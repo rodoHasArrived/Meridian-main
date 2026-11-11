@@ -1,7 +1,13 @@
 using System.Text.Json;
+using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
+using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -10,6 +16,99 @@ namespace Meridian.Ui.Shared.Endpoints;
 // file because LedgerEndpoints.cs is at its file-size cap.
 public static partial class LedgerEndpoints
 {
+    private static void MapAccountRunningBalanceEndpoint(WebApplication app, JsonSerializerOptions jsonOptions)
+    {
+        app.MapGet(UiApiRoutes.LedgerPeriodAccountRunningBalance, async (
+            Guid periodId,
+            string? account,
+            string? symbol,
+            string? financialAccountId,
+            string? dimensions,
+            AccountingBasisKindDto? accountingBasis,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!HasAccountingPackageTenantScope(tenant) || !EndpointAuthorization.TryResolveActor(context, out _))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (accountingBasis is { } selectedBasis && !Enum.IsDefined(selectedBasis))
+            {
+                return Results.BadRequest(new { error = "Query parameter 'accountingBasis' is unsupported." });
+            }
+
+            if (string.IsNullOrWhiteSpace(account))
+            {
+                return Results.BadRequest(new { error = "Query parameter 'account' is required." });
+            }
+
+            if (!TryParseRunningBalanceDimensionScope(dimensions, jsonOptions, out var dimensionScope))
+            {
+                return Results.BadRequest(new { error = "Query parameter 'dimensions' must be a JSON ledger dimension set." });
+            }
+
+            var journalStore = ResolveJournalStore(context);
+            var bookService = ResolveService(context);
+            if (journalStore is null || bookService is null
+                || context.RequestServices.GetService<IFundProfileTenancyRegistry>() is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var period = await journalStore.GetPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            if (period is null)
+            {
+                return Results.NotFound(new { error = $"Ledger period '{periodId}' was not found." });
+            }
+
+            if (period.PeriodId != periodId)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (period.LedgerBookId is not { } bookId || bookId == Guid.Empty)
+            {
+                return Results.BadRequest(new { error = $"Ledger period '{periodId}' is not scoped to a ledger book." });
+            }
+
+            var book = await ResolveAccessiblePreparationBookAsync(context, bookId).ConfigureAwait(false);
+            if (book is null)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var accountName = account.Trim();
+            var entries = await journalStore
+                .QueryAsync(
+                    new LedgerJournalEntryQuery(LedgerBookId: bookId, PeriodId: periodId, AccountName: accountName),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            if (entries.Any(entry => entry.PeriodId != periodId))
+            {
+                return Results.Problem("The retained journal population does not match the requested period.",
+                    statusCode: StatusCodes.Status503ServiceUnavailable);
+            }
+            return Results.Json(
+                BuildAccountRunningBalance(
+                    entries, periodId, bookId, accountName, symbol, financialAccountId, dimensionScope, book.FundProfileId, accountingBasis),
+                jsonOptions);
+        })
+        .WithName("GetLedgerPeriodAccountRunningBalance").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
+        .Produces<LedgerAccountRunningBalanceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .Produces(StatusCodes.Status503ServiceUnavailable);
+    }
+
     /// <summary>
     /// Posting history for one account in store order, with a running balance in the account's
     /// normal-balance sign. The store's account filter is re-applied here so the result is correct
@@ -23,7 +122,8 @@ public static partial class LedgerEndpoints
         string? symbol,
         string? financialAccountId,
         RunningBalanceDimensionScope? dimensionScope = null,
-        string? bookFundProfileId = null)
+        string? bookFundProfileId = null,
+        AccountingBasisKindDto? accountingBasis = null)
     {
         // An omitted filter (null) matches any value; a filter sent empty selects the lines that
         // have no symbol or no financial account. Without that distinction, picking the unscoped
@@ -31,6 +131,7 @@ public static partial class LedgerEndpoints
         var symbolFilter = symbol?.Trim();
         var financialAccountFilter = financialAccountId?.Trim();
         var lines = entries
+            .Where(entry => accountingBasis is null || entry.AccountingBasis == accountingBasis)
             .OrderBy(static entry => entry.Entry.Timestamp)
             .ThenBy(static entry => entry.GlobalSequence)
             .SelectMany(static entry => entry.Entry.Lines.Select(line => (Record: entry, Line: line)))

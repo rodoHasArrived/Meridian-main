@@ -26,7 +26,7 @@ _metadata_spec.loader.exec_module(_metadata)
 
 ROOT_FILES = {
     "package.json", "package-lock.json", "release.json", "release-build.json", "_ds_manifest.json", "LICENSE",
-    "_ds_bundle.js", "_preview_runtime.js", "README.md", "SKILL.md", "CHANGELOG.md",
+    "_ds_bundle.js", "_preview_runtime.js", "_preview_jsx.js", "README.md", "SKILL.md", "CHANGELOG.md",
     "PATTERNS.md", "BRAND_GUIDELINES.md", "CONTENT_FUNDAMENTALS.md", "ICONOGRAPHY.md",
     "INSPIRATION_BRIEF.md", "VISUAL_FOUNDATIONS.md", "THIRD_PARTY_NOTICES.md",
     "governance-baseline.json", "styles.css", "colors_and_type.css", "index.html",

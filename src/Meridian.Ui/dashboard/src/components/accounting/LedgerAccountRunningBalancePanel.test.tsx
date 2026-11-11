@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
 import type { LedgerAccountRunningBalance } from "@/types";
@@ -119,5 +119,25 @@ describe("LedgerAccountRunningBalancePanel", () => {
 
     expect(await screen.findByRole("alert")).toBeInTheDocument();
     expect(screen.queryByText("No postings to this account in the selected period.")).not.toBeInTheDocument();
+  });
+
+  it("reloads the selected basis and ignores a late response from the previous basis", async () => {
+    let finishPrimary!: (data: LedgerAccountRunningBalance) => void;
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance)
+      .mockImplementationOnce(() => new Promise(resolve => { finishPrimary = resolve; }))
+      .mockResolvedValueOnce(makeRunningBalance({
+        endingBalance: 40,
+        points: [{ journalEntryId: "gaap-journal", entryId: "gaap-entry", globalSequence: 2,
+          timestamp: "2026-06-30T22:00:00Z", description: "GAAP-only fee", debit: 0, credit: 40, balance: 40 }]
+      }));
+    const view = render(<LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" accountingBasis="Primary" formatAmount={formatAmount} />);
+    view.rerender(<LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" accountingBasis="Gaap" formatAmount={formatAmount} />);
+    await screen.findByText("GAAP-only fee");
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenLastCalledWith(PERIOD_ID, {
+      account: "Management fees", accountingBasis: "Gaap", symbol: null, financialAccountId: null, dimensions: null
+    });
+    await act(async () => finishPrimary(makeRunningBalance()));
+    expect(screen.queryByText("June management fee")).not.toBeInTheDocument();
+    expect(screen.getByText(/1 posting; ending balance/)).toHaveTextContent("$40.00");
   });
 });

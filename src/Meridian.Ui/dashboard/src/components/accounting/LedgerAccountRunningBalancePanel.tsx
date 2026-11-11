@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { getLedgerPeriodAccountRunningBalance } from "@/lib/ledger-reports-api";
-import type { LedgerAccountRunningBalance, LedgerDimensionSet } from "@/types";
+import type { AccountingBasisKind, LedgerAccountRunningBalance, LedgerDimensionSet } from "@/types";
 
 export interface LedgerAccountRunningBalancePanelProps {
   periodId: string;
   accountName: string;
+  /** The selected trial-balance row's basis; omission retains the legacy unfiltered API read. */
+  accountingBasis?: AccountingBasisKind;
   symbol?: string | null;
   financialAccountId?: string | null;
   /**
@@ -31,6 +33,7 @@ type RunningBalanceState =
 export function LedgerAccountRunningBalancePanel({
   periodId,
   accountName,
+  accountingBasis,
   symbol = null,
   financialAccountId = null,
   dimensions = null,
@@ -49,7 +52,8 @@ export function LedgerAccountRunningBalancePanel({
           account: accountName,
           symbol,
           financialAccountId,
-          dimensions: JSON.parse(dimensionsKey) as LedgerDimensionSet | null
+          dimensions: JSON.parse(dimensionsKey) as LedgerDimensionSet | null,
+          ...(accountingBasis !== undefined ? { accountingBasis } : {})
         });
         if (!cancelled) {
           setState({ status: "ready", data });
@@ -67,7 +71,7 @@ export function LedgerAccountRunningBalancePanel({
     return () => {
       cancelled = true;
     };
-  }, [periodId, accountName, symbol, financialAccountId, dimensionsKey]);
+  }, [periodId, accountName, accountingBasis, symbol, financialAccountId, dimensionsKey]);
 
   const title = `Postings to ${accountName}`;
   return (

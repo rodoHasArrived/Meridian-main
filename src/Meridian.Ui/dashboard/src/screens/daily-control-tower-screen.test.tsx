@@ -7,6 +7,10 @@ import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
 
+vi.mock("@/components/meridian/operator-triage-queue", () => ({
+  OperatorTriageQueue: ({ fallback }: { fallback: React.ReactNode }) => <>{fallback}</>
+}));
+
 // A payload that produces a multi-row finance queue so row selection is
 // observable: two trading work items plus one data-provider warning.
 const payload: AppShellWorkspacePayload = {
@@ -132,6 +136,9 @@ describe("DailyControlTowerScreen", () => {
     expect(
       screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 loaded workspace items");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
@@ -142,6 +149,9 @@ describe("DailyControlTowerScreen", () => {
 
     const status = screen.getByRole("region", { name: "Workstation status" });
     const line = within(status).getByTestId("status-row-issues");
+    const priority = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priority).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
+    expect(priority.querySelectorAll('[data-testid="status-row-issues"]')).toHaveLength(1);
     expect(line).toHaveTextContent("Blocked");
     expect(line).toHaveTextContent("Decisions:");
     expect(line).toHaveTextContent("Brokerage sync failed · 2 more");
@@ -169,8 +179,9 @@ describe("DailyControlTowerScreen", () => {
 
     expect(shell.attention.tone).toBe("blocked");
     expect(shell.attention.title).toBe("Brokerage sync failed");
-    const headline = screen.getByText("Brokerage sync failed", { selector: ".mds-rpanel__title" });
-    expect(headline.closest(".mds-rpanel")).toHaveTextContent("Blocked");
+    const headline = screen.getByRole("region", { name: "Priority decision" });
+    expect(headline).toHaveTextContent("Brokerage sync failed");
+    expect(headline).toHaveTextContent("Blocked");
     expect(screen.getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
   });
 
@@ -221,16 +232,13 @@ describe("DailyControlTowerScreen", () => {
     ).not.toHaveAttribute("aria-selected", "true");
   });
 
-  it("requires an explicit scope choice before showing the combined queue", async () => {
-    const user = userEvent.setup();
+  it("shows the combined ranked queue without a scope selection", () => {
     renderScreen({ search: "" });
-
-    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Daily control tower finance queue" })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
-
+    expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("All authorized scopes");
+    expect(screen.getByRole("columnheader", { name: "Workspace" })).toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
   });
 
   it("supports keyboard selection and detail focus through the shared dense-row contract", async () => {
@@ -270,11 +278,8 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Brokerage sync failed", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
-    expect(priorityPanel).not.toBeNull();
-    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+    const priorityPanel = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priorityPanel as HTMLElement).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
   });
 
   it("has no accessibility violations", async () => {

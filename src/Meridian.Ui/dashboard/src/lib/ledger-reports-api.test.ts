@@ -37,4 +37,15 @@ describe("ledgerPeriodAccountRunningBalanceEndpoint", () => {
       )
     ).toBe(false);
   });
+
+  it("scopes a running balance to the selected accounting basis without changing unscoped filters", () => {
+    const url = new URL(ledgerPeriodAccountRunningBalanceEndpoint(periodId, {
+      account: "Cash", accountingBasis: "Gaap", symbol: null, financialAccountId: null, dimensions: null
+    }), "http://localhost");
+    expect(url.searchParams.get("accountingBasis")).toBe("Gaap");
+    expect(url.searchParams.get("symbol")).toBe("");
+    expect(url.searchParams.get("financialAccountId")).toBe("");
+    expect(url.searchParams.get("dimensions")).toBe("null");
+    expect(new URL(ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash" }), "http://localhost").searchParams.has("accountingBasis")).toBe(false);
+  });
 });

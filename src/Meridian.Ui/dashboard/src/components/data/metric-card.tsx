@@ -55,6 +55,8 @@ export interface MetricCardProps {
   freshnessLabel?: string;
   /** Where the figure comes from, e.g. "Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC". */
   provenance?: string;
+  /** Declared calculation/population basis; omit only for non-financial decorative samples. */
+  basis?: ReactNode;
 }
 
 const TONE_STATUS: Record<MetricCardTone, string> = {
@@ -72,7 +74,7 @@ const TONE_STATUS: Record<MetricCardTone, string> = {
  * <MetricCard label="Net liquidation" value="$1,284,002.18" delta="+1.84% today" tone="success" />
  * <MetricCard label="Day P&L" value="-$4,118.22" delta="-0.32%" tone="danger" />
  */
-function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel, freshnessLabel, provenance }: MetricCardProps) {
+function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ariaLabel, deltaAriaLabel, freshnessLabel, provenance, basis }: MetricCardProps) {
   injectStyle("metric", CSS);
   const t =
     trend ??
@@ -99,6 +101,7 @@ function MetricCardComponent({ label, value, delta, tone = "neutral", trend, ari
     >
       <p className="mds-metric__label">{label}</p>
       <p className="mds-metric__value">{value}</p>
+      {basis ? <p className="mt-2 text-xs text-muted-foreground">{basis}</p> : null}
       {delta && (
         <div className={`mds-metric__delta mds-delta--${t}`} aria-label={deltaAriaLabel}>
           {delta}

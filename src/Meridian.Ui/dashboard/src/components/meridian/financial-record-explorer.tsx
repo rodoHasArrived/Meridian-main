@@ -3,6 +3,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNod
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
+import { EntityLink } from "@/components/meridian/entity-inspector";
 import { ProofDrawer, ProofActionButton } from "@/components/meridian/proof-drawer";
 import { cn } from "@/lib/utils";
 import {
@@ -22,6 +23,11 @@ import type {
 } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { normalizeFinancialLabel, pluralizeCount } from "@/lib/format";
+
+const inspectorWorkspaceRoutes: Record<string, string> = {
+  ledger: "/accounting/ledger", portfolio: "/portfolio",
+  "security-instrument": "/accounting/security-master", "report-line-provenance": "/reporting/evidence"
+};
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -256,6 +262,12 @@ export function FinancialRecordExplorerShell({
               </a>
             </Button>
           ) : null}
+          {dtoMode && selectedRow && inspectorWorkspaceRoutes[dtoMode.explorerId] && !dtoMode.isBlocked ? <EntityLink ariaLabel="Inspect selected record" record={{
+            kind: "record", id: selectedRow.recordId, label: selectedRow.label,
+            workspaceHref: `${inspectorWorkspaceRoutes[dtoMode.explorerId]}${new URL(shareHref, "http://localhost").search}`,
+            summary: [{ label: "Record type", value: selectedRow.recordType }, { label: "Source", value: selectedRow.source }, { label: "Status", value: selectedRow.status }],
+            proof: { explorer: dtoMode, recordId: selectedRow.recordId }
+          }}>Inspect record</EntityLink> : null}
           {dtoMode && onSaveView ? (
             <input
               className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-[var(--interaction-focus)]"

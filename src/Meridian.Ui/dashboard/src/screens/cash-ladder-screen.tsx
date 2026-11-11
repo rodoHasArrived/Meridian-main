@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/format";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
@@ -27,7 +28,6 @@ import {
   type CashLadderDrillRow
 } from "@/screens/cash-ladder-screen.view-model";
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
-import { formatNumber } from "@/lib/format";
 
 const SOURCE_PALETTE = [
   "var(--chart-series-1, #29323A)",

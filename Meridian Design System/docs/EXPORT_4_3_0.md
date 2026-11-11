@@ -14,7 +14,9 @@ different API from a historical checkout.
 
 `scripts/build_package.mjs` rebuilds `_ds_bundle.js` from the manifest's current
 sources. `release-build.json` records source hashes, generated asset hashes,
-counts, and tool versions. The separate `_preview_runtime.js` supplies a pinned
+counts, and tool versions. `_preview_jsx.js` is the pinned in-browser JSX compiler that
+standalone specimen pages load so their readable JSX demo source runs offline.
+The separate `_preview_runtime.js` supplies a pinned
 local React/ReactDOM runtime for the ordinary HTML smoke page. Application
 consumers should use their own React instance and omit that preview runtime.
 
