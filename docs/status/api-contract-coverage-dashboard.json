@@ -9,9 +9,9 @@
     "endpoint_count": 746,
     "documented_endpoint_count": 227,
     "undocumented_endpoint_count": 519,
-    "workstation_contract_count": 974,
+    "workstation_contract_count": 977,
     "documented_workstation_contract_count": 39,
-    "undocumented_workstation_contract_count": 935
+    "undocumented_workstation_contract_count": 938
   },
   "endpoints": [
     {
@@ -6128,373 +6128,383 @@
       "documented": false
     },
     {
+      "name": "ReportingSchedulePeriodFrequencyDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1210",
+      "documented": false
+    },
+    {
+      "name": "ReportingSchedulePeriodCadenceDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1221",
+      "documented": false
+    },
+    {
       "name": "ReportingScheduleUpsertRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1195",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1224",
       "documented": true
     },
     {
       "name": "ReportingScheduleRunResultDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1213",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1248",
       "documented": false
     },
     {
       "name": "ReportingDueScheduleRunResultDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1219",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1254",
       "documented": false
     },
     {
       "name": "ReportingEntityScopeKindDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1225",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1260",
       "documented": false
     },
     {
       "name": "ReportingAccountingBasisDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1234",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269",
       "documented": false
     },
     {
       "name": "ReportingConsolidationLevelDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1244",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1279",
       "documented": false
     },
     {
       "name": "ReportingOutputFormatDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1253",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1288",
       "documented": false
     },
     {
       "name": "ReportingFinalityDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1263",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1270",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305",
       "documented": false
     },
     {
       "name": "ReportingRunScopeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1277",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1312",
       "documented": false
     },
     {
       "name": "ReportingLedgerBookSelectionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1285",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1320",
       "documented": false
     },
     {
       "name": "ReportingRunParametersDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1289",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1324",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessCheckDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1342",
       "documented": false
     },
     {
       "name": "ReportingRunReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1321",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1356",
       "documented": true
     },
     {
       "name": "ReportingRunRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1333",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1368",
       "documented": true
     },
     {
       "name": "ReportingRunResultDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1346",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1381",
       "documented": false
     },
     {
       "name": "ReportingRunAuditEntryDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1349",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1384",
       "documented": false
     },
     {
       "name": "ReportingRunAuditTrailDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1356",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1391",
       "documented": false
     },
     {
       "name": "ReportPackWorkflowStateDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1379",
-      "documented": false
-    },
-    {
-      "name": "VersionedReportTemplateIdDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1392",
-      "documented": false
-    },
-    {
-      "name": "ReportTemplateParameterDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1394",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridKindDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1397",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterAggregateFunctionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1406",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterMetricDefinitionDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1414",
       "documented": false
     },
     {
-      "name": "ReportWriterFormulaDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1420",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterFilterOperatorDto",
+      "name": "VersionedReportTemplateIdDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1427",
       "documented": false
     },
     {
-      "name": "ReportWriterFilterDefinitionDto",
+      "name": "ReportTemplateParameterDefinitionDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1429",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterGridKindDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterAggregateFunctionDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1441",
       "documented": false
     },
     {
+      "name": "ReportWriterMetricDefinitionDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1449",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterFormulaDefinitionDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1455",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterFilterOperatorDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1462",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterFilterDefinitionDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1476",
+      "documented": false
+    },
+    {
       "name": "ReportWriterGridDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1447",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1482",
       "documented": false
     },
     {
       "name": "ReportWriterCellStyleDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1464",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1499",
       "documented": false
     },
     {
       "name": "ReportWriterFormatRuleDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1472",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1507",
       "documented": false
     },
     {
       "name": "ReportWriterChartTypeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1481",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1516",
       "documented": false
     },
     {
       "name": "ReportWriterChartDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1489",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1524",
       "documented": false
     },
     {
       "name": "ReportWriterChartSeriesDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1495",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1530",
       "documented": false
     },
     {
       "name": "ReportWriterChartRenderDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1500",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1535",
       "documented": false
     },
     {
       "name": "ReportWriterGridColumnDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1508",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1513",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterMetricLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1518",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterFormulaLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1523",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterFilterLineageDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1528",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridDataDictionaryFieldDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1534",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridValidationCheckDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1543",
       "documented": false
     },
     {
-      "name": "ReportWriterGridLineageDto",
+      "name": "ReportWriterGridRowDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1548",
       "documented": false
     },
     {
+      "name": "ReportWriterMetricLineageDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1553",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterFormulaLineageDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1558",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterFilterLineageDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1563",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterGridDataDictionaryFieldDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1569",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterGridValidationCheckDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1578",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterGridLineageDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1583",
+      "documented": false
+    },
+    {
       "name": "ReportWriterGridRenderDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1557",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1592",
       "documented": false
     },
     {
       "name": "ReportWriterDiffRowStateDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1571",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1606",
       "documented": false
     },
     {
       "name": "ReportWriterDiffDirectionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1580",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1615",
       "documented": false
     },
     {
       "name": "ReportWriterGridDiffCellDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1586",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridDiffRowDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1593",
-      "documented": false
-    },
-    {
-      "name": "ReportWriterGridDiffDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1600",
-      "documented": false
-    },
-    {
-      "name": "ReportAccessModeDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1613",
-      "documented": false
-    },
-    {
-      "name": "ReportAccessPrincipalKindDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1621",
       "documented": false
     },
     {
+      "name": "ReportWriterGridDiffRowDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1628",
+      "documented": false
+    },
+    {
+      "name": "ReportWriterGridDiffDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1635",
+      "documented": false
+    },
+    {
+      "name": "ReportAccessModeDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1648",
+      "documented": false
+    },
+    {
+      "name": "ReportAccessPrincipalKindDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656",
+      "documented": false
+    },
+    {
       "name": "ReportAccessPrincipalDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1627",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1662",
       "documented": false
     },
     {
       "name": "ReportAccessPolicyDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1632",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1667",
       "documented": false
     },
     {
       "name": "ReportAccessEvaluationDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1639",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1674",
       "documented": false
     },
     {
       "name": "ReportTemplateDefinitionDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1644",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1679",
       "documented": false
     },
     {
       "name": "RenderReportTemplateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1687",
       "documented": false
     },
     {
       "name": "RenderReportTemplateResponseDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1657",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692",
       "documented": false
     },
     {
       "name": "ReportTemplateLifecycleStatusDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1665",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1700",
       "documented": false
     },
     {
       "name": "ReportTemplateAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1673",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1708",
       "documented": false
     },
     {
       "name": "ReportTemplateGovernanceRecordDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1681",
-      "documented": false
-    },
-    {
-      "name": "ReportTemplateDraftRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1705",
-      "documented": false
-    },
-    {
-      "name": "ReportTemplateDecisionRequestDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1716",
       "documented": false
     },
     {
+      "name": "ReportTemplateDraftRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1740",
+      "documented": false
+    },
+    {
+      "name": "ReportTemplateDecisionRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1751",
+      "documented": false
+    },
+    {
       "name": "ReportPackAuditEventDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1720",
-      "documented": false
-    },
-    {
-      "name": "ReportPackEvidenceLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1722",
-      "documented": false
-    },
-    {
-      "name": "ReportPackChangedLineDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1723",
-      "documented": false
-    },
-    {
-      "name": "ReportPackLineProvenanceDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1724",
-      "documented": false
-    },
-    {
-      "name": "ReportPackPublicationManifestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1742",
-      "documented": false
-    },
-    {
-      "name": "ReportPackPublishRequestDto",
       "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1755",
       "documented": false
     },
     {
+      "name": "ReportPackEvidenceLinkDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757",
+      "documented": false
+    },
+    {
+      "name": "ReportPackChangedLineDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758",
+      "documented": false
+    },
+    {
+      "name": "ReportPackLineProvenanceDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759",
+      "documented": false
+    },
+    {
+      "name": "ReportPackPublicationManifestDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1777",
+      "documented": false
+    },
+    {
+      "name": "ReportPackPublishRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790",
+      "documented": false
+    },
+    {
       "name": "ReportPackWorkflowActionRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1765",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800",
       "documented": false
     },
     {
       "name": "ReportPackRejectRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1768",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1803",
       "documented": false
     },
     {
       "name": "ReportPackCreateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1773",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808",
       "documented": false
     },
     {
       "name": "ReportPackRestatementMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1781",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1816",
       "documented": false
     },
     {
       "name": "ReportPackRejectionMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1788",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823",
       "documented": false
     },
     {
       "name": "ReportPackRestateRequestDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1794",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1829",
       "documented": false
     },
     {
       "name": "ReportPackWorkflowRecordDto",
-      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800",
+      "source": "src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1835",
       "documented": false
     },
     {
@@ -7673,218 +7683,223 @@
       "documented": false
     },
     {
-      "name": "CorporateActionDescriptorDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:82",
+      "name": "SecurityMasterGovernanceDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:80",
       "documented": false
     },
     {
-      "name": "CorporateActionTimelineEntryDto",
+      "name": "CorporateActionDescriptorDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:96",
       "documented": false
     },
     {
+      "name": "CorporateActionTimelineEntryDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:110",
+      "documented": false
+    },
+    {
       "name": "SecurityMasterEconomicDefinitionDrillInDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:102",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:116",
       "documented": false
     },
     {
       "name": "SecurityMasterTrustPostureDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:119",
-      "documented": false
-    },
-    {
-      "name": "SecurityMasterSourceCandidateDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:133",
       "documented": false
     },
     {
+      "name": "SecurityMasterSourceCandidateDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:147",
+      "documented": false
+    },
+    {
       "name": "SecurityMasterConflictAssessmentDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:145",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:159",
       "documented": false
     },
     {
       "name": "SecurityMasterIdentifierSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:160",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:174",
       "documented": false
     },
     {
       "name": "SecurityMasterProviderSymbolMappingDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:172",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:186",
       "documented": false
     },
     {
       "name": "SecurityMasterSchemaCompatibilityDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:185",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:199",
       "documented": false
     },
     {
       "name": "SecurityMasterChangeHistoryItemDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:194",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:208",
       "documented": false
     },
     {
       "name": "SecurityMasterDeclaredExerciseStatus",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:212",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:226",
       "documented": false
     },
     {
       "name": "SecurityMasterScheduleBlockerDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:222",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:236",
       "documented": false
     },
     {
       "name": "SecurityMasterDeclaredExerciseOutcomeDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:237",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:251",
       "documented": false
     },
     {
       "name": "SecurityMasterScheduleSummaryDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:244",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:258",
       "documented": false
     },
     {
       "name": "SecurityMasterScheduleBookDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:256",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:270",
       "documented": false
     },
     {
       "name": "SecurityMasterScheduleEventDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:272",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:286",
       "documented": false
     },
     {
       "name": "SecurityMasterFactorPointDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:294",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:308",
       "documented": false
     },
     {
       "name": "SecurityMasterScheduleProvenanceDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:306",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:320",
       "documented": false
     },
     {
       "name": "SecurityMasterLotModelDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:319",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:333",
       "documented": false
     },
     {
       "name": "SecurityMasterOpenLotReadModelDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:328",
-      "documented": false
-    },
-    {
-      "name": "SecurityMasterOpenLotDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:342",
       "documented": false
     },
     {
+      "name": "SecurityMasterOpenLotDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:356",
+      "documented": false
+    },
+    {
       "name": "SecurityMasterOpenLotProvenanceDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:377",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:391",
       "documented": false
     },
     {
       "name": "SecurityMasterDownstreamImpactDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:388",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:402",
       "documented": false
     },
     {
       "name": "SecurityMasterImpactLinkDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:404",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:418",
       "documented": false
     },
     {
       "name": "SecurityMasterRecommendedActionDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:411",
-      "documented": false
-    },
-    {
-      "name": "InstrumentPassportProviderConfidenceDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:425",
       "documented": false
     },
     {
+      "name": "InstrumentPassportProviderConfidenceDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:439",
+      "documented": false
+    },
+    {
       "name": "InstrumentPassportReferenceDataWorkbenchDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:440",
-      "documented": false
-    },
-    {
-      "name": "InstrumentPassportReferenceDataWorkbenchSectionDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:446",
-      "documented": false
-    },
-    {
-      "name": "InstrumentPassportOperationsHandoffDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:454",
       "documented": false
     },
     {
+      "name": "InstrumentPassportReferenceDataWorkbenchSectionDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:460",
+      "documented": false
+    },
+    {
+      "name": "InstrumentPassportOperationsHandoffDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:468",
+      "documented": false
+    },
+    {
       "name": "InstrumentPassportOperationsWorkbenchDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:469",
-      "documented": false
-    },
-    {
-      "name": "InstrumentPassportOperationsWorkbenchPanelDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:476",
-      "documented": false
-    },
-    {
-      "name": "InstrumentPassportOperationsWorkbenchItemDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:483",
       "documented": false
     },
     {
+      "name": "InstrumentPassportOperationsWorkbenchPanelDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:490",
+      "documented": false
+    },
+    {
+      "name": "InstrumentPassportOperationsWorkbenchItemDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:497",
+      "documented": false
+    },
+    {
       "name": "InstrumentPassportOperationsReadinessDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:493",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:507",
       "documented": false
     },
     {
       "name": "SecurityMasterOperatingModelDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:504",
-      "documented": false
-    },
-    {
-      "name": "SecurityMasterOperatingModelStageDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:518",
       "documented": false
     },
     {
+      "name": "SecurityMasterOperatingModelStageDto",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:532",
+      "documented": false
+    },
+    {
       "name": "SecurityMasterEntitlementApplicabilityDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:526",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:540",
       "documented": false
     },
     {
       "name": "SecurityMasterOperatorMetadataDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:542",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:556",
       "documented": false
     },
     {
       "name": "SecurityMasterManualChangeApprovalPostureDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:553",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:567",
       "documented": false
     },
     {
       "name": "InstrumentPassportClassificationProfileDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:566",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:580",
       "documented": true
     },
     {
       "name": "InstrumentPassportDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:590",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:604",
       "documented": true
     },
     {
       "name": "InstrumentPassportPricingDto",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:610",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:624",
       "documented": false
     },
     {
       "name": "BulkResolveSecurityMasterConflictsRequest",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:620",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:634",
       "documented": false
     },
     {
       "name": "BulkResolveSecurityMasterConflictsResult",
-      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:626",
+      "source": "src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:640",
       "documented": false
     },
     {

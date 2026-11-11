@@ -279,6 +279,10 @@ public sealed record StructuredCashFlowProjectionDto(
     string? BlockedReason = null,
     bool IsNormalizedPer100 = false)
 {
+    /// <summary>Typed capability refusal; null on successful and older projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityCashFlowBlockerDto? Blocker { get; init; }
+
     /// <summary>Calendar and kernel evidence for a declared projection; absent on legacy projections.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }
@@ -322,6 +326,9 @@ public sealed record StructuredCashFlowLedgerPostingResult(
     string? BlockedReason,
     IReadOnlyList<StructuredCashFlowLedgerPosting> Postings)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityCashFlowBlockerDto? Blocker { get; init; }
+
     /// <summary>Creates a blocked result carrying the gate reason and no postings.</summary>
     public static StructuredCashFlowLedgerPostingResult Blocked(Guid securityId, string reason)
         => new(securityId, false, reason, Array.Empty<StructuredCashFlowLedgerPosting>());

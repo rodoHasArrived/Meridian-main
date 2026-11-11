@@ -484,10 +484,12 @@ public sealed class DirectLendingViewModel : BindableBase
             var portfolioTask = _apiClient.GetWithResponseAsync<LoanPortfolioSummaryDto>("/api/loans/portfolio", ct);
             var operationsTask = _apiClient.GetWithResponseAsync<DirectLendingOperationsReadModelDto>("/api/loans/operations", ct);
 
-            await Task.WhenAll(portfolioTask, operationsTask).ConfigureAwait(false);
+            // Resume on the caller's context: everything below mutates bound collections and raises
+            // property notifications, which WPF requires on the UI thread.
+            await Task.WhenAll(portfolioTask, operationsTask).ConfigureAwait(true);
 
-            var portfolio = (await portfolioTask.ConfigureAwait(false)).DataOrLoggedNull("Load loan portfolio summary");
-            var operations = (await operationsTask.ConfigureAwait(false)).DataOrLoggedNull("Load direct-lending operations read model");
+            var portfolio = (await portfolioTask.ConfigureAwait(true)).DataOrLoggedNull("Load loan portfolio summary");
+            var operations = (await operationsTask.ConfigureAwait(true)).DataOrLoggedNull("Load direct-lending operations read model");
 
             _allLoans.Clear();
             if (portfolio?.Loans is not null)

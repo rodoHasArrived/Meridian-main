@@ -153,6 +153,19 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedN
 
 Keep provider abstractions stable and implementation-neutral. Concrete adapters belong in Infrastructure.
 
+Namespaces in this project are part of the plugin contract and do not all match the project name.
+Thirty files here declare `Meridian.Infrastructure.*` namespaces (`Adapters.Core`, `DataSources`,
+`Contracts`, `Utilities`, `Resilience`, `Http`, and `Meridian.Infrastructure` itself for
+`IMarketDataClient`), which they share with types that live in `Meridian.Infrastructure`. Do not
+rename them as a cleanup:
+
+- `DataSourceCapabilityContracts` in `DataSourceAttribute.cs` identifies provider registrations by
+  namespace-qualified type name, so a rename changes how plugins are discovered.
+- Provider plugins compiled against this SDK bind to these full type names.
+- About 400 C# and F# files import these namespaces.
+
+New SDK types that have no existing callers should use `Meridian.ProviderSdk` or a child namespace.
+
 ## Related docs
 
 - `docs/providers/`

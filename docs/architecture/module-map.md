@@ -90,6 +90,12 @@ flowchart LR
   operator route calls it yet; composition does not establish workstation activation.
 - Design tokens and shared UI patterns should come from the Meridian Design
   System or local shared dashboard primitives, not one-off screen styling.
+- A namespace does not always name its owning project. `src/Meridian.ProviderSdk` declares thirty
+  files in `Meridian.Infrastructure.*` namespaces, kept because plugin discovery and compiled
+  provider plugins bind to those full type names; see the change rules in
+  `src/Meridian.ProviderSdk/README.md`. `src/Meridian.Contracts/SecurityMaster/Compatibility/`
+  holds two files of `[Obsolete]` bridge types in `Meridian.Application.SecurityMaster*` so existing
+  implementations keep their type identity. Find a type's owner by its file path, not its namespace.
 
 ## OMS Runtime Ownership and Lifecycle
 
@@ -173,7 +179,8 @@ accounting into a competing source of truth:
 - `src/Meridian.Ui.Shared` adapts those source-owned services into endpoint/read-model support for the browser workstation and WPF shell.
 - External GL and provider systems remain evidence inputs where configured; Meridian-owned ledger records, retained evidence, approvals, and report outputs are the operational record surface.
 - Storage journal records, UI projections, report-pack links, and workflow records are intentionally separate persistence or presentation surfaces. They may carry source-owned identifiers, evidence links, state labels, and DTO snapshots, but they must not redefine posting rules, trial-balance math, close-readiness gates, reconciliation classifications, or accounting approval semantics outside `src/Meridian.Ledger` and `src/Meridian.FinancialOperations`.
-- New accounting-like models outside the ledger or Financial Operations owners must be projection-, persistence-, reporting-, or workflow-specific, named for that role, and covered by the `AccountingSemanticBoundaryTests` allowlist so reviewers can distinguish intentional boundary surfaces from duplicated accounting semantics.
+- Stated exception: `src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs` enforces posting-command integrity at the durable append boundary, and it stays in Storage on purpose. `PostgresLedgerJournalStore` and `GovernedLedgerPostingTarget` call it before appending, so the checks run even when a caller bypasses Financial Operations. It validates the store's own write envelope (`LedgerJournalEntryWrite`): command identity and idempotency, reviewer approval state, data provenance, asset-accounting evidence, correction lineage, book context, and line dimensions. Its inputs are `Meridian.Contracts` DTOs and `Meridian.Ledger` types, and it refuses with `LedgerValidationException`. It is a fail-closed guard, not a second owner of accounting semantics: journal construction, balancing, policy selection, and approval workflow stay in `src/Meridian.Ledger` and `src/Meridian.FinancialOperations`, and new posting rules belong there first. See `event-accounting-architecture.md` ("Durable write validation").
+- New accounting-like models outside the ledger or Financial Operations owners must be projection-, persistence-, reporting-, or workflow-specific, and named for that role, so reviewers can distinguish intentional boundary surfaces from duplicated accounting semantics. `tests/Meridian.Tests/Architecture/AccountingSemanticsBoundaryTests.cs` enforces one such boundary today (private-capital semantic builders must not be defined in `src/Meridian.Ui.Shared`); it is a deny-list for that case, not a general allowlist, so extend it when a new boundary needs a test.
 
 The [strategy, order, and execution dictionary](../domain/strategy-order-execution.md) defines the
 shared business meanings. Current run/account/readiness admission and runtime-isolation limits

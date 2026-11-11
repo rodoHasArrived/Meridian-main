@@ -98,7 +98,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             openIdentifierConflictCount == 0;
         // A declared call or put schedule that is blocked leaves its option dates unknown, so the
         // obligation and cash-flow sections are not ready however many other rows the book holds.
-        var declaredExerciseBlockerCount = DeclaredExerciseBlockers(snapshot).Count;
+        var declaredExerciseBlockerCount = ScheduleReadinessBlockers(snapshot).Count;
         var hasObligationEvidence =
             declaredExerciseBlockerCount == 0 &&
             (snapshot.CorporateActions.Count > 0 ||
@@ -372,7 +372,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
     {
         var scheduleEventCount = snapshot.ScheduleBook?.Events.Count ?? 0;
         var factorCount = snapshot.ScheduleBook?.FactorHistory.Count ?? 0;
-        var declaredExerciseBlockerCount = DeclaredExerciseBlockers(snapshot).Count;
+        var declaredExerciseBlockerCount = ScheduleReadinessBlockers(snapshot).Count;
         var paymentScheduleReady = declaredExerciseBlockerCount == 0
             && (scheduleEventCount > 0 || snapshot.ScheduleSummary?.SupportsCashflowSchedule == true);
         var hasClassification = !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.AssetClass)
@@ -492,10 +492,11 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             && !string.IsNullOrWhiteSpace(snapshot.EconomicDefinition.Currency);
         // Close readiness needs the record's terms; a blocked declared call or put schedule means they
         // cannot be relied on for option dates, whatever else is retained.
-        var declaredExerciseBlockers = DeclaredExerciseBlockers(snapshot);
+        var declaredExerciseBlockers = ScheduleReadinessBlockers(snapshot);
+        var blockedScheduleLabel = snapshot.CashFlowBlocker is null ? "declared call/put schedule" : "cash-flow or exercise schedule";
         var closeBlockedAction = declaredExerciseBlockers.Count == 0
             ? "Clear unresolved Security Master blockers before close package use."
-            : $"Resolve the blocked declared call/put schedule ({string.Join(", ", declaredExerciseBlockers.Select(static blocker => blocker.Code))}) before close package use.";
+            : $"Resolve the blocked {blockedScheduleLabel} ({string.Join(", ", declaredExerciseBlockers.Select(static blocker => blocker.Code))}) before close package use.";
         var termsReady = declaredExerciseBlockers.Count == 0
             && (snapshot.ScheduleBook?.Events.Count > 0
             || snapshot.ScheduleSummary?.HasEconomicScheduleTerms == true
@@ -503,7 +504,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             || pricing.TradingParameters is not null);
         var valuationReady = identityReady && IsReadyStatus(pricing.Status);
         var reconciliationReady = identityReady && classificationReady && !snapshot.TrustPosture.HasOpenConflicts;
-        var ledgerReady = identityReady && classificationReady && snapshot.DownstreamImpact.LedgerExposureCount > 0;
+        var ledgerReady = identityReady && classificationReady && snapshot.DownstreamImpact.LedgerExposureCount > 0
+            && snapshot.CashFlowBlocker is null;
         var closeReady = reconciliationReady && ledgerReady && termsReady;
         var reportReady = identityReady && snapshot.DownstreamImpact.ReportPackExposureCount > 0 && !snapshot.TrustPosture.HasOpenConflicts;
         var nextAction = handoffs.FirstOrDefault(static handoff => handoff.IsEnabled);
@@ -512,7 +514,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService
         [
             BuildReadiness("valuation", "Valuation-ready", valuationReady, pricing.Summary, activeProviderCount + (pricing.TradingParameters is null ? 0 : 1), identifierConflictCount, "Review pricing source, identifier confidence, and active provider evidence.", nextAction?.Target),
             BuildReadiness("reconciliation", "Reconciliation-ready", reconciliationReady, snapshot.DownstreamImpact.ReconciliationExposureSummary, snapshot.DownstreamImpact.ReconciliationExposureCount + activeProviderCount, snapshot.TrustPosture.OpenConflictCount, "Resolve identifier, classification, maturity, coupon, currency, or factor conflicts.", nextAction?.Target),
-            BuildReadiness("ledger", "Ledger-ready", ledgerReady, snapshot.DownstreamImpact.LedgerExposureSummary, snapshot.DownstreamImpact.LedgerExposureCount + (classificationReady ? 1 : 0), ledgerReady ? 0 : 1, "Confirm ledger classification and retained Security Master provenance.", nextAction?.Target),
+            BuildReadiness("ledger", "Ledger-ready", ledgerReady, snapshot.DownstreamImpact.LedgerExposureSummary, snapshot.DownstreamImpact.LedgerExposureCount + (classificationReady ? 1 : 0), ledgerReady ? 0 : 1, snapshot.CashFlowBlocker is { } blocker ? $"Resolve cash-flow calculation blocker ({blocker.Code}) before accrual posting." : "Confirm ledger classification and retained Security Master provenance.", nextAction?.Target),
             BuildReadiness("close", "Close-ready", closeReady, snapshot.DownstreamImpact.Summary, snapshot.DownstreamImpact.Links.Count + (termsReady ? 1 : 0), closeReady ? 0 : Math.Max(1, declaredExerciseBlockers.Count), closeBlockedAction, nextAction?.Target),
             BuildReadiness("report", "Report-ready", reportReady, snapshot.DownstreamImpact.ReportPackExposureSummary, snapshot.DownstreamImpact.ReportPackExposureCount, reportReady ? 0 : 1, "Link report-line provenance and resolve open definition conflicts.", nextAction?.Target)
         ];
