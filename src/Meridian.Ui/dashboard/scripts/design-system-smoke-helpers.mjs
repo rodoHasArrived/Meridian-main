@@ -70,7 +70,7 @@ export function parseDesignSystemOptions(args) {
 }
 
 /**
- * Smoke-only GET support for five exact fixture identities. Personal views are empty;
+ * Smoke-only GET support for six exact fixture identities. Personal views are empty;
  * history is unavailable/empty, never reconstructed from current task/provider state.
  */
 export function readOnlySmokeResponse(url, method = "GET") {
@@ -79,7 +79,8 @@ export function readOnlySmokeResponse(url, method = "GET") {
   const views = new Set([
     "/api/workstation/tables/close-checklist-progress-data/views",
     "/api/workstation/tables/portfolio-positions/views",
-    "/api/workstation/tables/provider-evidence-age-data/views"
+    "/api/workstation/tables/provider-evidence-age-data/views",
+    "/api/workstation/tables/accounting-reconciliation-breaks/views"
   ]);
   let body, limitation;
   if (views.has(pathname)) {

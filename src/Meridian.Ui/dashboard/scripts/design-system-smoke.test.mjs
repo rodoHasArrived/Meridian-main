@@ -70,13 +70,14 @@ test("supporting fixtures are exact-method/path matches rather than catch-all wr
   assert.equal(supportingSmokeResponse("/api/workstation/operator/visits/unknown", "POST"), null);
 });
 
-test("new smoke-only support stays scoped to five GET identities without inventing history", () => {
+test("new smoke-only support stays scoped to six GET identities without inventing history", () => {
   const paths = [
     "/api/workstation/tables/close-checklist-progress-data/views",
     "/api/workstation/tables/portfolio-positions/views",
     "/api/workstation/tables/provider-evidence-age-data/views",
     "/api/workstation/operations/continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/checklist/history",
-    "/api/workstation/provider-verification-history/provider-alpaca-paper"
+    "/api/workstation/provider-verification-history/provider-alpaca-paper",
+    "/api/workstation/tables/accounting-reconciliation-breaks/views"
   ];
   for (const path of paths) {
     const response = readOnlySmokeResponse(path, "GET");
@@ -86,7 +87,7 @@ test("new smoke-only support stays scoped to five GET identities without inventi
     assert.equal(readOnlySmokeResponse(path, "POST"), null);
     assert.equal(readOnlySmokeResponse(path + "/unknown", "GET"), null);
   }
-  for (const path of paths.slice(0, 3)) assert.deepEqual(readOnlySmokeResponse(path).body, []);
+  for (const path of [...paths.slice(0, 3), paths[5]]) assert.deepEqual(readOnlySmokeResponse(path).body, []);
   const checklist = readOnlySmokeResponse(paths[3]).body;
   assert.equal(checklist.status, "Unavailable");
   assert.equal(checklist.workflowId, "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6");
