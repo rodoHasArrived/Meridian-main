@@ -538,3 +538,21 @@ Remaining failures, both real findings, neither hidden:
 | --- | --- |
 | `test_clean_package_passes` | The 56 governance findings recorded above |
 | `test_contrast.test_all_pairs_pass` | Twelve brand-variant findings from `scripts/check_contrast.py`, six brands times two rules. Dark: a brand states a light accent only, and the dark blocks re-point `--theme-accent` at higher specificity, so every brand renders the default terracotta in dark mode. Light: the rule requires each brand to restate `--theme-border-focus`, written when the focus ring followed the accent; 4.3.0 makes focus a separate blue interaction role |
+
+## Chart annotation and peer access follow-up (issue #3509)
+
+The "Chart interaction" limitation above is closed for the two package
+components. `ChartAnnotations.List` renders the overlay's bands, events and
+callouts as an HTML list in time order beside the chart; the overlay itself stays
+presentational because it sits inside the frame's image-role SVG.
+`PeerComparisonStrip` rails are buttons that open the named peer values, and its
+table now lists them; no value depends on a hover title.
+
+`tests/chart-a11y-regression.mjs` (in `npm run test:components`) exercises
+keyboard order, Home/End, Enter/Space/Escape, the list-to-overlay link, the peer
+disclosure by keyboard and pointer, the table contents, dark theme and forced
+colours in Chromium, with zero axe WCAG A/AA violations in four states. It loads
+the package token files. No screen reader was run, so announcement wording is
+unverified. `ChartAnnotations.List` is a static member, not a new top-level
+export, so the 351-export census is unchanged. The dashboard's native charts
+were not changed.

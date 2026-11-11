@@ -56,7 +56,7 @@
       "components/charts/BarChart.jsx": "331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2",
       "components/charts/CandleChart.jsx": "1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9",
       "components/charts/CashFlowLadder.jsx": "8e5027c4fad6e0be4b455cc63656da872f99dfae4788866a0555b06d44311cef",
-      "components/charts/ChartAnnotations.jsx": "69c3dc4fd00ce12b8131ece787613415bc69c84823caa95ebe22418d979bb910",
+      "components/charts/ChartAnnotations.jsx": "c2243b8ac7302e8925ad7c709ae95a7476a54977a508fd20dc0d891027ad8831",
       "components/charts/ChartCard.jsx": "6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6",
       "components/charts/ChartFrame.jsx": "2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22",
       "components/charts/ChartTooltip.jsx": "558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832",
@@ -77,7 +77,7 @@
       "components/charts/LineageGraph.jsx": "eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6",
       "components/charts/MaturityLadder.jsx": "12b102c5ee393a56044d39e73e53522ceb5ac9f7de43ce58cee080b4bcfb2f52",
       "components/charts/OwnershipGraph.jsx": "ec348e422a0d9298b8650c7a1ac24010f07e0be0dc500aaff1e3ef77d5756114",
-      "components/charts/PeerComparisonStrip.jsx": "c5486bbf76c0ab86ae0568886aaf76e0a6d53b0f9c17c3da72fc7dcb29f36278",
+      "components/charts/PeerComparisonStrip.jsx": "d5e848493ee446e996f4ec3b736c18bb1c13e0b491e70d8163a705cfd430268f",
       "components/charts/PnLCalendar.jsx": "4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3",
       "components/charts/ScatterChart.jsx": "772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51",
       "components/charts/ScenarioSelector.jsx": "3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7",
@@ -255,8 +255,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "a6dc91e7d6dbe6654cb9f2ad650b1b5c00c481ac8027d6b8d365493760605644",
-      "bytes": 1677339
+      "sha256": "96c0e8e946185c4d47f80ff9d2992704443505f738c2293431f899fd390cb196",
+      "bytes": 1689341
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",

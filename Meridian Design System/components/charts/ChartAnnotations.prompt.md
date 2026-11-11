@@ -18,7 +18,27 @@ color merely to decorate a label. The caller resolves label collisions and
 validates finite values; the overlay does not infer dates, evidence, or causality.
 
 Missing geometry renders nothing; empty annotation arrays draw nothing. Without
-a pane, callouts are omitted because no value scale is defined. The overlay has
-no keyboard controls or independent accessible name: give the enclosing chart an
-`ariaLabel`, `ariaDescription`, and accessible data that include consequential
-annotations. Tooltip-only explanations are insufficient.
+a pane, callouts are omitted because no value scale is defined.
+
+The overlay sits inside the frame's image-role SVG, so it can never take focus
+or be read item by item. Whenever an annotation carries meaning, render
+`ChartAnnotations.List` beside the chart with the same arrays:
+
+```jsx
+const [active, setActive] = React.useState(null);
+<ChartFrame ariaLabel="Synthetic price" …>
+  {g => <ChartAnnotations g={g} pane="price" events={events} callouts={callouts} activeId={active} />}
+</ChartFrame>
+<ChartAnnotations.List events={events} callouts={callouts}
+  ariaLabel="Annotations on synthetic price"
+  formatIndex={i => dates[i]} formatValue={v => "$" + v.toFixed(2)}
+  activeId={active} onActiveChange={setActive} />
+```
+
+The list is ordered by x-index. Each entry is a button naming where it is, what
+it says, its type and its semantic kind in words. Arrow keys, Home and End move
+between entries; Enter or Space opens an entry's `detail`; Escape closes it and
+focus stays on the entry. Focusing or hovering an entry emphasises its mark on
+the chart through `activeId`. Give annotations an `id` when the arrays can be
+reordered. Pass `formatIndex`, or entries read as bare positions. The enclosing
+chart still needs its own `ariaLabel`.

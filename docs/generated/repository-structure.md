@@ -4418,6 +4418,7 @@ Meridian-main
 │   │   ├── agency-regression.mjs
 │   │   ├── books-loop.html
 │   │   ├── BROWSER_TEST_PLAN.md
+│   │   ├── chart-a11y-regression.mjs
 │   │   ├── conformance-rules.js
 │   │   ├── conformance.html
 │   │   ├── decision-preview.html

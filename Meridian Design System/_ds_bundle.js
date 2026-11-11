@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"3e303c7d53984731d9a9567dce3f167385f4a9530c39dfb4a400c470ef9b8fde","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"ea15f534e77c0b986b3cf4e89ded1cc28d448bee3722e283d65969b10030ce42","components/accounting/AllocationEditor.jsx":"ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"030b9d4916c88dc6e2d1ff537e9c7e33f0edef30c7bcadcaa5a4464633aaec4e","components/accounting/BasisBridge.jsx":"a3c3b75cf7f48cf5b6557ca56f53ba0aa28b20a3a45b7c999ab81623d044bdbd","components/accounting/BasisComparisonMatrix.jsx":"b0a522f2ae7edb7ca9b74b27b62dfd4690cd45631ee63cfde587bd5b3ee06627","components/accounting/CalculationTrace.jsx":"c494830d99b8300f6ec68b6d4d857ff8863a5e6a01969fa602bc7d84cf484b7a","components/accounting/CloseCalendar.jsx":"531e4d1058821ef596ef0365798d967c2a57d8f4d5e85afbbd91ceabb06cf368","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"42ea7f5f5179aaf13d0c2de745046b0a2ff78aa59155975b5acf7fa14af12f48","components/accounting/IncomeSchedule.jsx":"b50ed52af142bc9d2fe2ed0726a2dd78bd4d80434f20d633859e36bb26b98db4","components/accounting/JournalEntryForm.jsx":"9ac44e9fc88279fe366efb9f68470ba7562713d457c5fe7a1e1420b1dd8e7140","components/accounting/LedgerTable.jsx":"0e0fa846ccfdfe276e93510a17c3278179832fb1491e70a88c70e95e546fcf14","components/accounting/LifecycleRibbon.jsx":"6c0098b10ece1c840c1b88bbbcef8c10160f42095c4f35ff78bc94371a44484b","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"541c9b6cfa1b09c15553bf54f0798cc701d82b90b678ac647ec4cd8c264f660b","components/accounting/ReconciliationPanel.jsx":"27e85b36c9898fa9c7a80b4ed265dc08e8893d4d79483ef194612f3aa1ce4bd0","components/accounting/RollforwardMatrix.jsx":"2e44d13dabb0f51ced17b198f58d9a24c5efe636ca0d28dbe643df857dba5359","components/accounting/RollforwardTrace.jsx":"f0d36d55637055236efdf9a98f9504b8fda3934cbd789862f38d3cb768aad293","components/accounting/ScheduleLadder.jsx":"1bac73485a633c374417c0c5aa0b9efd5bdfa4ffc37dd9b0dfc3de1890cebdbb","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"59096359bf200141b2850f825dec0b9bd89f5a274f0a2945427774f48d1a69fe","components/accounting/TieOutPanel.jsx":"72150959524ae44736599c1af97c50635046692e254c8123559b6197b596972c","components/accounting/TrialBalance.jsx":"6b6b958adaf29d5fe5746af99de6730471d0e10e869aad3cae2e4d18aaf45162","components/accounting/VarianceCell.jsx":"44423891a1b2d65de6e6a72afb0560f3e0b87c7cf22bbeb6c151e9d877e799f5","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"1296912c7a2288e3cf68f46bd25e81478f2e5c52f422e9361ef2000834f047af","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"8e5027c4fad6e0be4b455cc63656da872f99dfae4788866a0555b06d44311cef","components/charts/ChartAnnotations.jsx":"69c3dc4fd00ce12b8131ece787613415bc69c84823caa95ebe22418d979bb910","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"efd128888a0542d1a21d02c29c8c43befe5fbc3c95788cec2cf561744361090f","components/charts/ControlDependencyGraph.jsx":"8d7faf2f63cb0e3bb166b7775892adbea66e9d0d69c1effa9c8a3333033433da","components/charts/CorrelationHeatmap.jsx":"295488ee4c32a038ad6cbc7fd9b21afc81000d035ff465dae3a2068d6b919f74","components/charts/CoverageMatrix.jsx":"02be64e24ddc245e419bdfd56910324a8c4ed35007506bbd93b00470141c7006","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"403370b181cf2cd2f567fef9f7ce655fcb97934225c8dae822a8cd24d065ebb5","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6","components/charts/MaturityLadder.jsx":"12b102c5ee393a56044d39e73e53522ceb5ac9f7de43ce58cee080b4bcfb2f52","components/charts/OwnershipGraph.jsx":"ec348e422a0d9298b8650c7a1ac24010f07e0be0dc500aaff1e3ef77d5756114","components/charts/PeerComparisonStrip.jsx":"c5486bbf76c0ab86ae0568886aaf76e0a6d53b0f9c17c3da72fc7dcb29f36278","components/charts/PnLCalendar.jsx":"4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"5f530894d7e1a5ab2ea595e771c6645f80576d599f44b863a52b76accc335850","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"c1126ee4cc3b98904bb43bb12ccf8691dd99db942ddcb8e1063ba347d527f4d2","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"86ceabff33b2cf3c51a9703d3ae952aff3d16a046305288c052a9d74c5cbac82","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"b775c7ad34461865215f9997494b4cdec930ed96e344277d2764fbd3d960f0a2","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"90620e4ee44b3dab9548576dd70883f7503e9441508f3b3d01d2e5fef084f04d","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"3a19dead2eebca544f53a9b245792e54462b3e24653b81c787a604437f34a80c","components/core/Checkbox.jsx":"ff568f2cb9cba670688530edc96dc6a1f72106dd8dfee8df371e75f5ea82a9e0","components/core/Combobox.jsx":"cc57eaf7771b3d3de6adff86ca82840e1231e6a0dac3c8f4972fa6d9353ea053","components/core/CommandPalette.jsx":"ceaad13f7f4cbfb58e2ec0a9e78f62db24c83ad35b7fc6d43e3d05a34805a475","components/core/ContextMenu.jsx":"1b2dacb545f88af880bbbb5f47587d2baefafa2b3d77b636ec9ad53939132045","components/core/ContinuityFrame.jsx":"eece36eb00950df00d49009c5579e309e0e162c1fd589ea35df1e5261134ae34","components/core/DatePicker.jsx":"5510a89cc068e5459a414a4a0c7716acdb0c7f19c558b5dd5a341bbf82be3cb2","components/core/DateRangePicker.jsx":"f20116f37460bdae1c3330ee9bd6d2feee46b37ac5b9729b645cc37c1f68669e","components/core/Datum.jsx":"85b238aba3a03d82d787cb45cab1fc71ab57b387aca8c805d814d47455dd32a8","components/core/Delta.jsx":"c97a0a2b91689e771dd795b03be48b357bed777aba9a81a3cf7f1933cf8c4f9c","components/core/DensityToggle.jsx":"209c0b53e0e6ef9793458b792a207a99919d7e29ecccf2c8fe53324c1633d6bd","components/core/Dialog.jsx":"6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24","components/core/Disclosure.jsx":"401fca679e2d5919bb60c50d60a0c92c69de4bda096066bf4be12475d4a615ab","components/core/Drawer.jsx":"dc0e77ccc4b296c0a74627a4bd5f62f79786b4b9cbfa351c4245d0286bf396b6","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"a15890b24bcb7411d15eb8dab11cd6c8a1236164b4327b6da337675e0e1f6039","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"5cb89511428e74304232a20e008530e60989f576d1bd517327883dfb88087cea","components/core/FormValidation.jsx":"22ebc3c050ee99e075dee39210ff10929ab4a052ff78656b974c2182913d023b","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"6095d2d802f135cc479078ce3dfbbb56a51b7e7b5833cc22e4729ab4f358223d","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"f1650219d5c7a9623d089535ad40372aa4772cdb1414eaa576dc6009345a4ce3","components/core/Input.jsx":"c36441f047c77495a95848e63f30720da93a7ab9e0ef479e462837caeae1e658","components/core/InstrumentChip.jsx":"f2d436f4d50996e30a038747b7a306231e5169c0c319284908af87718622832c","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"dca000abf47d38c9e04052a9f082ddebdb4a4d6c6d2b52c1ae2270b122b32511","components/core/MultiSelect.jsx":"be0fdfdd91c829441673dff3fb0e3d69cfc6a68969a22915a5309eaf9f05cfbe","components/core/NotificationCenter.jsx":"2c69a93ca1d8c389e9ba8db6ed78b82bd6cfda4e0384db94a85ea12dc87a7d8f","components/core/NumberInput.jsx":"ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b","components/core/ObjectModel.jsx":"acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"996194e94edb9f8c756e14bb9c943a449ea5351ecb1e57cf41dc150429d96205","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"4bb4925875040bd86e17c5f1de3fdf5febc133880dad82f33a938db109bdd8ff","components/core/ProgressBar.jsx":"9738bfeabebd00059a4c746f3557bcfe6a01ac01547c91f515a575accde8d077","components/core/RadioGroup.jsx":"edd05f11584a924a9b5b764926294b75076e59c4a1ca3e1bfc72142372a1f750","components/core/Registry.jsx":"0c4133073a12d9ca86f7dfefdae154fca03aaaa3210610cc0c25064494344b0d","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"27cdea4a30ae8cb1fa669843656a962a95052244e31e76239bac8263febec531","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"6d0fb9b3559ff54581a208e09a7abdf388af7ee88c35baea7118ab506ebcce90","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec","components/core/StrategyModel.jsx":"7ae4909385e4761c595385742c3ede0988766006e56b9c129ea2abbee3f37e93","components/core/Tabs.jsx":"6efbb8287b6cdf31a8fc32a3046182dd8ce2f8046389fbe4f2ebf57a20f45f63","components/core/TagInput.jsx":"7ab1da1c2a338785d892f0e7e02da77e7e8f8e0d800d81ea1d162e1ed5466432","components/core/TextArea.jsx":"27ba04102aee7fba20a24db7190700a4f565eabf49954463d448390296285b4f","components/core/TimeContext.jsx":"3c22e493d7f3001ef5b965513b49cefc1c533721c99ce3219b2029f2d50b5c25","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"eb704f1bc2b97b8b3f85e4faf6f10961d5e19aa60d1e15cc534d0e8e412e9e90","components/core/Tooltip.jsx":"3c7eb58696ee2c8fddee1f2f1bf3adfc8a54751cbc7663cd2dc172598c30c4ad","components/core/TreeView.jsx":"6d0efdcc9e29a23616bf990df5a2fac280d36f2470e89b5cb3b861458bcc69a4","components/core/Validators.js":"65cbb84289f440ae64a4a867ad487f8d2c77f9427bf0a5e080a532b324c55551","components/core/ValueAuthority.jsx":"69f967235c12094a6c676ddc7e9c8a74df0ac146435a76b56055222c763fb67c","components/core/format.js":"62016d1e92df353b64d9d406115a4ead4b72ac8970e2c87b9cba761034f6c4f8","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"609104423c512bb221936265d2e2d7a223a710918420b59ccb35eb9d1a477df0","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"0864807f77e3694ad3a276f786868e735b76a1f9f5deb2cca455c4ff3a76c712","components/data/ColumnChooser.jsx":"fc3fb7c05b3675c2f2dd5d10dcc968c03338ba7a3a03a5bb65948757ba42e72c","components/data/ColumnManager.jsx":"f95157b95ca4f290df13367124b72e920a37eb96e48ea6075dbbd3a778eb3bd1","components/data/DataGrid.jsx":"3bf4eba8cb0cca5e577f3951798c6e87446a2ab2c2d0a50061b16e3a181cf805","components/data/DataStateSwitch.jsx":"c9eefab8a4e5af6c0c81538f926161f9277816ce1f5340b51582cbce4984921f","components/data/DenseDataTable.jsx":"4040ebf80673b5052376f316bb23f4dc2411e67a698a991a8dd49a87e7f6b12c","components/data/EditableCell.jsx":"3d570c945558767cb5687f29b4889fbe03a99c64cb70b002d13c931a94ac0cf7","components/data/EmptyState.jsx":"18ebd8860e29949430d8b8fa00f2933dc870f7e9b990072645e16c59c20ff541","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"1ef8f00c5dea92151a7fc616cdd373649448f55c6204fc51468cfbe0ca602f59","components/data/FilterBuilder.jsx":"1f073ebcc0f13fbaabc43ca579fd9f11f271c7310270eea468accff3b0dc5021","components/data/FilteredDataTable.jsx":"3cc9b8716fd6c726d4eaac81c0e45d896a65e33da36f54eac99278697931a46b","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"b6e4734d5f8f1dd282500b9abf5ee73e99d379832078cd744a4f19aeb481139b","components/data/Pagination.jsx":"4061917e12f0c6efe3902d32b543b87aed408213b293670c9dcd828261afdcc8","components/data/SavedViews.jsx":"ebd09a16b67b60e2617ec733f4a9ff2bca1ab6638ed4660895ca34f8f1f86f7c","components/data/SelectionCompare.jsx":"2dbce821c9f279692df59da6d7a6998d57c86b2e15584e6b9a3d646e4b060b67","components/data/SelectionToolbar.jsx":"87e31e304f05b21ec1d67661cba87bf50e0fde0ef0a75e11b085c47764110563","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"0599414fa7634924bb4ba283992a59c7b3d0dedf2ae3c86e94903b9b6cba7b24","components/data/WorksheetGrid.jsx":"af32bc19a17e6d9bfa8b1b9f9b69bed5a2fc11a47147f46d1e4bb3103e343369","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"ab343de3f5db8a42fbae0709944bea4c9d55053a308ae0445f5c14153284634d","components/data/useRowSelection.js":"a799985727b9fd4cec548ce71fb4685783edd903e60ca745f2db66202e4a4a03","components/data/useTableColumns.js":"7471ccf8ebdb4068b383c30ef88a05e278a3c5b9532745acc5b5d2cd06ff08d7","components/data/useTableState.js":"4ef6478e6f2ec4092ede0be55349b3fbb9bcfaaf8897cb8173842cc0e211a7b5","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"eee9bd4d9df1e9949e476dd282779ad12c0009918c9dbc097db66e0999fb3255","components/decision/DecisionSnapshot.jsx":"ff55975dc7dbeb582bcbb95f1ad6ff0ab72886813089ade2eba72f9eba53f4b2","components/decision/EvidenceRail.jsx":"bf89e3ad56d7f4e56d9b6e25acd26979db26e098c709d564b69741e18e463ae8","components/operations/ActionEnvelope.jsx":"c8f2de141664ca8666a587914429d9efc620b0f946a1b7dc521d0be25c29bab1","components/operations/ActionGuard.jsx":"62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213","components/operations/ActionQueue.jsx":"c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928","components/operations/AdapterDiagnostics.jsx":"ea348bd829ab7d66317bdaf09a2fbf676afb7ece501bbe8d7d64c1cc5a2154ed","components/operations/AnnotationLayer.jsx":"873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed","components/operations/AttestationPanel.jsx":"701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff","components/operations/CaseQueue.jsx":"fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b","components/operations/ChangeSetReview.jsx":"6ad0550059c4d172a021364096b0e8e8f924ff59a3581bd10ffe9bc85fe57e3f","components/operations/ClaimHeader.jsx":"76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"b7456804bf3643f03a972aa7de9f110631bb7b939a4c9e3ff0596d253d337fc8","components/operations/EvidenceLink.jsx":"12130debcb947fa71846477e64cbb45183fb8dadfc10af15d35b70fda28284f4","components/operations/EvidencePreview.jsx":"683eca48e2dd0d71dd92834d2c50e8134e51cfcb98671a7f8d0dc68e076f184c","components/operations/GateRail.jsx":"953e10ab8d10f419f549d8671da3c234cc1954299f91f26f135117d484a7e19b","components/operations/HandoverBrief.jsx":"8e9befbbf0c55ea8be256998b2d9133adebc24922fffcf773a1f6016ed916ad5","components/operations/LogTail.jsx":"2068ae78c3e33c951623c245ba041d3a3c0fec04019b3a8db58242e0512cc577","components/operations/ProvenanceChip.jsx":"b5a1af85d552c5c0d56adb02c2138e949fe1a617019f22ddbbb14029b0bdaf85","components/operations/ReadinessPanel.jsx":"68c8a501d5d8bfec0c1cef2b484bb6d7979263114bf741cc1cd5c99e47e39838","components/operations/ResolutionDrawer.jsx":"207ae9ad8dc4bcdccb8dba95c0db9efd9d42c3d8d2ae21c74709c9e153b6b508","components/operations/SeverityBadge.jsx":"cabe54de50bb06a2db2f037bd0a712dca79dcb46b39bfbd2261222f1512dac37","components/operations/SlaChip.jsx":"69840675f6f35433473af8ce38dca71e366b11a4147e85b721bef2d29be4e2b8","components/operations/SourceCoverageSummary.jsx":"a2fabf3d0eb247f994bf48f5d100046ff5dc392105d54668675a707b86ffe886","components/operations/Status.jsx":"e4c8d1ba42a77533917be6c7dd484ff8379858dc39e7b0cde48dfee452de8066","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"7e72cc58a46c7e34f777fedd421e3e2cee9c86e673d1214044148fb0c9924aa2","components/operations/ValidationIssueList.jsx":"242c29b376aded92f6214689274664ca7ff35ea21f0109bfb80dc7c9c41a78de","components/operations/ValueEnvelope.jsx":"ff4c5fe7a38a00e67ac0b3d867946f012aff7a987223d9ffb678577afc1e6f49","components/operations/VersionConflictNotice.jsx":"52194a0b56f4bf89bcaa4fecfaeb1de69eed37590bc9317537ab9ad5d2ea04a4","components/operations/WorkspaceSection.jsx":"d7adcf15f139ab8122f177baaf2bf88226c8b119c52d525d260364e77dfcc0e8","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"c38abc70df96a7e2ab28c3077a5e22ac2d93568a94880282da96c5cce83029ed","components/shell/NavRail.jsx":"f3d74b14eeeb00985991b521c449b0fb4e4065397c7dd9942e98962c5d840096","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892","components/shell/SessionControls.jsx":"7dce6e37c88d6f60c386f83266b3d8a5f6f26c7ae4b1c78fc82a6803f7faee5a","components/shell/StatusBar.jsx":"8bb3fa130af477df7466ac9b0f345232d03064d72a0b57eaa30c7932af58c81a","components/shell/WorkspaceContextBar.jsx":"b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43","components/shell/WorkspaceLayout.jsx":"436b772f0f3b6e5e45ce2296ab8221f5e24a9c49590e7ac4a14168e33d7629c5","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"8bc03705cf53e150049e3455fc7e56c991d37474ffe70daa83bfc62c72f65502","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"2479760273c2f27a07f59fa06c62a9c10413c6f6c1c9018cc363ff28f395a3af","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"f8c63c501c9e665b83de62d3faf30685f1e4cbb8e2d7fe4110c3c525bcfb1dc0","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"e85f7bb32de68aaf74ca806c8ea0fa87026962e7a0e5f92001c0ed4299fae6ee","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
+/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"3e303c7d53984731d9a9567dce3f167385f4a9530c39dfb4a400c470ef9b8fde","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"ea15f534e77c0b986b3cf4e89ded1cc28d448bee3722e283d65969b10030ce42","components/accounting/AllocationEditor.jsx":"ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"030b9d4916c88dc6e2d1ff537e9c7e33f0edef30c7bcadcaa5a4464633aaec4e","components/accounting/BasisBridge.jsx":"a3c3b75cf7f48cf5b6557ca56f53ba0aa28b20a3a45b7c999ab81623d044bdbd","components/accounting/BasisComparisonMatrix.jsx":"b0a522f2ae7edb7ca9b74b27b62dfd4690cd45631ee63cfde587bd5b3ee06627","components/accounting/CalculationTrace.jsx":"c494830d99b8300f6ec68b6d4d857ff8863a5e6a01969fa602bc7d84cf484b7a","components/accounting/CloseCalendar.jsx":"531e4d1058821ef596ef0365798d967c2a57d8f4d5e85afbbd91ceabb06cf368","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"42ea7f5f5179aaf13d0c2de745046b0a2ff78aa59155975b5acf7fa14af12f48","components/accounting/IncomeSchedule.jsx":"b50ed52af142bc9d2fe2ed0726a2dd78bd4d80434f20d633859e36bb26b98db4","components/accounting/JournalEntryForm.jsx":"9ac44e9fc88279fe366efb9f68470ba7562713d457c5fe7a1e1420b1dd8e7140","components/accounting/LedgerTable.jsx":"0e0fa846ccfdfe276e93510a17c3278179832fb1491e70a88c70e95e546fcf14","components/accounting/LifecycleRibbon.jsx":"6c0098b10ece1c840c1b88bbbcef8c10160f42095c4f35ff78bc94371a44484b","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"541c9b6cfa1b09c15553bf54f0798cc701d82b90b678ac647ec4cd8c264f660b","components/accounting/ReconciliationPanel.jsx":"27e85b36c9898fa9c7a80b4ed265dc08e8893d4d79483ef194612f3aa1ce4bd0","components/accounting/RollforwardMatrix.jsx":"2e44d13dabb0f51ced17b198f58d9a24c5efe636ca0d28dbe643df857dba5359","components/accounting/RollforwardTrace.jsx":"f0d36d55637055236efdf9a98f9504b8fda3934cbd789862f38d3cb768aad293","components/accounting/ScheduleLadder.jsx":"1bac73485a633c374417c0c5aa0b9efd5bdfa4ffc37dd9b0dfc3de1890cebdbb","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"59096359bf200141b2850f825dec0b9bd89f5a274f0a2945427774f48d1a69fe","components/accounting/TieOutPanel.jsx":"72150959524ae44736599c1af97c50635046692e254c8123559b6197b596972c","components/accounting/TrialBalance.jsx":"6b6b958adaf29d5fe5746af99de6730471d0e10e869aad3cae2e4d18aaf45162","components/accounting/VarianceCell.jsx":"44423891a1b2d65de6e6a72afb0560f3e0b87c7cf22bbeb6c151e9d877e799f5","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"1296912c7a2288e3cf68f46bd25e81478f2e5c52f422e9361ef2000834f047af","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"8e5027c4fad6e0be4b455cc63656da872f99dfae4788866a0555b06d44311cef","components/charts/ChartAnnotations.jsx":"c2243b8ac7302e8925ad7c709ae95a7476a54977a508fd20dc0d891027ad8831","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"efd128888a0542d1a21d02c29c8c43befe5fbc3c95788cec2cf561744361090f","components/charts/ControlDependencyGraph.jsx":"8d7faf2f63cb0e3bb166b7775892adbea66e9d0d69c1effa9c8a3333033433da","components/charts/CorrelationHeatmap.jsx":"295488ee4c32a038ad6cbc7fd9b21afc81000d035ff465dae3a2068d6b919f74","components/charts/CoverageMatrix.jsx":"02be64e24ddc245e419bdfd56910324a8c4ed35007506bbd93b00470141c7006","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"403370b181cf2cd2f567fef9f7ce655fcb97934225c8dae822a8cd24d065ebb5","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6","components/charts/MaturityLadder.jsx":"12b102c5ee393a56044d39e73e53522ceb5ac9f7de43ce58cee080b4bcfb2f52","components/charts/OwnershipGraph.jsx":"ec348e422a0d9298b8650c7a1ac24010f07e0be0dc500aaff1e3ef77d5756114","components/charts/PeerComparisonStrip.jsx":"d5e848493ee446e996f4ec3b736c18bb1c13e0b491e70d8163a705cfd430268f","components/charts/PnLCalendar.jsx":"4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"5f530894d7e1a5ab2ea595e771c6645f80576d599f44b863a52b76accc335850","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"c1126ee4cc3b98904bb43bb12ccf8691dd99db942ddcb8e1063ba347d527f4d2","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"86ceabff33b2cf3c51a9703d3ae952aff3d16a046305288c052a9d74c5cbac82","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"b775c7ad34461865215f9997494b4cdec930ed96e344277d2764fbd3d960f0a2","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"90620e4ee44b3dab9548576dd70883f7503e9441508f3b3d01d2e5fef084f04d","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"3a19dead2eebca544f53a9b245792e54462b3e24653b81c787a604437f34a80c","components/core/Checkbox.jsx":"ff568f2cb9cba670688530edc96dc6a1f72106dd8dfee8df371e75f5ea82a9e0","components/core/Combobox.jsx":"cc57eaf7771b3d3de6adff86ca82840e1231e6a0dac3c8f4972fa6d9353ea053","components/core/CommandPalette.jsx":"ceaad13f7f4cbfb58e2ec0a9e78f62db24c83ad35b7fc6d43e3d05a34805a475","components/core/ContextMenu.jsx":"1b2dacb545f88af880bbbb5f47587d2baefafa2b3d77b636ec9ad53939132045","components/core/ContinuityFrame.jsx":"eece36eb00950df00d49009c5579e309e0e162c1fd589ea35df1e5261134ae34","components/core/DatePicker.jsx":"5510a89cc068e5459a414a4a0c7716acdb0c7f19c558b5dd5a341bbf82be3cb2","components/core/DateRangePicker.jsx":"f20116f37460bdae1c3330ee9bd6d2feee46b37ac5b9729b645cc37c1f68669e","components/core/Datum.jsx":"85b238aba3a03d82d787cb45cab1fc71ab57b387aca8c805d814d47455dd32a8","components/core/Delta.jsx":"c97a0a2b91689e771dd795b03be48b357bed777aba9a81a3cf7f1933cf8c4f9c","components/core/DensityToggle.jsx":"209c0b53e0e6ef9793458b792a207a99919d7e29ecccf2c8fe53324c1633d6bd","components/core/Dialog.jsx":"6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24","components/core/Disclosure.jsx":"401fca679e2d5919bb60c50d60a0c92c69de4bda096066bf4be12475d4a615ab","components/core/Drawer.jsx":"dc0e77ccc4b296c0a74627a4bd5f62f79786b4b9cbfa351c4245d0286bf396b6","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"a15890b24bcb7411d15eb8dab11cd6c8a1236164b4327b6da337675e0e1f6039","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"5cb89511428e74304232a20e008530e60989f576d1bd517327883dfb88087cea","components/core/FormValidation.jsx":"22ebc3c050ee99e075dee39210ff10929ab4a052ff78656b974c2182913d023b","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"6095d2d802f135cc479078ce3dfbbb56a51b7e7b5833cc22e4729ab4f358223d","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"f1650219d5c7a9623d089535ad40372aa4772cdb1414eaa576dc6009345a4ce3","components/core/Input.jsx":"c36441f047c77495a95848e63f30720da93a7ab9e0ef479e462837caeae1e658","components/core/InstrumentChip.jsx":"f2d436f4d50996e30a038747b7a306231e5169c0c319284908af87718622832c","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"dca000abf47d38c9e04052a9f082ddebdb4a4d6c6d2b52c1ae2270b122b32511","components/core/MultiSelect.jsx":"be0fdfdd91c829441673dff3fb0e3d69cfc6a68969a22915a5309eaf9f05cfbe","components/core/NotificationCenter.jsx":"2c69a93ca1d8c389e9ba8db6ed78b82bd6cfda4e0384db94a85ea12dc87a7d8f","components/core/NumberInput.jsx":"ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b","components/core/ObjectModel.jsx":"acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"996194e94edb9f8c756e14bb9c943a449ea5351ecb1e57cf41dc150429d96205","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"4bb4925875040bd86e17c5f1de3fdf5febc133880dad82f33a938db109bdd8ff","components/core/ProgressBar.jsx":"9738bfeabebd00059a4c746f3557bcfe6a01ac01547c91f515a575accde8d077","components/core/RadioGroup.jsx":"edd05f11584a924a9b5b764926294b75076e59c4a1ca3e1bfc72142372a1f750","components/core/Registry.jsx":"0c4133073a12d9ca86f7dfefdae154fca03aaaa3210610cc0c25064494344b0d","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"27cdea4a30ae8cb1fa669843656a962a95052244e31e76239bac8263febec531","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"6d0fb9b3559ff54581a208e09a7abdf388af7ee88c35baea7118ab506ebcce90","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec","components/core/StrategyModel.jsx":"7ae4909385e4761c595385742c3ede0988766006e56b9c129ea2abbee3f37e93","components/core/Tabs.jsx":"6efbb8287b6cdf31a8fc32a3046182dd8ce2f8046389fbe4f2ebf57a20f45f63","components/core/TagInput.jsx":"7ab1da1c2a338785d892f0e7e02da77e7e8f8e0d800d81ea1d162e1ed5466432","components/core/TextArea.jsx":"27ba04102aee7fba20a24db7190700a4f565eabf49954463d448390296285b4f","components/core/TimeContext.jsx":"3c22e493d7f3001ef5b965513b49cefc1c533721c99ce3219b2029f2d50b5c25","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"eb704f1bc2b97b8b3f85e4faf6f10961d5e19aa60d1e15cc534d0e8e412e9e90","components/core/Tooltip.jsx":"3c7eb58696ee2c8fddee1f2f1bf3adfc8a54751cbc7663cd2dc172598c30c4ad","components/core/TreeView.jsx":"6d0efdcc9e29a23616bf990df5a2fac280d36f2470e89b5cb3b861458bcc69a4","components/core/Validators.js":"65cbb84289f440ae64a4a867ad487f8d2c77f9427bf0a5e080a532b324c55551","components/core/ValueAuthority.jsx":"69f967235c12094a6c676ddc7e9c8a74df0ac146435a76b56055222c763fb67c","components/core/format.js":"62016d1e92df353b64d9d406115a4ead4b72ac8970e2c87b9cba761034f6c4f8","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"609104423c512bb221936265d2e2d7a223a710918420b59ccb35eb9d1a477df0","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"0864807f77e3694ad3a276f786868e735b76a1f9f5deb2cca455c4ff3a76c712","components/data/ColumnChooser.jsx":"fc3fb7c05b3675c2f2dd5d10dcc968c03338ba7a3a03a5bb65948757ba42e72c","components/data/ColumnManager.jsx":"f95157b95ca4f290df13367124b72e920a37eb96e48ea6075dbbd3a778eb3bd1","components/data/DataGrid.jsx":"3bf4eba8cb0cca5e577f3951798c6e87446a2ab2c2d0a50061b16e3a181cf805","components/data/DataStateSwitch.jsx":"c9eefab8a4e5af6c0c81538f926161f9277816ce1f5340b51582cbce4984921f","components/data/DenseDataTable.jsx":"4040ebf80673b5052376f316bb23f4dc2411e67a698a991a8dd49a87e7f6b12c","components/data/EditableCell.jsx":"3d570c945558767cb5687f29b4889fbe03a99c64cb70b002d13c931a94ac0cf7","components/data/EmptyState.jsx":"18ebd8860e29949430d8b8fa00f2933dc870f7e9b990072645e16c59c20ff541","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"1ef8f00c5dea92151a7fc616cdd373649448f55c6204fc51468cfbe0ca602f59","components/data/FilterBuilder.jsx":"1f073ebcc0f13fbaabc43ca579fd9f11f271c7310270eea468accff3b0dc5021","components/data/FilteredDataTable.jsx":"3cc9b8716fd6c726d4eaac81c0e45d896a65e33da36f54eac99278697931a46b","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"b6e4734d5f8f1dd282500b9abf5ee73e99d379832078cd744a4f19aeb481139b","components/data/Pagination.jsx":"4061917e12f0c6efe3902d32b543b87aed408213b293670c9dcd828261afdcc8","components/data/SavedViews.jsx":"ebd09a16b67b60e2617ec733f4a9ff2bca1ab6638ed4660895ca34f8f1f86f7c","components/data/SelectionCompare.jsx":"2dbce821c9f279692df59da6d7a6998d57c86b2e15584e6b9a3d646e4b060b67","components/data/SelectionToolbar.jsx":"87e31e304f05b21ec1d67661cba87bf50e0fde0ef0a75e11b085c47764110563","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"0599414fa7634924bb4ba283992a59c7b3d0dedf2ae3c86e94903b9b6cba7b24","components/data/WorksheetGrid.jsx":"af32bc19a17e6d9bfa8b1b9f9b69bed5a2fc11a47147f46d1e4bb3103e343369","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"ab343de3f5db8a42fbae0709944bea4c9d55053a308ae0445f5c14153284634d","components/data/useRowSelection.js":"a799985727b9fd4cec548ce71fb4685783edd903e60ca745f2db66202e4a4a03","components/data/useTableColumns.js":"7471ccf8ebdb4068b383c30ef88a05e278a3c5b9532745acc5b5d2cd06ff08d7","components/data/useTableState.js":"4ef6478e6f2ec4092ede0be55349b3fbb9bcfaaf8897cb8173842cc0e211a7b5","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"eee9bd4d9df1e9949e476dd282779ad12c0009918c9dbc097db66e0999fb3255","components/decision/DecisionSnapshot.jsx":"ff55975dc7dbeb582bcbb95f1ad6ff0ab72886813089ade2eba72f9eba53f4b2","components/decision/EvidenceRail.jsx":"bf89e3ad56d7f4e56d9b6e25acd26979db26e098c709d564b69741e18e463ae8","components/operations/ActionEnvelope.jsx":"c8f2de141664ca8666a587914429d9efc620b0f946a1b7dc521d0be25c29bab1","components/operations/ActionGuard.jsx":"62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213","components/operations/ActionQueue.jsx":"c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928","components/operations/AdapterDiagnostics.jsx":"ea348bd829ab7d66317bdaf09a2fbf676afb7ece501bbe8d7d64c1cc5a2154ed","components/operations/AnnotationLayer.jsx":"873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed","components/operations/AttestationPanel.jsx":"701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff","components/operations/CaseQueue.jsx":"fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b","components/operations/ChangeSetReview.jsx":"6ad0550059c4d172a021364096b0e8e8f924ff59a3581bd10ffe9bc85fe57e3f","components/operations/ClaimHeader.jsx":"76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"b7456804bf3643f03a972aa7de9f110631bb7b939a4c9e3ff0596d253d337fc8","components/operations/EvidenceLink.jsx":"12130debcb947fa71846477e64cbb45183fb8dadfc10af15d35b70fda28284f4","components/operations/EvidencePreview.jsx":"683eca48e2dd0d71dd92834d2c50e8134e51cfcb98671a7f8d0dc68e076f184c","components/operations/GateRail.jsx":"953e10ab8d10f419f549d8671da3c234cc1954299f91f26f135117d484a7e19b","components/operations/HandoverBrief.jsx":"8e9befbbf0c55ea8be256998b2d9133adebc24922fffcf773a1f6016ed916ad5","components/operations/LogTail.jsx":"2068ae78c3e33c951623c245ba041d3a3c0fec04019b3a8db58242e0512cc577","components/operations/ProvenanceChip.jsx":"b5a1af85d552c5c0d56adb02c2138e949fe1a617019f22ddbbb14029b0bdaf85","components/operations/ReadinessPanel.jsx":"68c8a501d5d8bfec0c1cef2b484bb6d7979263114bf741cc1cd5c99e47e39838","components/operations/ResolutionDrawer.jsx":"207ae9ad8dc4bcdccb8dba95c0db9efd9d42c3d8d2ae21c74709c9e153b6b508","components/operations/SeverityBadge.jsx":"cabe54de50bb06a2db2f037bd0a712dca79dcb46b39bfbd2261222f1512dac37","components/operations/SlaChip.jsx":"69840675f6f35433473af8ce38dca71e366b11a4147e85b721bef2d29be4e2b8","components/operations/SourceCoverageSummary.jsx":"a2fabf3d0eb247f994bf48f5d100046ff5dc392105d54668675a707b86ffe886","components/operations/Status.jsx":"e4c8d1ba42a77533917be6c7dd484ff8379858dc39e7b0cde48dfee452de8066","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"7e72cc58a46c7e34f777fedd421e3e2cee9c86e673d1214044148fb0c9924aa2","components/operations/ValidationIssueList.jsx":"242c29b376aded92f6214689274664ca7ff35ea21f0109bfb80dc7c9c41a78de","components/operations/ValueEnvelope.jsx":"ff4c5fe7a38a00e67ac0b3d867946f012aff7a987223d9ffb678577afc1e6f49","components/operations/VersionConflictNotice.jsx":"52194a0b56f4bf89bcaa4fecfaeb1de69eed37590bc9317537ab9ad5d2ea04a4","components/operations/WorkspaceSection.jsx":"d7adcf15f139ab8122f177baaf2bf88226c8b119c52d525d260364e77dfcc0e8","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"c38abc70df96a7e2ab28c3077a5e22ac2d93568a94880282da96c5cce83029ed","components/shell/NavRail.jsx":"f3d74b14eeeb00985991b521c449b0fb4e4065397c7dd9942e98962c5d840096","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892","components/shell/SessionControls.jsx":"7dce6e37c88d6f60c386f83266b3d8a5f6f26c7ae4b1c78fc82a6803f7faee5a","components/shell/StatusBar.jsx":"8bb3fa130af477df7466ac9b0f345232d03064d72a0b57eaa30c7932af58c81a","components/shell/WorkspaceContextBar.jsx":"b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43","components/shell/WorkspaceLayout.jsx":"436b772f0f3b6e5e45ce2296ab8221f5e24a9c49590e7ac4a14168e33d7629c5","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"8bc03705cf53e150049e3455fc7e56c991d37474ffe70daa83bfc62c72f65502","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"2479760273c2f27a07f59fa06c62a9c10413c6f6c1c9018cc363ff28f395a3af","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"f8c63c501c9e665b83de62d3faf30685f1e4cbb8e2d7fe4110c3c525bcfb1dc0","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"e85f7bb32de68aaf74ca806c8ea0fa87026962e7a0e5f92001c0ed4299fae6ee","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
 (() => {
   // api/accounting.js
   (function(global) {
@@ -6220,6 +6220,138 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     scenario: "var(--series-scenario)"
   };
   var kindColor = (k) => KIND[k] || KIND.event;
+  var annotationId = (type, item, i) => item && item.id != null ? String(item.id) : `${type}-${i}`;
+  var KIND_WORD = { positive: "Positive", negative: "Negative", warning: "Warning", information: "Information", scenario: "Scenario" };
+  var injected37 = false;
+  function inject37() {
+    if (injected37 || typeof document === "undefined") return;
+    injected37 = true;
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "chart-annotation-list");
+    el.textContent = `
+.mds-cal{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:2px;font-family:var(--font-body);}
+.mds-cal__btn{appearance:none;width:100%;display:flex;align-items:baseline;gap:8px;text-align:left;background:none;border:1px solid transparent;border-radius:var(--radius-button,2px);padding:5px 8px;color:var(--text-primary);font:inherit;font-size:var(--viz-type-label,12px);cursor:pointer;}
+.mds-cal__btn:hover{background:var(--bg-hover);}
+.mds-cal__btn[aria-expanded="true"]{background:var(--interaction-selected-surface,var(--bg-active));}
+.mds-cal__btn:focus-visible{outline:2px solid var(--interaction-focus,var(--border-focus,#2D6FB3));outline-offset:1px;}
+.mds-cal__tag{flex:none;min-width:16px;padding:0 4px;border:1px solid currentColor;border-radius:var(--radius-chip,3px);font-family:var(--font-data);font-size:var(--viz-type-micro,10px);font-weight:700;text-align:center;}
+.mds-cal__at{flex:none;font-family:var(--font-data);font-variant-numeric:slashed-zero tabular-nums;color:var(--text-muted);}
+.mds-cal__kind{flex:none;font-size:var(--viz-type-micro,10px);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary);}
+.mds-cal__detail{margin:0 0 4px 34px;padding:4px 8px;border-left:2px solid var(--border-strong);font-size:var(--viz-type-annotation,12px);line-height:1.45;color:var(--text-secondary);max-width:62ch;}
+@media (forced-colors:active){.mds-cal__btn[aria-expanded="true"]{border-color:Highlight;}.mds-cal__btn:focus-visible{outline-color:Highlight;}}
+`;
+    document.head.appendChild(el);
+  }
+  function ChartAnnotationList({
+    bands = [],
+    events = [],
+    callouts = [],
+    ariaLabel = "Chart annotations",
+    formatIndex = (i) => `#${i}`,
+    // x-index → the label the axis shows (a date, a period)
+    formatValue = (v) => String(v),
+    // callout value → printed figure with its unit
+    activeId,
+    onActiveChange,
+    // controlled highlight, shared with <ChartAnnotations activeId>
+    emptyLabel = "No annotations on this chart."
+  }) {
+    inject37();
+    const base = react_default.useId();
+    const [open, setOpen] = react_default.useState(null);
+    const refs = react_default.useRef([]);
+    const items = react_default.useMemo(() => {
+      const all = [
+        ...bands.map((b, i) => ({
+          id: annotationId("band", b, i),
+          at: Math.min(b.from, b.to),
+          tag: "↔",
+          kind: b.kind,
+          where: `${formatIndex(b.from)} to ${formatIndex(b.to)}`,
+          text: b.label || "Regime",
+          detail: b.detail,
+          type: "Regime"
+        })),
+        ...events.map((e, i) => ({
+          id: annotationId("event", e, i),
+          at: e.index,
+          tag: e.badge != null ? String(e.badge) : String(i + 1),
+          kind: e.kind,
+          where: formatIndex(e.index),
+          text: e.label || "Event",
+          detail: e.detail,
+          type: "Event"
+        })),
+        ...callouts.map((c, i) => ({
+          id: annotationId("callout", c, i),
+          at: c.index,
+          tag: "•",
+          kind: c.kind,
+          where: `${formatIndex(c.index)}, ${formatValue(c.value)}`,
+          text: c.text,
+          detail: c.detail,
+          type: "Callout"
+        }))
+      ];
+      return all.map((item, order2) => ({ item, order: order2 })).sort((a, b) => a.item.at - b.item.at || a.order - b.order).map((x) => x.item);
+    }, [bands, events, callouts, formatIndex, formatValue]);
+    if (!items.length) return /* @__PURE__ */ window.React.createElement("p", { style: { margin: "8px 0 0", fontSize: "var(--viz-type-annotation,12px)", color: "var(--text-muted)" } }, emptyLabel);
+    const move = (to) => {
+      const el = refs.current[Math.max(0, Math.min(items.length - 1, to))];
+      if (el) el.focus();
+    };
+    const onKeyDown = (e, i) => {
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        e.preventDefault();
+        move(i + 1);
+      } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") {
+        e.preventDefault();
+        move(i - 1);
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        move(0);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        move(items.length - 1);
+      } else if (e.key === "Escape" && open != null) {
+        e.preventDefault();
+        e.stopPropagation();
+        setOpen(null);
+      }
+    };
+    return /* @__PURE__ */ window.React.createElement("ol", { className: "mds-cal", "aria-label": ariaLabel }, items.map((it, i) => {
+      const expanded = open === it.id;
+      const detailId = `${base}-d${i}`;
+      const color = kindColor(it.kind);
+      return /* @__PURE__ */ window.React.createElement("li", { key: it.id }, /* @__PURE__ */ window.React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "mds-cal__btn",
+          ref: (el) => {
+            refs.current[i] = el;
+          },
+          "data-annotation-id": it.id,
+          "data-active": activeId === it.id ? "true" : void 0,
+          "aria-expanded": it.detail ? expanded : void 0,
+          "aria-controls": it.detail && expanded ? detailId : void 0,
+          onFocus: () => onActiveChange && onActiveChange(it.id),
+          onMouseEnter: () => onActiveChange && onActiveChange(it.id),
+          onBlur: () => onActiveChange && onActiveChange(null),
+          onMouseLeave: () => onActiveChange && onActiveChange(null),
+          onClick: () => {
+            if (it.detail) setOpen(expanded ? null : it.id);
+          },
+          onKeyDown: (e) => onKeyDown(e, i)
+        },
+        /* @__PURE__ */ window.React.createElement("span", { className: "mds-cal__tag", style: { color }, "aria-hidden": "true" }, it.tag),
+        /* @__PURE__ */ window.React.createElement("span", { className: "mds-cal__at" }, it.where),
+        /* @__PURE__ */ window.React.createElement("span", { style: { flex: "1 1 auto", minWidth: 0 } }, it.text),
+        /* @__PURE__ */ window.React.createElement("span", { className: "mds-cal__kind" }, it.type, KIND_WORD[it.kind] ? ` · ${KIND_WORD[it.kind]}` : "")
+      ), it.detail && expanded && /* @__PURE__ */ window.React.createElement("p", { className: "mds-cal__detail", id: detailId }, it.detail));
+    }));
+  }
+  ChartAnnotationList.displayName = "ChartAnnotations.List";
   function ChartAnnotations({
     g,
     // the geometry object from ChartFrame's children render prop
@@ -6232,8 +6364,10 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     callouts = [],
     // [{ index, value, text, dx?, dy?, anchor? }] — leader + text
     showRules = true,
-    badgeY = null
+    badgeY = null,
     // override badge baseline (defaults to pane top)
+    activeId = null
+    // id from ChartAnnotations.List's onActiveChange — emphasises that mark
   }) {
     if (!g) return null;
     const p = pane ? g.pane(pane) : null;
@@ -6242,6 +6376,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const y = p ? p.y : null;
     const by = badgeY != null ? badgeY : t2;
     const clampX = (x) => Math.max(g.plotL, Math.min(g.plotR, x));
+    const on = (kind, item, i) => activeId != null && annotationId(kind, item, i) === activeId;
     return /* @__PURE__ */ window.React.createElement("g", null, bands.map((bd, i) => {
       const x0 = clampX(g.x(bd.from)), x1 = clampX(g.x(bd.to));
       const c = kindColor(bd.kind);
@@ -6255,7 +6390,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
           fill: c,
           opacity: "0.07"
         }
-      ), /* @__PURE__ */ window.React.createElement("line", { x1: x0, x2: x0, y1: t2, y2: b, stroke: c, strokeWidth: "1", opacity: "0.35" }), /* @__PURE__ */ window.React.createElement("line", { x1, x2: x1, y1: t2, y2: b, stroke: c, strokeWidth: "1", opacity: "0.35" }), bd.label && /* @__PURE__ */ window.React.createElement(
+      ), /* @__PURE__ */ window.React.createElement("line", { x1: x0, x2: x0, y1: t2, y2: b, stroke: c, strokeWidth: on("band", bd, i) ? 2 : 1, opacity: on("band", bd, i) ? 1 : 0.35 }), /* @__PURE__ */ window.React.createElement("line", { x1, x2: x1, y1: t2, y2: b, stroke: c, strokeWidth: on("band", bd, i) ? 2 : 1, opacity: on("band", bd, i) ? 1 : 0.35 }), bd.label && /* @__PURE__ */ window.React.createElement(
         "text",
         {
           x: (x0 + x1) / 2,
@@ -6271,7 +6406,32 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       const c = kindColor(e.kind);
       const badge = e.badge != null ? String(e.badge) : String(i + 1);
       const w = Math.max(16, badge.length * 7 + 9);
-      return /* @__PURE__ */ window.React.createElement("g", { key: "e" + i }, showRules && /* @__PURE__ */ window.React.createElement("line", { x1: x, x2: x, y1: by + 8, y2: b, stroke: c, strokeWidth: "1", strokeDasharray: "var(--viz-dash-flow,3 4)", opacity: "0.7" }), /* @__PURE__ */ window.React.createElement("rect", { x: x - w / 2, y: by - 3, width: w, height: 16, rx: "2", fill: c, opacity: "0.92" }), /* @__PURE__ */ window.React.createElement(
+      return /* @__PURE__ */ window.React.createElement("g", { key: "e" + i }, showRules && /* @__PURE__ */ window.React.createElement(
+        "line",
+        {
+          x1: x,
+          x2: x,
+          y1: by + 8,
+          y2: b,
+          stroke: c,
+          strokeWidth: on("event", e, i) ? 2 : 1,
+          strokeDasharray: on("event", e, i) ? void 0 : "var(--viz-dash-flow,3 4)",
+          opacity: on("event", e, i) ? 1 : 0.7
+        }
+      ), /* @__PURE__ */ window.React.createElement(
+        "rect",
+        {
+          x: x - w / 2,
+          y: by - 3,
+          width: w,
+          height: 16,
+          rx: "2",
+          fill: c,
+          opacity: "0.92",
+          stroke: on("event", e, i) ? "var(--interaction-focus,var(--border-focus,#2D6FB3))" : "none",
+          strokeWidth: "2"
+        }
+      ), /* @__PURE__ */ window.React.createElement(
         "text",
         {
           x,
@@ -6292,10 +6452,12 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       const ty = Math.max(t2 + 11, Math.min(b - 4, py + dy));
       const anchor = c.anchor || (dx < 0 ? "end" : "start");
       const col = c.kind ? kindColor(c.kind) : "var(--viz-annotation,var(--text-secondary))";
-      return /* @__PURE__ */ window.React.createElement("g", { key: "c" + i }, /* @__PURE__ */ window.React.createElement("path", { d: `M${x} ${py}L${tx - (anchor === "end" ? -5 : 5)} ${ty + 3}`, fill: "none", stroke: col, strokeWidth: "1", opacity: "0.7" }), /* @__PURE__ */ window.React.createElement("circle", { cx: x, cy: py, r: "var(--viz-marker,4px)", fill: "none", stroke: col, strokeWidth: "1.5" }), /* @__PURE__ */ window.React.createElement("text", { x: tx, y: ty, textAnchor: anchor, fill: col, style: { ...AXIS, ...HALO } }, c.text));
+      return /* @__PURE__ */ window.React.createElement("g", { key: "c" + i }, /* @__PURE__ */ window.React.createElement("path", { d: `M${x} ${py}L${tx - (anchor === "end" ? -5 : 5)} ${ty + 3}`, fill: "none", stroke: col, strokeWidth: "1", opacity: "0.7" }), /* @__PURE__ */ window.React.createElement("circle", { cx: x, cy: py, r: "var(--viz-marker,4px)", fill: "none", stroke: col, strokeWidth: on("callout", c, i) ? 3 : 1.5 }), /* @__PURE__ */ window.React.createElement("text", { x: tx, y: ty, textAnchor: anchor, fill: col, style: { ...AXIS, ...HALO } }, c.text));
     }));
   }
   ChartAnnotations.displayName = "ChartAnnotations";
+  ChartAnnotations.List = ChartAnnotationList;
+  ChartAnnotations.idOf = annotationId;
 
   // components/charts/ChartCard.jsx
   function ChartCard({ title, subtitle, readout, actions, height = 320, children, style = {} }) {
@@ -6312,10 +6474,10 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   }
 
   // components/charts/ChartTooltip.jsx
-  var injected37 = false;
-  function inject37() {
-    if (injected37 || typeof document === "undefined") return;
-    injected37 = true;
+  var injected38 = false;
+  function inject38() {
+    if (injected38 || typeof document === "undefined") return;
+    injected38 = true;
     const css = `
 .mds-ctip{position:absolute;top:10px;z-index:var(--z-tooltip,500);pointer-events:none;
   min-width:120px;background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
@@ -6333,7 +6495,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     document.head.appendChild(el);
   }
   function ChartTooltip({ index, count, title, rows = [], padLeft = 10, rail = 62 }) {
-    inject37();
+    inject38();
     if (index == null || !rows.length) return null;
     const frac = count > 1 ? index / (count - 1) : 0;
     const flip = frac > 0.55;
@@ -6342,10 +6504,10 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   }
 
   // components/charts/ComparisonPlate.jsx
-  var injected38 = false;
-  function inject38() {
-    if (injected38 || typeof document === "undefined") return;
-    injected38 = true;
+  var injected39 = false;
+  function inject39() {
+    if (injected39 || typeof document === "undefined") return;
+    injected39 = true;
     const css = `
 .mds-plates{display:grid;gap:var(--plate-gap,12px);
   grid-template-columns:repeat(auto-fit,minmax(var(--plate-min-width,208px),1fr));width:100%;}
@@ -6393,7 +6555,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     className = "",
     ...rest
   }) {
-    inject38();
+    inject39();
     const h = height || parseFloat(getVar("--plate-plot-h")) || 124;
     const padT = 8, padB = 16, padL = 18;
     const plotH = h - padT - padB;
@@ -6445,7 +6607,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     className = "",
     ...rest
   }) {
-    inject38();
+    inject39();
     const dom = domain || domainOf(plates.map((p) => p.values));
     const ticks = niceTicks(dom[0], dom[1], tickCount);
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-plates${className ? " " + className : ""}`, ...rest }, plates.map((p) => /* @__PURE__ */ window.React.createElement(
@@ -6489,10 +6651,10 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
   var TYPES2 = { input: "Data input", validation: "Validation", reconciliation: "Reconciliation", calculation: "Calculation", journal: "Journal", review: "Review", approval: "Approval", attestation: "Attestation", report: "Report", external: "External dependency" };
   var EDGE = { requires: "Requires", produces: "Produces", validates: "Validates", blocks: "Blocks", invalidates: "Invalidates", reopens: "Reopens", approves: "Approves" };
   var BLOCKING = /* @__PURE__ */ new Set(["blocked", "failed"]);
-  var injected39 = false;
-  function inject39() {
-    if (injected39 || typeof document === "undefined") return;
-    injected39 = true;
+  var injected40 = false;
+  function inject40() {
+    if (injected40 || typeof document === "undefined") return;
+    injected40 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "control-dependency-graph");
     el.textContent = `
@@ -6577,7 +6739,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     className = "",
     ...rest
   }) {
-    inject39();
+    inject40();
     const [own, setOwn] = react_default.useState(defaultView);
     const view = viewProp || own;
     const setView = (v) => {
@@ -6687,10 +6849,10 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
   }
 
   // components/charts/CorrelationHeatmap.jsx
-  var injected40 = false;
-  function inject40() {
-    if (injected40 || typeof document === "undefined") return;
-    injected40 = true;
+  var injected41 = false;
+  function inject41() {
+    if (injected41 || typeof document === "undefined") return;
+    injected41 = true;
     const css = `
 .mds-corr{display:inline-grid;gap:1px;background:var(--border,#D2CDC3);
   border:1px solid var(--border-strong,#AAA49A);font-family:var(--font-data,monospace);}
@@ -6725,7 +6887,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
     showValues = true,
     onCellHover = null
   }) {
-    inject40();
+    inject41();
     const n = labels.length;
     const cols = `${headerSize}px repeat(${n}, ${cellSize}px)`;
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr", style: { gridTemplateColumns: cols }, role: "grid", "aria-label": "Correlation matrix" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__corner" }), labels.map((l) => /* @__PURE__ */ window.React.createElement("div", { key: "ch" + l, className: "mds-corr__h", role: "columnheader" }, l)), matrix.map((row, r) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: "r" + r }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-corr__h mds-corr__rh", role: "rowheader" }, labels[r]), row.map((v, c) => {
@@ -6747,10 +6909,10 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
   CorrelationHeatmap.displayName = "CorrelationHeatmap";
 
   // components/charts/CoverageMatrix.jsx
-  var injected41 = false;
-  function inject41() {
-    if (injected41 || typeof document === "undefined") return;
-    injected41 = true;
+  var injected42 = false;
+  function inject42() {
+    if (injected42 || typeof document === "undefined") return;
+    injected42 = true;
     const css = `
 .mds-covm{font-family:var(--font-body);display:inline-flex;flex-direction:column;gap:8px;max-width:100%;}
 .mds-covm__scroll{overflow:auto;max-width:100%;}
@@ -6807,7 +6969,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject41();
+    inject42();
     const [hover, setHover] = react_default.useState(null);
     const R = rows.map((r) => typeof r === "string" ? { id: r, label: r } : r);
     const C = cols.map((c) => typeof c === "string" ? { id: c, label: c } : c);
@@ -7242,10 +7404,10 @@ button.mds-covm__cell{cursor:pointer;}
   var COND3 = { confirmed: "●", provisional: "◐", estimated: "○", stale: "◔", overridden: "◆", missing: "■", na: "—", pending: "◇", exception: "▲", reconciled: "✓" };
   var glyph2 = (c) => COND3[String(c || "").toLowerCase()] || null;
   var RANKS = [{ id: "contribution", label: "Contribution" }, { id: "difference", label: "Difference" }, { id: "weight", label: "Weight" }, { id: "label", label: "Name" }];
-  var injected42 = false;
-  function inject42() {
-    if (injected42 || typeof document === "undefined") return;
-    injected42 = true;
+  var injected43 = false;
+  function inject43() {
+    if (injected43 || typeof document === "undefined") return;
+    injected43 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "duration-contribution");
     el.textContent = `
@@ -7322,7 +7484,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject42();
+    inject43();
     const [own, setOwn] = react_default.useState(defaultRank);
     const rank2 = rankProp || own;
     const setRank = (r) => {
@@ -7490,10 +7652,10 @@ button.mds-covm__cell{cursor:pointer;}
   var roleOf = (r) => FIGURE_ROLES[r] || FIGURE_ROLES.actual;
   var AX = "var(--text-muted, #606870)";
   var RULE = "var(--border, #D2CDC3)";
-  var injected43 = false;
-  function inject43() {
-    if (injected43 || typeof document === "undefined") return;
-    injected43 = true;
+  var injected44 = false;
+  function inject44() {
+    if (injected44 || typeof document === "undefined") return;
+    injected44 = true;
     const css = `
 .mds-fig{display:flex;flex-direction:column;background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);border-radius:2px;}
 .mds-fig__hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 10px;border-bottom:1px solid var(--border,#D2CDC3);}
@@ -7589,7 +7751,7 @@ button.mds-covm__cell{cursor:pointer;}
     children,
     ...rest
   }) {
-    inject43();
+    inject44();
     const body = geometry === "ladder" ? /* @__PURE__ */ window.React.createElement(Ladder, { series, width, height, zero: zero !== false }) : geometry === "distribution" ? /* @__PURE__ */ window.React.createElement(Distribution, { series, width, height }) : geometry === "plate" ? /* @__PURE__ */ window.React.createElement(Plate, { rows, columns, cells }) : /* @__PURE__ */ window.React.createElement(Trace, { series, width, height });
     const legendItems = geometry === "plate" ? (columns || []).filter((c) => c.role) : series.filter((s) => s.role || s.label);
     return /* @__PURE__ */ window.React.createElement("figure", { className: `mds-fig${className ? " " + className : ""}`, style: { margin: 0 }, ...rest }, title || clocks ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__hd" }, /* @__PURE__ */ window.React.createElement("figcaption", { className: "mds-fig__ti" }, title), clocks ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-fig__cl" }, clocks) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__bd", style: small ? { padding: 6 } : void 0 }, body), legend && legendItems.length ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-fig__lg" }, legendItems.map((s, i) => {
@@ -7598,7 +7760,7 @@ button.mds-covm__cell{cursor:pointer;}
     })) : null, children);
   }
   function FigureSet({ figures = [], columns = 2, className = "", ...rest }) {
-    inject43();
+    inject44();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-fig__grid${className ? " " + className : ""}`, style: { gridTemplateColumns: `repeat(${columns}, minmax(0,1fr))` }, ...rest }, figures.map((f, i) => /* @__PURE__ */ window.React.createElement(Figure, { key: f.title || i, small: true, ...f })));
   }
 
@@ -7686,10 +7848,10 @@ button.mds-covm__cell{cursor:pointer;}
   Histogram.displayName = "Histogram";
 
   // components/charts/IntervalBar.jsx
-  var injected44 = false;
-  function inject44() {
-    if (injected44 || typeof document === "undefined") return;
-    injected44 = true;
+  var injected45 = false;
+  function inject45() {
+    if (injected45 || typeof document === "undefined") return;
+    injected45 = true;
     const css = `
 .mds-ivb{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center;width:100%;
   font-family:var(--font-body);}
@@ -7710,7 +7872,7 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function IntervalBar({ rows = [], domain, format: format2 = (v) => String(v), note, className = "", ...rest }) {
-    inject44();
+    inject45();
     const all = [];
     rows.forEach((r) => {
       all.push(r.lo, r.hi);
@@ -7739,10 +7901,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/charts/LineageGraph.jsx
-  var injected45 = false;
-  function inject45() {
-    if (injected45 || typeof document === "undefined") return;
-    injected45 = true;
+  var injected46 = false;
+  function inject46() {
+    if (injected46 || typeof document === "undefined") return;
+    injected46 = true;
     const css = `
 .mds-lin{display:flex;flex-direction:column;gap:10px;width:100%;font-family:var(--font-body);}
 .mds-lin__vp{position:relative;overflow:auto;background:var(--bg-light);border:1px solid var(--border);
@@ -7832,7 +7994,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject45();
+    inject46();
     const { pos, width, height: canvasH } = layout(nodes, edges, nodeWidth, nodeHeight, columnGap, rowGap);
     const byId = new Map(nodes.map((n) => [n.id, n]));
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-lin${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-lin__vp", style: { height } }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-lin__canvas", style: { width, height: Math.max(canvasH, height - 2) } }, /* @__PURE__ */ window.React.createElement("svg", { className: "mds-lin__edges", width, height: Math.max(canvasH, height - 2), "aria-hidden": "true" }, edges.map((e, i) => {
@@ -7881,10 +8043,10 @@ button.mds-covm__cell{cursor:pointer;}
   var MATURITY_BUCKETS = ["0–1 year", "1–3 years", "3–5 years", "5–7 years", "7–10 years", "10–20 years", "20+ years", "Unknown"];
   var MODES3 = [{ id: "amount", label: "Amount" }, { id: "percent", label: "Percent" }];
   var UNKNOWN = /^unknown|^unscheduled|^perpetual|^no maturity/i;
-  var injected46 = false;
-  function inject46() {
-    if (injected46 || typeof document === "undefined") return;
-    injected46 = true;
+  var injected47 = false;
+  function inject47() {
+    if (injected47 || typeof document === "undefined") return;
+    injected47 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "maturity-ladder");
     el.textContent = `
@@ -7962,7 +8124,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject46();
+    inject47();
     const [own, setOwn] = react_default.useState(defaultMode);
     const mode = modeProp || own;
     const setMode = (m2) => {
@@ -8014,10 +8176,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/charts/OwnershipGraph.jsx
-  var injected47 = false;
-  function inject47() {
-    if (injected47 || typeof document === "undefined") return;
-    injected47 = true;
+  var injected48 = false;
+  function inject48() {
+    if (injected48 || typeof document === "undefined") return;
+    injected48 = true;
     const css = `
 .mds-own{position:relative;padding:18px 12px;overflow:auto;display:flex;flex-direction:column;align-items:flex-start;}
 .mds-own__svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible;}
@@ -8099,7 +8261,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject47();
+    inject48();
     const wrapRef = useRef(null);
     const nodeRefs = useRef({});
     const [paths, setPaths] = useState([]);
@@ -8162,11 +8324,34 @@ button.mds-covm__cell{cursor:pointer;}
   // components/charts/PeerComparisonStrip.jsx
   var MONO3 = { fontFamily: "var(--font-data)", fontVariantNumeric: "slashed-zero tabular-nums" };
   var SR4 = { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 };
+  var injected49 = false;
+  function inject49() {
+    if (injected49 || typeof document === "undefined") return;
+    injected49 = true;
+    const el = document.createElement("style");
+    el.setAttribute("data-mds", "peer-comparison-strip");
+    el.textContent = `
+.mds-pcs__rail{appearance:none;display:block;position:relative;width:100%;height:22px;margin:0;padding:0;border:0;background:none;color:inherit;font:inherit;cursor:pointer;border-radius:var(--radius-button,2px);}
+.mds-pcs__rail:focus-visible{outline:2px solid var(--interaction-focus,var(--border-focus,#2D6FB3));outline-offset:3px;}
+.mds-pcs__detail{margin:2px 0 6px;padding:6px 8px;border-left:2px solid var(--border-strong);font-size:var(--viz-type-annotation,12px);color:var(--text-secondary);}
+.mds-pcs__detail dl{display:flex;flex-wrap:wrap;gap:2px 16px;margin:0;}
+.mds-pcs__detail dt{color:var(--text-muted);}
+.mds-pcs__detail dd{margin:0 0 0 4px;font-family:var(--font-data);font-variant-numeric:slashed-zero tabular-nums;color:var(--text-primary);}
+.mds-pcs__detail div{display:flex;}
+@media (forced-colors:active){
+  .mds-pcs__track,.mds-pcs__peer{background:CanvasText;forced-color-adjust:none;}
+  .mds-pcs__subject{background:Highlight;border-color:Canvas;forced-color-adjust:none;}
+  .mds-pcs__rail:focus-visible{outline-color:Highlight;}
+}
+`;
+    document.head.appendChild(el);
+  }
   var median = (a) => {
     const s = [...a].sort((x, y) => x - y);
     const m2 = s.length >> 1;
     return s.length % 2 ? s[m2] : (s[m2 - 1] + s[m2]) / 2;
   };
+  var namedPeers = (m2, f) => (m2.peers || []).map((value, i) => ({ value, name: m2.peerLabels && m2.peerLabels[i] || `Peer ${i + 1}` })).filter((p) => p.value != null && isFinite(p.value)).sort((a, b) => a.value - b.value).map((p) => ({ ...p, text: f(p.value) }));
   function PeerComparisonStrip({
     metrics = [],
     // [{ id?, label, value, peers?: number[], domain?: [lo,hi], median?, fmt?, higherIsBetter?, note? }]
@@ -8176,8 +8361,13 @@ button.mds-covm__cell{cursor:pointer;}
     showRank = true,
     fmt: fmt6 = (v) => Math.abs(v) >= 100 ? v.toFixed(0) : v.toFixed(2),
     ariaLabel,
-    caption
+    caption,
+    peerDetail = true
+    // each rail is a disclosure listing its peer values; false keeps a static strip
   }) {
+    inject49();
+    const base = react_default.useId();
+    const [open, setOpen] = react_default.useState(null);
     return /* @__PURE__ */ window.React.createElement("div", { role: ariaLabel ? "group" : void 0, "aria-label": ariaLabel, style: { position: "relative", display: "flex", flexDirection: "column", gap: 2 } }, metrics.map((m2, mi) => {
       const f = m2.fmt || fmt6;
       const peers = m2.peers || [];
@@ -8190,21 +8380,47 @@ button.mds-covm__cell{cursor:pointer;}
       const above = med != null && m2.value > med;
       const tone = better == null ? "var(--series-actual)" : above === !!better ? "var(--series-positive)" : "var(--series-negative)";
       const rank2 = peers.length ? peers.filter((p) => better === false ? p < m2.value : p > m2.value).length + 1 : null;
-      return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), m2.value != null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(m2.value)}`, style: { position: "absolute", left: pct3(m2.value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, m2.value == null ? "—" : f(m2.value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1)));
-    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
+      const rowKey = String(m2.id ?? m2.label ?? mi);
+      const named = namedPeers(m2, f);
+      const interactive = peerDetail && named.length > 0;
+      const expanded = interactive && open === rowKey;
+      const detailId = `${base}-p${mi}`;
+      const summary = `${m2.label}: ${subjectLabel} ${m2.value == null ? "no data" : f(m2.value)}` + (med != null ? `, peer median ${f(med)}` : "") + (rank2 != null ? `, rank ${rank2} of ${peers.length + 1}` : "") + `. ${named.length} peer value${named.length === 1 ? "" : "s"}`;
+      const marks = /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement("span", { className: "mds-pcs__track", style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, className: "mds-pcs__peer", style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), m2.value != null && /* @__PURE__ */ window.React.createElement("span", { className: "mds-pcs__subject", style: { position: "absolute", left: pct3(m2.value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }));
+      const ends = /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", pointerEvents: "none" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", pointerEvents: "none" }, "aria-hidden": "true" }, f(hi)));
+      return /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: m2.id || m2.label || mi }, /* @__PURE__ */ window.React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 && !expanded ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, interactive ? /* @__PURE__ */ window.React.createElement(
+        "button",
+        {
+          type: "button",
+          className: "mds-pcs__rail",
+          "aria-label": summary,
+          "aria-expanded": expanded,
+          "aria-controls": expanded ? detailId : void 0,
+          onClick: () => setOpen(expanded ? null : rowKey),
+          onKeyDown: (e) => {
+            if (e.key === "Escape" && expanded) {
+              e.preventDefault();
+              e.stopPropagation();
+              setOpen(null);
+            }
+          }
+        },
+        /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, marks)
+      ) : /* @__PURE__ */ window.React.createElement("div", { style: { position: "relative", height: 22 }, "aria-hidden": "true" }, marks), ends), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, m2.value == null ? "—" : f(m2.value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1))), expanded && /* @__PURE__ */ window.React.createElement("div", { className: "mds-pcs__detail", id: detailId, style: { borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("dl", null, med != null && /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("dt", null, "Peer median"), /* @__PURE__ */ window.React.createElement("dd", null, f(med))), named.map((n, i) => /* @__PURE__ */ window.React.createElement("div", { key: i }, /* @__PURE__ */ window.React.createElement("dt", null, n.name), /* @__PURE__ */ window.React.createElement("dd", null, n.text))))));
+    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer values"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
       const f = m2.fmt || fmt6, peers = m2.peers || [];
       const med = m2.median != null ? m2.median : peers.length ? median(peers) : null;
       const rank2 = peers.length ? peers.filter((p) => m2.higherIsBetter === false ? p < m2.value : p > m2.value).length + 1 : null;
-      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, m2.value == null ? "no data" : f(m2.value)), /* @__PURE__ */ window.React.createElement("td", null, med == null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, rank2 == null ? "—" : `${rank2} of ${peers.length + 1}`));
+      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, m2.value == null ? "no data" : f(m2.value)), /* @__PURE__ */ window.React.createElement("td", null, med == null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, rank2 == null ? "—" : `${rank2} of ${peers.length + 1}`), /* @__PURE__ */ window.React.createElement("td", null, namedPeers(m2, f).map((n) => `${n.name} ${n.text}`).join("; ") || "no peers"));
     }))), caption && /* @__PURE__ */ window.React.createElement("p", { style: { margin: "10px 0 0", fontSize: "var(--viz-type-annotation,12px)", color: "var(--text-secondary)", maxWidth: "62ch" } }, caption));
   }
   PeerComparisonStrip.displayName = "PeerComparisonStrip";
 
   // components/charts/PnLCalendar.jsx
-  var injected48 = false;
-  function inject48() {
-    if (injected48 || typeof document === "undefined") return;
-    injected48 = true;
+  var injected50 = false;
+  function inject50() {
+    if (injected50 || typeof document === "undefined") return;
+    injected50 = true;
     const css = `
 .mds-pnlcal{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-body);}
 .mds-pnlcal__grid{display:grid;grid-template-columns:repeat(7,1fr);}
@@ -8265,7 +8481,7 @@ button.mds-covm__cell{cursor:pointer;}
     );
   }
   function PnLCalendar({ month, values = {}, bars = null, heat = true, valueFormat, cellHeight = 48, showTotal = true, style = {} }) {
-    inject48();
+    inject50();
     const [y, m2] = String(month).split("-").map(Number);
     const days = new Date(Date.UTC(y, m2, 0)).getUTCDate();
     const lead = (new Date(Date.UTC(y, m2 - 1, 1)).getUTCDay() + 6) % 7;
@@ -8644,10 +8860,10 @@ button.mds-covm__cell{cursor:pointer;}
   SmallMultiples.displayName = "SmallMultiples";
 
   // components/charts/TimeframeSwitcher.jsx
-  var injected49 = false;
-  function inject49() {
-    if (injected49 || typeof document === "undefined") return;
-    injected49 = true;
+  var injected51 = false;
+  function inject51() {
+    if (injected51 || typeof document === "undefined") return;
+    injected51 = true;
     const css = `
 .mds-tf{display:inline-flex;align-items:stretch;padding:2px;gap:2px;background:var(--bg-medium,#EBE8E1);
   border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,2px);
@@ -8705,7 +8921,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject49();
+    inject51();
     const opts = options.map((o) => typeof o === "string" ? { value: o, label: o } : o);
     const isControlled = value != null;
     const [internal, setInternal] = react_default.useState(defaultValue != null ? defaultValue : (opts[0] || {}).value);
@@ -8746,7 +8962,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject49();
+    inject51();
     const isControlled = controlledMode != null;
     const [internalMode, setInternalMode] = react_default.useState(defaultMode);
     const mode = isControlled ? controlledMode : internalMode;
@@ -8793,10 +9009,10 @@ button.mds-covm__cell{cursor:pointer;}
   AsOfControl.displayName = "AsOfControl";
 
   // components/charts/TraceChart.jsx
-  var injected50 = false;
-  function inject50() {
-    if (injected50 || typeof document === "undefined") return;
-    injected50 = true;
+  var injected52 = false;
+  function inject52() {
+    if (injected52 || typeof document === "undefined") return;
+    injected52 = true;
     const css = `
 .mds-trc{position:relative;width:100%;font-family:var(--font-body);}
 .mds-trc__svg{display:block;width:100%;overflow:visible;}
@@ -8840,7 +9056,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject50();
+    inject52();
     const hostRef = react_default.useRef(null);
     const [w, setW] = react_default.useState(720);
     react_default.useEffect(() => observeWidth(hostRef.current, setW), []);
@@ -9476,10 +9692,10 @@ button.mds-covm__cell{cursor:pointer;}
   var ChartCursor = { ChartCursorSync, useChartCrosshair, useSyncedCursor };
 
   // components/core/Accordion.jsx
-  var injected51 = false;
-  function inject51() {
-    if (injected51 || typeof document === "undefined") return;
-    injected51 = true;
+  var injected53 = false;
+  function inject53() {
+    if (injected53 || typeof document === "undefined") return;
+    injected53 = true;
     const css = `
 .mds-acc{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);}
 .mds-acc-item + .mds-acc-item{border-top:1px solid var(--border-divider,#E2DED5);}
@@ -9504,7 +9720,7 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function Accordion({ items = [], multi = false, defaultOpen = [] }) {
-    inject51();
+    inject53();
     const [open, setOpen] = react_default.useState(() => new Set(defaultOpen));
     const toggle = (i) => setOpen((prev) => {
       const next = multi ? new Set(prev) : /* @__PURE__ */ new Set();
@@ -9530,10 +9746,10 @@ button.mds-covm__cell{cursor:pointer;}
   Accordion.displayName = "Accordion";
 
   // components/core/AsyncCombobox.jsx
-  var injected52 = false;
-  function inject52() {
-    if (injected52 || typeof document === "undefined") return;
-    injected52 = true;
+  var injected54 = false;
+  function inject54() {
+    if (injected54 || typeof document === "undefined") return;
+    injected54 = true;
     const css = `
 .mds-cbx{position:relative;font-family:var(--font-body);}
 .mds-cbx__field{display:flex;align-items:center;gap:6px;height:30px;padding:0 8px;
@@ -9573,7 +9789,7 @@ button.mds-covm__cell{cursor:pointer;}
     emptyLabel = "No matches",
     maxRows = 200
   }) {
-    inject52();
+    inject54();
     const [open, setOpen] = react_default.useState(false);
     const [text, setText] = react_default.useState("");
     const [options, setOptions] = react_default.useState([]);
@@ -9708,10 +9924,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/Badge.jsx
-  var injected53 = false;
-  function inject53() {
-    if (injected53 || typeof document === "undefined") return;
-    injected53 = true;
+  var injected55 = false;
+  function inject55() {
+    if (injected55 || typeof document === "undefined") return;
+    injected55 = true;
     const css = `
 .mds-badge{display:inline-flex;align-items:center;gap:6px;border:1px solid;
   padding:3px 8px;font-family:var(--font-body);font-size:11px;font-weight:600;
@@ -9733,7 +9949,7 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function Badge({ variant = "neutral", dot = false, className = "", children, ...rest }) {
-    inject53();
+    inject55();
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-badge mds-badge--${variant}${className ? " " + className : ""}`, ...rest }, dot && /* @__PURE__ */ window.React.createElement("span", { className: "mds-badge__dot", "aria-hidden": "true" }), children);
   }
 
@@ -9783,10 +9999,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/Callout.jsx
-  var injected54 = false;
-  function inject54() {
-    if (injected54 || typeof document === "undefined") return;
-    injected54 = true;
+  var injected56 = false;
+  function inject56() {
+    if (injected56 || typeof document === "undefined") return;
+    injected56 = true;
     const css = `
 .mds-callout{display:flex;gap:10px;padding:12px 14px;border:1px solid var(--border,#D2CDC3);
   border-left-width:3px;background:var(--bg-light,#F8F7F3);font-family:var(--font-body);}
@@ -9811,16 +10027,16 @@ button.mds-covm__cell{cursor:pointer;}
   }
   var ICONS = { info: "ℹ", success: "✓", warning: "▲", danger: "✕" };
   function Callout({ tone = "info", title, children, icon }) {
-    inject54();
+    inject56();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-callout mds-callout--${tone}`, role: "note" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-callout-icon", "aria-hidden": "true" }, icon ?? ICONS[tone]), /* @__PURE__ */ window.React.createElement("div", { className: "mds-callout-body" }, title && /* @__PURE__ */ window.React.createElement("p", { className: "mds-callout-title" }, title), children && /* @__PURE__ */ window.React.createElement("p", { className: "mds-callout-text" }, children)));
   }
   Callout.displayName = "Callout";
 
   // components/core/Capsule.jsx
-  var injected55 = false;
-  function inject55() {
-    if (injected55 || typeof document === "undefined") return;
-    injected55 = true;
+  var injected57 = false;
+  function inject57() {
+    if (injected57 || typeof document === "undefined") return;
+    injected57 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "capsule");
     el.textContent = `
@@ -9847,15 +10063,15 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function CapsuleHeader({ title, context, state = "ready", tools, collapsible, collapsed, onToggle, movable }) {
-    inject55();
+    inject57();
     return /* @__PURE__ */ window.React.createElement("header", { className: "mds-capsule__header" }, movable ? /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", title: "Move module", style: { cursor: "grab", fontFamily: "var(--font-data)", color: "var(--text-disabled)" } }, "⠿") : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-capsule__identity" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-capsule__title" }, title), context ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-capsule__context" }, context) : null), /* @__PURE__ */ window.React.createElement("span", { className: "mds-capsule__state" }, state), tools ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-capsule__tools" }, tools) : null, collapsible ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-capsule__tool", onClick: onToggle, "aria-expanded": !collapsed, "aria-label": collapsed ? "Expand module" : "Collapse module" }, collapsed ? "+" : "−") : null);
   }
   function CapsuleBody({ className = "", children, ...rest }) {
-    inject55();
+    inject57();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-capsule__body${className ? " " + className : ""}`, ...rest }, children);
   }
   function CapsuleFooter({ className = "", children, ...rest }) {
-    inject55();
+    inject57();
     return /* @__PURE__ */ window.React.createElement("footer", { className: `mds-capsule__footer${className ? " " + className : ""}`, ...rest }, children);
   }
   function Capsule({
@@ -9877,7 +10093,7 @@ button.mds-covm__cell{cursor:pointer;}
     style,
     ...rest
   }) {
-    inject55();
+    inject57();
     const generatedId = react_default.useId();
     const key = storageKey ? `mds-capsule:${storageKey}` : null;
     const [collapsed, setCollapsed] = react_default.useState(() => {
@@ -9902,10 +10118,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/Combobox.jsx
-  var injected56 = false;
-  function inject56() {
-    if (injected56 || typeof document === "undefined") return;
-    injected56 = true;
+  var injected58 = false;
+  function inject58() {
+    if (injected58 || typeof document === "undefined") return;
+    injected58 = true;
     const css = `
 .mds-cb-wrap{position:relative;width:100%;}
 .mds-cb-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
@@ -9985,7 +10201,7 @@ button.mds-covm__cell{cursor:pointer;}
     "aria-label": ariaLabel,
     ...rest
   }) {
-    inject56();
+    inject58();
     const auto = useUid2();
     const base = id || auto;
     const listId = `${base}-listbox`;
@@ -10189,10 +10405,10 @@ button.mds-covm__cell{cursor:pointer;}
   Combobox.displayName = "Combobox";
 
   // components/core/CommandPalette.jsx
-  var injected57 = false;
-  function inject57() {
-    if (injected57 || typeof document === "undefined") return;
-    injected57 = true;
+  var injected59 = false;
+  function inject59() {
+    if (injected59 || typeof document === "undefined") return;
+    injected59 = true;
     const css = `
 .mds-cmd__scrim{position:fixed;inset:0;z-index:var(--z-modal,200);display:flex;justify-content:center;
   align-items:flex-start;padding:14vh 16px 16px;background:var(--scrim, rgba(30,28,26,.5));}
@@ -10335,7 +10551,7 @@ button.mds-covm__cell{cursor:pointer;}
     rankByRecency = true
   }) {
     const uid6 = react_default.useId();
-    inject57();
+    inject59();
     const isControlled = controlledOpen != null;
     const [internalOpen, setInternalOpen] = react_default.useState(defaultOpen);
     const open = isControlled ? controlledOpen : internalOpen;
@@ -10549,10 +10765,10 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/core/ContextMenu.jsx
   var { useState: useState6, useRef: useRef2, useEffect: useEffect2 } = react_default;
-  var injected58 = false;
-  function inject58() {
-    if (injected58 || typeof document === "undefined") return;
-    injected58 = true;
+  var injected60 = false;
+  function inject60() {
+    if (injected60 || typeof document === "undefined") return;
+    injected60 = true;
     const css = `
 .cm-menu{position:fixed;z-index:var(--z-dropdown,100);background:var(--bg-light,#F8F7F3);
   border:1px solid var(--border,#D2CDC3);
@@ -10580,7 +10796,7 @@ button.mds-covm__cell{cursor:pointer;}
   }
   function ContextMenu({ items = [], x = 0, y = 0, onClose = () => {
   } }) {
-    inject58();
+    inject60();
     const menuRef = useRef2(null);
     const itemRefs = useRef2([]);
     const [pos, setPos] = useState6({ x, y });
@@ -10692,10 +10908,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/DateRangePicker.jsx
-  var injected59 = false;
-  function inject59() {
-    if (injected59 || typeof document === "undefined") return;
-    injected59 = true;
+  var injected61 = false;
+  function inject61() {
+    if (injected61 || typeof document === "undefined") return;
+    injected61 = true;
     const css = `
 .mds-dr-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
@@ -10797,7 +11013,7 @@ button.mds-covm__cell{cursor:pointer;}
     "aria-label": ariaLabel,
     ...rest
   }) {
-    inject59();
+    inject61();
     const auto = useUid3();
     const base = id || auto;
     const errorId = `${base}-error`;
@@ -11062,10 +11278,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/DensityToggle.jsx
-  var injected60 = false;
-  function inject60() {
-    if (injected60 || typeof document === "undefined") return;
-    injected60 = true;
+  var injected62 = false;
+  function inject62() {
+    if (injected62 || typeof document === "undefined") return;
+    injected62 = true;
     const css = `
 .mds-den{display:inline-flex;align-items:stretch;padding:2px;gap:2px;
   background:var(--bg-medium,#EBE8E1);border:1px solid var(--border,#D2CDC3);
@@ -11123,7 +11339,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject60();
+    inject62();
     const isControlled = controlled != null;
     const [internal, setInternal] = react_default.useState(() => {
       if (isControlled) return controlled;
@@ -11248,10 +11464,10 @@ button.mds-covm__cell{cursor:pointer;}
   // components/core/Dialog.jsx
   var { useEffect: useEffect3, useRef: useRef3 } = react_default;
   var DialogTitleIdContext = react_default.createContext(null);
-  var injected61 = false;
-  function inject61() {
-    if (injected61 || typeof document === "undefined") return;
-    injected61 = true;
+  var injected63 = false;
+  function inject63() {
+    if (injected63 || typeof document === "undefined") return;
+    injected63 = true;
     const css = `
 .mds-dialog-overlay {
   position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
@@ -11321,7 +11537,7 @@ button.mds-covm__cell{cursor:pointer;}
     maxWidth,
     closeOnEsc = true
   }) {
-    inject61();
+    inject63();
     const ref = useRef3(null);
     const titleId = react_default.useId();
     useOverlayFocus(ref, open, ".mds-dialog-wrap");
@@ -11398,10 +11614,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/SegmentedControl.jsx
-  var injected62 = false;
-  function inject62() {
-    if (injected62 || typeof document === "undefined") return;
-    injected62 = true;
+  var injected64 = false;
+  function inject64() {
+    if (injected64 || typeof document === "undefined") return;
+    injected64 = true;
     const css = `
 .mds-seg{display:inline-flex;align-items:stretch;padding:2px;gap:2px;
   background:var(--bg-medium,#EBE8E1);border:1px solid var(--border,#D2CDC3);
@@ -11438,7 +11654,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject62();
+    inject64();
     const items = normalize2(options);
     const refs = react_default.useRef([]);
     const enabled = items.map((o, i) => ({ o, i })).filter((x) => !x.o.disabled);
@@ -11534,10 +11750,10 @@ button.mds-covm__cell{cursor:pointer;}
       return null;
     }
   }
-  var injected63 = false;
-  function inject63() {
-    if (injected63 || typeof document === "undefined") return;
-    injected63 = true;
+  var injected65 = false;
+  function inject65() {
+    if (injected65 || typeof document === "undefined") return;
+    injected65 = true;
     const css = `
 .mds-disc{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);}
 .mds-disc + .mds-disc{border-top:0;}
@@ -11700,7 +11916,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject63();
+    inject65();
     const d = useDisc();
     const value = region ? d.detailFor(region) : d.detail;
     const overridden = region ? d.overridden(region) : false;
@@ -11720,7 +11936,7 @@ button.mds-covm__cell{cursor:pointer;}
     return list.reduce((worst2, s) => (SEVERITY_RANK[s] || 0) > (SEVERITY_RANK[worst2] || 0) ? s : worst2, "none");
   }
   function DisclosureResidue({ count, countLabel, severity, severityLabel, freshness: freshness2, children }) {
-    inject63();
+    inject65();
     const sev = severity && severity !== "none" ? severity : null;
     return /* @__PURE__ */ window.React.createElement("span", { className: "mds-disc__residue" }, count != null ? /* @__PURE__ */ window.React.createElement("span", null, count, countLabel ? " " + countLabel : "") : null, sev ? /* @__PURE__ */ window.React.createElement("span", { className: `mds-disc__sev mds-disc__sev--${sev}` }, /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true" }, SEVERITY_GLYPH[sev] || "▲"), severityLabel || sev) : null, freshness2 ? /* @__PURE__ */ window.React.createElement("span", { title: "Last observed" }, "◷ ", freshness2) : null, children);
   }
@@ -11746,7 +11962,7 @@ button.mds-covm__cell{cursor:pointer;}
     children,
     ...rest
   }) {
-    inject63();
+    inject65();
     const d = useDisc();
     const rid = id || (typeof title === "string" ? title : null);
     const level = d.detailFor(rid);
@@ -11780,7 +11996,7 @@ button.mds-covm__cell{cursor:pointer;}
     ) : /* @__PURE__ */ window.React.createElement("span", { className: "mds-disc__residue" }), dial || actions ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-disc__tools" }, actions, dial ? /* @__PURE__ */ window.React.createElement(DetailDial, { region: rid, showReset: false }) : null) : null), open ? /* @__PURE__ */ window.React.createElement("div", { id: bodyId, className: `mds-disc__body${bare ? " mds-disc__body--bare" : ""}` }, children) : null, showWithheld ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-disc__withheld" }, /* @__PURE__ */ window.React.createElement("span", null, withheld, " ", withheldLabel), /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-disc__reveal", onClick: () => d.setDetailFor(rid, "full") }, revealLabel || "Show full detail")) : null);
   }
   function DetailOnly({ region, label: label2, children, notice = true }) {
-    inject63();
+    inject65();
     const d = useDisc();
     if (d.detailFor(region) === "full") return /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, children);
     if (!notice) return null;
@@ -11818,10 +12034,10 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/core/Drawer.jsx
   var { useEffect: useEffect4, useRef: useRef4 } = react_default;
-  var injected64 = false;
-  function inject64() {
-    if (injected64 || typeof document === "undefined") return;
-    injected64 = true;
+  var injected66 = false;
+  function inject66() {
+    if (injected66 || typeof document === "undefined") return;
+    injected66 = true;
     const css = `
 .mds-drawer-overlay {
   position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
@@ -11914,7 +12130,7 @@ button.mds-covm__cell{cursor:pointer;}
     closeOnEsc = true
   }) {
     const uid6 = react_default.useId();
-    inject64();
+    inject66();
     const ref = useRef4(null);
     useOverlayFocus(ref, open, ".mds-drawer-wrap");
     useEffect4(() => {
@@ -11969,10 +12185,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/ErrorBoundary.jsx
-  var injected65 = false;
-  function inject65() {
-    if (injected65 || typeof document === "undefined") return;
-    injected65 = true;
+  var injected67 = false;
+  function inject67() {
+    if (injected67 || typeof document === "undefined") return;
+    injected67 = true;
     const css = `
 .mds-errbound{border:1px solid var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10));
   padding:16px;display:flex;flex-direction:column;gap:8px;font-family:var(--font-body);box-sizing:border-box;}
@@ -12003,7 +12219,7 @@ button.mds-covm__cell{cursor:pointer;}
       if (this.props.onError) this.props.onError(error, info);
     }
     render() {
-      inject65();
+      inject67();
       if (!this.state.error) return this.props.children;
       const { label: label2 = "This panel", fallback } = this.props;
       if (fallback) return fallback;
@@ -12026,10 +12242,10 @@ button.mds-covm__cell{cursor:pointer;}
 
   // components/core/FileUpload.jsx
   var { useState: useState7, useRef: useRef5 } = react_default;
-  var injected66 = false;
-  function inject66() {
-    if (injected66 || typeof document === "undefined") return;
-    injected66 = true;
+  var injected68 = false;
+  function inject68() {
+    if (injected68 || typeof document === "undefined") return;
+    injected68 = true;
     const css = `
 .mds-upload-wrap{display:block;width:100%;}
 .mds-upload-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
@@ -12054,7 +12270,7 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function FileUpload({ label: label2, onFilesSelected, multiple = true, accept = "*" }) {
-    inject66();
+    inject68();
     const [files, setFiles] = useState7([]);
     const [isDrag, setIsDrag] = useState7(false);
     const inputRef = useRef5(null);
@@ -12136,10 +12352,10 @@ button.mds-covm__cell{cursor:pointer;}
   Flex.displayName = "Flex";
 
   // components/core/Form.jsx
-  var injected67 = false;
-  function inject67() {
-    if (injected67 || typeof document === "undefined") return;
-    injected67 = true;
+  var injected69 = false;
+  function inject69() {
+    if (injected69 || typeof document === "undefined") return;
+    injected69 = true;
     const css = `
 .mds-form-row{display:flex;flex-direction:column;gap:5px;}
 .mds-form-row--horizontal{flex-direction:row;align-items:baseline;gap:12px;}
@@ -12166,19 +12382,19 @@ button.mds-covm__cell{cursor:pointer;}
     document.head.appendChild(el);
   }
   function FormRow({ label: label2, hint, error, horizontal = false, children, span }) {
-    inject67();
+    inject69();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-form-row${horizontal ? " mds-form-row--horizontal" : ""}${span ? ` mds-form-grid__span-${span}` : ""}` }, label2 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-form-row__label" }, label2), /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-row__field" }, children), error && /* @__PURE__ */ window.React.createElement("span", { className: "mds-form-row__error" }, error), hint && !error && /* @__PURE__ */ window.React.createElement("span", { className: "mds-form-row__hint" }, hint));
   }
   function FormGrid({ cols = 2, children }) {
-    inject67();
+    inject69();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-form-grid mds-form-grid--${Math.min(3, Math.max(1, cols))}` }, children);
   }
   function FormDivider() {
-    inject67();
+    inject69();
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-divider" });
   }
   function FormSectionLabel({ children }) {
-    inject67();
+    inject69();
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-form-section-label" }, children);
   }
   var Form = FormGrid;
@@ -12338,10 +12554,10 @@ button.mds-covm__cell{cursor:pointer;}
   };
 
   // components/core/FreshnessIndicator.jsx
-  var injected68 = false;
-  function inject68() {
-    if (injected68 || typeof document === "undefined") return;
-    injected68 = true;
+  var injected70 = false;
+  function inject70() {
+    if (injected70 || typeof document === "undefined") return;
+    injected70 = true;
     const css = `
 .mds-fresh{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-data,monospace);
   font-size:11px;line-height:1.2;color:var(--text-secondary,#535C65);white-space:nowrap;}
@@ -12389,7 +12605,7 @@ button.mds-covm__cell{cursor:pointer;}
     return d.toISOString().slice(11, 19) + "Z";
   }
   function ConnectionDot({ status = "live", size = 8, title }) {
-    inject68();
+    inject70();
     const s = STATUS3[status] || STATUS3.idle;
     return /* @__PURE__ */ window.React.createElement(
       "span",
@@ -12414,7 +12630,7 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     ...rest
   }) {
-    inject68();
+    inject70();
     const s = STATUS3[status] || STATUS3.idle;
     const [, force] = react_default.useState(0);
     react_default.useEffect(() => {
@@ -12474,10 +12690,10 @@ button.mds-covm__cell{cursor:pointer;}
   Grid.displayName = "Grid";
 
   // components/core/Kbd.jsx
-  var injected69 = false;
-  function inject69() {
-    if (injected69 || typeof document === "undefined") return;
-    injected69 = true;
+  var injected71 = false;
+  function inject71() {
+    if (injected71 || typeof document === "undefined") return;
+    injected71 = true;
     const css = `
 .mds-kbd{display:inline-flex;align-items:center;gap:3px;font-family:var(--font-body);vertical-align:middle;}
 .mds-kbd__key{display:inline-flex;align-items:center;justify-content:center;
@@ -12501,16 +12717,16 @@ button.mds-covm__cell{cursor:pointer;}
     return null;
   }
   function Kbd({ keys, variant = "default", className = "", children, ...rest }) {
-    inject69();
+    inject71();
     const parts = parseKeys(keys, children);
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-kbd mds-kbd--${variant}${className ? " " + className : ""}`, ...rest }, parts ? parts.map((k, i) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: i }, i > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "mds-kbd__plus", "aria-hidden": "true" }, "+"), /* @__PURE__ */ window.React.createElement("kbd", { className: "mds-kbd__key" }, k))) : /* @__PURE__ */ window.React.createElement("kbd", { className: "mds-kbd__key" }, children));
   }
 
   // components/core/HotkeysProvider.jsx
-  var injected70 = false;
-  function inject70() {
-    if (injected70 || typeof document === "undefined") return;
-    injected70 = true;
+  var injected72 = false;
+  function inject72() {
+    if (injected72 || typeof document === "undefined") return;
+    injected72 = true;
     const css = `
 .mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(30,28,26,.5));z-index:var(--z-hotkey,400);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9vh;
@@ -12555,7 +12771,7 @@ button.mds-covm__cell{cursor:pointer;}
     return e.key.length === 1 ? e.key.toLowerCase() : e.key.toLowerCase();
   }
   function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Keyboard shortcuts" }) {
-    inject70();
+    inject72();
     const [open, setOpen] = react_default.useState(false);
     const parsed = react_default.useMemo(
       () => bindings.map((b) => ({ ...b, parsed: parseBinding(b.keys) })),
@@ -12628,10 +12844,10 @@ button.mds-covm__cell{cursor:pointer;}
   }
 
   // components/core/InstrumentChip.jsx
-  var injected71 = false;
-  function inject71() {
-    if (injected71 || typeof document === "undefined") return;
-    injected71 = true;
+  var injected73 = false;
+  function inject73() {
+    if (injected73 || typeof document === "undefined") return;
+    injected73 = true;
     const css = `
 .mds-ichip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);border-radius:var(--radius-chip,2px);padding:2px 7px 2px 3px;
@@ -12684,7 +12900,7 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
     className = "",
     ...rest
   }) {
-    inject71();
+    inject73();
     const cls = CLASS_MAP[String(assetClass).toLowerCase()] || CLASS_MAP.eq;
     const Tag = onClick ? "button" : "span";
     return /* @__PURE__ */ window.React.createElement(
@@ -12741,10 +12957,10 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
     reporting: { label: "Reporting", glyph: "●", rank: 3, note: "Consequential for external reporting or disclosure" }
   };
   var money2 = (v, cur) => v == null ? null : cur ? formatMoney(v, { currency: cur, minDecimals: 0, maxDecimals: 2 }) : formatNumber(v, { minDecimals: 0, maxDecimals: 2 });
-  var injected72 = false;
-  function inject72() {
-    if (injected72 || typeof document === "undefined") return;
-    injected72 = true;
+  var injected74 = false;
+  function inject74() {
+    if (injected74 || typeof document === "undefined") return;
+    injected74 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "materiality");
     el.textContent = `
@@ -12778,7 +12994,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
   }
   var label = (a) => CLASS[a && a.classification] || { label: a && a.classification || "Unassessed", glyph: "·", rank: 0, note: "" };
   function MaterialityBadge({ assessment, classification, showAmount = false, currency = "USD", onOpen, className = "", ...rest }) {
-    inject72();
+    inject74();
     const a = assessment || (classification ? { classification } : null);
     const c = label(a);
     const amt2 = showAmount && a && a.amount != null ? money2(a.amount, currency) : null;
@@ -12800,7 +13016,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     );
   }
   function MaterialityAssessment({ assessment, currency = "USD", title = "Materiality", className = "", ...rest }) {
-    inject72();
+    inject74();
     if (!assessment) return null;
     const a = assessment, c = label(a), q = a.quantitative || {}, factors = a.qualitativeFactors || [];
     const present = factors.filter((f) => f.present).length;
@@ -12808,10 +13024,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
   }
 
   // components/core/MultiSelect.jsx
-  var injected73 = false;
-  function inject73() {
-    if (injected73 || typeof document === "undefined") return;
-    injected73 = true;
+  var injected75 = false;
+  function inject75() {
+    if (injected75 || typeof document === "undefined") return;
+    injected75 = true;
     const css = `
 .mds-ms-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
@@ -12897,7 +13113,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     "aria-label": ariaLabel,
     ...rest
   }) {
-    inject73();
+    inject75();
     const auto = useUid4();
     const base = id || auto;
     const listId = `${base}-listbox`;
@@ -13215,10 +13431,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
   }
 
   // components/core/NotificationCenter.jsx
-  var injected74 = false;
-  function inject74() {
-    if (injected74 || typeof document === "undefined") return;
-    injected74 = true;
+  var injected76 = false;
+  function inject76() {
+    if (injected76 || typeof document === "undefined") return;
+    injected76 = true;
     const css = `
 .mds-notif{position:relative;display:inline-block;font-family:var(--font-body);}
 .mds-notif__bell{appearance:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;
@@ -13259,7 +13475,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     document.head.appendChild(el);
   }
   function NotificationCenter({ items = [], onMarkAllRead, onSelect, label: label2 = "Alerts" }) {
-    inject74();
+    inject76();
     const [open, setOpen] = react_default.useState(false);
     const rootRef = react_default.useRef(null);
     const unread = items.filter((n) => !n.read).length;
@@ -13305,10 +13521,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
 
   // components/core/NumberInput.jsx
   var { useState: useState8 } = react_default;
-  var injected75 = false;
-  function inject75() {
-    if (injected75 || typeof document === "undefined") return;
-    injected75 = true;
+  var injected77 = false;
+  function inject77() {
+    if (injected77 || typeof document === "undefined") return;
+    injected77 = true;
     const css = `
 .mds-number-field{display:block;}
 .mds-number-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
@@ -13333,7 +13549,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     document.head.appendChild(el);
   }
   function NumberInput({ label: label2, value = 0, onChange, min, max, step = 1, disabled = false }) {
-    inject75();
+    inject77();
     const [localValue, setLocalValue] = useState8(value);
     const handleChange = (newVal) => {
       if (min !== void 0 && newVal < min) newVal = min;
@@ -13449,10 +13665,10 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
     missing: "var(--red,#B54B42)",
     na: "var(--text-disabled,#A4ABB2)"
   };
-  var injected76 = false;
-  function inject76() {
-    if (injected76 || typeof document === "undefined") return;
-    injected76 = true;
+  var injected78 = false;
+  function inject78() {
+    if (injected78 || typeof document === "undefined") return;
+    injected78 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "object-header");
     el.textContent = `
@@ -13503,7 +13719,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     className = "",
     ...rest
   }) {
-    inject76();
+    inject78();
     const o = describeObject({ type, id, name, identifierLabel, context, condition, asOf, value, version, coverage, exceptions });
     const amount = o.value && typeof o.value === "object" ? o.value : o.value != null ? { amount: o.value } : null;
     return /* @__PURE__ */ window.React.createElement("header", { className: `mds-objh${dense ? " mds-objh--dense" : ""}${className ? " " + className : ""}`, "data-object-type": o.type, ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-objh__ident" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__type" }, o.typeLabel), o.name ? /* @__PURE__ */ window.React.createElement("h2", { className: "mds-objh__name" }, o.name) : null, o.id != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__key" }, o.identifierLabel, " ", /* @__PURE__ */ window.React.createElement("b", null, o.id)) : null, o.version != null ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__ver" }, "Version ", o.version) : null), /* @__PURE__ */ window.React.createElement("div", { className: "mds-objh__facts" }, o.context.map((pair) => /* @__PURE__ */ window.React.createElement(Fact, { key: pair.label, label: pair.label, value: pair.value })), amount ? /* @__PURE__ */ window.React.createElement(Fact, { label: o.materialLabel, value: amount.amount, sub: amount.secondary, material: true }) : null, o.condition ? /* @__PURE__ */ window.React.createElement(Fact, { label: "Condition" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__v mds-objh__cond" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-objh__dot", style: { background: CONDITION_COLOR[o.condition] || CONDITION_COLOR.na } }), o.condition)) : null, o.asOf ? /* @__PURE__ */ window.React.createElement(Fact, { label: "As of", value: o.asOf }) : null, o.coverage ? /* @__PURE__ */ window.React.createElement(Fact, { label: "Evidence", value: o.coverage.text, flagged: o.coverage.complete === false, onClick: onOpenEvidence }) : null, o.exceptions ? /* @__PURE__ */ window.React.createElement(Fact, { label: o.exceptions.label || "Open exceptions", value: o.exceptions.count, flagged: o.exceptions.blocking, onClick: onOpenExceptions }) : null));
@@ -13547,10 +13763,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   function useScope() {
     return react_default.useContext(Ctx2);
   }
-  var injected77 = false;
-  function inject77() {
-    if (injected77 || typeof document === "undefined") return;
-    injected77 = true;
+  var injected79 = false;
+  function inject79() {
+    if (injected79 || typeof document === "undefined") return;
+    injected79 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "object-scope");
     el.textContent = `
@@ -13577,7 +13793,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     document.head.appendChild(el);
   }
   function ObjectScopeProvider({ scope, object, label: label2, children }) {
-    inject77();
+    inject79();
     const parent = useScope();
     const reg = react_default.useRef(/* @__PURE__ */ new Map());
     const subs = react_default.useRef(/* @__PURE__ */ new Set());
@@ -13600,7 +13816,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     return /* @__PURE__ */ window.React.createElement(Ctx2.Provider, { value }, children);
   }
   function ScopeMark({ scope, variant = "label", relation, title, className = "", ...rest }) {
-    inject77();
+    inject79();
     const ctx = useScope();
     const declared = scope || ctx && ctx.scope || null;
     if (!declared) return null;
@@ -13622,7 +13838,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     children,
     ...rest
   }) {
-    inject77();
+    inject79();
     const ctx = useScope();
     const declared = scope || ctx && ctx.scope || null;
     const rel = scopeRelation(declared, ctx && ctx.scope);
@@ -13640,7 +13856,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-scoped${stack ? "" : " mds-scoped--inline"} mds-scoped--${size}${className ? " " + className : ""}`, "data-foreign": foreign ? "on" : "off", "data-scope": declared || void 0, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-scoped__lead" }, /* @__PURE__ */ window.React.createElement(ScopeMark, { scope: declared, relation: rel, variant: "label" }), label2 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-scoped__k" }, label2) : null), children ?? /* @__PURE__ */ window.React.createElement("span", { className: "mds-scoped__n" }, value ?? "—"), note ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-scoped__note" }, note) : null, explain && rel.note ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-scoped__note" }, rel.note) : null);
   }
   function ScopeMismatch({ title, className = "", ...rest }) {
-    inject77();
+    inject79();
     const ctx = useScope();
     const [items, setItems] = react_default.useState([]);
     react_default.useEffect(() => ctx && ctx.subscribe ? ctx.subscribe(setItems) : void 0, [ctx]);
@@ -13748,10 +13964,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     return value;
   }
   var TrailHooks = { useObjectTrail, trailRef, trailMoved };
-  var injected78 = false;
-  function inject78() {
-    if (injected78 || typeof document === "undefined") return;
-    injected78 = true;
+  var injected80 = false;
+  function inject80() {
+    if (injected80 || typeof document === "undefined") return;
+    injected80 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "object-trail");
     el.textContent = `
@@ -13815,7 +14031,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     } }, /* @__PURE__ */ window.React.createElement("b", null, entry.label ?? entry.id), /* @__PURE__ */ window.React.createElement("em", null, typeLabel(entry)), entry.meta || entry.at ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-trail__meta" }, [entry.meta, entry.at].filter(Boolean).join(" · ")) : null, moved ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-trail__moved" }, "Version moved · viewed v", entry.version, " → now v", entry.currentVersion) : null);
   }
   function ObjectTrail({ label: label2 = "Trail", showPinned = true, maxPinned = 4, recentsLabel = "Recent", className = "", ...rest }) {
-    inject78();
+    inject80();
     const api = react_default.useContext(Ctx3);
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
@@ -13866,7 +14082,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     ), open ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-trail__panel", id: panelId, role: "group", "aria-label": "Recent and pinned objects" }, api.pinned.length ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-trail__group" }, /* @__PURE__ */ window.React.createElement("span", null, "Pinned · intent")), api.pinned.map((entry) => /* @__PURE__ */ window.React.createElement(Row2, { key: `p-${trailRef(entry)}`, entry, api, className: "mds-trail__row", onPick: () => setOpen(false) }))) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-trail__group" }, /* @__PURE__ */ window.React.createElement("span", null, "Recent · behaviour"), api.recents.length ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-trail__clear", onClick: api.clearRecents }, "Clear") : null), api.recents.length ? api.recents.map((entry) => /* @__PURE__ */ window.React.createElement(Row2, { key: `r-${trailRef(entry)}`, entry, api, className: "mds-trail__row", onPick: () => setOpen(false) })) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-tlist__empty", style: { padding: "10px" } }, "No objects opened in this session.")) : null));
   }
   function ObjectTrailList({ heading = "Where you were", limit = 6, showPinned = true, emptyStatement = "No objects opened yet. Anything you open here is retrievable for the rest of the session.", className = "", ...rest }) {
-    inject78();
+    inject80();
     const api = react_default.useContext(Ctx3);
     if (!api) return null;
     const recents = api.recents.slice(0, limit);
@@ -13874,10 +14090,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   }
 
   // components/core/PanelSurface.jsx
-  var injected79 = false;
-  function inject79() {
-    if (injected79 || typeof document === "undefined") return;
-    injected79 = true;
+  var injected81 = false;
+  function inject81() {
+    if (injected81 || typeof document === "undefined") return;
+    injected81 = true;
     const css = `
 .mds-panel{background:var(--card-surface,#F8F7F3);border:1px solid var(--border,#D2CDC3);}
 .mds-panel--raised{background:var(--card-surface-raised,#FCFBF8);}
@@ -13891,17 +14107,17 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     document.head.appendChild(el);
   }
   function PanelSurface({ raised = false, elevated = false, flat = false, strong = false, className = "", children, ...rest }) {
-    inject79();
+    inject81();
     const cls = `mds-panel${raised ? " mds-panel--raised" : ""}${elevated ? " mds-panel--elevated" : ""}${flat ? " mds-panel--flat" : ""}${strong ? " mds-panel--strong" : ""}${className ? " " + className : ""}`;
     return /* @__PURE__ */ window.React.createElement("div", { className: cls, ...rest }, children);
   }
 
   // components/core/Popover.jsx
   var { useEffect: useEffect5, useLayoutEffect: useLayoutEffect2, useRef: useRef6, useState: useState9 } = react_default;
-  var injected80 = false;
-  function inject80() {
-    if (injected80 || typeof document === "undefined") return;
-    injected80 = true;
+  var injected82 = false;
+  function inject82() {
+    if (injected82 || typeof document === "undefined") return;
+    injected82 = true;
     const css = `
 .mds-popover-root { position: fixed; z-index: var(--z-dropdown,100); pointer-events: none; }
 .mds-popover-wrap {
@@ -13934,7 +14150,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     closeOnBackdrop = true,
     closeOnEsc = true
   }) {
-    inject80();
+    inject82();
     const rootRef = useRef6(null);
     const [style, setStyle] = useState9({});
     useLayoutEffect2(() => {
@@ -14006,10 +14222,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   }
 
   // components/core/ProgressBar.jsx
-  var injected81 = false;
-  function inject81() {
-    if (injected81 || typeof document === "undefined") return;
-    injected81 = true;
+  var injected83 = false;
+  function inject83() {
+    if (injected83 || typeof document === "undefined") return;
+    injected83 = true;
     const css = `
 .mds-prog{display:flex;flex-direction:column;gap:5px;width:100%;font-family:var(--font-body);}
 .mds-prog__head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
@@ -14049,7 +14265,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     className = "",
     ...rest
   }) {
-    inject81();
+    inject83();
     const indeterminate = value === null || value === void 0;
     const scale2 = (v) => Math.max(0, Math.min(100, v / (max || 100) * 100));
     const pct3 = indeterminate ? 0 : scale2(value);
@@ -14076,10 +14292,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   }
 
   // components/core/RadioGroup.jsx
-  var injected82 = false;
-  function inject82() {
-    if (injected82 || typeof document === "undefined") return;
-    injected82 = true;
+  var injected84 = false;
+  function inject84() {
+    if (injected84 || typeof document === "undefined") return;
+    injected84 = true;
     const css = `
 .mds-radio-group{display:flex;flex-direction:column;gap:10px;font-family:var(--font-body);}
 .mds-radio-group--row{flex-direction:row;flex-wrap:wrap;gap:16px;}
@@ -14112,7 +14328,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     className = "",
     ...rest
   }) {
-    inject82();
+    inject84();
     const groupName = name || react_default.useId?.() || "mds-radio";
     const items = normalize3(options);
     return /* @__PURE__ */ window.React.createElement(
@@ -14259,10 +14475,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     return value;
   }
   var TimeHooks = { useTimeContext, checkTimeCoherence, formatTimeRole: format, TIME_ROLES };
-  var injected83 = false;
-  function inject83() {
-    if (injected83 || typeof document === "undefined") return;
-    injected83 = true;
+  var injected85 = false;
+  function inject85() {
+    if (injected85 || typeof document === "undefined") return;
+    injected85 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "time-context");
     el.textContent = `
@@ -14292,7 +14508,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     document.head.appendChild(el);
   }
   function TimeRole({ role, value, label: label2, showLabel = true, className = "", ...rest }) {
-    inject83();
+    inject85();
     let provided = null;
     try {
       provided = react_default.useContext(Ctx4);
@@ -14313,7 +14529,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     className = "",
     ...rest
   }) {
-    inject83();
+    inject85();
     let provided = null;
     try {
       provided = react_default.useContext(Ctx4);
@@ -14462,10 +14678,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   Object.defineProperty(Registry, "resolve", { value: resolve2, enumerable: false });
 
   // components/core/Slider.jsx
-  var injected84 = false;
-  function inject84() {
-    if (injected84 || typeof document === "undefined") return;
-    injected84 = true;
+  var injected86 = false;
+  function inject86() {
+    if (injected86 || typeof document === "undefined") return;
+    injected86 = true;
     const css = `
 .mds-slider{display:flex;flex-direction:column;gap:7px;width:100%;font-family:var(--font-body);}
 .mds-slider__head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;}
@@ -14527,7 +14743,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     className = "",
     ...rest
   }) {
-    inject84();
+    inject86();
     const uid6 = react_default.useId();
     const labelId = label2 ? uid6 + "-label" : void 0;
     const clamped = Math.min(max, Math.max(min, value));
@@ -14553,10 +14769,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   }
 
   // components/core/Spinner.jsx
-  var injected85 = false;
-  function inject85() {
-    if (injected85 || typeof document === "undefined") return;
-    injected85 = true;
+  var injected87 = false;
+  function inject87() {
+    if (injected87 || typeof document === "undefined") return;
+    injected87 = true;
     const css = `
 .mds-spin{display:inline-block;flex:0 0 auto;border-radius:50%;
   border:2px solid var(--border,#D2CDC3);border-top-color:var(--brand-signal,#C56343);
@@ -14577,7 +14793,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
     document.head.appendChild(el);
   }
   function Spinner({ size = "md", variant = "accent", label: label2, className = "", ...rest }) {
-    inject85();
+    inject87();
     const ring = /* @__PURE__ */ window.React.createElement(
       "span",
       {
@@ -14592,10 +14808,10 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
   }
 
   // components/core/SplitPane.jsx
-  var injected86 = false;
-  function inject86() {
-    if (injected86 || typeof document === "undefined") return;
-    injected86 = true;
+  var injected88 = false;
+  function inject88() {
+    if (injected88 || typeof document === "undefined") return;
+    injected88 = true;
     const css = `
 .mds-split{display:flex;width:100%;height:100%;min-height:0;min-width:0;overflow:hidden;}
 .mds-split--v{flex-direction:column;}
@@ -14649,7 +14865,7 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
     className = "",
     ...rest
   }) {
-    inject86();
+    inject88();
     const horiz = direction === "horizontal";
     const rootRef = react_default.useRef(null);
     const [total, setTotal] = react_default.useState(0);
@@ -14861,10 +15077,10 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
   }
 
   // components/core/Stepper.jsx
-  var injected87 = false;
-  function inject87() {
-    if (injected87 || typeof document === "undefined") return;
-    injected87 = true;
+  var injected89 = false;
+  function inject89() {
+    if (injected89 || typeof document === "undefined") return;
+    injected89 = true;
     const css = `
 .mds-stepper{display:flex;gap:1px;background:var(--border);list-style:none;margin:0;padding:0;}
 .mds-stepper--h{border-bottom:1px solid var(--border);}
@@ -14915,7 +15131,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     label: label2 = "Steps",
     ...rest
   }) {
-    inject87();
+    inject89();
     const interactive = typeof onStepChange === "function";
     return /* @__PURE__ */ window.React.createElement("ol", { className: `mds-stepper mds-stepper--${orientation === "vertical" ? "v" : "h"}`, "aria-label": label2, ...rest }, steps.map((step, idx) => {
       const complete = step.complete != null ? step.complete : idx < activeStep;
@@ -15202,10 +15418,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   };
 
   // components/core/Tabs.jsx
-  var injected88 = false;
-  function inject88() {
-    if (injected88 || typeof document === "undefined") return;
-    injected88 = true;
+  var injected90 = false;
+  function inject90() {
+    if (injected90 || typeof document === "undefined") return;
+    injected90 = true;
     const css = `
 .mds-tabs{display:flex;flex-direction:column;}
 .mds-tabs__bar{display:flex;gap:2px;border-bottom:1px solid var(--border,#D2CDC3);}
@@ -15229,7 +15445,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function Tabs({ tabs = [], value, defaultTab = 0, onChange, children }) {
-    inject88();
+    inject90();
     const uid6 = react_default.useId();
     const [internal, setInternal] = react_default.useState(defaultTab);
     const controlled = value != null;
@@ -15311,10 +15527,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/core/TagInput.jsx
-  var injected89 = false;
-  function inject89() {
-    if (injected89 || typeof document === "undefined") return;
-    injected89 = true;
+  var injected91 = false;
+  function inject91() {
+    if (injected91 || typeof document === "undefined") return;
+    injected91 = true;
     const css = `
 .mds-tags{display:flex;flex-wrap:wrap;gap:4px;align-items:center;min-height:32px;box-sizing:border-box;
   padding:3px 6px;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);cursor:text;}
@@ -15347,7 +15563,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     disabled = false,
     "aria-label": ariaLabel = "Tags"
   }) {
-    inject89();
+    inject91();
     const [draft, setDraft] = react_default.useState("");
     const inputRef = react_default.useRef(null);
     const commit = () => {
@@ -15402,10 +15618,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/core/TextArea.jsx
-  var injected90 = false;
-  function inject90() {
-    if (injected90 || typeof document === "undefined") return;
-    injected90 = true;
+  var injected92 = false;
+  function inject92() {
+    if (injected92 || typeof document === "undefined") return;
+    injected92 = true;
     const css = `
 .mds-textarea-field{display:block;}
 .mds-textarea-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
@@ -15427,7 +15643,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function TextArea({ label: label2, error, rows = 4, className = "", ...rest }) {
-    inject90();
+    inject92();
     const textarea = /* @__PURE__ */ window.React.createElement(
       "textarea",
       {
@@ -15442,10 +15658,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/core/Toast.jsx
-  var injected91 = false;
-  function inject91() {
-    if (injected91 || typeof document === "undefined") return;
-    injected91 = true;
+  var injected93 = false;
+  function inject93() {
+    if (injected93 || typeof document === "undefined") return;
+    injected93 = true;
     const css = `
 .mds-toast-stack{position:fixed;bottom:20px;right:20px;z-index:var(--z-toast,300);
   display:flex;flex-direction:column-reverse;gap:8px;pointer-events:none;}
@@ -15506,7 +15722,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   };
   var dismissers = /* @__PURE__ */ new Set();
   function ToastProvider() {
-    inject91();
+    inject93();
     const [toasts, setToasts] = react_default.useState([]);
     react_default.useEffect(() => {
       const handler = (toast) => {
@@ -15540,10 +15756,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   var Toast = ToastProvider;
 
   // components/core/Tooltip.jsx
-  var injected92 = false;
-  function inject92() {
-    if (injected92 || typeof document === "undefined") return;
-    injected92 = true;
+  var injected94 = false;
+  function inject94() {
+    if (injected94 || typeof document === "undefined") return;
+    injected94 = true;
     const css = `
 .mds-tip-host{position:relative;display:inline-flex;align-items:center;}
 .mds-tip-host:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:var(--focus-ring-offset,1px);}
@@ -15562,7 +15778,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function Tooltip({ content, children, placement = "above", delay = 300, focusable = false }) {
-    inject92();
+    inject94();
     const uid6 = react_default.useId();
     const [visible, setVisible] = react_default.useState(false);
     const timer = react_default.useRef(null);
@@ -15599,10 +15815,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/core/TreeView.jsx
-  var injected93 = false;
-  function inject93() {
-    if (injected93 || typeof document === "undefined") return;
-    injected93 = true;
+  var injected95 = false;
+  function inject95() {
+    if (injected95 || typeof document === "undefined") return;
+    injected95 = true;
     const css = `
 .mds-tree{font-family:var(--font-data);font-size:13px;color:var(--text-primary,#20252B);user-select:none;position:relative;}
 .mds-tree:focus-visible{outline:var(--focus-ring);outline-offset:2px;}
@@ -15658,7 +15874,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     "aria-label": ariaLabel,
     ...rest
   }) {
-    inject93();
+    inject95();
     const isControlled = expandedProp != null;
     const [uncontrolled, setUncontrolled] = react_default.useState(() => new Set(defaultExpanded));
     const expandedSet = react_default.useMemo(
@@ -16029,10 +16245,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     return { ...authority, candidates, authoritativeStage: stage, authoritative: candidates.find((c) => c.stage === stage) || null };
   }
   var fmt3 = (v, f) => f ? f(v) : typeof v === "number" ? formatNumber(v, { decimals: 2 }) : v == null ? "—" : String(v);
-  var injected94 = false;
-  function inject94() {
-    if (injected94 || typeof document === "undefined") return;
-    injected94 = true;
+  var injected96 = false;
+  function inject96() {
+    if (injected96 || typeof document === "undefined") return;
+    injected96 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "value-authority");
     el.textContent = `
@@ -16064,7 +16280,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function AuthorityChip({ stage, authoritative = false, version, className = "", ...rest }) {
-    inject94();
+    inject96();
     const s = STAGE2[stage] || { label: stage, glyph: "·" };
     return /* @__PURE__ */ window.React.createElement(
       "span",
@@ -16081,7 +16297,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     );
   }
   function AuthorityStack({ authority, label: label2 = "Value authority", unit, format: format2, showMeta = true, className = "", ...rest }) {
-    inject94();
+    inject96();
     const a = resolveAuthority(authority);
     if (!a) return null;
     const isIndex = a.candidates.findIndex((c) => c.stage === a.authoritativeStage);
@@ -16101,7 +16317,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     Panel: (props) => /* @__PURE__ */ window.React.createElement(AuthorityPanel, { ...props })
   };
   function AuthorityPanel({ authority, unit, format: format2, caption, className = "", ...rest }) {
-    inject94();
+    inject96();
     const a = resolveAuthority(authority);
     if (!a) return null;
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-auth${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("table", { className: "mds-auth__tbl" }, caption ? /* @__PURE__ */ window.React.createElement("caption", { style: { captionSide: "top", textAlign: "left", font: "600 11px var(--font-body)", paddingBottom: 6 } }, caption) : null, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Stage"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Version"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Effective"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Actor"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Condition"), /* @__PURE__ */ window.React.createElement("th", { scope: "col", style: { textAlign: "right" } }, "Value"))), /* @__PURE__ */ window.React.createElement("tbody", null, a.candidates.map((c, i) => {
@@ -16304,10 +16520,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   };
 
   // components/data/ColumnChooser.jsx
-  var injected95 = false;
-  function inject95() {
-    if (injected95 || typeof document === "undefined") return;
-    injected95 = true;
+  var injected97 = false;
+  function inject97() {
+    if (injected97 || typeof document === "undefined") return;
+    injected97 = true;
     const css = `
 .mds-colchz{position:relative;display:inline-block;}
 .mds-colchz__btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
@@ -16342,7 +16558,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function ColumnChooser({ columns = [], visible, onChange }) {
-    inject95();
+    inject97();
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
     const visSet = react_default.useMemo(() => new Set(visible ?? columns.map((c) => c.key)), [visible, columns]);
@@ -16375,10 +16591,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/data/ColumnManager.jsx
-  var injected96 = false;
-  function inject96() {
-    if (injected96 || typeof document === "undefined") return;
-    injected96 = true;
+  var injected98 = false;
+  function inject98() {
+    if (injected98 || typeof document === "undefined") return;
+    injected98 = true;
     const css = `
 .mds-colmgr{position:relative;display:inline-block;font-family:var(--font-body);}
 .mds-colmgr__btn{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;
@@ -16426,7 +16642,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     document.head.appendChild(el);
   }
   function ColumnManager({ cols, label: label2 = "Columns", widthStep = 20 }) {
-    inject96();
+    inject98();
     const [open, setOpen] = react_default.useState(false);
     const ref = react_default.useRef(null);
     react_default.useEffect(() => {
@@ -16617,10 +16833,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     }
   };
   var ROW_H2 = { terminal: 26, dense: 28, standard: 36, review: 44 };
-  var injected97 = false;
-  function inject97() {
-    if (injected97 || typeof document === "undefined") return;
-    injected97 = true;
+  var injected99 = false;
+  function inject99() {
+    if (injected99 || typeof document === "undefined") return;
+    injected99 = true;
     const css = `
 .mds-grid{width:100%;background:var(--bg-surface, #F8F7F3);border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:auto;}
 .mds-grid table{width:100%;border-collapse:collapse;font-family:var(--font-data,ui-monospace);font-variant-numeric:tabular-nums;}
@@ -16745,7 +16961,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     className = "",
     ...rest
   }) {
-    inject97();
+    inject99();
     const base = schema && GRID_SCHEMAS[schema] || null;
     const allCols = columns || (base ? base.columns : []);
     const cols = detail === "summary" ? allCols.filter((c) => c.tier !== "full") : allCols;
@@ -17031,10 +17247,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   DataGrid.formats = CELL_FORMATS;
 
   // components/data/DataStateSwitch.jsx
-  var injected98 = false;
-  function inject98() {
-    if (injected98 || typeof document === "undefined") return;
-    injected98 = true;
+  var injected100 = false;
+  function inject100() {
+    if (injected100 || typeof document === "undefined") return;
+    injected100 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "data-state-switch");
     el.textContent = `
@@ -17073,7 +17289,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     children
   }) {
     if (!state || state === "ready") return /* @__PURE__ */ window.React.createElement(react_default.Fragment, null, children);
-    inject98();
+    inject100();
     const mode = announce || (state === "error" ? "assertive" : "polite");
     const live = mode === "off" ? {} : { role: mode === "assertive" ? "alert" : "status", "aria-live": mode };
     const cols = `repeat(${columns}, 1fr)`;
@@ -17098,10 +17314,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/data/EditableCell.jsx
-  var injected99 = false;
-  function inject99() {
-    if (injected99 || typeof document === "undefined") return;
-    injected99 = true;
+  var injected101 = false;
+  function inject101() {
+    if (injected101 || typeof document === "undefined") return;
+    injected101 = true;
     const css = `
 .mds-editable{position:relative;display:inline-block;width:100%;}
 .mds-editable__display{padding:4px 6px;cursor:pointer;user-select:none;
@@ -17139,7 +17355,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     disabled = false,
     hint = ""
   }) {
-    inject99();
+    inject101();
     const [editing, setEditing] = react_default.useState(false);
     const [draft, setDraft] = react_default.useState(String(value ?? ""));
     const [error, setError] = react_default.useState(null);
@@ -17312,10 +17528,10 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   }
 
   // components/data/FilterBuilder.jsx
-  var injected100 = false;
-  function inject100() {
-    if (injected100 || typeof document === "undefined") return;
-    injected100 = true;
+  var injected102 = false;
+  function inject102() {
+    if (injected102 || typeof document === "undefined") return;
+    injected102 = true;
     const css = `
 .mds-fb{display:flex;flex-direction:column;gap:6px;font-family:var(--font-body);}
 .mds-fb__row{display:flex;align-items:center;gap:6px;}
@@ -17480,7 +17696,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject100();
+    inject102();
     const isControlled = controlled != null;
     const [internal, setInternal] = react_default.useState(() => defaultValue || [newRow(fields)]);
     const rows = isControlled ? controlled : internal;
@@ -17842,10 +18058,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/MetricCard.jsx
-  var injected101 = false;
-  function inject101() {
-    if (injected101 || typeof document === "undefined") return;
-    injected101 = true;
+  var injected103 = false;
+  function inject103() {
+    if (injected103 || typeof document === "undefined") return;
+    injected103 = true;
     const css = `
 .mds-metric{background:var(--card-surface-raised,#FCFBF8);
   border:1px solid var(--border,#D2CDC3);border-left-width:3px;
@@ -17891,7 +18107,7 @@ select.mds-fb__ctl{appearance:auto;}
     return /* @__PURE__ */ window.React.createElement("svg", { className: "mds-metric__spark", width: w, height: h, viewBox: `0 0 ${w} ${h}`, "aria-hidden": "true" }, /* @__PURE__ */ window.React.createElement("polyline", { points: d, fill: "none", stroke, strokeWidth: "1.25", strokeLinejoin: "round", strokeLinecap: "round" }), /* @__PURE__ */ window.React.createElement("circle", { cx: lx.toFixed(1), cy: ly.toFixed(1), r: "1.6", fill: stroke }));
   }
   function MetricCard({ label: label2, value, delta, context, tone = "neutral", trend, hero = false, sparkline, sparklineTone = "muted", sparklineLabel, envelope, style, ...rest }) {
-    inject101();
+    inject103();
     const t2 = trend || (delta && String(delta).trim().startsWith("-") ? "down" : delta && String(delta).trim().startsWith("+") ? "up" : "flat");
     const arrow = t2 === "up" ? "▲" : t2 === "down" ? "▼" : "";
     const parts = [`${label2}: ${value}`];
@@ -17904,10 +18120,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/OptimisticCell.jsx
-  var injected102 = false;
-  function inject102() {
-    if (injected102 || typeof document === "undefined") return;
-    injected102 = true;
+  var injected104 = false;
+  function inject104() {
+    if (injected104 || typeof document === "undefined") return;
+    injected104 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "optimistic-cell");
     el.textContent = `
@@ -18103,7 +18319,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     onCommit
   }) {
-    inject102();
+    inject104();
     const ledger = useLedger();
     const [asking, setAsking] = react_default.useState(false);
     const revertRef = react_default.useRef(null);
@@ -18145,7 +18361,7 @@ select.mds-fb__ctl{appearance:auto;}
     ), status === "rejected" && /* @__PURE__ */ window.React.createElement("div", { className: `mds-opt__note mds-opt__note--rejected ${right ? "mds-opt__note--right" : ""}`, role: "status" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__note-h" }, /* @__PURE__ */ window.React.createElement("b", null, "Rejected"), " ", /* @__PURE__ */ window.React.createElement("span", null, fmt6(entry.value), " → back to ", fmt6(entry.prior))), /* @__PURE__ */ window.React.createElement("p", null, entry.reason), /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-opt__btn", onClick: () => ledger.dismiss(entry.id) }, "Dismiss"))), status === "reverted" && /* @__PURE__ */ window.React.createElement("div", { className: `mds-opt__note ${right ? "mds-opt__note--right" : ""}`, role: "status" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__note-h" }, "Reverted ", /* @__PURE__ */ window.React.createElement("span", null, fmt6(entry.value), " → ", fmt6(entry.prior))), /* @__PURE__ */ window.React.createElement("p", null, entry.reason), /* @__PURE__ */ window.React.createElement("div", { className: "mds-opt__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-opt__btn", onClick: () => ledger.dismiss(entry.id) }, "Dismiss"))));
   }
   function OptimisticRowBar({ rowIds, label: label2 = "edits on this row", emptyLabel = null, className = "", children, ...rest }) {
-    inject102();
+    inject104();
     const ledger = useLedger();
     const [asking, setAsking] = react_default.useState(false);
     const revertRef = react_default.useRef(null);
@@ -18183,10 +18399,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/Pagination.jsx
-  var injected103 = false;
-  function inject103() {
-    if (injected103 || typeof document === "undefined") return;
-    injected103 = true;
+  var injected105 = false;
+  function inject105() {
+    if (injected105 || typeof document === "undefined") return;
+    injected105 = true;
     const css = `
 .pgn-wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px;
   padding: 12px; background: var(--bg-medium, #EBE8E1); border-radius: var(--radius-chip,2px);
@@ -18222,7 +18438,7 @@ select.mds-fb__ctl{appearance:auto;}
     itemsPerPage = 50,
     siblingCount = 1
   }) {
-    inject103();
+    inject105();
     const [jumpValue, setJumpValue] = react_default.useState(String(currentPage));
     react_default.useEffect(() => {
       setJumpValue(String(currentPage));
@@ -18308,10 +18524,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/SavedViews.jsx
-  var injected104 = false;
-  function inject104() {
-    if (injected104 || typeof document === "undefined") return;
-    injected104 = true;
+  var injected106 = false;
+  function inject106() {
+    if (injected106 || typeof document === "undefined") return;
+    injected106 = true;
     const css = `
 .mds-savedviews{position:relative;display:inline-block;font-family:var(--font-body);}
 .mds-savedviews__trigger{display:inline-flex;align-items:center;gap:7px;height:28px;padding:0 10px;box-sizing:border-box;
@@ -18367,7 +18583,7 @@ select.mds-fb__ctl{appearance:auto;}
     label: label2 = "View",
     onApply = null
   }) {
-    inject104();
+    inject106();
     const [open, setOpen] = react_default.useState(false);
     const [views, setViews] = react_default.useState(() => storageKey ? readJSON(storageKey + ".views", []) : []);
     const [active, setActive] = react_default.useState(() => storageKey ? localStorage.getItem(storageKey + ".active") : null);
@@ -18476,10 +18692,10 @@ select.mds-fb__ctl{appearance:auto;}
   SavedViews.displayName = "SavedViews";
 
   // components/data/SelectionCompare.jsx
-  var injected105 = false;
-  function inject105() {
-    if (injected105 || typeof document === "undefined") return;
-    injected105 = true;
+  var injected107 = false;
+  function inject107() {
+    if (injected107 || typeof document === "undefined") return;
+    injected107 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "selection-compare");
     el.textContent = `
@@ -18578,7 +18794,7 @@ select.mds-fb__ctl{appearance:auto;}
   }
   var SelectionCompareHooks = { useSelectionCompare };
   function CompareToggle({ item, label: label2 = "Compare", pressedLabel = "In compare", compact: compact3 = false, className = "", ...rest }) {
-    inject105();
+    inject107();
     const c = useSelectionCompare();
     const on = c.has(item.id);
     const full = !on && c.items.length >= c.max;
@@ -18602,7 +18818,7 @@ select.mds-fb__ctl{appearance:auto;}
     );
   }
   function CompareTray({ docked = "inline", label: label2 = "to compare", emptyLabel = null, className = "", ...rest }) {
-    inject105();
+    inject107();
     const c = useSelectionCompare();
     const n = c.items.length;
     if (!n && !emptyLabel) return null;
@@ -18612,7 +18828,7 @@ select.mds-fb__ctl{appearance:auto;}
     return CompareSheet;
   }, useSelectionCompare };
   function CompareSheet({ mode = "overlay", title = "Comparison by selection", categories, domain, format: format2, footerLabel, footerValue, className = "", ...rest }) {
-    inject105();
+    inject107();
     const c = useCtx();
     const items = c.set.items;
     const [sel, setSel] = react_default.useState(null);
@@ -18632,10 +18848,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/SelectionToolbar.jsx
-  var injected106 = false;
-  function inject106() {
-    if (injected106 || typeof document === "undefined") return;
-    injected106 = true;
+  var injected108 = false;
+  function inject108() {
+    if (injected108 || typeof document === "undefined") return;
+    injected108 = true;
     const css = `
 .mds-seltb{display:none;position:relative;
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);
@@ -18684,7 +18900,7 @@ select.mds-fb__ctl{appearance:auto;}
     actions = [],
     className = ""
   }) {
-    inject106();
+    inject108();
     const active = count > 0;
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-seltb ${active ? "mds-seltb--active" : ""} ${className}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__count" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-seltb__badge" }, count, " of ", total, " selected"), count < total && onSelectAll && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__shortcuts" }, /* @__PURE__ */ window.React.createElement("button", { className: "mds-seltb__shortcut", onClick: onSelectAll, type: "button" }, "Select all")), count > 0 && onClear && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__shortcuts" }, /* @__PURE__ */ window.React.createElement("button", { className: "mds-seltb__shortcut", onClick: onClear, type: "button" }, "Clear"))), (primaryAction || actions.length > 0) && /* @__PURE__ */ window.React.createElement("div", { className: "mds-seltb__actions" }, primaryAction && /* @__PURE__ */ window.React.createElement(
       "button",
@@ -18708,10 +18924,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/data/Skeleton.jsx
-  var injected107 = false;
-  function inject107() {
-    if (injected107 || typeof document === "undefined") return;
-    injected107 = true;
+  var injected109 = false;
+  function inject109() {
+    if (injected109 || typeof document === "undefined") return;
+    injected109 = true;
     const css = `
 .mds-skel{display:block;background:var(--bg-active,#E7EDF2);border-radius:var(--radius-chip,3px);
   position:relative;overflow:hidden;}
@@ -18740,7 +18956,7 @@ select.mds-fb__ctl{appearance:auto;}
     style = {},
     ...rest
   }) {
-    inject107();
+    inject109();
     if (variant === "text" && lines > 1) {
       return /* @__PURE__ */ window.React.createElement("div", { className: `mds-skel-lines${className ? " " + className : ""}`, ...rest }, Array.from({ length: lines }).map((_, i) => /* @__PURE__ */ window.React.createElement(
         "span",
@@ -18759,7 +18975,7 @@ select.mds-fb__ctl{appearance:auto;}
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-skel${v}${className ? " " + className : ""}`, style: dims, ...rest });
   }
   function SkeletonTable({ rows = 5, columns = 4, className = "", ...rest }) {
-    inject107();
+    inject109();
     const widths = ["70%", "45%", "55%", "40%", "60%", "50%"];
     return /* @__PURE__ */ window.React.createElement("table", { className: `mds-skel-table${className ? " " + className : ""}`, ...rest }, /* @__PURE__ */ window.React.createElement("tbody", null, Array.from({ length: rows }).map((_, r) => /* @__PURE__ */ window.React.createElement("tr", { key: r }, Array.from({ length: columns }).map((_2, c) => /* @__PURE__ */ window.React.createElement("td", { key: c }, /* @__PURE__ */ window.React.createElement(
       "span",
@@ -19150,10 +19366,10 @@ select.mds-fb__ctl{appearance:auto;}
   var TableHooks = { useTableState, useTableColumns, useRowSelection, useAsyncTableData };
 
   // components/data/Toolbar.jsx
-  var injected108 = false;
-  function inject108() {
-    if (injected108 || typeof document === "undefined") return;
-    injected108 = true;
+  var injected110 = false;
+  function inject110() {
+    if (injected110 || typeof document === "undefined") return;
+    injected110 = true;
     const css = `
 .mds-toolbar{display:flex;align-items:center;gap:12px;padding:8px 12px;flex-wrap:wrap;
   background:var(--bg-medium,#EBE8E1);border:1px solid var(--border,#D2CDC3);}
@@ -19167,7 +19383,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function Toolbar({ children, className = "", style = {}, ...rest }) {
-    inject108();
+    inject110();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-toolbar${className ? " " + className : ""}`, role: "toolbar", style, ...rest }, children);
   }
   function ToolbarGroup({ children, style = {}, ...rest }) {
@@ -19236,10 +19452,10 @@ select.mds-fb__ctl{appearance:auto;}
   VirtualizedList.displayName = "VirtualizedList";
 
   // components/data/WorksheetGrid.jsx
-  var injected109 = false;
-  function inject109() {
-    if (injected109 || typeof document === "undefined") return;
-    injected109 = true;
+  var injected111 = false;
+  function inject111() {
+    if (injected111 || typeof document === "undefined") return;
+    injected111 = true;
     const css = `
 .mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);background:var(--card-surface,#F8F7F3);}
 .mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#D2CDC3);}
@@ -19289,7 +19505,7 @@ select.mds-fb__ctl{appearance:auto;}
     label: label2 = "Worksheet",
     style = {}
   }) {
-    inject109();
+    inject111();
     const uid6 = react_default.useId();
     const gridRef = react_default.useRef(null);
     const restoreFocus = react_default.useRef(false);
@@ -19492,10 +19708,10 @@ select.mds-fb__ctl{appearance:auto;}
     irreversible: { label: "Irreversible", note: "Cannot be undone, compensated, or superseded.", tone: "danger" }
   };
   var GUARD_TONE = { blocking: "danger", warning: "warn", pending: "info", satisfied: "ok" };
-  var injected110 = false;
-  function inject110() {
-    if (injected110 || typeof document === "undefined") return;
-    injected110 = true;
+  var injected112 = false;
+  function inject112() {
+    if (injected112 || typeof document === "undefined") return;
+    injected112 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "consequence-rail");
     el.textContent = `
@@ -19551,7 +19767,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject110();
+    inject112();
     const uid6 = react_default.useId();
     const rev = consequences.reversibility ? REVERSIBILITY[consequences.reversibility] || { label: String(consequences.reversibility), note: "", tone: "neutral" } : null;
     const groups = CONSEQUENCE_KINDS.map((k) => ({ kind: k, items: Array.isArray(consequences[k.id]) ? consequences[k.id] : [] })).filter((g) => g.items.length);
@@ -19678,10 +19894,10 @@ select.mds-fb__ctl{appearance:auto;}
       release: () => setSnapshot(null)
     };
   }
-  var injected111 = false;
-  function inject111() {
-    if (injected111 || typeof document === "undefined") return;
-    injected111 = true;
+  var injected113 = false;
+  function inject113() {
+    if (injected113 || typeof document === "undefined") return;
+    injected113 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "decision-snapshot");
     el.textContent = `
@@ -19717,7 +19933,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject111();
+    inject113();
     const uid6 = react_default.useId();
     const found = findings || verifySnapshot(snapshot2, current || {});
     if (!snapshot2) {
@@ -19766,10 +19982,10 @@ select.mds-fb__ctl{appearance:auto;}
     recovering: { label: "Recovering", note: "Reconciling against the live feed" },
     stale: { label: "Stale", note: "Exceeds the freshness threshold" }
   };
-  var injected112 = false;
-  function inject112() {
-    if (injected112 || typeof document === "undefined") return;
-    injected112 = true;
+  var injected114 = false;
+  function inject114() {
+    if (injected114 || typeof document === "undefined") return;
+    injected114 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "evidence-rail");
     el.textContent = `
@@ -19817,7 +20033,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject112();
+    inject114();
     const uid6 = react_default.useId();
     const available = EVIDENCE_SECTIONS.filter((s) => sections[s.id] != null);
     const [internal, setInternal] = react_default.useState(defaultSection || available[0] && available[0].id);
@@ -19882,10 +20098,10 @@ select.mds-fb__ctl{appearance:auto;}
     confirmed: { label: "Confirmed", note: "No local effect until the instruction lands." },
     optimistic: { label: "Optimistic", note: "Local effect shown immediately, marked provisional until it lands." }
   };
-  var injected113 = false;
-  function inject113() {
-    if (injected113 || typeof document === "undefined") return;
-    injected113 = true;
+  var injected115 = false;
+  function inject115() {
+    if (injected115 || typeof document === "undefined") return;
+    injected115 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "action-envelope");
     el.textContent = `
@@ -19937,7 +20153,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function ActionStateChip({ state = "idle", attempt, idempotencyKey, className = "", ...rest }) {
-    inject113();
+    inject115();
     const m2 = stateMeta(state);
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-chip${className ? " " + className : ""}`, "data-sev": m2.severity, title: m2.meaning, ...rest }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-chip__g", "aria-hidden": "true" }, m2.glyph), /* @__PURE__ */ window.React.createElement("span", { className: "mds-chip__t" }, m2.label), attempt > 1 ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-chip__k" }, "att ", attempt) : null, idempotencyKey ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-chip__k" }, idempotencyKey) : null);
   }
@@ -19961,7 +20177,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject113();
+    inject115();
     const ctx = react_default.useContext(ActionContext);
     const live = ctx && action ? ctx.instructionFor(action) : null;
     const state = stateProp || live?.state || "idle";
@@ -19976,7 +20192,7 @@ select.mds-fb__ctl{appearance:auto;}
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-act${className ? " " + className : ""}`, "data-state": state, "aria-label": `${label2 || action} — ${m2.label}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-act__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-act__lbl" }, label2 || action), endpoint ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-act__ep" }, endpoint) : null, /* @__PURE__ */ window.React.createElement("span", { style: { marginLeft: "auto" } }, /* @__PURE__ */ window.React.createElement(ActionStateChip, { state, attempt: receipt?.attempt }))), showDeclaration ? /* @__PURE__ */ window.React.createElement("dl", { className: "mds-act__decl" }, /* @__PURE__ */ window.React.createElement("dt", null, "Idempotency"), /* @__PURE__ */ window.React.createElement("dd", { className: key ? "" : "undeclared" }, key || "undeclared — a resend would be a second instruction"), /* @__PURE__ */ window.React.createElement("dt", null, "Permission"), /* @__PURE__ */ window.React.createElement("dd", null, permission ? /* @__PURE__ */ window.React.createElement(window.React.Fragment, null, /* @__PURE__ */ window.React.createElement("b", null, permission.required || "—"), held === false ? " · not held" : held ? " · held" : "", permission.actor ? ` · ${permission.actor}` : "") : /* @__PURE__ */ window.React.createElement("span", { className: "undeclared" }, "undeclared")), /* @__PURE__ */ window.React.createElement("dt", null, "Posture"), /* @__PURE__ */ window.React.createElement("dd", null, /* @__PURE__ */ window.React.createElement("b", null, post.label), " · ", post.note), /* @__PURE__ */ window.React.createElement("dt", null, "Failure"), /* @__PURE__ */ window.React.createElement("dd", { className: failureSurface ? "" : "undeclared" }, failureSurface || "undeclared — a failure would have nowhere to appear")) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-act__body" }, /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__meaning" }, m2.meaning), state === "rejected" && reason ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__reason" }, /* @__PURE__ */ window.React.createElement("b", null, "Reason."), " ", reason) : null, state === "unlanded" ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__reason" }, /* @__PURE__ */ window.React.createElement("b", null, "Do not re-key this instruction."), " Retry carries the same idempotency key", key ? ` (${key})` : "", "; a fresh key would submit it twice.") : null, state === "landed" && receipt && !receipt.id ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__reason", "data-tone": "review" }, /* @__PURE__ */ window.React.createElement("b", null, "Acknowledged without a receipt."), " The adapter answered yes and returned no receipt id, so nothing here evidences the write. Confirm against the system of record before treating it as posted.") : null, receipt ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__receipt" }, receipt.id ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "id"), " ", receipt.id) : /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "id"), " none returned"), receipt.at ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "at"), " ", receipt.at) : null, receipt.latencyMs != null ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "latency"), " ", receipt.latencyMs, " ms") : null, receipt.attempt ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "attempt"), " ", receipt.attempt) : null, receipt.duplicateOf ? /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "deduped"), " against ", receipt.duplicateOf) : null) : null, /* @__PURE__ */ window.React.createElement("div", { className: "mds-act__acts" }, state === "idle" && submit ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-act__btn", "data-primary": "true", disabled: disabled || held === false, onClick: submit }, submitLabel || "Submit") : null, state === "inflight" ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-act__btn", disabled: true }, "Submitting…") : null, (state === "unlanded" || state === "rejected") && retry ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-act__btn", "data-primary": state === "unlanded" ? "true" : void 0, onClick: retry }, state === "unlanded" ? "Retry with the same key" : "Resubmit after change") : null, (state === "landed" || state === "rejected") && onAcknowledge ? /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-act__btn", onClick: onAcknowledge }, "Acknowledge") : null), showDeclaration ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-act__note" }, "Declared here, enforced by the server. These checks make the instruction legible; they do not authorize it.") : null));
   }
   function InstructionLedger({ instructions, label: label2 = "Instructions this session", emptyLabel = "No instruction submitted yet.", className = "", ...rest }) {
-    inject113();
+    inject115();
     const ctx = react_default.useContext(ActionContext);
     const list = instructions || ctx?.instructions || [];
     const open = list.filter((i) => i.state === "inflight" || i.state === "unlanded").length;
@@ -20152,10 +20368,10 @@ select.mds-fb__ctl{appearance:auto;}
       sentence: blocking.length ? `${blocking.length} blocking ${blocking.length === 1 ? "guard" : "guards"}` : warning.length ? `${warning.length} ${warning.length === 1 ? "warning" : "warnings"}` : pending.length ? `${pending.length} ${pending.length === 1 ? "check" : "checks"} awaiting input` : g.length ? "All guards satisfied" : "No guards declared"
     };
   }
-  var injected114 = false;
-  function inject114() {
-    if (injected114 || typeof document === "undefined") return;
-    injected114 = true;
+  var injected116 = false;
+  function inject116() {
+    if (injected116 || typeof document === "undefined") return;
+    injected116 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "action-guard");
     el.textContent = `
@@ -20192,7 +20408,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function ActionGuardList({ guards = [], label: label2 = "Guards", showSummary = true, onRemediate, sort = true, className = "", ...rest }) {
-    inject114();
+    inject116();
     const list = sort ? [...guards].sort((a, b) => meta3(b.state).rank - meta3(a.state).rank) : guards;
     const s = summarizeGuards(guards);
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-guards${className ? " " + className : ""}`, "aria-label": `${label2} — ${s.sentence}`, ...rest }, /* @__PURE__ */ window.React.createElement("header", { className: "mds-guards__hd" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-guards__lbl" }, label2), showSummary ? /* @__PURE__ */ window.React.createElement("span", { className: "mds-guards__sum" }, s.sentence) : null), /* @__PURE__ */ window.React.createElement("ul", { className: "mds-guards__list" }, list.map((g) => {
@@ -20216,7 +20432,7 @@ select.mds-fb__ctl{appearance:auto;}
     Availability: (props) => /* @__PURE__ */ window.React.createElement(ActionAvailability, { ...props })
   };
   function ActionAvailability({ action, guards = [], available, reason, requiredRole, onRemediate, className = "", ...rest }) {
-    inject114();
+    inject116();
     const s = summarizeGuards(guards);
     const ok = available !== void 0 ? available : !s.blocked;
     const blocker = s.firstBlocking;
@@ -20251,10 +20467,10 @@ select.mds-fb__ctl{appearance:auto;}
     if (instruction.state === "landed") return instruction.receipt && instruction.receipt.id ? "confirmed" : "acknowledged";
     return "submitted";
   }
-  var injected115 = false;
-  function inject115() {
-    if (injected115 || typeof document === "undefined") return;
-    injected115 = true;
+  var injected117 = false;
+  function inject117() {
+    if (injected117 || typeof document === "undefined") return;
+    injected117 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "action-queue");
     el.textContent = `
@@ -20315,7 +20531,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject115();
+    inject117();
     const ctx = react_default.useContext(ActionContext2);
     const list = listProp || ctx?.instructions || [];
     const [open, setOpen] = react_default.useState(defaultOpen);
@@ -20367,7 +20583,7 @@ select.mds-fb__ctl{appearance:auto;}
     })) : null);
   }
   function ActionQueueChip({ instructions: listProp, ackMs, label: label2 = "in flight", className = "", ...rest }) {
-    inject115();
+    inject117();
     const ctx = react_default.useContext(ActionContext2);
     const list = listProp || ctx?.instructions || [];
     const open = list.filter((i) => i.state === "inflight" || i.state === "unlanded" || i.state === "landed" && !i.receipt?.id);
@@ -20468,10 +20684,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/operations/SeverityBadge.jsx
-  var injected116 = false;
-  function inject116() {
-    if (injected116 || typeof document === "undefined") return;
-    injected116 = true;
+  var injected118 = false;
+  function inject118() {
+    if (injected118 || typeof document === "undefined") return;
+    injected118 = true;
     const css = `
 .mds-sev{display:inline-flex;align-items:center;gap:5px;width:fit-content;max-width:100%;
   min-height:20px;border:1px solid var(--severity-info-bd,#D2CDC3);border-radius:var(--radius-chip,2px);
@@ -20491,7 +20707,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function SeverityBadge({ status = "info", label: label2, dot = true, className = "", ...rest }) {
-    inject116();
+    inject118();
     const sev = normalizeSeverity(status);
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-sev mds-sev--${sev}${className ? " " + className : ""}`, ...rest }, dot && /* @__PURE__ */ window.React.createElement("span", { className: "mds-sev__dot", "aria-hidden": "true" }), label2 != null ? label2 : severityLabels[sev]);
   }
@@ -20515,10 +20731,10 @@ select.mds-fb__ctl{appearance:auto;}
   function adapterScheduleMissing(row) {
     return String(row?.posture || "").toLowerCase() === "retrying" && !(row?.retry && row.retry.nextAt);
   }
-  var injected117 = false;
-  function inject117() {
-    if (injected117 || typeof document === "undefined") return;
-    injected117 = true;
+  var injected119 = false;
+  function inject119() {
+    if (injected119 || typeof document === "undefined") return;
+    injected119 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "adapter-diagnostics");
     el.textContent = `
@@ -20585,7 +20801,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function AdapterPostureChip({ posture, label: label2, nextAttempt, className = "", ...rest }) {
-    inject117();
+    inject119();
     const p = adapterPosture(posture);
     return /* @__PURE__ */ window.React.createElement(
       "span",
@@ -20620,7 +20836,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject117();
+    inject119();
     const [internal, setInternal] = react_default.useState(defaultSelectedId ?? null);
     const active = selectedId !== void 0 ? selectedId : internal;
     const select = (id) => {
@@ -20668,10 +20884,10 @@ select.mds-fb__ctl{appearance:auto;}
   var AdapterHooks = { adapterPosture, adapterScheduleMissing };
 
   // components/operations/AnnotationLayer.jsx
-  var injected118 = false;
-  function inject118() {
-    if (injected118 || typeof document === "undefined") return;
-    injected118 = true;
+  var injected120 = false;
+  function inject120() {
+    if (injected120 || typeof document === "undefined") return;
+    injected120 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "annotation-layer");
     el.textContent = `
@@ -20841,7 +21057,7 @@ select.mds-fb__ctl{appearance:auto;}
     } }, /* @__PURE__ */ window.React.createElement("textarea", { ref, className: "mds-ann__ta", value: text, onChange: (e) => setText(e.target.value), placeholder: "What a reader of this figure should know", "aria-label": "Annotation text" }), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__life", role: "radiogroup", "aria-label": "When the object changes" }, /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid6}-life`, checked: life === "follow", onChange: () => setLife("follow") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Follow the object"), "Marked stale when v", current, " is superseded.")), /* @__PURE__ */ window.React.createElement("label", null, /* @__PURE__ */ window.React.createElement("input", { type: "radio", name: `${uid6}-life`, checked: life === "pin", onChange: () => setLife("pin") }), /* @__PURE__ */ window.React.createElement("span", null, /* @__PURE__ */ window.React.createElement("b", null, "Pin to v", current), "Stays as written; later versions show the pin."))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-ann__row" }, /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-ann__btn", onClick: onCancel }, "Cancel"), /* @__PURE__ */ window.React.createElement("button", { type: "submit", className: "mds-ann__btn mds-ann__btn--primary", disabled: !text.trim() }, "Add note")));
   }
   function AnnotationAnchor({ anchor, block = false, popover = "right", readOnly = false, className = "", children, ...rest }) {
-    inject118();
+    inject120();
     const layer2 = useAnnotations();
     const [open, setOpen] = react_default.useState(false);
     const [adding, setAdding] = react_default.useState(false);
@@ -20893,7 +21109,7 @@ select.mds-fb__ctl{appearance:auto;}
     return AnnotationPanel;
   }, useAnnotations };
   function AnnotationPanel({ title = "Annotations", onFocus, emptyText = "No notes on this object yet. Hover a figure and press ¶.", className = "", ...rest }) {
-    inject118();
+    inject120();
     const layer2 = useAnnotations();
     const [filter, setFilter] = react_default.useState("all");
     const focus = onFocus || layer2.onFocus;
@@ -20915,10 +21131,10 @@ select.mds-fb__ctl{appearance:auto;}
     superseded: { label: "Superseded", tone: "neutral" },
     expired: { label: "Expired — underlying change", tone: "exception" }
   };
-  var injected119 = false;
-  function inject119() {
-    if (injected119 || typeof document === "undefined") return;
-    injected119 = true;
+  var injected121 = false;
+  function inject121() {
+    if (injected121 || typeof document === "undefined") return;
+    injected121 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "attestation-panel");
     el.textContent = `
@@ -21005,7 +21221,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject119();
+    inject121();
     const [local, setLocal] = react_default.useState("");
     const comment = commentProp !== void 0 ? commentProp : local;
     const setComment = (v) => {
@@ -21048,10 +21264,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/operations/SlaChip.jsx
-  var injected120 = false;
-  function inject120() {
-    if (injected120 || typeof document === "undefined") return;
-    injected120 = true;
+  var injected122 = false;
+  function inject122() {
+    if (injected122 || typeof document === "undefined") return;
+    injected122 = true;
     const css = `
 .mds-sla{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
   min-height:20px;border:1px solid var(--severity-info-bd,#D2CDC3);border-radius:var(--radius-chip,2px);
@@ -21091,7 +21307,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject120();
+    inject122();
     const sev = normalizeSeverity(state);
     const nowMs = now == null ? Date.now() : typeof now === "number" ? now : Date.parse(now);
     let value = null;
@@ -21109,10 +21325,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/operations/CaseQueue.jsx
-  var injected121 = false;
-  function inject121() {
-    if (injected121 || typeof document === "undefined") return;
-    injected121 = true;
+  var injected123 = false;
+  function inject123() {
+    if (injected123 || typeof document === "undefined") return;
+    injected123 = true;
     const css = `
 .mds-caseq{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-card,6px);background:var(--bg-light,#F8F7F3);overflow:hidden;}
@@ -21159,7 +21375,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject121();
+    inject123();
     const listRef = useRef(null);
     const move = (dir) => {
       const idx = items.findIndex((it) => it.id === selectedId);
@@ -21266,10 +21482,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
   var ChangeSetHooks = { useChangeSet };
   ChangeSetProvider.use = useChangeSet;
-  var injected122 = false;
-  function inject122() {
-    if (injected122 || typeof document === "undefined") return;
-    injected122 = true;
+  var injected124 = false;
+  function inject124() {
+    if (injected124 || typeof document === "undefined") return;
+    injected124 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "change-set");
     el.textContent = `
@@ -21326,7 +21542,7 @@ select.mds-fb__ctl{appearance:auto;}
     document.head.appendChild(el);
   }
   function ChangeSetDiff({ changes = [], labels = {}, fields = {}, issues = [], reasons = {}, onReason, requireReason = false, grouped = true }) {
-    inject122();
+    inject124();
     if (!changes.length) return /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__diff" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-cs__empty" }, "No staged changes. Edits are held here for review before they touch the record."));
     const nameOf = (c) => c.label || fields[c.key]?.label || labels[c.key] || c.key;
     const groups = grouped ? changes.reduce((m2, c) => {
@@ -21342,7 +21558,7 @@ select.mds-fb__ctl{appearance:auto;}
     }))));
   }
   function ChangeReviewBar({ changes = [], warnings = [], errors = [], status, onDiscard, onReviewImpact, onSave, onSubmit, saveLabel = "Save changes", submitLabel = "Submit for review", disabled }) {
-    inject122();
+    inject124();
     const n = changes.length;
     const parts = [`${n} staged change${n === 1 ? "" : "s"}`];
     if (errors.length) parts.push(`${errors.length} error${errors.length === 1 ? "" : "s"}`);
@@ -21383,7 +21599,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject122();
+    inject124();
     const cs = useChangeSet();
     const all = issues || cs.issues || [];
     const errors = all.filter((i) => i.severity === "error");
@@ -21415,10 +21631,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/operations/ClaimHeader.jsx
-  var injected123 = false;
-  function inject123() {
-    if (injected123 || typeof document === "undefined") return;
-    injected123 = true;
+  var injected125 = false;
+  function inject125() {
+    if (injected125 || typeof document === "undefined") return;
+    injected125 = true;
     const css = `
 .mds-claim{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;width:100%;
   font-family:var(--font-body);padding:0 0 12px;border-bottom:1px solid var(--border);}
@@ -21453,7 +21669,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject123();
+    inject125();
     const ctx = Array.isArray(context) ? context : context ? [context] : [];
     return /* @__PURE__ */ window.React.createElement(
       "header",
@@ -21492,10 +21708,10 @@ select.mds-fb__ctl{appearance:auto;}
   }
 
   // components/operations/ConnectionState.jsx
-  var injected124 = false;
-  function inject124() {
-    if (injected124 || typeof document === "undefined") return;
-    injected124 = true;
+  var injected126 = false;
+  function inject126() {
+    if (injected126 || typeof document === "undefined") return;
+    injected126 = true;
     const css = `
 .mds-link{display:flex;align-items:center;gap:8px;min-height:24px;padding:3px 8px;
   border:1px solid var(--border);border-radius:var(--radius-chip,2px);background:var(--bg-light);
@@ -21547,7 +21763,7 @@ select.mds-fb__ctl{appearance:auto;}
     className = "",
     ...rest
   }) {
-    inject124();
+    inject126();
     const key = COPY[state] ? state : "live";
     const c = COPY[key];
     const meta5 = [
@@ -21573,10 +21789,10 @@ select.mds-fb__ctl{appearance:auto;}
 
   // components/operations/DataCondition.jsx
   DataCondition.CONDITIONS = conditionsVocabulary;
-  var injected125 = false;
-  function inject125() {
-    if (injected125 || typeof document === "undefined") return;
-    injected125 = true;
+  var injected127 = false;
+  function inject127() {
+    if (injected127 || typeof document === "undefined") return;
+    injected127 = true;
     const keys = ["confirmed", "provisional", "estimated", "stale", "overridden", "missing", "na", "pending", "exception", "reconciled", "restricted"];
     const perKey = keys.map((k) => `
 .mds-cond--${k}{color:var(--cond-${k}-fg);}
@@ -21609,7 +21825,7 @@ ${perKey}`;
     document.head.appendChild(el);
   }
   function DataCondition({ condition, detail, chip = false, label: label2, showGlyph = true, className = "", ...rest }) {
-    inject125();
+    inject127();
     const m2 = conditionMeta(condition);
     return /* @__PURE__ */ window.React.createElement(
       "span",
@@ -21624,7 +21840,7 @@ ${perKey}`;
     );
   }
   function DataConditionValue({ value, condition, detail, align, className = "", ...rest }) {
-    inject125();
+    inject127();
     const m2 = conditionMeta(condition);
     const text = formatConditioned(value, m2.key, detail);
     const style = align === "right" ? { justifyContent: "flex-end", width: "100%" } : void 0;
@@ -21642,7 +21858,7 @@ ${perKey}`;
     );
   }
   function DataConditionLegend({ items = [], className = "", ...rest }) {
-    inject125();
+    inject127();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-legend${className ? " " + className : ""}`, ...rest }, items.map((it, i) => {
       const m2 = conditionMeta(it.condition);
       return /* @__PURE__ */ window.React.createElement("div", { className: "mds-legend__row", key: it.id || it.label || i }, /* @__PURE__ */ window.React.createElement("span", { className: `mds-cond mds-cond--${m2.key}`, title: m2.note }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-cond__glyph", "aria-hidden": "true" }, m2.glyph)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-legend__name" }, it.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-legend__state" }, it.state || m2.label));
@@ -21674,10 +21890,10 @@ ${perKey}`;
     if (!v) throw new Error("Meridian: DecisionFlowRail / DecisionFlowStage / DecisionConsequenceBar must be rendered inside a DecisionFlowProvider.");
     return v;
   }
-  var injected126 = false;
-  function inject126() {
-    if (injected126 || typeof document === "undefined") return;
-    injected126 = true;
+  var injected128 = false;
+  function inject128() {
+    if (injected128 || typeof document === "undefined") return;
+    injected128 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "decision-flow");
     el.textContent = `
@@ -21748,7 +21964,7 @@ ${perKey}`;
     actorId,
     children
   }) {
-    inject126();
+    inject128();
     const [stepId, setStepId] = react_default.useState(() => readInitial({ urlParam, persistedKey, steps, initialStep }));
     const [completed, setCompleted] = react_default.useState({});
     const [guards, setGuards] = react_default.useState({});
@@ -21930,10 +22146,10 @@ ${perKey}`;
   }
 
   // components/operations/DiffView.jsx
-  var injected127 = false;
-  function inject127() {
-    if (injected127 || typeof document === "undefined") return;
-    injected127 = true;
+  var injected129 = false;
+  function inject129() {
+    if (injected129 || typeof document === "undefined") return;
+    injected129 = true;
     const css = `
 .mds-diff{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-body);}
 .mds-diff__row{display:grid;grid-template-columns:minmax(110px,170px) 1fr 18px 1fr;gap:8px;align-items:center;
@@ -21956,7 +22172,7 @@ ${perKey}`;
   }
   var show2 = (v) => v === null || v === void 0 || v === "" ? "—" : String(v);
   function DiffView({ changes = [], emptyLabel = "No changes", className = "", ...rest }) {
-    inject127();
+    inject129();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-diff${className ? " " + className : ""}`, ...rest }, changes.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-diff__empty" }, emptyLabel), changes.map((c, i) => {
       const same = show2(c.before) === show2(c.after);
       return /* @__PURE__ */ window.React.createElement("div", { key: c.field + i, className: `mds-diff__row${same ? " mds-diff__row--same" : ""}` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-diff__field" }, c.field), /* @__PURE__ */ window.React.createElement("span", { className: "mds-diff__val mds-diff__before", title: show2(c.before) }, show2(c.before)), /* @__PURE__ */ window.React.createElement("span", { className: "mds-diff__arrow", "aria-hidden": "true" }, "→"), /* @__PURE__ */ window.React.createElement("span", { className: "mds-diff__val mds-diff__after", title: show2(c.after) }, show2(c.after)));
@@ -21964,10 +22180,10 @@ ${perKey}`;
   }
 
   // components/operations/EvidenceLink.jsx
-  var injected128 = false;
-  function inject128() {
-    if (injected128 || typeof document === "undefined") return;
-    injected128 = true;
+  var injected130 = false;
+  function inject130() {
+    if (injected130 || typeof document === "undefined") return;
+    injected130 = true;
     const css = `
 .mds-evidence{display:inline-flex;align-items:center;gap:8px;max-width:100%;
   border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
@@ -21992,7 +22208,7 @@ ${perKey}`;
     document.head.appendChild(el);
   }
   function EvidenceLink({ label: label2, status = "info", route, href, onOpen, className = "", ...rest }) {
-    inject128();
+    inject130();
     const sev = normalizeSeverity(status);
     const Tag = href ? "a" : "button";
     const extra = href ? { href } : { type: "button" };
@@ -22012,10 +22228,10 @@ ${perKey}`;
   }
 
   // components/operations/EventTimeline.jsx
-  var injected129 = false;
-  function inject129() {
-    if (injected129 || typeof document === "undefined") return;
-    injected129 = true;
+  var injected131 = false;
+  function inject131() {
+    if (injected131 || typeof document === "undefined") return;
+    injected131 = true;
     const css = `
 .mds-evtl{font-family:var(--font-body);display:flex;flex-direction:column;}
 .mds-evtl__day{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;
@@ -22058,7 +22274,7 @@ ${perKey}`;
     className = "",
     ...rest
   }) {
-    inject129();
+    inject131();
     const rows = [];
     let lastDay = null;
     for (const ev of events) {
@@ -22086,10 +22302,10 @@ ${perKey}`;
   EventTimeline.displayName = "EventTimeline";
 
   // components/operations/EvidenceInspector.jsx
-  var injected130 = false;
-  function inject130() {
-    if (injected130 || typeof document === "undefined") return;
-    injected130 = true;
+  var injected132 = false;
+  function inject132() {
+    if (injected132 || typeof document === "undefined") return;
+    injected132 = true;
     const css = `
 .mds-insp{display:flex;flex-direction:column;background:var(--bg-light);border:1px solid var(--border);
   border-radius:var(--radius-card,4px);font-family:var(--font-body);color:var(--text-secondary);
@@ -22148,12 +22364,12 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     className = "",
     ...rest
   }) {
-    inject130();
+    inject132();
     const m2 = condition ? conditionMeta(condition) : null;
     return /* @__PURE__ */ window.React.createElement("aside", { className: `mds-insp${className ? " " + className : ""}`, "aria-label": "Evidence inspector", ...rest }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__eyebrow" }, eyebrow), value ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__sel" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__val" }, value), caption ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap" }, caption) : null, m2 ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__cap", style: { color: `var(--cond-${m2.key}-fg)` } }, m2.glyph, " ", m2.label) : null) : /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__empty" }, emptyMessage)), /* @__PURE__ */ window.React.createElement("div", { className: "mds-insp__body" }, children));
   }
   function EvidenceSection({ title, action, onAction, fields, note, children, className = "", ...rest }) {
-    inject130();
+    inject132();
     const fieldEnvelope = (f) => f.envelope || (f.tone ? { condition: f.tone } : null);
     return /* @__PURE__ */ window.React.createElement("section", { className: `mds-sec${className ? " " + className : ""}`, ...rest }, title ? /* @__PURE__ */ window.React.createElement("h3", { className: "mds-sec__t" }, title, action && onAction ? /* @__PURE__ */ window.React.createElement("button", { type: "button", onClick: onAction }, action) : null) : null, fields ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-fields" }, fields.map((f, i) => /* @__PURE__ */ window.React.createElement(react_default.Fragment, { key: f.label || i }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-fields__k" }, f.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-fields__v" }, fieldEnvelope(f) ? /* @__PURE__ */ window.React.createElement(
       ValueEnvelope,
@@ -22166,7 +22382,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     ) : f.value)))) : null, children, note ? /* @__PURE__ */ window.React.createElement("p", { className: "mds-sec__note" }, note) : null);
   }
   function ProvenanceTrace({ steps = [], selectedId, onSelect, className = "", ...rest }) {
-    inject130();
+    inject132();
     return /* @__PURE__ */ window.React.createElement("ol", { className: `mds-trace${className ? " " + className : ""}`, style: { listStyle: "none", margin: 0, padding: 0 }, ...rest }, steps.map((s, i) => {
       const id = s.id || s.label || i;
       const state = s.state || (selectedId && id === selectedId ? "current" : "done");
@@ -22185,10 +22401,10 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     return key ? { key, ...CONDITION4[key] } : null;
   }
   var TYPES3 = { statement: "Statement", confirmation: "Trade confirmation", extract: "GL extract", custodian: "Custodian file", pricing: "Pricing report", model: "Model output", policy: "Accounting policy", approval: "Approval record", correspondence: "Correspondence", snapshot: "Source snapshot", document: "Document" };
-  var injected131 = false;
-  function inject131() {
-    if (injected131 || typeof document === "undefined") return;
-    injected131 = true;
+  var injected133 = false;
+  function inject133() {
+    if (injected133 || typeof document === "undefined") return;
+    injected133 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "evidence-preview");
     el.textContent = `
@@ -22262,7 +22478,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     className = "",
     ...rest
   }) {
-    inject131();
+    inject133();
     const c = meta4(condition);
     const typeLabel2 = type ? TYPES3[String(type).toLowerCase()] || type : null;
     const canOpen = permissions.canOpen !== false;
@@ -22279,10 +22495,10 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
   }
 
   // components/operations/GateRail.jsx
-  var injected132 = false;
-  function inject132() {
-    if (injected132 || typeof document === "undefined") return;
-    injected132 = true;
+  var injected134 = false;
+  function inject134() {
+    if (injected134 || typeof document === "undefined") return;
+    injected134 = true;
     const css = `
 .mds-gates{display:flex;list-style:none;margin:0;padding:0;gap:0;min-width:0;}
 .mds-gate{position:relative;flex:1 1 0;display:flex;flex-direction:column;align-items:center;
@@ -22308,7 +22524,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
   }
   var GLYPH2 = { ready: "✓", blocked: "!" };
   function GateRail({ gates = [], className = "" }) {
-    inject132();
+    inject134();
     return /* @__PURE__ */ window.React.createElement("ol", { className: `mds-gates${className ? " " + className : ""}` }, gates.map((g, i) => {
       const sev = normalizeSeverity(g.status);
       const prevReady = i > 0 && normalizeSeverity(gates[i - 1].status) === "ready";
@@ -22344,10 +22560,10 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
     if (/ready|pass|health|complete|approv|certif|resolv|clear/.test(s)) return "ready";
     return "info";
   }
-  var injected133 = false;
-  function inject133() {
-    if (injected133 || typeof document === "undefined") return;
-    injected133 = true;
+  var injected135 = false;
+  function inject135() {
+    if (injected135 || typeof document === "undefined") return;
+    injected135 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "handover-brief");
     el.textContent = `
@@ -22415,7 +22631,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
     className = "",
     ...rest
   }) {
-    inject133();
+    inject135();
     const floor = severityFloor ? SEVERITY_ORDER[severityFloor] ?? 3 : null;
     const visible = items.filter((item) => floor == null ? true : (SEVERITY_ORDER[severityOf2(item.status || item.kind)] ?? 3) <= floor);
     const grouped = kinds.map((kind) => ({
@@ -22446,7 +22662,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
     }))) : /* @__PURE__ */ window.React.createElement("p", { className: "mds-hand__empty" }, emptyStatement || `Nothing moved on ${owned != null ? `your ${owned} objects` : "the objects you own"} since ${since || "your last session"}.`), footNote ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-hand__foot" }, footNote) : null);
   }
   function HandoverBriefChip({ count = 0, severity, since, label: label2 = "Handover", onClick, className = "", ...rest }) {
-    inject133();
+    inject135();
     return /* @__PURE__ */ window.React.createElement(
       "button",
       {
@@ -22466,10 +22682,10 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
   }
 
   // components/operations/LogTail.jsx
-  var injected134 = false;
-  function inject134() {
-    if (injected134 || typeof document === "undefined") return;
-    injected134 = true;
+  var injected136 = false;
+  function inject136() {
+    if (injected136 || typeof document === "undefined") return;
+    injected136 = true;
     const css = `
 .mds-logtail{display:flex;flex-direction:column;min-height:0;background:var(--bg-light,#F8F7F3);
   border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,2px);font-family:var(--font-body);}
@@ -22527,7 +22743,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
     style = {},
     ...rest
   }) {
-    inject134();
+    inject136();
     const bodyRef = react_default.useRef(null);
     const [follow, setFollow] = react_default.useState(followDefault);
     const [levels, setLevels] = react_default.useState(() => new Set(LEVELS3));
@@ -22592,10 +22808,10 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
   LogTail.displayName = "LogTail";
 
   // components/operations/ProvenanceChip.jsx
-  var injected135 = false;
-  function inject135() {
-    if (injected135 || typeof document === "undefined") return;
-    injected135 = true;
+  var injected137 = false;
+  function inject137() {
+    if (injected137 || typeof document === "undefined") return;
+    injected137 = true;
     const css = `
 .mds-prov{display:inline-flex;align-items:center;gap:6px;width:fit-content;max-width:100%;
   min-height:20px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
@@ -22634,7 +22850,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     className = "",
     ...rest
   }) {
-    inject135();
+    inject137();
     const sevA = normalizeSeverity(completeness);
     const sevB = normalizeSeverity(reconciliation);
     const sev = RANK[sevB] > RANK[sevA] ? sevB : sevA;
@@ -22665,10 +22881,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
 
   // components/operations/ReadinessPanel.jsx
-  var injected136 = false;
-  function inject136() {
-    if (injected136 || typeof document === "undefined") return;
-    injected136 = true;
+  var injected138 = false;
+  function inject138() {
+    if (injected138 || typeof document === "undefined") return;
+    injected138 = true;
     const css = `
 .mds-rpanel{display:grid;gap:8px;min-width:0;border:1px solid var(--severity-info-bd,#D2CDC3);
   border-left:3px solid var(--severity-info-fg,#606870);border-radius:var(--radius-card,2px);
@@ -22692,17 +22908,17 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function ReadinessPanel({ state = "info", statusLabel, title, detail, score: score2, actions, children }) {
-    inject136();
+    inject138();
     const sev = normalizeSeverity(state);
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-rpanel mds-rpanel--${sev}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-rpanel__head" }, /* @__PURE__ */ window.React.createElement(SeverityBadge, { status: state, label: statusLabel }), score2 != null && /* @__PURE__ */ window.React.createElement("span", { className: "mds-rpanel__score" }, score2)), title && /* @__PURE__ */ window.React.createElement("p", { className: "mds-rpanel__title" }, title), detail && /* @__PURE__ */ window.React.createElement("p", { className: "mds-rpanel__detail" }, detail), children, actions && /* @__PURE__ */ window.React.createElement("div", { className: "mds-rpanel__foot" }, actions));
   }
 
   // components/operations/ResolutionDrawer.jsx
   var SEVERITY2 = { blocked: { label: "Blocked", tone: "exception", mark: "▲" }, action: { label: "Action", tone: "exception", mark: "▲" }, exception: { label: "Exception", tone: "exception", mark: "▲" }, review: { label: "Review", tone: "review", mark: "◇" }, ready: { label: "Ready", tone: "pass", mark: "✓" }, info: { label: "Info", tone: "info", mark: "·" } };
-  var injected137 = false;
-  function inject137() {
-    if (injected137 || typeof document === "undefined") return;
-    injected137 = true;
+  var injected139 = false;
+  function inject139() {
+    if (injected139 || typeof document === "undefined") return;
+    injected139 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "resolution-drawer");
     el.textContent = `
@@ -22797,7 +23013,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     ...rest
   }) {
     const uid6 = react_default.useId();
-    inject137();
+    inject139();
     const sev = SEVERITY2[String(severity).toLowerCase()] || SEVERITY2.exception;
     const [localReason, setLocalReason] = react_default.useState("");
     const reasonValue = reason !== void 0 ? reason : localReason;
@@ -22828,10 +23044,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   ];
   var MAP2 = { confirmed: "confirmed", reconciled: "confirmed", complete: "confirmed", verified: "confirmed", ok: "confirmed", matched: "confirmed", certified: "confirmed", provisional: "provisional", preliminary: "provisional", unaudited: "provisional", estimated: "provisional", pending: "provisional", stale: "stale", delayed: "stale", aged: "stale", missing: "missing", absent: "missing", unavailable: "missing", exception: "missing", failed: "missing", na: "na", "not applicable": "na", "n/a": "na", none: "na" };
   var bucket = (v) => MAP2[String(v || "").trim().toLowerCase().replace(/[_-]+/g, " ")] || "missing";
-  var injected138 = false;
-  function inject138() {
-    if (injected138 || typeof document === "undefined") return;
-    injected138 = true;
+  var injected140 = false;
+  function inject140() {
+    if (injected140 || typeof document === "undefined") return;
+    injected140 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "source-coverage-summary");
     el.textContent = `
@@ -22882,7 +23098,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     className = "",
     ...rest
   }) {
-    inject138();
+    inject140();
     const tally = CATS.reduce((a, c) => {
       a[c.key] = 0;
       return a;
@@ -23125,10 +23341,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   };
 
   // components/operations/TrustStrip.jsx
-  var injected139 = false;
-  function inject139() {
-    if (injected139 || typeof document === "undefined") return;
-    injected139 = true;
+  var injected141 = false;
+  function inject141() {
+    if (injected141 || typeof document === "undefined") return;
+    injected141 = true;
     const css = `
 .mds-trust{display:flex;flex-wrap:wrap;align-items:stretch;gap:8px;min-width:0;}
 .mds-trust__item{display:flex;flex-direction:column;gap:2px;min-width:0;
@@ -23176,15 +23392,15 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     return STATE4[String(s).toLowerCase().replace(/[^a-z]/g, "")] || "muted";
   }
   function TrustStrip({ items = [], className = "" }) {
-    inject139();
+    inject141();
     return /* @__PURE__ */ window.React.createElement("div", { className: `mds-trust${className ? " " + className : ""}` }, items.map((it, i) => /* @__PURE__ */ window.React.createElement("div", { key: it.label || i, className: `mds-trust__item mds-trust__item--${trustState(it.state)}` }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-trust__label" }, it.label), /* @__PURE__ */ window.React.createElement("span", { className: "mds-trust__value" }, it.value))));
   }
 
   // components/operations/ValidationIssueList.jsx
-  var injected140 = false;
-  function inject140() {
-    if (injected140 || typeof document === "undefined") return;
-    injected140 = true;
+  var injected142 = false;
+  function inject142() {
+    if (injected142 || typeof document === "undefined") return;
+    injected142 = true;
     const css = `
 .mds-issues{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-card,2px);overflow:hidden;background:var(--bg-light,#F8F7F3);}
@@ -23212,7 +23428,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function ValidationIssueList({ issues = [], dense = false, emptyLabel = "No issues", className = "" }) {
-    inject140();
+    inject142();
     if (!issues.length) {
       return /* @__PURE__ */ window.React.createElement("div", { className: `mds-issues${className ? " " + className : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-issues__empty" }, emptyLabel));
     }
@@ -23223,10 +23439,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
 
   // components/operations/VersionConflictNotice.jsx
-  var injected141 = false;
-  function inject141() {
-    if (injected141 || typeof document === "undefined") return;
-    injected141 = true;
+  var injected143 = false;
+  function inject143() {
+    if (injected143 || typeof document === "undefined") return;
+    injected143 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "version-conflict");
     el.textContent = `
@@ -23289,7 +23505,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     ...rest
   }) {
     const uid6 = react_default.useId();
-    inject141();
+    inject143();
     const headingRef = react_default.useRef(null);
     react_default.useEffect(() => {
       if (autoFocus) headingRef.current?.focus();
@@ -23315,10 +23531,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
 
   // components/operations/WorkspaceSection.jsx
-  var injected142 = false;
-  function inject142() {
-    if (injected142 || typeof document === "undefined") return;
-    injected142 = true;
+  var injected144 = false;
+  function inject144() {
+    if (injected144 || typeof document === "undefined") return;
+    injected144 = true;
     const css = `
 .mds-wsection{display:grid;gap:12px;scroll-margin-top:12px;min-width:0;}
 .mds-wsection__head{position:sticky;top:0;z-index:15;display:flex;flex-wrap:wrap;align-items:center;
@@ -23342,15 +23558,15 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function WorkspaceSection({ id, title, summary, jump, onJump, jumpHref, children, className = "" }) {
-    inject142();
+    inject144();
     return /* @__PURE__ */ window.React.createElement("section", { id, className: `mds-wsection${className ? " " + className : ""}` }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__head" }, /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__heading" }, title && /* @__PURE__ */ window.React.createElement("h3", { className: "mds-wsection__title" }, title), summary && /* @__PURE__ */ window.React.createElement("p", { className: "mds-wsection__summary" }, summary)), jump && (jumpHref ? /* @__PURE__ */ window.React.createElement("a", { className: "mds-wsection__jump", href: jumpHref }, jump) : /* @__PURE__ */ window.React.createElement("button", { type: "button", className: "mds-wsection__jump", onClick: onJump }, jump))), /* @__PURE__ */ window.React.createElement("div", { className: "mds-wsection__body" }, children));
   }
 
   // components/shell/GlobalSearch.jsx
-  var injected143 = false;
-  function inject143() {
-    if (injected143 || typeof document === "undefined") return;
-    injected143 = true;
+  var injected145 = false;
+  function inject145() {
+    if (injected145 || typeof document === "undefined") return;
+    injected145 = true;
     const css = `
 .mds-gsearch__scrim{position:fixed;inset:0;z-index:2147481000;background:var(--scrim,rgba(32,37,43,.32));
   display:flex;justify-content:center;align-items:flex-start;padding-top:56px;}
@@ -23411,7 +23627,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     placeholder = "Search this screen, or go to…",
     emptyHint
   }) {
-    inject143();
+    inject145();
     const [q, setQ] = react_default.useState("");
     const [active, setActive] = react_default.useState(0);
     const inputRef = react_default.useRef(null);
@@ -23521,10 +23737,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
 
   // components/shell/NavRail.jsx
-  var injected144 = false;
-  function inject144() {
-    if (injected144 || typeof document === "undefined") return;
-    injected144 = true;
+  var injected146 = false;
+  function inject146() {
+    if (injected146 || typeof document === "undefined") return;
+    injected146 = true;
     const css = `
 .op-rail{width:14rem;flex-shrink:0;box-sizing:border-box;height:100%;overflow:auto;
   background:var(--sidebar-bg,#EBE8E1);border-right:1px solid var(--sidebar-border,#D2CDC3);
@@ -23553,7 +23769,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function NavRail({ sections, activeId, onSelect }) {
-    inject144();
+    inject146();
     return /* @__PURE__ */ window.React.createElement("nav", { className: "op-rail" }, sections.map((sec, si) => /* @__PURE__ */ window.React.createElement("div", { key: si, style: { marginBottom: 10 } }, /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__section" }, sec.label), /* @__PURE__ */ window.React.createElement("div", { className: "op-rail__nav" }, sec.items.map((it) => /* @__PURE__ */ window.React.createElement(
       "button",
       {
@@ -23569,10 +23785,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   }
 
   // components/shell/ReturnPath.jsx
-  var injected145 = false;
-  function inject145() {
-    if (injected145 || typeof document === "undefined") return;
-    injected145 = true;
+  var injected147 = false;
+  function inject147() {
+    if (injected147 || typeof document === "undefined") return;
+    injected147 = true;
     const css = `
 .mds-return{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-family:var(--font-body);}
 .mds-return__label{font-family:var(--font-data);font-size:9.5px;font-weight:600;
@@ -23598,7 +23814,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function ReturnPath({ loops = [], label: label2 = "Back to", layout: layout2 = "inline", emptyText, showIds = true }) {
-    inject145();
+    inject147();
     if (!loops.length) {
       return emptyText ? /* @__PURE__ */ window.React.createElement("div", { className: "mds-return" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-return__empty" }, emptyText)) : null;
     }
@@ -23651,10 +23867,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     const unknown = regions.filter((r) => arch.regions.indexOf(r.role) === -1).map((r) => r.role);
     return { ...spec, archetype: spec.archetype, regions, warnings: unknown.length ? [`Regions outside the ${arch.label} archetype: ${unknown.join(", ")}`] : [] };
   }
-  var injected146 = false;
-  function inject146() {
-    if (injected146 || typeof document === "undefined") return;
-    injected146 = true;
+  var injected148 = false;
+  function inject148() {
+    if (injected148 || typeof document === "undefined") return;
+    injected148 = true;
     const css = `
 .mds-sc{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;padding:12px;background:var(--bg-canvas,#F2F0EB);}
 .mds-sc__rg{display:flex;flex-direction:column;min-width:0;background:var(--bg-light,#F8F7F3);
@@ -23674,7 +23890,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function ScreenComposition({ screen, slots = {}, showRoles = false, className = "", children, ...rest }) {
-    inject146();
+    inject148();
     const s = screen && screen.regions ? screen : defineScreen(screen || {});
     const tagged = {};
     react_default.Children.forEach(children, (c) => {
@@ -23687,10 +23903,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   ScreenComposition.archetypes = ARCHETYPES;
 
   // components/shell/SessionControls.jsx
-  var injected147 = false;
-  function inject147() {
-    if (injected147 || typeof document === "undefined") return;
-    injected147 = true;
+  var injected149 = false;
+  function inject149() {
+    if (injected149 || typeof document === "undefined") return;
+    injected149 = true;
     const css = `
 .mds-usermenu{position:relative;display:inline-block;font-family:var(--font-body);}
 .mds-usermenu__chip{appearance:none;cursor:pointer;width:28px;height:28px;border-radius:50%;
@@ -23741,7 +23957,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     return String(name || "?").split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
   }
   function UserMenu({ name = "", role = "", detail = "", items = [], onSignOut, onChrome = true }) {
-    inject147();
+    inject149();
     const [open, setOpen] = react_default.useState(false);
     const rootRef = react_default.useRef(null);
     react_default.useEffect(() => {
@@ -23798,22 +24014,22 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     ))));
   }
   function RoleBadge({ role = "viewer", label: label2 }) {
-    inject147();
+    inject149();
     const r = String(role).toLowerCase();
     const known = ["admin", "operator", "viewer"].includes(r) ? r : "viewer";
     return /* @__PURE__ */ window.React.createElement("span", { className: `mds-rolebadge mds-rolebadge--${known}` }, label2 || role);
   }
   function ReadOnlyBanner({ message = "You have view-only access. Changes are disabled for your role." }) {
-    inject147();
+    inject149();
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-readonly", role: "status" }, /* @__PURE__ */ window.React.createElement("span", { className: "mds-readonly__tag" }, "Read-only"), /* @__PURE__ */ window.React.createElement("span", null, message));
   }
   var SessionControls = { UserMenu, RoleBadge, ReadOnlyBanner };
 
   // components/shell/StatusBar.jsx
-  var injected148 = false;
-  function inject148() {
-    if (injected148 || typeof document === "undefined") return;
-    injected148 = true;
+  var injected150 = false;
+  function inject150() {
+    if (injected150 || typeof document === "undefined") return;
+    injected150 = true;
     const css = `
 .ws-statusbar{display:flex;align-items:center;gap:0;min-height:28px;padding:0 12px;
   background:var(--statusbar-bg,#29323A);border-top:1px solid var(--statusbar-border,#3A444D);
@@ -23834,7 +24050,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     document.head.appendChild(el);
   }
   function StatusBar({ items = [] }) {
-    inject148();
+    inject150();
     return /* @__PURE__ */ window.React.createElement("footer", { className: "ws-statusbar" }, items.map((it, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, className: `ws-statusbar__item${it.push ? " ws-statusbar__item--push" : ""}` }, it.status && /* @__PURE__ */ window.React.createElement("span", { className: `ws-statusbar__dot ws-st--${it.status}` }), it.label && /* @__PURE__ */ window.React.createElement("span", { className: "ws-statusbar__label" }, it.label), /* @__PURE__ */ window.React.createElement("span", null, it.value))));
   }
 
@@ -23859,10 +24075,10 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     return value;
   }
   var WorkspaceHooks = { useWorkspaceContext };
-  var injected149 = false;
-  function inject149() {
-    if (injected149 || typeof document === "undefined") return;
-    injected149 = true;
+  var injected151 = false;
+  function inject151() {
+    if (injected151 || typeof document === "undefined") return;
+    injected151 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "workspace-context");
     el.textContent = `
@@ -23902,7 +24118,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     className = "",
     ...rest
   }) {
-    inject149();
+    inject151();
     let provided = null;
     try {
       provided = react_default.useContext(Context2);
@@ -24107,10 +24323,10 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     return value;
   }
   var LayoutHooks = { useWorkspaceLayout };
-  var injected150 = false;
-  function inject150() {
-    if (injected150 || typeof document === "undefined") return;
-    injected150 = true;
+  var injected152 = false;
+  function inject152() {
+    if (injected152 || typeof document === "undefined") return;
+    injected152 = true;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "workspace-layout");
     el.textContent = `
@@ -24151,7 +24367,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     document.head.appendChild(el);
   }
   function WorkspaceLayoutBar({ actions, showRestored = true, saveLabel = "Save", resetLabel = "Reset", className = "", ...rest }) {
-    inject150();
+    inject152();
     const api = react_default.useContext(Ctx9);
     if (!api) return null;
     const hiddenIds = Object.entries(api.regions).filter(([, r]) => r && r.hidden).map(([id]) => id);
@@ -24178,7 +24394,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
   }
   var GridCtx = react_default.createContext({ direction: "row" });
   function WorkspaceLayoutGrid({ direction = "row", gap = 8, slots, children, className = "", style, ...rest }) {
-    inject150();
+    inject152();
     const api = react_default.useContext(Ctx9);
     const ref = react_default.useRef(null);
     const raw = react_default.Children.toArray(children).filter(Boolean);
@@ -24283,7 +24499,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     return /* @__PURE__ */ window.React.createElement(WorkspaceLayoutProvider, { screenId, regions, layouts, persist, storage, onChange }, bar ? /* @__PURE__ */ window.React.createElement(WorkspaceLayoutBar, { actions: barActions }) : null, /* @__PURE__ */ window.React.createElement(WorkspaceLayoutGrid, { direction, gap, ...rest }, children));
   }
   function LayoutRegion({ id, label: label2, actions, collapsible = true, chrome = true, onPopOut, minSize = 0.1, size, children, className = "", style, ...rest }) {
-    inject150();
+    inject152();
     const api = react_default.useContext(Ctx9);
     const { direction } = react_default.useContext(GridCtx);
     react_default.useEffect(() => {
@@ -24338,10 +24554,10 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
   }
 
   // components/shell/WorkstationShell.jsx
-  var injected151 = false;
-  function inject151() {
-    if (injected151 || typeof document === "undefined") return;
-    injected151 = true;
+  var injected153 = false;
+  function inject153() {
+    if (injected153 || typeof document === "undefined") return;
+    injected153 = true;
     const css = `
 .ws-shell{display:flex;flex-direction:column;height:100%;min-height:0;background:var(--bg,#F2F0EB);font-family:var(--font-body);}
 .ws-shell__row{display:flex;flex:1;min-height:0;}
@@ -24397,7 +24613,7 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
     children
     // main workspace content
   }) {
-    inject151();
+    inject153();
     return /* @__PURE__ */ window.React.createElement("div", { className: "ws-shell", style: { height }, "data-workspace-archetype": archetype }, topbar || null, /* @__PURE__ */ window.React.createElement("div", { className: "ws-shell__row" }, nav || null, /* @__PURE__ */ window.React.createElement(
       "main",
       {
@@ -24447,10 +24663,10 @@ button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(
       back: M.backTarget ? M.backTarget() : null
     };
   }
-  var injected152 = false;
-  function inject152() {
-    if (injected152 || typeof document === "undefined") return;
-    injected152 = true;
+  var injected154 = false;
+  function inject154() {
+    if (injected154 || typeof document === "undefined") return;
+    injected154 = true;
     const css = `
 .ws-masthead{display:grid;min-height:48px;
   grid-template-columns:minmax(0,max-content) minmax(220px,1fr) max-content max-content max-content;
@@ -24509,7 +24725,7 @@ button.ws-crumb:hover{color:var(--topbar-text,#F1EFEA);text-decoration:underline
     onSignOut,
     showOperator = true
   }) {
-    inject152();
+    inject154();
     const env = String(environment).toLowerCase();
     const time = useWorldClock(clock);
     const who = useOperator(operator);
@@ -24620,10 +24836,10 @@ button.ws-crumb:hover{color:var(--topbar-text,#F1EFEA);text-decoration:underline
   }
 
   // components/trading/DepthLadder.jsx
-  var injected153 = false;
-  function inject153() {
-    if (injected153 || typeof document === "undefined") return;
-    injected153 = true;
+  var injected155 = false;
+  function inject155() {
+    if (injected155 || typeof document === "undefined") return;
+    injected155 = true;
     const css = `
 .mds-ladder{font-family:var(--font-data);font-size:12px;display:inline-flex;flex-direction:column;
   border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);min-width:264px;}
@@ -24686,7 +24902,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     className = "",
     ...rest
   }) {
-    inject153();
+    inject155();
     const A = asks.slice(0, levels);
     const B = bids.slice(0, levels);
     const maxSize = Math.max(1, ...A.map((l) => l.size || 0), ...B.map((l) => l.size || 0));
@@ -24757,10 +24973,10 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
   DepthLadder.displayName = "DepthLadder";
 
   // components/trading/FillsFeed.jsx
-  var injected154 = false;
-  function inject154() {
-    if (injected154 || typeof document === "undefined") return;
-    injected154 = true;
+  var injected156 = false;
+  function inject156() {
+    if (injected156 || typeof document === "undefined") return;
+    injected156 = true;
     const css = `
 .mds-fills{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
   font-family:var(--font-data);font-size:11px;overflow-y:auto;}
@@ -24785,7 +25001,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     document.head.appendChild(el);
   }
   function FillsFeed({ fills = [], maxHeight = 260, emptyLabel = "No fills this session" }) {
-    inject154();
+    inject156();
     return /* @__PURE__ */ window.React.createElement("div", { className: "mds-fills", style: { maxHeight }, role: "log", "aria-label": "Execution fills" }, fills.length === 0 && /* @__PURE__ */ window.React.createElement("div", { className: "mds-fills__empty" }, emptyLabel), fills.map((f, i) => {
       const side = String(f.side || "").toLowerCase();
       return /* @__PURE__ */ window.React.createElement("div", { key: f.id || i, className: "mds-fills__row" }, /* @__PURE__ */ window.React.createElement(Timestamp, { className: "mds-fills__time", value: f.time, format: "time" }), /* @__PURE__ */ window.React.createElement("span", { className: "mds-fills__sym" }, f.symbol), /* @__PURE__ */ window.React.createElement("span", { className: `mds-fills__side mds-fills__side--${side === "sell" ? "sell" : "buy"}` }, f.side), /* @__PURE__ */ window.React.createElement("span", { className: "mds-fills__qty" }, f.qty), /* @__PURE__ */ window.React.createElement("span", { className: "mds-fills__px" }, "@ ", f.price));
@@ -24793,10 +25009,10 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
   }
 
   // components/trading/OptionChainTable.jsx
-  var injected155 = false;
-  function inject155() {
-    if (injected155 || typeof document === "undefined") return;
-    injected155 = true;
+  var injected157 = false;
+  function inject157() {
+    if (injected157 || typeof document === "undefined") return;
+    injected157 = true;
     const css = `
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);display:inline-block;min-width:100%;outline:none;}
@@ -24864,7 +25080,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     className = "",
     ...rest
   }) {
-    inject155();
+    inject157();
     const sorted = rows.slice().sort((a, b) => a.strike - b.strike);
     const callCols = columns;
     const putCols = columns.slice().reverse();
@@ -24963,10 +25179,10 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
   OptionChainTable.displayName = "OptionChainTable";
 
   // components/trading/OrderTicket.jsx
-  var injected156 = false;
-  function inject156() {
-    if (injected156 || typeof document === "undefined") return;
-    injected156 = true;
+  var injected158 = false;
+  function inject158() {
+    if (injected158 || typeof document === "undefined") return;
+    injected158 = true;
     const css = `
 .mds-ticket{display:flex;flex-direction:column;gap:10px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);padding:14px;font-family:var(--font-body);box-sizing:border-box;}
@@ -25020,7 +25236,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     onDraftChange,
     onSubmit
   }) {
-    inject156();
+    inject158();
     const [side, setSide] = react_default.useState(prefill?.side || defaultSide);
     const [qty, setQty] = react_default.useState(prefill?.qty != null ? String(prefill.qty) : "");
     const [type, setType] = react_default.useState(prefill?.type || "market");
@@ -25126,10 +25342,10 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
   }
 
   // components/trading/TimeAndSalesTape.jsx
-  var injected157 = false;
-  function inject157() {
-    if (injected157 || typeof document === "undefined") return;
-    injected157 = true;
+  var injected159 = false;
+  function inject159() {
+    if (injected159 || typeof document === "undefined") return;
+    injected159 = true;
     const css = `
 .mds-tape{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
   font-family:var(--font-data);font-size:11px;overflow-y:auto;}
@@ -25172,7 +25388,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     emptyLabel = "No prints",
     locale
   }) {
-    inject157();
+    inject159();
     const dirs = react_default.useMemo(() => {
       const last = /* @__PURE__ */ new Map();
       const out = new Array(prints.length);
