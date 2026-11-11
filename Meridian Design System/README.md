@@ -13,6 +13,13 @@ Current-branch evidence and a reproducible distribution handoff:
 [4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md).
 These describe this working tree separately from the historical upstream release reports.
 
+The [specimen card gallery](tests/gallery.html) reads the supported cards from `_ds_manifest.json`.
+Serve the package over local HTTP, then search or filter its groups and open one preview at its
+intended viewport. Some specimens retain CDN or Design Component host dependencies; document
+loading is distinct from component verification. `npm run test:gallery` checks catalogue metadata
+and filtering; `npm run test:gallery:browser` checks loading, recovery, focus, and desktop layouts.
+
+
 An operator-workstation design system for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.
 
 This system implements **"Programmed Institutionalism"** — an institutional instrument, not a SaaS dashboard: a paper → plate → well material hierarchy (canvas `#F2F0EB`, panels `#F8F7F3`, data surfaces `#FCFBF8`), cool graphite ink, graphite chrome bars (`#29323A`), ONE terracotta **signal** (`#C56343` — brand and scenario, never a loss, error, or focus color), a separate blue **interaction** family for focus and selection (`#2D6FB3` / `#496C8F`), desaturated independent semantics used as alpha-10 washes, IBM Plex Sans + IBM Plex Mono, and structure built from **fine 1px rules, tonal steps and inset wells — no card shadows, no glow, no gradients**. Clarity emerges from systems, not decoration; every pixel communicates information.
