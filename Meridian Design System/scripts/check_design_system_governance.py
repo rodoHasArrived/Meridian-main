@@ -13,6 +13,8 @@ Gates (all static; no network, no browser):
   aria-refs       static aria-controls/aria-labelledby/aria-activedescendant values must be
                   computed (template literal / expression), never a hard-coded string id
   eligibility     every templates/<slug>/ is classified in api/template-eligibility.json
+  retained        a template marked `retained` there and absent from the manifest's template list
+                  has its template-contract gaps reported as a warning; marked and published fails
   generated       generated files present and never hand-edited markers intact
 
   python scripts/check_design_system_governance.py           # report; exit 1 on failures
@@ -122,32 +124,69 @@ def views_own_data_state(folder, src):
             return False
     return True
 
+def retained_templates():
+    """Slugs api/template-eligibility.json marks `retained`, and the slugs the manifest publishes.
+
+    A retained template is an unpublished compatibility screen kept from before the entry
+    contract. Its contract gaps are reported as one warning rather than enforced, because the
+    contract governs what the picker offers. The exemption is tied to being unpublished: a
+    retained slug that appears in the manifest's template list fails, so a screen cannot be
+    published while still excused from the contract."""
+    retained, published = set(), set()
+    try:
+        tpls = json.loads((ROOT / "api" / "template-eligibility.json").read_text(encoding="utf-8"))["templates"]
+        retained = {slug for slug, t in tpls.items() if str(t.get("retained") or "").strip()}
+    except Exception:
+        pass  # check_eligibility reports a missing or unreadable file
+    try:
+        manifest = json.loads((ROOT / "_ds_manifest.json").read_text(encoding="utf-8"))
+        published = {pathlib.PurePosixPath(t.get("folder", "")).name for t in manifest.get("templates", [])}
+    except Exception:
+        pass  # check_manifest reports a missing manifest
+    return retained, published
+
 def check_templates():
+    retained, published = retained_templates()
+    for slug in sorted(retained & published):
+        fail("template", f"{slug}: marked retained in api/template-eligibility.json but published in "
+                         "the manifest — a published template meets the entry contract")
     for folder in sorted(p for p in (ROOT / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")):
         slug = folder.name
-        pascal = "".join(w.capitalize() for w in slug.split("-"))
-        entry = folder / f"{pascal}.dc.html"
-        if not entry.exists():
-            fail("template", f"{slug}: entry {pascal}.dc.html missing")
-            continue
-        src = entry.read_text(encoding="utf-8")
-        if "<!-- @template " not in src.split("\n", 12)[0] and "@template" not in src[:1200]:
-            fail("template", f"{slug}: @template marker not near the top")
-        if not (folder / "ds-base.js").exists():
-            fail("template", f"{slug}: ds-base.js missing")
-        if "$preview" not in src:
-            fail("template", f"{slug}: $preview missing from data-props")
-        for tweak in ("density", "theme", "environment", "dataState"):
-            if f"&quot;{tweak}&quot;" not in src and f'"{tweak}"' not in src:
-                fail("template", f"{slug}: standard tweak '{tweak}' missing")
-        if "DataStateSwitch" not in src and not views_own_data_state(folder, src):
-            fail("template", f"{slug}: DataStateSwitch not used")
-        if "<h1" not in src:
-            warn("template", f"{slug}: no literal <h1> (may live in an imported sibling)")
-        for m in re.finditer(r'"(\.\./[\w-]+/[\w]+\.dc\.html)"', src):
-            target = (folder / m.group(1)).resolve()
-            if not target.exists():
-                fail("routes", f"{slug}: broken route {m.group(1)}")
+        if slug in retained and slug not in published:
+            gaps = []
+            check_template(folder, slug, lambda gate, msg: gaps.append(msg.split(": ", 1)[-1]))
+            if gaps:
+                warn("template", f"{slug}: retained compatibility screen, {len(gaps)} entry-contract "
+                                 f"gap(s) reported, not enforced ({'; '.join(gaps)})")
+        else:
+            check_template(folder, slug, fail)
+
+def check_template(folder, slug, contract):
+    """One template against the entry contract. `contract` receives the contract findings, which
+    a retained screen collects instead of failing on; a broken route always fails."""
+    pascal = "".join(w.capitalize() for w in slug.split("-"))
+    entry = folder / f"{pascal}.dc.html"
+    if not entry.exists():
+        contract("template", f"{slug}: entry {pascal}.dc.html missing")
+        return
+    src = entry.read_text(encoding="utf-8")
+    if "<!-- @template " not in src.split("\n", 12)[0] and "@template" not in src[:1200]:
+        contract("template", f"{slug}: @template marker not near the top")
+    if not (folder / "ds-base.js").exists():
+        contract("template", f"{slug}: ds-base.js missing")
+    if "$preview" not in src:
+        contract("template", f"{slug}: $preview missing from data-props")
+    for tweak in ("density", "theme", "environment", "dataState"):
+        if f"&quot;{tweak}&quot;" not in src and f'"{tweak}"' not in src:
+            contract("template", f"{slug}: standard tweak '{tweak}' missing")
+    if "DataStateSwitch" not in src and not views_own_data_state(folder, src):
+        contract("template", f"{slug}: DataStateSwitch not used")
+    if "<h1" not in src:
+        warn("template", f"{slug}: no literal <h1> (may live in an imported sibling)")
+    for m in re.finditer(r'"(\.\./[\w-]+/[\w]+\.dc\.html)"', src):
+        target = (folder / m.group(1)).resolve()
+        if not target.exists():
+            fail("routes", f"{slug}: broken route {m.group(1)}")
 
 def check_eligibility():
     """A new template must be classified before it ships. Full validation (completeness, reason

@@ -19,6 +19,7 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 - **`PositionDetail`** template — gains the `environment` and `dataState` tweaks; the environment drives the document badge and the work plane sits in a `DataStateSwitch`.
 - **`NavRail`** · **`StatusBar`** · **`WorkstationTopbar`** — header comments name the token instead of quoting its hex.
 - **`scripts/check_design_system_governance.py`** — an entry that only switches between sibling views satisfies the data-state rule when it hands `dataState` to every view it imports and each of those views uses `DataStateSwitch`. `StrategyRuns` and `StrategyFormation` were reported although all six of their views carry the switch.
+- **`api/template-eligibility.json`** — the ten unpublished compatibility screens (`amx-governance`, `backtest-builder`, `backtest-compare`, `covered-call-lab`, `family-office`, `journaling-workstation`, `reconciliation-workstation`, `split-pane-reconciliation`, `strategy-builder`, `strategy-onboarding`) carry a `retained` marker. The gate reports their entry-contract gaps as one warning each instead of 54 failures, and fails if a retained screen is published in the manifest. The screens themselves are unchanged. The gate now passes: 0 findings, 35 warnings.
 
 ### Fixed — consuming-workstation component review
 - **`ScenarioSelector`** — native button radios support Space/Enter; arrows and Home/End move focus with selection. A missing saved selection leaves a reachable first option without changing the caller's value; read-only choices remain disabled.

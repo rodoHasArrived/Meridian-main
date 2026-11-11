@@ -44,11 +44,14 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
-The retained whole-package governance gate currently reports 67 legacy/template
-findings and 25 warnings, so `validate_release.py` returns a failure while its
-other six gates pass. That result remains visible in the audit. The separate
-build/export integrity checks validate the curated artifact; they do not turn
-the legacy governance result into a passing release certification.
+The whole-package governance gate reports no findings and 35 warnings, so
+`validate_release.py` passes all seven gates. Ten of the warnings are the
+unpublished compatibility screens marked `retained` in
+`api/template-eligibility.json`: their entry-contract gaps are reported, not
+enforced, and the screens were not migrated. At import the gate reported 67
+findings; the audit records that result and its resolution. A passing validator
+is a static result; browser and assistive-technology validation remain
+deferred as stated there.
 
 ## Archive and verification
 

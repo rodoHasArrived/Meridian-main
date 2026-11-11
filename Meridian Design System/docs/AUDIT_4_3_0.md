@@ -238,7 +238,25 @@ dark, manual dark and forced light. The per-brand focus requirement was
 inverted to match the focus law: a brand inherits the interaction blue and
 fails if it states a different focus colour. `check_contrast.py` reports zero
 findings; no threshold changed. No consumer in this repository sets
-`data-brand`. The governance gate is unchanged at 67 findings and 25 warnings.
+`data-brand`.
+
+**Governance gate (resolved in a follow-up).** The gate reported 67 findings
+and 25 warnings at import, as the tables in this audit record. It now reports
+none and 35 warnings, and `validate_release.py` passes all seven gates:
+
+- Thirteen findings were fixed: `Modal` named its dialog through a fixed id;
+  three shell components quoted raw hex in comments; `BooksLoop` and
+  `PositionDetail` lacked standard tweaks; and `StrategyRuns` and
+  `StrategyFormation` were reported although every view they switch between
+  carries `DataStateSwitch`, which the gate now follows.
+- Fifty-four findings sat in ten unpublished compatibility screens. Those are
+  marked `retained` in `api/template-eligibility.json`, and the gate reports
+  their entry-contract gaps as ten warnings. The screens were not migrated. A
+  retained screen that appears in the manifest's template list fails the gate.
+
+The second item changes what the gate enforces, by the owner's decision: the
+statement below that no governance rule was weakened describes the import, not
+this follow-up.
 
 ## Production browser integration follow-up
 

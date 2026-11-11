@@ -13,7 +13,7 @@ them with `npm ci` from the package directory. See
 | `generate_inventory.py` | Regenerates the readme census between `inventory:generated` markers from `_ds_manifest.json`. `--write` / `--check`. Idempotent. |
 | `generate_families.py` | Generates `api/families.json` and the marked counts/membership section of `api/README.md` from the manifest and family barrels. `--check` rejects unclassified, phantom, duplicate, or drifted assignments/docs. |
 | `release_identity.py` | Renders canonical identity/census blocks in `README.md`, `docs/METRICS.md`, and the package landing page from release/manifest/family records. `--write` / `--check`. |
-| `check_design_system_governance.py` | Static gates: component trio pairing, raw-hex, `!important`, manifest/source parity, template contract, broken routes, hard-coded ARIA references, generated files present. |
+| `check_design_system_governance.py` | Static gates: component trio pairing, raw-hex, `!important`, manifest/source parity, template contract (reported, not enforced, for unpublished screens marked `retained` in `api/template-eligibility.json`), broken routes, hard-coded ARIA references, generated files present. |
 | `sync_catalog.py` | Generates `guidelines/CARD_INDEX.md` from every `@dsCard` marker. `--write` / `--check`. |
 | `sync_template_scaffold.py` | Enforces byte-identical `ds-base.js`/`support.js` from `templates/_scaffold/`. `--write` / `--check`. |
 | `compile_bundle_extensions.py` | Validates `bundle_extensions.json` (sources exist, `.d.ts` pairs, exports real, manifest carries them). This is a compile-plan check; it does not rebuild the bundle. Use the package build for current source output. |
