@@ -43,6 +43,7 @@ export const WORKSTATION_API_ENDPOINTS = {
   ledgerPeriodTrialBalance: UI_API_ROUTES.LedgerPeriodTrialBalance,
   ledgerPeriodPnlSummary: UI_API_ROUTES.LedgerPeriodPnlSummary,
   ledgerPeriodJournalEntries: UI_API_ROUTES.LedgerPeriodJournalEntries,
+  ledgerPeriodAccountRunningBalance: UI_API_ROUTES.LedgerPeriodAccountRunningBalance,
   accountingConfiguration: UI_API_ROUTES.LedgerAccountingConfiguration,
   accountingConfigurationChart: UI_API_ROUTES.LedgerAccountingConfigurationChart,
   accountingConfigurationTemplates: UI_API_ROUTES.LedgerAccountingConfigurationTemplates,
@@ -139,6 +140,21 @@ export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
 
 export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+}
+
+export function ledgerPeriodAccountRunningBalanceEndpoint(
+  periodId: string,
+  query: { account: string; symbol?: string | null; financialAccountId?: string | null }
+): string {
+  const params = new URLSearchParams({ account: query.account });
+  if (query.symbol) {
+    params.set("symbol", query.symbol);
+  }
+  if (query.financialAccountId) {
+    params.set("financialAccountId", query.financialAccountId);
+  }
+
+  return `${routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodAccountRunningBalance, "periodId", periodId)}?${params.toString()}`;
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {

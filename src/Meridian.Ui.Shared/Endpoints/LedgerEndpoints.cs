@@ -321,6 +321,57 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
 
+        app.MapGet(UiApiRoutes.LedgerPeriodAccountRunningBalance, async (
+            Guid periodId,
+            string? account,
+            string? symbol,
+            string? financialAccountId,
+            HttpContext context) =>
+        {
+            if (!HasLedgerReadPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (string.IsNullOrWhiteSpace(account))
+            {
+                return Results.BadRequest(new { error = "Query parameter 'account' is required." });
+            }
+
+            var journalStore = ResolveJournalStore(context);
+            if (journalStore is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            var period = await journalStore.GetPeriodAsync(periodId, context.RequestAborted).ConfigureAwait(false);
+            if (period is null)
+            {
+                return Results.NotFound(new { error = $"Ledger period '{periodId}' was not found." });
+            }
+
+            if (period.LedgerBookId is not { } bookId)
+            {
+                return Results.BadRequest(new { error = $"Ledger period '{periodId}' is not scoped to a ledger book." });
+            }
+
+            var accountName = account.Trim();
+            var entries = await journalStore
+                .QueryAsync(
+                    new LedgerJournalEntryQuery(LedgerBookId: bookId, PeriodId: periodId, AccountName: accountName),
+                    context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(
+                BuildAccountRunningBalance(entries, periodId, bookId, accountName, symbol, financialAccountId),
+                jsonOptions);
+        })
+        .WithName("GetLedgerPeriodAccountRunningBalance").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)
+        .Produces<LedgerAccountRunningBalanceDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status501NotImplemented);
+
         app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
             Guid aggregateId,
             Guid? ledgerBookId,
@@ -2386,6 +2437,63 @@ public static partial class LedgerEndpoints
             NetIncome = CalculateNetIncome(lines),
             PeriodOnPeriodVariance = null
         };
+    }
+
+    /// <summary>
+    /// Posting history for one account in store order, with a running balance in the account's
+    /// normal-balance sign. The store's account filter is re-applied here so the result is correct
+    /// for any <see cref="ILedgerJournalStore"/> implementation.
+    /// </summary>
+    internal static LedgerAccountRunningBalanceDto BuildAccountRunningBalance(
+        IReadOnlyList<LedgerJournalEntryRecord> entries,
+        Guid periodId,
+        Guid ledgerBookId,
+        string accountName,
+        string? symbol,
+        string? financialAccountId)
+    {
+        var symbolFilter = string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim();
+        var financialAccountFilter = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
+        var lines = entries
+            .OrderBy(static entry => entry.Entry.Timestamp)
+            .ThenBy(static entry => entry.GlobalSequence)
+            .SelectMany(static entry => entry.Entry.Lines.Select(line => (Record: entry, Line: line)))
+            .Where(item => string.Equals(item.Line.Account.Name, accountName, StringComparison.OrdinalIgnoreCase))
+            .Where(item => symbolFilter is null
+                || string.Equals(item.Line.Account.Symbol, symbolFilter, StringComparison.OrdinalIgnoreCase))
+            .Where(item => financialAccountFilter is null
+                || string.Equals(item.Line.Account.FinancialAccountId, financialAccountFilter, StringComparison.OrdinalIgnoreCase))
+            .ToArray();
+
+        LedgerAccountType? accountType = lines.Length > 0 ? lines[0].Line.Account.AccountType : null;
+        var debitNormal = accountType is LedgerAccountType.Asset or LedgerAccountType.Expense;
+        var balance = 0m;
+        var points = new List<LedgerAccountRunningBalancePointDto>(lines.Length);
+        foreach (var (record, line) in lines)
+        {
+            balance += debitNormal ? line.Debit - line.Credit : line.Credit - line.Debit;
+            points.Add(new LedgerAccountRunningBalancePointDto(
+                record.Entry.JournalEntryId,
+                line.EntryId,
+                record.GlobalSequence,
+                record.Entry.Timestamp,
+                string.IsNullOrWhiteSpace(line.Description) ? record.Entry.Description : line.Description,
+                line.Debit,
+                line.Credit,
+                balance));
+        }
+
+        return new LedgerAccountRunningBalanceDto(
+            periodId,
+            ledgerBookId,
+            accountName,
+            accountType?.ToString(),
+            symbolFilter,
+            financialAccountFilter,
+            lines.Sum(static item => item.Line.Debit),
+            lines.Sum(static item => item.Line.Credit),
+            balance,
+            points);
     }
 
     private static IReadOnlyList<LedgerJournalEntryDto> BuildJournalEntryDtos(

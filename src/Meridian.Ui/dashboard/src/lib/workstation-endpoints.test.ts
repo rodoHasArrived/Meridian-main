@@ -22,6 +22,7 @@ import {
   WORKSTATION_API_ENDPOINTS,
   WORKSTATION_API_ENDPOINT_TEMPLATES,
   backfillCheckpointEndpoint,
+  ledgerPeriodAccountRunningBalanceEndpoint,
   backfillCheckpointPendingEndpoint,
   backfillCheckpointResumeEndpoint,
   workstationIngestionOperationActionEndpoint,
@@ -939,5 +940,16 @@ describe("execution control route contract parity", () => {
       EXECUTION_API_ENDPOINTS.circuitBreaker,
       "the browser workstation must be able to open the execution circuit breaker, not only WPF"
     ).toBe(UI_API_ROUTES.ExecutionControlsCircuitBreaker);
+  });
+
+  it("builds the ledger account running-balance route with its account query", () => {
+    expect(
+      ledgerPeriodAccountRunningBalanceEndpoint("11111111-1111-1111-1111-111111111111", {
+        account: "Management fees",
+        symbol: "AAPL"
+      })
+    ).toBe(
+      "/api/ledger/periods/11111111-1111-1111-1111-111111111111/accounts/running-balance?account=Management+fees&symbol=AAPL"
+    );
   });
 });

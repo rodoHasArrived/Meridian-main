@@ -1,12 +1,14 @@
 import { apiGetJson } from "@/lib/api";
 import {
   WORKSTATION_API_ENDPOINTS,
+  ledgerPeriodAccountRunningBalanceEndpoint,
   ledgerPeriodJournalEntriesEndpoint,
   ledgerPeriodPnlSummaryEndpoint,
   ledgerPeriodsEndpoint,
   ledgerPeriodTrialBalanceEndpoint
 } from "@/lib/workstation-endpoints";
 import type {
+  LedgerAccountRunningBalance,
   LedgerBook,
   LedgerPeriod,
   LedgerPeriodPnlSummary,
@@ -38,4 +40,12 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
 
 export function getLedgerPeriodJournalEntries(periodId: string) {
   return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+}
+
+/** Posting history and running balance for one account of a ledger period (durable book of record). */
+export function getLedgerPeriodAccountRunningBalance(
+  periodId: string,
+  query: { account: string; symbol?: string | null; financialAccountId?: string | null }
+) {
+  return apiGetJson<LedgerAccountRunningBalance>(ledgerPeriodAccountRunningBalanceEndpoint(periodId, query));
 }
