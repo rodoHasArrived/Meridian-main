@@ -24,7 +24,7 @@ const CSS = `
   overflow:hidden;text-overflow:ellipsis;}
 .mds-rpanel__detail{margin:0;color:var(--text-muted,var(--ws-text-muted,#606870));font-size:12px;line-height:1.45;}
 .mds-rpanel__foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;
-  border-top:1px solid var(--border,#D2CDC3);padding-top:10px;margin-top:2px;}
+  border-top:1px solid var(--border-color,#D2CDC3);padding-top:10px;margin-top:2px;}
 `;
 
 export interface ReadinessPanelProps {

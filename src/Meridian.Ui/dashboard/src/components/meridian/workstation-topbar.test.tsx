@@ -77,14 +77,18 @@ describe("WorkstationTopbar", () => {
     await userEvent.click(navToggle);
     expect(onOpenNavigation).toHaveBeenCalledTimes(1);
 
-    const command = screen.getByRole("button", { name: "Open command search" });
+    const command = screen.getByRole("button", { name: "Search commands Ctrl K" });
+    expect(command).toHaveAccessibleDescription("Open command search. Keyboard shortcut: Ctrl K.");
     expect(command).toHaveAttribute("aria-controls", "command-palette");
     expect(command).toHaveAttribute("aria-haspopup", "dialog");
     await userEvent.click(command);
     expect(onOpenCommandPalette).toHaveBeenCalledTimes(1);
 
     expect(screen.getByRole("region", { name: "Trust status" })).toHaveAttribute("aria-live", "polite");
-    await userEvent.click(screen.getByLabelText(/^Environment, provenance, and provider posture\./));
+    const summary = screen.getByText("PAPER").closest("summary");
+    expect(summary).toHaveAccessibleName("PAPER SEEDED Seeded demo data");
+    expect(summary).toHaveAccessibleDescription(expect.stringMatching(/^Environment, provenance, and provider posture\./));
+    await userEvent.click(screen.getByText("PAPER"));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();

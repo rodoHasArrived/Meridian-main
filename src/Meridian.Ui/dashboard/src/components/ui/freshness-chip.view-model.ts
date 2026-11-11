@@ -13,7 +13,7 @@ export interface FreshnessChipInput {
   label?: string;
   /** Marks the surface as failing regardless of age. */
   errorMessage?: string | null;
-  /** Suppresses the aging tone while a refresh is running. */
+  /** A refresh is running; it does not make the last successful update newer. */
   inFlight?: boolean;
   /** Push-fed surface indicator (reserved for the live data spine). */
   live?: boolean;
@@ -33,6 +33,30 @@ export interface FreshnessChipViewModel {
 export function buildFreshnessChipViewModel(input: FreshnessChipInput): FreshnessChipViewModel {
   const subject = input.label?.trim() || "Data";
   const age = formatRelativeAge(input.timestamp, input.now);
+  const timestampMs = input.timestamp ? Date.parse(input.timestamp) : NaN;
+  const hasValidTimestamp = Number.isFinite(timestampMs);
+
+  if (input.errorMessage) {
+    return {
+      state: "failing",
+      badgeVariant: "danger",
+      dot: false,
+      text: hasValidTimestamp ? `Failing · ${age}` : "Failing",
+      ariaLabel: `${subject} refresh is failing: ${input.errorMessage}${hasValidTimestamp ? ` Last success ${age}.` : ""}`,
+      title: joinDetail(input.errorMessage, input.detail)
+    };
+  }
+
+  if (input.timestamp && !hasValidTimestamp) {
+    return {
+      state: "unknown",
+      badgeVariant: "outline",
+      dot: false,
+      text: "Unavailable",
+      ariaLabel: `${subject} freshness is unavailable: last-success timestamp is invalid.`,
+      title: joinDetail("Last-success timestamp is invalid.", input.detail)
+    };
+  }
 
   if (input.live) {
     return {
@@ -42,17 +66,6 @@ export function buildFreshnessChipViewModel(input: FreshnessChipInput): Freshnes
       text: "Live",
       ariaLabel: `${subject} is streaming live.`,
       title: input.detail ?? null
-    };
-  }
-
-  if (input.errorMessage) {
-    return {
-      state: "failing",
-      badgeVariant: "danger",
-      dot: false,
-      text: input.timestamp ? `Failing · ${age}` : "Failing",
-      ariaLabel: `${subject} refresh is failing: ${input.errorMessage}${input.timestamp ? ` Last success ${age}.` : ""}`,
-      title: joinDetail(input.errorMessage, input.detail)
     };
   }
 
@@ -67,8 +80,8 @@ export function buildFreshnessChipViewModel(input: FreshnessChipInput): Freshnes
     };
   }
 
-  const ageMs = input.now - new Date(input.timestamp).getTime();
-  const aging = Number.isFinite(ageMs) && ageMs > input.staleBudgetMs && !input.inFlight;
+  const ageMs = input.now - timestampMs;
+  const aging = ageMs > input.staleBudgetMs;
   if (aging) {
     return {
       state: "aging",
@@ -76,7 +89,7 @@ export function buildFreshnessChipViewModel(input: FreshnessChipInput): Freshnes
       dot: false,
       text: `Stale · ${age}`,
       ariaLabel: `${subject} is stale: last success ${age}.`,
-      title: input.detail ?? null
+      title: input.inFlight ? joinDetail("Refresh in progress.", input.detail) : input.detail ?? null
     };
   }
 

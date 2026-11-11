@@ -12,7 +12,7 @@ const CSS = `
 .mds-gate{position:relative;flex:1 1 0;display:flex;flex-direction:column;align-items:center;
   gap:6px;text-align:center;padding:0 4px;min-width:0;}
 .mds-gate:not(:first-child)::before{content:"";position:absolute;top:13px;left:calc(-50% + 14px);
-  width:calc(100% - 28px);height:2px;background:var(--mds-gate-line,var(--border,#D2CDC3));z-index:0;}
+  width:calc(100% - 28px);height:2px;background:var(--mds-gate-line,var(--border-color,#D2CDC3));z-index:0;}
 .mds-gate__node{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;
   width:28px;height:28px;border-radius:50%;border:1.5px solid var(--severity-info-bd,#D2CDC3);
   background:var(--bg-panel,var(--bg-light,#F8F7F3));color:var(--severity-info-fg,#606870);
@@ -63,7 +63,7 @@ export function GateRail({ gates = [], className }: GateRailProps) {
       {gates.map((g, i) => {
         const sev = normalizeSeverity(g.status);
         const prevReady = i > 0 && normalizeSeverity(gates[i - 1].status) === "ready";
-        const line = prevReady ? "var(--severity-ready-fg,#2C5C40)" : "var(--border,#D2CDC3)";
+        const line = prevReady ? "var(--severity-ready-fg,#2C5C40)" : "var(--border-color,#D2CDC3)";
         const style = { "--mds-gate-line": line } as CSSProperties;
         return (
           <li

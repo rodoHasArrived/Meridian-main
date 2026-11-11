@@ -66,8 +66,8 @@ export function NumberInput({
       ) : null}
       <div
         className={cn(
-          "flex h-9 items-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
-          "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
+          "flex h-9 items-center rounded-[var(--radius-button)] border bg-[var(--ws-surface-raised)]",
+          "focus-within:border-[var(--interaction-focus)] focus-within:ring-2 focus-within:ring-[var(--interaction-focus)]",
           error ? "border-danger/60" : "border-border",
           disabled && "cursor-not-allowed opacity-55"
         )}
@@ -77,7 +77,7 @@ export function NumberInput({
           aria-label="Decrement"
           disabled={disabled || (min !== undefined && current <= min)}
           onClick={() => commit(current - step)}
-          className="flex h-full w-8 items-center justify-center border-r border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
+          className="flex h-full w-8 items-center justify-center border-r border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
         >
           −
         </button>
@@ -100,7 +100,7 @@ export function NumberInput({
           aria-label="Increment"
           disabled={disabled || (max !== undefined && current >= max)}
           onClick={() => commit(current + step)}
-          className="flex h-full w-8 items-center justify-center border-l border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
+          className="flex h-full w-8 items-center justify-center border-l border-border text-base font-semibold text-foreground transition-colors hover:bg-[var(--ws-row-hover)] focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] disabled:cursor-not-allowed disabled:opacity-50 [outline-offset:-2px]"
         >
           +
         </button>

@@ -84,7 +84,7 @@
 .workspace-workbench-inspect-toggle { display: none; }
 .workspace-workbench-shell-main > * { min-width: 0; }
 .workspace-workbench-shell-main:focus-visible,
-.workspace-workbench-shell-inspector:focus-visible { outline: 2px solid var(--interaction-focus, #2D6FB3); outline-offset: 2px; }
+.workspace-workbench-shell-inspector:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
 @media (max-width: 1279px) {
   .workspace-workbench-shell--switchable .workspace-workbench-shell-layout { grid-template-columns: minmax(0, 1fr); }
   .workspace-workbench-shell--switchable .workspace-workbench-inspect-toggle { display: flex; justify-content: end; }

@@ -365,7 +365,7 @@ describe("App", () => {
     expect(screen.getByRole("status", { name: "Activation status check" })).toHaveTextContent(
       "Checking activation status"
     );
-    expect(screen.queryByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(screen.queryByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .not.toBeInTheDocument();
     expect(mockedUseWorkstationData).not.toHaveBeenCalled();
   });
@@ -396,7 +396,7 @@ describe("App", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Retry activation check" }));
 
-    expect(await screen.findByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(await screen.findByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .toBeInTheDocument();
     expect(firstRunRequests).toBe(2);
     expect(mockedUseWorkstationData).toHaveBeenCalled();
@@ -534,7 +534,8 @@ describe("App", () => {
   it("opens and closes the command palette with Control+K", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
-    const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
+    const trigger = screen.getByRole("button", { name: "Go to route, action, evidence... Ctrl K" });
+    expect(trigger).toHaveAccessibleDescription("Open workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(trigger).toHaveClass("mds-masthead__search");
@@ -547,7 +548,8 @@ describe("App", () => {
     const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
     expect(dialog).toHaveAttribute("id", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(trigger).toHaveAccessibleName("Close workstation command palette (Ctrl K)");
+    expect(trigger).toHaveAccessibleName("Go to route, action, evidence... Ctrl K");
+    expect(trigger).toHaveAccessibleDescription("Close workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
@@ -592,6 +594,21 @@ describe("App", () => {
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
     expect(confidence).toHaveTextContent("4 loaded workspace items");
+    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    await user.click(trust.querySelector("summary") as HTMLElement);
+    expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
+      .toHaveAttribute("href", "/");
+    expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
+      .toHaveAccessibleDescription(expect.stringContaining("Open Today"));
+    await user.click(trust.querySelector("summary") as HTMLElement);
+    const status = within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" });
+    expect(within(status).getByTestId("status-row-issues")).toHaveTextContent("Decisions:Brokerage sync failed");
+    ["Decisions", "Providers", "Provenance", "Workspace data"].forEach((label) => {
+      expect(within(status.querySelector("dl") as HTMLElement).getByText(label)).toBeInTheDocument();
+    });
+    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more$/))
+      .toBeInTheDocument();
+
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(confidence).toHaveTextContent("All authorized scopes");

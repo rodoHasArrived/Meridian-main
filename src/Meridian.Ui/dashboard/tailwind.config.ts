@@ -10,12 +10,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // Every stack must end in a CSS generic family. Chromium does not resolve
-        // ui-monospace / ui-sans-serif, so without the generic tail a machine
-        // missing the named faces (Linux, macOS Chrome) falls back to Times.
-        sans: ["IBM Plex Sans", "system-ui", "ui-sans-serif", "sans-serif"],
-        mono: ["IBM Plex Mono", "ui-monospace", "Consolas", "monospace"],
-        display: ["IBM Plex Sans", "system-ui", "ui-sans-serif", "sans-serif"]
+        // Native primitives and utilities share the canonical typography tokens.
+        // IBM Plex binaries are bundled locally; each token retains a generic fallback.
+        sans: ["var(--font-body)", "sans-serif"],
+        mono: ["var(--font-data)", "monospace"],
+        display: ["var(--font-display)", "sans-serif"]
       },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",

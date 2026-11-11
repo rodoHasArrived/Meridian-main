@@ -111,3 +111,35 @@ The backend run used a source-linked focused harness; the full canonical test as
 complete in this session. This is not a claim that the
 entire backend suite or aggregate quality gate passed. No live providers, Windows Chrome/Edge,
 WPF runtime or assistive technology were exercised. Local checks do not replace hosted checks.
+
+## Integration into PR #3501 — 2026-11-11
+
+The program is combined with the current Design System 4.3 workstation controls, fonts,
+semantic tokens and accessibility fixes. Combined Context, authorized triage, complete source
+exports, exact financial context and investigation remain available. Existing WPF work from
+#3501 is preserved; this program adds no WPF implementation.
+
+Integration repairs cover interrupted triage refreshes, definitive discussion-version conflicts,
+SQL schema changes, controlled table visibility/sorting, and selected-account triage authority.
+Accounting-only operators retain exact account/fund ownership checks without gaining trading
+visibility. Legacy unscoped command receipts remain replayable. Technical run identities remain
+copyable in disclosure rather than appearing as primary operator labels. The footer retains
+material attention and stale-page evidence without repeating navigation. Design-system ratchet
+allowances only decrease; no rule or baseline was loosened.
+
+Validation on the combined source, using the declared lockfile dependencies:
+
+| Check | Result and scope |
+| --- | --- |
+| Dashboard source suite | 448 files, 4,984 tests passed, zero failed or skipped. |
+| Backend | Canonical assembly built; 131 focused tests passed, zero failed/skipped, including real PostgreSQL persistence/concurrency, native DuckDB exports, scope refusal and exact retry compatibility. |
+| Build and static checks | Production build, strict TypeScript, lint, canonical 77-file asset/font/license check and seven Node tooling tests passed. Lint retains 98 hook warnings. |
+| Maintained generation | Converged across two passes; every required and advisory step passed, with no protected-file violations. |
+| Browser workflows | 18 interaction groups at 1920 × 1080, 1440 × 900 and 1366 × 768 passed in Linux Chromium. Eighteen axe scans had no violations; incomplete checks remain for manual assessment. |
+| Navigation and masthead | 28 mask/theme/forced-colors checks passed. Masthead text measured 11.34:1 in light appearance and 16.38:1 in dark appearance. |
+| Rendered catalog | All 82 routes captured in four disjoint batches; coverage, route identity, image quality and freshness validated. |
+| Screenshot contracts | 41 Python regression tests passed. |
+
+The full backend suite, Windows Chrome/Edge, assistive technology and live providers were not
+exercised. Synthetic source gaps remain explicit unavailable states. Hosted GitHub checks are
+the integration authority; these results do not authorize merging or production activation.

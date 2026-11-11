@@ -75,6 +75,23 @@ describe("authorized operator triage", () => {
     expect(vi.mocked(commandOperatorTriage).mock.calls[0][1]).toEqual(vi.mocked(commandOperatorTriage).mock.calls[1][1]);
   });
 
+  it("submits a reviewed triage action with Enter and cancels without dispatching another command", async () => {
+    const user = userEvent.setup();
+    vi.mocked(commandOperatorTriage).mockResolvedValueOnce({ status: "Applied", workItemId: blocked.workItemId, replayed: false });
+    await mount("account-1");
+    await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+    await user.type(screen.getByLabelText("Reason"), "Keyboard investigation{Enter}");
+    await waitFor(() => expect(commandOperatorTriage).toHaveBeenCalledWith(blocked.workItemId, expect.objectContaining({
+      action: "Acknowledge", reason: "Keyboard investigation", fundAccountId: "account-1"
+    }), expect.any(Object)));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Acknowledge" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Acknowledge" }));
+    await user.type(screen.getByLabelText("Reason"), "Abandoned change");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(commandOperatorTriage).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps a pending command alive across evidence refresh and recovers its controls after confirmation", async () => {
     const user = userEvent.setup();
     let confirm!: (result: Awaited<ReturnType<typeof commandOperatorTriage>>) => void;

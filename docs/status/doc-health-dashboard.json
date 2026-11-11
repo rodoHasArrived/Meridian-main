@@ -1,11 +1,11 @@
 {
-  "total_files": 948,
-  "orphaned_count": 390,
+  "total_files": 950,
+  "orphaned_count": 391,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:c0a0095cceef4a771e42b5923e47c16241be8060a81d7e167b8f50740a7b6f40",
+  "signal_digest": "sha256:503ebda8a3c66677dee6abc965a258b4ed7508e1264fcdd1a262c5922aed85fb",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -303,6 +303,7 @@
     "Meridian Design System/guidelines/VISUAL_FOUNDATIONS.md",
     "Meridian Design System/guidelines/WORKSTATION_BLUEPRINT.md",
     "Meridian Design System/guidelines/WORKSTATION_HIERARCHY.md",
+    "Meridian Design System/guidelines/financial-numbers.md",
     "Meridian Design System/templates/PRODUCTION_SCREENS.md",
     "Meridian Design System/tests/A11Y_RUN_4.2.0.md",
     "Meridian Design System/tests/A11Y_RUN_4.3.0.md",
@@ -2476,6 +2477,13 @@
     },
     {
       "path": "docs/engineering/plans/bond-capability-expansion.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/browser-workstation-ux-program.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6389,6 +6397,13 @@
     },
     {
       "path": "Meridian Design System/guidelines/EXTENDING.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "Meridian Design System/guidelines/financial-numbers.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

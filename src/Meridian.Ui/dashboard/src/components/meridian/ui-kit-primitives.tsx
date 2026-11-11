@@ -536,6 +536,9 @@ function DenseDataTableComponent<T>({
   const wrapElement = (
     <div
       className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
+      role={!selectableRows ? "region" : undefined}
+      aria-label={!selectableRows ? `${ariaLabel} scroll area` : undefined}
+      tabIndex={!selectableRows ? 0 : undefined}
       data-empty={rows.length === 0 ? "true" : undefined}
       data-density={density}
       ref={wrapRef}

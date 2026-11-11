@@ -1,0 +1,92 @@
+/* Meridian webfonts — Programmed Institutionalism.
+   Interface: IBM Plex Sans (modern grotesk, per the identity brief).
+   Data/code: IBM Plex Mono — ALL numerics are mono + tabular; prices never jump.
+   Both families are SELF-HOSTED from assets/fonts/ (OFL — licenses alongside):
+   zero egress, identical rendering everywhere. local() first so an installed
+   copy short-circuits the download. The identity wordmark on the brand sheet
+   uses a geometric grotesk we don't have binaries for; IBM Plex Sans is the
+   documented substitute until the real face is supplied. */
+
+/* IBM Plex Sans — self-hosted. */
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans"), local("IBMPlexSans"),
+       url("../assets/fonts/IBMPlexSans-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Italic"), local("IBMPlexSans-Italic"),
+       url("../assets/fonts/IBMPlexSans-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Medium"), local("IBMPlexSans-Medium"),
+       url("../assets/fonts/IBMPlexSans-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans SemiBold"), local("IBMPlexSans-SemiBold"),
+       url("../assets/fonts/IBMPlexSans-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Sans";
+  src: local("IBM Plex Sans Bold"), local("IBMPlexSans-Bold"),
+       url("../assets/fonts/IBMPlexSans-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* IBM Plex Mono — self-hosted. local() first so an installed copy wins. */
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono"), local("IBMPlexMono"),
+       url("../assets/fonts/IBMPlexMono-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Italic"), local("IBMPlexMono-Italic"),
+       url("../assets/fonts/IBMPlexMono-Italic.ttf") format("truetype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Medium"), local("IBMPlexMono-Medium"),
+       url("../assets/fonts/IBMPlexMono-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono SemiBold"), local("IBMPlexMono-SemiBold"),
+       url("../assets/fonts/IBMPlexMono-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "IBM Plex Mono";
+  src: local("IBM Plex Mono Bold"), local("IBMPlexMono-Bold"),
+       url("../assets/fonts/IBMPlexMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

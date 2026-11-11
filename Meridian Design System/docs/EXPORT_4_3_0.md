@@ -25,6 +25,7 @@ directory:
 npm ci
 npm run build
 npm run build:check
+npm run test:release
 python scripts/validate_release.py
 python scripts/export_release.py --check
 python scripts/export_release.py
@@ -35,6 +36,19 @@ the standard library. Build-time dependencies and their exact versions are pinne
 in `package-lock.json`. The source freshness check and export integrity check
 must pass after component changes. Documentation-only edits still change the
 archive's per-file hashes and require a new export.
+
+With Chromium available, `npm run test:components` runs the ScenarioSelector and
+optimistic-observer source regressions. `npm run test:agency` exercises agency
+contracts and `npm run test:browser` exercises the standalone reference. Set
+`MERIDIAN_CHROMIUM_PATH` when selecting a system Chromium. These browser checks
+have their own synthetic-data scope; they do not replace workstation integration
+or live-backend validation.
+
+The retained whole-package governance gate currently reports 67 legacy/template
+findings and 25 warnings, so `validate_release.py` returns a failure while its
+other six gates pass. That result remains visible in the audit. The separate
+build/export integrity checks validate the curated artifact; they do not turn
+the legacy governance result into a passing release certification.
 
 ## Archive and verification
 
@@ -81,8 +95,11 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   narrower browser-bundle path; it does not convert the full template catalogue.
 - **Platform integration:** map the package's token roles and domain contracts
   deliberately. `tokens/parity-manifest.json` shares selected names with the
-  application while declaring that values are not shared. Keep production app
-  and WPF changes outside this export unless separately requested.
+  application while declaring that values are not shared. The production browser
+  integration in this PR is delivered through the monorepo's native source and
+  built workstation assets; this standalone archive contains the design-system
+  package. Concurrent WPF integration uses its platform resources and requires
+  Windows validation separately.
 
 The archive excludes uploads, scraps, screenshots, embedded application-source
 snapshots, local dependency directories, and previous export output. It retains

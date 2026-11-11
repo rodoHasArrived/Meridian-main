@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -208,8 +210,8 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           {ladder ? <Badge variant="outline">{ladder.engineVersion}</Badge> : null}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Scenario
-            <select
-              className="rounded border bg-background px-2 py-1 text-sm text-foreground"
+            <Select
+              className="min-h-8 py-1 text-sm"
               value={scenarioId}
               onChange={(event) => {
                 setScenarioId(event.target.value);
@@ -222,14 +224,14 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   {option.displayName}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Min balance
-            <input
+            <Input
               type="number"
               inputMode="decimal"
-              className="w-28 rounded border bg-background px-2 py-1 text-sm text-foreground"
+              className="min-h-8 w-28 py-1 font-mono text-sm"
               placeholder="0"
               value={minimumCashInput}
               onChange={(event) => {
@@ -322,7 +324,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                 <svg
                   viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
                   className="w-full"
-                  role="img"
+                  role="group"
                   aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
                 >
                   {chart.yTicks.map((tick) => (
@@ -378,8 +380,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                       key={bar.index}
                       role="button"
                       tabIndex={0}
+                      aria-pressed={bar.index === selectedBucket}
                       aria-label={bar.ariaLabel}
-                      className="cursor-pointer focus:outline-hidden"
+                      className="cursor-pointer focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--interaction-focus)]"
                       onClick={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {

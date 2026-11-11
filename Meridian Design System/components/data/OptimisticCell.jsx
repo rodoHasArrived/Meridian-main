@@ -67,7 +67,14 @@ function createLedger(handlers = { current: {} }) {
   const h = () => handlers.current || {};
   let entries = [];
   const subs = new Set();
-  const emit = () => subs.forEach((f) => f(entries));
+  // Observers cannot change the outcome of a write that the transport already
+  // confirmed, or prevent another subscriber from receiving that outcome.
+  const notify = (listener, value, name) => {
+    try { listener && listener(value); }
+    catch (err) { console.error(`OptimisticProvider: ${name} observer failed`, err); }
+  };
+  const emit = () => subs.forEach((f) => notify(f, entries, "ledger"));
+  const settle = (edit) => notify(h().onSettle, edit, "onSettle");
   const patch = (id, fn) => { entries = entries.map((e) => (e.id === id ? { ...e, ...fn(e) } : e)); emit(); };
   const api = {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
@@ -77,15 +84,17 @@ function createLedger(handlers = { current: {} }) {
     async commit(edit) {
       const e = { id: `opt-${++seq}`, status: "pending", at: Date.now(), ...edit };
       entries = [...entries, e]; emit();
+      let result;
       try {
-        const r = h().commit ? await h().commit(e) : undefined;
-        patch(e.id, () => ({ status: "confirmed", settledAt: Date.now(), receipt: r && r.receipt }));
-        h().onSettle && h().onSettle({ ...e, status: "confirmed" });
+        result = h().commit ? await h().commit(e) : undefined;
       } catch (err) {
         const reason = (err && err.message) || String(err || "rejected by the write path");
         patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
-        h().onSettle && h().onSettle({ ...e, status: "rejected", reason });
+        settle({ ...e, status: "rejected", reason });
+        return;
       }
+      patch(e.id, () => ({ status: "confirmed", settledAt: Date.now(), receipt: result && result.receipt }));
+      settle({ ...e, status: "confirmed" });
     },
     async revert(ids, reason) {
       const list = Array.isArray(ids) ? ids : [ids];
@@ -101,10 +110,12 @@ function createLedger(handlers = { current: {} }) {
       targets.forEach((t) => patch(t.id, () => ({ status: "reverting" })));
       try {
         if (h().revert) await h().revert(targets, reason);
-        targets.forEach((t) => { patch(t.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })); h().onSettle && h().onSettle({ ...t, status: "reverted", reason }); });
       } catch (err) {
         targets.forEach((t) => patch(t.id, () => ({ status: "confirmed", revertError: (err && err.message) || String(err) })));
+        return;
       }
+      targets.forEach((t) => patch(t.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })));
+      targets.forEach((t) => settle({ ...t, status: "reverted", reason }));
     },
     dismiss(id) { patch(id, () => ({ status: "dismissed" })); },
   };
