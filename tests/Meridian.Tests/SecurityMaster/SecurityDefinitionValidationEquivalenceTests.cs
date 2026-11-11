@@ -20,8 +20,8 @@ namespace Meridian.Tests.SecurityMaster;
 /// definition-expressible, a mutation of the twin trips <b>both</b> validators with that code,
 /// and the definition validator never reports a code the kind validator does not — so S2-B2 can
 /// switch the command path onto the definition surface without changing a single verdict on the
-/// expressible set. Codes absent from the ledger are codec-only: their subject data has no
-/// module home yet, and they stay with the kind validation at the codec boundary.
+/// expressible set. The ledger was one side of a partition while some rules were codec-only;
+/// since the stage-3 contraction every term rule is on the definition surface and ledgered here.
 /// </summary>
 [Trait("Category", "Unit")]
 public sealed class SecurityDefinitionValidationEquivalenceTests

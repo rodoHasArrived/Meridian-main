@@ -61,6 +61,46 @@ public sealed class SecurityRetainedFoldClearedValueTests
     }
 
     [Fact]
+    public void ABondDocumentsSinkingFundModule_SurvivesReplayUnchanged()
+    {
+        // A bond's principal schedule is homed on the principalSchedule module, so the older
+        // sinkingFund module is still something only the retained document holds. A hand-shaped
+        // bond document that carries one — with a pro-rata flag and a frequency the bond row has
+        // no key for — must come back from a replay exactly as written.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "Bond",
+            new
+            {
+                maturity = "2030-01-01",
+                issueDate = "2024-01-01",
+                couponType = "Fixed",
+                couponRate = 4.25m,
+                dayCount = "30/360",
+                isCallable = false,
+                issuerName = "ACME Corp",
+                subclass = "SinkingFund",
+                par = 1000m,
+                paymentFrequency = "SemiAnnual",
+                principalSchedule = new object[] { new { paymentDate = "2028-01-01", amount = 400m } }
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["sinkingFund"] = JsonNode.Parse(
+            """{"schedule":[{"sinkDate":"2028-01-01","amount":400}],"sinkFrequency":"Annual","isProRata":true}""");
+
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _)
+            .Should().BeTrue("the bond row has no key for the sinking-fund module, so the document keeps its carry");
+
+        var sinkingFund = SecurityEconomicDefinitionAdapter.ToEconomicRecord(replayed).EconomicTerms.GetProperty("sinkingFund");
+        sinkingFund.GetProperty("isProRata").GetBoolean().Should().BeTrue();
+        sinkingFund.GetProperty("sinkFrequency").GetString().Should().Be("Annual");
+        sinkingFund.GetProperty("schedule").GetArrayLength().Should().Be(1);
+    }
+
+    [Fact]
     public void Fold_LeavesAFlatAuthoritativeFieldCleared_AndStillFillsTheRest()
     {
         using var rebuilt = JsonDocument.Parse(
