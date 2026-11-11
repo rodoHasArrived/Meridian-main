@@ -53,23 +53,6 @@ public static class DailyPortfolioPricingDraftBuilder
         return drafts;
     }
 
-    /// <summary>
-    /// Compatibility helper for a single-security projection. Multi-security projections fail
-    /// closed so a caller cannot silently discard drafts; use <see cref="BuildDrafts"/> instead.
-    /// </summary>
-    [PostingCalculationNotYetConnected("Single-security compatibility helper; the daily mark-to-market path calls BuildDrafts.")]
-    public static AutomatedJournalDraft? BuildDraft(DailyPortfolioPricingProjection projection)
-    {
-        var drafts = BuildDrafts(projection);
-        return drafts.Count switch
-        {
-            0 => null,
-            1 => drafts[0],
-            _ => throw new InvalidOperationException(
-                "Daily portfolio pricing produced multiple security/account drafts; use BuildDrafts to retain the full batch.")
-        };
-    }
-
     private static AutomatedJournalDraft BuildDraft(
         DailyPortfolioPricingProjection projection,
         DraftScope scope,

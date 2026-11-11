@@ -6,7 +6,7 @@
 Seeded ledger: 10,000,000 capital on 2025-12-31; 100,000 EUR bought at 1.08 on 2026-01-10;
 1,000,000 realized gain on 2026-01-20. Terms: management fee 2% on a 365-day basis; performance
 fee 20% above a 10,000,000 high-water mark with no hurdle; EUR/USD 1.10 on 2026-01-31 and 1.09 on
-2026-02-28.
+2026-02-28, each quoted on its own date (`maxRateAgeDays` 0).
 
 Hand check:
 

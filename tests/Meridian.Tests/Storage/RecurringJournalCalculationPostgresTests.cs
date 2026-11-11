@@ -68,7 +68,8 @@ public sealed class RecurringJournalCalculationPostgresTests
                     new() { ["annualRate"] = 0.02m, ["yearBasisDays"] = 365m }, ct);
                 await RegisterAsync(session, scope, "performance-fee", PerformanceFeeAccrualCalculation.CalculationKind,
                     new() { ["performanceFeeRate"] = 0.20m, ["highWaterMark"] = 10_000_000m, ["hurdleAmount"] = 0m, ["crystallize"] = 0m }, ct);
-                await RegisterAsync(session, scope, "fx-revaluation", FxRevaluationCalculation.CalculationKind, new(), ct);
+                await RegisterAsync(session, scope, "fx-revaluation", FxRevaluationCalculation.CalculationKind,
+                    new() { ["maxRateAgeDays"] = 0m }, ct);
             }
 
             var fixture = await CreateFixtureAsync(root, database, book, recurring);
@@ -97,6 +98,85 @@ public sealed class RecurringJournalCalculationPostgresTests
                 .Should().BeEquivalentTo(golden["2026-02-28"], options => options.WithStrictOrdering());
             (await store.GetByPeriodAsync(january.PeriodId, ct)).Should().HaveCount(5);
             (await store.GetByPeriodAsync(february.PeriodId, ct)).Should().BeEmpty("February drafts still await approval");
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FixedIncomeAccrual_ReadsOpenFaceValueLotsFromPostgres_AndDraftsTheMonthsCouponAndAmortization()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        var ct = timeout.Token;
+        var root = Path.Combine(Path.GetTempPath(), "meridian-recurring-bond-" + Guid.NewGuid().ToString("N"));
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        try
+        {
+            var store = database.JournalStore;
+            var securityId = Guid.NewGuid();
+            var book = new LedgerBookRecord(Guid.NewGuid(), Fund, Guid.NewGuid(), FundStructureNodeKindDto.Fund,
+                "Golden bond book", "USD", Registered, Registered);
+            var scope = new RecurringJournalScope(Fund, book.LedgerBookId, Entity, "USD", Tenant, Company);
+            var carrying = LedgerAccounts.Securities("UST30");
+            using (FundScopeTenantAuthority.Enter(Tenant, "golden-fixture"))
+            {
+                await store.SaveLedgerBookAsync(book, ct);
+                await SavePeriodAsync(store, book, 2026, 1, ct);
+                // 1,000,000 face at 101.20, maturing 2026-12-31: 12,000 of premium over 365 days.
+                await store.SaveTaxLotAsync(new LedgerTaxLotRecord(Guid.NewGuid(), book.LedgerBookId, carrying, "lot-1",
+                    new DateOnly(2025, 12, 31), 10_000m, 10_000m, 101.20m, "USD", Registered, Registered,
+                    SecurityId: securityId, BookPositionId: Guid.NewGuid(), OriginalFace: 1_000_000m, BookedFactor: 1m, ParBasis: 100m), ct);
+            }
+
+            var recurring = new FileRecurringJournalStore(Path.Combine(root, "recurring"));
+            await recurring.InitializeAsync(ct);
+            await using (var session = await recurring.OpenSessionAsync(ct))
+            {
+                await session.RegisterTemplateAsync(new JournalTemplate("bond-template", "Bond accrual", "Calculated each period", [],
+                    calculation: new JournalTemplateCalculation(FixedIncomeAccrualCalculation.CalculationKind,
+                        new Dictionary<string, string> { ["securityId"] = securityId.ToString("D"), ["ticker"] = "UST30" })),
+                    "controller", 0, Registered, ct);
+                await session.RegisterScheduleAsync(new RecurringJournalSchedule("bond-accrual", "bond-template",
+                    new LedgerBookKey(Fund, "Fund"), RecurringJournalCadence.Monthly, JanuaryEnd, "controller", Registered,
+                    endsOn: JanuaryEnd), scope,
+                    [new JournalEvidenceReference("bond-terms", "evidence://bond-terms", "security-terms", "document-vault",
+                        Registered.AddDays(-1), "records-controller", ContentHash: new string('d', 64), EvidenceVersion: 1)],
+                    "controller", 0, Registered, ct);
+            }
+
+            // One semi-annual coupon of 18,100 accruing 100 a day from 2025-12-31 to 2026-06-30.
+            var cashFlows = new Mock<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(MockBehavior.Strict);
+            cashFlows.Setup(service => service.GetProjectionAsOfAsync(securityId, Meridian.Contracts.SecurityMaster.StructuredCashFlowScenario.Base,
+                    It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((Guid id, Meridian.Contracts.SecurityMaster.StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken _) =>
+                    new Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto(id,
+                        Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind.CalculatedBullet, scenario, asOf,
+                        [new Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry(
+                            new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero), 0m, 18_100m, 1m)
+                        { AccrualStart = new DateOnly(2025, 12, 31), AccrualEnd = new DateOnly(2026, 6, 30) }],
+                        Meridian.Contracts.SecurityMaster.StructuredCashFlowStaleness.Fresh, asOf,
+                        TermsUsed: Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms.Empty with
+                        { MaturityDate = new DateOnly(2026, 12, 31), DayCountConvention = "ACT/365" }));
+
+            var fixture = await CreateFixtureAsync(root, database, book, recurring, inputs => new FixedIncomeAccrualCalculation(inputs,
+                new Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge(cashFlows.Object,
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge>.Instance),
+                cashFlows.Object));
+
+            await fixture.Runner.RunDueAsync(At(JanuaryEnd), ct: ct);
+
+            var draft = (await fixture.Drafts.ListAsync(Fund, book.LedgerBookId, ct)).Should().ContainSingle().Subject;
+            draft.Lines.Select(line => (line.AccountPath, line.Side.ToString(), line.Amount)).Should().BeEquivalentTo(new[]
+            {
+                // 31 days of coupon at 100 a day; 12,000 x 31/365 of premium written down against income.
+                ("Assets:Accrued Interest Receivable UST30", "Debit", 3_100m),
+                ("Revenue:Coupon Income", "Credit", 3_100m),
+                ("Revenue:Coupon Income", "Debit", 1_019.18m),
+                ("Assets:Securities UST30", "Credit", 1_019.18m)
+            });
         }
         finally
         {
@@ -142,7 +222,8 @@ public sealed class RecurringJournalCalculationPostgresTests
     }
 
     private static async Task<Fixture> CreateFixtureAsync(string root, LedgerPostgresTestDatabase database,
-        LedgerBookRecord book, FileRecurringJournalStore recurring)
+        LedgerBookRecord book, FileRecurringJournalStore recurring,
+        Func<IRecurringJournalCalculationInputs, IRecurringJournalCalculation>? extraCalculation = null)
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, book.LedgerBookId,
@@ -153,7 +234,10 @@ public sealed class RecurringJournalCalculationPostgresTests
              new("perf-payable", "Liabilities:Performance Fee Payable", "Performance Fee Payable", "Liability"),
              new("eur-cash", "Assets:Cash EUR", EuroCash.Name, "Asset", FinancialAccountId: EuroCash.FinancialAccountId),
              new("fx-gain", "Revenue:Unrealized FX Gain", LedgerAccounts.UnrealizedFxGain.Name, "Revenue"),
-             new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense")],
+             new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
+             new("bond", "Assets:Securities UST30", LedgerAccounts.Securities("UST30").Name, "Asset", Symbol: "UST30"),
+             new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable("UST30").Name, "Asset", Symbol: "UST30"),
+             new("coupon", "Revenue:Coupon Income", LedgerAccounts.CouponIncome.Name, "Revenue")],
             [], [], [], [], TenantId: Tenant, CompanyId: Company));
         var audit = new FileAccountingConfigurationStore(Path.Combine(root, "audit.json"));
         var configurationService = new AccountingConfigurationService(configuration, audit);
@@ -170,9 +254,14 @@ public sealed class RecurringJournalCalculationPostgresTests
         var runner = new RecurringJournalRunner(recurring, intake, drafts,
             new RecurringJournalPeriodAuthority(journalStore, tenancy.Object, new VerifiedSubject()),
         [
+            .. extraCalculation is null ? Array.Empty<IRecurringJournalCalculation>() : [extraCalculation(inputs)],
             new ManagementFeeAccrualCalculation(inputs),
             new PerformanceFeeAccrualCalculation(inputs),
-            new FxRevaluationCalculation(inputs, new MonthEndRates())
+            new FxRevaluationCalculation(inputs, new TableReconciliationFxRateProvider(
+            [
+                new ReconciliationFxQuote("EUR", "USD", 1.10m, JanuaryEnd),
+                new ReconciliationFxQuote("EUR", "USD", 1.09m, FebruaryEnd)
+            ], source: "golden-rates rev-1"))
         ]);
         return new(runner, drafts, workbench);
     }
@@ -217,15 +306,6 @@ public sealed class RecurringJournalCalculationPostgresTests
 
     private sealed record Fixture(RecurringJournalRunner Runner, FileManualJournalEntryDraftStore Drafts,
         ManualJournalEntryWorkbenchService Workbench);
-
-    private sealed class MonthEndRates : IReconciliationFxRateProvider
-    {
-        public bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate)
-        {
-            rate = asOf == JanuaryEnd ? 1.10m : asOf == FebruaryEnd ? 1.09m : 0m;
-            return fromCurrency == "EUR" && toCurrency == "USD" && rate > 0m;
-        }
-    }
 
     private sealed class VerifiedSubject : IRecurringJournalSubjectAuthority
     {

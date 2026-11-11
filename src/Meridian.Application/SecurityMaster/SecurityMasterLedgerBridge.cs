@@ -15,7 +15,7 @@ namespace Meridian.Application.SecurityMaster;
 /// using <see cref="LedgerViewKind.SecurityMaster"/>, enabling reconciliation between
 /// contractual flows (declared in the Security Master) and actual cash movements.
 /// </summary>
-[PostingCalculationNotYetConnected("Had no production caller when the connection guard was introduced (2026-11); connecting or retiring it is an open decision.")]
+[PostingCalculationNotYetConnected("Posts straight into a ledger rather than drafting for approval, and its dividend postings would duplicate the governed corporate-action dividend drafts. Its paydown, redemption and memo postings need governed producers before this is retired.")]
 public interface ISecurityMasterLedgerBridge
 {
     /// <summary>

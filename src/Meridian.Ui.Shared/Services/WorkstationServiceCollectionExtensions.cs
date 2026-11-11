@@ -1160,7 +1160,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
-                sp.GetService<IAutomatedJournalScheduleStatusSource>()));
+                sp.GetService<IAutomatedJournalScheduleStatusSource>(),
+                sp.GetService<IRecurringJournalQueueSource>()));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();
         services.TryAddSingleton<IClosePublicationReadinessGuard>(sp => new ClosePublicationReadinessGuard(

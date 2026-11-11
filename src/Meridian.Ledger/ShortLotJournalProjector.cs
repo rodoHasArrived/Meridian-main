@@ -121,7 +121,7 @@ public static class ShortLotJournalProjector
     }
 
     /// <summary>The exact inverse of a posted short opening or cover journal: every line's sides swapped, nothing else.</summary>
-    [PostingCalculationNotYetConnected("Had no production caller when the connection guard was introduced (2026-11); connecting or retiring it is an open decision.")]
+    [PostingCalculationNotYetConnected("Corrections are reversed by the journal workbench, which keeps line dimensions and currency; this tuple form drops both, so it should be retired or extended, not wired as is.")]
     public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Reverse(
         IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> posted)
     {

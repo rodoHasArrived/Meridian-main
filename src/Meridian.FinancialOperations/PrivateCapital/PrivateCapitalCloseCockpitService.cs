@@ -45,13 +45,16 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
     private readonly IDailyValuationScheduleStatusSource? _dailyValuationScheduleStatusSource;
     private readonly IAutomatedJournalScheduleStatusSource? _automatedJournalScheduleStatusSource;
+    private readonly IRecurringJournalQueueSource? _recurringJournalQueueSource;
 
     public PrivateCapitalCloseCockpitService(
         IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService,
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
         IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
-        IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null)
+        IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null,
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
     {
+        _recurringJournalQueueSource = recurringJournalQueueSource;
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
         _dailyValuationScheduleStatusSource = dailyValuationScheduleStatusSource;
@@ -116,6 +119,11 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             dailyValuationDrafts,
             automatedJournalStatus,
             automatedJournalDrafts);
+        if (await BuildRecurringJournalLaneAsync(fundProfileId, ledgerBookId, entityId, periodId, tenantId, companyId, ct)
+                .ConfigureAwait(false) is { } recurringLane)
+        {
+            lanes = [.. lanes, recurringLane];
+        }
         var approvalHistory = BuildApprovalHistory(workflows, records, reportOutputs);
         var navSupportPackages = BuildNavSupportPackages(workflows, records, reportOutputs);
         var evidencePackages = BuildEvidencePackages(lanes, approvalHistory, navSupportPackages, workflows);
@@ -908,6 +916,69 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules,
             evidence,
             requiredAction);
+    }
+
+    /// <summary>
+    /// Recurring and calculated journals generated for the period (fees, accruals, FX revaluation)
+    /// must be posted, or recorded as needing no draft, before the period closes. The lane exists
+    /// only when the period has such occurrences, so a fund without recurring schedules is unaffected.
+    /// An occurrence the scheduled worker has not yet claimed is not visible here.
+    /// </summary>
+    private async Task<PrivateCapitalCloseCockpitLaneDto?> BuildRecurringJournalLaneAsync(
+        string? fundProfileId, Guid? ledgerBookId, string? entityId, string? periodId,
+        string? tenantId, string? companyId, CancellationToken ct)
+    {
+        if (_recurringJournalQueueSource is null || ledgerBookId is not { } bookId ||
+            NormalizeOptional(fundProfileId) is not { } fund || NormalizeOptional(entityId) is not { } entity ||
+            NormalizeOptional(tenantId) is not { } tenant || NormalizeOptional(companyId) is not { } company)
+        {
+            return null;
+        }
+
+        const string laneId = "recurring-journals";
+        const string label = "Recurring and calculated journals";
+        RecurringJournalOccurrenceDto[] rows;
+        try
+        {
+            var queue = await _recurringJournalQueueSource
+                .GetQueueAsync(fund, bookId, entity, ct, tenant, company)
+                .ConfigureAwait(false);
+            rows = queue.Occurrences.Where(row => MatchesPeriod(row.EffectiveDate, periodId)).ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
+        {
+            // Unknown is not ready: an unreadable queue cannot show the period's journals are posted.
+            return Lane(laneId, label, EvidenceStatusDto.Blocked, false,
+                "The recurring journal queue could not be read, so the period's recurring journals cannot be confirmed as posted.",
+                UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, [],
+                "Restore the recurring journal queue, then recheck close readiness");
+        }
+
+        if (rows.Length == 0)
+            return null;
+
+        static bool IsPosted(RecurringJournalOccurrenceDto row) => row.State == "Drafted" &&
+            (string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Posted), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.CloseLocked), StringComparison.Ordinal));
+        var posted = rows.Count(IsPosted);
+        var nothingDue = rows.Count(static row => row.State == "NoDraftRequired");
+        var awaiting = rows.Count(row => row.State == "Drafted" && !IsPosted(row));
+        var blocked = rows.Length - posted - nothingDue - awaiting;
+        var isReady = posted + nothingDue == rows.Length;
+        var evidence = rows
+            .SelectMany(row => row.SourceEvidenceReferences.Select(reference => new OperationsEvidenceLinkDto(
+                $"recurring-journal:{row.OccurrenceId}:{reference}", "Recurring journal source evidence", reference,
+                "recurring-journal-queue", null)))
+            .DistinctBy(static link => link.Route, StringComparer.Ordinal)
+            .ToArray();
+        return Lane(laneId, label,
+            isReady ? EvidenceStatusDto.Ready : blocked > 0 ? EvidenceStatusDto.Blocked : EvidenceStatusDto.ReviewRequired,
+            isReady,
+            $"{rows.Length} recurring occurrence(s) in the period: {posted} posted, {nothingDue} with nothing to post, {awaiting} awaiting approval or posting, {blocked} blocked or not yet drafted.",
+            UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, evidence,
+            blocked > 0
+                ? "Resolve the blocked recurring occurrences, then approve and post their drafts"
+                : "Review, approve, and post the recurring journal drafts for the period");
     }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildAutomatedJournalLane(

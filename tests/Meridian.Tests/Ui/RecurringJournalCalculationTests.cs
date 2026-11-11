@@ -199,16 +199,18 @@ public sealed class RecurringJournalCalculationTests : IDisposable
                 currency: new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
             new(Guid.NewGuid(), purchase, At(new(2026, 1, 10)), LedgerAccounts.Cash, 0m, 108_000m, "Buy EUR")
         ]));
-        await SeedAsync(FxRevaluationCalculation.CalculationKind, new());
-        var rates = new Rates { [("EUR", JanuaryEnd)] = 1.10m };
-        var fixture = await CreateFixtureAsync(rates);
+        await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 3m });
+        // The January quote is 28 days old by the end of February, so it cannot stand in for one.
+        var quotes = new List<ReconciliationFxQuote> { new("EUR", "USD", 1.10m, JanuaryEnd) };
+        var fixture = await CreateFixtureAsync(Rates(quotes));
 
         var results = await fixture.Runner.RunDueAsync(At(FebruaryEnd));
 
         results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
-            .Blockers.Should().ContainSingle().Which.Should().Contain("No EUR/USD FX rate");
+            .Blockers.Should().ContainSingle().Which.Should().Contain("dated 2026-01-31, 28 day(s)");
         var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
         january.TotalDebits.Should().Be(2_000m, "100,000 EUR at 1.10 is 110,000 against 108,000 carried");
+        january.Memo.Should().Contain("EUR/USD 1.1 dated 2026-01-31 (direct, test-rates rev-1)");
         january.Lines.Select(line => (line.AccountPath, line.Side, line.Amount)).Should().BeEquivalentTo(new[]
         {
             ("Assets:Cash EUR", AccountingTemplateLineSideDto.Debit, 2_000m),
@@ -218,8 +220,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         // Once January's revaluation is posted the account carries 110,000. February at 1.09
         // must draft a 1,000 loss, not a second gain against the original 108,000.
         Post(JanuaryEnd, (EuroCash, 2_000m, 0m), (LedgerAccounts.UnrealizedFxGain, 0m, 2_000m));
-        rates[("EUR", FebruaryEnd)] = 1.09m;
-        await (await CreateFixtureAsync(rates)).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+        quotes.Add(new("EUR", "USD", 1.09m, FebruaryEnd.AddDays(-1)));
+        await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
 
         var february = (await fixture.Drafts.ListAsync(Fund, Book)).Single(draft => draft.AccountingDate == FebruaryEnd);
         february.Lines.Select(line => (line.AccountPath, line.Side, line.Amount)).Should().BeEquivalentTo(new[]
@@ -227,6 +229,27 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             ("Expenses:Unrealized FX Loss", AccountingTemplateLineSideDto.Debit, 1_000m),
             ("Assets:Cash EUR", AccountingTemplateLineSideDto.Credit, 1_000m)
         });
+    }
+
+    [Fact]
+    public async Task FxRevaluation_RateWithoutQuoteDateOrSource_Blocks()
+    {
+        Capitalize(10_000_000m);
+        var purchase = Guid.NewGuid();
+        _ledger.Post(new JournalEntry(purchase, At(new(2026, 1, 10)), "Buy EUR",
+        [
+            new(Guid.NewGuid(), purchase, At(new(2026, 1, 10)), EuroCash, 108_000m, 0m, "Buy EUR",
+                currency: new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
+            new(Guid.NewGuid(), purchase, At(new(2026, 1, 10)), LedgerAccounts.Cash, 0m, 108_000m, "Buy EUR")
+        ]));
+        await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 3m }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(new UndatedRates());
+
+        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("quote date and source");
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
     }
 
     [Fact]
@@ -365,7 +388,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
                 cashFlowService),
-            new FxRevaluationCalculation(inputs, rates ?? new Rates())
+            new FxRevaluationCalculation(inputs, rates ?? Rates([]))
         ]);
         return new(runner, drafts, workbench, inputs);
     }
@@ -405,10 +428,17 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             => Task.FromResult(lots);
     }
 
-    private sealed class Rates : Dictionary<(string Currency, DateOnly Date), decimal>, IReconciliationFxRateProvider
+    private static TableReconciliationFxRateProvider Rates(IEnumerable<ReconciliationFxQuote> quotes)
+        => new(quotes.ToArray(), source: "test-rates rev-1");
+
+    /// <summary>A rate source that can quote a number but not when or where it came from.</summary>
+    private sealed class UndatedRates : IReconciliationFxRateProvider
     {
         public bool TryGetRate(string fromCurrency, string toCurrency, DateOnly asOf, out decimal rate)
-            => TryGetValue((fromCurrency, asOf), out rate) && toCurrency == "USD";
+        {
+            rate = 1.10m;
+            return true;
+        }
     }
 
     /// <summary>A 6% annual bond paying 5,000 at each month-end, projected from the requested as-of date.</summary>

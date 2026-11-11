@@ -59,6 +59,8 @@ public sealed class PostingCalculationConnectionTests
         Assert.Contains("FundEconomicsJournalFactory.BuildPerformanceFeeAccrualDraft", discovered);
         Assert.Contains("MultiCurrencyLedgerTranslator.BuildUnrealizedFxRevaluationLines", discovered);
         Assert.Contains("ISecurityMasterAmortizationLedgerBridge.PostProjectedCashFlowsAsync", discovered);
+        Assert.Contains("SecurityMasterCashFlowService.BuildLedgerPostingsAsync", discovered);
+        Assert.Contains("StructuredCashFlowLedgerBridge.BuildCouponAccrualPostings", discovered);
     }
 
     private static IEnumerable<MethodInfo> DiscoverPostingCalculations()
@@ -71,8 +73,16 @@ public sealed class PostingCalculationConnectionTests
             .Where(type => type.IsInterface && type.Name.EndsWith("LedgerBridge", StringComparison.Ordinal))
             .SelectMany(type => type.GetMethods())
             .Where(method => method.GetParameters().Any(parameter => parameter.ParameterType == typeof(global::Meridian.Ledger.Ledger)));
-        return builders.Concat(bridges).DistinctBy(Describe);
+        // Services that build ledger postings for a caller to post.
+        var postingBuilders = typeof(ISecurityMasterAmortizationLedgerBridge).Assembly.GetExportedTypes()
+            .Where(type => type.IsClass && !type.Name.StartsWith("Null", StringComparison.Ordinal))
+            .SelectMany(type => type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly))
+            .Where(method => !method.IsSpecialName && Unwrap(method.ReturnType).Name.EndsWith("LedgerPostingResult", StringComparison.Ordinal));
+        return builders.Concat(bridges).Concat(postingBuilders).DistinctBy(Describe);
     }
+
+    private static Type Unwrap(Type type)
+        => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Task<>) ? type.GetGenericArguments()[0] : type;
 
     private static bool BuildsJournal(Type type)
     {
@@ -95,11 +105,16 @@ public sealed class PostingCalculationConnectionTests
         var call = new Regex(method.IsStatic
             ? $@"\b{Regex.Escape(typeName)}\s*\.\s*{Regex.Escape(method.Name)}\s*[(<]"
             : $@"\.\s*{Regex.Escape(method.Name)}\s*[(<]", RegexOptions.Compiled);
+        // A sibling implementation or the interface declaring the method is not a caller.
         var implementers = method.IsStatic
             ? []
             : method.DeclaringType.Assembly.GetTypes()
-                .Where(type => method.DeclaringType.IsAssignableFrom(type) && !type.IsInterface)
-                .Select(type => new Regex($@"\bclass\s+{Regex.Escape(type.Name)}\b", RegexOptions.Compiled))
+                .Where(type => type != method.DeclaringType &&
+                    (method.DeclaringType.IsAssignableFrom(type) || type.IsAssignableFrom(method.DeclaringType) ||
+                     method.DeclaringType.GetInterfaces().Any(contract => contract.IsAssignableFrom(type))))
+                .Concat(method.DeclaringType.GetInterfaces())
+                .Where(type => type.Namespace?.StartsWith("Meridian", StringComparison.Ordinal) == true)
+                .Select(type => new Regex($@"\b(class|interface)\s+{Regex.Escape(type.Name)}\b", RegexOptions.Compiled))
                 .ToArray();
         return sources.Any(source =>
             !declaration.IsMatch(source.Code) &&

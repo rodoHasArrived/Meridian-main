@@ -20,7 +20,7 @@ public static class FixedAssetDepreciationDraftBuilder
     /// <param name="assets">Per-asset depreciation inputs for the period.</param>
     /// <param name="bookLabel">Optional fund/book identifier used for scoping, idempotency, and metadata.</param>
     /// <param name="description">Optional description override for the batched draft.</param>
-    [PostingCalculationNotYetConnected("Had no production caller when the connection guard was introduced (2026-11); connecting or retiring it is an open decision.")]
+    [PostingCalculationNotYetConnected("Needs a durable fixed-asset register to supply each asset's charge; none exists outside this assembly.")]
     public static AutomatedJournalDraft? BuildDraft(
         DateOnly periodEnd,
         DateTimeOffset asOf,

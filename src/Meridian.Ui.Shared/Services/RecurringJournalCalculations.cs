@@ -325,7 +325,10 @@ public sealed class FixedIncomeAccrualCalculation(
 /// Unrealized FX revaluation of foreign-currency asset and liability accounts at the effective
 /// date. An account's foreign balance is the sum of its journal legs recorded in that currency; its
 /// carrying value is its book-currency balance, which already includes earlier revaluations, so each
-/// occurrence drafts only the change since the last one. A missing rate blocks the draft.
+/// occurrence drafts only the change since the last one. The rate must come with its evidence
+/// (quote date, derivation and table revision) and be no older than the schedule term
+/// <c>maxRateAgeDays</c>; a missing, undated or stale rate blocks the draft. The memo records the
+/// evidence of every rate used.
 /// </summary>
 public sealed class FxRevaluationCalculation(
     IRecurringJournalCalculationInputs inputs,
@@ -339,6 +342,9 @@ public sealed class FxRevaluationCalculation(
     {
         if (rates is null)
             throw new InvalidOperationException("No FX rate source is available; FX revaluation is blocked.");
+        var maxRateAgeDays = context.RequireParameter("maxRateAgeDays");
+        if (maxRateAgeDays < 0m || maxRateAgeDays != decimal.Truncate(maxRateAgeDays))
+            throw new InvalidOperationException("The schedule term 'maxRateAgeDays' must be a whole number of days, zero or more.");
         var bookCurrency = context.Scope.Currency.Trim().ToUpperInvariant();
         var asOf = RecurringJournalCalculationMath.EndOfDay(context.EffectiveDate);
         var ledger = await inputs.HydrateLedgerAsOfAsync(context.Scope, context.EffectiveDate, ct).ConfigureAwait(false);
@@ -373,12 +379,19 @@ public sealed class FxRevaluationCalculation(
         }
 
         var ratesToBook = new Dictionary<string, decimal>(StringComparer.Ordinal);
+        var rateEvidence = new List<string>();
         foreach (var currency in accountCurrencies.Values.Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal))
         {
-            if (!rates.TryGetRate(currency, bookCurrency, context.EffectiveDate, out var rate) || rate <= 0m)
+            if (!rates.TryResolveRate(currency, bookCurrency, context.EffectiveDate, out var resolved) || resolved.Rate <= 0m)
                 throw new InvalidOperationException(
-                    $"No {currency}/{bookCurrency} FX rate is available for {context.EffectiveDate:yyyy-MM-dd}; FX revaluation is blocked.");
-            ratesToBook[currency] = rate;
+                    $"No {currency}/{bookCurrency} FX rate with a quote date and source is available for {context.EffectiveDate:yyyy-MM-dd}; FX revaluation is blocked.");
+            var ageDays = context.EffectiveDate.DayNumber - resolved.RateDate.DayNumber;
+            if (ageDays < 0 || ageDays > maxRateAgeDays)
+                throw new InvalidOperationException(
+                    $"The {currency}/{bookCurrency} FX rate is dated {resolved.RateDate:yyyy-MM-dd}, {ageDays} day(s) from {context.EffectiveDate:yyyy-MM-dd}; the schedule allows {maxRateAgeDays:0}. FX revaluation is blocked.");
+            ratesToBook[currency] = resolved.Rate;
+            rateEvidence.Add(FormattableString.Invariant(
+                $"{currency}/{bookCurrency} {RecurringJournalCalculationMath.Rate(resolved.Rate)} dated {resolved.RateDate:yyyy-MM-dd} ({resolved.Method}, {resolved.Source})"));
         }
 
         var translation = MultiCurrencyLedgerTranslator.Translate(localBalances, bookCurrency, ratesToBook, accountCurrencies, carrying);
@@ -389,14 +402,14 @@ public sealed class FxRevaluationCalculation(
                 dimensions: (LedgerLineDimensionSet?)null))
             .Where(line => line.debit != 0m || line.credit != 0m)
             .ToArray();
-        var rateText = string.Join(", ", ratesToBook.Select(pair => $"{pair.Key} {RecurringJournalCalculationMath.Rate(pair.Value)}"));
+        var rateText = string.Join("; ", rateEvidence);
         if (lines.Length == 0)
             return RecurringJournalCalculationResult.NothingDue(
                 $"Foreign-currency balances already carry their {context.EffectiveDate:yyyy-MM-dd} value ({rateText}).");
 
         var total = lines.Sum(line => line.debit);
         var description = FormattableString.Invariant(
-            $"Unrealized FX revaluation at {context.EffectiveDate:yyyy-MM-dd} for {foreignLegs.Length} account(s) at {rateText} to {bookCurrency} ({RecurringJournalCalculationMath.Money(total)})");
+            $"Unrealized FX revaluation at {context.EffectiveDate:yyyy-MM-dd} for {foreignLegs.Length} account(s), {RecurringJournalCalculationMath.Money(total)}; {rateText}");
         var journalEvent = new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate, bookCurrency, total,
             context.OccurredAtUtc, Description: description, EffectiveDate: context.EffectiveDate);
         var metadata = new JournalEntryMetadata(ActivityType: "fx-revaluation", EffectiveDate: context.EffectiveDate);

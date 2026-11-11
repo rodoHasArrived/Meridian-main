@@ -33,7 +33,7 @@
       ]
     },
     {
-      "memo": "Unrealized FX revaluation at 2026-01-31 for 1 account(s) at EUR 1.1 to USD (2000.00)",
+      "memo": "Unrealized FX revaluation at 2026-01-31 for 1 account(s), 2000.00; EUR/USD 1.1 dated 2026-01-31 (direct, golden-rates rev-1)",
       "status": "Draft",
       "lines": [
         {
@@ -83,7 +83,7 @@
       ]
     },
     {
-      "memo": "Unrealized FX revaluation at 2026-02-28 for 1 account(s) at EUR 1.09 to USD (1000.00)",
+      "memo": "Unrealized FX revaluation at 2026-02-28 for 1 account(s), 1000.00; EUR/USD 1.09 dated 2026-02-28 (direct, golden-rates rev-1)",
       "status": "Draft",
       "lines": [
         {

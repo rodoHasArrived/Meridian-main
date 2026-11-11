@@ -64,7 +64,7 @@ flow. Its memo states the inputs the amount came from.
 | `performance-fee-accrual` | Ledger net assets and the performance fee already payable at the effective date | `performanceFeeRate`, `highWaterMark`, `hurdleAmount`, `crystallize` (0 or 1) |
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
 | `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId` |
-| `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the FX rate for the effective date | none |
+| `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the dated FX rate for the effective date | `maxRateAgeDays` |
 
 Rules that keep an amount from being drafted twice:
 
@@ -84,16 +84,33 @@ Rules that keep an amount from being drafted twice:
   the window containing its period date.
 
 Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
-non-postable cash-flow projection, or a missing FX rate blocks the occurrence with its reason.
+non-postable cash-flow projection, or an FX rate that is missing, has no quote date and source, or
+is older than `maxRateAgeDays` blocks the occurrence with its reason.
 
-Current limits. Projected principal paydowns are not drafted. The FX rate comes
-from the reconciliation rate table (`reconciliation/fx-rates.json`); the rate evidence
-`W12-BOOK-001` requires (source revision, direction, staleness) is not yet retained. Revaluation
-needs journal legs that record a transaction currency. The high-water mark and hurdle are schedule
-terms an operator maintains; there is no fee-terms store.
+**FX rate evidence.** The revaluation memo records, for every rate used, the pair, the rate, the
+quote date, whether it was direct, inverse or triangulated, and the rate table with its content
+digest. A triangulated rate is dated by its older leg.
 
-`PostingCalculationConnectionTests` fails when a method that builds journal drafts or lines has
-no production caller and is not marked `[PostingCalculationNotYetConnected("reason")]`.
+**Period close.** Close readiness has a "Recurring and calculated journals" lane whenever the
+period has recurring occurrences. It is ready only when each one is posted or recorded as
+needing no draft; an unreadable queue is not ready. An occurrence the scheduled worker has not
+yet claimed is not visible to the lane, so run the worker for the period end before closing.
+
+Current limits. Projected principal paydowns are not drafted. The FX rate table
+(`reconciliation/fx-rates.json`) is read once at startup and is operator-maintained; it is not a
+governed rate store with approvals. Revaluation needs journal legs that record a transaction
+currency, and no production posting path writes a foreign-currency leg yet (manual journals are
+single-currency and asset postings are functional-only), so until `W12-BOOK-001` adds governed
+foreign-currency posting the calculation reports nothing due. The high-water mark and hurdle are
+schedule terms an operator maintains; there is no fee-terms store.
+
+`PostingCalculationConnectionTests` fails when a method that builds journal drafts, lines or
+ledger postings has no production caller and is not marked
+`[PostingCalculationNotYetConnected("reason")]`. Each marker states what the calculation is
+waiting for: a fixed-asset register (depreciation), commitment default terms (capital-call
+default interest), a distribution workflow (waterfall), governed producers (the corporate-action
+ledger bridge), and retirement or repointing (the short-lot tuple reversal and the whole-coupon
+ledger-postings builder).
 
 ## Definition correction and recovery
 

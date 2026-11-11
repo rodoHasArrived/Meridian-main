@@ -11041,6 +11041,7 @@ Meridian-main
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.AllocationEvidenceScope.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs
+│   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.RecurringJournals.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.ReportEvidenceScope.cs
 │   │   │   │   └── PrivateCapitalFundEventLedgerReadinessBuilderTests.cs
 │   │   │   ├── Reconciliation

@@ -81,7 +81,10 @@ public sealed record RecurringJournalQueueRow(RecurringJournalOccurrenceDto Occu
 {
     public string Definition => $"{Occurrence.ScheduleId} · v{Occurrence.ScheduleVersion}\nTemplate {Occurrence.TemplateId} · v{Occurrence.TemplateVersion}";
     public string EffectiveDate => $"{Occurrence.EffectiveDate:yyyy-MM-dd}\n{Occurrence.PeriodId ?? "Period unresolved"}";
-    public string State => $"{Occurrence.State}\nApproval: {Occurrence.ApprovalStatus ?? "Not submitted"}";
+    // A calculated occurrence with nothing to post has no draft to approve; its reason is a note.
+    public string State => Occurrence.State == "NoDraftRequired"
+        ? "Nothing to post"
+        : $"{Occurrence.State}\nApproval: {Occurrence.ApprovalStatus ?? "Not submitted"}";
     public string Draft => Occurrence.JournalEntryId?.ToString("D") ?? "No retained draft";
     public string Blockers => string.Join(Environment.NewLine, Occurrence.Blockers);
     public string PeriodLock => string.Join(Environment.NewLine,
