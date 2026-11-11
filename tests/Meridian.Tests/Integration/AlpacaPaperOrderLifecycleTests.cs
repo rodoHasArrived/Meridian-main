@@ -36,7 +36,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
     private static readonly IReadOnlyDictionary<string, string> ExtendedHours =
         new Dictionary<string, string> { ["extended_hours"] = "true" };
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task RestingLimitOrder_IsAcknowledgedListedRecoveredAndCancelled()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -68,7 +68,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         await paper.WaitUntilNotOpenAsync([ack.GatewayOrderId!], "a cancelled order must leave the open book");
     }
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task ReplacedOrder_CancelledByItsOriginalClientOrderId_LeavesNoWorkingSuccessor()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -111,7 +111,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
             "neither the original nor its replacement may keep working after the cancel");
     }
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task RefusedSubmissions_AreReportedAsTheBrokerDecidedThem()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -134,6 +134,8 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         ((await paper.Gateway.GetOrderForRecoveryAsync(unknownId, paper.Token)) is null).Should().BeTrue();
 
         // Insufficient buying power is a definite 403 rejection carrying the broker's reason.
+        // This one submission is deliberately far beyond the transport's share ceiling.
+        paper.AllowNextSubmissionBeyondTheShareCeiling();
         var rejected = await paper.Gateway.SubmitOrderAsync(
             RestingBuy(paper.NextClientOrderId()) with { Quantity = 1_000_000m, LimitPrice = 500m }, paper.Token);
         rejected.ReportType.Should().Be(ExecutionReportType.Rejected);
@@ -141,7 +143,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         rejected.RejectReason.Should().Contain("insufficient buying power");
     }
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task ConditionalAndBracketOrders_AreAcceptedWithTheirChildOrdersAndCancelled()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -182,7 +184,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         }
     }
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task OptionAndMultiLegOrders_AreAcceptedAndCancelled_WithoutBreakingReconciliation()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -239,7 +241,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
         await paper.WaitUntilNotOpenAsync(spread.ChildOrders!.Select(leg => leg.OrderId), "cancelling the package cancels its legs");
     }
 
-    [AlpacaPaperOrderLifecycleFact]
+    [AlpacaPaperOrdersFact]
     public async Task MarketableRoundTrip_FillsReconcileExactlyOnce_AndLeaveThePositionAsFound()
     {
         await using var paper = await PaperOrderSession.ConnectAsync(output);
@@ -333,7 +335,7 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
     {
         private readonly ITestOutputHelper _output;
         private readonly CancellationTokenSource _timeout = new(TimeSpan.FromMinutes(3));
-        private readonly PaperOrderHttpClientFactory _clients = new();
+        private readonly AlpacaPaperSandboxHttpClientFactory _clients = new(AlpacaPaperSandboxAccess.IndividualOrders);
         private readonly AlpacaOptions _options;
         private readonly HashSet<string> _ownedBrokerOrderIds = new(StringComparer.Ordinal);
         private readonly List<(string ClientOrderId, string Symbol, OrderSide Side)> _submitted = [];
@@ -353,20 +355,15 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
 
         public static async Task<PaperOrderSession> ConnectAsync(ITestOutputHelper output)
         {
-            var key = Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName);
-            var secret = Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName);
-            var environment = Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.TradingEnvironmentName);
-            // Assert presence only: test failures must never print a credential value.
-            string.IsNullOrWhiteSpace(key).Should().BeFalse("ALPACA_KEY_ID must be configured for the opted-in paper order run");
-            string.IsNullOrWhiteSpace(secret).Should().BeFalse("ALPACA_SECRET_KEY must be configured for the opted-in paper order run");
-            string.Equals(environment, "paper", StringComparison.Ordinal).Should().BeTrue(
-                "ALPACA_TRADING_ENVIRONMENT must explicitly be paper; live or implicit defaults are refused");
+            var (key, secret) = AlpacaPaperSandbox.RequirePaperCredentials();
 
-            var session = new PaperOrderSession(output, new AlpacaOptions(KeyId: key!, SecretKey: secret!, UseSandbox: true));
+            var session = new PaperOrderSession(output, new AlpacaOptions(KeyId: key, SecretKey: secret, UseSandbox: true));
             await session.Gateway.ConnectAsync(session.Token);
             session.ExternalAccountId = (await session.Gateway.GetAccountsAsync(session.Token)).Single().AccountId;
             return session;
         }
+
+        public void AllowNextSubmissionBeyondTheShareCeiling() => _clients.AllowNextSubmissionBeyondTheShareCeiling();
 
         public string NextClientOrderId() => $"{_runPrefix}-{Interlocked.Increment(ref _sequence)}";
 
@@ -533,67 +530,10 @@ public sealed class AlpacaPaperOrderLifecycleTests(ITestOutputHelper output)
                     ex.GetType().Name, _runPrefix);
             }
 
-            _output.WriteLine("Paper Trading API requests: {0} read, {1} order mutations.", _clients.ReadCount, _clients.MutationCount);
+            _output.WriteLine("Paper Trading API requests: {0}, of which {1} order mutations.", _clients.RequestCount, _clients.MutationCount);
             await Gateway.DisposeAsync();
             _clients.Dispose();
             _timeout.Dispose();
         }
-    }
-
-    private sealed class PaperOrderHttpClientFactory : IHttpClientFactory, IDisposable
-    {
-        private readonly PaperOrderHandler _handler = new();
-        public int ReadCount => _handler.ReadCount;
-        public int MutationCount => _handler.MutationCount;
-        public HttpClient CreateClient(string name) => new(_handler, disposeHandler: false)
-        {
-            Timeout = TimeSpan.FromSeconds(20)
-        };
-        public void Dispose() => _handler.Dispose();
-    }
-
-    /// <summary>
-    /// Refuses anything but reads and order-scoped mutations on the paper host, before the
-    /// request (and its credentials) can leave the process.
-    /// </summary>
-    private sealed class PaperOrderHandler : DelegatingHandler
-    {
-        private const string OrderPath = "/v2/orders";
-        private int _readCount;
-        private int _mutationCount;
-        public int ReadCount => Volatile.Read(ref _readCount);
-        public int MutationCount => Volatile.Read(ref _mutationCount);
-
-        public PaperOrderHandler() : base(new HttpClientHandler { AllowAutoRedirect = false }) { }
-
-        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
-        {
-            var uri = request.RequestUri;
-            var path = uri?.AbsolutePath ?? string.Empty;
-            var paperHost = uri is not null && uri.Scheme == Uri.UriSchemeHttps && uri.Port == 443
-                && string.Equals(uri.Host, "paper-api.alpaca.markets", StringComparison.OrdinalIgnoreCase);
-            var read = request.Method == HttpMethod.Get && path.StartsWith("/v2/", StringComparison.Ordinal);
-            // One order at a time: never the cancel-all or close-position routes.
-            var singleOrder = path.Length > OrderPath.Length + 1 && path.StartsWith(OrderPath + "/", StringComparison.Ordinal);
-            var mutation = request.Method == HttpMethod.Post && path == OrderPath
-                || (request.Method == HttpMethod.Patch || request.Method == HttpMethod.Delete) && singleOrder;
-            if (!paperHost || !(read || mutation))
-                throw new InvalidOperationException(
-                    "Paper order certification permits only paper Trading API reads and single-order submit, replace and cancel requests.");
-            if (read)
-                Interlocked.Increment(ref _readCount);
-            else
-                Interlocked.Increment(ref _mutationCount);
-            return base.SendAsync(request, cancellationToken);
-        }
-    }
-}
-
-public sealed class AlpacaPaperOrderLifecycleFactAttribute : FactAttribute
-{
-    public AlpacaPaperOrderLifecycleFactAttribute()
-    {
-        if (!string.Equals(Environment.GetEnvironmentVariable("MERIDIAN_RUN_ALPACA_PAPER_ORDERS"), "1", StringComparison.Ordinal))
-            Skip = "Real paper-broker order validation is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1 and the documented paper credentials.";
     }
 }

@@ -238,7 +238,7 @@ internal static partial class SecurityEconomicDefinitionAdapter
         {
             var legacy = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(source, assetClass).Payload;
             var fragment = new JsonObject();
-            foreach (var field in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
+            foreach (var field in new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey })
                 if (legacy.TryGetProperty(field, out var value))
                     fragment[field] = JsonNode.Parse(value.GetRawText());
             return JsonNode.DeepEquals(fragment, declaration);
