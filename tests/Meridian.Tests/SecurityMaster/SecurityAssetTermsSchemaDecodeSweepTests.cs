@@ -287,6 +287,8 @@ public sealed partial class SecurityAssetTermsSchemaDecodeSweepTests
         var field = SecurityAssetTermsSchema.Fields(assetClass).Single(f => f.Key == key);
         var terms = MutableTwin(assetClass);
         terms[key] = "ZzzUndeclaredSweepValue";
+        if (key == SecurityRecordRateUnit.FieldKey)
+            terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = field.SinceTermsVersion;
 
         var decode = () => WriteDecode(assetClass, terms);
         decode.Should().Throw<Exception>(

@@ -279,7 +279,8 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             : field?.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
                 ? JsonNode.Parse(value.Trim())
                 : TryParseJsonNode(value.Trim()) ?? JsonValue.Create(value);
-        if (field?.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+        if (field?.Type is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
+            || field?.Key == SecurityRecordRateUnit.FieldKey)
         {
             // The approved whole-container edit explicitly authors this declaration. Match the
             // staging preflight's stamp promotion so repairing an old row's stray container does

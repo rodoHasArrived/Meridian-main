@@ -6,6 +6,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Core.Config;
 using Meridian.Application.Config.Credentials;
+using Meridian.Application.ProviderRouting;
 using Meridian.DataIntegration.Credentials;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -39,7 +40,7 @@ public sealed class BrokerageConnectionEndpointsTests
             _ => { },
             UserPermission.ManageCredentials);
 
-        var response = await app.GetTestClient().GetAsync("/api/brokerage-connections/alpaca/status");
+        var response = await app.GetTestClient().GetAsync(AlpacaRoute("/status"));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -53,11 +54,11 @@ public sealed class BrokerageConnectionEndpointsTests
         {
             services.AddSingleton<IHttpClientFactory>(_ => new StubHttpClientFactory(new CapturingStubHandler(
                 request => capturedRequest = request,
-                new StringContent("{\"account_number\":\"PA-ENDPOINT\"}", Encoding.UTF8, "application/json"))));
+                new StringContent("{\"account_number\":\"" + OwnedAccount + "\"}", Encoding.UTF8, "application/json"))));
         });
 
         var response = await app.GetTestClient().PostAsync(
-            "/api/brokerage-connections/alpaca/connect",
+            AlpacaRoute("/connect"),
             JsonContent(new { keyId = "endpoint-key", secretKey = "endpoint-secret", environment = "paper" }));
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -65,15 +66,16 @@ public sealed class BrokerageConnectionEndpointsTests
         status.ProviderId.Should().Be("alpaca");
         status.State.Should().Be(BrokerageConnectionStateDto.Connected);
         status.Environment.Should().Be("paper");
-        status.ExternalAccountId.Should().Be("PA-ENDPOINT");
+        status.ExternalAccountId.Should().Be(OwnedAccount);
         status.MaskedKeyId.Should().NotContain("endpoint-key");
         status.LastError.Should().BeNull();
         Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.KeyIdName).Should().NotBe("endpoint-key");
         Environment.GetEnvironmentVariable(AlpacaCredentialEnvironment.SecretKeyName).Should().NotBe("endpoint-secret");
-        var store = app.Services.GetRequiredService<IProviderCredentialStore>();
-        var stored = await store.ReadForProviderAsync("alpaca");
+        var store = (IScopedProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        var stored = await store.ReadScopedAsync("alpaca", new ProviderCredentialScope(TestTenant, OwnedConnection, OwnedAccount, "paper"));
         stored.Should().NotBeNull();
         stored!.Get("KeyId").Should().Be("endpoint-key");
+        (await store.ReadForProviderAsync("alpaca")).Should().BeNull("the provider-wide record must stay untouched");
         capturedRequest.Should().NotBeNull();
         capturedRequest!.RequestUri!.ToString().Should().Be("https://paper-api.alpaca.markets/v2/account");
     }
@@ -85,7 +87,7 @@ public sealed class BrokerageConnectionEndpointsTests
         await using var app = await CreateAppAsync(_ => { }, RolePermissions.For(UserRole.TradeDesk));
 
         var response = await app.GetTestClient().PostAsync(
-            "/api/brokerage-connections/alpaca/connect",
+            AlpacaRoute("/connect"),
             JsonContent(new { keyId = "trade-desk-key", secretKey = "trade-desk-secret", environment = "paper" }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
@@ -99,7 +101,7 @@ public sealed class BrokerageConnectionEndpointsTests
             _ => { },
             UserPermission.ViewTrades);
 
-        var response = await app.GetTestClient().DeleteAsync("/api/brokerage-connections/alpaca");
+        var response = await app.GetTestClient().DeleteAsync(AlpacaRoute());
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
@@ -250,9 +252,9 @@ public sealed class BrokerageConnectionEndpointsTests
     {
         using var env = AlpacaEnvScope.Clear();
         await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
-            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("""{"account_number":"PA-AUDIT"}""", Encoding.UTF8, "application/json")))));
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("{\"account_number\":\"" + OwnedAccount + "\"}", Encoding.UTF8, "application/json")))));
         var client = app.GetTestClient();
-        var response = await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        var response = await client.PostAsync(AlpacaRoute("/connect"), JsonContent(new
         {
             keyId = "audit-key",
             secretKey = "audit-secret",
@@ -260,7 +262,7 @@ public sealed class BrokerageConnectionEndpointsTests
             requestedBy = "forged-operator"
         }));
         response.StatusCode.Should().Be(HttpStatusCode.OK);
-        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await client.DeleteAsync(AlpacaRoute())).StatusCode.Should().Be(HttpStatusCode.OK);
         var store = app.Services.GetRequiredService<IProviderCredentialStore>();
         var path = Path.Combine(Path.GetDirectoryName(store.VaultPath)!, "provider-credentials.audit.jsonl");
         var audit = (await File.ReadAllLinesAsync(path)).Select(line => JsonSerializer.Deserialize<JsonElement>(line)).ToArray();
@@ -274,28 +276,151 @@ public sealed class BrokerageConnectionEndpointsTests
         using var env = AlpacaEnvScope.Clear();
         await using var app = await CreateAppAsync(_ => { }, includeActor: false);
         var client = app.GetTestClient();
-        (await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        (await client.PostAsync(AlpacaRoute("/connect"), JsonContent(new
         {
             keyId = "audit-key",
             secretKey = "audit-secret",
             requestedBy = "forged-operator"
         }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
-        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync(AlpacaRoute())).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
     }
+
+    [Fact]
+    public async Task AlpacaRoutes_WithoutConnectionId_UseTheTenantsSingleOwnedPaperConnection()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("{\"account_number\":\"" + OwnedAccount + "\"}", Encoding.UTF8, "application/json")))));
+        var client = app.GetTestClient();
+
+        var connect = await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        {
+            keyId = "endpoint-key",
+            secretKey = "endpoint-secret",
+            environment = "paper"
+        }));
+
+        connect.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await ReadAsync<BrokerageConnectionStatusDto>(connect)).State.Should().Be(BrokerageConnectionStateDto.Connected);
+        var store = (IScopedProviderCredentialStore)app.Services.GetRequiredService<IProviderCredentialStore>();
+        (await store.ReadScopedAsync("alpaca", new ProviderCredentialScope(TestTenant, OwnedConnection, OwnedAccount, "paper")))!
+            .Get("KeyId").Should().Be("endpoint-key");
+        (await store.ReadForProviderAsync("alpaca")).Should().BeNull();
+        var status = await ReadAsync<BrokerageConnectionStatusDto>(await client.GetAsync("/api/brokerage-connections/alpaca/status"));
+        status.ExternalAccountId.Should().Be(OwnedAccount);
+        (await client.GetAsync("/api/brokerage-connections/alpaca/status?connectionId=")).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
+    public async Task AlpacaRoutes_ForTenantWithoutOwnedConnection_StoreNothingAndNeverUseAnotherTenantsRecord()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        var providerCalls = 0;
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => providerCalls++, new StringContent("{\"account_number\":\"" + OwnedAccount + "\"}", Encoding.UTF8, "application/json")))),
+            tenantId: "tenant-without-connections");
+        var client = app.GetTestClient();
+
+        var statusResponse = await client.GetAsync("/api/brokerage-connections/alpaca/status");
+        statusResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var status = await ReadAsync<BrokerageConnectionStatusDto>(statusResponse);
+        status.IsConfigured.Should().BeFalse();
+        status.ExternalAccountId.Should().BeNull();
+        status.Warnings.Should().ContainSingle().Which.Should().Contain("No owned Alpaca paper connection");
+        (await client.PostAsync("/api/brokerage-connections/alpaca/connect", JsonContent(new
+        {
+            keyId = "endpoint-key",
+            secretKey = "endpoint-secret",
+            environment = "paper"
+        }))).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await client.DeleteAsync("/api/brokerage-connections/alpaca")).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await client.GetAsync(AlpacaRoute("/status"))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        providerCalls.Should().Be(0);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task AlpacaRoutes_ForAnotherTenantsConnection_AreForbidden()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        var providerCalls = 0;
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => providerCalls++, new StringContent("{\"account_number\":\"PA-FOREIGN\"}", Encoding.UTF8, "application/json")))));
+        var client = app.GetTestClient();
+        const string foreign = "?connectionId=" + ForeignConnection;
+
+        (await client.GetAsync("/api/brokerage-connections/alpaca/status" + foreign)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.PostAsync("/api/brokerage-connections/alpaca/connect" + foreign, JsonContent(new
+        {
+            keyId = "endpoint-key",
+            secretKey = "endpoint-secret",
+            environment = "paper"
+        }))).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await client.DeleteAsync("/api/brokerage-connections/alpaca" + foreign)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+
+        providerCalls.Should().Be(0);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task PostAlpacaConnect_ForAnotherAccountOrEnvironment_ReturnsBadRequestWithoutStoring()
+    {
+        using var env = AlpacaEnvScope.Clear();
+        await using var app = await CreateAppAsync(services => services.AddSingleton<IHttpClientFactory>(
+            new StubHttpClientFactory(new CapturingStubHandler(_ => { }, new StringContent("{\"account_number\":\"PA-SOMEONE-ELSE\"}", Encoding.UTF8, "application/json")))));
+        var client = app.GetTestClient();
+
+        var wrongAccount = await client.PostAsync(AlpacaRoute("/connect"), JsonContent(new
+        {
+            keyId = "endpoint-key",
+            secretKey = "endpoint-secret",
+            environment = "paper"
+        }));
+        var wrongEnvironment = await client.PostAsync(AlpacaRoute("/connect"), JsonContent(new
+        {
+            keyId = "endpoint-key",
+            secretKey = "endpoint-secret",
+            environment = "live"
+        }));
+
+        wrongAccount.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await wrongAccount.Content.ReadAsStringAsync()).Should().NotContain("endpoint-secret");
+        wrongEnvironment.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        File.Exists(app.Services.GetRequiredService<IProviderCredentialStore>().VaultPath).Should().BeFalse();
+    }
+
+    private const string TestTenant = "tenant-test";
+    private const string OwnedConnection = "alpaca-paper-owned";
+    private const string OwnedAccount = "PA-ENDPOINT";
+    private const string ForeignConnection = "alpaca-paper-foreign";
+
+    private static string AlpacaRoute(string suffix = "")
+        => "/api/brokerage-connections/alpaca" + suffix + "?connectionId=" + OwnedConnection;
 
     private static async Task<WebApplication> CreateAppAsync(
         Action<IServiceCollection> configureServices,
         UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageCredentials,
-        bool includeActor = true)
+        bool includeActor = true,
+        string tenantId = TestTenant)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
             EnvironmentName = Environments.Development
         });
         builder.WebHost.UseTestServer();
-        builder.Services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(
-            Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-endpoints", Guid.NewGuid().ToString("N"))));
+        var root = Path.Combine(Path.GetTempPath(), "meridian-tests", "brokerage-endpoints", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(root);
+        var config = new Meridian.Application.UI.ConfigStore(Path.Combine(root, "appsettings.json"));
+        await config.SaveAsync(new AppConfig(DataRoot: root));
+        var connections = new ProviderConnectionService(config);
+        await connections.UpsertForTenantAsync(new(OwnedConnection, "alpaca", "Owned paper", ExternalAccountId: OwnedAccount), TestTenant, "paper");
+        await connections.UpsertForTenantAsync(new(ForeignConnection, "alpaca", "Foreign paper", ExternalAccountId: "PA-FOREIGN"), "tenant-other", "paper");
+        builder.Services.AddSingleton(new ConfigStore(config.ConfigPath));
+        builder.Services.AddSingleton<IProviderCredentialStore>(_ => new FileProviderCredentialStore(root));
+        builder.Services.AddSingleton<ProviderConnectionLifecycleService>();
         builder.Services.AddSingleton<AlpacaBrokerageConnectionService>();
         configureServices(builder.Services);
 
@@ -303,7 +428,7 @@ public sealed class BrokerageConnectionEndpointsTests
         app.Use(async (context, next) =>
         {
             context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "tenant-test";
+            context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = tenantId;
             context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "company-test";
             if (includeActor)
                 context.Items[LoginSessionMiddleware.CurrentUserKey] = "brokerage-test-operator";

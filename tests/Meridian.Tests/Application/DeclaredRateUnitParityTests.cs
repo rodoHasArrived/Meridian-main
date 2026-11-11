@@ -4,6 +4,7 @@ using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Contracts.CashFlows;
+using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.SecurityMaster;
@@ -115,16 +116,14 @@ public sealed class DeclaredRateUnitParityTests
     [Fact]
     public async Task ASupportedNegativeDepositRate_ResolvesToTheSameFraction_InBothCashFlowReaders()
     {
-        // Deposit declares Fraction with negative rates permitted. Both readers accept the unit; their
-        // downstream sign policies still differ and are pinned here as an open D3 item: the legacy
-        // projection floors a negative annual rate at zero, while the contractual preview pays signed
-        // (negative) interest. The accounting slice does not post Deposits (outside the slice).
+        // A negative Deposit rate is a valid retained fact. The calculation-only preview supports
+        // signed interest; the unsigned cash-flow/posting reader reports a typed capability refusal.
         var security = Deposit(-0.005m);
 
         var projection = await ProjectAsync(security);
-        projection.BlockedReason.Should().BeNull();
-        projection.Schedule.Should().NotBeEmpty();
-        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 0m);
+        projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        projection.BlockedReason.Should().Be(SecurityInterestSupport.NegativeInterestReason);
+        projection.Schedule.Should().BeEmpty();
 
         var preview = await PreviewAsync(security);
         preview.Blockers.Should().BeEmpty();
@@ -146,6 +145,118 @@ public sealed class DeclaredRateUnitParityTests
 
         RateUnitNormalizer.Normalize("Swap", "legs.spreadBps", 125m).TryGetFraction(out var spread).Should().BeTrue();
         spread.Should().Be(0.0125m);
+    }
+
+    [Fact]
+    public async Task V2NegativeDepositReceipt_ReplaysItsRetainedZeroFloor_WhileV3BlocksNewCalculations()
+    {
+        var security = Deposit(-0.005m);
+        var source = new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
+            Cutoff, false, null, null);
+        var store = Substitute.For<ISecurityMasterCashFlowStore>();
+        store.GetSourceAsync(security.SecurityId, Arg.Any<CancellationToken>()).Returns(source);
+        var query = Substitute.For<SecurityMasterQueryContract>();
+        query.GetRecordedByIdAsOfAsync(security.SecurityId, Cutoff, Arg.Any<CancellationToken>()).Returns(security);
+        var receipts = Substitute.For<ISecurityCashFlowReceiptStore>();
+        var retained = new Dictionary<string, SecurityCashFlowCalculationReceipt>();
+        receipts.RetainAsync(Arg.Any<SecurityCashFlowCalculationReceipt>(), Arg.Any<CancellationToken>())
+            .Returns(call => { var receipt = call.Arg<SecurityCashFlowCalculationReceipt>(); retained[receipt.ContentSha256] = receipt; return Task.CompletedTask; });
+        receipts.GetAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(retained.GetValueOrDefault(call.Arg<string>())));
+        var service = new SecurityMasterCashFlowService(store, [], query,
+            NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
+        var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base,
+            new BondCalculationContext(Cutoff, KnownAt: Cutoff)))!;
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v3");
+        current.Projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        current.Projection.Schedule.Should().BeEmpty();
+
+        // Exact v2 output: four contractual dates, principal at maturity, and the old zero floor.
+        var oldProjection = current.Projection with
+        {
+            Schedule = Enumerable.Range(1, 4).Select(quarter => new StructuredCashFlowScheduleEntry(
+                new DateTimeOffset(Issue.AddMonths(quarter * 3).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+                quarter == 4 ? Par : 0m, 0m, quarter == 4 ? 0m : 1m)).ToArray(),
+            BlockedReason = null,
+            Blocker = null,
+            InputManifest = current.Projection.InputManifest!.Select(input => input.Kind == "CalculationModel"
+                ? input with { Key = SecurityMasterCashFlowService.PreviousContextCalculationVersion } : input).ToArray()
+        };
+        var old = current with
+        {
+            ModelVersion = SecurityMasterCashFlowService.PreviousContextCalculationVersion,
+            Projection = oldProjection,
+            ContentSha256 = string.Empty
+        };
+        old = old with { ContentSha256 = SecurityMasterCashFlowService.ReceiptHash(old) };
+        retained[old.ContentSha256] = old;
+
+        var replay = (await service.ReplayProjectionAsync(old.ContentSha256))!;
+        replay.BlockedReason.Should().BeNull();
+        replay.Blocker.Should().BeNull();
+        replay.Schedule.Should().Equal(oldProjection.Schedule);
+    }
+
+    [Fact]
+    public void NegativeFixing_WithAContractualSpreadOrFloor_UsesTheEffectiveCoupon()
+    {
+        var evidence = new BondFloatingRateEvidence(Issue, false, "SOFR", -0.005m, 0.01m,
+            null, null, Par, 0.25m, SecurityCouponRateUnit.Fraction, "synthetic");
+
+        evidence.TryCoupon(0m, out var positive, out _, out var blocker).Should().BeTrue();
+        positive.Should().Be(1250m);
+        blocker.Should().BeNull();
+        evidence.TryCoupon(-0.01m, out _, out _, out blocker).Should().BeFalse();
+        blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        (evidence with { Floor = 0m }).TryCoupon(-0.01m, out var floored, out _, out blocker).Should().BeTrue();
+        floored.Should().Be(0m, "an explicit contractual floor is applied before the signed-interest guard");
+        blocker.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ANegativeFloatingCoupon_BlocksAllLegs_InsteadOfReturningAZeroCoupon()
+    {
+        var projection = await ProjectAsync(FloatingSwap(spreadBps: -125m));
+
+        projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        projection.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().BeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task ANegativeFixedSwapCoupon_IsAValidRateButAnUnsupportedInterestModel()
+    {
+        var swap = FloatingSwap(0m);
+        var terms = JsonNode.Parse(swap.AssetSpecificTerms.GetRawText())!.AsObject();
+        var leg = terms["legs"]![0]!.AsObject();
+        leg["legType"] = "Fixed";
+        leg["fixedRate"] = -0.005m;
+        terms["assetClassTermsVersion"] = 4;
+        terms["rateUnit"] = "Fraction";
+        swap = swap with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+
+        var projection = await ProjectAsync(swap);
+
+        projection.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        projection.Schedule.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AccountingWithASignedCouponField_ReportsACapabilityIssueAndNoAccrual()
+    {
+        var id = Guid.NewGuid();
+        var security = new SecurityMasterAccountingSecurity(id, "SIGNED", "Bond", "USD",
+            new SecurityFixedIncomeTerms(-0.005m, "Fixed", "30/360", 4,
+                IssueDate: Issue, MaturityDate: Maturity)
+            { TermsAssetClass = "Deposit" }, new SecurityAccountingRule("AvailableForSale", "GAAP"));
+        var result = new SecurityMasterAccountingEventService().Generate(new SecurityMasterAccountingEventRequest(
+            "negative-rate", Issue, Issue.AddMonths(3), [security],
+            [new SecurityMasterAccountingPosition("SIGNED", id, "account", Par)]));
+
+        result.Issues.Should().ContainSingle(issue => issue.Code == SecurityInterestSupport.NegativeInterestUnsupported);
+        result.AccrualCalculations.Should().BeEmpty();
+        result.ExpectedEvents.Should().BeEmpty();
+        result.JournalPreviews.Should().BeEmpty();
     }
 
     [Fact]

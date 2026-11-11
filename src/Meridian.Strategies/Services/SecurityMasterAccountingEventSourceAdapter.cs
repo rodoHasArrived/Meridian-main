@@ -369,15 +369,15 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     // (readable under ADR-024 increment 4a), or null when it declares none or cannot be read here.
     private static RateUnit? ReadDeclaredCouponRateUnit(SecurityEconomicDefinitionRecord definition)
     {
-        if (definition.LegacyAssetSpecificTerms is not { } retained || ResolveTermsAssetClass(definition) is not { } assetClass)
-        {
+        if (ResolveTermsAssetClass(definition) is not { } assetClass)
             return null;
-        }
+        if (definition.LegacyAssetSpecificTerms is not { } retained)
+            return SecurityRecordRateUnit.ReadEconomic(definition.EconomicTerms);
 
         var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(assetClass, retained);
         return declared.Status == SecurityDeclaredConventionsStatus.Declared
             ? RateUnitNormalizer.ParseCouponRateUnit(declared.Block.CouponRateUnit)
-            : null;
+            : SecurityRecordRateUnit.Read(assetClass, retained);
     }
 
     private static SecurityAccountingRule? ToAccountingRule(SecurityEconomicDefinitionRecord definition)

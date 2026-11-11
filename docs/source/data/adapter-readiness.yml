@@ -53,6 +53,9 @@ adapters:
     closed when the requested feed has no usable entitlement; diagnostics preserve the selected feed and entitlement.
     REST and trade-update errors remain observable. Corporate-action HTTP failures and non-cancellation exceptions
     are logged and return empty action collections; empty results must not be treated as verified absence of actions.
+    Corporate-action ingest reads the fetch outcome instead, which reports missing credentials or a failed first
+    page as unavailable and a failed later page, repeated page token or page-limit overrun as incomplete; ingest
+    records these as errors and withholds the partial history.
     Cancellation propagates. Option contract discovery and chain snapshots return nothing rather than a partial
     chain when a page fails or paging does not terminate. Asset search and contract discovery follow the selected
     credential record's Trading API host, then ALPACA_TRADING_ENVIRONMENT; with neither, a paper key ID goes to

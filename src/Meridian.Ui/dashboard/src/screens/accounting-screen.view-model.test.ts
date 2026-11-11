@@ -2085,6 +2085,15 @@ describe("accounting-screen view model", () => {
     expect(corporateActionsState.errorDetails).toEqual(trialBalanceState.errorDetails);
   });
 
+  it.each([
+    ["Put", "Holder put"],
+    ["CallNoticeDeadline", "Issuer call notice deadline"],
+    ["PutNoticeDeadline", "Holder put notice deadline"]
+  ])("labels declared schedule event %s for operators", (eventType, label) => {
+    const rows = buildSecurityScheduleRows(cashFlowSchedules.map((row) => ({ ...row, eventType })));
+    expect(rows[0].eventTypeLabel).toBe(label);
+  });
+
   it("derives cash-flow and factor schedule rows with selected detail state", () => {
     const rows = buildSecurityScheduleRows(cashFlowSchedules, "sched-1-paydown");
     const state = buildSecuritySchedulesViewState({
