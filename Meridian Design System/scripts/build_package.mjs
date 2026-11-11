@@ -56,6 +56,7 @@ const common = { absWorkingDir: root, bundle: true, write: false, format: 'iife'
 const header = { format: 4, version: pkg.version, namespace, components, sourceHashAlgorithm: 'sha256', sourceHashes, inlinedExternals: [], unexposedExports };
 const bundle = await build({
   ...common,
+  metafile: true,
   treeShaking: false,
   stdin: { contents: entry, resolveDir: root, sourcefile: 'meridian-design-system-entry.js', loader: 'js' },
   jsxFactory: 'window.React.createElement', jsxFragment: 'window.React.Fragment',
@@ -80,7 +81,9 @@ const generated = {
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
   counts: { exports: components.length, cards: manifest.cards.length, templates: manifest.templates.length, tokenRecords: manifest.tokens.length },
-  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, sourceHashes },
+  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, sourceHashes,
+    bundledSources: Object.keys(bundle.metafile.inputs).map(path => path.split('\\').join('/'))
+      .filter(path => Object.hasOwn(sourceHashes, path)).sort() },
   assets: Object.fromEntries(Object.entries({ ...generated,
     '_ds_manifest.json': await readFile(resolve(root, '_ds_manifest.json'), 'utf8'),
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')

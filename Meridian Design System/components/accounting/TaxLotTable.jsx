@@ -42,7 +42,7 @@ function inject() {
   padding:2px 7px;font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
 .tlt__hp--short{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;

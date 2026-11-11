@@ -40,9 +40,14 @@ export function ChartAnnotations({
   const y = p ? p.y : null;
   const by = badgeY != null ? badgeY : t;
   const clampX = (x) => Math.max(g.plotL, Math.min(g.plotR, x));
+  const descriptions = [
+    ...bands.map((bd, i) => `${bd.label || `Band ${i + 1}`} (${bd.kind || "event"}), positions ${bd.from} to ${bd.to}`),
+    ...events.map((e, i) => `Event ${e.badge != null ? e.badge : i + 1}${e.label ? `, ${e.label}` : ""} (${e.kind || "event"}), position ${e.index}${e.detail ? `: ${e.detail}` : ""}`),
+    ...(y ? callouts.map((c) => `${c.text}${c.kind ? ` (${c.kind})` : ""}, position ${c.index}, value ${c.value}`) : []),
+  ];
 
   return (
-    <g>
+    <g role={descriptions.length ? "img" : undefined} aria-label={descriptions.length ? `Chart annotations. ${descriptions.join(". ")}` : undefined}>
       {bands.map((bd, i) => {
         const x0 = clampX(g.x(bd.from)), x1 = clampX(g.x(bd.to));
         const c = kindColor(bd.kind);
@@ -66,6 +71,7 @@ export function ChartAnnotations({
         const w = Math.max(16, badge.length * 7 + 9);
         return (
           <g key={"e" + i}>
+            <title>{[e.label || `Event ${badge}`, e.detail].filter((part) => part != null && part !== "").join(": ")}</title>
             {showRules && (
               <line x1={x} x2={x} y1={by + 8} y2={b} stroke={c} strokeWidth="1" strokeDasharray="var(--viz-dash-flow,3 4)" opacity="0.7" />
             )}

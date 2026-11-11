@@ -3065,6 +3065,7 @@ Meridian-main
 │   │   ├── legacy.js
 │   │   ├── primitives.js
 │   │   ├── README.md
+│   │   ├── retired-exports.json
 │   │   ├── shell.js
 │   │   ├── template-eligibility.json
 │   │   └── trading.js
@@ -4126,6 +4127,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── release_identity.py
 │   │   ├── sync_catalog.py
+│   │   ├── sync_color_fallbacks.py
+│   │   ├── sync_manifest_metadata.py
 │   │   ├── sync_template_scaffold.py
 │   │   ├── validate_release.py
 │   │   └── visual_diff.py
@@ -4419,27 +4422,44 @@ Meridian-main
 │   │   ├── action-contract.html
 │   │   ├── agency-regression.mjs
 │   │   ├── books-loop.html
+│   │   ├── brand-contrast-regression.mjs
 │   │   ├── BROWSER_TEST_PLAN.md
+│   │   ├── chart-accessibility-regression.mjs
+│   │   ├── component-hook-regression.mjs
+│   │   ├── conformance-card-regression.mjs
 │   │   ├── conformance-rules.js
+│   │   ├── conformance-settle-regression.mjs
 │   │   ├── conformance.html
 │   │   ├── decision-preview.html
+│   │   ├── form-field-regression.mjs
 │   │   ├── gallery-browser.mjs
 │   │   ├── gallery.css
 │   │   ├── gallery.html
 │   │   ├── gallery.mjs
 │   │   ├── gallery.test.mjs
+│   │   ├── global-search-focus-regression.mjs
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── mock-transport.js
+│   │   ├── modal-label-regression.mjs
 │   │   ├── optimistic-observer-regression.mjs
+│   │   ├── optimistic-settlement-regression.mjs
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
+│   │   ├── retained-template-states-regression.mjs
 │   │   ├── scenario-selector-regression.mjs
+│   │   ├── semantic-role-regression.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
+│   │   ├── specimen-matrix.mjs
+│   │   ├── SPECIMEN_MATRIX.md
+│   │   ├── template-preview-regression.mjs
 │   │   ├── test_contrast.py
 │   │   ├── test_design_system_governance.py
+│   │   ├── test_manifest_metadata.py
 │   │   ├── test_release.py
+│   │   ├── test_sync_color_fallbacks.py
+│   │   ├── test_token_parity.py
 │   │   ├── unit-tests.html
 │   │   ├── unit.html
 │   │   └── verify-new-components.html
@@ -7931,6 +7951,7 @@ Meridian-main
 │   │   │   │   ├── sync-design-system-assets.d.mts
 │   │   │   │   ├── sync-design-system-assets.mjs
 │   │   │   │   ├── sync-design-system-assets.test.mjs
+│   │   │   │   ├── test-native-adapter-colors.mjs
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
@@ -9258,6 +9279,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.workflow-routing.ts
 │   │   │   │   ├── app.test.tsx
 │   │   │   │   ├── app.tsx
+│   │   │   │   ├── design-system-color-values.test.ts
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── selected-surface-contrast.test.ts

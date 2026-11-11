@@ -12,6 +12,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --ladder-row{syntax:"*";inherits:true;}
 .mds-ladder{font-family:var(--font-data);font-size:12px;display:inline-flex;flex-direction:column;
   border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);min-width:264px;}
 .mds-ladder__head{display:grid;grid-template-columns:1fr 88px 1fr;border-bottom:1px solid var(--border,#D2CDC3);

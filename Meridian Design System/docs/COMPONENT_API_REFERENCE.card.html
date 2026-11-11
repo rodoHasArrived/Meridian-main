@@ -232,7 +232,7 @@
   </div>
 
   <div class="detail-panel hidden" id="detailPanel">
-    <button class="detail-close" id="detailClose">&times;</button>
+    <button type="button" class="detail-close" id="detailClose" aria-label="Close component details">&times;</button>
     <div id="detailContent"></div>
   </div>
 
@@ -580,7 +580,7 @@
           { name: 'delay', type: 'number (ms)', default: '300' },
           { name: 'children', type: 'React.ReactNode', default: 'required' },
         ],
-        example: '<Tooltip content="Delete forever"><button>🗑</button></Tooltip>',
+        example: '<Tooltip content="Delete forever"><button type="button">🗑</button></Tooltip>',
       },
 
       // Core UI — Navigation & hierarchy
@@ -1417,7 +1417,7 @@
       {
         name: 'EvidenceLink',
         category: 'operations',
-        description: 'Reference to an evidence artifact — status dot, label, mono route, open arrow. Renders <a> with href, else <button>.',
+        description: 'Reference to an evidence artifact — status dot, label, mono route, open arrow. Renders <a> with href, else <button type="button">.',
         props: [
           { name: 'label', type: 'React.ReactNode', default: 'undefined' },
           { name: 'status', type: 'string (Ready, ReviewRequired, Blocked, Stale, Missing)', default: '"info"' },

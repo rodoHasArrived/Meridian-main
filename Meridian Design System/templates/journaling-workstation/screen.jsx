@@ -1,10 +1,8 @@
 // Meridian journaling workstation — comprehensive double-entry posting interface
 // Integrates balanced form, posting history, search/filter, and reconciliation tie-in
-const {
-  WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Input, Select, Badge, Modal,
-  ModalHeader, ModalBody, ModalFooter, Tabs, TabPanel, DenseDataTable, JournalEntryForm,
-  ReconciliationPanel, FilteredDataTable, EmptyState, Pagination, Toast, ToastProvider
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Input, Select, Badge, Dialog, Tabs, TabPanel, JournalEntryForm, ReconciliationPanel, EmptyState, Pagination, Toast, ToastProvider;
 const { useState, useMemo } = React;
 
 /* ── CSS ── */
@@ -68,14 +66,7 @@ const SEED_ENTRIES = [
 /* ── Components ── */
 function JournalEntryModal({ open, onClose, accounts, onPost, entry }) {
   return (
-    <Modal open={open} onClose={onClose}>
-      <div className="journ-modal-hd">
-        <div>
-          <Eyebrow>{entry ? "Edit journal entry" : "New journal entry"}</Eyebrow>
-          <div className="journ-modal-title">Record a balanced posting</div>
-        </div>
-        <button className="journ-close-btn" onClick={onClose}>×</button>
-      </div>
+    <Dialog open={open} onClose={onClose} title={entry ? "Edit journal entry" : "New journal entry"} size="lg">
       <div className="journ-modal-body">
         <JournalEntryForm
           initialHeader={entry ? { date: entry.date, ref: entry.ref, memo: entry.memo } : { date: new Date().toISOString().slice(0,10), ref: "JE-" }}
@@ -88,7 +79,7 @@ function JournalEntryModal({ open, onClose, accounts, onPost, entry }) {
           }}
         />
       </div>
-    </Modal>
+    </Dialog>
   );
 }
 
@@ -202,7 +193,8 @@ function QuickStats({ entries }) {
 }
 
 /* ── Main workstation ── */
-function JournalingWorkstationScreen() {
+function JournalingWorkstationScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Input, Select, Badge, Dialog, Tabs, TabPanel, JournalEntryForm, ReconciliationPanel, EmptyState, Pagination, Toast, ToastProvider } = window.MeridianDesignSystem_205d17);
   const [entries, setEntries] = useState(SEED_ENTRIES);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
@@ -230,7 +222,7 @@ function JournalingWorkstationScreen() {
   return (
     <React.Fragment>
       <div className="journ-layout">
-        <WorkstationTopbar moduleLabel="Journaling" environment="PAPER" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+        <WorkstationTopbar moduleLabel="Journaling" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
 
         <div className="journ-main">
           <NavRail
@@ -247,10 +239,11 @@ function JournalingWorkstationScreen() {
           <main className="journ-content">
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
               <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)" }}>Journaling</h1>
-              <Button variant="primary" size="sm" onClick={() => { setEditingEntry(null); setModalOpen(true); }}>
+              <Button disabled={dataState !== "ready"} variant="primary" size="sm" onClick={() => { setEditingEntry(null); setModalOpen(true); }}>
                 New entry
               </Button>
             </div>
+          <DataStateSwitch state={dataState} label="Journal entries">
 
             <div style={{ display: "flex", gap: 8, borderBottom: "1px solid var(--border)", marginBottom: 12 }}>
               <button onClick={() => setTab("entries")}
@@ -278,7 +271,8 @@ function JournalingWorkstationScreen() {
                 <p style={{ fontSize: 12, color: "var(--text-muted)" }}>Select entries and statement items to mark as matched.</p>
               </div>
             )}
-          </main>
+                    </DataStateSwitch>
+        </main>
         </div>
 
         <StatusBar items={[

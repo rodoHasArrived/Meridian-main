@@ -132,7 +132,7 @@ function DashboardWorkstationScreen() {
             <PanelSurface raised strong style={{ display: "flex", flexDirection: "column", borderLeft: "3px solid var(--accent)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: "var(--bg-medium)", borderBottom: "1px solid var(--border-strong)" }}>
                 <Eyebrow>Selected position</Eyebrow>
-                <span style={{ font: "600 11px var(--font-data)", color: "var(--accent)", marginLeft: "auto" }}>{row.symbol}</span>
+                <span style={{ font: "600 11px var(--font-data)", color: "var(--brand-signal-ink)", marginLeft: "auto" }}>{row.symbol}</span>
               </div>
               <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
                 <EntitySummary columns={2} items={[

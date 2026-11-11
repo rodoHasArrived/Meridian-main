@@ -53,7 +53,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cs__status[data-tone="pass"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.10))}
 .mds-cs__status[data-tone="review"]{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.10))}
 .mds-cs__status[data-tone="exception"]{color:var(--red-dim,#873832);border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10))}
-.mds-cs__status[data-tone="info"]{color:var(--purple,#2F648A);border-color:var(--purple,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
+.mds-cs__status[data-tone="info"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
 .mds-cs__scope{display:flex;flex-wrap:wrap;gap:14px;padding:7px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-well,var(--card-surface-raised,#FCFBF8))}
 .mds-cs__scope div{display:grid;gap:1px}
 .mds-cs__scope dt{font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870)}
@@ -69,7 +69,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cs__issue{display:flex;gap:5px;font:10px var(--font-data,monospace)}
 .mds-cs__issue[data-sev="error"]{color:var(--red-dim,#873832)}
 .mds-cs__issue[data-sev="warning"]{color:var(--orange-dim,#724D11)}
-.mds-cs__issue[data-sev="info"]{color:var(--purple,#2F648A)}
+.mds-cs__issue[data-sev="info"]{color:var(--purple-dim,#234B68)}
 .mds-cs__reason{display:grid;gap:3px}
 .mds-cs__reason label{font:9px var(--font-data,monospace);text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-cs__reason input{box-sizing:border-box;width:100%;height:26px;border:1px solid var(--border,#D2CDC3);background:var(--surface-well,var(--card-surface-raised,#FCFBF8));color:var(--text-primary,#20252B);font:11px var(--font-body);padding:0 7px}

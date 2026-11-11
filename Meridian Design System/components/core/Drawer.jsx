@@ -10,7 +10,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-drawer-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
   /* The scrim carries the drawer's elevation, as Dialog's does. Without it the overlay sits at
      z:auto and any sticky table header (--z-raised) paints through the open drawer. */
   z-index: var(--z-drawer, 150);

@@ -885,6 +885,8 @@ the dark ink the package puts on a terracotta fill (4.7:1; white is 4.0:1). Bran
 `Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
 window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
 the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.
+Retained SVG text declarations follow the package's IBM Plex Sans identity; canonical asset
+copies stay byte-aligned with the package.
 IBM Plex Sans now supplies display and body text; IBM Plex Mono supplies financial values, code,
 identifiers, and keyboard labels. All ten package faces and both OFL licenses are embedded from
 `Assets/Fonts/`, so no installed fonts or network access are required. Window and Page roots set

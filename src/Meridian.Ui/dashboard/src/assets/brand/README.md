@@ -3,6 +3,9 @@
 Identity v1.0 — Datum + Field. Wordmark lettering is stored as vector outlines, so no
 font file is required to render any mark.
 
+Supporting descriptors and editorial copy use IBM Plex Sans with a sans-serif fallback,
+matching the self-hosted interface family. Outlined wordmark geometry is preserved.
+
 ## Marks (square, symbol only — use in app chrome, favicons, tiles)
 
 | File | Purpose | Size |

@@ -29,6 +29,8 @@ page.on('console', message => { if (message.type() === 'error') diagnostics.push
 try {
   await page.setContent('<!doctype html><html lang="en"><head><title>Optimistic observer contracts</title></head><body><main><h1>Observer fault isolation</h1><div id="fixture-root"></div></main></body></html>');
   await page.addScriptTag({ content: outputFiles[0].text });
+  // Exercise console fallback; the settlement regression covers reportError and async faults.
+  await page.evaluate(() => { window.reportError = undefined; });
   await page.evaluate(() => {
     const { React, createRoot, OptimisticProvider, useOptimistic } = window.fixture;
     window.fixtureRoot = createRoot(document.getElementById('fixture-root'));

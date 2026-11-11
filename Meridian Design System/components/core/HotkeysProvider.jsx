@@ -15,7 +15,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(30,28,26,.5));z-index:var(--z-hotkey,400);
+.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(17,23,29,.5));z-index:var(--z-hotkey,400);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9vh;
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}

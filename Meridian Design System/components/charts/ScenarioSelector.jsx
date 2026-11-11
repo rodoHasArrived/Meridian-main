@@ -28,7 +28,7 @@ export function ScenarioSelector({
   const selectedIndex = ids.indexOf(value);
   const tabStopIndex = selectedIndex < 0 ? 0 : selectedIndex;
   const onKeyDown = (e, index) => {
-    if (inert || !ids.length) return;
+    if (inert || !ids.length || e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey) return;
     let nextIndex;
     if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex = (index + 1) % ids.length;
     else if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex = (index - 1 + ids.length) % ids.length;
@@ -42,7 +42,7 @@ export function ScenarioSelector({
 
   return (
     <div>
-      <div role="radiogroup" aria-label={ariaLabel} style={{
+      <div role="radiogroup" aria-label={ariaLabel} aria-orientation={layout === "columns" ? "horizontal" : "vertical"} style={{
         display: layout === "columns" ? "grid" : "flex",
         gridTemplateColumns: layout === "columns" ? `repeat(${Math.max(1, scenarios.length)},minmax(0,1fr))` : undefined,
         flexDirection: layout === "columns" ? undefined : "column",
@@ -55,7 +55,7 @@ export function ScenarioSelector({
               ref={(node) => { radios.current[index] = node; }}
               disabled={inert}
               tabIndex={!inert && index === tabStopIndex ? 0 : -1}
-              onClick={inert ? undefined : () => onChange(s.id)}
+              onClick={inert ? undefined : (e) => { e.currentTarget.focus(); onChange(s.id); }}
               onKeyDown={(e) => onKeyDown(e, index)}
               style={{
                 display: "flex", alignItems: "center", gap: 12, minWidth: 0,

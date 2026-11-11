@@ -1,4 +1,4 @@
-/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"3e303c7d53984731d9a9567dce3f167385f4a9530c39dfb4a400c470ef9b8fde","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"ea15f534e77c0b986b3cf4e89ded1cc28d448bee3722e283d65969b10030ce42","components/accounting/AllocationEditor.jsx":"ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"030b9d4916c88dc6e2d1ff537e9c7e33f0edef30c7bcadcaa5a4464633aaec4e","components/accounting/BasisBridge.jsx":"a3c3b75cf7f48cf5b6557ca56f53ba0aa28b20a3a45b7c999ab81623d044bdbd","components/accounting/BasisComparisonMatrix.jsx":"b0a522f2ae7edb7ca9b74b27b62dfd4690cd45631ee63cfde587bd5b3ee06627","components/accounting/CalculationTrace.jsx":"c494830d99b8300f6ec68b6d4d857ff8863a5e6a01969fa602bc7d84cf484b7a","components/accounting/CloseCalendar.jsx":"531e4d1058821ef596ef0365798d967c2a57d8f4d5e85afbbd91ceabb06cf368","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"42ea7f5f5179aaf13d0c2de745046b0a2ff78aa59155975b5acf7fa14af12f48","components/accounting/IncomeSchedule.jsx":"b50ed52af142bc9d2fe2ed0726a2dd78bd4d80434f20d633859e36bb26b98db4","components/accounting/JournalEntryForm.jsx":"9ac44e9fc88279fe366efb9f68470ba7562713d457c5fe7a1e1420b1dd8e7140","components/accounting/LedgerTable.jsx":"0e0fa846ccfdfe276e93510a17c3278179832fb1491e70a88c70e95e546fcf14","components/accounting/LifecycleRibbon.jsx":"6c0098b10ece1c840c1b88bbbcef8c10160f42095c4f35ff78bc94371a44484b","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"541c9b6cfa1b09c15553bf54f0798cc701d82b90b678ac647ec4cd8c264f660b","components/accounting/ReconciliationPanel.jsx":"27e85b36c9898fa9c7a80b4ed265dc08e8893d4d79483ef194612f3aa1ce4bd0","components/accounting/RollforwardMatrix.jsx":"2e44d13dabb0f51ced17b198f58d9a24c5efe636ca0d28dbe643df857dba5359","components/accounting/RollforwardTrace.jsx":"f0d36d55637055236efdf9a98f9504b8fda3934cbd789862f38d3cb768aad293","components/accounting/ScheduleLadder.jsx":"1bac73485a633c374417c0c5aa0b9efd5bdfa4ffc37dd9b0dfc3de1890cebdbb","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"59096359bf200141b2850f825dec0b9bd89f5a274f0a2945427774f48d1a69fe","components/accounting/TieOutPanel.jsx":"72150959524ae44736599c1af97c50635046692e254c8123559b6197b596972c","components/accounting/TrialBalance.jsx":"6b6b958adaf29d5fe5746af99de6730471d0e10e869aad3cae2e4d18aaf45162","components/accounting/VarianceCell.jsx":"44423891a1b2d65de6e6a72afb0560f3e0b87c7cf22bbeb6c151e9d877e799f5","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"1296912c7a2288e3cf68f46bd25e81478f2e5c52f422e9361ef2000834f047af","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"8e5027c4fad6e0be4b455cc63656da872f99dfae4788866a0555b06d44311cef","components/charts/ChartAnnotations.jsx":"69c3dc4fd00ce12b8131ece787613415bc69c84823caa95ebe22418d979bb910","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"efd128888a0542d1a21d02c29c8c43befe5fbc3c95788cec2cf561744361090f","components/charts/ControlDependencyGraph.jsx":"8d7faf2f63cb0e3bb166b7775892adbea66e9d0d69c1effa9c8a3333033433da","components/charts/CorrelationHeatmap.jsx":"295488ee4c32a038ad6cbc7fd9b21afc81000d035ff465dae3a2068d6b919f74","components/charts/CoverageMatrix.jsx":"02be64e24ddc245e419bdfd56910324a8c4ed35007506bbd93b00470141c7006","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"403370b181cf2cd2f567fef9f7ce655fcb97934225c8dae822a8cd24d065ebb5","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6","components/charts/MaturityLadder.jsx":"12b102c5ee393a56044d39e73e53522ceb5ac9f7de43ce58cee080b4bcfb2f52","components/charts/OwnershipGraph.jsx":"ec348e422a0d9298b8650c7a1ac24010f07e0be0dc500aaff1e3ef77d5756114","components/charts/PeerComparisonStrip.jsx":"c5486bbf76c0ab86ae0568886aaf76e0a6d53b0f9c17c3da72fc7dcb29f36278","components/charts/PnLCalendar.jsx":"4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"5f530894d7e1a5ab2ea595e771c6645f80576d599f44b863a52b76accc335850","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"c1126ee4cc3b98904bb43bb12ccf8691dd99db942ddcb8e1063ba347d527f4d2","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"86ceabff33b2cf3c51a9703d3ae952aff3d16a046305288c052a9d74c5cbac82","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"b775c7ad34461865215f9997494b4cdec930ed96e344277d2764fbd3d960f0a2","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"90620e4ee44b3dab9548576dd70883f7503e9441508f3b3d01d2e5fef084f04d","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"3a19dead2eebca544f53a9b245792e54462b3e24653b81c787a604437f34a80c","components/core/Checkbox.jsx":"ff568f2cb9cba670688530edc96dc6a1f72106dd8dfee8df371e75f5ea82a9e0","components/core/Combobox.jsx":"cc57eaf7771b3d3de6adff86ca82840e1231e6a0dac3c8f4972fa6d9353ea053","components/core/CommandPalette.jsx":"ceaad13f7f4cbfb58e2ec0a9e78f62db24c83ad35b7fc6d43e3d05a34805a475","components/core/ContextMenu.jsx":"1b2dacb545f88af880bbbb5f47587d2baefafa2b3d77b636ec9ad53939132045","components/core/ContinuityFrame.jsx":"eece36eb00950df00d49009c5579e309e0e162c1fd589ea35df1e5261134ae34","components/core/DatePicker.jsx":"5510a89cc068e5459a414a4a0c7716acdb0c7f19c558b5dd5a341bbf82be3cb2","components/core/DateRangePicker.jsx":"f20116f37460bdae1c3330ee9bd6d2feee46b37ac5b9729b645cc37c1f68669e","components/core/Datum.jsx":"85b238aba3a03d82d787cb45cab1fc71ab57b387aca8c805d814d47455dd32a8","components/core/Delta.jsx":"c97a0a2b91689e771dd795b03be48b357bed777aba9a81a3cf7f1933cf8c4f9c","components/core/DensityToggle.jsx":"209c0b53e0e6ef9793458b792a207a99919d7e29ecccf2c8fe53324c1633d6bd","components/core/Dialog.jsx":"6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24","components/core/Disclosure.jsx":"401fca679e2d5919bb60c50d60a0c92c69de4bda096066bf4be12475d4a615ab","components/core/Drawer.jsx":"dc0e77ccc4b296c0a74627a4bd5f62f79786b4b9cbfa351c4245d0286bf396b6","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"a15890b24bcb7411d15eb8dab11cd6c8a1236164b4327b6da337675e0e1f6039","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"5cb89511428e74304232a20e008530e60989f576d1bd517327883dfb88087cea","components/core/FormValidation.jsx":"22ebc3c050ee99e075dee39210ff10929ab4a052ff78656b974c2182913d023b","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"6095d2d802f135cc479078ce3dfbbb56a51b7e7b5833cc22e4729ab4f358223d","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"f1650219d5c7a9623d089535ad40372aa4772cdb1414eaa576dc6009345a4ce3","components/core/Input.jsx":"c36441f047c77495a95848e63f30720da93a7ab9e0ef479e462837caeae1e658","components/core/InstrumentChip.jsx":"f2d436f4d50996e30a038747b7a306231e5169c0c319284908af87718622832c","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"fba0050a68c79d57ae92d54088266339ecf34ad090818514b8a60bb7efcaf741","components/core/MultiSelect.jsx":"be0fdfdd91c829441673dff3fb0e3d69cfc6a68969a22915a5309eaf9f05cfbe","components/core/NotificationCenter.jsx":"2c69a93ca1d8c389e9ba8db6ed78b82bd6cfda4e0384db94a85ea12dc87a7d8f","components/core/NumberInput.jsx":"ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b","components/core/ObjectModel.jsx":"acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"996194e94edb9f8c756e14bb9c943a449ea5351ecb1e57cf41dc150429d96205","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"4bb4925875040bd86e17c5f1de3fdf5febc133880dad82f33a938db109bdd8ff","components/core/ProgressBar.jsx":"9738bfeabebd00059a4c746f3557bcfe6a01ac01547c91f515a575accde8d077","components/core/RadioGroup.jsx":"edd05f11584a924a9b5b764926294b75076e59c4a1ca3e1bfc72142372a1f750","components/core/Registry.jsx":"0c4133073a12d9ca86f7dfefdae154fca03aaaa3210610cc0c25064494344b0d","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"27cdea4a30ae8cb1fa669843656a962a95052244e31e76239bac8263febec531","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"6d0fb9b3559ff54581a208e09a7abdf388af7ee88c35baea7118ab506ebcce90","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec","components/core/StrategyModel.jsx":"7ae4909385e4761c595385742c3ede0988766006e56b9c129ea2abbee3f37e93","components/core/Tabs.jsx":"6efbb8287b6cdf31a8fc32a3046182dd8ce2f8046389fbe4f2ebf57a20f45f63","components/core/TagInput.jsx":"7ab1da1c2a338785d892f0e7e02da77e7e8f8e0d800d81ea1d162e1ed5466432","components/core/TextArea.jsx":"27ba04102aee7fba20a24db7190700a4f565eabf49954463d448390296285b4f","components/core/TimeContext.jsx":"3c22e493d7f3001ef5b965513b49cefc1c533721c99ce3219b2029f2d50b5c25","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"eb704f1bc2b97b8b3f85e4faf6f10961d5e19aa60d1e15cc534d0e8e412e9e90","components/core/Tooltip.jsx":"3c7eb58696ee2c8fddee1f2f1bf3adfc8a54751cbc7663cd2dc172598c30c4ad","components/core/TreeView.jsx":"6d0efdcc9e29a23616bf990df5a2fac280d36f2470e89b5cb3b861458bcc69a4","components/core/Validators.js":"65cbb84289f440ae64a4a867ad487f8d2c77f9427bf0a5e080a532b324c55551","components/core/ValueAuthority.jsx":"69f967235c12094a6c676ddc7e9c8a74df0ac146435a76b56055222c763fb67c","components/core/format.js":"62016d1e92df353b64d9d406115a4ead4b72ac8970e2c87b9cba761034f6c4f8","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"609104423c512bb221936265d2e2d7a223a710918420b59ccb35eb9d1a477df0","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"0864807f77e3694ad3a276f786868e735b76a1f9f5deb2cca455c4ff3a76c712","components/data/ColumnChooser.jsx":"fc3fb7c05b3675c2f2dd5d10dcc968c03338ba7a3a03a5bb65948757ba42e72c","components/data/ColumnManager.jsx":"f95157b95ca4f290df13367124b72e920a37eb96e48ea6075dbbd3a778eb3bd1","components/data/DataGrid.jsx":"3bf4eba8cb0cca5e577f3951798c6e87446a2ab2c2d0a50061b16e3a181cf805","components/data/DataStateSwitch.jsx":"c9eefab8a4e5af6c0c81538f926161f9277816ce1f5340b51582cbce4984921f","components/data/DenseDataTable.jsx":"4040ebf80673b5052376f316bb23f4dc2411e67a698a991a8dd49a87e7f6b12c","components/data/EditableCell.jsx":"3d570c945558767cb5687f29b4889fbe03a99c64cb70b002d13c931a94ac0cf7","components/data/EmptyState.jsx":"18ebd8860e29949430d8b8fa00f2933dc870f7e9b990072645e16c59c20ff541","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"1ef8f00c5dea92151a7fc616cdd373649448f55c6204fc51468cfbe0ca602f59","components/data/FilterBuilder.jsx":"1f073ebcc0f13fbaabc43ca579fd9f11f271c7310270eea468accff3b0dc5021","components/data/FilteredDataTable.jsx":"3cc9b8716fd6c726d4eaac81c0e45d896a65e33da36f54eac99278697931a46b","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"b6e4734d5f8f1dd282500b9abf5ee73e99d379832078cd744a4f19aeb481139b","components/data/Pagination.jsx":"4061917e12f0c6efe3902d32b543b87aed408213b293670c9dcd828261afdcc8","components/data/SavedViews.jsx":"ebd09a16b67b60e2617ec733f4a9ff2bca1ab6638ed4660895ca34f8f1f86f7c","components/data/SelectionCompare.jsx":"2dbce821c9f279692df59da6d7a6998d57c86b2e15584e6b9a3d646e4b060b67","components/data/SelectionToolbar.jsx":"87e31e304f05b21ec1d67661cba87bf50e0fde0ef0a75e11b085c47764110563","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"0599414fa7634924bb4ba283992a59c7b3d0dedf2ae3c86e94903b9b6cba7b24","components/data/WorksheetGrid.jsx":"af32bc19a17e6d9bfa8b1b9f9b69bed5a2fc11a47147f46d1e4bb3103e343369","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"ab343de3f5db8a42fbae0709944bea4c9d55053a308ae0445f5c14153284634d","components/data/useRowSelection.js":"a799985727b9fd4cec548ce71fb4685783edd903e60ca745f2db66202e4a4a03","components/data/useTableColumns.js":"7471ccf8ebdb4068b383c30ef88a05e278a3c5b9532745acc5b5d2cd06ff08d7","components/data/useTableState.js":"4ef6478e6f2ec4092ede0be55349b3fbb9bcfaaf8897cb8173842cc0e211a7b5","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"eee9bd4d9df1e9949e476dd282779ad12c0009918c9dbc097db66e0999fb3255","components/decision/DecisionSnapshot.jsx":"ff55975dc7dbeb582bcbb95f1ad6ff0ab72886813089ade2eba72f9eba53f4b2","components/decision/EvidenceRail.jsx":"bf89e3ad56d7f4e56d9b6e25acd26979db26e098c709d564b69741e18e463ae8","components/operations/ActionEnvelope.jsx":"c8f2de141664ca8666a587914429d9efc620b0f946a1b7dc521d0be25c29bab1","components/operations/ActionGuard.jsx":"62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213","components/operations/ActionQueue.jsx":"c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928","components/operations/AdapterDiagnostics.jsx":"ea348bd829ab7d66317bdaf09a2fbf676afb7ece501bbe8d7d64c1cc5a2154ed","components/operations/AnnotationLayer.jsx":"873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed","components/operations/AttestationPanel.jsx":"701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff","components/operations/CaseQueue.jsx":"fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b","components/operations/ChangeSetReview.jsx":"6ad0550059c4d172a021364096b0e8e8f924ff59a3581bd10ffe9bc85fe57e3f","components/operations/ClaimHeader.jsx":"76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"b7456804bf3643f03a972aa7de9f110631bb7b939a4c9e3ff0596d253d337fc8","components/operations/EvidenceLink.jsx":"12130debcb947fa71846477e64cbb45183fb8dadfc10af15d35b70fda28284f4","components/operations/EvidencePreview.jsx":"683eca48e2dd0d71dd92834d2c50e8134e51cfcb98671a7f8d0dc68e076f184c","components/operations/GateRail.jsx":"953e10ab8d10f419f549d8671da3c234cc1954299f91f26f135117d484a7e19b","components/operations/HandoverBrief.jsx":"8e9befbbf0c55ea8be256998b2d9133adebc24922fffcf773a1f6016ed916ad5","components/operations/LogTail.jsx":"2068ae78c3e33c951623c245ba041d3a3c0fec04019b3a8db58242e0512cc577","components/operations/ProvenanceChip.jsx":"b5a1af85d552c5c0d56adb02c2138e949fe1a617019f22ddbbb14029b0bdaf85","components/operations/ReadinessPanel.jsx":"68c8a501d5d8bfec0c1cef2b484bb6d7979263114bf741cc1cd5c99e47e39838","components/operations/ResolutionDrawer.jsx":"207ae9ad8dc4bcdccb8dba95c0db9efd9d42c3d8d2ae21c74709c9e153b6b508","components/operations/SeverityBadge.jsx":"cabe54de50bb06a2db2f037bd0a712dca79dcb46b39bfbd2261222f1512dac37","components/operations/SlaChip.jsx":"69840675f6f35433473af8ce38dca71e366b11a4147e85b721bef2d29be4e2b8","components/operations/SourceCoverageSummary.jsx":"a2fabf3d0eb247f994bf48f5d100046ff5dc392105d54668675a707b86ffe886","components/operations/Status.jsx":"e4c8d1ba42a77533917be6c7dd484ff8379858dc39e7b0cde48dfee452de8066","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"7e72cc58a46c7e34f777fedd421e3e2cee9c86e673d1214044148fb0c9924aa2","components/operations/ValidationIssueList.jsx":"242c29b376aded92f6214689274664ca7ff35ea21f0109bfb80dc7c9c41a78de","components/operations/ValueEnvelope.jsx":"ff4c5fe7a38a00e67ac0b3d867946f012aff7a987223d9ffb678577afc1e6f49","components/operations/VersionConflictNotice.jsx":"52194a0b56f4bf89bcaa4fecfaeb1de69eed37590bc9317537ab9ad5d2ea04a4","components/operations/WorkspaceSection.jsx":"d7adcf15f139ab8122f177baaf2bf88226c8b119c52d525d260364e77dfcc0e8","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"c38abc70df96a7e2ab28c3077a5e22ac2d93568a94880282da96c5cce83029ed","components/shell/NavRail.jsx":"623d14018e2948f4e6b9b2d73124c1e7fa7adec1bd1ad1edc4967b2d26ba5ab3","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892","components/shell/SessionControls.jsx":"7dce6e37c88d6f60c386f83266b3d8a5f6f26c7ae4b1c78fc82a6803f7faee5a","components/shell/StatusBar.jsx":"295017b232ecd8386cbdf5115ed76fd834aeb788d1454011465fed59ffd65589","components/shell/WorkspaceContextBar.jsx":"b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43","components/shell/WorkspaceLayout.jsx":"436b772f0f3b6e5e45ce2296ab8221f5e24a9c49590e7ac4a14168e33d7629c5","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"067992e1916a7734ff302bfb68459e77f41a453ae86f8847b5beba7ea77fe337","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"2479760273c2f27a07f59fa06c62a9c10413c6f6c1c9018cc363ff28f395a3af","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"f8c63c501c9e665b83de62d3faf30685f1e4cbb8e2d7fe4110c3c525bcfb1dc0","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"e85f7bb32de68aaf74ca806c8ea0fa87026962e7a0e5f92001c0ed4299fae6ee","tests/conformance-rules.js":"399c6558d14628fcfdc11020a41b15c958e2201654dab3d990a98a5b53c5aa0e","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
+/* @ds-bundle: {"format":4,"version":"4.3.0","namespace":"MeridianDesignSystem_205d17","components":[{"name":"AccountTree","sourcePath":"components/accounting/AccountTree.jsx"},{"name":"AccountingPeriodSelector","sourcePath":"components/accounting/AccountingPeriodSelector.jsx"},{"name":"AgingTable","sourcePath":"components/accounting/AgingTable.jsx"},{"name":"AllocationEditor","sourcePath":"components/accounting/AllocationEditor.jsx"},{"name":"AmountCell","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"ASSURANCE_STAGES","sourcePath":"components/accounting/Assurance.jsx"},{"name":"AssuranceChip","sourcePath":"components/accounting/Assurance.jsx"},{"name":"CertificationMatrix","sourcePath":"components/accounting/Assurance.jsx"},{"name":"Assurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"BasisBridge","sourcePath":"components/accounting/BasisBridge.jsx"},{"name":"BasisComparisonMatrix","sourcePath":"components/accounting/BasisComparisonMatrix.jsx"},{"name":"CalculationTrace","sourcePath":"components/accounting/CalculationTrace.jsx"},{"name":"CloseCalendar","sourcePath":"components/accounting/CloseCalendar.jsx"},{"name":"CommitmentBar","sourcePath":"components/accounting/CommitmentBar.jsx"},{"name":"FxRevaluationTable","sourcePath":"components/accounting/FxRevaluationTable.jsx"},{"name":"IncomeSchedule","sourcePath":"components/accounting/IncomeSchedule.jsx"},{"name":"JournalEntryForm","sourcePath":"components/accounting/JournalEntryForm.jsx"},{"name":"LedgerTable","sourcePath":"components/accounting/LedgerTable.jsx"},{"name":"LifecycleRibbon","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"LifecycleLanes","sourcePath":"components/accounting/LifecycleRibbon.jsx"},{"name":"Money","sourcePath":"components/accounting/Money.jsx"},{"name":"PostingImpactPreview","sourcePath":"components/accounting/PostingImpactPreview.jsx"},{"name":"ReconciliationPanel","sourcePath":"components/accounting/ReconciliationPanel.jsx"},{"name":"RollforwardMatrix","sourcePath":"components/accounting/RollforwardMatrix.jsx"},{"name":"RollforwardTrace","sourcePath":"components/accounting/RollforwardTrace.jsx"},{"name":"ScheduleLadder","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"ScheduleLadderSet","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"StatementTable","sourcePath":"components/accounting/StatementTable.jsx"},{"name":"TaxLotTable","sourcePath":"components/accounting/TaxLotTable.jsx"},{"name":"TieOutPanel","sourcePath":"components/accounting/TieOutPanel.jsx"},{"name":"TrialBalance","sourcePath":"components/accounting/TrialBalance.jsx"},{"name":"VarianceCell","sourcePath":"components/accounting/VarianceCell.jsx"},{"name":"AnalyticalField","sourcePath":"components/charts/AnalyticalField.jsx"},{"name":"AnalyticalFigure","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"AnalyticalFigureGrid","sourcePath":"components/charts/AnalyticalFigure.jsx"},{"name":"BarChart","sourcePath":"components/charts/BarChart.jsx"},{"name":"CandleChart","sourcePath":"components/charts/CandleChart.jsx"},{"name":"CashFlowLadder","sourcePath":"components/charts/CashFlowLadder.jsx"},{"name":"ChartAnnotations","sourcePath":"components/charts/ChartAnnotations.jsx"},{"name":"ChartCard","sourcePath":"components/charts/ChartCard.jsx"},{"name":"AXIS_FONT","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"AxisChip","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartFrame","sourcePath":"components/charts/ChartFrame.jsx"},{"name":"ChartTooltip","sourcePath":"components/charts/ChartTooltip.jsx"},{"name":"ComparisonPlate","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"PlateGrid","sourcePath":"components/charts/ComparisonPlate.jsx"},{"name":"ControlDependencyGraph","sourcePath":"components/charts/ControlDependencyGraph.jsx"},{"name":"CorrelationHeatmap","sourcePath":"components/charts/CorrelationHeatmap.jsx"},{"name":"CoverageMatrix","sourcePath":"components/charts/CoverageMatrix.jsx"},{"name":"DepthChart","sourcePath":"components/charts/DepthChart.jsx"},{"name":"DistributionRange","sourcePath":"components/charts/DistributionRange.jsx"},{"name":"DonutChart","sourcePath":"components/charts/DonutChart.jsx"},{"name":"DotMatrix","sourcePath":"components/charts/DotMatrix.jsx"},{"name":"DrawdownChart","sourcePath":"components/charts/DrawdownChart.jsx"},{"name":"DurationContribution","sourcePath":"components/charts/DurationContribution.jsx"},{"name":"EquityCurve","sourcePath":"components/charts/EquityCurve.jsx"},{"name":"FIGURE_ROLES","sourcePath":"components/charts/Figure.jsx"},{"name":"GEOMETRIES","sourcePath":"components/charts/Figure.jsx"},{"name":"Figure","sourcePath":"components/charts/Figure.jsx"},{"name":"FigureSet","sourcePath":"components/charts/Figure.jsx"},{"name":"Histogram","sourcePath":"components/charts/Histogram.jsx"},{"name":"IntervalBar","sourcePath":"components/charts/IntervalBar.jsx"},{"name":"LineageGraph","sourcePath":"components/charts/LineageGraph.jsx"},{"name":"MATURITY_BUCKETS","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"MaturityLadder","sourcePath":"components/charts/MaturityLadder.jsx"},{"name":"OwnershipGraph","sourcePath":"components/charts/OwnershipGraph.jsx"},{"name":"PeerComparisonStrip","sourcePath":"components/charts/PeerComparisonStrip.jsx"},{"name":"PnLCalendar","sourcePath":"components/charts/PnLCalendar.jsx"},{"name":"ScatterChart","sourcePath":"components/charts/ScatterChart.jsx"},{"name":"ScenarioSelector","sourcePath":"components/charts/ScenarioSelector.jsx"},{"name":"SmallMultiples","sourcePath":"components/charts/SmallMultiples.jsx"},{"name":"Sparkline","sourcePath":"components/charts/Sparkline.jsx"},{"name":"TimeframeSwitcher","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"AsOfControl","sourcePath":"components/charts/TimeframeSwitcher.jsx"},{"name":"TraceChart","sourcePath":"components/charts/TraceChart.jsx"},{"name":"Treemap","sourcePath":"components/charts/Treemap.jsx"},{"name":"WatchlistStrip","sourcePath":"components/charts/WatchlistStrip.jsx"},{"name":"WaterfallChart","sourcePath":"components/charts/WaterfallChart.jsx"},{"name":"YieldCurve","sourcePath":"components/charts/YieldCurve.jsx"},{"name":"ChartCursorSync","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ChartCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"ROLES","sourcePath":"components/charts/viz.js"},{"name":"Fmt","sourcePath":"components/charts/viz.js"},{"name":"Accordion","sourcePath":"components/core/Accordion.jsx"},{"name":"AsyncCombobox","sourcePath":"components/core/AsyncCombobox.jsx"},{"name":"Badge","sourcePath":"components/core/Badge.jsx"},{"name":"Breadcrumb","sourcePath":"components/core/Breadcrumb.jsx"},{"name":"Button","sourcePath":"components/core/Button.jsx"},{"name":"Callout","sourcePath":"components/core/Callout.jsx"},{"name":"CapsuleHeader","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleBody","sourcePath":"components/core/Capsule.jsx"},{"name":"CapsuleFooter","sourcePath":"components/core/Capsule.jsx"},{"name":"Capsule","sourcePath":"components/core/Capsule.jsx"},{"name":"Checkbox","sourcePath":"components/core/Checkbox.jsx"},{"name":"Toggle","sourcePath":"components/core/Checkbox.jsx"},{"name":"Combobox","sourcePath":"components/core/Combobox.jsx"},{"name":"CommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"ContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"ContinuityStatus","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"ContinuityFrame","sourcePath":"components/core/ContinuityFrame.jsx"},{"name":"DatePicker","sourcePath":"components/core/DatePicker.jsx"},{"name":"DateRangePicker","sourcePath":"components/core/DateRangePicker.jsx"},{"name":"Datum","sourcePath":"components/core/Datum.jsx"},{"name":"DatumGroup","sourcePath":"components/core/Datum.jsx"},{"name":"Delta","sourcePath":"components/core/Delta.jsx"},{"name":"DensityToggle","sourcePath":"components/core/DensityToggle.jsx"},{"name":"Dialog","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogHeader","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogBody","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogFooter","sourcePath":"components/core/Dialog.jsx"},{"name":"DialogForm","sourcePath":"components/core/Dialog.jsx"},{"name":"DETAIL_LEVELS","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureProvider","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailDial","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureResidue","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureRegion","sourcePath":"components/core/Disclosure.jsx"},{"name":"DetailOnly","sourcePath":"components/core/Disclosure.jsx"},{"name":"DisclosureHooks","sourcePath":"components/core/Disclosure.jsx"},{"name":"Disclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"Drawer","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerHeader","sourcePath":"components/core/Drawer.jsx"},{"name":"DrawerBody","sourcePath":"components/core/Drawer.jsx"},{"name":"ErrorBoundary","sourcePath":"components/core/ErrorBoundary.jsx"},{"name":"Eyebrow","sourcePath":"components/core/Eyebrow.jsx"},{"name":"FileUpload","sourcePath":"components/core/FileUpload.jsx"},{"name":"Flex","sourcePath":"components/core/Flex.jsx"},{"name":"FormRow","sourcePath":"components/core/Form.jsx"},{"name":"FormGrid","sourcePath":"components/core/Form.jsx"},{"name":"FormDivider","sourcePath":"components/core/Form.jsx"},{"name":"FormSectionLabel","sourcePath":"components/core/Form.jsx"},{"name":"Form","sourcePath":"components/core/Form.jsx"},{"name":"FormField","sourcePath":"components/core/FormField.jsx"},{"name":"FormValidation","sourcePath":"components/core/FormValidation.jsx"},{"name":"FieldInput","sourcePath":"components/core/FormValidation.jsx"},{"name":"FormErrorSummary","sourcePath":"components/core/FormValidation.jsx"},{"name":"NEGATIVE_STYLES","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatProvider","sourcePath":"components/core/FormatProvider.jsx"},{"name":"FormatHooks","sourcePath":"components/core/FormatProvider.jsx"},{"name":"Format","sourcePath":"components/core/FormatProvider.jsx"},{"name":"ConnectionDot","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"FreshnessIndicator","sourcePath":"components/core/FreshnessIndicator.jsx"},{"name":"Grid","sourcePath":"components/core/Grid.jsx"},{"name":"HotkeysProvider","sourcePath":"components/core/HotkeysProvider.jsx"},{"name":"Input","sourcePath":"components/core/Input.jsx"},{"name":"InstrumentChip","sourcePath":"components/core/InstrumentChip.jsx"},{"name":"Kbd","sourcePath":"components/core/Kbd.jsx"},{"name":"LocalDate","sourcePath":"components/core/LocalDate.jsx"},{"name":"LocalDateText","sourcePath":"components/core/LocalDate.jsx"},{"name":"MaterialityBadge","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MaterialityAssessment","sourcePath":"components/core/MaterialityAssessment.jsx"},{"name":"MultiSelect","sourcePath":"components/core/MultiSelect.jsx"},{"name":"NotificationCenter","sourcePath":"components/core/NotificationCenter.jsx"},{"name":"NumberInput","sourcePath":"components/core/NumberInput.jsx"},{"name":"OBJECT_TYPES","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHeader","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectHooks","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ObjectModel","sourcePath":"components/core/ObjectModel.jsx"},{"name":"ANALYTICAL_SCOPES","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScopeProvider","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMark","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopedValue","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeMismatch","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ScopeHooks","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectScope","sourcePath":"components/core/ObjectScope.jsx"},{"name":"ObjectTrailProvider","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"TrailHooks","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"ObjectTrailList","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"PanelSurface","sourcePath":"components/core/PanelSurface.jsx"},{"name":"Popover","sourcePath":"components/core/Popover.jsx"},{"name":"ProgressBar","sourcePath":"components/core/ProgressBar.jsx"},{"name":"RadioGroup","sourcePath":"components/core/RadioGroup.jsx"},{"name":"DENSITY","sourcePath":"components/core/Registry.jsx"},{"name":"SEVERITY","sourcePath":"components/core/Registry.jsx"},{"name":"TIME_ROLES","sourcePath":"components/core/TimeContext.jsx"},{"name":"Registry","sourcePath":"components/core/Registry.jsx"},{"name":"RegistryTable","sourcePath":"components/core/Registry.jsx"},{"name":"SegmentedControl","sourcePath":"components/core/SegmentedControl.jsx"},{"name":"Select","sourcePath":"components/core/Select.jsx"},{"name":"Slider","sourcePath":"components/core/Slider.jsx"},{"name":"Spinner","sourcePath":"components/core/Spinner.jsx"},{"name":"SplitPane","sourcePath":"components/core/SplitPane.jsx"},{"name":"Stack","sourcePath":"components/core/Stack.jsx"},{"name":"StatusBanner","sourcePath":"components/core/StatusBanner.jsx"},{"name":"Stepper","sourcePath":"components/core/Stepper.jsx"},{"name":"STRATEGY_LIFECYCLE","sourcePath":"components/core/StrategyModel.jsx"},{"name":"STRATEGY_FORMATION_STEPS","sourcePath":"components/core/StrategyModel.jsx"},{"name":"StrategyModel","sourcePath":"components/core/StrategyModel.jsx"},{"name":"Tabs","sourcePath":"components/core/Tabs.jsx"},{"name":"TabPanel","sourcePath":"components/core/Tabs.jsx"},{"name":"TagInput","sourcePath":"components/core/TagInput.jsx"},{"name":"TextArea","sourcePath":"components/core/TextArea.jsx"},{"name":"TimeContextProvider","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeHooks","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeRole","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContextPanel","sourcePath":"components/core/TimeContext.jsx"},{"name":"TimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"Timestamp","sourcePath":"components/core/Timestamp.jsx"},{"name":"ToastProvider","sourcePath":"components/core/Toast.jsx"},{"name":"Toast","sourcePath":"components/core/Toast.jsx"},{"name":"Tooltip","sourcePath":"components/core/Tooltip.jsx"},{"name":"TreeView","sourcePath":"components/core/TreeView.jsx"},{"name":"Validators","sourcePath":"components/core/Validators.js"},{"name":"AuthorityChip","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityStack","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"ValueAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"AuthorityPanel","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"GLYPHS","sourcePath":"components/core/format.js"},{"name":"DOW","sourcePath":"components/core/localDate.js"},{"name":"FormHooks","sourcePath":"components/core/useFormState.js"},{"name":"BulkActionBar","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"BulkSelectCheckbox","sourcePath":"components/data/BulkActionBar.jsx"},{"name":"ColumnChooser","sourcePath":"components/data/ColumnChooser.jsx"},{"name":"ColumnManager","sourcePath":"components/data/ColumnManager.jsx"},{"name":"CELL_FORMATS","sourcePath":"components/data/DataGrid.jsx"},{"name":"GRID_SCHEMAS","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataGrid","sourcePath":"components/data/DataGrid.jsx"},{"name":"DataStateSwitch","sourcePath":"components/data/DataStateSwitch.jsx"},{"name":"EditableCell","sourcePath":"components/data/EditableCell.jsx"},{"name":"EmptyState","sourcePath":"components/data/EmptyState.jsx"},{"name":"EntitySummary","sourcePath":"components/data/EntitySummary.jsx"},{"name":"FilterBuilder","sourcePath":"components/data/FilterBuilder.jsx"},{"name":"KeyValueGrid","sourcePath":"components/data/KeyValueGrid.jsx"},{"name":"LinkedSelectionProvider","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"SelectionHooks","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"LinkedSelectionTarget","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"MetricCard","sourcePath":"components/data/MetricCard.jsx"},{"name":"OptimisticProvider","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticHooks","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticCell","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"OptimisticRowBar","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"Pagination","sourcePath":"components/data/Pagination.jsx"},{"name":"SavedViews","sourcePath":"components/data/SavedViews.jsx"},{"name":"SelectionCompareProvider","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompareHooks","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareToggle","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareTray","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"CompareSheet","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"SelectionToolbar","sourcePath":"components/data/SelectionToolbar.jsx"},{"name":"Skeleton","sourcePath":"components/data/Skeleton.jsx"},{"name":"SkeletonTable","sourcePath":"components/data/Skeleton.jsx"},{"name":"TableHooks","sourcePath":"components/data/TableHooks.js"},{"name":"Toolbar","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarGroup","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarSpacer","sourcePath":"components/data/Toolbar.jsx"},{"name":"ToolbarDivider","sourcePath":"components/data/Toolbar.jsx"},{"name":"VirtualizedList","sourcePath":"components/data/VirtualizedList.jsx"},{"name":"WorksheetGrid","sourcePath":"components/data/WorksheetGrid.jsx"},{"name":"CONSEQUENCE_KINDS","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"ConsequenceRail","sourcePath":"components/decision/ConsequenceRail.jsx"},{"name":"DecisionSnapshotPanel","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"DecisionSnapshot","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"SnapshotHooks","sourcePath":"components/decision/DecisionSnapshot.jsx"},{"name":"EVIDENCE_SECTIONS","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"EvidenceRail","sourcePath":"components/decision/EvidenceRail.jsx"},{"name":"ACTION_STATES","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionStateChip","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelope","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"InstructionLedger","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionEnvelopeProvider","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionHooks","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"ActionGuardList","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionGuard","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"ActionAvailability","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"QUEUE_RUNGS","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueue","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ActionQueueChip","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"ADAPTER_POSTURES","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterPostureChip","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterDiagnostics","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AdapterHooks","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"AnnotationProvider","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationHooks","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationAnchor","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationLayer","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AnnotationPanel","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"AttestationPanel","sourcePath":"components/operations/AttestationPanel.jsx"},{"name":"CaseQueue","sourcePath":"components/operations/CaseQueue.jsx"},{"name":"ChangeSetProvider","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetHooks","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetDiff","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeReviewBar","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ChangeSetReview","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"ClaimHeader","sourcePath":"components/operations/ClaimHeader.jsx"},{"name":"ConnectionState","sourcePath":"components/operations/ConnectionState.jsx"},{"name":"DataCondition","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionValue","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DataConditionLegend","sourcePath":"components/operations/DataCondition.jsx"},{"name":"DecisionFlowProvider","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowRail","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionFlowStage","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DecisionConsequenceBar","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"DiffView","sourcePath":"components/operations/DiffView.jsx"},{"name":"EventTimeline","sourcePath":"components/operations/EventTimeline.jsx"},{"name":"EvidenceInspector","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceSection","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"ProvenanceTrace","sourcePath":"components/operations/EvidenceInspector.jsx"},{"name":"EvidenceLink","sourcePath":"components/operations/EvidenceLink.jsx"},{"name":"EvidencePreview","sourcePath":"components/operations/EvidencePreview.jsx"},{"name":"GateRail","sourcePath":"components/operations/GateRail.jsx"},{"name":"HandoverBrief","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"HandoverBriefChip","sourcePath":"components/operations/HandoverBrief.jsx"},{"name":"LogTail","sourcePath":"components/operations/LogTail.jsx"},{"name":"ProvenanceChip","sourcePath":"components/operations/ProvenanceChip.jsx"},{"name":"ReadinessPanel","sourcePath":"components/operations/ReadinessPanel.jsx"},{"name":"ResolutionDrawer","sourcePath":"components/operations/ResolutionDrawer.jsx"},{"name":"SeverityBadge","sourcePath":"components/operations/SeverityBadge.jsx"},{"name":"SlaChip","sourcePath":"components/operations/SlaChip.jsx"},{"name":"SourceCoverageSummary","sourcePath":"components/operations/SourceCoverageSummary.jsx"},{"name":"Status","sourcePath":"components/operations/Status.jsx"},{"name":"STRATEGY_RUN_AXES","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"StrategyRunModel","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"TrustStrip","sourcePath":"components/operations/TrustStrip.jsx"},{"name":"ValidationIssueList","sourcePath":"components/operations/ValidationIssueList.jsx"},{"name":"ENVELOPE_MARKS","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"AUTHORITIES","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeMark","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"ValueEnvelope","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopePanel","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"EnvelopeCoherence","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"VersionConflictNotice","sourcePath":"components/operations/VersionConflictNotice.jsx"},{"name":"WorkspaceSection","sourcePath":"components/operations/WorkspaceSection.jsx"},{"name":"GlobalSearch","sourcePath":"components/shell/GlobalSearch.jsx"},{"name":"NavRail","sourcePath":"components/shell/NavRail.jsx"},{"name":"ReturnPath","sourcePath":"components/shell/ReturnPath.jsx"},{"name":"ARCHETYPES","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"ScreenComposition","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"UserMenu","sourcePath":"components/shell/SessionControls.jsx"},{"name":"RoleBadge","sourcePath":"components/shell/SessionControls.jsx"},{"name":"ReadOnlyBanner","sourcePath":"components/shell/SessionControls.jsx"},{"name":"SessionControls","sourcePath":"components/shell/SessionControls.jsx"},{"name":"StatusBar","sourcePath":"components/shell/StatusBar.jsx"},{"name":"WorkspaceContextProvider","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceHooks","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceContextBar","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"WorkspaceLayoutProvider","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutHooks","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutBar","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayoutGrid","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"LayoutRegion","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"WorkstationShell","sourcePath":"components/shell/WorkstationShell.jsx"},{"name":"WorkstationTopbar","sourcePath":"components/shell/WorkstationTopbar.jsx"},{"name":"Blotter","sourcePath":"components/trading/Blotter.jsx"},{"name":"DepthLadder","sourcePath":"components/trading/DepthLadder.jsx"},{"name":"FillsFeed","sourcePath":"components/trading/FillsFeed.jsx"},{"name":"OptionChainTable","sourcePath":"components/trading/OptionChainTable.jsx"},{"name":"OrderTicket","sourcePath":"components/trading/OrderTicket.jsx"},{"name":"TimeAndSalesTape","sourcePath":"components/trading/TimeAndSalesTape.jsx"}],"sourceHashAlgorithm":"sha256","sourceHashes":{"api/accounting.js":"32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4","api/analytics.js":"93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437","api/coordination.js":"071d33c712dd84bd1d755b9d74515a6336697f90ffecc2ca92ac80314aefc3d1","api/data.js":"89acfb7da4c585ba655b3901a5bba7f367184b614dbce79653bed62b243c788e","api/decision.js":"f07458ea2956126c59e37a23159369b06bf06da74a1e50581a53318a8ffd1fa5","api/evidence.js":"c767f680e87df8a92edfb6a7f14150bb789a67b64525272d9ef622cba736063f","api/legacy.js":"560b474515b04c2cf068955403659d74d05fc388feded136177b50836b81300a","api/primitives.js":"4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e","api/shell.js":"033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba","api/trading.js":"d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802","components/accounting/AccountTree.jsx":"3e303c7d53984731d9a9567dce3f167385f4a9530c39dfb4a400c470ef9b8fde","components/accounting/AccountingPeriodSelector.jsx":"2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c","components/accounting/AgingTable.jsx":"ea15f534e77c0b986b3cf4e89ded1cc28d448bee3722e283d65969b10030ce42","components/accounting/AllocationEditor.jsx":"ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9","components/accounting/AmountCell.jsx":"cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45","components/accounting/Assurance.jsx":"998d50bbfd8a0b7254f0e50193368f259041de7bf3fbf9ff13f382bbf091215b","components/accounting/BasisBridge.jsx":"a3c3b75cf7f48cf5b6557ca56f53ba0aa28b20a3a45b7c999ab81623d044bdbd","components/accounting/BasisComparisonMatrix.jsx":"e59d45b9f7d472c185d99c1c46ab94200eea8ac733a717f5600400e5475169a6","components/accounting/CalculationTrace.jsx":"0ca7762d47306a2c83415dd31a42db3a73b0bceb47474fcc9a6bd0299244de87","components/accounting/CloseCalendar.jsx":"f17f2dbb35ff6a227f8b6d3601d1f98408790307dc3e9976855152790693deb4","components/accounting/CommitmentBar.jsx":"8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0","components/accounting/FxRevaluationTable.jsx":"42ea7f5f5179aaf13d0c2de745046b0a2ff78aa59155975b5acf7fa14af12f48","components/accounting/IncomeSchedule.jsx":"b50ed52af142bc9d2fe2ed0726a2dd78bd4d80434f20d633859e36bb26b98db4","components/accounting/JournalEntryForm.jsx":"9fe5e53f7dab98b6ef0854b34f967e7bfbb4f3f4b8ce36e7e7963438878f658c","components/accounting/LedgerTable.jsx":"0e0fa846ccfdfe276e93510a17c3278179832fb1491e70a88c70e95e546fcf14","components/accounting/LifecycleRibbon.jsx":"6c0098b10ece1c840c1b88bbbcef8c10160f42095c4f35ff78bc94371a44484b","components/accounting/Money.jsx":"398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0","components/accounting/PostingImpactPreview.jsx":"541c9b6cfa1b09c15553bf54f0798cc701d82b90b678ac647ec4cd8c264f660b","components/accounting/ReconciliationPanel.jsx":"7dfb0c7af9ce17b6ada54c3dbdeb7443db82e131e872469a5c299b09c7b22482","components/accounting/RollforwardMatrix.jsx":"2e44d13dabb0f51ced17b198f58d9a24c5efe636ca0d28dbe643df857dba5359","components/accounting/RollforwardTrace.jsx":"f0d36d55637055236efdf9a98f9504b8fda3934cbd789862f38d3cb768aad293","components/accounting/ScheduleLadder.jsx":"3667bf520ab8f9bb03e4765d036dcd03ff889fba5231f212ffece92f78462f5a","components/accounting/StatementTable.jsx":"2e486a5ae299b2a7ca65ea8c8bc4e6d621774f91027e8d17b4dc6301ca489f26","components/accounting/TaxLotTable.jsx":"3b76dadc7bd6b2810489672b0ac0e68054a6ceb21a23480d87dd4557a097a0d0","components/accounting/TieOutPanel.jsx":"72150959524ae44736599c1af97c50635046692e254c8123559b6197b596972c","components/accounting/TrialBalance.jsx":"6b6b958adaf29d5fe5746af99de6730471d0e10e869aad3cae2e4d18aaf45162","components/accounting/VarianceCell.jsx":"2a23367514ecaabd4d013445adf1870c81d2494e6811a966b282a04c550f9034","components/accounting/money.js":"d9373bff6f5102341cad7e9449501cc577ad5c256af79a6d13730c6d1ffe7676","components/charts/AnalyticalField.jsx":"1296912c7a2288e3cf68f46bd25e81478f2e5c52f422e9361ef2000834f047af","components/charts/AnalyticalFigure.jsx":"4854d1e5568c239ab97d4dc59c611902c6a925041c8f55b6826a4622cb22020e","components/charts/BarChart.jsx":"331663e52d569d0dd4ca0e83c16d0d02f36a3b2fb90ff053297b030dab5345e2","components/charts/CandleChart.jsx":"1e8a2fed53f4502e5a7c79d47a75fb1f9dfd3f246ccf855cacb47ed5c91e77a9","components/charts/CashFlowLadder.jsx":"a4822f307d9cc550e0c32eb9f863ae8b1b18afa29ca6e29b910b66aca0e49976","components/charts/ChartAnnotations.jsx":"d11a59ac21420eefce2cdc6b910f438d5bfa449356f9cfd486b3f29f98025d77","components/charts/ChartCard.jsx":"6effbc549d35f377e92d82e94c3d809493b47c22669995bd2d5a8eeb8107e2d6","components/charts/ChartFrame.jsx":"2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22","components/charts/ChartTooltip.jsx":"558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832","components/charts/ComparisonPlate.jsx":"efd128888a0542d1a21d02c29c8c43befe5fbc3c95788cec2cf561744361090f","components/charts/ControlDependencyGraph.jsx":"58c1d528f6ac9f345d878c97d304b1f793502cce539768fd2737871988a9f4e4","components/charts/CorrelationHeatmap.jsx":"295488ee4c32a038ad6cbc7fd9b21afc81000d035ff465dae3a2068d6b919f74","components/charts/CoverageMatrix.jsx":"02be64e24ddc245e419bdfd56910324a8c4ed35007506bbd93b00470141c7006","components/charts/DepthChart.jsx":"9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4","components/charts/DistributionRange.jsx":"3d506a855b8c626b165b5544f3dfabaa29d2cafff33534add51d9d049b2d81a4","components/charts/DonutChart.jsx":"9170151975a1b012503828d1c500c5799963859a650f6ae5a6098dae54798667","components/charts/DotMatrix.jsx":"e86e509908716f09979e28a8560bc4bd215a9f3fca2a13c8d37d17a1d64bd5ff","components/charts/DrawdownChart.jsx":"b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a","components/charts/DurationContribution.jsx":"2076ad11fc4c21d231a794fb98a0b32b534282ffd7f0d506dc04e8aaf4785349","components/charts/EquityCurve.jsx":"a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956","components/charts/Figure.jsx":"c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d","components/charts/Histogram.jsx":"86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17","components/charts/IntervalBar.jsx":"4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4","components/charts/LineageGraph.jsx":"eef32c388c288f7e4a72216cd61399de450212938ff5858781883f82112143e6","components/charts/MaturityLadder.jsx":"5fcee60cd99cb7f51983149f166cf27777bbbd21d784178f8d1f02d5a014e20a","components/charts/OwnershipGraph.jsx":"dfa1dcddc11f1b7154d4001106cda71628d8aa4de117304c3344c4ea5a3a8594","components/charts/PeerComparisonStrip.jsx":"09fb948ad27b7dcf9505f09ef0c331b4c8c6b4af21c880d7adb145b7382bfefe","components/charts/PnLCalendar.jsx":"4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3","components/charts/ScatterChart.jsx":"772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51","components/charts/ScenarioSelector.jsx":"2ebfa2c5794b678837f973d5d0c28a528bc75361d136bb4cfb73ab1518a13610","components/charts/SmallMultiples.jsx":"d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e","components/charts/Sparkline.jsx":"657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06","components/charts/TimeframeSwitcher.jsx":"5f530894d7e1a5ab2ea595e771c6645f80576d599f44b863a52b76accc335850","components/charts/TraceChart.jsx":"4202a2b610805906d916cf6c5f94fc21156416ab13ff1c4f25bebf7a44963472","components/charts/Treemap.jsx":"c1126ee4cc3b98904bb43bb12ccf8691dd99db942ddcb8e1063ba347d527f4d2","components/charts/WatchlistStrip.jsx":"30c287ef4265f327d0c2c70014484494ffd1d54e1cd51afe3b112bdcd77eaf53","components/charts/WaterfallChart.jsx":"7083c9626ef0c481791e776b391af262c05c659c11f5f874b12c7b708d37d442","components/charts/YieldCurve.jsx":"f5194121f5a0bedf9a3a4772fa2c85d944b3aa6f36cb74a8908e74b9ae05eebd","components/charts/useChartCrosshair.js":"86ceabff33b2cf3c51a9703d3ae952aff3d16a046305288c052a9d74c5cbac82","components/charts/viz.js":"cc385e67e88e4ec4e184501395920359070adf2e8e773c2d9a43d364f9d4ceb2","components/core/Accordion.jsx":"469797802ae061c3b61736a19a4485ba77a604572b65e2172abafb116099b4b6","components/core/AsyncCombobox.jsx":"b775c7ad34461865215f9997494b4cdec930ed96e344277d2764fbd3d960f0a2","components/core/Badge.jsx":"c10b37bfbcffdf53f48112a8cca3b5e2b11c8f1f61fe816f104fa9628ab8e014","components/core/Breadcrumb.jsx":"d23ca1491fb181e00742c9e73b989fb230a6c4ed08f045eb06d946db313934de","components/core/Button.jsx":"18311af4ebf702ed9aa541e5ab9148a2fb9bfe635e95ff8e651bed6a6aed0e6b","components/core/Callout.jsx":"0a4f98838ea77025f4033b0b4df883c7035cabe765963e3ae86f32c5d759f0a9","components/core/Capsule.jsx":"3a19dead2eebca544f53a9b245792e54462b3e24653b81c787a604437f34a80c","components/core/Checkbox.jsx":"112e93cac36cc0cc5eeba2b5f2525764f49c2400037cc049b6e413b2682a661f","components/core/Combobox.jsx":"7a310627267e3e0826943df2ac1b45d821557a39977f7904a69aa7a91f2cb3f6","components/core/CommandPalette.jsx":"fd1ce47bdf87d1ac7182e32f2fdedc18c1357d7c76afa6ed72bc760315deed9c","components/core/ContextMenu.jsx":"1b2dacb545f88af880bbbb5f47587d2baefafa2b3d77b636ec9ad53939132045","components/core/ContinuityFrame.jsx":"eece36eb00950df00d49009c5579e309e0e162c1fd589ea35df1e5261134ae34","components/core/DatePicker.jsx":"06e7c5d5b3b18618c8f236fa3e8a50753a4c1c8e0769bbe619b9889eeae93639","components/core/DateRangePicker.jsx":"1994b0a02ffa2ee054fe93f71f6cbb4a127fbd7ccb5268c0516c7678370edf6f","components/core/Datum.jsx":"11946d7e4640188a637e1e1df6119a72cc1f3469da20137284b4c428f70bc5ac","components/core/Delta.jsx":"c97a0a2b91689e771dd795b03be48b357bed777aba9a81a3cf7f1933cf8c4f9c","components/core/DensityToggle.jsx":"209c0b53e0e6ef9793458b792a207a99919d7e29ecccf2c8fe53324c1633d6bd","components/core/Dialog.jsx":"9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1","components/core/Disclosure.jsx":"401fca679e2d5919bb60c50d60a0c92c69de4bda096066bf4be12475d4a615ab","components/core/Drawer.jsx":"0e239857032a45f6a443c1750faad3759b2fdcefcc9a94822cea64c3aa1e15b5","components/core/ErrorBoundary.jsx":"e77ed377ba50a689052c6791c31f33f5ff2e879645ec4caa6bfd828b69cd4089","components/core/Eyebrow.jsx":"df412a943581ec3cdf5399122d98308b25329c3598e511560bf7c8c76b1dba1f","components/core/FileUpload.jsx":"a15890b24bcb7411d15eb8dab11cd6c8a1236164b4327b6da337675e0e1f6039","components/core/Flex.jsx":"cb320fab89ab54e971633763c1757a047f61d022d99df38a7db22a319af8c3d6","components/core/Form.jsx":"28cd4aafe7a26501be5c519b443a6c4ddc374d2ff6bef093bbb21cc07c736b47","components/core/FormField.jsx":"8b58e2df4a2c3e7bf9494a4b8f1a6756368cac9ae484873491e1d28f94ff3c16","components/core/FormValidation.jsx":"22ebc3c050ee99e075dee39210ff10929ab4a052ff78656b974c2182913d023b","components/core/FormatProvider.jsx":"05a1eaab1a260c164410bf9f34af13e7327d28888ffcfb450991d9ed2dfc29c7","components/core/FreshnessIndicator.jsx":"6095d2d802f135cc479078ce3dfbbb56a51b7e7b5833cc22e4729ab4f358223d","components/core/Gauge.jsx":"91cce969ee0bb9bfce58450b08bf16c04ed12ff6c53000f3e73b9628a93e37db","components/core/Grid.jsx":"01128532601bcc0712748d3de2c4a109e002f96f3a1ed6b2f5f9b89e4d583f2d","components/core/HotkeysProvider.jsx":"7361fe85db05d60fed3257c1fadad69bf198a09eb619daded4537868a4c67a6f","components/core/Input.jsx":"c36441f047c77495a95848e63f30720da93a7ab9e0ef479e462837caeae1e658","components/core/InstrumentChip.jsx":"11cf11163903eaf38348331d13f5c6eb1db57e47ea9e8ccc7d47dfedba080564","components/core/Kbd.jsx":"bc655e224a6aa339de369de3baf229b77db6f691a72f881f4e5f1c9d78bfa6e4","components/core/LinearGauge.jsx":"dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604","components/core/LocalDate.jsx":"39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3","components/core/MaterialityAssessment.jsx":"25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a","components/core/Modal.jsx":"5db09567f94f3032cd5c9fcc26cb0c510eb63e0851ddb7b8096ae155edc99ae8","components/core/MultiSelect.jsx":"8e8c8014e31b42b773c178c842e6ae0b611a03090eaf5a22b645f72e7e967a07","components/core/NotificationCenter.jsx":"0bf741e0682f5bed80ed92a572b40bae0c19a97a612c440441ae89b107912972","components/core/NumberInput.jsx":"ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b","components/core/ObjectModel.jsx":"acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31","components/core/ObjectScope.jsx":"3f6d471e11ea0be02ab0dcade6a8c51afefe75e9b6cbd82d457bfd360163aadf","components/core/ObjectTrail.jsx":"a04f6e02883e4f875461c4865f2392b9a1a09c481e6058e73ca86c627b86a847","components/core/PanelSurface.jsx":"8fcc4b13e00578443d50a1bafe037f64d17cbd99824e672764146cbe886e8b82","components/core/Popover.jsx":"4bb4925875040bd86e17c5f1de3fdf5febc133880dad82f33a938db109bdd8ff","components/core/ProgressBar.jsx":"9738bfeabebd00059a4c746f3557bcfe6a01ac01547c91f515a575accde8d077","components/core/RadioGroup.jsx":"edd05f11584a924a9b5b764926294b75076e59c4a1ca3e1bfc72142372a1f750","components/core/Registry.jsx":"0c4133073a12d9ca86f7dfefdae154fca03aaaa3210610cc0c25064494344b0d","components/core/SegmentedControl.jsx":"d46c240a96332ba89a76d6ff55ccf7e7a39ae3daa1f192350d79149aa809448d","components/core/Select.jsx":"27cdea4a30ae8cb1fa669843656a962a95052244e31e76239bac8263febec531","components/core/Slider.jsx":"0ad5194e536e1b1de079c932066e447bb1e7e5dbcd0b933fbdda399ee6352449","components/core/Spinner.jsx":"58f9edc70ed8652a611190c5d2aa16fa38203caa4f3e694dd0ee8289292c0a43","components/core/SplitPane.jsx":"6d0fb9b3559ff54581a208e09a7abdf388af7ee88c35baea7118ab506ebcce90","components/core/Stack.jsx":"35e22a8758b9a3ffd35e370fa16f1a22f5c64d95c49dd287a74ab48c424e8727","components/core/StatusBanner.jsx":"8812bff035b4e77b60dd47f56bada971fbf85afbec86ca4ac2f9ad170af01251","components/core/Stepper.jsx":"689e04416d9ebaaaf85de705cf91a522865921445cc5979d6472c326eba537d5","components/core/StrategyModel.jsx":"7ae4909385e4761c595385742c3ede0988766006e56b9c129ea2abbee3f37e93","components/core/Tabs.jsx":"6efbb8287b6cdf31a8fc32a3046182dd8ce2f8046389fbe4f2ebf57a20f45f63","components/core/TagInput.jsx":"7ab1da1c2a338785d892f0e7e02da77e7e8f8e0d800d81ea1d162e1ed5466432","components/core/TextArea.jsx":"27ba04102aee7fba20a24db7190700a4f565eabf49954463d448390296285b4f","components/core/TimeContext.jsx":"3c22e493d7f3001ef5b965513b49cefc1c533721c99ce3219b2029f2d50b5c25","components/core/Timestamp.jsx":"983e59f6bfcd523572f41ea9002df109da75ea73bb92b5346b80eaecf1947cb9","components/core/Toast.jsx":"b71b255012a0ecc6c3f59326a6f127df834f3ec8d56b33905ba312ae4f01bbea","components/core/Tooltip.jsx":"fed17a565b640c117de49f810e93c8c3cb3c3d47a9fd2cb050026a82c121082f","components/core/TreeView.jsx":"6c3d51eb8805f36f52d48e3df3642036c618214cf63edadfa8a353d84503aabd","components/core/Validators.js":"65cbb84289f440ae64a4a867ad487f8d2c77f9427bf0a5e080a532b324c55551","components/core/ValueAuthority.jsx":"69f967235c12094a6c676ddc7e9c8a74df0ac146435a76b56055222c763fb67c","components/core/format.js":"62016d1e92df353b64d9d406115a4ead4b72ac8970e2c87b9cba761034f6c4f8","components/core/localDate.js":"7f055f64cefd8478be169b657cc8ad8dd71600dea2a55798a7805362af0e64cd","components/core/useFormState.js":"609104423c512bb221936265d2e2d7a223a710918420b59ccb35eb9d1a477df0","components/core/useOverlayFocus.js":"9301635fc0a563174eee78fd1cbd20f8c820666cde01b2f89be55dece41135dd","components/data/BulkActionBar.jsx":"0864807f77e3694ad3a276f786868e735b76a1f9f5deb2cca455c4ff3a76c712","components/data/ColumnChooser.jsx":"e9b4b58280cb9b49646cd9b3ea2747c2fb4611a1d151f0aba9887c64a4e0dd43","components/data/ColumnManager.jsx":"0bb3adfecb0090c8b72954734d1499cf1c19caaee803b1a1dd862132e9720f09","components/data/DataGrid.jsx":"3bf4eba8cb0cca5e577f3951798c6e87446a2ab2c2d0a50061b16e3a181cf805","components/data/DataStateSwitch.jsx":"c9eefab8a4e5af6c0c81538f926161f9277816ce1f5340b51582cbce4984921f","components/data/DenseDataTable.jsx":"fe0a861f0183ecc963e7a596c3dcc180dba1292c7978c8311e0969690e230f87","components/data/EditableCell.jsx":"3d570c945558767cb5687f29b4889fbe03a99c64cb70b002d13c931a94ac0cf7","components/data/EmptyState.jsx":"18ebd8860e29949430d8b8fa00f2933dc870f7e9b990072645e16c59c20ff541","components/data/EntitySummary.jsx":"8ad6e5d756fab1844044c0e9a66464cf6faef87826a2e09bf85a91af54273686","components/data/ExpandableDataTable.jsx":"34b7a07232d6f3353f751f1e0e9e4b4ddd3dd2b902672ce3f85246e86f7c68ba","components/data/FilterBuilder.jsx":"fbb4e45ac623abce8a06a594fdd779b6326f36a9648cc90b0c5a38081fc87637","components/data/FilteredDataTable.jsx":"b83f85c688e8c58f918a38c4a5c9a4af582b6ffc4b556c0836159ebc1a43fe26","components/data/KeyValueGrid.jsx":"94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7","components/data/LinkedSelectionProvider.jsx":"cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214","components/data/MetricCard.jsx":"33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082","components/data/OptimisticCell.jsx":"1e67e538db9459dfd58d882ccde5d5db169207d9f2200d9ee8fc996ccc58fb94","components/data/Pagination.jsx":"4061917e12f0c6efe3902d32b543b87aed408213b293670c9dcd828261afdcc8","components/data/SavedViews.jsx":"8cbed09fd52f3dbdd6b6522e7eab43069eb1c2fec407d2a102a0caa4de929ff9","components/data/SelectionCompare.jsx":"2dbce821c9f279692df59da6d7a6998d57c86b2e15584e6b9a3d646e4b060b67","components/data/SelectionToolbar.jsx":"fe19621c28c9f268378d7bf77ad5fdd5adda467ee7e3c7319f25e1bbd54cf12b","components/data/Skeleton.jsx":"5f9652eda4d6c5ff9e90577f8c477711b88cfce44a3bd7a8f74704f25354593f","components/data/TableHooks.js":"533bff5b26899d68a8312bea0845929509c19aebbc84801f207f79dd200080d9","components/data/Toolbar.jsx":"1a14df32a8f9ad6542ebba299587c3cf1da8de6c0a8c9a05234d1f805142bcdb","components/data/VirtualizedList.jsx":"0599414fa7634924bb4ba283992a59c7b3d0dedf2ae3c86e94903b9b6cba7b24","components/data/WorksheetGrid.jsx":"af32bc19a17e6d9bfa8b1b9f9b69bed5a2fc11a47147f46d1e4bb3103e343369","components/data/gridFormat.js":"fd436c00da97a70961de0dcc2ebfa852a5e7d6bec8a831e58effd1aa86044bb8","components/data/useAsyncTableData.js":"ab343de3f5db8a42fbae0709944bea4c9d55053a308ae0445f5c14153284634d","components/data/useRowSelection.js":"a799985727b9fd4cec548ce71fb4685783edd903e60ca745f2db66202e4a4a03","components/data/useTableColumns.js":"7471ccf8ebdb4068b383c30ef88a05e278a3c5b9532745acc5b5d2cd06ff08d7","components/data/useTableState.js":"4ef6478e6f2ec4092ede0be55349b3fbb9bcfaaf8897cb8173842cc0e211a7b5","components/data/useThemeRowHeight.js":"b57e448018c5d78247f7b3244ef772db24faf6e8b7884031e43926875d2a3c95","components/decision/ConsequenceRail.jsx":"eee9bd4d9df1e9949e476dd282779ad12c0009918c9dbc097db66e0999fb3255","components/decision/DecisionSnapshot.jsx":"ff55975dc7dbeb582bcbb95f1ad6ff0ab72886813089ade2eba72f9eba53f4b2","components/decision/EvidenceRail.jsx":"bf89e3ad56d7f4e56d9b6e25acd26979db26e098c709d564b69741e18e463ae8","components/operations/ActionEnvelope.jsx":"a812d9324177af16232ab0261cf12f8a125ee487235d2380e18625d56656911e","components/operations/ActionGuard.jsx":"62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213","components/operations/ActionQueue.jsx":"fd07aa8b3b1185cbe9cf9bffb1a65f03dba99e20d5269e7ff56cc912d0fe6a08","components/operations/AdapterDiagnostics.jsx":"57878946145ca5a1e8e30fa6e7bfc3ea0beff8089dfccb4191161dd260c2d3b9","components/operations/AnnotationLayer.jsx":"873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed","components/operations/AttestationPanel.jsx":"701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff","components/operations/CaseQueue.jsx":"fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b","components/operations/ChangeSetReview.jsx":"0131a0ffe378e9304ec360a7f9cac662bc7cc33afb8ca8de5441a0758d29e30a","components/operations/ClaimHeader.jsx":"76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378","components/operations/ConnectionState.jsx":"7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147","components/operations/DataCondition.jsx":"f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed","components/operations/DecisionFlow.jsx":"9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898","components/operations/DiffView.jsx":"e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3","components/operations/EventTimeline.jsx":"053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6","components/operations/EvidenceInspector.jsx":"f340e9274ac08c8bfc71abef521b06ea76f8ea400b7ad5c58fd86a9e5b0b5975","components/operations/EvidenceLink.jsx":"8635914188ac1889e9fd5ea942537ee80906f75d03a174e638868ad54589cad8","components/operations/EvidencePreview.jsx":"683eca48e2dd0d71dd92834d2c50e8134e51cfcb98671a7f8d0dc68e076f184c","components/operations/GateRail.jsx":"df86ef309d3ca6a09cc78210a455198c05e5ee97519db28cb852cd5857f04965","components/operations/HandoverBrief.jsx":"c760e61ae9452cd95d5411e83bf1a4e40c7ff4c9a39c4c616cb36cb4542b3c97","components/operations/LogTail.jsx":"2068ae78c3e33c951623c245ba041d3a3c0fec04019b3a8db58242e0512cc577","components/operations/ProvenanceChip.jsx":"e874c21d303409c49e410cbb38b49b20669b10397a10f151984ca5fc5567b973","components/operations/ReadinessPanel.jsx":"73eb1518625f6d8eb70b9a1907053119a789714057b21265707dce8958f5e900","components/operations/ResolutionDrawer.jsx":"5018ae13ffa679dbabfd33a4570bacf2266f6fceb83e649b2405792e9bfe6f1c","components/operations/SeverityBadge.jsx":"e709b6011fdd2adf2ff41a7c7ea227cec44178d0b54bf20ebfd3a28cfef31435","components/operations/SlaChip.jsx":"0b81721d2aba88c4819c08337f1ff6da0ca6a6e257bd9867202712b55617b81d","components/operations/SourceCoverageSummary.jsx":"8a3be43ddf67564e0babe79856baa16c39f3fecee25b6c0b1a3861ace78b6632","components/operations/Status.jsx":"e4c8d1ba42a77533917be6c7dd484ff8379858dc39e7b0cde48dfee452de8066","components/operations/StrategyRunModel.jsx":"e594758074094a58f1cd2b09886cb68a8c3c5ad0d73f4d940345fc162946266e","components/operations/TrustStrip.jsx":"7e72cc58a46c7e34f777fedd421e3e2cee9c86e673d1214044148fb0c9924aa2","components/operations/ValidationIssueList.jsx":"28c43d942d39fb3f0423d7c499a8a5d8c50e627245e45cc1484669824dfeb97c","components/operations/ValueEnvelope.jsx":"ff4c5fe7a38a00e67ac0b3d867946f012aff7a987223d9ffb678577afc1e6f49","components/operations/VersionConflictNotice.jsx":"52194a0b56f4bf89bcaa4fecfaeb1de69eed37590bc9317537ab9ad5d2ea04a4","components/operations/WorkspaceSection.jsx":"d30eb476112d1fdfb3f603cb5e4aa077c90fce88cfb9389b7b46a4b67cf33ec4","components/operations/conditions.js":"eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf","components/operations/status.js":"3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8","components/shell/GlobalSearch.jsx":"4c209bde06b08eaafa232460e858944595b91ed8ad0752278c9a0bcfa67f755d","components/shell/NavRail.jsx":"623d14018e2948f4e6b9b2d73124c1e7fa7adec1bd1ad1edc4967b2d26ba5ab3","components/shell/ReturnPath.jsx":"387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74","components/shell/ScreenComposition.jsx":"34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892","components/shell/SessionControls.jsx":"0f0e8a312f6c5b9d602d5f1b39a48fc6dd25906bf36d761dedfb8a31448018a2","components/shell/StatusBar.jsx":"295017b232ecd8386cbdf5115ed76fd834aeb788d1454011465fed59ffd65589","components/shell/WorkspaceContextBar.jsx":"b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43","components/shell/WorkspaceLayout.jsx":"436b772f0f3b6e5e45ce2296ab8221f5e24a9c49590e7ac4a14168e33d7629c5","components/shell/WorkstationShell.jsx":"cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863","components/shell/WorkstationTopbar.jsx":"067992e1916a7734ff302bfb68459e77f41a453ae86f8847b5beba7ea77fe337","components/trading/Blotter.jsx":"9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8","components/trading/DepthLadder.jsx":"ccf900015157eb4b2b18b56b6047e55dbb44ed1068bbcebd91c6594829928b22","components/trading/FillsFeed.jsx":"6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0","components/trading/OptionChainTable.jsx":"d0ca9a513ee5ca23c50d5f79b1760af6cc4522fbf2c3a793e78e76a80f87d54f","components/trading/OrderTicket.jsx":"e7bd28d3356af90cda7c23aefbcb34f87e42dda380c4fabd43278503dc9b081e","components/trading/TimeAndSalesTape.jsx":"8d60d74b894dfcfe909cd95525f8cccca5b1a37a724a327da2542b4a6074e072","tests/conformance-rules.js":"5825637a5a1c97d926eb1f20daf9378e6ed3487e981747c5a805518e6b0bd7b2","tests/mock-transport.js":"238c83d10a66d6b1b35d9edb2597cf6d7e7ace816a60ab0d8bbd0259e1588ec5"},"inlinedExternals":[],"unexposedExports":[{"name":"accountNormalSide","sourcePath":"components/accounting/money.js"},{"name":"adapterPosture","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"adapterScheduleMissing","sourcePath":"components/operations/AdapterDiagnostics.jsx"},{"name":"addDays","sourcePath":"components/core/localDate.js"},{"name":"addMonths","sourcePath":"components/core/localDate.js"},{"name":"agingBucketIndex","sourcePath":"components/accounting/money.js"},{"name":"allocateAmount","sourcePath":"components/accounting/money.js"},{"name":"amortizeStraightLine","sourcePath":"components/accounting/money.js"},{"name":"assuranceCoverage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceHistory","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceState","sourcePath":"components/accounting/Assurance.jsx"},{"name":"assuranceVerb","sourcePath":"components/accounting/Assurance.jsx"},{"name":"atDepth","sourcePath":"components/core/Disclosure.jsx"},{"name":"bandPath","sourcePath":"components/charts/viz.js"},{"name":"buildTrialBalance","sourcePath":"components/accounting/money.js"},{"name":"checkTimeCoherence","sourcePath":"components/core/TimeContext.jsx"},{"name":"clampDate","sourcePath":"components/core/localDate.js"},{"name":"conditionMeta","sourcePath":"components/operations/conditions.js"},{"name":"conditionsVocabulary","sourcePath":"components/operations/conditions.js"},{"name":"convertAmount","sourcePath":"components/accounting/money.js"},{"name":"currencyDecimals","sourcePath":"components/core/format.js"},{"name":"currencySymbol","sourcePath":"components/core/format.js"},{"name":"dayOfInstant","sourcePath":"components/core/localDate.js"},{"name":"daysBetween","sourcePath":"components/accounting/money.js"},{"name":"decimalsForTick","sourcePath":"components/core/format.js"},{"name":"defineScreen","sourcePath":"components/shell/ScreenComposition.jsx"},{"name":"deriveMetrics","sourcePath":"components/operations/StrategyRunModel.jsx"},{"name":"describeObject","sourcePath":"components/core/ObjectModel.jsx"},{"name":"domainOf","sourcePath":"components/charts/viz.js"},{"name":"dowLabels","sourcePath":"components/core/localDate.js"},{"name":"effectiveYieldSchedule","sourcePath":"components/accounting/money.js"},{"name":"elbow","sourcePath":"components/charts/viz.js"},{"name":"envelopeCheck","sourcePath":"components/operations/ValueEnvelope.jsx"},{"name":"fixtureTransport","sourcePath":"components/operations/ActionEnvelope.jsx"},{"name":"formatAccounting","sourcePath":"components/core/format.js"},{"name":"formatBp","sourcePath":"components/operations/conditions.js"},{"name":"formatBps","sourcePath":"components/core/format.js"},{"name":"formatCompact","sourcePath":"components/core/format.js"},{"name":"formatConditioned","sourcePath":"components/operations/conditions.js"},{"name":"formatGridSigned","sourcePath":"components/data/gridFormat.js"},{"name":"formatMoney","sourcePath":"components/core/format.js"},{"name":"formatMoneyCompact","sourcePath":"components/core/format.js"},{"name":"formatNumber","sourcePath":"components/core/format.js"},{"name":"formatPercent","sourcePath":"components/core/format.js"},{"name":"formatPrice","sourcePath":"components/core/format.js"},{"name":"formatQuantity","sourcePath":"components/core/format.js"},{"name":"formatSigned","sourcePath":"components/operations/conditions.js"},{"name":"formatSignedDelta","sourcePath":"components/core/format.js"},{"name":"formatSlaDuration","sourcePath":"components/operations/SlaChip.jsx"},{"name":"fromISO","sourcePath":"components/core/localDate.js"},{"name":"fxRevalue","sourcePath":"components/accounting/money.js"},{"name":"getDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"getNumberDefaults","sourcePath":"components/core/format.js"},{"name":"gridProof","sourcePath":"components/data/DataGrid.jsx"},{"name":"humanizeStatus","sourcePath":"components/operations/status.js"},{"name":"isEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"linePath","sourcePath":"components/charts/viz.js"},{"name":"longDate","sourcePath":"components/core/localDate.js"},{"name":"monthTitle","sourcePath":"components/core/localDate.js"},{"name":"nextAssuranceStage","sourcePath":"components/accounting/Assurance.jsx"},{"name":"niceTicks","sourcePath":"components/charts/viz.js"},{"name":"normalizeCondition","sourcePath":"components/operations/conditions.js"},{"name":"normalizeSeverity","sourcePath":"components/operations/status.js"},{"name":"numberFormatter","sourcePath":"components/core/format.js"},{"name":"objectMeta","sourcePath":"components/core/ObjectModel.jsx"},{"name":"observeWidth","sourcePath":"components/charts/viz.js"},{"name":"pad","sourcePath":"components/core/localDate.js"},{"name":"parseLoose","sourcePath":"components/core/localDate.js"},{"name":"rangePresets","sourcePath":"components/core/localDate.js"},{"name":"resetNumberDefaults","sourcePath":"components/core/format.js"},{"name":"resolve","sourcePath":"components/core/Registry.jsx"},{"name":"resolveAuthority","sourcePath":"components/core/ValueAuthority.jsx"},{"name":"roleStyle","sourcePath":"components/charts/viz.js"},{"name":"roundMoney","sourcePath":"components/accounting/money.js"},{"name":"rungFor","sourcePath":"components/operations/ActionQueue.jsx"},{"name":"sameDay","sourcePath":"components/core/localDate.js"},{"name":"scale","sourcePath":"components/charts/viz.js"},{"name":"scheduleApplies","sourcePath":"components/accounting/ScheduleLadder.jsx"},{"name":"scopeMeta","sourcePath":"components/core/ObjectScope.jsx"},{"name":"scopeRelation","sourcePath":"components/core/ObjectScope.jsx"},{"name":"setDefaultLocale","sourcePath":"components/accounting/money.js"},{"name":"setNumberDefaults","sourcePath":"components/core/format.js"},{"name":"severityKeys","sourcePath":"components/operations/status.js"},{"name":"severityLabels","sourcePath":"components/operations/status.js"},{"name":"severityOf","sourcePath":"components/core/Disclosure.jsx"},{"name":"signAssurance","sourcePath":"components/accounting/Assurance.jsx"},{"name":"splitEnvelopeValue","sourcePath":"components/accounting/AmountCell.jsx"},{"name":"sumAmounts","sourcePath":"components/accounting/money.js"},{"name":"summarizeGuards","sourcePath":"components/operations/ActionGuard.jsx"},{"name":"toISO","sourcePath":"components/core/localDate.js"},{"name":"toNumber","sourcePath":"components/core/format.js"},{"name":"trailMoved","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"trailRef","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useAnnotations","sourcePath":"components/operations/AnnotationLayer.jsx"},{"name":"useAsyncTableData","sourcePath":"components/data/useAsyncTableData.js"},{"name":"useAsyncValidation","sourcePath":"components/core/useFormState.js"},{"name":"useChangeSet","sourcePath":"components/operations/ChangeSetReview.jsx"},{"name":"useChartCrosshair","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useCommandPalette","sourcePath":"components/core/CommandPalette.jsx"},{"name":"useContextMenu","sourcePath":"components/core/ContextMenu.jsx"},{"name":"useDecisionFlow","sourcePath":"components/operations/DecisionFlow.jsx"},{"name":"useDirtyState","sourcePath":"components/core/useFormState.js"},{"name":"useDisclosure","sourcePath":"components/core/Disclosure.jsx"},{"name":"useFormat","sourcePath":"components/core/FormatProvider.jsx"},{"name":"useLinkedSelection","sourcePath":"components/data/LinkedSelectionProvider.jsx"},{"name":"useMeasuredWidth","sourcePath":"components/charts/viz.js"},{"name":"useObjectTrail","sourcePath":"components/core/ObjectTrail.jsx"},{"name":"useOptimistic","sourcePath":"components/data/OptimisticCell.jsx"},{"name":"useOverlayEscape","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useOverlayFocus","sourcePath":"components/core/useOverlayFocus.js"},{"name":"useRowSelection","sourcePath":"components/data/useRowSelection.js"},{"name":"useSelectionCompare","sourcePath":"components/data/SelectionCompare.jsx"},{"name":"useSyncedCursor","sourcePath":"components/charts/useChartCrosshair.js"},{"name":"useTableColumns","sourcePath":"components/data/useTableColumns.js"},{"name":"useTableState","sourcePath":"components/data/useTableState.js"},{"name":"useThemeRowHeight","sourcePath":"components/data/useThemeRowHeight.js"},{"name":"useTimeContext","sourcePath":"components/core/TimeContext.jsx"},{"name":"useToast","sourcePath":"components/core/Toast.jsx"},{"name":"useWizard","sourcePath":"components/core/useFormState.js"},{"name":"useWorkspaceContext","sourcePath":"components/shell/WorkspaceContextBar.jsx"},{"name":"useWorkspaceLayout","sourcePath":"components/shell/WorkspaceLayout.jsx"},{"name":"weeksFor","sourcePath":"components/core/localDate.js"}]} */
 (() => {
   // api/accounting.js
   (function(global) {
@@ -271,7 +271,7 @@
     const ELIGIBILITY = "api/template-eligibility.json";
     const stripComments = (t2) => t2.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^[ \t]*\/\/.*$/gm, "");
     const adoption = (p) => isTemplate(p) ? "review" : "blocked";
-    const stripVarFallbacks = (t2) => t2.replace(/var\(\s*--[A-Za-z0-9-]+\s*,[^()]*\)/g, "var(--x)");
+    const stripVarFallbacks = (t2) => t2.replace(/var\(\s*--[A-Za-z0-9-]+\s*,[^()]*\)/g, (match) => match.replace(/[^\r\n]/g, " "));
     const RULES = [
       {
         id: "C-01",
@@ -549,7 +549,18 @@
       });
     }
     const CARD_ASSERTIONS = [
-      { id: "mounted", label: "card mounts and renders content", run: (doc) => doc.body && doc.body.textContent.trim().length > 40 && doc.body.querySelectorAll("*").length > 12 ? null : "card rendered (almost) nothing" },
+      { id: "mounted", label: "card mounts and renders content", run: (doc, win = doc.defaultView) => {
+        if (!doc.body) return "card rendered (almost) nothing";
+        if (doc.body.innerText.trim().length > 40) return null;
+        const name = (el) => (el.getAttribute("aria-label") || (el.getAttribute("aria-labelledby") || "").split(/\s+/).map((id) => doc.getElementById(id)?.textContent || "").join(" ").trim() || el.getAttribute("alt") || el.querySelector("title")?.textContent || "").trim();
+        const rendered = (el) => {
+          const box = el.getBoundingClientRect(), style = win.getComputedStyle(el);
+          return box.width > 0 && box.height > 0 && style.display !== "none" && style.visibility !== "hidden" && !el.closest('[hidden],[aria-hidden="true"]');
+        };
+        const image = [...doc.images].some((el) => rendered(el) && name(el) && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0);
+        const graphic = [...doc.querySelectorAll("svg")].some((el) => rendered(el) && name(el) && el.querySelector("path,rect,circle,line,polyline,polygon,text,use,image"));
+        return image || graphic ? null : "card rendered (almost) nothing";
+      } },
       { id: "bundle", label: "no component threw while evaluating", run: (doc, win) => {
         const ns = Object.keys(win).find((k) => /^MeridianDesignSystem_/.test(k));
         const errs = ns && win[ns] && win[ns].__errors;
@@ -582,48 +593,163 @@
         const bad = [...doc.querySelectorAll("[tabindex]")].filter((el) => Number(el.getAttribute("tabindex")) > 0);
         return bad.length ? `${bad.length} element(s) with a positive tabindex` : null;
       } },
-      { id: "transition-all", label: "no computed `transition-property: all`", run: (doc, win) => {
+      { id: "transition-all", label: "no active `transition-property: all`", run: (doc, win) => {
         const els = [...doc.querySelectorAll("*")].slice(0, 500);
-        const bad = els.filter((el) => win.getComputedStyle(el).transitionProperty === "all");
+        const bad = els.filter((el) => {
+          const style = win.getComputedStyle(el);
+          const properties = style.transitionProperty.split(",").map((value) => value.trim());
+          const durations = style.transitionDuration.split(",").map((value) => parseFloat(value));
+          return properties.some((property, i) => property === "all" && durations[i % durations.length] > 0);
+        });
         return bad.length ? `${bad.length} element(s) transition every property` : null;
       } },
       { id: "dialog", label: "any dialog is modal and named", run: (doc) => {
         const bad = [...doc.querySelectorAll("[role=dialog],[role=alertdialog]")].filter((el) => !el.getAttribute("aria-label") && !el.getAttribute("aria-labelledby"));
         return bad.length ? `${bad.length} unnamed dialog(s)` : null;
       } },
-      { id: "tokens-resolve", label: "every token a component references exists", run: (doc, win) => {
-        const defined = /* @__PURE__ */ new Set(), referenced = /* @__PURE__ */ new Map();
-        const sheets = [...doc.styleSheets];
-        for (const sheet of sheets) {
-          let rules;
-          try {
-            rules = sheet.cssRules;
-          } catch (e) {
-            continue;
-          }
-          const walk = (list) => {
-            for (const r of list) {
-              if (r.cssRules) {
-                walk(r.cssRules);
-                continue;
-              }
-              const text = r.cssText || "";
-              for (const m2 of text.matchAll(/(--[A-Za-z0-9-]+)\s*:/g)) defined.add(m2[1]);
+      { id: "tokens-resolve", label: "active component token references resolve in their scope", run: (doc, win) => {
+        const missing = /* @__PURE__ */ new Map(), unverifiable = /* @__PURE__ */ new Set(), computed = /* @__PURE__ */ new WeakMap();
+        const styleFor = (el, pseudo = "") => {
+          if (!computed.has(el)) computed.set(el, /* @__PURE__ */ new Map());
+          const styles = computed.get(el);
+          if (!styles.has(pseudo)) styles.set(pseudo, win.getComputedStyle(el, pseudo || null));
+          return styles.get(pseudo);
+        };
+        const selectors = (text) => {
+          const out = [];
+          let start = 0, depth = 0, quote = null, escaped = false;
+          for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+            if (escaped) {
+              escaped = false;
+              continue;
             }
-          };
-          try {
-            walk(rules);
-          } catch (e) {
+            if (c === "\\") {
+              escaped = true;
+              continue;
+            }
+            if (quote) {
+              if (c === quote) quote = null;
+              continue;
+            }
+            if (c === '"' || c === "'") {
+              quote = c;
+              continue;
+            }
+            if (c === "(" || c === "[") depth++;
+            if (c === ")" || c === "]") depth--;
+            if (c === "," && depth === 0) {
+              out.push(text.slice(start, i).trim());
+              start = i + 1;
+            }
           }
-        }
+          out.push(text.slice(start).trim());
+          return out.filter(Boolean);
+        };
+        const nest = (child, parent) => {
+          let out = "", used = false, quote = null, escaped = false;
+          for (const c of child) {
+            if (escaped) {
+              out += c;
+              escaped = false;
+              continue;
+            }
+            if (c === "\\") {
+              out += c;
+              escaped = true;
+              continue;
+            }
+            if (quote) {
+              out += c;
+              if (c === quote) quote = null;
+              continue;
+            }
+            if (c === '"' || c === "'") {
+              out += c;
+              quote = c;
+              continue;
+            }
+            if (c === "&") {
+              out += parent;
+              used = true;
+            } else out += c;
+          }
+          return used ? out : `${parent} ${child}`;
+        };
+        const references = (style, matches, owner, optional) => {
+          if (!style || !matches.length) return;
+          const uses = [];
+          const value = style.cssText.replace(/\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, " ");
+          for (const m2 of value.matchAll(/var\(\s*(--[A-Za-z0-9-]+)\s*/g)) {
+            const after = m2.index + m2[0].length;
+            let end = after, depth = 1;
+            for (; end < value.length; end++) {
+              if (value[end] === "(") depth++;
+              if (value[end] === ")" && --depth === 0) break;
+            }
+            uses.push({ name: m2[1], fallback: value[after] === "," && depth === 0 && value.slice(after + 1, end).trim().length > 0 });
+          }
+          for (const { el, pseudo } of matches) for (const { name, fallback } of uses) {
+            if (!styleFor(el, pseudo).getPropertyValue(name).trim() && !(optional.has(name) && fallback) && !missing.has(name)) missing.set(name, owner);
+          }
+        };
+        const active = (rule) => !(rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) && !(rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText));
+        const optionalProperties = (list, names = /* @__PURE__ */ new Set()) => {
+          for (const rule of list) {
+            if (!active(rule)) continue;
+            if (win.CSSPropertyRule && rule instanceof win.CSSPropertyRule && rule.syntax === "*" && rule.inherits && !rule.initialValue) names.add(rule.name);
+            if (rule.cssRules) optionalProperties(rule.cssRules, names);
+            if (rule.styleSheet && (!rule.media.mediaText || win.matchMedia(rule.media.mediaText).matches)) optionalProperties(rule.styleSheet.cssRules, names);
+          }
+          return names;
+        };
+        const walk = (list, owner, optional, parents = []) => {
+          for (const rule of list) {
+            if (rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) continue;
+            if (rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText)) continue;
+            if (rule.styleSheet) {
+              if (rule.media.mediaText && !win.matchMedia(rule.media.mediaText).matches) continue;
+              try {
+                walk(rule.styleSheet.cssRules, owner, optional, parents);
+              } catch (e) {
+                unverifiable.add(`imported stylesheet (${owner})`);
+              }
+            }
+            if (rule.type === win.CSSRule.KEYFRAMES_RULE) {
+              const animated = [...doc.querySelectorAll("*")].filter((el) => styleFor(el).animationName.split(",").map((name) => name.trim()).includes(rule.name));
+              for (const frame of rule.cssRules) references(frame.style, animated.map((el) => ({ el, pseudo: "" })), owner, optional);
+              continue;
+            }
+            let resolved = parents;
+            if (rule.selectorText) {
+              const own = selectors(rule.selectorText);
+              resolved = parents.length ? own.flatMap((child) => parents.map((parent) => nest(child, parent))) : own;
+              const matches = [];
+              for (const selector of resolved) {
+                const pseudo = selector.match(/::[\w-]+(?:\([^)]*\))?$/)?.[0] || "";
+                const target = (pseudo ? selector.slice(0, -pseudo.length) : selector).trim() || "*";
+                try {
+                  doc.querySelectorAll(target).forEach((el) => matches.push({ el, pseudo }));
+                } catch (e) {
+                  unverifiable.add(`${selector} (${owner})`);
+                }
+              }
+              references(rule.style, matches, owner, optional);
+            }
+            if (rule.cssRules) walk(rule.cssRules, owner, optional, resolved);
+          }
+        };
         for (const style of doc.querySelectorAll("style[data-mds]")) {
-          const owner = style.getAttribute("data-mds");
-          for (const m2 of (style.textContent || "").matchAll(/var\(\s*(--[A-Za-z0-9-]+)/g)) {
-            if (!referenced.has(m2[1])) referenced.set(m2[1], owner);
+          try {
+            walk(style.sheet.cssRules, style.getAttribute("data-mds"), optionalProperties(style.sheet.cssRules));
+          } catch (e) {
+            unverifiable.add(`stylesheet (${style.getAttribute("data-mds")})`);
           }
         }
-        const missing = [...referenced].filter(([name]) => !defined.has(name) && !win.getComputedStyle(doc.body).getPropertyValue(name).trim());
-        return missing.length ? `${missing.length} invented token(s): ` + missing.slice(0, 4).map(([n, o]) => `${n} (${o})`).join(", ") : null;
+        const notes = [];
+        if (missing.size) notes.push(`${missing.size} invented token(s): ` + [...missing].slice(0, 4).map(([name, owner]) => `${name} (${owner})`).join(", "));
+        if (unverifiable.size) notes.push("token scope could not be checked: " + [...unverifiable].slice(0, 2).join(", "));
+        return notes.length ? notes.join("; ") : null;
       } },
       { id: "eligibility", label: "a published adoption figure recomputes from its own rows", run: (doc, win) => {
         const e = win.__eligibility;
@@ -648,12 +774,25 @@
         return bad.length ? bad.slice(0, 3).join(" · ") : null;
       } },
       { id: "focus-visible", label: "focus is visible on the first control", run: (doc, win) => {
-        const el = doc.querySelector("button:not([disabled]),a[href],input:not([type=hidden]),select");
+        const el = [...doc.querySelectorAll("button,[role=button],a[href],input:not([type=hidden]),select,textarea")].find((node) => {
+          const style = win.getComputedStyle(node);
+          return !node.matches(":disabled") && !node.closest("[inert]") && node.tabIndex >= 0 && node.getClientRects().length > 0 && style.visibility === "visible";
+        });
         if (!el) return null;
-        el.focus();
+        if (doc.activeElement === el) el.blur();
+        const nodes = [];
+        for (let node = el; node && node !== doc.body; node = node.parentElement) nodes.push(node);
+        const indicator = (node) => {
+          const s = win.getComputedStyle(node);
+          return { outline: s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 ? `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor}` : null, shadow: s.boxShadow };
+        };
+        const before = nodes.map(indicator);
+        el.focus({ focusVisible: true });
         if (doc.activeElement !== el) return "first control could not take focus";
-        const s = win.getComputedStyle(el);
-        const has4 = s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 || s.boxShadow !== "none" || /inset/.test(s.boxShadow);
+        const has4 = nodes.some((node, i) => {
+          const after = indicator(node);
+          return after.outline && after.outline !== before[i].outline || after.shadow !== "none" && after.shadow !== before[i].shadow;
+        });
         return has4 ? null : "no visible focus indicator on the first control";
       } }
     ];
@@ -1908,8 +2047,8 @@
     const css = `
 .mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870);background:var(--bg-light,#F8F7F3);white-space:nowrap}
 .mds-asr::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
-.mds-asr[data-stage="prepared"]{color:var(--pending-dim,#5C503E);border-color:var(--pending,#7A6B52)}
-.mds-asr[data-stage="reviewed"]{color:var(--purple-dim,#234B68);border-color:var(--purple,#2F648A)}
+.mds-asr[data-stage="prepared"]{color:var(--state-pending-fg,#5C503E);border-color:var(--pending,#7A6B52)}
+.mds-asr[data-stage="reviewed"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A)}
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B54B42)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
@@ -1924,7 +2063,7 @@
 .mds-cert__dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:50%;background:transparent;vertical-align:middle}
 .mds-cert__dot[data-on="true"]{background:var(--green,#2E7655);border-color:var(--green,#2E7655)}
 .mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B54B42);border-style:dashed}
-.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--pending-dim,#5C503E);margin-left:6px}
+.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--state-pending-fg,#5C503E);margin-left:6px}
 .mds-cert__foot{display:flex;gap:14px;align-items:center;padding:8px 10px;border-top:1px solid var(--border,#D2CDC3);font-size:11px;color:var(--text-secondary,#535C65)}
 .mds-cert__foot b{color:var(--text-primary,#20252B);font-weight:600}
 `;
@@ -2056,7 +2195,7 @@
 .mds-bcm__modes{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-bcm__modes button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-bcm__modes button:first-child{border-left:0}
-.mds-bcm__modes button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-bcm__modes button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-bcm__modes button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-bcm__scroll{overflow:auto}
 .mds-bcm table{border-collapse:collapse;width:100%;min-width:560px}
@@ -2072,7 +2211,7 @@
 .mds-bcm__cell--action{cursor:pointer}
 .mds-bcm__cell--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-bcm__cell--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
+.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-bcm__val{display:block;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-bcm__val[data-text="true"]{font-family:var(--font-body);font-size:11px}
 .mds-bcm__val[data-condition="missing"],.mds-bcm__val[data-condition="exception"]{color:var(--red-dim,#873832)}
@@ -2199,7 +2338,7 @@
 .mds-calc__levels{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden;flex:none}
 .mds-calc__levels button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-calc__levels button:first-child{border-left:0}
-.mds-calc__levels button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-calc__levels button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-calc__levels button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-calc__group{padding:5px 12px 0;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870)}
 .mds-calc__rows{padding:4px 12px 6px}
@@ -2286,6 +2425,8 @@
     const el = document.createElement("style");
     el.setAttribute("data-mds", "datum");
     el.textContent = `
+@property --datum-color{syntax:"*";inherits:true;}
+@property --datum-lane{syntax:"*";inherits:true;}
 .mds-datum{position:absolute;z-index:3;pointer-events:none;color:var(--text-muted,#606870);font-family:var(--font-data,monospace);font-size:10px;line-height:1;}
 .mds-datum--v{top:0;bottom:0;width:0;border-left:var(--stroke-hairline,1px) solid var(--datum-color,var(--border-strong,#AAA49A));}
 .mds-datum--h{left:0;right:0;height:0;border-top:var(--stroke-hairline,1px) solid var(--datum-color,var(--border-strong,#AAA49A));}
@@ -2429,6 +2570,7 @@
           onActivate,
           labelLane,
           className,
+          style,
           ...rest
         }
       );
@@ -2546,7 +2688,7 @@
 .mds-close__views{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-close__views button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-well,#FCFBF8);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:4px 9px;cursor:pointer}
 .mds-close__views button:first-child{border-left:0}
-.mds-close__views button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-close__views button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-close__views button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-close__grid{display:grid;grid-template-columns:repeat(var(--close-cols,7),minmax(132px,1fr));overflow:auto}
 .mds-close__day{min-height:var(--calendar-cell-min-height,170px);border-right:1px solid var(--border-divider,#E2DED5);position:relative}
@@ -2557,10 +2699,10 @@
 .mds-close__task{display:grid;gap:2px;width:100%;border:0;border-left:2px solid var(--neutral,#6D757D);background:var(--surface-well,#FCFBF8);padding:6px;text-align:left;cursor:pointer;color:var(--text-secondary,#535C65);font-family:var(--font-body)}
 .mds-close__task:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-close__task:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
-.mds-close__task[data-selected="true"]{background:var(--selected-surface,#E7EDF2)}
+.mds-close__task[data-selected="true"]{background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-close__task[data-tone="done"]{border-left-color:var(--green,#2E7655)}
 .mds-close__task[data-tone="review"]{border-left-color:var(--orange,#986717)}
-.mds-close__task[data-tone="active"]{border-left-color:var(--purple,#2F648A)}
+.mds-close__task[data-tone="active"]{border-left-color:var(--color-info,#2F648A)}
 .mds-close__task[data-tone="blocked"]{border-left-color:var(--red,#B54B42);background:var(--red-surface,rgba(245,229,226,.1))}
 .mds-close__name{font-size:10px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-close__meta{font:9px/13px var(--font-data,monospace);color:var(--text-muted,#606870)}
@@ -2569,7 +2711,7 @@
 .mds-close__row{display:grid;grid-template-columns:20px minmax(160px,1.6fr) 1fr 108px 96px 78px;gap:10px;align-items:center;width:100%;min-height:36px;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);background:transparent;text-align:left;font-size:11px;color:var(--text-secondary,#535C65);cursor:pointer;font-family:var(--font-body)}
 .mds-close__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-close__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-close__row[data-selected="true"]{background:var(--selected-surface,#E7EDF2)}
+.mds-close__row[data-selected="true"]{background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-close__row strong{color:var(--text-primary,#20252B);font-weight:600}
 .mds-close__row small{display:block;font:9px/13px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-close__row[data-tone="blocked"] .mds-close__status{color:var(--red-dim,#873832);font-weight:600}
@@ -3273,7 +3415,7 @@
 .mds-date-open:disabled{cursor:not-allowed;color:var(--text-disabled,#A4ABB2);}
 .mds-date-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);padding:10px;
-  box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-date-cal--above{top:auto;bottom:calc(100% + 4px);}
 .mds-date-cal--right{left:auto;right:0;}
 .mds-date-header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:10px;}
@@ -3689,8 +3831,8 @@
     ))), dlId && /* @__PURE__ */ window.React.createElement("datalist", { id: dlId }, accounts.map((a) => /* @__PURE__ */ window.React.createElement("option", { key: a, value: a }))), /* @__PURE__ */ window.React.createElement("table", { className: "jnl__grid" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Account"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--r", scope: "col" }, "Debit"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--r", scope: "col" }, "Credit"), /* @__PURE__ */ window.React.createElement("th", { className: "jnl--x", scope: "col", "aria-label": "Remove" }))), /* @__PURE__ */ window.React.createElement("tbody", null, lines.map((row, i) => /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("td", null, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Account line ${i + 1}`,
         placeholder: "Account",
-        "aria-label": `Line ${i + 1} account`,
         value: row.account,
         onChange: (e) => setL(i, "account", e.target.value),
         list: dlId
@@ -3698,9 +3840,9 @@
     )), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Debit line ${i + 1}`,
         type: "number",
         placeholder: "0.00",
-        "aria-label": `Line ${i + 1} debit`,
         value: row.debit,
         onChange: (e) => setL(i, "debit", e.target.value),
         style: { textAlign: "right" }
@@ -3708,9 +3850,9 @@
     )), /* @__PURE__ */ window.React.createElement("td", { className: "jnl--r" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": `Credit line ${i + 1}`,
         type: "number",
         placeholder: "0.00",
-        "aria-label": `Line ${i + 1} credit`,
         value: row.credit,
         onChange: (e) => setL(i, "credit", e.target.value),
         style: { textAlign: "right" }
@@ -4336,15 +4478,15 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     return /* @__PURE__ */ window.React.createElement("div", { className: "rec__side" }, /* @__PURE__ */ window.React.createElement("div", { className: "rec__head" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__title" }, side.title), /* @__PURE__ */ window.React.createElement("span", { className: "rec__counts" }, /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--ok" }, matched, " matched"), open > 0 && /* @__PURE__ */ window.React.createElement("span", { className: "rec__chip rec__chip--open" }, open, " open"))), /* @__PURE__ */ window.React.createElement("div", { className: "rec__tablewrap", tabIndex: 0, role: "region", "aria-label": `${side.title} items` }, /* @__PURE__ */ window.React.createElement("table", { className: "rec__table" }, /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col", "aria-label": "Matched", style: { width: 28, textAlign: "center" } }, /* @__PURE__ */ window.React.createElement(
       Checkbox,
       {
+        "aria-label": `Matched status for all ${side.title} items`,
         checked: allMatched,
-        "aria-label": `Match all ${side.title} items`,
         onChange: (checked) => onToggleAll && onToggleAll(side, checked)
       }
     )), columns.map((c) => /* @__PURE__ */ window.React.createElement(SortHead, { key: c.key, col: c, sort, onSort })))), /* @__PURE__ */ window.React.createElement("tbody", null, rows.length === 0 && /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("td", { className: "rec__empty", colSpan: columns.length + 1 }, "No matching items")), rows.map((it, i) => /* @__PURE__ */ window.React.createElement("tr", { key: it.id ?? i, className: it.matched ? "matched" : "open" }, /* @__PURE__ */ window.React.createElement("td", { style: { textAlign: "center", paddingLeft: 6, paddingRight: 6 } }, /* @__PURE__ */ window.React.createElement(
       Checkbox,
       {
+        "aria-label": `Matched: ${side.title} ${it.ref ?? it.id}`,
         checked: it.matched || false,
-        "aria-label": `Match ${side.title} item ${it.ref ?? i + 1}`,
         onChange: (checked) => onToggleItem && onToggleItem(it.id, checked)
       }
     )), columns.map(
@@ -4392,8 +4534,8 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     return /* @__PURE__ */ window.React.createElement("div", { className: "rec", role: "group", "aria-label": "Reconciliation" }, (filterable || searchable) && /* @__PURE__ */ window.React.createElement("div", { className: "rec__toolbar" }, filterable ? /* @__PURE__ */ window.React.createElement("div", { className: "rec__seg", role: "group", "aria-label": "Filter by status" }, STATUS_TABS.map((t2) => /* @__PURE__ */ window.React.createElement("button", { key: t2.key, type: "button", "aria-pressed": status === t2.key, onClick: () => setStatus(t2.key) }, t2.label))) : /* @__PURE__ */ window.React.createElement("span", null), searchable && /* @__PURE__ */ window.React.createElement("div", { className: "rec__searchwrap" }, /* @__PURE__ */ window.React.createElement(
       Input,
       {
+        "aria-label": "Filter reconciliation items by memo or reference",
         placeholder: "Filter memo, ref…",
-        "aria-label": "Filter reconciliation items",
         value: query,
         onChange: (e) => setQuery(e.target.value)
       }
@@ -4570,7 +4712,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-var--action{background:none;border:0;border-left:2px solid transparent;font:inherit;color:inherit;cursor:pointer;padding:1px 3px 1px 7px}
 .mds-var--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-var--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
-.mds-var[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
+.mds-var[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,var(--bg-active,#E7EDF2))}
 .mds-var--inline{grid-auto-flow:column;align-items:baseline;gap:8px;justify-items:start;text-align:left;min-width:0}
 .mds-var--inline .mds-var__note{display:none}
 `;
@@ -4695,7 +4837,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const el = document.createElement("style");
     el.setAttribute("data-mds", "schedule-ladder");
     el.textContent = `
-.mds-sl{border:1px solid var(--border,#D2CDC3);background:var(--surface-well,#FCFBF8);font-family:var(--font-body);color:var(--text-secondary,#535C65)}
+.mds-sl{border:1px solid var(--border,#D2CDC3);background:var(--surface-well,var(--bg-light,#F8F7F3));font-family:var(--font-body);color:var(--text-secondary,#535C65)}
 .mds-sl__head{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:9px 11px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-sl__title{margin:0;font-size:13px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-sl__object,.mds-sl__meta{font:10px/14px var(--font-data,monospace);color:var(--text-muted,#606870)}
@@ -4944,7 +5086,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
   padding:2px 7px;font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
 .tlt__hp--short{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
@@ -6140,7 +6282,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
 .mds-cfl__row--action{cursor:pointer}
 .mds-cfl__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-cfl__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
+.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-cfl__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-cfl__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-cfl__track{position:relative;height:22px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
@@ -6242,7 +6384,12 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
     const y = p ? p.y : null;
     const by = badgeY != null ? badgeY : t2;
     const clampX = (x) => Math.max(g.plotL, Math.min(g.plotR, x));
-    return /* @__PURE__ */ window.React.createElement("g", null, bands.map((bd, i) => {
+    const descriptions = [
+      ...bands.map((bd, i) => `${bd.label || `Band ${i + 1}`} (${bd.kind || "event"}), positions ${bd.from} to ${bd.to}`),
+      ...events.map((e, i) => `Event ${e.badge != null ? e.badge : i + 1}${e.label ? `, ${e.label}` : ""} (${e.kind || "event"}), position ${e.index}${e.detail ? `: ${e.detail}` : ""}`),
+      ...y ? callouts.map((c) => `${c.text}${c.kind ? ` (${c.kind})` : ""}, position ${c.index}, value ${c.value}`) : []
+    ];
+    return /* @__PURE__ */ window.React.createElement("g", { role: descriptions.length ? "img" : void 0, "aria-label": descriptions.length ? `Chart annotations. ${descriptions.join(". ")}` : void 0 }, bands.map((bd, i) => {
       const x0 = clampX(g.x(bd.from)), x1 = clampX(g.x(bd.to));
       const c = kindColor(bd.kind);
       return /* @__PURE__ */ window.React.createElement("g", { key: "b" + i }, /* @__PURE__ */ window.React.createElement(
@@ -6271,7 +6418,7 @@ button.mds-lcr__stage:focus-visible{outline:2px solid var(--border-focus);outlin
       const c = kindColor(e.kind);
       const badge = e.badge != null ? String(e.badge) : String(i + 1);
       const w = Math.max(16, badge.length * 7 + 9);
-      return /* @__PURE__ */ window.React.createElement("g", { key: "e" + i }, showRules && /* @__PURE__ */ window.React.createElement("line", { x1: x, x2: x, y1: by + 8, y2: b, stroke: c, strokeWidth: "1", strokeDasharray: "var(--viz-dash-flow,3 4)", opacity: "0.7" }), /* @__PURE__ */ window.React.createElement("rect", { x: x - w / 2, y: by - 3, width: w, height: 16, rx: "2", fill: c, opacity: "0.92" }), /* @__PURE__ */ window.React.createElement(
+      return /* @__PURE__ */ window.React.createElement("g", { key: "e" + i }, /* @__PURE__ */ window.React.createElement("title", null, [e.label || `Event ${badge}`, e.detail].filter((part) => part != null && part !== "").join(": ")), showRules && /* @__PURE__ */ window.React.createElement("line", { x1: x, x2: x, y1: by + 8, y2: b, stroke: c, strokeWidth: "1", strokeDasharray: "var(--viz-dash-flow,3 4)", opacity: "0.7" }), /* @__PURE__ */ window.React.createElement("rect", { x: x - w / 2, y: by - 3, width: w, height: 16, rx: "2", fill: c, opacity: "0.92" }), /* @__PURE__ */ window.React.createElement(
         "text",
         {
           x,
@@ -6502,7 +6649,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-cdg__toggle{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-cdg__toggle button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-cdg__toggle button:first-child{border-left:0}
-.mds-cdg__toggle button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-cdg__toggle button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-cdg__toggle button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-cdg svg{width:100%;height:auto;display:block;background:var(--surface-well,var(--card-surface-raised,#FCFBF8));border:1px solid var(--border,#D2CDC3)}
 .mds-cdg__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25}
@@ -6516,7 +6663,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-cdg__node--done rect{stroke:var(--green,#2E7655)}
 .mds-cdg__node--blocked rect{stroke:var(--red,#B54B42);fill:var(--red-surface,rgba(245,229,226,.08))}
 .mds-cdg__node--review rect{stroke:var(--orange,#986717)}
-.mds-cdg__node--active rect{stroke:var(--purple,#2F648A)}
+.mds-cdg__node--active rect{stroke:var(--color-info,#2F648A)}
 .mds-cdg__node--downstream rect{stroke-dasharray:3 2}
 .mds-cdg__node--critical rect{stroke-width:1.75}
 .mds-cdg__datum{fill:none;stroke:var(--selected,#496C8F);stroke-width:2}
@@ -7255,7 +7402,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dc__ranks{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-dc__ranks button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-dc__ranks button:first-child{border-left:0}
-.mds-dc__ranks button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-dc__ranks button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-dc__ranks button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-dc__unit{flex-basis:100%;font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-dc__colhead,.mds-dc__row{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:center}
@@ -7265,7 +7412,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dc__row{min-height:32px;width:100%;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .mds-dc__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-dc__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
+.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-dc__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-dc__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-dc__num{text-align:right;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
@@ -7897,7 +8044,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-ml__modes{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-ml__modes button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-ml__modes button:first-child{border-left:0}
-.mds-ml__modes button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-ml__modes button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-ml__modes button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-ml__unit{font:9px var(--font-data,monospace);color:var(--text-muted,#606870);flex-basis:100%}
 .mds-ml__colhead,.mds-ml__row{display:grid;grid-template-columns:minmax(78px,104px) 1fr 92px 92px 96px;gap:10px;align-items:center}
@@ -7907,7 +8054,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-ml__row--action{cursor:pointer}
 .mds-ml__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-ml__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-ml__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
+.mds-ml__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-ml__row[data-unknown="true"] .mds-ml__label{font-style:italic}
 .mds-ml__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-ml__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
@@ -8029,7 +8176,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-own__row + .mds-own__row{margin-top:56px;}
 .mds-own__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;min-width:132px;max-width:200px;
   padding:8px 11px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,6px);
-  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-raised,0 1px 2px rgba(26,32,39,.06));
+  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-card,none);
   text-align:left;cursor:default;font-family:var(--font-body,"IBM Plex Sans",sans-serif);}
 .mds-own__node--click{cursor:pointer;}
 .mds-own__node--click:hover{border-color:var(--border-strong,#AAA49A);background:var(--bg-hover,#EDEFF0);}
@@ -8191,11 +8338,11 @@ button.mds-covm__cell{cursor:pointer;}
       const tone = better == null ? "var(--series-actual)" : above === !!better ? "var(--series-positive)" : "var(--series-negative)";
       const rank2 = peers.length ? peers.filter((p) => better === false ? p < m2.value : p > m2.value).length + 1 : null;
       return /* @__PURE__ */ window.React.createElement("div", { key: m2.id || m2.label || mi, style: { display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" } }, /* @__PURE__ */ window.React.createElement("div", { style: { width: labelWidth2, flex: "0 0 auto", minWidth: 0 } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.label), m2.note && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" } }, m2.note)), /* @__PURE__ */ window.React.createElement("div", { style: { flex: "1 1 auto", minWidth: 120, position: "relative", height: 22 } }, /* @__PURE__ */ window.React.createElement("div", { style: { position: "absolute", left: 0, right: 0, top: 10, height: 2, background: "var(--viz-grid,var(--chart-grid))" } }), peers.map((p, i) => /* @__PURE__ */ window.React.createElement("span", { key: i, title: `peer ${f(p)}`, style: { position: "absolute", left: pct3(p), top: 5, width: 1, height: 12, marginLeft: -0.5, background: "var(--series-prior)", opacity: 0.55 } })), med != null && /* @__PURE__ */ window.React.createElement("span", { title: `median ${f(med)}`, style: { position: "absolute", left: pct3(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 } }), m2.value != null && /* @__PURE__ */ window.React.createElement("span", { title: `${subjectLabel} ${f(m2.value)}`, style: { position: "absolute", left: pct3(m2.value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" } }), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(lo)), /* @__PURE__ */ window.React.createElement("span", { style: { ...MONO3, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }, "aria-hidden": "true" }, f(hi))), /* @__PURE__ */ window.React.createElement("div", { style: { ...MONO3, width: valueWidth, flex: "0 0 auto", textAlign: "right" } }, /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone } }, m2.value == null ? "—" : f(m2.value)), showRank && rank2 != null && /* @__PURE__ */ window.React.createElement("div", { style: { fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" } }, rank2, " of ", peers.length + 1)));
-    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
+    }), ariaLabel && /* @__PURE__ */ window.React.createElement("table", { style: SR4 }, /* @__PURE__ */ window.React.createElement("caption", null, caption || ariaLabel), /* @__PURE__ */ window.React.createElement("thead", null, /* @__PURE__ */ window.React.createElement("tr", null, /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Metric"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, subjectLabel), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer median"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Peer values"), /* @__PURE__ */ window.React.createElement("th", { scope: "col" }, "Rank"))), /* @__PURE__ */ window.React.createElement("tbody", null, metrics.map((m2, i) => {
       const f = m2.fmt || fmt6, peers = m2.peers || [];
       const med = m2.median != null ? m2.median : peers.length ? median(peers) : null;
       const rank2 = peers.length ? peers.filter((p) => m2.higherIsBetter === false ? p < m2.value : p > m2.value).length + 1 : null;
-      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, m2.value == null ? "no data" : f(m2.value)), /* @__PURE__ */ window.React.createElement("td", null, med == null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, rank2 == null ? "—" : `${rank2} of ${peers.length + 1}`));
+      return /* @__PURE__ */ window.React.createElement("tr", { key: i }, /* @__PURE__ */ window.React.createElement("th", { scope: "row" }, m2.label), /* @__PURE__ */ window.React.createElement("td", null, m2.value == null ? "no data" : f(m2.value)), /* @__PURE__ */ window.React.createElement("td", null, med == null ? "no peers" : f(med)), /* @__PURE__ */ window.React.createElement("td", null, peers.length ? peers.map((peer) => f(peer)).join(", ") : "no peers"), /* @__PURE__ */ window.React.createElement("td", null, rank2 == null ? "—" : `${rank2} of ${peers.length + 1}`));
     }))), caption && /* @__PURE__ */ window.React.createElement("p", { style: { margin: "10px 0 0", fontSize: "var(--viz-type-annotation,12px)", color: "var(--text-secondary)", maxWidth: "62ch" } }, caption));
   }
   PeerComparisonStrip.displayName = "PeerComparisonStrip";
@@ -8496,7 +8643,7 @@ button.mds-covm__cell{cursor:pointer;}
     const selectedIndex = ids.indexOf(value);
     const tabStopIndex = selectedIndex < 0 ? 0 : selectedIndex;
     const onKeyDown = (e, index) => {
-      if (inert || !ids.length) return;
+      if (inert || !ids.length || e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey) return;
       let nextIndex;
       if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex = (index + 1) % ids.length;
       else if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex = (index - 1 + ids.length) % ids.length;
@@ -8507,7 +8654,7 @@ button.mds-covm__cell{cursor:pointer;}
       radios.current[nextIndex]?.focus();
       onChange(ids[nextIndex]);
     };
-    return /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("div", { role: "radiogroup", "aria-label": ariaLabel, style: {
+    return /* @__PURE__ */ window.React.createElement("div", null, /* @__PURE__ */ window.React.createElement("div", { role: "radiogroup", "aria-label": ariaLabel, "aria-orientation": layout2 === "columns" ? "horizontal" : "vertical", style: {
       display: layout2 === "columns" ? "grid" : "flex",
       gridTemplateColumns: layout2 === "columns" ? `repeat(${Math.max(1, scenarios.length)},minmax(0,1fr))` : void 0,
       flexDirection: layout2 === "columns" ? void 0 : "column",
@@ -8527,7 +8674,10 @@ button.mds-covm__cell{cursor:pointer;}
           },
           disabled: inert,
           tabIndex: !inert && index === tabStopIndex ? 0 : -1,
-          onClick: inert ? void 0 : () => onChange(s.id),
+          onClick: inert ? void 0 : (e) => {
+            e.currentTarget.focus();
+            onChange(s.id);
+          },
           onKeyDown: (e) => onKeyDown(e, index),
           style: {
             display: "flex",
@@ -9763,18 +9913,17 @@ button.mds-covm__cell{cursor:pointer;}
             border: "none",
             background: "transparent",
             padding: 0,
-            color: "var(--brand-signal,#C56343)",
+            color: "var(--brand-signal-ink,#944A32)",
             fontFamily: "var(--font-data)",
             fontSize: 12,
             cursor: item.onClick ? "pointer" : "default",
-            textDecoration: "none",
-            transition: "opacity .1s ease"
+            textDecoration: "none"
           },
           onMouseEnter: (e) => {
-            if (item.onClick) e.currentTarget.style.opacity = "0.7";
+            if (item.onClick) e.currentTarget.style.textDecoration = "underline";
           },
           onMouseLeave: (e) => {
-            e.currentTarget.style.opacity = "1";
+            e.currentTarget.style.textDecoration = "none";
           }
         },
         item.label
@@ -9930,7 +10079,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-cb-btn:disabled{cursor:not-allowed;color:var(--text-disabled,#A4ABB2);}
 .mds-cb-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);
-  max-height:240px;overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));
+  max-height:240px;overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));
   border-radius:var(--radius-overlay,6px);}
 .mds-cb-opt{padding:8px 12px;font-family:var(--font-data);font-size:12px;
   color:var(--text-primary,#20252B);cursor:pointer;display:flex;align-items:center;gap:8px;}
@@ -9947,7 +10096,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-cb-group:first-child{border-top:0;}
 .mds-cb-empty{padding:10px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);}
 .mds-cb-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#883832);margin-top:5px;}
-.mds-cb-mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal,#C56343);}
+.mds-cb-mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal-ink,#944A32);}
 .mds-cb-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
 `;
     const el = document.createElement("style");
@@ -10195,10 +10344,10 @@ button.mds-covm__cell{cursor:pointer;}
     injected57 = true;
     const css = `
 .mds-cmd__scrim{position:fixed;inset:0;z-index:var(--z-modal,200);display:flex;justify-content:center;
-  align-items:flex-start;padding:14vh 16px 16px;background:var(--scrim, rgba(30,28,26,.5));}
+  align-items:flex-start;padding:14vh 16px 16px;background:var(--scrim, rgba(17,23,29,.5));}
 .mds-cmd{width:100%;max-width:580px;display:flex;flex-direction:column;max-height:60vh;
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
-  border-radius:var(--radius-card,2px);box-shadow:var(--shadow-menu,0 2px 6px rgba(0,0,0,.18));
+  border-radius:var(--radius-card,2px);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18));
   font-family:var(--font-body);overflow:hidden;}
 .mds-cmd__field{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;flex:none;
   border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
@@ -10230,7 +10379,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-cmd__key{font-family:var(--font-data,monospace);font-size:10px;font-weight:600;
   color:var(--text-secondary,#535C65);border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);padding:1px 5px;border-radius:var(--radius-button,2px);}
-.mds-cmd__mark{color:var(--brand-signal,#C56343);font-weight:700;}
+.mds-cmd__mark{color:var(--brand-signal-ink,#944A32);font-weight:700;}
 .mds-cmd__meta{margin-left:8px;font-family:var(--font-data,monospace);font-size:10.5px;color:var(--text-muted,#606870);}
 .mds-cmd__verbs{flex:none;display:none;gap:4px;}
 .mds-cmd__row--hl .mds-cmd__verbs{display:inline-flex;}
@@ -10716,7 +10865,7 @@ button.mds-covm__cell{cursor:pointer;}
 .mds-dr-btn:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-dr-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);display:flex;
-  box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-dr-cal--above{top:auto;bottom:calc(100% + 4px);}
 .mds-dr-cal--right{left:auto;right:0;}
 .mds-dr-presets{flex:0 0 auto;display:flex;flex-direction:column;gap:2px;padding:10px;
@@ -11254,7 +11403,7 @@ button.mds-covm__cell{cursor:pointer;}
     injected61 = true;
     const css = `
 .mds-dialog-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
   z-index: var(--z-modal, 200); display: flex; align-items: center; justify-content: center;
   animation: mds-dialog-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }
@@ -11824,7 +11973,7 @@ button.mds-covm__cell{cursor:pointer;}
     injected64 = true;
     const css = `
 .mds-drawer-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
   /* The scrim carries the drawer's elevation, as Dialog's does. Without it the overlay sits at
      z:auto and any sticky table header (--z-raised) paints through the open drawer. */
   z-index: var(--z-drawer, 150);
@@ -12193,7 +12342,14 @@ button.mds-covm__cell{cursor:pointer;}
     className = "",
     style = {}
   }) {
-    const fieldId = Math.random().toString(36).slice(2);
+    const generatedId = react_default.useId();
+    const control = react_default.isValidElement(children) ? children : null;
+    const fieldId = control?.props.id || generatedId;
+    const helpId = `${fieldId}-help`;
+    const describedBy = [.../* @__PURE__ */ new Set([
+      ...(control?.props["aria-describedby"] || "").split(/\s+/).filter(Boolean),
+      ...hint || error ? [helpId] : []
+    ])].join(" ");
     return /* @__PURE__ */ window.React.createElement(
       "div",
       {
@@ -12218,15 +12374,18 @@ button.mds-covm__cell{cursor:pointer;}
           }
         },
         label2,
-        required && /* @__PURE__ */ window.React.createElement("span", { style: { color: "var(--red)", marginLeft: "4px" } }, "*")
+        required && /* @__PURE__ */ window.React.createElement("span", { "aria-hidden": "true", style: { color: "var(--red)", marginLeft: "4px" } }, "*")
       ),
-      children && typeof children === "object" && children.type ? (() => {
-        const cloned = children;
-        return cloned.props ? children : children;
-      })() : children,
+      control ? react_default.cloneElement(control, {
+        id: fieldId,
+        ...describedBy ? { "aria-describedby": describedBy } : {},
+        ...error ? { "aria-invalid": true } : {},
+        ...required ? { "aria-required": true } : {}
+      }) : children,
       (hint || error) && /* @__PURE__ */ window.React.createElement(
         "div",
         {
+          id: helpId,
           style: {
             fontSize: "var(--type-caption)",
             color: error ? "var(--red)" : "var(--text-muted)",
@@ -12512,7 +12671,7 @@ button.mds-covm__cell{cursor:pointer;}
     if (injected70 || typeof document === "undefined") return;
     injected70 = true;
     const css = `
-.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(30,28,26,.5));z-index:var(--z-hotkey,400);
+.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(17,23,29,.5));z-index:var(--z-hotkey,400);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9vh;
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}
@@ -12648,7 +12807,7 @@ button.mds-ichip:focus-visible{outline:var(--focus-ring);outline-offset:var(--fo
 .mds-ichip--sm{padding:1px 5px 1px 2px;gap:5px;}
 .mds-ichip--sm .mds-ichip__class{width:13px;height:13px;font-size:7.5px;}
 .mds-ichip--sm .mds-ichip__sym{font-size:11px;}
-.mds-ichip__class--eq{color:var(--brand-signal,#C56343);border-color:var(--brand-signal,#C56343);background:var(--blue-a10,rgba(47,100,138,.1));}
+.mds-ichip__class--eq{color:var(--brand-signal-ink,#944A32);border-color:var(--brand-signal,#C56343);background:var(--blue-a10,rgba(47,100,138,.1));}
 .mds-ichip__class--fut{color:var(--purple-dim,#234B68);border-color:var(--purple,#2F648A);background:var(--purple-a10,rgba(47,100,138,.1));}
 .mds-ichip__class--opt{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.1));}
 .mds-ichip__class--fx{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1));}
@@ -12843,7 +13002,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
 .mds-ms-btn:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-ms-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);max-height:260px;
-  overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-ms-menu--above{top:auto;bottom:calc(100% + 4px);}
 .mds-ms-bulk{display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border-divider,#E2DED5);
   position:sticky;top:0;background:var(--bg-light,#F8F7F3);z-index:1;}
@@ -13237,7 +13396,7 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
 .mds-notif__hd-title{font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);}
 .mds-notif__mark{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-size:11px;color:var(--brand-signal,#C56343);padding:0;font-family:var(--font-body);}
+  font-size:11px;color:var(--brand-signal-ink,#944A32);padding:0;font-family:var(--font-body);}
 .mds-notif__mark:hover{text-decoration:underline;}
 .mds-notif__item{display:grid;grid-template-columns:10px 1fr auto;gap:8px;padding:9px 12px;
   border-top:1px solid var(--border-divider,#E2DED5);align-items:start;}
@@ -13788,7 +13947,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
 .mds-trail__row b{font-size:12px;font-weight:600;color:var(--text-primary,#20252B);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-trail__row .mds-trail__meta{grid-column:1/-1;font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-trail__moved{grid-column:1/-1;font:600 9.5px var(--font-data,monospace);letter-spacing:.03em;text-transform:uppercase;color:var(--severity-action-fg,#724D11)}
-.mds-trail__notice{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid var(--severity-action-bd,#986717);background:var(--severity-action-bg,#986717);color:var(--text-primary,#20252B);font-size:11.5px}
+.mds-trail__notice{display:flex;align-items:center;gap:8px;padding:5px 10px;border-bottom:1px solid var(--severity-action-bd,rgba(152, 103, 23, 0.42));background:var(--severity-action-bg,rgba(152, 103, 23, 0.11));color:var(--text-primary,#20252B);font-size:11.5px}
 .mds-trail__notice strong{font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--severity-action-fg,#724D11)}
 .mds-trail__notice button{margin-left:auto;border:0;background:transparent;color:var(--link,#2A5F96);font:inherit;cursor:pointer}
 .mds-tlist{font-family:var(--font-body)}
@@ -14866,6 +15025,7 @@ body.mds-split-dragging--v,body.mds-split-dragging--v *{cursor:row-resize !impor
     if (injected87 || typeof document === "undefined") return;
     injected87 = true;
     const css = `
+@property --stepper-height{syntax:"*";inherits:true;}
 .mds-stepper{display:flex;gap:1px;background:var(--border);list-style:none;margin:0;padding:0;}
 .mds-stepper--h{border-bottom:1px solid var(--border);}
 .mds-stepper--v{flex-direction:column;border-right:1px solid var(--border);}
@@ -14897,7 +15057,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-stepper-step--error .mds-stepper-step__label{color:var(--red-dim,#883832);}
 .mds-stepper-step__badge{flex:0 0 auto;margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;
   background:var(--bg-medium);color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-chip,2px);}
-.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-surface,#F5E5E2);color:var(--red-dim,#883832);}
+.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-a10,rgba(181, 75, 66, 0.1));color:var(--red-dim,#883832);}
 .mds-stepper-step__sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 @media print{.mds-stepper{background:none;}.mds-stepper-step{background:none;}}
 `;
@@ -15466,7 +15626,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   color:var(--text-muted,#606870);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
 .mds-toast__close:hover{color:var(--text-primary,#20252B);}
 .mds-toast__action{appearance:none;border:1px solid var(--brand-signal,#C56343);background:transparent;
-  cursor:pointer;color:var(--brand-signal-dim,#CB6E4E);font-family:var(--font-body);font-size:12px;
+  cursor:pointer;color:var(--brand-signal-ink,#944A32);font-family:var(--font-body);font-size:12px;
   font-weight:600;padding:4px 10px;margin-top:8px;align-self:flex-start;border-radius:var(--radius-button,2px);}
 .mds-toast__action:hover{background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px;}
@@ -15550,7 +15710,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-tip-box{position:absolute;z-index:var(--z-tooltip,500);pointer-events:none;
   background:var(--text-primary,#20252B);color:var(--bg-light,#F8F7F3);
   padding:8px 12px;font-family:var(--font-body);font-size:11px;line-height:1.4;
-  width:max-content;max-width:280px;border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));}
+  width:max-content;max-width:280px;border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));}
 .mds-tip-box--above{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--below{top:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--left{right:calc(100% + 6px);top:50%;transform:translateY(-50%);}
@@ -15604,6 +15764,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
     if (injected93 || typeof document === "undefined") return;
     injected93 = true;
     const css = `
+@property --tree-row-height{syntax:"*";inherits:true;}
 .mds-tree{font-family:var(--font-data);font-size:13px;color:var(--text-primary,#20252B);user-select:none;position:relative;}
 .mds-tree:focus-visible{outline:var(--focus-ring);outline-offset:2px;}
 .mds-tree-row{display:flex;align-items:center;gap:6px;height:var(--tree-row-height,var(--theme-row-height,36px));padding:0 8px;cursor:pointer;border-left:2px solid transparent;position:relative;}
@@ -16333,8 +16494,8 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-colchz__ck--on{background:var(--interaction-selected,#496C8F);border-color:var(--interaction-selected,#496C8F);color:var(--text-on-accent,#0D1217);}
 .mds-colchz__foot{padding:8px 12px;border-top:1px solid var(--border,#D2CDC3);}
 .mds-colchz__reset{appearance:none;border:none;background:transparent;
-  font-family:var(--font-body);font-size:11px;color:var(--brand-signal,#C56343);cursor:pointer;padding:0;}
-.mds-colchz__reset:hover{opacity:.75;}
+  font-family:var(--font-body);font-size:11px;color:var(--brand-signal-ink,#944A32);cursor:pointer;padding:0;}
+.mds-colchz__reset:hover{text-decoration:underline;}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "colchooser");
@@ -16394,7 +16555,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
   border-bottom:1px solid var(--border,#D2CDC3);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);}
 .mds-colmgr__reset{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-family:var(--font-body);font-size:11px;color:var(--brand-signal,#C56343);padding:0;font-variant:normal;letter-spacing:0;}
+  font-family:var(--font-body);font-size:11px;color:var(--brand-signal-ink,#944A32);padding:0;font-variant:normal;letter-spacing:0;}
 .mds-colmgr__reset:hover{text-decoration:underline;}
 .mds-colmgr__row{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;
   padding:6px 12px;border-top:1px solid var(--border-divider,#E2DED5);}
@@ -16408,7 +16569,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-colmgr__label{font-size:12px;color:var(--text-primary,#20252B);overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;display:flex;align-items:center;gap:6px;}
 .mds-colmgr__pintag{font-size:8px;font-weight:700;font-variant:all-small-caps;letter-spacing:.05em;
-  color:var(--brand-signal-dim,#CB6E4E);border:1px solid var(--brand-signal,#C56343);border-radius:2px;padding:0 3px;}
+  color:var(--brand-signal-ink,#944A32);border:1px solid var(--brand-signal,#C56343);border-radius:2px;padding:0 3px;}
 .mds-colmgr__ctrls{display:flex;align-items:center;gap:2px;}
 .mds-colmgr__ic{appearance:none;border:1px solid transparent;background:transparent;cursor:pointer;
   width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;
@@ -17321,7 +17482,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-fb__row{display:flex;align-items:center;gap:6px;}
 .mds-fb__and{flex:0 0 34px;text-align:right;font-family:var(--font-data);font-size:9.5px;font-weight:700;
   letter-spacing:.06em;color:var(--text-muted,#606870);}
-.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-input,2px);
+.mds-fb__ctl{height:26px;box-sizing:border-box;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,4px);
   background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);font-family:var(--font-body);font-size:12px;
   padding:0 7px;min-width:0;}
 .mds-fb__ctl:hover{border-color:var(--border-hover,#BEB8AD);}
@@ -17339,7 +17500,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-fb__btn{height:24px;box-sizing:border-box;display:inline-flex;align-items:center;gap:6px;cursor:pointer;
   border-radius:var(--radius-button,2px);font-family:var(--font-body);font-size:11px;font-weight:600;padding:0 10px;}
 .mds-fb__btn--add{border:1px dashed var(--border-strong,#AAA49A);background:transparent;color:var(--text-secondary,#535C65);}
-.mds-fb__btn--add:hover{border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.mds-fb__btn--add:hover{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);}
 .mds-fb__btn--apply{border:1px solid var(--brand-signal,#C56343);background:var(--brand-signal,#C56343);color:var(--text-on-accent,#0D1217);}
 .mds-fb__btn--apply:hover{background:var(--brand-signal-dim,#CB6E4E);border-color:var(--brand-signal-dim,#CB6E4E);}
 .mds-fb__btn--clear{border:none;background:transparent;color:var(--text-muted,#606870);text-decoration:underline;text-underline-offset:2px;}
@@ -17918,8 +18079,8 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-opt--pending .mds-opt__mark{color:var(--cond-provisional-fg,#2F648A);}
 .mds-opt--confirmed .mds-opt__mark{color:var(--cond-confirmed-fg,#2E7655);}
 .mds-opt--rejected .mds-opt__mark,.mds-opt--reverted .mds-opt__mark{color:var(--red,#B54B42);}
-.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,#2F648A);}
-.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,#2E7655);}
+.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,rgba(47, 100, 138, 0.34));}
+.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,rgba(46, 118, 85, 0.34));}
 .mds-opt--rejected .mds-editable__display{border:1px solid var(--red,#B54B42);}
 .mds-opt__prior{font:11px var(--font-data);color:var(--text-muted,#606870);text-decoration:line-through;white-space:nowrap;}
 .mds-opt__revert{background:none;border:1px solid transparent;border-radius:2px;padding:0 4px;min-height:24px;
@@ -17963,19 +18124,30 @@ select.mds-fb__ctl{appearance:auto;}
     const h = () => handlers.current || {};
     let entries = [];
     const subs = /* @__PURE__ */ new Set();
-    const notify = (listener, value, name) => {
-      try {
-        listener && listener(value);
-      } catch (err) {
-        console.error(`OptimisticProvider: ${name} observer failed`, err);
-      }
-    };
-    const emit = () => subs.forEach((f) => notify(f, entries, "ledger"));
-    const settle = (edit) => notify(h().onSettle, edit, "onSettle");
     const patch = (id, fn) => {
       entries = entries.map((e) => e.id === id ? { ...e, ...fn(e) } : e);
       emit();
     };
+    const reportObserverError = (error, name) => {
+      if (typeof globalThis.reportError === "function") {
+        try {
+          globalThis.reportError(error);
+          return;
+        } catch {
+        }
+      }
+      console.error(`OptimisticProvider: ${name} observer failed`, error);
+    };
+    const notify = (listener, value, name) => {
+      try {
+        const result = listener && listener(value);
+        if (result && typeof result.then === "function") Promise.resolve(result).catch((error) => reportObserverError(error, name));
+      } catch (error) {
+        reportObserverError(error, name);
+      }
+    };
+    const emit = () => subs.forEach((listener) => notify(listener, entries, "ledger"));
+    const notifySettlement = (edit) => notify(h().onSettle, edit, "onSettle");
     const api = {
       subscribe(f) {
         subs.add(f);
@@ -17998,17 +18170,16 @@ select.mds-fb__ctl{appearance:auto;}
         const e = { id: `opt-${++seq}`, status: "pending", at: Date.now(), ...edit };
         entries = [...entries, e];
         emit();
-        let result;
+        let settled;
         try {
-          result = h().commit ? await h().commit(e) : void 0;
+          const r = h().commit ? await h().commit(e) : void 0;
+          settled = { status: "confirmed", settledAt: Date.now(), receipt: r && r.receipt };
         } catch (err) {
           const reason = err && err.message || String(err || "rejected by the write path");
-          patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
-          settle({ ...e, status: "rejected", reason });
-          return;
+          settled = { status: "rejected", settledAt: Date.now(), reason };
         }
-        patch(e.id, () => ({ status: "confirmed", settledAt: Date.now(), receipt: result && result.receipt }));
-        settle({ ...e, status: "confirmed" });
+        patch(e.id, () => settled);
+        notifySettlement({ ...e, ...settled });
       },
       async revert(ids, reason) {
         const list = Array.isArray(ids) ? ids : [ids];
@@ -18022,7 +18193,7 @@ select.mds-fb__ctl{appearance:auto;}
           return;
         }
         targets.forEach((t2) => patch(t2.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })));
-        targets.forEach((t2) => settle({ ...t2, status: "reverted", reason }));
+        targets.forEach((t2) => notifySettlement({ ...t2, status: "reverted", reason }));
       },
       dismiss(id) {
         patch(id, () => ({ status: "dismissed" }));
@@ -18039,7 +18210,7 @@ select.mds-fb__ctl{appearance:auto;}
     const [, force] = react_default.useState(0);
     react_default.useEffect(() => ref.current.subscribe((entries) => {
       force((n) => n + 1);
-      onChange && onChange(entries);
+      return onChange && onChange(entries);
     }), [onChange]);
     return /* @__PURE__ */ window.React.createElement(Ctx5.Provider, { value: ref.current }, children);
   }
@@ -18323,7 +18494,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-savedviews__dirty{font-family:var(--font-data);font-size:10.5px;color:var(--orange-dim,#724D11);}
 .mds-savedviews__caret{font-size:9px;color:var(--text-muted,#606870);}
 .mds-savedviews__menu{position:absolute;top:calc(100% + 4px);left:0;z-index:1000;min-width:252px;
-  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 2px 6px rgba(0,0,0,.18));padding:4px 0;}
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18));padding:4px 0;}
 .mds-savedviews__label{padding:6px 12px 3px;font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870);}
 .mds-savedviews__item{display:flex;align-items:center;gap:8px;}
 .mds-savedviews__row{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:6px 12px;border:0;background:none;
@@ -18650,7 +18821,7 @@ select.mds-fb__ctl{appearance:auto;}
   color:var(--text-primary,#20252B);}
 .mds-seltb__shortcuts{display:flex;gap:12px;}
 .mds-seltb__shortcut{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--brand-signal,#C56343);
+  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--brand-signal-ink,#944A32);
   text-decoration:underline;padding:0;line-height:1;}
 .mds-seltb__shortcut:hover{opacity:.8;}
 .mds-seltb__actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -19906,19 +20077,19 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-act__receipt{display:flex;flex-wrap:wrap;gap:2px 14px;margin:0;font:10px/1.6 var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-act__receipt b{font-weight:600;color:var(--text-secondary,#535C65)}
 .mds-act__acts{display:flex;flex-wrap:wrap;gap:6px}
-.mds-act__btn{min-height:28px;padding:4px 11px;font:600 11px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-control,4px)}
+.mds-act__btn{min-height:28px;padding:4px 11px;font:600 11px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-button,4px)}
 .mds-act__btn:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-act__btn:focus-visible{outline:2px solid var(--interaction-focus,var(--focus,#2D6FB3));outline-offset:1px}
-.mds-act__btn[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--topbar-text,#F2F0EB)}
+.mds-act__btn[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--ink-inverse,#F5F3EE)}
 .mds-act__btn:disabled{cursor:not-allowed;color:var(--text-disabled,#A4ABB2);border-color:var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3)}
 .mds-chip{display:inline-flex;align-items:baseline;gap:5px;font:11px/1.35 var(--font-body);border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);padding:1px 6px;white-space:nowrap;border-radius:var(--radius-chip,2px)}
 .mds-chip__g{font:10px var(--font-data,monospace)}
 .mds-chip__t{font-variant:all-small-caps;font-weight:600;letter-spacing:.04em}
 .mds-chip__k{font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-chip[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,#2E7655);background:var(--severity-ready-bg,#2E7655)}
-.mds-chip[data-sev="review"]{color:var(--severity-review-fg,#8E4730);border-color:var(--severity-review-bd,#C56343);background:var(--severity-review-bg,#C56343)}
-.mds-chip[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,#986717);background:var(--severity-action-bg,#986717)}
-.mds-chip[data-sev="blocked"]{color:var(--severity-blocked-fg,#873832);border-color:var(--severity-blocked-bd,#B54B42);background:var(--severity-blocked-bg,#B54B42);font-weight:600}
+.mds-chip[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.mds-chip[data-sev="review"]{color:var(--severity-review-fg,#944A32);border-color:var(--severity-review-bd,rgba(197, 99, 67, 0.36));background:var(--severity-review-bg,rgba(197, 99, 67, 0.1))}
+.mds-chip[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,rgba(152, 103, 23, 0.42));background:var(--severity-action-bg,rgba(152, 103, 23, 0.11))}
+.mds-chip[data-sev="blocked"]{color:var(--severity-blocked-fg,#873832);border-color:var(--severity-blocked-bd,rgba(181, 75, 66, 0.4));background:var(--severity-blocked-bg,rgba(181, 75, 66, 0.1));font-weight:600}
 .mds-chip[data-sev="info"]{color:var(--text-secondary,#535C65)}
 .mds-act[data-state="unlanded"]>.mds-act__hd{box-shadow:inset 2px 0 0 var(--red,#B54B42)}
 .mds-act[data-state="inflight"]>.mds-act__hd{box-shadow:inset 2px 0 0 var(--orange,#986717)}
@@ -19928,7 +20099,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-led__lbl{font:600 9px/1.6 var(--font-data,monospace);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted,#606870)}
 .mds-led__sum{font:10px/1.6 var(--font-data,monospace);color:var(--text-secondary,#535C65)}
 .mds-led__list{margin:0;padding:0;list-style:none;display:grid;gap:0}
-.mds-led__row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 10px;border-bottom:1px solid var(--border-divider,#E2DED5);min-height:var(--row-standard,36px);align-content:center}
+.mds-led__row{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:6px 10px;border-bottom:1px solid var(--border-divider,#E2DED5);min-height:var(--theme-row-height,36px);align-content:center}
 .mds-led__row:last-child{border-bottom:0}
 .mds-led__act{font:600 11px/1.45 var(--font-body)}
 .mds-led__meta{grid-column:1/-1;font:9.5px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870)}
@@ -20258,7 +20429,7 @@ select.mds-fb__ctl{appearance:auto;}
     const el = document.createElement("style");
     el.setAttribute("data-mds", "action-queue");
     el.textContent = `
-.mds-aq{position:fixed;right:14px;bottom:40px;z-index:var(--z-popover,120);width:380px;max-width:calc(100vw - 28px);font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border-strong,#AAA49A);background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-menu,0 2px 6px rgba(0,0,0,.18))}
+.mds-aq{position:fixed;right:14px;bottom:40px;z-index:var(--z-dropdown,100);width:380px;max-width:calc(100vw - 28px);font-family:var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border-strong,#AAA49A);background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18))}
 .mds-aq[data-docked="inline"]{position:static;width:auto;max-width:none;box-shadow:none;border-color:var(--border,#D2CDC3)}
 .mds-aq__hd{display:flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);cursor:pointer;user-select:none}
 .mds-aq__hd:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
@@ -20286,10 +20457,10 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-aq__meta{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 10px;font:9.5px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-aq__reason{grid-column:1/-1;margin:0;font:11px/1.45 var(--font-body);color:var(--text-primary,#20252B);padding:5px 8px;border-left:2px solid var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.08))}
 .mds-aq__acts{grid-column:1/-1;display:flex;gap:6px}
-.mds-aq__btn{min-height:24px;padding:2px 9px;font:600 10.5px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-control,4px)}
+.mds-aq__btn{min-height:24px;padding:2px 9px;font:600 10.5px var(--font-body);cursor:pointer;background:var(--bg,#F2F0EB);border:1px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);border-radius:var(--radius-button,4px)}
 .mds-aq__btn:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-aq__btn:focus-visible{outline:2px solid var(--interaction-focus,var(--focus,#2D6FB3));outline-offset:1px}
-.mds-aq__btn[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--topbar-text,#F2F0EB)}
+.mds-aq__btn[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--ink-inverse,#F5F3EE)}
 .mds-aq__empty{padding:10px;font:11px/1.5 var(--font-body);color:var(--text-muted,#606870)}
 .mds-aq__clock{font-variant-numeric:tabular-nums}
 @media print{.mds-aq{display:none}}
@@ -20480,7 +20651,7 @@ select.mds-fb__ctl{appearance:auto;}
   letter-spacing:.04em;padding:0 7px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-sev__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .mds-sev--ready{border-color:var(--severity-ready-bd,rgba(46,118,85,.36));background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
-.mds-sev--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#8E4730);}
+.mds-sev--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#944A32);}
 .mds-sev--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
 .mds-sev--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
 .mds-sev--info{border-color:var(--severity-info-bd,#D2CDC3);background:var(--severity-info-bg,#EBE8E1);color:var(--severity-info-fg,#606870);}
@@ -20533,7 +20704,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__t span{font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-adpt__t[data-sev="blocked"] b{color:var(--severity-blocked-fg,#883832)}
 .mds-adpt__t[data-sev="action"] b{color:var(--severity-action-fg,#724D11)}
-.mds-adpt__t[data-sev="review"] b{color:var(--severity-review-fg,#8E4730)}
+.mds-adpt__t[data-sev="review"] b{color:var(--severity-review-fg,#944A32)}
 .mds-adpt__t[data-sev="ready"] b{color:var(--severity-ready-fg,#225840)}
 .mds-adpt__cols,.mds-adpt__row{display:grid;grid-template-columns:104px minmax(150px,1fr) 96px 118px 116px 122px;gap:10px;align-items:baseline}
 .mds-adpt__cols{padding:5px 13px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
@@ -20541,7 +20712,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__row{width:100%;padding:8px 13px;min-height:var(--row-review,40px);border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:transparent;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
 .mds-adpt__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-adpt__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-adpt__row[aria-expanded="true"]{background:var(--bg-active,#E7EDF2);border-left-color:var(--accent,#C56343)}
+.mds-adpt__row[aria-expanded="true"]{background:var(--interaction-selected-surface,#E7EDF2);border-left-color:var(--interaction-selected,#496C8F)}
 .mds-adpt__row--dense{padding:5px 13px;min-height:0}
 .mds-adpt__name{display:grid;gap:1px;min-width:0}
 .mds-adpt__name b{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -20557,7 +20728,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__kv{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;font:11px var(--font-data,monospace);color:var(--text-secondary,#535C65)}
 .mds-adpt__kv dt{color:var(--text-muted,#606870)}
 .mds-adpt__kv dd{margin:0;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums}
-.mds-adpt__err{font:11px var(--font-data,monospace);line-height:1.5;color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,#B54B42);border:1px solid var(--severity-blocked-bd,#B54B42);padding:6px 8px;white-space:pre-wrap;word-break:break-word}
+.mds-adpt__err{font:11px var(--font-data,monospace);line-height:1.5;color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,rgba(181, 75, 66, 0.1));border:1px solid var(--severity-blocked-bd,rgba(181, 75, 66, 0.4));padding:6px 8px;white-space:pre-wrap;word-break:break-word}
 .mds-adpt__errmeta{font:9.5px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-adpt__acts{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .mds-adpt__btn{height:26px;padding:0 10px;border:1px solid var(--border-strong,#AAA49A);border-radius:2px;background:var(--bg-light,#F8F7F3);color:var(--text-primary,#20252B);font:600 11px var(--font-body);cursor:pointer;white-space:nowrap}
@@ -20565,19 +20736,19 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-adpt__btn:disabled{opacity:.5;cursor:not-allowed}
 .mds-adpt__btn:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
 .mds-adpt__says{font-size:11.5px;line-height:1.45;color:var(--text-secondary,#535C65);text-wrap:pretty}
-.mds-adpt__flag{grid-column:1/-1;font:600 10.5px var(--font-data,monospace);color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,#B54B42);border-left:2px solid var(--severity-blocked-fg,#883832);padding:5px 8px}
+.mds-adpt__flag{grid-column:1/-1;font:600 10.5px var(--font-data,monospace);color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,rgba(181, 75, 66, 0.1));border-left:2px solid var(--severity-blocked-fg,#883832);padding:5px 8px}
 .mds-adpt__stale{grid-column:1/-1;font:10.5px var(--font-data,monospace);color:var(--severity-action-fg,#724D11)}
 .mds-adpt__foot{padding:7px 13px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-adpt__empty{padding:16px 13px;font-size:12px;color:var(--text-secondary,#535C65)}
 .mds-apc{display:inline-flex;align-items:center;gap:5px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:2px;background:var(--bg-light,#F8F7F3);font:600 10px var(--font-data,monospace);letter-spacing:.04em;text-transform:uppercase;color:var(--text-secondary,#535C65);white-space:nowrap}
 .mds-apc__dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted,#606870)}
-.mds-apc[data-sev="blocked"]{color:var(--severity-blocked-fg,#883832);border-color:var(--severity-blocked-bd,#B54B42);background:var(--severity-blocked-bg,#B54B42)}
+.mds-apc[data-sev="blocked"]{color:var(--severity-blocked-fg,#883832);border-color:var(--severity-blocked-bd,rgba(181, 75, 66, 0.4));background:var(--severity-blocked-bg,rgba(181, 75, 66, 0.1))}
 .mds-apc[data-sev="blocked"] .mds-apc__dot{background:var(--severity-blocked-fg,#883832)}
-.mds-apc[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,#986717);background:var(--severity-action-bg,#986717)}
+.mds-apc[data-sev="action"]{color:var(--severity-action-fg,#724D11);border-color:var(--severity-action-bd,rgba(152, 103, 23, 0.42));background:var(--severity-action-bg,rgba(152, 103, 23, 0.11))}
 .mds-apc[data-sev="action"] .mds-apc__dot{background:var(--severity-action-fg,#724D11)}
-.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#8E4730);border-color:var(--severity-review-bd,#C56343);background:var(--severity-review-bg,#C56343)}
-.mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#8E4730)}
-.mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,#2E7655);background:var(--severity-ready-bg,#2E7655)}
+.mds-apc[data-sev="review"]{color:var(--severity-review-fg,#944A32);border-color:var(--severity-review-bd,rgba(197, 99, 67, 0.36));background:var(--severity-review-bg,rgba(197, 99, 67, 0.1))}
+.mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#944A32)}
+.mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
 .mds-apc[data-sev="ready"] .mds-apc__dot{background:var(--severity-ready-fg,#225840)}
 .mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted,#606870)}
 @media print{.mds-adpt__acts,.mds-adpt__btn{display:none}.mds-adpt__row{break-inside:avoid}.mds-adpt__detail{break-inside:avoid}}
@@ -21064,7 +21235,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-sla--ready{border-color:var(--severity-ready-bd,rgba(46,118,85,.36));background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
 .mds-sla--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
 .mds-sla--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
-.mds-sla--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#8E4730);}
+.mds-sla--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#944A32);}
 `;
     const el = document.createElement("style");
     el.setAttribute("data-mds", "sla-chip");
@@ -21283,7 +21454,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-cs__status[data-tone="pass"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.10))}
 .mds-cs__status[data-tone="review"]{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.10))}
 .mds-cs__status[data-tone="exception"]{color:var(--red-dim,#873832);border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10))}
-.mds-cs__status[data-tone="info"]{color:var(--purple,#2F648A);border-color:var(--purple,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
+.mds-cs__status[data-tone="info"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
 .mds-cs__scope{display:flex;flex-wrap:wrap;gap:14px;padding:7px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);background:var(--surface-well,var(--card-surface-raised,#FCFBF8))}
 .mds-cs__scope div{display:grid;gap:1px}
 .mds-cs__scope dt{font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870)}
@@ -21299,7 +21470,7 @@ select.mds-fb__ctl{appearance:auto;}
 .mds-cs__issue{display:flex;gap:5px;font:10px var(--font-data,monospace)}
 .mds-cs__issue[data-sev="error"]{color:var(--red-dim,#873832)}
 .mds-cs__issue[data-sev="warning"]{color:var(--orange-dim,#724D11)}
-.mds-cs__issue[data-sev="info"]{color:var(--purple,#2F648A)}
+.mds-cs__issue[data-sev="info"]{color:var(--purple-dim,#234B68)}
 .mds-cs__reason{display:grid;gap:3px}
 .mds-cs__reason label{font:9px var(--font-data,monospace);text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-cs__reason input{box-sizing:border-box;width:100%;height:26px;border:1px solid var(--border,#D2CDC3);background:var(--surface-well,var(--card-surface-raised,#FCFBF8));color:var(--text-primary,#20252B);font:11px var(--font-body);padding:0 7px}
@@ -21978,7 +22149,7 @@ ${perKey}`;
 .mds-evidence:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
 .mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
-.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#8E4730);}
+.mds-evidence--review .mds-evidence__dot{background:var(--state-paper-fg,#465664);}
 .mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
 .mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -22110,7 +22281,7 @@ ${perKey}`;
 .mds-sec__t{display:flex;align-items:center;gap:8px;font-size:var(--type-label,10px);
   font-weight:var(--weight-semibold,600);font-variant:all-small-caps;letter-spacing:.05em;
   color:var(--text-muted);margin-bottom:8px;}
-.mds-sec__t button{margin-left:auto;font:inherit;font-size:10px;color:var(--brand-signal,#C56343);background:none;
+.mds-sec__t button{margin-left:auto;font:inherit;font-size:10px;color:var(--brand-signal-ink,#944A32);background:none;
   border:0;padding:0;cursor:pointer;text-transform:none;letter-spacing:0;}
 .mds-sec__note{font-size:11px;line-height:15px;color:var(--text-muted);margin-top:8px;text-wrap:pretty;}
 .mds-fields{display:grid;grid-template-columns:auto 1fr;gap:5px 12px;align-items:baseline;}
@@ -22130,7 +22301,7 @@ ${perKey}`;
 .mds-trace__lbl{font-size:12px;font-weight:var(--weight-medium,500);color:var(--text-primary);}
 .mds-trace__meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);margin-top:2px;}
 button.mds-trace__body{text-align:left;background:none;border:0;padding:0;cursor:pointer;font:inherit;width:100%;}
-button.mds-trace__body:hover .mds-trace__lbl{color:var(--brand-signal,#C56343);}
+button.mds-trace__body:hover .mds-trace__lbl{color:var(--brand-signal-ink,#944A32);}
 button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outline-offset:2px;}
 `;
     const el = document.createElement("style");
@@ -22294,7 +22465,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
   background:var(--bg-light,#F8F7F3);color:var(--severity-info-fg,#606870);
   font-family:var(--font-data,monospace);font-size:11px;font-weight:700;}
 .mds-gate--ready .mds-gate__node{border-color:var(--severity-ready-fg,#225840);background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
-.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#8E4730);background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#8E4730);}
+.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#944A32);background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#944A32);}
 .mds-gate--action .mds-gate__node{border-color:var(--severity-action-fg,#724D11);background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
 .mds-gate--blocked .mds-gate__node{border-color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
 .mds-gate__label{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--text-primary,#20252B);line-height:1.2;}
@@ -22366,7 +22537,7 @@ button.mds-trace__body:focus-visible{outline:2px solid var(--border-focus);outli
 .mds-hand__count span{font:600 9px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-hand__count[data-sev="blocked"] b{color:var(--severity-blocked-fg,#883832)}
 .mds-hand__count[data-sev="action"] b{color:var(--severity-action-fg,#724D11)}
-.mds-hand__count[data-sev="review"] b{color:var(--severity-review-fg,#8E4730)}
+.mds-hand__count[data-sev="review"] b{color:var(--severity-review-fg,#944A32)}
 .mds-hand__count[data-sev="ready"] b{color:var(--severity-ready-fg,#225840)}
 .mds-hand__group{display:block}
 .mds-hand__glabel{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:6px 13px;background:var(--card-surface-raised,#FCFBF8);border-bottom:1px solid var(--border-divider,#E2DED5);font:600 9.5px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted,#606870)}
@@ -22391,7 +22562,7 @@ button.mds-hand__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);o
 .mds-hchip__dot{width:6px;height:6px;border-radius:50%;background:var(--text-muted,#606870)}
 .mds-hchip[data-sev="blocked"] .mds-hchip__dot{background:var(--severity-blocked-fg,#883832)}
 .mds-hchip[data-sev="action"] .mds-hchip__dot{background:var(--severity-action-fg,#724D11)}
-.mds-hchip[data-sev="review"] .mds-hchip__dot{background:var(--severity-review-fg,#8E4730)}
+.mds-hchip[data-sev="review"] .mds-hchip__dot{background:var(--severity-review-fg,#944A32)}
 @media print{.mds-hand__ack,.mds-hand__act{display:none}.mds-hand__row{break-inside:avoid}}
 `;
     document.head.appendChild(el);
@@ -22607,7 +22778,7 @@ button.mds-prov:hover{border-color:var(--border-strong,#AAA49A);background:var(-
 button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
 .mds-prov__dot{height:6px;width:6px;border-radius:50%;flex:0 0 auto;}
 .mds-prov__dot--ready{background:var(--severity-ready-fg,#225840);}
-.mds-prov__dot--review{background:var(--severity-review-fg,#8E4730);}
+.mds-prov__dot--review{background:var(--severity-review-fg,#944A32);}
 .mds-prov__dot--action{background:var(--severity-action-fg,#724D11);}
 .mds-prov__dot--blocked{background:var(--severity-blocked-fg,#883832);}
 .mds-prov__dot--info{background:var(--severity-info-fg,#606870);}
@@ -22674,7 +22845,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   border-left:3px solid var(--severity-info-fg,#606870);border-radius:var(--radius-card,2px);
   background:var(--bg-light,#F8F7F3);padding:12px 14px;box-shadow:var(--shadow-soft,0 1px 1px rgba(0,0,0,.06));}
 .mds-rpanel--ready{border-color:var(--severity-ready-bd,rgba(46,118,85,.36));border-left-color:var(--severity-ready-fg,#225840);}
-.mds-rpanel--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));border-left-color:var(--severity-review-fg,#8E4730);}
+.mds-rpanel--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));border-left-color:var(--severity-review-fg,#944A32);}
 .mds-rpanel--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));border-left-color:var(--severity-action-fg,#724D11);}
 .mds-rpanel--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));border-left-color:var(--severity-blocked-fg,#883832);}
 .mds-rpanel__head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;}
@@ -22716,7 +22887,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-res__sev[data-tone="exception"]{color:var(--red-dim,#873832);border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10))}
 .mds-res__sev[data-tone="review"]{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.10))}
 .mds-res__sev[data-tone="pass"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.10))}
-.mds-res__sev[data-tone="info"]{color:var(--purple,#2F648A);border-color:var(--purple,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
+.mds-res__sev[data-tone="info"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A);background:var(--purple-a10,rgba(47,100,138,.10))}
 .mds-res__meta{margin-top:3px;font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-res__statement{padding:9px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);font-size:11px;line-height:16px;color:var(--text-primary,#20252B)}
 .mds-res__body{flex:1;overflow:auto}
@@ -22851,7 +23022,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-scs__row--action{cursor:pointer}
 .mds-scs__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-scs__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
+.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-scs__name{font-size:11px;color:var(--text-primary,#20252B)}
 .mds-scs__note{display:block;font:9px/13px var(--font-body);color:var(--text-muted,#606870)}
 .mds-scs__glyph{display:inline-block;width:11px;text-align:center;margin-right:5px;color:var(--text-muted,#606870)}
@@ -23198,7 +23369,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   background:var(--severity-info-fg,#606870);}
 .mds-issue--blocked .mds-issue__dot{background:var(--severity-blocked-fg,#883832);}
 .mds-issue--action .mds-issue__dot{background:var(--severity-action-fg,#724D11);}
-.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#8E4730);}
+.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#944A32);}
 .mds-issue--ready .mds-issue__dot{background:var(--severity-ready-fg,#225840);}
 .mds-issue__code{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
   color:var(--text-secondary,#535C65);white-space:nowrap;}
@@ -23330,7 +23501,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-wsection__summary{margin:1px 0 0;color:var(--text-muted,#606870);font-size:12px;line-height:1.35;}
 .mds-wsection__jump{display:inline-flex;align-items:center;gap:6px;min-height:30px;
   border:1px solid var(--brand-signal,#C56343);border-radius:var(--radius-chip,2px);
-  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--brand-signal,#C56343);
+  background:var(--blue-a10,rgba(47,100,138,.10));color:var(--brand-signal-ink,#944A32);
   padding:4px 10px;font-family:var(--font-body);font-size:11px;font-weight:700;cursor:pointer;text-decoration:none;
   white-space:nowrap;}
 .mds-wsection__jump:hover{background:var(--bg-active,#E7EDF2);}
@@ -23352,13 +23523,14 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
     if (injected143 || typeof document === "undefined") return;
     injected143 = true;
     const css = `
-.mds-gsearch__scrim{position:fixed;inset:0;z-index:2147481000;background:var(--scrim,rgba(32,37,43,.32));
+.mds-gsearch__scrim{position:fixed;inset:0;z-index:2147481000;background:var(--scrim,rgba(17,23,29,.32));
   display:flex;justify-content:center;align-items:flex-start;padding-top:56px;}
 .mds-gsearch{width:min(680px,calc(100vw - 32px));max-height:min(60vh,520px);display:flex;flex-direction:column;
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
-  box-shadow:var(--shadow-menu,0 12px 32px rgba(0,0,0,.24));font-family:var(--font-body);}
+  box-shadow:var(--shadow-menu,0 12px 32px rgba(17,23,29,.24));font-family:var(--font-body);}
 .mds-gsearch__field{display:flex;align-items:center;gap:9px;padding:0 12px;height:44px;flex:none;
   border-bottom:1px solid var(--border,#D2CDC3);}
+.mds-gsearch__field:focus-within{outline:var(--focus-ring,2px solid var(--interaction-focus,#2D6FB3));outline-offset:-2px;}
 .mds-gsearch__glyph{color:var(--text-muted,#606870);font-size:14px;line-height:1;}
 .mds-gsearch__input{flex:1;min-width:0;appearance:none;border:none;outline:none;background:transparent;
   font-family:var(--font-body);font-size:14px;color:var(--text-primary,#20252B);}
@@ -23377,7 +23549,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
 .mds-gsearch__row[data-active="true"]{background:var(--sidebar-active,#E7EDF2);
   border-left-color:var(--sidebar-active-ind,#C56343);color:var(--text-primary,#20252B);}
 .mds-gsearch__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mds-gsearch__label mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal-dim,#CB6E4E);
+.mds-gsearch__label mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal-ink,#944A32);
   font-weight:600;padding:0 1px;}
 .mds-gsearch__meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#606870);
   white-space:nowrap;font-variant-numeric:tabular-nums;}
@@ -23722,7 +23894,7 @@ button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3)
   letter-spacing:.04em;background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);}
 .mds-rolebadge--admin{border-color:var(--purple,#2F648A);color:var(--purple-dim,#234B68);
   background:var(--purple-a10,rgba(47,100,138,.10));}
-.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-dim,#CB6E4E);
+.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);
   background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-rolebadge--viewer{border-color:var(--border-strong,#AAA49A);}
 .mds-readonly{display:flex;align-items:center;gap:10px;padding:7px 14px;
@@ -24625,6 +24797,7 @@ button.ws-crumb:hover{color:var(--topbar-text,#F1EFEA);text-decoration:underline
     if (injected153 || typeof document === "undefined") return;
     injected153 = true;
     const css = `
+@property --ladder-row{syntax:"*";inherits:true;}
 .mds-ladder{font-family:var(--font-data);font-size:12px;display:inline-flex;flex-direction:column;
   border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);min-width:264px;}
 .mds-ladder__head{display:grid;grid-template-columns:1fr 88px 1fr;border-bottom:1px solid var(--border,#D2CDC3);
@@ -24798,6 +24971,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
     if (injected155 || typeof document === "undefined") return;
     injected155 = true;
     const css = `
+@property --ochain-row{syntax:"*";inherits:true;}
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);display:inline-block;min-width:100%;outline:none;}
 .mds-ochain__grid{display:grid;}
@@ -24829,7 +25003,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
 .mds-ochain__spot{grid-column:1/-1;display:flex;align-items:center;gap:8px;height:20px;padding:0 8px;
   background:var(--card-surface-raised,#FCFBF8);border-top:1px solid var(--brand-signal,#C56343);
   border-bottom:1px solid var(--border,#D2CDC3);}
-.mds-ochain__spotlab{font-size:11px;color:var(--brand-signal-dim,#CB6E4E);font-variant-numeric:tabular-nums;font-weight:600;}
+.mds-ochain__spotlab{font-size:11px;color:var(--brand-signal-ink,#944A32);font-variant-numeric:tabular-nums;font-weight:600;}
 .mds-ochain__spotrule{flex:1;border-top:1px dashed color-mix(in srgb,var(--brand-signal,#C56343) 45%,transparent);}
 `;
     const el = document.createElement("style");
@@ -25148,7 +25322,7 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
 .mds-tape__size--t1{color:var(--text-secondary,#535C65);}
 .mds-tape__size--t2{color:var(--text-primary,#20252B);font-weight:600;}
 .mds-tape__blk{font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--brand-signal-dim,#CB6E4E);margin-left:6px;}
+  letter-spacing:.05em;color:var(--brand-signal-ink,#944A32);margin-left:6px;}
 .mds-tape__venue{color:var(--text-muted,#606870);font-size:10px;text-align:right;}
 .mds-tape__empty{padding:18px 10px;text-align:center;font-family:var(--font-body);
   font-size:12px;color:var(--text-muted,#606870);}

@@ -66,12 +66,12 @@ export function PeerComparisonStrip({
       {ariaLabel && (
         <table style={SR}>
           <caption>{caption || ariaLabel}</caption>
-          <thead><tr><th scope="col">Metric</th><th scope="col">{subjectLabel}</th><th scope="col">Peer median</th><th scope="col">Rank</th></tr></thead>
+          <thead><tr><th scope="col">Metric</th><th scope="col">{subjectLabel}</th><th scope="col">Peer median</th><th scope="col">Peer values</th><th scope="col">Rank</th></tr></thead>
           <tbody>{metrics.map((m, i) => {
             const f = m.fmt || fmt, peers = m.peers || [];
             const med = m.median != null ? m.median : (peers.length ? median(peers) : null);
             const rank = peers.length ? peers.filter((p) => (m.higherIsBetter === false ? p < m.value : p > m.value)).length + 1 : null;
-            return <tr key={i}><th scope="row">{m.label}</th><td>{m.value == null ? "no data" : f(m.value)}</td><td>{med == null ? "no peers" : f(med)}</td><td>{rank == null ? "—" : `${rank} of ${peers.length + 1}`}</td></tr>;
+            return <tr key={i}><th scope="row">{m.label}</th><td>{m.value == null ? "no data" : f(m.value)}</td><td>{med == null ? "no peers" : f(med)}</td><td>{peers.length ? peers.map((peer) => f(peer)).join(", ") : "no peers"}</td><td>{rank == null ? "—" : `${rank} of ${peers.length + 1}`}</td></tr>;
           })}</tbody>
         </table>
       )}
