@@ -2,19 +2,21 @@
 """WCAG contrast checker for the Meridian token system.
 
 Computes contrast ratios directly from tokens/colors.css (light) and tokens/colors-dark.css
-(dark), including one level of var() indirection and simple two-color `color-mix(in srgb, X N%, Y)`
-resolution (how the --*-dim tokens are built). Fails with exit 1 when any checked pair drops
+(dark), including custom-property aliases/fallbacks, HSL channel values, and two-color sRGB color-mix().
+Structural primary-action checks read the actual package Button CSS and workstation adapter
+utilities in light, auto-dark, manual-dark and forced-light contexts. Fails with exit 1 when any checked pair drops
 below its threshold — so token edits that break AA are caught before they ship.
 
 This closes the "known follow-up" in guidelines/ACCESSIBILITY.md: the contrast table there was
 hand-measured; this script re-derives it on every run.
 
-Usage:  python3 scripts/check_contrast.py [--root PATH]
+Usage:  python3 scripts/check_contrast.py [--root PATH] [--actions-only]
 """
 
 from __future__ import annotations
 
 import argparse
+import colorsys
 import re
 import sys
 from pathlib import Path
@@ -22,9 +24,6 @@ from pathlib import Path
 TOKEN_PATTERN = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);")
 HEX_PATTERN = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 VAR_PATTERN = re.compile(r"^var\(\s*(--[a-z0-9-]+)\s*\)$")
-MIX_PATTERN = re.compile(
-    r"^color-mix\(in srgb,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*(.+?)\)$"
-)
 
 # (name, fg token, bg token, minimum ratio)
 # 4.5 = AA normal text · 3.0 = AA large text / graphical objects (dots, checkmark glyphs).
@@ -138,31 +137,131 @@ def hex_to_rgb(value: str) -> tuple[float, float, float] | None:
     return tuple(int(h[i : i + 2], 16) for i in (0, 2, 4))  # type: ignore[return-value]
 
 
-def resolve(value: str, tokens: dict[str, str], depth: int = 0) -> tuple[float, float, float] | None:
-    if depth > 8:
+def split_arguments(value: str, delimiter: str = ",") -> list[str]:
+    """Split CSS function arguments without splitting nested var()/color-mix()."""
+    parts, start, depth = [], 0, 0
+    for index, char in enumerate(value):
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+        elif char == delimiter and depth == 0:
+            parts.append(value[start:index].strip())
+            start = index + 1
+    parts.append(value[start:].strip())
+    return parts
+
+
+def expand_variables(value: str, tokens: dict[str, str], seen: tuple[str, ...] = ()) -> str | None:
+    """Resolve custom-property aliases, including fallbacks; cycles remain invalid."""
+    if len(seen) > 32:
+        return None
+    while "var(" in value:
+        start = value.index("var(")
+        cursor, depth = start + 4, 1
+        while cursor < len(value) and depth:
+            depth += (value[cursor] == "(") - (value[cursor] == ")")
+            cursor += 1
+        if depth:
+            return None
+        arguments = split_arguments(value[start + 4:cursor - 1])
+        name = arguments[0]
+        if not re.fullmatch(r"--[a-z0-9-]+", name):
+            return None
+        if name in seen:
+            return None
+        replacement = None
+        if name in tokens:
+            replacement = expand_variables(tokens[name], tokens, (*seen, name))
+        if replacement is None and len(arguments) > 1:
+            replacement = expand_variables(",".join(arguments[1:]), tokens, seen)
+        if replacement is None:
+            return None
+        value = value[:start] + replacement + value[cursor:]
+    return value.strip()
+
+
+def resolve_color(value: str, tokens: dict[str, str]) -> tuple[float, float, float, float] | None:
+    """Resolve the CSS colors used by primary actions, retaining alpha for compositing.
+
+    HSL channel properties, rgb()/hsl(), var() fallbacks and premultiplied sRGB
+    color-mix() are supported. Unsupported expressions fail instead of becoming
+    a guessed color or an omitted required pair.
+    """
+    value = expand_variables(value.strip(), tokens)
+    if value is None:
         return None
     value = value.strip()
-    rgb = hex_to_rgb(value)
-    if rgb:
-        return rgb
-    var = VAR_PATTERN.match(value)
-    if var:
-        target = tokens.get(var.group(1))
-        return resolve(target, tokens, depth + 1) if target else None
-    mix = MIX_PATTERN.match(value)
+    if value.lower() in {"black", "white", "transparent"}:
+        return {"black": (0., 0., 0., 1.), "white": (255., 255., 255., 1.),
+                "transparent": (0., 0., 0., 0.)}[value.lower()]
+    match = re.fullmatch(r"#([a-f0-9]{3,4}|[a-f0-9]{6}|[a-f0-9]{8})", value, re.I)
+    if match:
+        digits = match.group(1)
+        if len(digits) in (3, 4):
+            digits = "".join(char * 2 for char in digits)
+        rgb = tuple(float(int(digits[index:index + 2], 16)) for index in (0, 2, 4))
+        return (*rgb, int(digits[6:8], 16) / 255 if len(digits) == 8 else 1.)
+    mix = re.fullmatch(r"color-mix\(\s*in\s+srgb\s*,(.*)\)", value, re.I | re.S)
     if mix:
-        a = resolve(mix.group(1), tokens, depth + 1)
-        pct = float(mix.group(2)) / 100.0
-        b_raw = mix.group(3).strip()
-        b = (0.0, 0.0, 0.0) if b_raw in ("transparent",) else resolve(b_raw, tokens, depth + 1)
-        if a is None or b is None:
+        arguments = split_arguments(mix.group(1))
+        if len(arguments) != 2:
             return None
-        return tuple(a[i] * pct + b[i] * (1 - pct) for i in range(3))  # type: ignore[return-value]
-    if value in ("#000", "black"):
-        return (0.0, 0.0, 0.0)
-    if value in ("#FFF", "#FFFFFF", "white"):
-        return (255.0, 255.0, 255.0)
-    return None
+        colors, weights = [], []
+        for argument in arguments:
+            weight = re.search(r"\s+([0-9]+(?:\.[0-9]+)?)%$", argument)
+            colors.append(resolve_color(argument[:weight.start()] if weight else argument, {}))
+            weights.append(float(weight.group(1)) / 100 if weight else None)
+        if any(color is None for color in colors):
+            return None
+        if weights == [None, None]:
+            weights = [.5, .5]
+        elif weights[0] is None:
+            weights[0] = 1 - weights[1]
+        elif weights[1] is None:
+            weights[1] = 1 - weights[0]
+        if any(weight < 0 or weight > 1 for weight in weights):
+            return None
+        total = sum(weights)
+        if total == 0:
+            return None
+        weights = [weight / total for weight in weights]
+        alpha = sum(color[3] * weight for color, weight in zip(colors, weights))
+        channels = tuple(sum(color[index] * color[3] * weight for color, weight in zip(colors, weights)) / alpha
+                         if alpha else 0. for index in range(3))
+        return (*channels, alpha * min(total, 1.))
+    function = re.fullmatch(r"(rgba?|hsla?)\((.*)\)", value, re.I | re.S)
+    # Some consumers store HSL channels directly; Tailwind wraps them in hsl().
+    if function:
+        kind, channels = function.group(1).lower(), function.group(2)
+    elif re.fullmatch(r"[-+0-9.]+(?:deg|turn|rad)?\s+[-+0-9.]+%\s+[-+0-9.]+%", value):
+        kind, channels = "hsl", value
+    else:
+        return None
+    pieces = re.split(r"\s*(?:,|/)\s*|\s+", channels.strip())
+    if len(pieces) not in (3, 4):
+        return None
+    try:
+        alpha = float(pieces[3].rstrip("%")) / (100 if pieces[3].endswith("%") else 1) if len(pieces) == 4 else 1.
+        if not 0 <= alpha <= 1:
+            return None
+        if kind.startswith("rgb"):
+            rgb = tuple(float(part.rstrip("%")) / (100 if part.endswith("%") else 255) * 255 for part in pieces[:3])
+            return (*tuple(min(255., max(0., channel)) for channel in rgb), alpha)
+        hue = re.fullmatch(r"([-+0-9.]+)(deg|turn|rad)?", pieces[0])
+        if hue is None or not pieces[1].endswith("%") or not pieces[2].endswith("%"):
+            return None
+        angle = float(hue.group(1)) * {None: 1, "deg": 1, "turn": 360, "rad": 180 / 3.141592653589793}[hue.group(2)]
+        saturation, lightness = (min(1., max(0., float(part[:-1]) / 100)) for part in pieces[1:3])
+        return (*tuple(channel * 255 for channel in colorsys.hls_to_rgb((angle % 360) / 360, lightness, saturation)), alpha)
+    except ValueError:
+        return None
+
+
+def resolve(value: str, tokens: dict[str, str], depth: int = 0) -> tuple[float, float, float] | None:
+    """Compatibility API for checks requiring an opaque color."""
+    color = resolve_color(value, tokens)
+    return color[:3] if color is not None and color[3] == 1 else None
 
 
 def luminance(rgb: tuple[float, float, float]) -> float:
@@ -286,6 +385,7 @@ def check_brands(root: Path) -> list[str]:
                     continue
                 fg, bg = resolve(label, tokens), resolve(f"var({token})", tokens)
                 if fg is None or bg is None:
+                    failures.append(f"[{mode} · brand {brand}] cannot resolve required contrast pair")
                     continue
                 value = ratio(fg, bg)
                 status = "ok" if value >= 4.5 else "FAIL"
@@ -296,6 +396,7 @@ def check_brands(root: Path) -> list[str]:
                 fg = resolve(f"var({prefix}{fg_name})", tokens)
                 bg = resolve(f"var({prefix}{bg_name})", tokens)
                 if fg is None or bg is None:
+                    failures.append(f"[{mode} · brand {brand}] cannot resolve required contrast pair")
                     continue
                 value = ratio(fg, bg)
                 status = "ok" if value >= minimum else "FAIL"
@@ -305,43 +406,179 @@ def check_brands(root: Path) -> list[str]:
     return failures
 
 
-# The browser workstation keeps a parallel --ws-* track in its own index.css, and its
-# DesignSystemButton reads --ws-accent-hover rather than the canonical --accent-hover. That
-# track shipped a 3.86:1 hover behind a green gate because nothing here looked at it.
-WS_STATES = [("base", "--ws-accent"), ("hover", "--ws-accent-hover"), ("pressed", "--ws-accent-pressed")]
+# The primary action is structural graphite/paper. Read the rules/class contract
+# that actually renders it rather than substituting the independent brand signal.
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
-# Tailwind --primary-foreground, as HSL triples: white in light, near-black ink in dark.
-WS_LABEL = {"light": (255.0, 255.0, 255.0), "dark": (26.0, 21.0, 18.0)}
+WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
+
+
+def css_leaf_rules(text: str):
+    """Yield simple CSS rules with enclosing at-rules, preserving source order.
+
+    This is deliberately scoped to the flat declaration blocks authored in the
+    package token sheets. It handles quotes/braces and nested @layer/@media,
+    rather than letting an auto-dark regex consume all later manual/light rules.
+    """
+    text = strip_comments(text)
+    stack, segment, quote, escaped = [], 0, None, False
+    for index, char in enumerate(text):
+        if quote:
+            if escaped:
+                escaped = False
+            elif char == "\\":
+                escaped = True
+            elif char == quote:
+                quote = None
+            continue
+        if char in ("'", '"'):
+            quote = char
+        elif char == ";":
+            segment = index + 1
+        elif char == "{":
+            prelude = text[segment:index].strip()
+            if stack:
+                stack[-1]["children"] = True
+            stack.append({"selector": prelude, "start": index + 1, "children": False})
+            segment = index + 1
+        elif char == "}" and stack:
+            block = stack.pop()
+            if not block["children"]:
+                yield block["selector"], text[block["start"]:index], tuple(item["selector"] for item in stack)
+            segment = index + 1
+
+
+def mode_tokens(text: str) -> dict[str, dict[str, str]]:
+    """Resolve the authored light/auto-dark/manual-dark/forced-light scopes."""
+    scopes = {name: {} for name in ("base", "auto-dark", "manual-dark", "forced-light")}
+    for selector_list, body, ancestors in css_leaf_rules(text):
+        media = [ancestor for ancestor in ancestors if ancestor.startswith("@media")]
+        # Print/high-contrast modes are separate user choices, not the default
+        # color-scheme contexts measured here.
+        if any(not re.search(r"prefers-color-scheme\s*:\s*dark", ancestor) for ancestor in media):
+            continue
+        for selector in split_arguments(selector_list):
+            if selector in (":root", "html"):
+                scope = "auto-dark" if media else "base"
+            else:
+                match = re.fullmatch(r''':root\[data-theme=["']?(dark|light)["']?\]''', selector)
+                if match is None:
+                    continue
+                scope = "manual-dark" if match.group(1) == "dark" else "forced-light"
+            scopes[scope].update({name: value.strip() for name, value in TOKEN_PATTERN.findall(body)})
+    base = scopes["base"]
+    return {
+        "light": dict(base),
+        "auto-dark": {**base, **scopes["auto-dark"]},
+        "manual-dark": {**base, **scopes["manual-dark"]},
+        "forced-light": {**base, **scopes["auto-dark"], **scopes["forced-light"]},
+    }
+
+
+def declarations(body: str) -> dict[str, str]:
+    # Background longhand participates in the same cascade as the color part of
+    # the shorthand; otherwise a safe base fill could hide an unsafe hover fill.
+    return {"background" if name == "background-color" else name: value.strip()
+            for name, value in re.findall(r"(?:^|;)\s*([a-z-]+)\s*:\s*([^;]+)", body)}
+
+
+def primary_css_states(text: str) -> dict[str, tuple[str, str]]:
+    """Read the package Button's actual background/color cascade."""
+    selectors = {".mds-btn--primary": "base", ".mds-btn--primary:hover": "hover", ".mds-btn--primary:active": "pressed"}
+    rules = {}
+    for selector_list, body, _ in css_leaf_rules(text):
+        for selector in split_arguments(selector_list):
+            if selector in selectors:
+                rules.setdefault(selectors[selector], {}).update(declarations(body))
+    base = rules.get("base", {})
+    # Missing required declarations are deliberately not supplied guessed colors.
+    states = {}
+    for state in ("base", "hover", "pressed"):
+        values = {**base, **rules.get(state, {})}
+        background = values.get("background", "")
+        if values.get("background-image", "none") != "none":
+            background = "unsupported layered primary background: " + values["background-image"]
+        states[state] = (values.get("color", ""), background)
+    return states
+
+
+def composite(color, surface):
+    return tuple(color[index] * color[3] + surface[index] * (1 - color[3]) for index in range(3))
+
+
+def check_primary_states(track: str, contexts: dict[str, dict[str, str]], states: dict[str, tuple[str, str]]) -> list[str]:
+    failures = []
+    for mode, tokens in contexts.items():
+        for state, (foreground, background) in states.items():
+            fg, bg = resolve_color(foreground, tokens), resolve_color(background, tokens)
+            if fg is None or bg is None:
+                role = "foreground" if fg is None else "background"
+                expression = foreground if fg is None else background
+                failures.append(f"[{mode} · {track}] structural primary {state}: cannot resolve required {role} {expression!r}")
+                continue
+            if bg[3] < 1:
+                surface = resolve_color("var(--bg-light)", tokens)
+                if surface is None or surface[3] != 1:
+                    failures.append(f"[{mode} · {track}] structural primary {state}: cannot resolve required opaque supporting surface --bg-light")
+                    continue
+                effective_background = composite(bg, surface)
+            else:
+                effective_background = bg[:3]
+            value = ratio(composite(fg, effective_background), effective_background)
+            status = "ok" if value >= 4.5 else "FAIL"
+            print(f"[{mode} · {track}] structural primary {state} label: {value:.2f}:1 (min 4.5) {status}")
+            if value < 4.5:
+                failures.append(f"[{mode} · {track}] structural primary {state} label: {value:.2f}:1 < 4.5")
+    return failures
+
+
+def check_package_primary(root: Path) -> list[str]:
+    component = root / "components/core/Button.jsx"
+    sheets = [root / "tokens" / name for name in ("colors.css", "theme.css", "colors-dark.css")]
+    if not component.exists() or any(not sheet.exists() for sheet in sheets):
+        return ["[package] structural primary: required Button source or token stylesheet missing"]
+    source = component.read_text(encoding="utf-8")
+    css = re.search(r"\bconst\s+css\s*=\s*`(.*?)`", source, re.S)
+    if css is None:
+        return ["[package] structural primary: cannot read required Button CSS contract"]
+    contexts = mode_tokens("\n".join(sheet.read_text(encoding="utf-8") for sheet in sheets))
+    return check_primary_states("package", contexts, primary_css_states(css.group(1)))
+
+
+def utility_color(classes: str, property_name: str, prefix: str = "") -> str:
+    matches = [name[len(prefix + property_name + "-"):] for name in classes.split()
+               if name.startswith(prefix + property_name + "-")]
+    if len(matches) != 1:
+        return ""  # a required absent/ambiguous mapping fails resolution
+    value = matches[0]
+    if value.startswith("[") and value.endswith("]"):
+        return value[1:-1].replace("_", " ")
+    if re.fullmatch(r"[a-z][a-z0-9-]*", value):
+        return f"hsl(var(--{value}))"
+    return f"unsupported {prefix}{property_name} utility: {value}"
 
 
 def check_workstation(root: Path) -> list[str]:
-    """Check the browser workstation's --ws-* button states, which are not in this package."""
-    index = root.parent / WS_INDEX
-    if not index.exists():
-        return []  # package used standalone, without the monorepo around it
-    text = index.read_text(encoding="utf-8")
-    # First declaration of each token is the light block; the dark blocks follow.
-    blocks = {"light": {}, "dark": {}}
-    for m in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", text):
-        tok, val = m.group(1), m.group(2)
-        blocks["light"].setdefault(tok, val)
-    for m in re.finditer(r"prefers-color-scheme:\s*dark(.*)", text, re.S):
-        for d in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", m.group(1)):
-            blocks["dark"].setdefault(d.group(1), d.group(2))
-        break
-
-    failures: list[str] = []
-    for mode, tokens in blocks.items():
-        label = WS_LABEL[mode]
-        for state, tok in WS_STATES:
-            if tok not in tokens:
-                continue
-            value = ratio(label, hex_to_rgb(tokens[tok]))
-            status = "ok" if value >= 4.5 else "FAIL"
-            print(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 (min 4.5) {status}")
-            if status == "FAIL":
-                failures.append(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 < 4.5")
-    return failures
+    """Read the consuming adapter's primary utilities and its scoped CSS tokens."""
+    index, adapter = root.parent / WS_INDEX, root.parent / WS_BUTTON
+    if not index.exists() and not adapter.parent.exists() and not (root.parent / "Meridian.sln").exists():
+        print("[workstation] outside verification scope: standalone package has no consuming workstation")
+        return []
+    if not index.exists() or not adapter.exists():
+        return ["[workstation] structural primary: required stylesheet or button adapter missing"]
+    source = adapter.read_text(encoding="utf-8")
+    variants = re.search(r"\bconst\s+buttonVariantClasses\b[^=]*=\s*\{(.*?)\};", source, re.S)
+    default = re.search(r'\bdefault:\s*"([^"]+)"', variants.group(1)) if variants else None
+    if default is None:
+        return ["[workstation] structural primary: cannot read required default button utility contract"]
+    classes = default.group(1)
+    label = utility_color(classes, "text")
+    base = utility_color(classes, "bg")
+    states = {"base": (label, base),
+              "hover": (utility_color(classes, "text", "hover:") if "hover:text-" in classes else label,
+                        utility_color(classes, "bg", "hover:") if "hover:bg-" in classes else base),
+              "pressed": (utility_color(classes, "text", "active:") if "active:text-" in classes else label,
+                          utility_color(classes, "bg", "active:") if "active:bg-" in classes else base)}
+    return check_primary_states("workstation", mode_tokens(index.read_text(encoding="utf-8")), states)
 
 
 # The package publishes a --ws-* compatibility layer beside the canonical tokens. The two
@@ -369,6 +606,7 @@ def check_ws_aliases(root: Path) -> list[str]:
             continue
         a, b = resolve(f"var({ws})", tokens), resolve(f"var({canon})", tokens)
         if a is None or b is None:
+            failures.append(f"[ws-alias] cannot resolve required alias pair {ws}/{canon}")
             continue
         if a != b:
             failures.append(f"[ws-alias] {ws} does not mirror {canon}")
@@ -1161,7 +1399,7 @@ def run_checks(root: Path) -> list[str]:
     dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
     dark = {**light, **dark_overrides}
     return (check_mode("light", light) + check_mode("dark", dark)
-            + check_brands(root) + check_workstation(root)
+            + check_brands(root) + check_package_primary(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
             + check_var_chains(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
@@ -1175,14 +1413,18 @@ def run_checks(root: Path) -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--actions-only", action="store_true",
+                        help="Check actual package/workstation structural primary actions in every color-scheme mode; leave historical governance checks to the full default gate")
     args = parser.parse_args()
-    failures = run_checks(args.root)
+    root = args.root.resolve()
+    failures = (check_package_primary(root) + check_workstation(root)
+                if args.actions_only else run_checks(root))
     if failures:
         print("\nContrast failures:", file=sys.stderr)
         for f in failures:
             print("  " + f, file=sys.stderr)
         return 1
-    print("\nAll token contrast pairs pass.")
+    print("\nAll primary action contrast pairs pass." if args.actions_only else "\nAll token contrast pairs pass.")
     return 0
 
 
