@@ -612,7 +612,6 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
 
       <OperationalTrustSummary
         label="Trading data confidence"
-        disclosure
         source={{
           value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
           detail: hasRecoveryProjection

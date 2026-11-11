@@ -1,4 +1,5 @@
 import { StatusBanner } from "@/components/ui/status-banner";
+import { buildDegradedModeNotices } from "@/lib/degraded-mode";
 import type { DegradedModeStatus } from "@/types";
 
 export interface DegradedModeBannerProps {
@@ -11,32 +12,7 @@ export interface DegradedModeBannerProps {
  * client-side fixture state, so it reflects what the host is actually doing.
  */
 export function DegradedModeBanner({ degradedMode }: DegradedModeBannerProps) {
-  if (!degradedMode) {
-    return null;
-  }
-
-  const notices: { key: string; title: string; detail: string }[] = [];
-
-  if (degradedMode.marketDataMode === "simulated") {
-    notices.push({
-      key: "simulated-market-data",
-      title: "SIMULATED MARKET DATA",
-      detail: degradedMode.marketDataDetail
-        ?? "The configured streaming source generates synthetic prices. Do not treat quotes, fills, or P&L as real."
-    });
-  }
-
-  if (degradedMode.persistenceMode !== "configured") {
-    const missing = degradedMode.missingPersistenceDomains;
-    notices.push({
-      key: "persistence",
-      title: `PERSISTENCE: ${degradedMode.persistenceMode.toUpperCase()}`,
-      detail: missing.length > 0
-        ? `Store domains without a database (data is lost on restart): ${missing.join(", ")}. `
-          + "Set MERIDIAN_DATABASE_URL to enable persistence."
-        : "No store domain has a database configured. Set MERIDIAN_DATABASE_URL to enable persistence."
-    });
-  }
+  const notices = buildDegradedModeNotices(degradedMode);
 
   if (notices.length === 0) {
     return null;

@@ -772,7 +772,6 @@ export function PortfolioScreen({
 
       <OperationalTrustSummary
         label="Portfolio data confidence"
-        disclosure
         source={{
           value: vm.positionSourceLabel,
           detail: "Holdings source used by this route",

@@ -87,8 +87,8 @@ export function OperatingScopeChip({
 
 /**
  * On-demand workflow detail (current workflow, decision, steps). It lives in the scope chip's
- * popover, the scope picker, so the header keeps a single row. The cross-workspace decision
- * brief itself renders as the masthead status pill (DecisionBriefPill).
+ * popover, the scope picker, so the header keeps a single row. The worst cross-workspace issue
+ * itself renders as the masthead attention pill (AttentionPill).
  */
 export function WorkflowContextDisclosure({ viewModel }: { viewModel: AppShellWorkflowContinuityViewModel }) {
   const decision = viewModel.decisionBrief;
