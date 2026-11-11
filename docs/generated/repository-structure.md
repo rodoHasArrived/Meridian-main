@@ -8126,16 +8126,22 @@ Meridian-main
 │   │   │   │   │   │   ├── LedgerTable.tsx
 │   │   │   │   │   │   ├── money.test.ts
 │   │   │   │   │   │   ├── money.ts
+│   │   │   │   │   │   ├── proof-arithmetic.test.ts
+│   │   │   │   │   │   ├── proof-arithmetic.ts
 │   │   │   │   │   │   ├── ReconciliationComparisonPanel.test.tsx
 │   │   │   │   │   │   ├── ReconciliationComparisonPanel.tsx
 │   │   │   │   │   │   ├── ReconciliationPanel.test.tsx
 │   │   │   │   │   │   ├── ReconciliationPanel.tsx
 │   │   │   │   │   │   ├── RecurringJournalQueue.test.tsx
 │   │   │   │   │   │   ├── RecurringJournalQueue.tsx
+│   │   │   │   │   │   ├── RollforwardTrace.test.tsx
+│   │   │   │   │   │   ├── RollforwardTrace.tsx
 │   │   │   │   │   │   ├── StatementTable.test.tsx
 │   │   │   │   │   │   ├── StatementTable.tsx
 │   │   │   │   │   │   ├── TaxLotTable.test.tsx
 │   │   │   │   │   │   ├── TaxLotTable.tsx
+│   │   │   │   │   │   ├── TieOutPanel.test.tsx
+│   │   │   │   │   │   ├── TieOutPanel.tsx
 │   │   │   │   │   │   ├── TrialBalanceRowDetail.test.tsx
 │   │   │   │   │   │   ├── TrialBalanceRowDetail.tsx
 │   │   │   │   │   │   ├── TrialBalanceTable.test.tsx
@@ -8149,6 +8155,10 @@ Meridian-main
 │   │   │   │   │   │   ├── chart-sync.tsx
 │   │   │   │   │   │   ├── ChartCard.tsx
 │   │   │   │   │   │   ├── charts.test.tsx
+│   │   │   │   │   │   ├── compare-series.test.ts
+│   │   │   │   │   │   ├── compare-series.ts
+│   │   │   │   │   │   ├── ComparisonPlate.test.tsx
+│   │   │   │   │   │   ├── ComparisonPlate.tsx
 │   │   │   │   │   │   ├── CorrelationHeatmap.tsx
 │   │   │   │   │   │   ├── DepthChart.tsx
 │   │   │   │   │   │   ├── DrawdownChart.tsx
@@ -8157,6 +8167,8 @@ Meridian-main
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── RangeCoverageHeatmap.tsx
 │   │   │   │   │   │   ├── SegmentedLineChart.tsx
+│   │   │   │   │   │   ├── SelectionCompare.test.tsx
+│   │   │   │   │   │   ├── SelectionCompare.tsx
 │   │   │   │   │   │   ├── Sparkline.tsx
 │   │   │   │   │   │   ├── StatusTimeline.tsx
 │   │   │   │   │   │   └── ticks.ts
@@ -8165,6 +8177,8 @@ Meridian-main
 │   │   │   │   │   │   ├── backfill-validation-dashboard.tsx
 │   │   │   │   │   │   ├── concrete.ts
 │   │   │   │   │   │   ├── edit-provider-drawer.tsx
+│   │   │   │   │   │   ├── editable-cell.test.tsx
+│   │   │   │   │   │   ├── editable-cell.tsx
 │   │   │   │   │   │   ├── empty-state.concrete.test.tsx
 │   │   │   │   │   │   ├── empty-state.tsx
 │   │   │   │   │   │   ├── entity-summary.tsx
@@ -8172,9 +8186,14 @@ Meridian-main
 │   │   │   │   │   │   ├── key-value-grid.tsx
 │   │   │   │   │   │   ├── metric-card.concrete.test.tsx
 │   │   │   │   │   │   ├── metric-card.tsx
+│   │   │   │   │   │   ├── optimistic-cell.test.tsx
+│   │   │   │   │   │   ├── optimistic-cell.tsx
+│   │   │   │   │   │   ├── optimistic-ledger.test.ts
+│   │   │   │   │   │   ├── optimistic-ledger.ts
 │   │   │   │   │   │   ├── pagination.concrete.test.tsx
 │   │   │   │   │   │   ├── pagination.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
+│   │   │   │   │   │   ├── provider-setup-panel.integration.test.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.test.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.tsx
 │   │   │   │   │   │   ├── skeleton.concrete.test.tsx
@@ -8418,6 +8437,8 @@ Meridian-main
 │   │   │   │   │       ├── label.tsx
 │   │   │   │   │       ├── layout.test.tsx
 │   │   │   │   │       ├── layout.tsx
+│   │   │   │   │       ├── local-date-text.test.tsx
+│   │   │   │   │       ├── local-date-text.tsx
 │   │   │   │   │       ├── modal.tsx
 │   │   │   │   │       ├── multi-select.tsx
 │   │   │   │   │       ├── number-input.test.tsx
@@ -8625,6 +8646,9 @@ Meridian-main
 │   │   │   │   │   │   ├── storage.ts
 │   │   │   │   │   │   └── types.ts
 │   │   │   │   │   ├── provider-setup
+│   │   │   │   │   │   ├── provider-module-priority.test.ts
+│   │   │   │   │   │   ├── provider-module-priority.ts
+│   │   │   │   │   │   ├── use-provider-setup.test.tsx
 │   │   │   │   │   │   └── use-provider-setup.ts
 │   │   │   │   │   ├── accounting-navigation.test.ts
 │   │   │   │   │   ├── accounting-navigation.ts
@@ -8678,6 +8702,8 @@ Meridian-main
 │   │   │   │   │   ├── ledger-tax-results-api.ts
 │   │   │   │   │   ├── ledger-tax-results-format.test.ts
 │   │   │   │   │   ├── ledger-tax-results-format.ts
+│   │   │   │   │   ├── local-date.test.ts
+│   │   │   │   │   ├── local-date.ts
 │   │   │   │   │   ├── mark-freshness.ts
 │   │   │   │   │   ├── metric-context.test.ts
 │   │   │   │   │   ├── metric-context.ts
@@ -8840,6 +8866,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.break-audit-rebuild.view-model.ts
 │   │   │   │   │   ├── accounting-screen.calibration-panel.tsx
+│   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.test.tsx
 │   │   │   │   │   ├── accounting-screen.capital-account-workbench-panel.tsx
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.capital-accounts.view-model.ts
@@ -8905,6 +8932,8 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.reconciliation-resolve-dialog.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation-workbench.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation-workbench.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation.tie-out.screen.test.tsx
+│   │   │   │   │   ├── accounting-screen.reconciliation.tie-out.test.tsx
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.test.ts
 │   │   │   │   │   ├── accounting-screen.reconciliation.view-model.ts
 │   │   │   │   │   ├── accounting-screen.security-master-detail-panels.tsx
@@ -9181,12 +9210,14 @@ Meridian-main
 │   │   │   │   │   ├── strategy-run-ledger-screen.test.tsx
 │   │   │   │   │   ├── strategy-run-ledger-screen.tsx
 │   │   │   │   │   ├── strategy-screen.a11y.test.tsx
+│   │   │   │   │   ├── strategy-screen.equity-paths.test.tsx
 │   │   │   │   │   ├── strategy-screen.evidence-timeline.ts
 │   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
 │   │   │   │   │   ├── strategy-screen.tsx
+│   │   │   │   │   ├── strategy-screen.view-model.equity-paths.test.ts
 │   │   │   │   │   ├── strategy-screen.view-model.test.ts
 │   │   │   │   │   ├── strategy-screen.view-model.ts
 │   │   │   │   │   ├── strategy-screen.workflow-continuity.ts

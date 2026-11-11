@@ -32,6 +32,7 @@ import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
+import { TieOutPanel } from "@/components/accounting/TieOutPanel";
 import {
   approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
@@ -2398,8 +2399,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             <ReconciliationReadinessPanel />
           </div>
 
-          <div className="xl:col-span-2">
+          <div className="space-y-3 xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
+            {/* Proof of the summary above, built from the same numbers and the same balanced rule.
+                Its heading stays at the panel default (h3), level with the sibling cards in this band. */}
+            {reconciliation.comparisonView.tieOut ? (
+              <TieOutPanel {...reconciliation.comparisonView.tieOut} />
+            ) : null}
           </div>
 
 
