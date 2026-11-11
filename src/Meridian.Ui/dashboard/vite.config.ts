@@ -7,6 +7,15 @@ import type { Plugin, ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
 import { getScenario, resolveScenarioResponse, scenarioHeader, unexpectedScenarioRequest } from "./src/scenarios";
 import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
+import { synchronizeDesignSystemAssets } from "./scripts/sync-design-system-assets.mjs";
+
+/** Includes direct Vite launches from scripts/dev/web-dev.mjs, beyond npm hooks. */
+export function createMeridianDesignSystemAssetsPlugin(): Plugin {
+  return {
+    name: "meridian-design-system-assets",
+    buildStart() { synchronizeDesignSystemAssets(); }
+  };
+}
 
 export const defaultMeridianApiBaseUrl = "http://localhost:8080";
 export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
@@ -279,7 +288,7 @@ const { version: appVersion } = JSON.parse(
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
-  plugins: [react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
+  plugins: [createMeridianDesignSystemAssetsPlugin(), react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
     "import.meta.env.VITE_MERIDIAN_DEV_MODE": JSON.stringify(devMode ?? "")

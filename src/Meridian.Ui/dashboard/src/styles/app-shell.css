@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
    Meridian "Programmed Institutionalism" workstation shell
-   Warm near-black chrome (#1F1D1A) capping a warm-paper Institutional Ops workstation.
-   Flat surfaces, hairline borders, one copper accent (#A85436).
-   Tokens are referenced with hex fallbacks so this compiles ahead of the token PR.
+   Graphite chrome capping the paper/plate/well workstation hierarchy.
+   Flat surfaces, fine rules, terracotta signal, and independent blue interactions.
+   Canonical roles come from the production design-system token bridge.
    ───────────────────────────────────────────────────────────────────────────── */
 
 .workstation-frame {
@@ -11,7 +11,7 @@
   flex-direction: column;
   background: var(--theme-bg-canvas, var(--ws-page-bg, #F2F0EB));
   color: var(--theme-primary-text, var(--ws-text, #20252B));
-  font-family: var(--theme-font-body, var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif));
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
 }
 
 /* Skip link -------------------------------------------------------------------- */
@@ -20,7 +20,7 @@
   left: -100vw;
   top: 0.75rem;
   z-index: 1000;
-  border: 1px solid var(--ws-accent, #C56343);
+  border: 1px solid var(--interaction-focus);
   border-radius: var(--radius-button, 2px);
   background: var(--theme-topbar-bg, var(--ws-masthead-bg, #29323A));
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F1EFEA));
@@ -33,7 +33,7 @@
 .skip-link:focus {
   left: 0.75rem;
   outline: none;
-  box-shadow: 0 0 0 2px rgba(168, 84, 54, 0.35), var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
+  box-shadow: 0 0 0 2px var(--interaction-focus), var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
 }
 
 /* ── Masthead / topbar (48px near-black brand bar) ──────────────────────────── */
@@ -83,7 +83,7 @@
 }
 
 .workstation-brand .name {
-  font-family: var(--theme-font-display, var(--font-display, "Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", system-ui, sans-serif));
+  font-family: var(--font-display, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F1EFEA));
@@ -96,16 +96,16 @@
   justify-content: center;
   width: 30px;
   height: 30px;
-  border: 1px solid #35312A;
+  border: 1px solid var(--topbar-field-border);
   border-radius: var(--radius-button, 2px);
-  background: #13110E;
-  color: #BBB5AC;
+  background: var(--topbar-field-bg);
+  color: var(--topbar-text-muted);
   cursor: pointer;
   transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
 }
 
 .workstation-nav-toggle:hover {
-  border-color: #454138;
+  border-color: var(--topbar-field-border-hover);
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F1EFEA));
 }
 
@@ -126,27 +126,27 @@
   max-width: 560px;
   height: 30px;
   padding: 0 0.625rem;
-  border: 1px solid #35312A;
+  border: 1px solid var(--topbar-field-border);
   border-radius: var(--radius-button, 2px);
-  background: #13110E;
-  color: #969188;
+  background: var(--topbar-field-bg);
+  color: var(--topbar-text-faint);
   text-align: left;
   cursor: text;
   transition: border-color 120ms ease;
 }
 
 .workstation-search:hover {
-  border-color: #454138;
+  border-color: var(--topbar-field-border-hover);
 }
 
 .workstation-search:focus-visible {
   outline: none;
-  border-color: var(--ws-accent, #C56343);
-  box-shadow: 0 0 0 2px rgba(168, 84, 54, 0.35);
+  border-color: var(--interaction-focus);
+  box-shadow: 0 0 0 2px var(--interaction-focus);
 }
 
 .workstation-search svg {
-  color: #969188;
+  color: var(--topbar-text-faint);
 }
 
 .workstation-search-placeholder {
@@ -156,17 +156,17 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 0.75rem;
-  color: #969188;
+  color: var(--topbar-text-faint);
 }
 
 .workstation-search-kbd {
   display: inline-flex;
   align-items: center;
   padding: 1px 5px;
-  border: 1px solid #35312A;
+  border: 1px solid var(--topbar-field-border);
   border-radius: var(--radius-chip, 2px);
-  color: #969188;
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  color: var(--topbar-text-faint);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   white-space: nowrap;
 }
@@ -214,7 +214,7 @@
   border: 1px solid var(--topbar-border, #2D2A25);
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
-  color: #F3EFE8;
+  color: var(--topbar-text);
   cursor: pointer;
   list-style: none;
   white-space: nowrap;
@@ -225,7 +225,7 @@
 }
 
 .workstation-trust-summary:focus-visible {
-  outline: 2px solid rgba(168, 84, 54, 0.55);
+  outline: 2px solid var(--interaction-focus);
   outline-offset: 2px;
 }
 
@@ -247,13 +247,13 @@
 
 .workstation-trust-sep {
   flex: none;
-  color: #969188;
+  color: var(--topbar-text-faint);
 }
 
 /* SEEDED / SIMULATED / SAMPLE / UNKNOWN: not real data, in the masthead's warning ochre. */
 .workstation-trust-summary .workstation-trust-data {
   color: #E0B36B;
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   letter-spacing: 0.04em;
 }
@@ -278,7 +278,7 @@
   border: 1px solid var(--ws-border, #D2CDC3);
   border-radius: 3px;
   background: var(--ws-surface, #F8F7F3);
-  box-shadow: 0 8px 24px rgba(17, 24, 39, 0.2);
+  box-shadow: var(--shadow-menu);
   padding: 0.5rem;
 }
 
@@ -290,11 +290,11 @@
   min-width: 0;
   min-height: 22px;
   padding: 0 0.45rem;
-  border: 1px solid #35312A;
+  border: 1px solid var(--ws-border);
   border-radius: var(--radius-chip, 2px);
-  background: #13110E;
-  color: #BBB5AC;
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  background: var(--ws-surface);
+  color: var(--ws-text);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
   text-decoration: none;
   white-space: normal;
@@ -302,15 +302,15 @@
 
 a.workstation-trust-item:hover,
 a.workstation-trust-item:focus-visible {
-  border-color: var(--ws-accent, #C56343);
-  color: var(--ws-masthead-fg, #F1EFEA);
+  border-color: var(--interaction-focus);
+  color: var(--ws-text);
   outline: 2px solid transparent;
-  box-shadow: 0 0 0 2px rgba(168, 84, 54, 0.35);
+  box-shadow: 0 0 0 2px var(--interaction-focus);
 }
 
 .workstation-trust-label {
-  color: #969188;
-  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  color: var(--topbar-text-faint);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-variant: all-small-caps;
   letter-spacing: 0.03em;
 }
@@ -318,7 +318,7 @@ a.workstation-trust-item:focus-visible {
 .workstation-trust-value {
   max-width: 100%;
   overflow: hidden;
-  color: #F3EFE8;
+  color: var(--topbar-text);
   font-weight: 600;
   text-overflow: ellipsis;
 }
@@ -331,23 +331,31 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-trust-item-ready {
-  border-color: rgba(58, 122, 86, 0.5);
-  color: #7FD9B4;
+  border-color: var(--severity-ready-bd);
+  color: var(--severity-ready-fg);
 }
 
 .workstation-trust-item-review {
-  border-color: rgba(138, 82, 14, 0.55);
-  color: #E0B36B;
+  border-color: var(--severity-action-bd);
+  color: var(--severity-action-fg);
 }
 
 .workstation-trust-item-blocked {
-  border-color: rgba(168, 68, 60, 0.55);
-  color: #E58AA0;
+  border-color: var(--severity-blocked-bd);
+  color: var(--severity-blocked-fg);
 }
 
 .workstation-trust-item-pending {
-  border-color: rgba(93, 84, 134, 0.55);
-  color: #B6A6E0;
+  border-color: var(--severity-review-bd);
+  color: var(--severity-review-fg);
+}
+
+.workstation-trust-menu .workstation-trust-label {
+  color: var(--ws-text-muted);
+}
+
+.workstation-trust-menu .workstation-trust-value {
+  color: inherit;
 }
 
 /* Actions cluster (alerts bell + session card) --------------------------------- */
@@ -386,7 +394,7 @@ a.workstation-trust-item:focus-visible {
   width: 7px;
   height: 7px;
   border-radius: 9999px;
-  background: #989286;
+  background: var(--topbar-text-faint);
 }
 
 .masthead-status-pill-status {
@@ -414,8 +422,8 @@ a.workstation-trust-item:focus-visible {
 
 .masthead-status-pill-more {
   flex: none;
-  color: #BBB5AC;
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  color: var(--topbar-text-muted);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.75rem;
 }
 
@@ -432,10 +440,10 @@ a.workstation-trust-item:focus-visible {
   min-width: 0;
   height: 26px;
   padding: 0 0.5rem;
-  border: 1px solid #35312A;
+  border: 1px solid var(--topbar-field-border);
   border-radius: var(--radius-chip, 2px);
-  background: #13110E;
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  background: var(--topbar-field-bg);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.6875rem;
 }
 
@@ -445,7 +453,7 @@ a.workstation-trust-item:focus-visible {
    `min-width: auto`, which refuses to shrink below the text's own width, so the
    overflow rules below would never fire and the card would push past the masthead. */
 .workstation-session-name {
-  color: #F3EFE8;
+  color: var(--topbar-text);
   white-space: nowrap;
   min-width: 0;
   overflow: hidden;
@@ -453,7 +461,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-session-role {
-  color: #969188;
+  color: var(--topbar-text-faint);
   white-space: nowrap;
   min-width: 0;
   overflow: hidden;
@@ -467,7 +475,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-session-card .workstation-session-role {
-  color: #BBB5AC;
+  color: var(--topbar-text-muted);
 }
 
 /* ── Shell body (nav rail + workbench) ──────────────────────────────────────── */
@@ -573,7 +581,7 @@ a.workstation-trust-item:focus-visible {
   background: var(--statusbar-bg, #29323A);
   border-top: 1px solid var(--topbar-border, #2D2A25);
   color: var(--statusbar-text, #D8D3CA);
-  font-family: var(--font-data, "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace);
+  font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
 }
@@ -584,7 +592,7 @@ a.workstation-trust-item:focus-visible {
   gap: 6px;
   height: 16px;
   padding: 0 12px;
-  border-right: 1px solid #2D2A25;
+  border-right: 1px solid var(--topbar-border);
 }
 
 .workstation-statusbar-item:first-child {
@@ -594,12 +602,12 @@ a.workstation-trust-item:focus-visible {
 .workstation-statusbar-item-push {
   margin-left: auto;
   border-right: none;
-  border-left: 1px solid #2D2A25;
+  border-left: 1px solid var(--topbar-border);
 }
 
 .workstation-statusbar-label {
-  color: #969188;
-  font-family: var(--font-body, "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif);
+  color: var(--topbar-text-faint);
+  font-family: var(--font-body, "IBM Plex Sans", system-ui, -apple-system, sans-serif);
   font-variant: all-small-caps;
   letter-spacing: 0.03em;
 }
@@ -704,7 +712,7 @@ a.workstation-trust-item:focus-visible {
   font-size: 0.8125rem; color: var(--ws-text-muted); white-space: nowrap; border-radius: var(--radius-sm);
 }
 .workstation-header-crumb:hover:not(:disabled) { color: var(--ws-text); text-decoration: underline; }
-.workstation-header-crumb:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workstation-header-crumb:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
 .workstation-header-scope { grid-column: 2; min-width: 0; justify-self: center; }
 .workstation-header-actions { grid-column: 3; display: flex; align-items: center; justify-content: end; gap: 0.25rem; min-width: 0; }
 .operating-scope { min-width: 0; }
@@ -715,7 +723,7 @@ a.workstation-trust-item:focus-visible {
 }
 button.operating-scope-chip { cursor: pointer; }
 button.operating-scope-chip:hover { border-color: var(--border-hi, var(--ws-text-muted)); background: var(--ws-surface-subtle, #EBE8E1); }
-button.operating-scope-chip:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
 .operating-scope-chip-value { display: inline-flex; gap: 0.375rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .operating-scope-chip-item { display: inline-flex; gap: 0.375rem; min-width: 0; }
 .operating-scope-chip-item-retained { color: var(--ws-text-muted); font-weight: 500; }
@@ -736,7 +744,7 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--primary); o
   padding: 0.375rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;
 }
 .workstation-views-menu > summary::-webkit-details-marker { display: none; }
-.workstation-views-menu > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workstation-views-menu > summary:focus-visible { outline: 2px solid var(--interaction-focus); outline-offset: 2px; }
 .workstation-views-panel {
   position: absolute; z-index: 30; top: 100%; margin: 0.25rem 0 0;
   width: min(20rem, 70vw); padding: 0.75rem; border: 1px solid var(--ws-border);

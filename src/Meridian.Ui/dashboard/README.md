@@ -304,7 +304,7 @@ Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet
 once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
 Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
 Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
-resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Consolas renders data
+resolve `ui-monospace`, so without it a machine lacking the bundled IBM Plex face and system monospace fallbacks renders data
 text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
 patched `source-map-js` 1.2.2.
 
@@ -713,9 +713,10 @@ accounting policy and source provenance, and the execution mode on fill and attr
 Keep the TypeScript declarations aligned with `StrategyRunReadModels.cs`; nullable source
 references remain nullable, while required policy and mode fields must also be present in fixtures.
 
-The browser workstation visual system is light-first and aligned to the Meridian Design System's
-Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline
-borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep
+The browser workstation visual system uses Meridian Design System 4.3.0's
+paper/plate/well hierarchy, graphite chrome and primary actions, independent blue
+focus/selection/link roles, terracotta brand/scenario signal, and local IBM Plex
+Sans/Mono typography. Light and dark appearances resolve through semantic roles. Keep
 visual changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
 instead of introducing one-off screen styling.
 
@@ -2020,7 +2021,9 @@ independently of Tailwind utility ordering.
 and checks token-backed components, responsive utilities, typography, opacity, and focus behavior.
 Any future separately processed stylesheet that uses `@apply` must first reference
 `src/styles/index.css` with `@reference` to access the workstation theme without emitting it twice.
-The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
+### Meridian Design System 4.3.0 integration
+
+The root `Meridian Design System/` package is the visual source bundle for tokens,
 component references, patterns, templates, and governance scripts. The browser workstation consumes
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
@@ -2030,10 +2033,40 @@ is the primary action and chrome color, terracotta (`#C56343`) is the brand/atte
 and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
 surface). Light, auto-dark, manual-dark, and forced-light scopes take their values from the package's
 `tokens/` files.
+
+`main.tsx` loads `src/design-system/fonts.css`, synchronized from the package,
+before the workstation stylesheet. IBM Plex Sans and Mono TTFs ship under
+`src/assets/fonts/`; their OFL notices ship through `public/licenses/`. Brand
+marks, lockups, the identity sheet, and module icons use the canonical copied
+assets in `src/assets/` and the typed asset bridge. Vite bundles these local
+assets for hosted and offline-capable deployments.
+
+Asset drift is checked before dev/build and by Vite's build hook. Run
+`npm run design-system:check` to verify the copied bytes,
+`npm run design-system:sync` after an intentional package asset update, and
+`npm run design-system:test-assets` for the synchronization regression suite.
+Keep the package, synchronized assets, token bridge, and contract tests in the
+same reviewable change.
+
+Auxiliary route and primitive styles consume the same roles: `--font-body` /
+`--font-display` for interface text, `--font-data` for values and identifiers,
+`--interaction-focus` for keyboard focus, `--interaction-selected` and
+`--interaction-selected-surface` for committed selection, and
+`--interaction-link` for navigation links. Table headers, zebra rows, row detail,
+popovers, and shell fields use the active `--ws-*` / chrome surfaces so appearance
+changes do not reveal hardcoded legacy panels. Financial and permission states
+retain their own severity roles and visible labels.
+
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
+This integration covers the browser workstation. Its IBM Plex type system is
+distinct from WPF's native Segoe/Cascadia typography; this change does not claim
+identical platform typography or modify the WPF application.
+
+### Workspace-specific styling
+
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped
 under Close, Records, Reconciliation, Review, and Administration; Accounting screens do not repeat
 those routes in a horizontal tab strip or task-mode launcher. Governed delivery evidence remains a

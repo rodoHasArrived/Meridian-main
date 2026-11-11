@@ -2,10 +2,11 @@
 
 **Reviewed:** 2026-11-11 · **Source:** PR #3501, initial head `7e580e1729`
 
-The branch advanced to `a81d7afb45` during this task with an existing dashboard
-palette migration. That concurrent `src/` work is preserved. This export
-follow-up changes the design-system package; it does not replace or rewrite the
-dashboard migration or WPF.
+The branch advanced to `a81d7afb45` with an existing dashboard palette migration;
+that work is preserved. The initial review covered the package export. The user
+then expanded scope to integrate the package into the production browser
+workstation, starting from `4782c83013`. The integration follow-up below records
+that additional work; WPF remains outside its scope.
 
 This review concerns the existing package in PR #3501. It does not describe the
 older package on the repository's main branch. `release.json` declares 4.3.0
@@ -122,8 +123,9 @@ screenshots are needed to assess geometry on the target Windows environment.
 **Token migration.** The package uses IBM Plex typography, terracotta brand/
 scenario signal, blue focus/selection, and its own material hierarchy. Token
 name compatibility does not imply equal values in Meridian's application. The
-parity manifest explicitly declares `valuesShared: false`; integrating this
-export is a separate app migration. This work does not modify WPF.
+package parity manifest declares `valuesShared: false`; browser integration must
+therefore compare the actual package values and role mappings. The follow-up
+below performs that application integration separately from the archive build.
 
 **Maturity.** Use the regenerated `api/families.json` for each export's stability;
 the package's stable channel does not make every export stable. Review the 4.0
@@ -153,3 +155,38 @@ preview and transport outcomes must remain labeled as demonstrations.
 
 Build/export commands, archive contents, dependency scope, and integrity checks
 are documented in [Export handoff](EXPORT_4_3_0.md).
+
+## Production browser integration follow-up
+
+The browser workstation now consumes the package through its native TypeScript
+design-system adapters, synchronized brand/font assets, and the canonical role
+bridge in `src/Meridian.Ui/dashboard/src/styles/index.css`. This keeps the
+production application's routing, state, financial workflows, and shared API
+contracts in their existing owners.
+
+The integration includes local IBM Plex Sans/Mono fonts and OFL notices; brand
+assets and typed imports; package-value light/dark token scopes; and distinct
+graphite action, terracotta signal, blue focus/selection/link, and financial
+severity roles. The asset synchronization checks run before dev/build and in
+Vite, so the package copy cannot silently drift from its source assets.
+
+Auxiliary stylesheet review found direct Segoe/Cascadia declarations, copper
+focus/selection, effective hardcoded table header/zebra/row-cap surfaces, and a
+dark trust-menu item inside a paper dropdown. These now consume semantic font,
+interaction, workspace, and chrome roles. Accounting/reconciliation selection,
+keyboard focus, dense-table details, navigation, and workflow continuity use the
+same mappings. Financial severity and environment meanings remain independently
+expressed through their own roles and text.
+
+All 15 auxiliary stylesheets parse with PostCSS. Focused asset synchronization
+and application/component verification must be reported at their actual scope;
+the earlier export smoke page and upstream QA remain separate evidence. The
+source module README documents integration ownership and synchronization
+commands. No package-level conformance claim substitutes for exercising the
+rendered production workstation.
+
+The production integration baseline is `4782c83013`. Browser IBM Plex typography
+and WPF's native Segoe/Cascadia typography remain distinct platform adaptations;
+WPF is preserved and no identical-typeface claim is made. SVG labels on the
+strategy, live-quotes, and shared historical charts now read the browser's
+semantic `--font-data` stack alongside the auxiliary CSS consumers.

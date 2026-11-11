@@ -53,6 +53,20 @@ function contrastRatio(foreground: string, background: string) {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+function hslTokenHex(styles: string, name: string) {
+  const value = styles.match(new RegExp(`${name}:\\s*([\\d.]+) ([\\d.]+)% ([\\d.]+)%`));
+  if (!value) throw new Error(`Missing HSL channels for ${name}`);
+  const hue = Number(value[1]) / 30;
+  const saturation = Number(value[2]) / 100;
+  const lightness = Number(value[3]) / 100;
+  const amplitude = saturation * Math.min(lightness, 1 - lightness);
+  return "#" + [0, 8, 4].map((offset) => {
+    const k = (offset + hue) % 12;
+    const channel = lightness - amplitude * Math.max(-1, Math.min(k - 3, 9 - k, 1));
+    return Math.round(channel * 255).toString(16).padStart(2, "0");
+  }).join("").toUpperCase();
+}
+
 function readWorkspaceSurfaceStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/workspace-surface.css"), "utf8");
 }
@@ -245,11 +259,11 @@ describe("dashboard design-system contract", () => {
     expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EB");
     expect(designSystemTheme).toContain("--theme-accent: #C56343");
     expect(designSystemTheme).toContain("--theme-border: #D2CDC3");
-    expect(styles).toContain("--background: 43 21% 94%");
-    expect(styles).toContain("--foreground: 213 15% 15%");
-    expect(styles).toContain("--primary: 208 17% 19%");
+    expect(hslTokenHex(styles, "--background")).toBe("#F2F0EB");
+    expect(hslTokenHex(styles, "--foreground")).toBe("#20252B");
+    expect(hslTokenHex(styles, "--primary")).toBe("#29323A");
     // Focus is the interaction blue (#2D6FB3), never the terracotta signal.
-    expect(styles).toContain("--ring: 210 60% 44%");
+    expect(hslTokenHex(styles, "--ring")).toBe("#2D6FB3");
     expect(styles).toContain("--ws-page-bg: #F2F0EB");
     expect(styles).toContain("--ws-surface: #F8F7F3");
     expect(styles).toContain("--ws-surface-subtle: #EBE8E1");
@@ -264,10 +278,9 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--card-bg: var(--ws-surface)");
     expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
     expect(styles).toContain("--cyan-primary: var(--ws-accent)");
-    // --ws-page-bg / --ws-masthead-bg now appear once in :root plus once each in
-    // the dark-mode and forced-light scopes (auto-dark, manual dark, light opt-out).
-    expect(styles.match(/--ws-page-bg:/g)).toHaveLength(4);
-    expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(4);
+    // Default + auto-dark + manual dark + forced light + nested light panels.
+    expect(styles.match(/--ws-page-bg:/g)).toHaveLength(5);
+    expect(styles.match(/--ws-masthead-bg:/g)).toHaveLength(5);
   });
 
   it("keeps dark readiness and inactive navigation text above WCAG AA contrast", () => {
@@ -320,20 +333,67 @@ describe("dashboard design-system contract", () => {
     }
   });
 
-  it("unifies workstation radii to the mandated 2px and keeps surfaces flat", () => {
+  it("matches the 4.3 source roles across both CSS representations and both themes", () => {
+    const withoutComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, "");
+    const baseScope = (css: string) => withoutComments(css).match(/:root\s*\{([^}]+)\}/)?.[1] ?? "";
+    const declared = (css: string, token: string) => {
+      const value = css.match(new RegExp(`${token}:\\s*([^;]+);`))?.[1].trim();
+      if (!value) throw new Error(`Missing source contract token ${token}`);
+      return value.toUpperCase();
+    };
+    const styles = readDashboardStyles();
+    const applicationLight = baseScope(styles);
+    const applicationDark = withoutComments(styles).match(/:root\[data-theme="dark"\]\s*\{([^}]+)\}/)?.[1] ?? "";
+    const packageLight = baseScope(readDesignSystemPackageFile("tokens/colors.css"));
+    const packageDark = baseScope(readDesignSystemPackageFile("tokens/colors-dark.css"));
+    const pairs = [
+      ["--ws-page-bg", "--bg"], ["--ws-surface", "--bg-light"],
+      ["--ws-surface-subtle", "--bg-medium"], ["--ws-surface-raised", "--card-surface-raised"],
+      ["--ws-border", "--border"], ["--ws-border-hover", "--border-hover"],
+      ["--ws-border-strong", "--border-strong"], ["--ws-row-border", "--border-divider"],
+      ["--ws-text", "--text-primary"], ["--ws-text-secondary", "--text-secondary"],
+      ["--ws-text-muted", "--text-muted"], ["--ws-accent", "--accent"],
+      ["--ws-rail-active", "--selected-surface"], ["--brand-axis", "--brand-axis"],
+      ["--ink-inverse", "--ink-inverse"], ["--brand-field", "--brand-field"],
+      ["--focus", "--focus"], ["--selected", "--selected"],
+      ["--selected-surface", "--selected-surface"], ["--link", "--link"],
+      ["--link-hover", "--link-hover"], ["--pending", "--pending"],
+      ["--neutral", "--neutral"], ["--missing", "--missing"]
+    ];
+    const hslPairs = [
+      ["--background", "--bg"], ["--foreground", "--text-primary"],
+      ["--primary", "--brand-axis"], ["--primary-foreground", "--ink-inverse"],
+      ["--accent", "--accent"], ["--accent-foreground", "--text-on-accent"],
+      ["--sidebar-primary", "--selected"], ["--ring", "--focus"]
+    ];
+    for (const [theme, application, source] of [
+      ["light", applicationLight, packageLight], ["dark", applicationDark, packageDark]
+    ]) {
+      for (const [appToken, sourceToken] of pairs) {
+        // Dark-only sheets inherit unmodified values from the package's light base.
+        const upstream = source.includes(`${sourceToken}:`) ? source : packageLight;
+        expect(declared(application, appToken), `${theme} ${appToken}`).toBe(declared(upstream, sourceToken));
+      }
+      for (const [appToken, sourceToken] of hslPairs) {
+        expect(hslTokenHex(application, appToken), `${theme} HSL ${appToken}`).toBe(declared(source, sourceToken));
+      }
+    }
+  });
+
+  it("adopts the 4.3 chip, control and surface radii while keeping surfaces flat", () => {
     const styles = readDashboardStyles();
 
-    // Concrete: one tight 2px corner across chips/controls/cards; the named
+    // 4.3: 2px chips, 4px controls/cards; the named
     // scale tops out at 6px (0.375rem) for large sheets only.
-    expect(styles).toContain("--radius: 0.125rem");
+    expect(styles).toContain("--radius: 0.25rem");
     expect(styles).toContain("--radius-xl: 0.375rem");
-    expect(styles).toContain("--radius-lg: 0.25rem");
-    expect(styles).toContain("--radius-md: 0.1875rem");
+    expect(styles).toContain("--radius-lg: 0.375rem");
+    expect(styles).toContain("--radius-md: 0.25rem");
     expect(styles).toContain("--radius-sm: 0.125rem");
     expect(styles).toContain("--radius-xs: 0.125rem");
     expect(styles).toContain("--radius-chip: 2px");
-    expect(styles).toContain("--radius-button: 2px");
-    expect(styles).toContain("--radius-card: 2px");
+    expect(styles).toContain("--radius-button: 4px");
+    expect(styles).toContain("--radius-card: 4px");
     expect(styles).toContain("--radius-checkbox: 2px");
 
     // Flat by mandate: the card/panel shadow tokens resolve to none; borders
@@ -341,7 +401,7 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--ws-shadow: none");
     expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
     expect(styles).toContain("--shadow-panel: var(--ws-shadow)");
-    expect(styles).toContain("--shadow-menu: 0 2px 6px rgba(0, 0, 0, 0.18)");
+    expect(styles).toContain("--shadow-menu: 0 2px 8px rgba(17, 23, 29, 0.16)");
     expect(styles).toContain("--shadow-float: var(--shadow-menu)");
     expect(styles).not.toContain("3px 3px 0 rgba(0, 0, 0, 0.72)");
   });
@@ -356,7 +416,7 @@ describe("dashboard design-system contract", () => {
   it("uses the high-contrast focus token for translucent primary focus rings", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("--cyan-focus: var(--ws-accent)");
+    expect(styles).toContain("--cyan-focus: var(--interaction-focus)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
   });
@@ -411,14 +471,14 @@ describe("dashboard design-system contract", () => {
     const tailwindConfig = readTailwindConfig();
 
     // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
-    expect(styles).toContain("--sidebar: 42 20% 90%");
-    expect(styles).toContain("--sidebar-foreground: 216 6% 33%");
-    expect(styles).toContain("--sidebar-primary: 16 51% 44%");
-    expect(styles).toContain("--sidebar-border: 50 10% 88%");
-    expect(styles).toContain("--sidebar-ring: 16 51% 44%");
+    expect(hslTokenHex(styles, "--sidebar")).toBe("#EBE8E1");
+    expect(hslTokenHex(styles, "--sidebar-foreground")).toBe("#535C65");
+    expect(hslTokenHex(styles, "--sidebar-primary")).toBe("#496C8F");
+    expect(hslTokenHex(styles, "--sidebar-border")).toBe("#D2CDC3");
+    expect(hslTokenHex(styles, "--sidebar-ring")).toBe("#2D6FB3");
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
-    expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
+    expect(navStyles).toContain("--mds-nav-rail-accent: var(--interaction-selected)");
     // The fallback mirrors --ws-rail-active (#E7EDF2); it previously quoted --accent-ghost
     // (#F4E7E0), a different token.
     expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #E7EDF2))");
@@ -429,16 +489,16 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("\"hsl(var(--sidebar-border) / <alpha-value>)\"");
   });
 
-  it("exposes chart-1…5 tokens aligned with the Programmed Institutionalism semantic palette", () => {
+  it("exposes chart-1…5 observation roles separately from financial status hues", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // terracotta #C56343 · forest #2E7655 · brick #B54B42 · ochre #986717 · slate #8C918F
-    expect(styles).toContain("--chart-1: 16 51% 44%");
-    expect(styles).toContain("--chart-2: 146 36% 35%");
-    expect(styles).toContain("--chart-3: 4 47% 45%");
-    expect(styles).toContain("--chart-4: 37 77% 31%");
-    expect(styles).toContain("--chart-5: 40 5% 47%");
+    // Observed/derived traces use ink and slate; gain/loss remain explicit semantic roles.
+    expect(hslTokenHex(styles, "--chart-1")).toBe("#29323A");
+    expect(hslTokenHex(styles, "--chart-2")).toBe("#5D7286");
+    expect(hslTokenHex(styles, "--chart-3")).toBe("#7890A4");
+    expect(hslTokenHex(styles, "--chart-4")).toBe("#2E4B6E");
+    expect(hslTokenHex(styles, "--chart-5")).toBe("#8C918F");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("chart: {");
@@ -469,7 +529,7 @@ describe("dashboard design-system contract", () => {
 
     // Environment modes derive from the semantic palette (Live·Paper·Fixture).
     expect(styles).toContain("--mode-live: var(--red)");
-    expect(styles).toContain("--mode-paper: var(--ws-accent)");
+    expect(styles).toContain("--mode-paper: var(--brand-field)");
     expect(styles).toContain("--mode-fixture: var(--orange)");
   });
 
@@ -481,7 +541,7 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--severity-review-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
@@ -490,9 +550,9 @@ describe("dashboard design-system contract", () => {
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
     expect(styles).toContain("--state-live-fg: var(--red-dim)");
-    expect(styles).toContain("--state-paper-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--state-paper-fg: var(--brand-field-dim)");
     expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
-    expect(styles).toContain("--state-pending-fg: var(--purple-dim)");
+    expect(styles).toContain("--state-pending-fg: var(--pending-dim)");
     expect(styles).toContain(
       "--state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent)"
     );
@@ -512,16 +572,17 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--ws-accent: #D88466");
 
     // The forced-light opt-out re-asserts the warm-paper light canvas.
-    expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(2);
+    expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(3);
   });
 
-  it("uses Segoe UI as the primary sans font and Cascadia Mono with JetBrains fallback for mono", () => {
+  it("uses the canonical self-hosted IBM Plex font families through semantic stacks", () => {
     const tailwindConfig = readTailwindConfig();
-
-    expect(tailwindConfig).toContain("\"Segoe UI Variable Text\"");
-    expect(tailwindConfig).toContain("\"Segoe UI Variable Display\"");
-    expect(tailwindConfig).toContain("\"Cascadia Mono\"");
-    expect(tailwindConfig).toContain("\"JetBrains Mono\"");
+    const styles = readDashboardStyles();
+    expect(tailwindConfig).toContain('"var(--font-body)"');
+    expect(tailwindConfig).toContain('"var(--font-display)"');
+    expect(tailwindConfig).toContain('"var(--font-data)"');
+    expect(styles).toContain('--font-body: "IBM Plex Sans"');
+    expect(styles).toContain('--font-data: "IBM Plex Mono"');
   });
 
   it("ends every Tailwind font stack in a generic family so missing faces never fall back to serif", () => {
@@ -541,17 +602,15 @@ describe("dashboard design-system contract", () => {
     expect(entryStyles.match(/@config\s+"/g)).toHaveLength(1);
   });
 
-  it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {
+  it("loads the canonical local font closure without external font requests", () => {
     const styles = readDashboardStyles();
-
-    // Operator workstation must render offline / under strict CSP: no external
-    // font fetch. Monospace resolves via the local Cascadia @font-face plus the
-    // system ui-monospace stack (JetBrains Mono only if locally installed).
-    expect(styles).not.toContain("googleapis.com");
-    expect(styles).not.toMatch(/@import\s+url\(\s*["']?https?:/i);
-    expect(styles).toContain("font-family: \"Segoe UI Variable Display\"");
-    expect(styles).toContain("font-family: \"Segoe UI Variable Text\"");
-    expect(styles).toContain("font-family: \"Cascadia Mono\"");
+    const fonts = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/fonts.css");
+    expect(fonts).toBe(readDesignSystemPackageFile("tokens/fonts.css"));
+    expect(readDashboardEntry()).toContain('import "@/design-system/fonts.css";');
+    expect(fonts).not.toMatch(/(?:url\(|@import)[^;]*https?:/i);
+    expect(fonts).toContain('font-family: "IBM Plex Sans"');
+    expect(fonts).toContain('font-family: "IBM Plex Mono"');
+    expect(styles).not.toMatch(/@font-face/);
   });
 
   it("keeps the reference workbench preview aligned with the schedule evidence pattern", () => {

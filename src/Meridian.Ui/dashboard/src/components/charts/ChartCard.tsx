@@ -31,7 +31,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
     <div
       style={{
         background: "var(--card-surface, var(--panel, #F8F7F3))",
-        border: "1px solid var(--border, #D2CDC3)",
+        border: "1px solid var(--border-color, #D2CDC3)",
         borderRadius: "var(--radius-card, 2px)",
         display: "flex",
         flexDirection: "column",
@@ -45,7 +45,7 @@ export function ChartCard({ title, subtitle, readout, actions, height = 320, chi
           alignItems: "center",
           gap: 12,
           padding: "12px 14px",
-          borderBottom: "1px solid var(--border, #D2CDC3)"
+          borderBottom: "1px solid var(--border-color, #D2CDC3)"
         }}
       >
         <div style={{ minWidth: 0 }}>

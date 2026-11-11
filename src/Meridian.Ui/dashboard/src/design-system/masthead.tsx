@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
 import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
@@ -42,6 +42,7 @@ export function DesignSystemMasthead({
   session,
   actions
 }: DesignSystemMastheadProps) {
+  const commandDescriptionId = useId();
   return (
     <header
       className="workstation-masthead mds-masthead ws-masthead"
@@ -50,7 +51,7 @@ export function DesignSystemMasthead({
       <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button
           type="button"
-          className="workstation-nav-toggle mds-masthead__nav-toggle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="workstation-nav-toggle mds-masthead__nav-toggle focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
           aria-label="Open workspace navigation"
           aria-expanded={navOpen}
           aria-haspopup="dialog"
@@ -71,9 +72,10 @@ export function DesignSystemMasthead({
 
       <button
         type="button"
-        className="workstation-search mds-masthead__search ws-search focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+        className="workstation-search mds-masthead__search ws-search focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
         onClick={onOpenCommandPalette}
-        aria-label={commandTrigger.label}
+        aria-label={commandTrigger.placeholder || commandTrigger.label}
+        aria-describedby={commandDescriptionId}
         aria-controls={commandTrigger.controlsId}
         aria-expanded={commandTrigger.expanded}
         aria-haspopup={commandTrigger.hasPopup}
@@ -82,6 +84,9 @@ export function DesignSystemMasthead({
         <span className="workstation-search-placeholder ws-search__txt">{commandTrigger.placeholder}</span>
         <span className="workstation-search-kbd ws-kbd" aria-hidden="true">{commandTrigger.shortcutLabel}</span>
       </button>
+      <span id={commandDescriptionId} className="sr-only">
+        {commandTrigger.label}. Keyboard shortcut: {commandTrigger.shortcutLabel}.
+      </span>
 
       <DesignSystemTrustStrip viewModel={trustStrip} />
 

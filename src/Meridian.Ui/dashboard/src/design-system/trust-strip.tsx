@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { useId } from "react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
 import { DesignSystemBadge } from "@/design-system/badge";
@@ -13,6 +14,8 @@ import { cn } from "@/lib/utils";
  */
 export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
   const { environment } = viewModel;
+  const summaryDescriptionId = useId();
+  const summaryVisibleLabel = [environment.label, environment.dataLabel].filter(Boolean).join(" ");
   const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
@@ -23,8 +26,9 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
       aria-atomic="true"
       data-design-system-component="Status"
     >
+      <span id={summaryDescriptionId} className="sr-only">{summaryAriaLabel}</span>
       <details className="workstation-trust-details">
-        <summary className="workstation-trust-summary" aria-label={summaryAriaLabel}>
+        <summary className="workstation-trust-summary" aria-label={summaryVisibleLabel} aria-describedby={summaryDescriptionId}>
           <DesignSystemBadge
             className="workstation-trust-environment"
             variant={environment.variant}

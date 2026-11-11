@@ -8,10 +8,10 @@ import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
 .mds-metric{background:var(--card-surface-raised,#FCFBF8);
-  border:1px solid var(--border,#D2CDC3);border-left-width:3px;
+  border:1px solid var(--border-color,#D2CDC3);border-left-width:3px;
   border-radius:var(--radius-card,2px);padding:18px;}
 .mds-metric--neutral{border-left-color:var(--border-strong,#AAA49A);}
-.mds-metric--info{border-left-color:var(--accent,#C56343);}
+.mds-metric--info{border-left-color:var(--semantic-info,#2F648A);}
 .mds-metric--success{border-left-color:var(--severity-ready-fg,#2C5C40);}
 .mds-metric--warning{border-left-color:var(--severity-action-fg,#68450E);}
 .mds-metric--danger{border-left-color:var(--severity-blocked-fg,#7E332D);}

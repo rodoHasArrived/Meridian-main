@@ -116,14 +116,14 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2 text-xs">
                   {line.evidenceHref ? (
-                    <Link className="text-primary underline-offset-2 hover:underline" to={line.evidenceHref}>
+                    <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={line.evidenceHref}>
                       {line.evidenceLabel}
                     </Link>
                   ) : (
                     <span className="text-muted-foreground">{line.evidenceLabel}</span>
                   )}
                   {line.approvalHref ? (
-                    <Link className="text-primary underline-offset-2 hover:underline" to={line.approvalHref}>
+                    <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={line.approvalHref}>
                       Approval evidence
                     </Link>
                   ) : null}
@@ -149,11 +149,11 @@ export function AccountingTrialBalanceSelectedDetailPanel({
                 <div className="text-sm font-semibold text-foreground">
                   {document.href ? (
                     document.href.startsWith("/accounting") ? (
-                      <Link className="text-primary underline-offset-2 hover:underline" to={document.href} aria-label={document.ariaLabel}>
+                      <Link className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" to={document.href} aria-label={document.ariaLabel}>
                         {document.label}
                       </Link>
                     ) : (
-                      <a className="text-primary underline-offset-2 hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
+                      <a className="text-[var(--interaction-link)] underline-offset-2 hover:text-[var(--interaction-link-hover)] hover:underline" href={document.href} target="_blank" rel="noreferrer" aria-label={document.ariaLabel}>
                         {document.label}
                       </a>
                     )
