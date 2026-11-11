@@ -1,5 +1,5 @@
-using System.Security.Cryptography;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 
 namespace Meridian.Ledger;
@@ -32,6 +32,6 @@ public static class PrivateCapitalCallPlanHash
                 x.UncalledAfter
             })
         };
-        return Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(canonical))).ToLowerInvariant();
+        return Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(canonical));
     }
 }

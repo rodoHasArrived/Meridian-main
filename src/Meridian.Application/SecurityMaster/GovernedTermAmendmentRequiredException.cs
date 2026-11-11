@@ -1,8 +1,9 @@
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
-/// A direct (operator) term amendment refused because
-/// <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on. The edit must be
+/// A direct (operator) term amendment refused because governed term amendments are required:
+/// <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on, or the
+/// Institutional governance profile is in force. The edit must be
 /// staged through the governed workbench (Draft → Submitted → Approved → Published) instead.
 /// Raised by <see cref="SecurityMasterService"/> itself, so every in-process caller of
 /// <c>ISecurityMasterService</c> sees the same refusal the HTTP routes and the WPF editor show.

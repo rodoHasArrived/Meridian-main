@@ -120,6 +120,20 @@ public sealed class PrivateCapitalLifecycleServiceTests
     }
 
     [Fact]
+    public void PlanHash_PreservesRetainedVersionOneDigest()
+    {
+        var call = new PrivateCapitalCallDto(" CALL-1 ", Scope with { TenantId = " TENANT-A ", Currency = " usd " },
+            PeriodId, Notice, Notice.AddDays(14), 100_000m, "Investment funding", "",
+            [
+                new("call-1:c-2", "c-2", 1, "lp-c-2", "capital-c-2", 40_000m, 400_000m, 360_000m),
+                new("call-1:c-1", "c-1", 1, "lp-c-1", "capital-c-1", 60_000m, 600_000m, 540_000m)
+            ], "operator", DateTimeOffset.UnixEpoch);
+
+        // This frozen version-one digest predates migration to the shared hashing primitive.
+        PrivateCapitalCallPlanHash.Compute(call).Should().Be("36eddff9962556cc7c54655b52ec12fcb51e5091b4827fff634a29586dad9511");
+    }
+
+    [Fact]
     public async Task PlanHash_BindsTermsAndAllocationsButExcludesClockAndPostedObservations()
     {
         var store = Store([Commitment("c-1", 600_000m), Commitment("c-2", 400_000m)]);

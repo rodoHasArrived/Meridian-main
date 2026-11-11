@@ -115,6 +115,28 @@ public sealed class ConfigJsonSchemaGeneratorTests
     }
 
     [Fact]
+    public void GenerateSchema_SecurityMasterWorkbenchDeclaresTheGovernanceProfileAndItsThreeRequirements()
+    {
+        var properties = _generator.GenerateSchema()["$defs"]!["SecurityMasterWorkbenchOptions"]!["properties"]!.AsObject();
+
+        var profile = properties["GovernanceProfile"]!.AsObject();
+        profile["type"]!.GetValue<string>().Should().Be("string");
+        profile["enum"]!.AsArray().Select(static node => node!.GetValue<string>())
+            .Should().Equal("Standard", "Institutional");
+
+        foreach (var requirement in new[]
+                 {
+                     "RequireGovernedTermAmendments",
+                     "RequireIndependentReviewer",
+                     "RequireIndependentProfileApprover"
+                 })
+        {
+            properties.ContainsKey(requirement).Should().BeTrue($"{requirement} is a governance setting");
+            properties[requirement]!["type"]!.GetValue<string>().Should().Be("boolean");
+        }
+    }
+
+    [Fact]
     public void WriteSchema_WritesSchemaToDisk()
     {
         var tempPath = Path.Combine(Path.GetTempPath(), $"appsettings-schema-{Guid.NewGuid():N}.json");

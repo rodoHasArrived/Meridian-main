@@ -2075,6 +2075,10 @@ Statement run detail, capital accounts and the governed-approvals poll ignore a 
 arrives after a newer request was issued. Capital accounts shows its loading banner, never the
 previous scope's rows, while a changed query loads.
 
+## Security Master declared exercise outcome
+
+`SecurityMasterScheduleSummary` and `SecurityMasterScheduleBook` (`types/workstation-6.ts`, `types/workstation-7.ts`) carry an optional `declaredExercise`: the typed outcome of a record's declared call and put schedule (`status` of `Resolved` or `Blocked`, `asOf`, `blockers` with a `code` and `reason`). It is absent for a record that declares no schedule. No screen reads it yet; the passport statuses the screens already render are what change when a schedule is blocked.
+
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in

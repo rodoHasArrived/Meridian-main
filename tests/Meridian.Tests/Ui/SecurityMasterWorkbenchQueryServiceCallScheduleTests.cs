@@ -40,7 +40,7 @@ public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
         """{"callDate":"2028-01-01","callSchedule":[{"callDate":"2027-01-01","callPrice":102,"priceBasis":"PercentOfPar","priceType":"Fixed"},{"callDate":"2029-01-01","callPrice":100}],"capRate":null,"couponRate":4.25,"couponType":"Fixed","dayCount":"30/360","floatingIndex":null,"floorRate":null,"inflationBaseIndexValue":null,"inflationIndex":null,"inflationIndexRatio":null,"isCallable":true,"issueDate":"2024-01-01","issuerName":"ACME Corp","legalFinalMaturity":null,"mandatoryPutDate":null,"maturity":"2030-01-01","par":1000,"paymentFrequency":"SemiAnnual","preRefundDate":null,"principalSchedule":[],"putSchedule":[{"putDate":"2028-07-01","putPrice":100}],"schemaVersion":1,"termsFormat":"flat","assetClassTermsVersion":3,"seniority":"Senior","spreadBps":null,"stepSchedule":[],"subclass":"Corporate"}""";
 
     [Fact]
-    public async Task GetTrustSnapshotAsync_StructuredCreditDeclaringCallAndPutSchedules_AddsNoCallEventAndKeepsTheMaturityAsNextLifecycleDate()
+    public async Task GetTrustSnapshotAsync_StructuredCreditDeclaringEntriesWithoutAnExerciseStyle_IsBlocked_AndShowsNoCallOrPutRow()
     {
         var queryService = new StoredRowSecurityMasterQueryService(Projection("StructuredCredit", DeclaringStructuredCredit));
         var economic = (await queryService.GetEconomicDefinitionByIdAsync(SecurityId))!;
@@ -59,20 +59,33 @@ public sealed class SecurityMasterWorkbenchQueryServiceCallScheduleTests
         economic.EconomicTerms.TryGetProperty("structuredProduct", out var structuredProduct).Should().BeTrue();
         structuredProduct.ValueKind.Should().Be(JsonValueKind.Object);
 
-        var snapshot = await CreateService(queryService).GetTrustSnapshotAsync(SecurityId, fundProfileId: null);
+        var snapshot = await SecurityMasterWorkbenchScheduleBookHarness
+            .CreateService(queryService, now: new DateTimeOffset(2026, 12, 1, 0, 0, 0, TimeSpan.Zero))
+            .GetTrustSnapshotAsync(SecurityId, fundProfileId: null);
 
+        // Until increment 8f a StructuredCredit kept the scalar read and showed no call row because it
+        // has no scalar. It is now a declaring record. These entries state no exercise style, which the
+        // retained-declaration rules shared with Bond refuse, so the schedule is blocked rather than guessed at.
         snapshot.Should().NotBeNull();
         snapshot!.ScheduleSummary.Should().NotBeNull();
         snapshot.ScheduleSummary!.SupportsCashflowSchedule.Should().BeTrue("structuredProduct already supports it");
         snapshot.ScheduleSummary.NextLifecycleDate.Should().Be(
-            new DateOnly(2031, 6, 15), "with no corporate action, the maturity stays the next lifecycle date");
+            new DateOnly(2031, 6, 15), "a blocked declared schedule offers no option date, so the maturity stays the next lifecycle date");
         snapshot.ScheduleBook.Should().NotBeNull();
         snapshot.ScheduleBook!.NextLifecycleDate.Should().Be(new DateOnly(2031, 6, 15));
         snapshot.ScheduleBook.Events.Should().NotContain(
-            item => item.EventType == "Call", "StructuredCredit keeps the scalar read of call.firstCallDate, which a declared schedule leaves null");
-        snapshot.ScheduleBook.Summary.Should().NotContain("Declared call/put schedule", "only Bond rows are read from the declared schedule");
+            static item => item.EventType.Contains("Call", StringComparison.Ordinal) || item.EventType.Contains("Put", StringComparison.Ordinal),
+            "a blocked declared schedule shows no option row");
         snapshot.ScheduleBook.Events.Should().ContainSingle(item => item.EventType == "Maturity")
             .Which.EffectiveDate.Should().Be(new DateOnly(2031, 6, 15));
+
+        var outcome = snapshot.ScheduleBook.DeclaredExercise;
+        outcome.Should().NotBeNull("a StructuredCredit that declares a schedule its stamp decodes is a declaring record");
+        outcome!.Status.Should().Be(Meridian.Contracts.Workstation.SecurityMasterDeclaredExerciseStatus.Blocked);
+        var blocker = outcome.Blockers.Should().ContainSingle().Subject;
+        blocker.Code.Should().Be("ExerciseScheduleRefused");
+        blocker.Reason.Should().Contain("exerciseStyle must be explicitly stated");
+        snapshot.ScheduleBook.Summary.Should().Contain("Declared call/put schedule is blocked (ExerciseScheduleRefused)");
     }
 
     [Fact]
