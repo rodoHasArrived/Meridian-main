@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Core.Exceptions;
@@ -45,14 +46,15 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
+    /// <summary>The request budget; capabilities sharing a vendor quota can override it.</summary>
+    protected virtual RateLimiter RequestRateLimiter => RateLimiter;
     protected readonly ILogger Log;
     protected readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
     private readonly HttpResponseHandler _responseHandler;
     private readonly object _rateLimitSync = new();
     private readonly TimeProvider _timeProvider;
+    private readonly ConditionalWeakTable<HttpResponseMessage, object> _responsesWithCooldown = new();
 
-    private int _requestCount;
-    private DateTimeOffset _windowStart;
     private DateTimeOffset? _rateLimitResetsAt;
     private bool _isRateLimited;
     protected bool Disposed;
@@ -194,14 +196,13 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 retryBaseDelay: TimeSpan.FromSeconds(1),
                 circuitBreakerFailureThreshold: 5,
                 circuitBreakerDuration: TimeSpan.FromSeconds(30),
-                requestTimeout: TimeSpan.FromSeconds(30))
+                requestTimeout: TimeSpan.FromSeconds(30),
+                timeProvider: _timeProvider)
             : ResiliencePipeline<HttpResponseMessage>.Empty;
 
         // Initialize centralized HTTP response handler (Name property must be available).
         // Name is abstract, so derived class must implement it before this runs.
         _responseHandler = new HttpResponseHandler(GetType().Name, Log);
-
-        _windowStart = _timeProvider.GetUtcNow();
     }
 
 
@@ -229,13 +230,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     protected async Task WaitForRateLimitSlotAsync(CancellationToken ct)
     {
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-        lock (_rateLimitSync)
-        {
-            var now = _timeProvider.GetUtcNow();
-            ResetRequestWindowIfExpired(now);
-            _requestCount++;
-        }
+        await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -243,12 +238,13 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     protected void RecordRateLimitHit(TimeSpan? retryAfter)
     {
+        var duration = retryAfter is { } value ? (value > TimeSpan.Zero ? value : TimeSpan.Zero) : RateLimitWindow;
+        RequestRateLimiter.ApplyCooldown(duration);
         DateTimeOffset resetAt;
         lock (_rateLimitSync)
         {
             _isRateLimited = true;
-            var duration = retryAfter is { } value && value > TimeSpan.Zero ? value : RateLimitWindow;
-            resetAt = _timeProvider.GetUtcNow() + duration;
+            resetAt = RequestRateLimiter.GetCooldownUntil() ?? _timeProvider.GetUtcNow();
             _rateLimitResetsAt = resetAt;
         }
 
@@ -289,7 +285,12 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
     private RateLimitInfo GetRateLimitInfo(DateTimeOffset observedAt)
     {
-        ResetRequestWindowIfExpired(observedAt);
+        var usage = RequestRateLimiter.GetStatus();
+        if (RequestRateLimiter.GetCooldownUntil() is { } sharedReset && sharedReset > observedAt)
+        {
+            _isRateLimited = true;
+            _rateLimitResetsAt = sharedReset;
+        }
         if (_isRateLimited && _rateLimitResetsAt is { } resetAt && observedAt >= resetAt)
         {
             _isRateLimited = false;
@@ -298,25 +299,14 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         return new RateLimitInfo(
             Name,
-            _requestCount,
-            MaxRequestsPerWindow,
+            usage.RequestsInWindow,
+            usage.MaxRequests,
             RateLimitWindow,
             _rateLimitResetsAt,
             _isRateLimited,
             _rateLimitResetsAt.HasValue ? _rateLimitResetsAt.Value - observedAt : null
         );
     }
-
-    private void ResetRequestWindowIfExpired(DateTimeOffset observedAt)
-    {
-        if (observedAt - _windowStart <= RateLimitWindow)
-            return;
-
-        _requestCount = 0;
-        _windowStart = observedAt;
-    }
-
-
 
     /// <summary>
     /// Execute an HTTP GET request with rate limiting, resilience, and standard error handling.
@@ -329,16 +319,27 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task<HttpResponseMessage> ExecuteGetAsync(string url, string symbol, string dataType, CancellationToken ct)
     {
         ThrowIfDisposed();
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
-        // Execute with resilience pipeline (retry, circuit breaker)
-        var response = await ResiliencePipeline.ExecuteAsync(
-            async token => await Http.GetAsync(url, token).ConfigureAwait(false),
-            ct).ConfigureAwait(false);
-
-        return response;
+        // This pipeline is the sole retry owner. Reserve quota inside its callback so
+        // every send, including retries, consumes a slot. Factory retry handlers opt out.
+        return await ResiliencePipeline.ExecuteAsync(async token =>
+        {
+            await WaitForRateLimitSlotAsync(token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            var response = await Http.SendAsync(request, token).ConfigureAwait(false);
+            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+                (!response.IsSuccessStatusCode && retryAfter.HasValue))
+            {
+                RecordRateLimitHit(retryAfter ?? TimeSpan.FromSeconds(60));
+                _responsesWithCooldown.Add(response, new object());
+                RaiseRateLimitHit(GetRateLimitInfo());
+            }
+            return response;
+        }, ct).ConfigureAwait(false);
     }
 
     private static string RedactSensitiveQueryParameters(string url)
@@ -448,8 +449,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             dataType,
             info =>
             {
-                RecordRateLimitHit(info.RetryAfter);
-                RaiseRateLimitHit(GetRateLimitInfo());
+                if (!_responsesWithCooldown.TryGetValue(response, out _))
+                {
+                    RecordRateLimitHit(info.RetryAfter);
+                    RaiseRateLimitHit(GetRateLimitInfo());
+                }
             },
             ct).ConfigureAwait(false);
 

@@ -147,7 +147,8 @@ public static class HttpResiliencePolicy
         TimeSpan? retryBaseDelay = null,
         int circuitBreakerFailureThreshold = 5,
         TimeSpan? circuitBreakerDuration = null,
-        TimeSpan? requestTimeout = null)
+        TimeSpan? requestTimeout = null,
+        TimeProvider? timeProvider = null)
     {
         retryBaseDelay ??= TimeSpan.FromSeconds(1);
         circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
@@ -155,7 +156,7 @@ public static class HttpResiliencePolicy
 
         var logger = LoggingSetup.ForContext("HttpResilience");
 
-        return new ResiliencePipelineBuilder<HttpResponseMessage>()
+        return new ResiliencePipelineBuilder<HttpResponseMessage> { TimeProvider = timeProvider ?? TimeProvider.System }
             // Outermost: Total operation timeout
             .AddTimeout(new TimeoutStrategyOptions
             {
@@ -185,6 +186,14 @@ public static class HttpResiliencePolicy
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = true,
                 MaxDelay = TimeSpan.FromSeconds(30),
+                DelayGenerator = args => ValueTask.FromResult(
+                    args.Outcome.Result is { } response ? ExtractRetryAfter(response, timeProvider) : null),
+                OnRetry = args =>
+                {
+                    // Polly does not dispose outcomes it replaces with a later attempt.
+                    args.Outcome.Result?.Dispose();
+                    return ValueTask.CompletedTask;
+                },
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .Handle<HttpRequestException>()
                     .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
@@ -243,19 +252,18 @@ public static class HttpResiliencePolicy
     /// Extracts the Retry-After value from an HTTP response.
     /// Supports both seconds and HTTP-date formats.
     /// </summary>
-    public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response)
+    public static TimeSpan? ExtractRetryAfter(HttpResponseMessage response, TimeProvider? timeProvider = null)
     {
         // Try the typed header first
         if (response.Headers.RetryAfter?.Delta.HasValue == true)
         {
-            return response.Headers.RetryAfter.Delta.Value;
+            return ClampDelay(response.Headers.RetryAfter.Delta.Value);
         }
 
         if (response.Headers.RetryAfter?.Date.HasValue == true)
         {
-            var delay = response.Headers.RetryAfter.Date.Value - DateTimeOffset.UtcNow;
-            if (delay > TimeSpan.Zero)
-                return delay;
+            var delay = response.Headers.RetryAfter.Date.Value - (timeProvider ?? TimeProvider.System).GetUtcNow();
+            return ClampDelay(delay);
         }
 
         // Fall back to raw header parsing
@@ -267,21 +275,22 @@ public static class HttpResiliencePolicy
                 // Try parsing as seconds
                 if (int.TryParse(retryAfterValue, out var seconds))
                 {
-                    return TimeSpan.FromSeconds(seconds);
+                    return ClampDelay(TimeSpan.FromSeconds(seconds));
                 }
 
                 // Try parsing as HTTP date
                 if (DateTimeOffset.TryParse(retryAfterValue, out var retryDate))
                 {
-                    var delay = retryDate - DateTimeOffset.UtcNow;
-                    if (delay > TimeSpan.Zero)
-                        return delay;
+                    var delay = retryDate - (timeProvider ?? TimeProvider.System).GetUtcNow();
+                    return ClampDelay(delay);
                 }
             }
         }
 
         return null;
     }
+
+    private static TimeSpan ClampDelay(TimeSpan delay) => delay > TimeSpan.Zero ? delay : TimeSpan.Zero;
 
     /// <summary>
     /// Determines if an HTTP response represents a transient error that should trigger circuit breaker.
@@ -302,8 +311,9 @@ public static class HttpResiliencePolicy
     {
         var statusCode = (int)response.StatusCode;
         return statusCode >= 500 || // Server errors
-               statusCode == 408 || // Request Timeout
-               statusCode == 429;   // Too Many Requests (handled separately with Retry-After)
+               statusCode == 408;   // Request Timeout
+        // Throttling is returned to the caller immediately, with a shared cooldown.
+        // Provider orchestration can retry it without keeping a hidden HTTP operation alive.
     }
 }
 

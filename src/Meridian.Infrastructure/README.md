@@ -21,6 +21,16 @@ The backfill worker's connectivity handler is documented as logging only; offlin
 
 `RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
 
+Historical HTTP requests use the base provider as their retry owner. Each send attempt acquires
+capacity, including retries; the named-client retry policy yields to these requests. Throttling
+responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
+attempts. Twelve Data history, symbol search and corporate actions share the `api-requests` budget
+for the same API credential; different credentials and vendor quota groups retain separate budgets.
+Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.
+This coordinates the existing request-count limit; weighted vendor credits and daily entitlements
+are not modeled, and other provider families retain their existing capability budgets.
+These paths use synthetic regression tests; live provider compatibility remains live-untested.
+
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
@@ -163,6 +173,10 @@ and trade-update reconnects share the resolved credential snapshot and its retai
 Corporate-action adapters receive the resolved context explicitly, while legacy direct construction
 still supports environment lookup. `ProviderFactoryCredentialIsolationTests` exercises actual
 adapter construction and outbound request credentials across rotation, deletion and owner scopes.
+
+Hosted OpenFIGI resolution/search and Polygon corporate-action requests resolve the selected
+credential owner for outbound requests. Rotation takes effect on the next request; a deleted or
+incomplete selected record cannot borrow a key from configuration, environment or another owner.
 
 Tracked HTTP clients resolve circuit-breaker callbacks through their owning service provider.
 Each named breaker is a provider-local singleton, retaining state across requests and handler

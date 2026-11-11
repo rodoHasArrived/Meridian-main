@@ -1,5 +1,5 @@
-using System.Collections.Concurrent;
-using System.Threading;
+using System.Security.Cryptography;
+using System.Text;
 using Meridian.Core.Logging;
 using Serilog;
 
@@ -11,14 +11,16 @@ namespace Meridian.Infrastructure.Adapters.Core;
 public sealed class RateLimiter : IDisposable
 {
     private readonly SemaphoreSlim _semaphore = new(1, 1);
-    private readonly ConcurrentQueue<DateTimeOffset> _requestTimestamps = new();
-    private readonly object _cleanupLock = new();
+    private readonly Queue<DateTimeOffset> _requestTimestamps = new();
+    private readonly object _sync = new();
+    private readonly CancellationTokenSource _lifetime = new();
     private readonly int _maxRequests;
     private readonly TimeSpan _window;
     private readonly TimeSpan _minDelay;
     private readonly ILogger _log;
     private readonly TimeProvider _timeProvider;
     private DateTimeOffset _lastRequest = DateTimeOffset.MinValue;
+    private DateTimeOffset? _cooldownUntil;
     private bool _disposed;
 
     public RateLimiter(
@@ -39,161 +41,215 @@ public sealed class RateLimiter : IDisposable
     }
 
     /// <summary>
-    /// Wait until a request can be made within rate limits.
-    /// Returns the time waited.
+    /// Wait until a request can be made within rate limits, and charge that attempt.
+    /// Returns the time waited. Cancelled waits do not consume capacity.
     /// </summary>
     public async Task<TimeSpan> WaitForSlotAsync(CancellationToken ct = default)
     {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        var waitStart = _timeProvider.GetUtcNow();
-
-        await _semaphore.WaitAsync(ct).ConfigureAwait(false);
-        try
+        CancellationTokenSource linked;
+        lock (_sync)
         {
-            // Clean up old timestamps outside the window
-            CleanupOldTimestamps();
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            linked = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
+        }
 
-            // Check if we need to wait for rate limit window
-            while (_requestTimestamps.Count >= _maxRequests)
+        using (linked)
+        {
+            var waitStart = _timeProvider.GetUtcNow();
+            await _semaphore.WaitAsync(linked.Token).ConfigureAwait(false);
+            try
             {
-                if (_requestTimestamps.TryPeek(out var oldest))
+                while (true)
                 {
-                    var waitTime = oldest.Add(_window) - _timeProvider.GetUtcNow();
-                    if (waitTime > TimeSpan.Zero)
+                    TimeSpan wait;
+                    lock (_sync)
                     {
-                        _log.Debug("Rate limit reached, waiting {WaitMs}ms", waitTime.TotalMilliseconds);
-                        await Task.Delay(waitTime, _timeProvider, ct).ConfigureAwait(false);
+                        linked.Token.ThrowIfCancellationRequested();
+                        var now = _timeProvider.GetUtcNow();
+                        CleanupOldTimestamps(now);
+                        var next = _lastRequest == DateTimeOffset.MinValue ? now : _lastRequest + _minDelay;
+                        if (_requestTimestamps.Count >= _maxRequests && _requestTimestamps.TryPeek(out var oldest))
+                            next = Max(next, oldest + _window);
+                        if (_cooldownUntil is { } cooldown)
+                            next = Max(next, cooldown);
+                        wait = next - now;
+                        if (wait <= TimeSpan.Zero)
+                        {
+                            _requestTimestamps.Enqueue(now);
+                            _lastRequest = now;
+                            return now - waitStart;
+                        }
                     }
+
+                    _log.Debug("Rate limit reached, waiting {WaitMs}ms", wait.TotalMilliseconds);
+                    await Task.Delay(wait, _timeProvider, linked.Token).ConfigureAwait(false);
+                    // A response from another in-flight request can extend the cooldown while
+                    // this caller sleeps; recheck all constraints before charging and sending.
                 }
-                CleanupOldTimestamps();
             }
-
-            // Enforce minimum delay between requests
-            var timeSinceLastRequest = _timeProvider.GetUtcNow() - _lastRequest;
-            if (timeSinceLastRequest < _minDelay)
+            finally
             {
-                var delayNeeded = _minDelay - timeSinceLastRequest;
-                _log.Debug("Enforcing min delay, waiting {WaitMs}ms", delayNeeded.TotalMilliseconds);
-                await Task.Delay(delayNeeded, _timeProvider, ct).ConfigureAwait(false);
+                _semaphore.Release();
             }
+        }
+    }
 
-            // Record this request
+    /// <summary>Extend the shared provider cooldown without shortening an existing one.</summary>
+    public void ApplyCooldown(TimeSpan duration)
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (duration <= TimeSpan.Zero)
+                return;
+            var until = _timeProvider.GetUtcNow() + duration;
+            if (_cooldownUntil is null || until > _cooldownUntil)
+                _cooldownUntil = until;
+        }
+    }
+
+    public DateTimeOffset? GetCooldownUntil()
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _cooldownUntil > _timeProvider.GetUtcNow() ? _cooldownUntil : null;
+        }
+    }
+
+    /// <summary>Record a request without waiting (for tracking external calls).</summary>
+    public void RecordRequest()
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
             var now = _timeProvider.GetUtcNow();
             _requestTimestamps.Enqueue(now);
             _lastRequest = now;
-
-            return now - waitStart;
-        }
-        finally
-        {
-            _semaphore.Release();
         }
     }
 
-    /// <summary>
-    /// Record a request without waiting (for tracking external calls).
-    /// </summary>
-    public void RecordRequest()
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-        var now = _timeProvider.GetUtcNow();
-        _requestTimestamps.Enqueue(now);
-        _lastRequest = now;
-    }
-
-    /// <summary>
-    /// Get current usage statistics.
-    /// </summary>
+    /// <summary>Get current usage statistics, including a provider-imposed cooldown.</summary>
     public (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining) GetStatus()
     {
-        CleanupOldTimestamps();
-        var remaining = TimeSpan.Zero;
-
-        if (_requestTimestamps.TryPeek(out var oldest))
+        lock (_sync)
         {
-            remaining = oldest.Add(_window) - _timeProvider.GetUtcNow();
-            if (remaining < TimeSpan.Zero)
-                remaining = TimeSpan.Zero;
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            var now = _timeProvider.GetUtcNow();
+            CleanupOldTimestamps(now);
+            var reset = now;
+            if (_requestTimestamps.TryPeek(out var oldest))
+                reset = Max(reset, oldest + _window);
+            if (_cooldownUntil is { } cooldown)
+                reset = Max(reset, cooldown);
+            return (_requestTimestamps.Count, _maxRequests, reset - now);
         }
-
-        return (_requestTimestamps.Count, _maxRequests, remaining);
     }
 
-    private void CleanupOldTimestamps()
+    private void CleanupOldTimestamps(DateTimeOffset now)
     {
-        // Peek-then-dequeue is two operations: without a lock, two callers can both peek the
-        // same expired entry and the second dequeue removes a fresh timestamp instead,
-        // undercounting the window and letting a burst exceed the provider's limit.
-        lock (_cleanupLock)
-        {
-            var cutoff = _timeProvider.GetUtcNow() - _window;
-            while (_requestTimestamps.TryPeek(out var oldest) && oldest < cutoff)
-            {
-                _requestTimestamps.TryDequeue(out _);
-            }
-        }
+        var cutoff = now - _window;
+        while (_requestTimestamps.TryPeek(out var oldest) && oldest <= cutoff)
+            _requestTimestamps.Dequeue();
     }
+
+    private static DateTimeOffset Max(DateTimeOffset left, DateTimeOffset right) => left > right ? left : right;
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-        _semaphore.Dispose();
+        lock (_sync)
+        {
+            if (_disposed)
+                return;
+            _disposed = true;
+        }
+        _lifetime.Cancel();
+        // Waiters own the semaphore until their finally blocks run. Do not dispose it
+        // under them; it has no unmanaged wait handle in this async-only implementation.
     }
 }
 
-/// <summary>
-/// Manages rate limiters for multiple providers.
-/// </summary>
+/// <summary>Manages request budgets shared across provider capabilities.</summary>
 public sealed class RateLimiterRegistry : IDisposable
 {
-    private readonly ConcurrentDictionary<string, RateLimiter> _limiters = new();
+    internal static RateLimiterRegistry Shared { get; } = new();
+    internal TimeProvider TimeProvider => _timeProvider;
+
+    private readonly Dictionary<string, (RateLimiter Limiter, int Maximum, TimeSpan Window, TimeSpan Delay)> _limiters = new(StringComparer.Ordinal);
+    private readonly object _sync = new();
     private readonly ILogger _log;
+    private readonly TimeProvider _timeProvider;
     private bool _disposed;
 
-    public RateLimiterRegistry(ILogger? log = null)
+    public RateLimiterRegistry(ILogger? log = null, TimeProvider? timeProvider = null)
     {
         _log = log ?? LoggingSetup.ForContext<RateLimiterRegistry>();
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
-    /// <summary>
-    /// Get or create a rate limiter for a provider.
-    /// </summary>
+    /// <summary>Get or create a legacy provider-wide limiter.</summary>
     public RateLimiter GetOrCreate(string providerName, int maxRequests, TimeSpan window, TimeSpan? minDelay = null)
-    {
-        ObjectDisposedException.ThrowIf(_disposed, this);
-
-        return _limiters.GetOrAdd(providerName, _ =>
-        {
-            _log.Information("Creating rate limiter for {Provider}: {MaxReq} requests per {Window}",
-                providerName, maxRequests, window);
-            return new RateLimiter(maxRequests, window, minDelay, _log);
-        });
-    }
+        => GetOrCreateCore(providerName, maxRequests, window, minDelay ?? TimeSpan.Zero, enforceConfiguration: false);
 
     /// <summary>
-    /// Get status for all registered rate limiters.
+    /// Get the vendor quota shared by capabilities using the same credential. Credential
+    /// values are hashed before becoming registry keys and never appear in status or logs.
+    /// The registry owns these limiters; individual providers must not dispose them.
     /// </summary>
+    public RateLimiter GetOrCreate(
+        string providerName,
+        string credential,
+        string quotaGroup,
+        int maxRequests,
+        TimeSpan window,
+        TimeSpan? minDelay = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerName);
+        ArgumentException.ThrowIfNullOrWhiteSpace(credential);
+        ArgumentException.ThrowIfNullOrWhiteSpace(quotaGroup);
+        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(credential)));
+        var key = $"{providerName.Trim().ToLowerInvariant()}:{quotaGroup.Trim().ToLowerInvariant()}:{fingerprint}";
+        return GetOrCreateCore(key, maxRequests, window, minDelay ?? TimeSpan.Zero, enforceConfiguration: true);
+    }
+
+    private RateLimiter GetOrCreateCore(string key, int maximum, TimeSpan window, TimeSpan delay, bool enforceConfiguration)
+    {
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            if (_limiters.TryGetValue(key, out var existing))
+            {
+                if (enforceConfiguration && (existing.Maximum != maximum || existing.Window != window || existing.Delay != delay))
+                    throw new InvalidOperationException("Capabilities sharing a vendor quota must use the same request budget configuration.");
+                return existing.Limiter;
+            }
+            var limiter = new RateLimiter(maximum, window, delay, _log, _timeProvider);
+            _limiters.Add(key, (limiter, maximum, window, delay));
+            return limiter;
+        }
+    }
+
     public IReadOnlyDictionary<string, (int RequestsInWindow, int MaxRequests, TimeSpan WindowRemaining)> GetAllStatus()
     {
-        return _limiters.ToDictionary(
-            kvp => kvp.Key,
-            kvp => kvp.Value.GetStatus()
-        );
+        lock (_sync)
+        {
+            ObjectDisposedException.ThrowIf(_disposed, this);
+            return _limiters.ToDictionary(pair => pair.Key, pair => pair.Value.Limiter.GetStatus());
+        }
     }
 
     public void Dispose()
     {
-        if (_disposed)
-            return;
-        _disposed = true;
-
-        foreach (var limiter in _limiters.Values)
+        RateLimiter[] limiters;
+        lock (_sync)
         {
-            limiter.Dispose();
+            if (_disposed)
+                return;
+            _disposed = true;
+            limiters = _limiters.Values.Select(entry => entry.Limiter).ToArray();
+            _limiters.Clear();
         }
-        _limiters.Clear();
+        foreach (var limiter in limiters)
+            limiter.Dispose();
     }
 }
