@@ -7407,6 +7407,7 @@ Meridian-main
 │   │   │   │   │   │   ├── degraded-mode-banner.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
+│   │   │   │   │   │   ├── figure-difference-note.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.view-state.test.ts
@@ -7472,6 +7473,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-schema-fields.parity.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
+│   │   │   │   │   │   ├── stat-strip.test.tsx
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── status-row.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
@@ -7814,6 +7816,8 @@ Meridian-main
 │   │   │   │   │   ├── ledger-tax-results-format.test.ts
 │   │   │   │   │   ├── ledger-tax-results-format.ts
 │   │   │   │   │   ├── mark-freshness.ts
+│   │   │   │   │   ├── metric-trust.test.ts
+│   │   │   │   │   ├── metric-trust.ts
 │   │   │   │   │   ├── onboarding.ts
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
@@ -7907,6 +7911,8 @@ Meridian-main
 │   │   │   │   │   ├── workflow-route-match.test.ts
 │   │   │   │   │   ├── workflow-route-match.ts
 │   │   │   │   │   ├── workspace-catalog.generated.ts
+│   │   │   │   │   ├── workspace-figure-context.test.ts
+│   │   │   │   │   ├── workspace-figure-context.tsx
 │   │   │   │   │   ├── workspace.test.ts
 │   │   │   │   │   ├── workspace.ts
 │   │   │   │   │   ├── workstation-endpoints.test.ts
@@ -8160,6 +8166,10 @@ Meridian-main
 │   │   │   │   │   ├── portfolio-screen.a11y.test.tsx
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.test.ts
 │   │   │   │   │   ├── portfolio-screen.evidence-timeline.ts
+│   │   │   │   │   ├── portfolio-screen.figure-differences.test.ts
+│   │   │   │   │   ├── portfolio-screen.figure-differences.ts
+│   │   │   │   │   ├── portfolio-screen.headline-evidence.test.ts
+│   │   │   │   │   ├── portfolio-screen.headline-evidence.ts
 │   │   │   │   │   ├── portfolio-screen.linked-context.ts
 │   │   │   │   │   ├── portfolio-screen.mark-freshness.test.ts
 │   │   │   │   │   ├── portfolio-screen.multi-asset-coverage.ts
@@ -8297,6 +8307,8 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.execution-controls.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.test.ts
 │   │   │   │   │   ├── trading-screen.governed-approvals.ts
+│   │   │   │   │   ├── trading-screen.headline-evidence.test.ts
+│   │   │   │   │   ├── trading-screen.headline-evidence.ts
 │   │   │   │   │   ├── trading-screen.linked-context.ts
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
