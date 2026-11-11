@@ -139,7 +139,7 @@ Validation on the combined source, using the declared lockfile dependencies:
 
 | Check | Result and scope |
 | --- | --- |
-| Dashboard source suite | 449 files, 5,045 tests passed, zero failed or skipped. |
+| Dashboard source suite | Full pre-workbench integration run: 449 files, 5,045 tests passed, zero failed or skipped. After the final native developer-workbench merge, 89 affected shell/workbench checks and 173 trading checks passed. |
 | Backend | Canonical assembly built; 131 focused tests passed, zero failed/skipped, including real PostgreSQL persistence/concurrency, native DuckDB exports, scope refusal and exact retry compatibility. |
 | Build and static checks | Production build, strict TypeScript, lint and the canonical 77-file asset/font/license check passed. Lint retains 98 hook warnings. C# whitespace verification passes on all 74 task paths; Roslyn confirmed 286,819 token kinds/values and parse diagnostics are unchanged by normalization. |
 | Maintained generation | Converged across two passes; every required and advisory step passed, with no protected-file violations. |
@@ -148,7 +148,7 @@ Validation on the combined source, using the declared lockfile dependencies:
 | Web fonts | All ten WOFF2 faces decoded and loaded; 30 observed font responses returned HTTP 200 with no font errors. |
 | Rendered catalog | All 82 routes captured in four disjoint batches; coverage, route identity, image quality and freshness validated. |
 | Screenshot contracts | 41 Python regression tests passed. |
-| Frontend tooling | Nine Node tooling tests passed, including WOFF2 source and license integrity. |
+| Frontend tooling | All 29 Node tooling tests passed on the final integration, including design-system rules, browser-smoke contracts, WOFF2 source and license integrity. |
 
 The full backend suite, Windows Chrome/Edge, assistive technology and live providers were not
 exercised. Synthetic source gaps remain explicit unavailable states. Hosted GitHub checks are

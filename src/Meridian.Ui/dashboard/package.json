@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "check:design-system": "node scripts/check-design-system.mjs",
+    "check:design-system:browser": "node scripts/smoke-workstation.mjs --design-system",
     "design-system:check": "node scripts/sync-design-system-assets.mjs --check",
     "design-system:sync": "node scripts/sync-design-system-assets.mjs --write",
     "design-system:test-assets": "node --test scripts/sync-design-system-assets.test.mjs",

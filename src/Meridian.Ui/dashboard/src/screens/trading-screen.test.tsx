@@ -1230,7 +1230,7 @@ describe("TradingScreen", () => {
     expect(confirmButton).toHaveAttribute("title", "Review and acknowledge the trading action before confirming.");
     await user.click(screen.getByRole("checkbox", { name: /I reviewed this trading action/i }));
     expect(confirmButton).toBeEnabled();
-    expect(confirmButton).toHaveClass("text-danger");
+    expect(confirmButton).toHaveClass("mds-btn--danger");
   });
 
   it("marks financially destructive blotter actions before confirmation", async () => {
@@ -1240,7 +1240,7 @@ describe("TradingScreen", () => {
     const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
     expect(cancelButtons).toHaveLength(2);
     for (const button of cancelButtons) {
-      expect(button).toHaveClass("text-danger");
+      expect(button).toHaveClass("mds-btn--danger");
     }
     await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
     const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });

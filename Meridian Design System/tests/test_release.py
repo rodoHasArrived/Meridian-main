@@ -52,6 +52,14 @@ class ReleaseTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, "Required distribution file missing"):
                     EXPORT.validate(data)
 
+    def test_gallery_document_module_and_styles_are_required(self):
+        for path in ["tests/gallery.html", "tests/gallery.mjs", "tests/gallery.css"]:
+            with self.subTest(path=path):
+                data = dict(self.data)
+                del data[path]
+                with self.assertRaisesRegex(ValueError, "Required distribution file missing"):
+                    EXPORT.validate(data)
+
     def test_family_metadata_must_cover_exact_public_contract(self):
         data = dict(self.data)
         families = json.loads(data["api/families.json"])

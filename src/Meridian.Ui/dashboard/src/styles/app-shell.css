@@ -477,9 +477,9 @@ a.workstation-trust-item:focus-visible {
 }
 
 /* The environment badge sits on the dark masthead even when the workspace uses a light
-   theme. Light-surface status and muted text colours do not have enough contrast. */
+   theme. Use the canonical dark-surface slate field tone in every appearance. */
 .workstation-trust-summary .mds-badge--paper {
-  color: #E9A983;
+  color: #7F9DB8;
 }
 
 .workstation-session-card .workstation-session-role {

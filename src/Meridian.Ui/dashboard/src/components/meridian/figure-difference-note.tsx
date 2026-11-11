@@ -21,10 +21,10 @@ function RetainedFigureDifferenceNote({ note, className }: { note: FigureDiffere
       )}
     >
       <p className="font-semibold leading-5 text-foreground">{note.title}</p>
-      <p className="leading-5 text-muted-foreground">{note.summary}</p>
+      <p className="leading-5 text-[var(--ws-tinted-text-secondary)]">{note.summary}</p>
       <table className="mt-2 w-full max-w-2xl text-xs" aria-label="Figures that differ">
         <thead>
-          <tr className="text-left text-muted-foreground">
+          <tr className="text-left text-[var(--ws-tinted-text-secondary)]">
             <th scope="col" className="py-1 pr-4 font-medium">Figure</th>
             <th scope="col" className="py-1 pr-4 text-right font-medium">{first?.name}</th>
             <th scope="col" className="py-1 text-right font-medium">{second?.name}</th>
@@ -35,7 +35,7 @@ function RetainedFigureDifferenceNote({ note, className }: { note: FigureDiffere
             <tr key={row.key} className="border-t border-border/60">
               <th scope="row" className="py-1 pr-4 text-left font-normal text-foreground">
                 {row.label}
-                {row.detail ? <span className="block text-muted-foreground">{row.detail}</span> : null}
+                {row.detail ? <span className="block text-[var(--ws-tinted-text-secondary)]">{row.detail}</span> : null}
               </th>
               <td className="py-1 pr-4 text-right font-mono tabular-nums text-foreground">{row.first}</td>
               <td className="py-1 text-right font-mono tabular-nums text-foreground">{row.second}</td>
@@ -43,7 +43,7 @@ function RetainedFigureDifferenceNote({ note, className }: { note: FigureDiffere
           ))}
         </tbody>
       </table>
-      <dl className="mt-2 space-y-0.5 text-xs leading-5 text-muted-foreground">
+      <dl className="mt-2 space-y-0.5 text-xs leading-5 text-[var(--ws-tinted-text-secondary)]">
         {note.sources.map((source) => (
           <div key={source.name} className="flex flex-wrap gap-x-2">
             <dt className="font-medium text-foreground">{source.name}</dt>

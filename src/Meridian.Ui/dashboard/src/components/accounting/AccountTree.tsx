@@ -151,13 +151,27 @@ export function AccountTree({
     if (!focusedVisible && focusedCode !== firstCode) setFocusedCode(firstCode);
   }, [focusedVisible, focusedCode, firstCode]);
 
-  const toggle = (code: string) =>
+  const toggle = (code: string) => {
+    // Collapsing a branch that holds the tab stop hands it to the branch itself, not to the
+    // first row of the tree, so the operator stays where they were working.
+    if (expanded.has(code) && focusedCode != null && focusedCode !== code) {
+      let parent = rows.find((row) => row.node.code === focusedCode)?.parentCode ?? null;
+      while (parent != null) {
+        if (parent === code) {
+          setFocusedCode(code);
+          break;
+        }
+        const current = parent;
+        parent = rows.find((row) => row.node.code === current)?.parentCode ?? null;
+      }
+    }
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(code)) next.delete(code);
       else next.add(code);
       return next;
     });
+  };
 
   const focusCode = (code: string) => {
     setFocusedCode(code);
