@@ -351,7 +351,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             .Should().BeEquivalentTo(["settlementType", "isAdjusted"]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Option")
             .Should().Contain(["strike", "putCall", "underlyingId", "multiplier", "exerciseStyle", "optChainId", "lastTradingDt"]);
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
+        // S3-E8 homed the swap's legs: the flat legs array reads back from the legStructure module.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Swap").Should().Contain("legs");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().NotContain("legs");
         // S3-E7 homed the bond's structural complement: its subclass, par, principal schedule, step
         // schedule and inflation index terms all read back from a module.
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Bond")
@@ -372,8 +374,14 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     private const string StructuredCreditEconomicTerms =
         """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07","factorScheduleEntries":[{"asOfDate":"2026-06-01","factor":0.8412},{"asOfDate":"2026-07-01","factor":0.8235}]},"floatingRate":{"referenceIndex":"SOFR\u002B250","spreadBps":null,"resetFrequency":null,"floorRate":null,"capRate":null},"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3EStructuredCreditModules + "}";
 
+    // The swap twin's legs, each with its declared block (S3-E8): the legStructure module writes a
+    // leg exactly as the flat family writes one at the version that carries the block.
+    private const string SwapTwinLegStructure =
+        "\"legStructure\":" + """{"legs":[{"currency":"USD","currentIndexRate":null,"dayCount":null,"direction":null,"exchangesPrincipal":false,"fixedRate":3.75,"index":null,"legId":null,"legType":"Fixed","notional":null,"notionalSchedule":[],"paymentFrequency":null,"resetSchedule":[],"scheduleConventions":{"accrualAdjusted":true,"businessDayConvention":"ModifiedFollowing","couponCashBasis":"DayCount","couponRateUnit":"Percent","direction":"Backward","endOfMonthRule":false,"firstRegularDate":"2026-07-15","lastRegularDate":"2030-07-15","paymentCalendars":["USNY"],"paymentLagBusinessDays":2,"rollConvention":"15","stubPolicy":"Short"},"spreadBps":null},{"currency":"USD","currentIndexRate":null,"dayCount":null,"direction":null,"exchangesPrincipal":false,"fixedRate":null,"index":"SOFR","legId":null,"legType":"Floating","notional":null,"notionalSchedule":[],"paymentFrequency":null,"resetSchedule":[],"scheduleConventions":{"accrualAdjusted":false,"businessDayConvention":"Following","couponCashBasis":"Level","couponRateUnit":"Fraction","direction":"Forward","endOfMonthRule":true,"firstRegularDate":"2026-04-15","lastRegularDate":"2030-10-15","paymentCalendars":["GBLO","USNY"],"paymentLagBusinessDays":1,"rollConvention":"Imm","stubPolicy":"Long"},"spreadBps":null}]}""";
+
     private const string SwapEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModulesBeforeTranche
+        + ",\"creditTranche\":null,\"privateHolding\":null,\"taxonomy\":null,\"couponSchedule\":null," + SwapTwinLegStructure + "}";
 
     // The S3-E module keys the serializer appends after sinkingFund; null for every class these
     // fixtures cover. One constant, so a new module home extends every fixture in one place.
@@ -385,10 +393,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     // The bond twin's structural complement (S3-E7): its principal schedule lands in sinkingFund,
     // its par in notional.denomination and its subclass in taxonomy.
     private const string S3EBondModules =
-        ""","sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400},{"sinkDate":"2031-06-15","amount":400}],"sinkFrequency":null,"isProRata":false},"exercise":null,"currencyPair":null,"notional":{"notional":null,"denomination":1000,"committedAmount":null,"fundedAmount":null,"unfundedAmount":null},"profileEnvelope":null,"listing":null,"underlying":null,"creditProtection":null,"structuredPayoff":null,"creditTranche":null,"privateHolding":null,"taxonomy":{"category":null,"subType":null,"subclass":"Corporate"},"couponSchedule":null""";
+        ""","sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400},{"sinkDate":"2031-06-15","amount":400}],"sinkFrequency":null,"isProRata":false},"exercise":null,"currencyPair":null,"notional":{"notional":null,"denomination":1000,"committedAmount":null,"fundedAmount":null,"unfundedAmount":null},"profileEnvelope":null,"listing":null,"underlying":null,"creditProtection":null,"structuredPayoff":null,"creditTranche":null,"privateHolding":null,"taxonomy":{"category":null,"subType":null,"subclass":"Corporate"},"couponSchedule":null,"legStructure":null""";
 
     // The S3-E7 keys that follow privateHolding; null unless a fixture's class feeds them.
-    private const string S3ETrailingNullModules = ",\"taxonomy\":null,\"couponSchedule\":null";
+    private const string S3ETrailingNullModules = ",\"taxonomy\":null,\"couponSchedule\":null,\"legStructure\":null";
 
     // The structured-credit twin declares its tranche terms, which the creditTranche module carries.
     private const string S3EStructuredCreditModules = S3ENullModulesBeforeTranche
@@ -404,7 +412,8 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     {
         // The economic document carries only the block's business-day convention and joint payment
         // calendar (in Accrual), so the block as a whole is not recoverable on replay until a contract
-        // step maps it; a swap's leg blocks travel inside the already-unrecoverable legs.
+        // step maps it. A swap's leg blocks are the exception: they travel whole inside the legs the
+        // legStructure module carries (S3-E8), so they are recovered with the legs.
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain("scheduleConventions");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass).Should().NotContain("scheduleConventions");
     }
@@ -418,7 +427,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     {
         // The frozen rules: the block fills Accrual on a bond, CD or structured credit only, with the
         // convention verbatim and the payment calendars as one joint calendar id. A swap's legs carry
-        // their own blocks, and the swap has no Accrual module to fill.
+        // their own blocks, whole, in the legStructure module, and the swap has no Accrual module to fill.
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
 

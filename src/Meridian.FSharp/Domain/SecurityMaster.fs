@@ -228,55 +228,6 @@ type PrincipalPaymentEntry = {
     Amount: decimal
 }
 
-/// The declared conventions the contractual schedule kernel (ADR-025) builds an instrument's periods
-/// with: the flat terms' <c>scheduleConventions</c> block (asset-class terms version 2 on bonds,
-/// certificates of deposit and swap legs, 3 on structured credit). A node reads it from payloads
-/// stamped at that version and does not write it until the contract step (ADR-024, readable before
-/// writable). Text members are kept verbatim, as the payload carries them;
-/// <c>ScheduleConventions.empty</c> means nothing is declared.
-type ScheduleConventions = {
-    BusinessDayConvention: string option
-    /// Whether accrual period boundaries are adjusted for business days (payment dates always are,
-    /// under <c>BusinessDayConvention</c>). None when the terms do not say.
-    AccrualAdjusted: bool option
-    /// The payment calendars by id, joined into one calendar when more than one is named.
-    PaymentCalendars: string list
-    PaymentLagBusinessDays: int option
-    RollConvention: string option
-    EndOfMonthRule: bool option
-    FirstRegularDate: DateOnly option
-    LastRegularDate: DateOnly option
-    /// Schedule generation direction: Forward or Backward.
-    Direction: string option
-    StubPolicy: string option
-    /// Whether a coupon rate is a percent or a fraction: Percent or Fraction.
-    CouponRateUnit: string option
-    /// How a regular coupon's cash amount is computed: Level (rate over frequency) or DayCount.
-    CouponCashBasis: string option
-}
-
-[<RequireQualifiedAccess>]
-module ScheduleConventions =
-    /// No convention declared: what every record carries until a node writes the block.
-    [<CompiledName("Empty")>]
-    let empty : ScheduleConventions =
-        { BusinessDayConvention = None
-          AccrualAdjusted = None
-          PaymentCalendars = []
-          PaymentLagBusinessDays = None
-          RollConvention = None
-          EndOfMonthRule = None
-          FirstRegularDate = None
-          LastRegularDate = None
-          Direction = None
-          StubPolicy = None
-          CouponRateUnit = None
-          CouponCashBasis = None }
-
-    /// Whether nothing is declared.
-    [<CompiledName("IsEmpty")>]
-    let isEmpty (conventions: ScheduleConventions) = conventions = empty
-
 /// One declared call (a flat callSchedule entry: asset-class terms version 3 on bonds and
 /// certificates of deposit, 4 on structured credit). Text members are kept verbatim; their meanings
 /// are frozen in ADR-025's Applications.
@@ -543,45 +494,6 @@ type OtherSecurityTerms = {
     Maturity: DateOnly option
     IssuerName: string option
     SettlementType: string option
-}
-
-/// One step of an amortizing or accreting leg notional: the notional in effect from this date
-/// until the next step (or maturity).
-type SwapNotionalStep = {
-    EffectiveDate: DateOnly
-    Notional: decimal
-}
-
-/// A floating-leg reset date with the index fixing observed on it, once known.
-type SwapResetEntry = {
-    ResetDate: DateOnly
-    FixingRate: decimal option
-}
-
-/// A swap leg with the economics consumed by cash-flow projection. Optional terms keep
-/// legacy legs readable and allow the projection to use security-level fallbacks.
-type SwapLeg = {
-    LegId: string option
-    LegType: string
-    Currency: string
-    /// Pay or Receive from the holder's perspective. None leaves the leg unnetted.
-    Direction: string option
-    Index: string option
-    FixedRate: decimal option
-    SpreadBps: decimal option
-    /// Observed index fixing used for flat-forward projection, without an implied forward curve.
-    CurrentIndexRate: decimal option
-    Notional: decimal option
-    PaymentFrequency: string option
-    DayCount: DayCountConvention option
-    /// Whether principal exchanges are part of the leg's contractual terms.
-    ExchangesPrincipal: bool
-    /// Dated notional steps for an amortizing or accreting leg; empty for a constant notional.
-    NotionalSchedule: SwapNotionalStep list
-    /// Reset dates with their observed fixings for a floating leg; empty when not tracked.
-    ResetSchedule: SwapResetEntry list
-    /// The leg's declared schedule conventions (asset-class terms version 2); empty until declared.
-    ScheduleConventions: ScheduleConventions
 }
 
 type SwapTerms = {

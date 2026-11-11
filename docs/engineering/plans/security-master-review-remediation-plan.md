@@ -515,3 +515,11 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     from "a later module key the rebuild emits null" to "a later module key the image
     predates", because a bond always restates its subclass. Swap legs are the only codec-only
     rules left.
+  - **S3-E8 — swap legs (implemented 2026-11-11).** A `legStructure` module carries a swap's
+    legs, each written by the flat family's own leg writer, including the leg's
+    `scheduleConventions` block. The ten leg rules moved to the definition surface, which
+    leaves `validateCodecOnlyKindTerms` empty, so it is removed: `validateKindTerms` is
+    `validateDefinitionTerms` over the kind's modules and the ledger is the complete list of
+    term-rule codes. The flatten recovers the flat `legs` array, stamping the row at the
+    block's terms version only when a leg declares one, so an economic-only swap replays with
+    its legs.

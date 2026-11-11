@@ -122,8 +122,8 @@ internal static class SecurityEconomicDefinitionAdapter
         // The flat family is keyed per asset class, so the fallback flattens against the record's
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
-        // still lossy for what the economic document never held — a swap's legs, a bond's
-        // floating-rate terms (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // still lossy for what the economic document never held — a bond's floating-rate
+        // terms, for one (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
@@ -620,6 +620,13 @@ internal static class SecurityEconomicDefinitionAdapter
                 steps = definition.Terms.CouponSchedule.Value.Steps
                     .Select(step => new { effectiveDate = step.EffectiveDate, rate = step.Rate })
                     .ToArray()
+            },
+            // ADR-027 stage 3 (S3-E8): a swap's legs, each written by the flat family's own leg
+            // writer so the flatten recovers the flat legs array from the module unchanged.
+            legStructure = definition.Terms.LegStructure is null ? null : new
+            {
+                legs = JsonSerializer.Deserialize<JsonElement>(
+                    Meridian.FSharp.SecurityMasterInterop.SecurityLegStructureDocument.LegsJson(definition.Terms.LegStructure.Value))
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

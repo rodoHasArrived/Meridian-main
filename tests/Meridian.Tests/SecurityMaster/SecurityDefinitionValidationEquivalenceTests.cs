@@ -201,6 +201,18 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
         ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
         ("Swap", "swap_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
+        // S3-E8: the legs live on the legStructure module.
+        ("Swap", "swap_legs_required", "legs", "[]"),
+        ("Swap", "swap_leg_notional_invalid", "legs", """[{"legType":"Fixed","currency":"USD","notional":0}]"""),
+        ("Swap", "swap_leg_direction_invalid", "legs", """[{"legType":"Fixed","currency":"USD","direction":"Sideways"}]"""),
+        ("Swap", "swap_leg_notional_schedule_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2027-01-15","notional":0}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_order_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2028-01-15","notional":900},{"effectiveDate":"2027-01-15","notional":800}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_range_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2999-01-01","notional":900}]}]"""),
+        ("Swap", "swap_leg_reset_schedule_order_invalid", "legs",
+            """[{"legType":"Floating","currency":"USD","index":"SOFR","resetSchedule":[{"resetDate":"2027-01-15","fixingRate":4.1},{"resetDate":"2026-07-15","fixingRate":4.0}]}]"""),
         ("CreditDefaultSwap", "cds_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
         ("CreditDefaultSwap", "cds_fixed_coupon_invalid", "fixedCouponBps", "-100"),
         ("NonDeliverableForward", "ndf_fixing_date_invalid", "fixingDate", "\"2999-01-01\""),
@@ -270,6 +282,14 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "bond_principal_schedule_invalid",
                 "bond_step_rate_invalid",
                 "bond_step_dates_duplicate"
+            ],
+            // The flat codec refuses a leg whose type or currency is blank and reads a blank
+            // payment frequency as absent, so only a directly built record can carry one.
+            ["Swap"] =
+            [
+                "swap_leg_type_required",
+                "swap_leg_currency_required",
+                "swap_leg_payment_frequency_invalid"
             ],
             // S3-E contraction: the records no longer hold these values as non-optional fields.
             // The flat codec refuses a payload that omits them, so only a directly built record

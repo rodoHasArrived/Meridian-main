@@ -839,6 +839,49 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E8 — swap legs gain a module home; the codec-only remainder ends — 2026-11-11
+
+The last codec-only rules were the ten over a swap's legs. A `legStructure` module now carries
+the legs, so those rules move to the definition surface and nothing is left behind:
+
+| Piece | What changed |
+| --- | --- |
+| Module | `legStructure { legs }`, where a leg is the existing `SwapLeg` record. `SwapLeg`, its notional-step and reset-entry records and `ScheduleConventions` moved from `SecurityMaster.fs` to `SecurityTermModules.fs` (same namespace, so no reference changes) because the module vocabulary compiles first. A swap with no legs carries no module. |
+| Validation | `swap_legs_required` and the nine per-leg codes moved to `validateDefinitionTerms`. `validateCodecOnlyKindTerms` had no rule left and is removed; `validateKindTerms` is `validateDefinitionTerms` over `modulesFromKind`, and `definitionExpressibleCodes` is the complete list of term-rule codes rather than one side of a partition. |
+| Serialization | Each leg is written by the flat family's own leg writer (`SecurityTermsWriteVersion.legPayloadWithConventions`, which the flat `Swap` arm now also calls), through `SecurityLegStructureDocument.LegsJson`. There is one definition of a leg's wire shape. |
+| Flatten | `ClassFlattenings` maps `legs` to the module with a versioned element member: the leg's `scheduleConventions` block. When any leg declares a block the row is stamped at the block's terms version and every leg keeps the key (null where a leg declares nothing); otherwise the row stays below that version and the key is dropped from every leg. That is the flat writer's own rule (ADR-024 decision 3), applied per element. |
+
+Seven of the ten codes are proven on both surfaces by a mutation-table row. The other three
+cannot be reached through the flat codec — it refuses a leg whose type or currency is blank,
+and reads a blank payment frequency as absent — so they are pinned on directly built records
+in `SecurityDefinitionValidationTests.fs` and listed in `CodesCoveredByFSharpTests`.
+
+Replay consequence: a swap document written from here on replays from the economic document
+alone with its legs intact, and since the flat row then holds the whole document the identity
+gate sheds the retained carry. `SwapImage_RecoversItsLegsOnEconomicOnlyReplay` pins both the
+declared-conventions and the no-conventions case, and two corpus cases
+(`swap-image-leg-structure`, `swap-image-leg-conventions`) pin the bytes. A swap document
+that predates the module still has no legs to recover and is still refused on the next-event
+path, as the existing `swap-maturity-only` case records.
+
+The module key is `legStructure` rather than `swapLegs` because `swapLegs` is already an
+accepted alias of the flat `legs` key, and several readers resolve the leg container by alias.
+
+What the economic document still does not carry is listed per class by
+`UnrecoverableKeys`; none of it has a validation rule waiting on a home. The largest items are
+a bond's floating-rate terms, a direct loan's floating-rate and principal-schedule terms, an
+equity's classification and preferred or convertible terms, and the whole-block
+`scheduleConventions` and typed call and put schedules of bonds, certificates of deposit and
+structured credit, which recover through their own stage-1 bridges.
+
+The replay corpus changed by the appended null key and the six entries of the two new swap
+cases; the write golden by that key plus the three swap variants' leg structure. No flat
+payload changed.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,413 passed, 1 skipped; `Meridian.FSharp.Tests` — 636 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E7 — the structural complement gains module homes — 2026-11-11
 
 S3-E6 left four groups of rules codec-only because their values are structures rather than

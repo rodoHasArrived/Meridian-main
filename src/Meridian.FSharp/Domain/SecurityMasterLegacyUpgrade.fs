@@ -651,6 +651,7 @@ module SecurityMasterLegacyUpgrade =
                             IssueDate = Some terms.EffectiveDate
                             MaturityDate = Some terms.MaturityDate
                         }
+                    LegStructure = if terms.Legs.IsEmpty then None else Some { Legs = terms.Legs }
             }
         | SecurityKind.DirectLoan terms ->
             {

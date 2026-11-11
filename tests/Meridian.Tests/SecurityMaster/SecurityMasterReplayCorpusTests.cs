@@ -269,6 +269,49 @@ public sealed class SecurityMasterReplayCorpusTests
             .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the current image of the same document");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SwapImage_RecoversItsLegsOnEconomicOnlyReplay(bool declaresConventions)
+    {
+        // ADR-027 stage 3 (S3-E8): the legStructure module carries a swap's legs as the flat family
+        // writes them, so a replay from the economic document alone rebuilds the flat legs array —
+        // stamped at the version that carries the leg scheduleConventions block only when a leg
+        // declares one — and the document is the flat row, so the carry is shed.
+        const string assetClass = "Swap";
+        var flat = declaresConventions
+            ? SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)
+            : SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, flat));
+        var moduleLegs = economic.EconomicTerms.GetProperty("legStructure").GetProperty("legs");
+
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
+            .Should().BeFalse("the flat row holds the legs, so the document is the flat row");
+        var recoveredLegs = recovered.AssetSpecificTerms.GetProperty("legs");
+        recoveredLegs.GetArrayLength().Should().Be(moduleLegs.GetArrayLength());
+        var blockSince = SecurityAssetTermsSchema.ElementFields(assetClass, "legs")
+            .Single(field => field.Key == SecurityVersionedTerms.ScheduleConventionsKey).SinceTermsVersion;
+        var stamp = recovered.AssetSpecificTerms.GetProperty(SecurityTermsEnvelope.AssetClassTermsVersionKey).GetInt32();
+        if (declaresConventions)
+        {
+            stamp.Should().Be(blockSince, "a leg that declares its conventions stamps the row at the block's version");
+            recoveredLegs.GetRawText().Should().Be(moduleLegs.GetRawText(), "at that version the flat leg is the module's leg");
+        }
+        else
+        {
+            stamp.Should().BeLessThan(blockSince, "no leg declares conventions, so the row stays below the block's version");
+            recoveredLegs.GetRawText().Should().Be(flat.GetProperty("legs").GetRawText(),
+                "below the block's version the flat writer omits the key, and so does the recovered leg");
+        }
+
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
+            .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the same document");
+    }
+
     [Fact]
     public void IdentityGate_KeepsSheddingWhenTheRebuildPopulatesALaterModuleTheImagePredates()
     {

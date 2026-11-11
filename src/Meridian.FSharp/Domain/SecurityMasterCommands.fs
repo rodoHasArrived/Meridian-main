@@ -58,110 +58,6 @@ module SecurityMaster =
         @ requireNotBlank "source_system_required" "SourceSystem" provenance.SourceSystem
         @ requireNotBlank "updated_by_required" "UpdatedBy" provenance.UpdatedBy
 
-    /// ADR-027 stage 2 (S2-B2): the kind rules whose subject data has NO module home — the exact
-    /// complement of definitionExpressibleCodes. The expressible rules moved to
-    /// validateDefinitionTerms, which validateKindTerms now composes with this remainder, so the
-    /// definition surface is authoritative for every ledgered code on every write while nothing
-    /// is checked twice. A rule leaves this function only by gaining a module home and a ledger
-    /// entry; the equivalence suite's mutation table keeps the partition honest.
-    let private validateCodecOnlyKindTerms (kind: SecurityKind) =
-        match kind with
-        | SecurityKind.Equity _ -> []
-        | SecurityKind.Option _ ->
-            []
-        | SecurityKind.Future _ ->
-            []
-        | SecurityKind.Bond _ ->
-            []
-        | SecurityKind.FxSpot _ ->
-            []
-        | SecurityKind.Deposit terms ->
-            []
-        | SecurityKind.MoneyMarketFund terms ->
-            []
-        | SecurityKind.CertificateOfDeposit terms ->
-            []
-        | SecurityKind.CommercialPaper terms ->
-            []
-        | SecurityKind.TreasuryBill terms ->
-            []
-        | SecurityKind.Repo terms ->
-            []
-        | SecurityKind.CashSweep terms ->
-            []
-        | SecurityKind.OtherSecurity _ ->
-            []
-        | SecurityKind.Swap terms ->
-            []
-            @ require (not terms.Legs.IsEmpty) (error "swap_legs_required" "Swap definitions must include at least one leg.")
-            @ (terms.Legs
-               |> List.collect (fun leg ->
-                   []
-                   @ requireNotBlank "swap_leg_type_required" "SwapLeg.LegType" leg.LegType
-                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
-                   @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
-                       (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
-                   @ require
-                       (leg.Direction
-                        |> Option.forall (fun direction ->
-                            String.Equals(direction, "Pay", StringComparison.OrdinalIgnoreCase)
-                            || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
-                       (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")
-                   @ require (leg.PaymentFrequency |> Option.forall (String.IsNullOrWhiteSpace >> not))
-                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")
-                   @ require (leg.NotionalSchedule |> List.forall (fun step -> step.Notional > 0m))
-                       (error "swap_leg_notional_schedule_invalid" "SwapLeg NotionalSchedule steps must have a notional greater than zero.")
-                   @ require
-                       (leg.NotionalSchedule
-                        |> List.pairwise
-                        |> List.forall (fun (earlier, later) -> earlier.EffectiveDate < later.EffectiveDate))
-                       (error "swap_leg_notional_schedule_order_invalid" "SwapLeg NotionalSchedule dates must be strictly ascending.")
-                   @ require
-                       (leg.NotionalSchedule
-                        |> List.forall (fun step -> step.EffectiveDate >= terms.EffectiveDate && step.EffectiveDate <= terms.MaturityDate))
-                       (error "swap_leg_notional_schedule_range_invalid" "SwapLeg NotionalSchedule dates must fall within the swap's effective and maturity dates.")
-                   @ require
-                       (leg.ResetSchedule
-                        |> List.pairwise
-                        |> List.forall (fun (earlier, later) -> earlier.ResetDate < later.ResetDate))
-                       (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
-        | SecurityKind.DirectLoan _ ->
-            []
-        | SecurityKind.StructuredCredit _ ->
-            []
-        | SecurityKind.PrivateFundInterest _ ->
-            []
-        | SecurityKind.PrivateCompanyEquity _ ->
-            []
-        | SecurityKind.RealEstateHolding _ ->
-            []
-        | SecurityKind.CommitmentGuarantee _ ->
-            []
-        | SecurityKind.Commodity _ ->
-            []
-        | SecurityKind.CryptoCurrency _ ->
-            []
-        | SecurityKind.Cfd _ ->
-            []
-        | SecurityKind.Warrant _ ->
-            []
-        | SecurityKind.FxForward _ ->
-            []
-        | SecurityKind.NonDeliverableForward _ ->
-            []
-        | SecurityKind.CreditDefaultSwap _ ->
-            []
-        | SecurityKind.Swaption _ ->
-            []
-        | SecurityKind.CapFloor _ ->
-            []
-        | SecurityKind.StructuredNote _ ->
-            []
-        | SecurityKind.InvestmentFund _ ->
-            []
-        | SecurityKind.CustomAsset _ ->
-            []
-
     /// The CustomAsset envelope rules, over the three values the profile-envelope module carries
     /// (it is the CustomAsset kind's payload since the S3-E contraction). ADR-027 stage 3 (S3-E4) moved them onto the
     /// definition surface when the envelope gained its module home.
@@ -232,10 +128,9 @@ module SecurityMaster =
     // whose subject data has a module home under SecurityMasterLegacyUpgrade.termsFromKind. Rules
     // are gated by the classification's TypeName exactly as validateKindTerms is gated by the kind
     // case, so the two validators agree code-for-code on the expressible set — the equivalence the
-    // stage-2 tests pin per class. Rules whose data has no module home (a swap's legs, a bond's
-    // subclass/par/principal schedule) stay with the codec-side kind validation
-    // (validateCodecOnlyKindTerms); that remainder shrinks as modules gain homes, which S3-E
-    // does theme by theme.
+    // stage-2 tests pin per class. Rules whose data had no module home stayed with a codec-side
+    // remainder until stage 3 (S3-E) gave each a home, theme by theme; the last, a swap's legs,
+    // moved in S3-E8, and the remainder no longer exists.
 
     let private moduleString (value: string option) = value |> Option.defaultValue String.Empty
 
@@ -552,9 +447,46 @@ module SecurityMaster =
             @ require (notional |> Option.exists (fun amount -> amount > 0m))
                 (error "cap_floor_notional_invalid" "CapFloor Notional must be greater than zero.")
         | "Swap" ->
+            // S3-E8: the legs live on the legStructure module, which a swap with no legs does not
+            // carry, so an absent module is the empty leg list.
+            let legs = modules.LegStructure |> Option.map (fun structure -> structure.Legs) |> Option.defaultValue []
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
                 (error "swap_date_range_invalid" "Swap EffectiveDate must be on or before MaturityDate.")
+            @ require (not legs.IsEmpty) (error "swap_legs_required" "Swap definitions must include at least one leg.")
+            @ (legs
+               |> List.collect (fun leg ->
+                   []
+                   @ requireNotBlank "swap_leg_type_required" "SwapLeg.LegType" leg.LegType
+                   @ requireNotBlank "swap_leg_currency_required" "SwapLeg.Currency" leg.Currency
+                   @ require (leg.Notional |> Option.forall (fun notional -> notional > 0m))
+                       (error "swap_leg_notional_invalid" "SwapLeg Notional must be greater than zero when present.")
+                   @ require
+                       (leg.Direction
+                        |> Option.forall (fun direction ->
+                            String.Equals(direction, "Pay", StringComparison.OrdinalIgnoreCase)
+                            || String.Equals(direction, "Receive", StringComparison.OrdinalIgnoreCase)))
+                       (error "swap_leg_direction_invalid" "SwapLeg Direction must be either 'Pay' or 'Receive' when present.")
+                   @ require (leg.PaymentFrequency |> Option.forall (String.IsNullOrWhiteSpace >> not))
+                       (error "swap_leg_payment_frequency_invalid" "SwapLeg PaymentFrequency must not be blank when present.")
+                   @ require (leg.NotionalSchedule |> List.forall (fun step -> step.Notional > 0m))
+                       (error "swap_leg_notional_schedule_invalid" "SwapLeg NotionalSchedule steps must have a notional greater than zero.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.EffectiveDate < later.EffectiveDate))
+                       (error "swap_leg_notional_schedule_order_invalid" "SwapLeg NotionalSchedule dates must be strictly ascending.")
+                   @ require
+                       (leg.NotionalSchedule
+                        |> List.forall (fun step ->
+                            (effectiveDate |> Option.forall (fun effective -> step.EffectiveDate >= effective))
+                            && (maturityDate |> Option.forall (fun maturity -> step.EffectiveDate <= maturity))))
+                       (error "swap_leg_notional_schedule_range_invalid" "SwapLeg NotionalSchedule dates must fall within the swap's effective and maturity dates.")
+                   @ require
+                       (leg.ResetSchedule
+                        |> List.pairwise
+                        |> List.forall (fun (earlier, later) -> earlier.ResetDate < later.ResetDate))
+                       (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
         | "CreditDefaultSwap" ->
             []
             @ requireOrderedWhenBoth effectiveDate maturityDate
@@ -664,15 +596,14 @@ module SecurityMaster =
             | None -> validateProfileEnvelope String.Empty 0 String.Empty
         | _ -> []
 
-    /// ADR-027 stage 2 (S2-B2): the kind rule set, recomposed. The definition surface
-    /// (validateDefinitionTerms over modulesFromKind) is authoritative for every
-    /// module-expressible code, and validateCodecOnlyKindTerms keeps the rules whose data has no
-    /// module home — the exact ledger partition, so nothing is checked twice and nothing is
-    /// dropped. Every command path (create, amend, record validation, the facade's standalone
-    /// checks) now validates through this composition.
+    /// The kind rule set is the definition rule set over the kind's modules. ADR-027 stage 2
+    /// (S2-B2) made it a composition of validateDefinitionTerms with a codec-only remainder — the
+    /// rules whose data had no module home; stage 3 gave every one of them a home, the last (a
+    /// swap's legs) in S3-E8, so the remainder is gone and the definition surface is the only
+    /// place a term rule lives. Every command path (create, amend, record validation, the
+    /// facade's standalone checks) validates through it.
     let private validateKindTerms (kind: SecurityKind) =
         validateDefinitionTerms (AssetClassRegistry.assetClassName kind) (SecurityMasterLegacyUpgrade.modulesFromKind kind)
-        @ validateCodecOnlyKindTerms kind
 
     let private validateKind (kind: SecurityKind) =
         let dayCounts =
@@ -817,11 +748,11 @@ module SecurityMaster =
     let validateDefinitionInvariants (typeName: string) (modules: SecurityTermModules) =
         validateDefinitionTerms typeName modules
 
-    /// Per-class ledger of validateKindTerms error codes the definition can express today. Codes
-    /// absent for a listed class, and every code of an unlisted class, are codec-only: their
-    /// subject data has no module home yet, so they stay with validateCodecOnlyKindTerms at the
-    /// codec boundary and move here only when a module gains the home (ADR-027 stage 3, S3-E,
-    /// moves them theme by theme).
+    /// Per-class ledger of the term-rule error codes, each of which the definition surface
+    /// expresses. Through ADR-027 stage 2 this was a partition: a code absent here was
+    /// codec-only, its subject data lacking a module home. Stage 3 (S3-E) moved every such code
+    /// here, the swap-leg codes last (S3-E8), so the ledger is now the complete list and the
+    /// equivalence suite's mutation table proves each entry on both surfaces.
     let definitionExpressibleCodes : Map<string, string list> =
         Map.ofList [
             "Option",
@@ -864,7 +795,11 @@ module SecurityMaster =
             [ "cap_floor_reference_index_required"; "cap_floor_strike_order_invalid"; "cap_floor_date_range_invalid"
               "cap_floor_type_invalid"; "cap_floor_cap_strike_required"; "cap_floor_floor_strike_required"
               "cap_floor_premium_invalid"; "cap_floor_notional_invalid" ]
-            "Swap", [ "swap_date_range_invalid" ]
+            "Swap",
+            [ "swap_date_range_invalid"; "swap_legs_required"; "swap_leg_type_required"; "swap_leg_currency_required"
+              "swap_leg_notional_invalid"; "swap_leg_direction_invalid"; "swap_leg_payment_frequency_invalid"
+              "swap_leg_notional_schedule_invalid"; "swap_leg_notional_schedule_order_invalid"
+              "swap_leg_notional_schedule_range_invalid"; "swap_leg_reset_schedule_order_invalid" ]
             "CreditDefaultSwap",
             [ "cds_date_range_invalid"; "cds_fixed_coupon_invalid"; "cds_notional_invalid"; "cds_reference_entity_required"
               "cds_protection_side_invalid"; "cds_recovery_rate_invalid" ]

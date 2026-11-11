@@ -75,7 +75,7 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
         ["exercise", "currencyPair", "notional", ProfileEnvelopeModule,
          "listing", "underlying", "creditProtection", "structuredPayoff", "creditTranche", "privateHolding",
-         "taxonomy", "couponSchedule"];
+         "taxonomy", "couponSchedule", "legStructure"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -246,10 +246,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
     /// an original v1 write for that class.
     /// <para>
-    /// What remains lost is what the economic-terms document never carried: a swap's legs and a
-    /// bond's floating-rate terms (the S3-E module homes carry the scalar complement, the
-    /// custom-asset profile document and, since S3-E7, a bond's subclass, par, principal, step and
-    /// inflation structure and the covenant entries). Since ADR-027 stage 1 increments 1 and 2,
+    /// What remains lost is what the economic-terms document never carried, such as a bond's
+    /// floating-rate terms (the S3-E module homes carry the scalar complement, the custom-asset
+    /// profile document, since S3-E7 a bond's subclass, par, principal, step and inflation
+    /// structure and the covenant entries, and since S3-E8 a swap's legs). Since ADR-027 stage 1 increments 1 and 2,
     /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
     /// and the Accrual module's business-day convention and joint payment calendar land in the
     /// scheduleConventions block, for a class that declares those homes — stamped at the held
@@ -349,6 +349,19 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                 stamp = Math.Max(stamp, conventionsSince!.Value);
             }
 
+            // ADR-027 stage 3 (S3-E8): an array whose elements carry a versioned member (a swap
+            // leg's scheduleConventions block) raises the stamp to that member's version when any
+            // element declares it, exactly as the flat writer stamps a record that holds one.
+            foreach (var mapping in mappings)
+            {
+                if (mapping.VersionedElementMember is { } versionedMember
+                    && ElementMemberSince(assetClass!, mapping.FlatKey, versionedMember) is { } memberSince
+                    && AnyElementDeclares(economicTerms, mapping, versionedMember))
+                {
+                    stamp = Math.Max(stamp, memberSince);
+                }
+            }
+
             WriteFlatEnvelope(writer, stamp);
 
             // The frozen fill: at or above its Since the block key is present, null when nothing
@@ -428,6 +441,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                     {
                         WriteArrayWithMappedMembers(writer, value, members);
                     }
+                    else if (mapping.VersionedElementMember is { } versionedMember && value.ValueKind == JsonValueKind.Array)
+                    {
+                        // The frozen fill (ADR-024 decision 3), per element: at or above the
+                        // member's version its key is present on every element, null when the
+                        // element declares nothing; below it the key is absent.
+                        var keepMember = ElementMemberSince(assetClass!, mapping.FlatKey, versionedMember) is { } memberSince
+                                         && stamp >= memberSince;
+                        WriteArrayWithVersionedMember(writer, value, versionedMember, keepMember);
+                    }
                     else
                     {
                         value.WriteTo(writer);
@@ -452,6 +474,66 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    private static int? ElementMemberSince(string assetClass, string container, string member)
+        => SecurityAssetTermsSchema.ElementFields(assetClass, container)
+            .FirstOrDefault(field => string.Equals(field.Key, member, StringComparison.Ordinal))?.SinceTermsVersion;
+
+    private static bool AnyElementDeclares(JsonElement economicTerms, FlatTermMapping mapping, string member)
+    {
+        foreach (var (module, field) in mapping.Sources)
+        {
+            if (GetObject(economicTerms, module) is JsonElement source
+                && source.TryGetProperty(field, out var array)
+                && array.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var element in array.EnumerateArray())
+                {
+                    if (element.ValueKind == JsonValueKind.Object
+                        && element.TryGetProperty(member, out var declared)
+                        && declared.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Copies an array of objects verbatim, keeping or dropping one versioned member on every
+    /// element: the module always carries the member, and the flat family carries it only from
+    /// the terms version that introduced it.
+    /// </summary>
+    private static void WriteArrayWithVersionedMember(Utf8JsonWriter writer, JsonElement array, string member, bool keepMember)
+    {
+        writer.WriteStartArray();
+        foreach (var element in array.EnumerateArray())
+        {
+            if (element.ValueKind != JsonValueKind.Object || keepMember)
+            {
+                element.WriteTo(writer);
+                continue;
+            }
+
+            writer.WriteStartObject();
+            foreach (var property in element.EnumerateObject())
+            {
+                if (!string.Equals(property.Name, member, StringComparison.Ordinal))
+                {
+                    property.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
     }
 
     /// <summary>
@@ -1119,7 +1201,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         string? EqualsLabel = null,
         (string Module, string Field, string Label)[]? LabelFromFlags = null,
         decimal? Scale = null,
-        (string From, string To)[]? ElementMembers = null);
+        (string From, string To)[]? ElementMembers = null,
+        string? VersionedElementMember = null);
 
     private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
 
@@ -1254,7 +1337,13 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("category", ("taxonomy", "category")),
             Map("subType", ("taxonomy", "subType"))
         ]),
-        ("Swap", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
+        ("Swap",
+        [
+            Map("effectiveDate", ("maturity", "effectiveDate")),
+            Map("maturityDate", MaturityDate),
+            // ADR-027 stage 3 (S3-E8): the legs, as the flat family writes them.
+            new FlatTermMapping("legs", [("legStructure", "legs")], VersionedElementMember: SecurityVersionedTerms.ScheduleConventionsKey)
+        ]),
         ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate), Map("covenants", ("covenants", "covenants"))]),
         ("StructuredCredit",
         [

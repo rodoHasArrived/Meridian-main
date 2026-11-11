@@ -131,7 +131,13 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             "appraisalValue": 8400000, "valuationDate": "2026-06-30", "marketOrAddress": "Austin, TX"
         },
         "taxonomy": { "category": "Note", "subType": "PromissoryNote", "subclass": "Corporate" },
-        "couponSchedule": { "steps": [ { "effectiveDate": "2027-01-15", "rate": 4.5 }, { "effectiveDate": "2029-01-15", "rate": 5.25 } ] }
+        "couponSchedule": { "steps": [ { "effectiveDate": "2027-01-15", "rate": 4.5 }, { "effectiveDate": "2029-01-15", "rate": 5.25 } ] },
+        "legStructure": {
+            "legs": [
+                { "currency": "USD", "currentIndexRate": null, "dayCount": "30/360", "direction": "Pay", "exchangesPrincipal": false, "fixedRate": 3.75, "index": null, "legId": "fixed", "legType": "Fixed", "notional": 10000000, "notionalSchedule": [], "paymentFrequency": "SemiAnnual", "resetSchedule": [], "scheduleConventions": null, "spreadBps": null },
+                { "currency": "USD", "currentIndexRate": 4.31, "dayCount": "ACT/360", "direction": "Receive", "exchangesPrincipal": false, "fixedRate": null, "index": "SOFR", "legId": "float", "legType": "Floating", "notional": 10000000, "notionalSchedule": [], "paymentFrequency": "Quarterly", "resetSchedule": [ { "fixingRate": 4.31, "resetDate": "2026-04-15" } ], "scheduleConventions": null, "spreadBps": 12.5 }
+            ]
+        }
     }
     """);
 
@@ -292,6 +298,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("privateHolding")]
     [InlineData("taxonomy")]
     [InlineData("couponSchedule")]
+    [InlineData("legStructure")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -347,6 +354,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("privateHolding")]
     [InlineData("taxonomy")]
     [InlineData("couponSchedule")]
+    [InlineData("legStructure")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated

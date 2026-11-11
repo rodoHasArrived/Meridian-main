@@ -300,3 +300,61 @@ let ``a bond schedule shape the flat codec refuses is refused on both surfaces``
     Assert.Contains(code, definitionCodes)
     for definitionCode in definitionCodes do
         Assert.Contains(definitionCode, kindCodes)
+
+// ADR-027 stage 3 (S3-E8): a swap's legs now have a module home (legStructure). The flat codec
+// refuses a leg whose type or currency is blank and reads a blank payment frequency as absent,
+// so the definition-surface copies of those three rules are pinned on directly built records.
+let private swapLeg : SwapLeg =
+    { LegId = Some "fixed"
+      LegType = "Fixed"
+      Currency = "USD"
+      Direction = Some "Pay"
+      Index = None
+      FixedRate = Some 3.75m
+      SpreadBps = None
+      CurrentIndexRate = None
+      Notional = Some 10000000m
+      PaymentFrequency = Some "SemiAnnual"
+      DayCount = None
+      ExchangesPrincipal = false
+      NotionalSchedule = []
+      ResetSchedule = []
+      ScheduleConventions = ScheduleConventions.empty }
+
+let private swapWith legs : SecurityKind =
+    SecurityKind.Swap {
+        EffectiveDate = DateOnly(2026, 1, 15)
+        MaturityDate = DateOnly(2031, 1, 15)
+        Legs = legs
+    }
+
+[<Fact>]
+let ``a swap with a clean leg passes both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ swapLeg ])
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``a swap with no legs carries no leg structure and is refused on both surfaces`` () =
+    let kind = swapWith []
+    Assert.True((SecurityMasterLegacyUpgrade.modulesFromKind kind).LegStructure.IsNone)
+    let kindCodes, definitionCodes = bothSurfaces "Swap" kind
+    Assert.Contains("swap_legs_required", kindCodes)
+    Assert.Contains("swap_legs_required", definitionCodes)
+
+[<Theory>]
+[<InlineData("swap_leg_type_required")>]
+[<InlineData("swap_leg_currency_required")>]
+[<InlineData("swap_leg_payment_frequency_invalid")>]
+let ``a swap leg shape the flat codec never yields is refused on both surfaces`` (code: string) =
+    let leg =
+        match code with
+        | "swap_leg_type_required" -> { swapLeg with LegType = " " }
+        | "swap_leg_currency_required" -> { swapLeg with Currency = " " }
+        | _ -> { swapLeg with PaymentFrequency = Some " " }
+
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ leg ])
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)

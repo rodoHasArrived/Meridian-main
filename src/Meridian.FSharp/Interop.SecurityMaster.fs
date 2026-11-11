@@ -144,6 +144,42 @@ module internal SecurityTermsWriteVersion =
                putEndDate = put.PutEndDate
                putPrice = put.PutPrice |})
 
+    /// One swap leg as the flat family writes it below the version that introduced the leg's
+    /// scheduleConventions block.
+    let legPayload (leg: SwapLeg) =
+        {| legId = leg.LegId
+           legType = leg.LegType
+           currency = leg.Currency
+           direction = leg.Direction
+           index = leg.Index
+           fixedRate = leg.FixedRate
+           spreadBps = leg.SpreadBps
+           currentIndexRate = leg.CurrentIndexRate
+           notional = leg.Notional
+           paymentFrequency = leg.PaymentFrequency
+           dayCount = leg.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
+           exchangesPrincipal = leg.ExchangesPrincipal
+           notionalSchedule =
+               leg.NotionalSchedule
+               |> List.map (fun step -> {| effectiveDate = step.EffectiveDate; notional = step.Notional |})
+           resetSchedule =
+               leg.ResetSchedule
+               |> List.map (fun entry -> {| resetDate = entry.ResetDate; fixingRate = entry.FixingRate |}) |}
+
+    /// One swap leg as the flat family writes it from that version upward: the same members plus
+    /// the block (null when the leg declares nothing).
+    let legPayloadWithConventions (leg: SwapLeg) =
+        {| legPayload leg with scheduleConventions = conventionsPayload leg.ScheduleConventions |}
+
+/// The economic document's legStructure module (ADR-027 stage 3, S3-E8). Each leg is written
+/// exactly as the flat family writes a leg at the version that carries its scheduleConventions
+/// block, by the same function, so the flatten recovers the flat <c>legs</c> array from the
+/// module without a second definition of a leg's shape.
+[<AbstractClass; Sealed>]
+type SecurityLegStructureDocument private () =
+    static member LegsJson(structure: LegStructureTerms) : string =
+        JsonSerializer.Serialize(structure.Legs |> List.map SecurityTermsWriteVersion.legPayloadWithConventions)
+
 type SecurityIdentifierSnapshot(identifier: Identifier) =
     do
         if not (SecurityIdentifier.providerMetadataMatchesKind identifier) then
@@ -419,41 +455,18 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                    issuerName = terms.IssuerName
                    settlementType = terms.SettlementType |})
         | SecurityKind.Swap terms ->
-            let legPayload (leg: SwapLeg) =
-                {| legId = leg.LegId
-                   legType = leg.LegType
-                   currency = leg.Currency
-                   direction = leg.Direction
-                   index = leg.Index
-                   fixedRate = leg.FixedRate
-                   spreadBps = leg.SpreadBps
-                   currentIndexRate = leg.CurrentIndexRate
-                   notional = leg.Notional
-                   paymentFrequency = leg.PaymentFrequency
-                   dayCount = leg.DayCount |> Option.map Meridian.Contracts.SecurityMaster.DayCountConventions.TermLabel
-                   exchangesPrincipal = leg.ExchangesPrincipal
-                   notionalSchedule =
-                       leg.NotionalSchedule
-                       |> List.map (fun step -> {| effectiveDate = step.EffectiveDate; notional = step.Notional |})
-                   resetSchedule =
-                       leg.ResetSchedule
-                       |> List.map (fun entry -> {| resetDate = entry.ResetDate; fixingRate = entry.FixingRate |}) |}
             if writesScheduleConventions () then
                 JsonSerializer.Serialize(
                     {| schemaVersion = schemaVersion
                        effectiveDate = terms.EffectiveDate
                        maturityDate = terms.MaturityDate
-                       legs =
-                           terms.Legs
-                           |> List.map (fun leg ->
-                               {| legPayload leg with
-                                    scheduleConventions = SecurityTermsWriteVersion.conventionsPayload leg.ScheduleConventions |}) |})
+                       legs = terms.Legs |> List.map SecurityTermsWriteVersion.legPayloadWithConventions |})
             else
                 JsonSerializer.Serialize(
                     {| schemaVersion = schemaVersion
                        effectiveDate = terms.EffectiveDate
                        maturityDate = terms.MaturityDate
-                       legs = terms.Legs |> List.map legPayload |})
+                       legs = terms.Legs |> List.map SecurityTermsWriteVersion.legPayload |})
         | SecurityKind.DirectLoan terms ->
             JsonSerializer.Serialize(
                 {| schemaVersion = schemaVersion
@@ -816,8 +829,8 @@ type SecurityMasterCommandFacade private () =
     static member ValidateDefinitionInvariants(typeName: string, modules: SecurityTermModules) =
         SecurityMaster.validateDefinitionInvariants typeName modules |> List.toArray
 
-    /// Per-class ledger of the validateKindTerms error codes the definition can express today;
-    /// every other code is codec-only until its subject data gains a module home.
+    /// Per-class ledger of the term-rule error codes, each of which the definition surface
+    /// expresses (complete since ADR-027 stage 3, S3-E8: no code is codec-only).
     static member DefinitionExpressibleCodes =
         SecurityMaster.definitionExpressibleCodes
         |> Map.toSeq
