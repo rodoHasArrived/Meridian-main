@@ -549,9 +549,19 @@ public sealed class AssetObligationDeclaredExerciseTimelineTests
     [InlineData("Bond", 3, "callSchedule", "null", false)]
     [InlineData("Bond", 3, "callSchedule", "{\"callDate\":\"2027-01-15\"}", false)]
     [InlineData("Bond", 3, "callDate", "\"2027-01-15\"", false)]
-    [InlineData("CertificateOfDeposit", 3, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
-    [InlineData("StructuredCredit", 4, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
-    public void DeclaresExerciseSchedule_FollowsTheSharedStampPredicate_ForBondCouponStructuresOnly(
+    // Increment 8f: the class gate is the terms schema, so the two other classes that declare the
+    // arrays are declaring records under the stamp that decodes them, and no other class is.
+    [InlineData("CertificateOfDeposit", 3, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", true)]
+    [InlineData("CertificateOfDeposit", 3, "putSchedule", "[{\"putDate\":\"2027-01-15\"}]", true)]
+    [InlineData("CertificateOfDeposit", 2, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
+    [InlineData("CertificateOfDeposit", 3, "callSchedule", "[null, {}]", false)]
+    [InlineData("StructuredCredit", 4, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", true)]
+    [InlineData("StructuredCredit", 4, "putSchedule", "[{\"putDate\":\"2027-01-15\"}]", true)]
+    [InlineData("StructuredCredit", 3, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
+    [InlineData("Deposit", 1, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
+    [InlineData("CommercialPaper", 1, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
+    [InlineData("Equity", 1, "callSchedule", "[{\"callDate\":\"2027-01-15\"}]", false)]
+    public void DeclaresExerciseSchedule_FollowsTheSharedStampPredicate_ForClassesWhoseTermsDeclareTheArrays(
         string assetClass, int stamp, string key, string valueJson, bool expected)
     {
         var terms = new Dictionary<string, object?>

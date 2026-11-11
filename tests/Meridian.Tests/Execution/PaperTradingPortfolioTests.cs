@@ -1037,6 +1037,79 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(expectedInterest);
     }
 
+    [Theory]
+    [InlineData(1, 2)]
+    [InlineData(30, 60)]
+    public void AccrueMarginInterest_ReplayingOperations_PreservesSingleChargeThroughPartialAndFullRepayment(
+        int days, int expectedInterest)
+    {
+        var boughtAt = new DateTimeOffset(2026, 11, 1, 12, 0, 0, TimeSpan.Zero);
+        var accruedAt = boughtAt.AddDays(days);
+        var buy = BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m) with { Timestamp = boughtAt };
+        var partialSale = BuildFill("AAPL", OrderSide.Sell, qty: 40, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(1)
+        };
+        var finalSale = BuildFill("AAPL", OrderSide.Sell, qty: 60, price: 200m) with
+        {
+            Timestamp = accruedAt.AddMinutes(2)
+        };
+
+        var originalTrace = RunScenario();
+        // Reconstruct the same explicit operations in fresh books twice. This is operation
+        // replay, not durable session replay: sessions do not yet record margin accruals.
+        for (var reconstruction = 0; reconstruction < 2; reconstruction++)
+            RunScenario().Should().Equal(originalTrace);
+
+        (DateTimeOffset Timestamp, string Description, LedgerAccount Account, decimal Debit, decimal Credit)[] RunScenario()
+        {
+            var ledger = new Meridian.Ledger.Ledger();
+            var portfolio = new PaperTradingPortfolio(
+            [
+                new AccountDefinition("margin-1", "Synthetic Reg T", AccountKind.Brokerage, 100_000m,
+                    MarginType: MarginAccountType.RegT),
+            ], ledger);
+
+            AssertStage(cash: 100_000m, principal: 0m, securities: 0m, expense: 0m, entries: 1);
+            portfolio.ApplyFill("margin-1", buy);
+            AssertStage(cash: 90_000m, principal: 10_000m, securities: 20_000m, expense: 0m, entries: 2);
+
+            portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt);
+            AssertStage(90_000m - expectedInterest, 10_000m, 20_000m, expectedInterest, entries: 3);
+
+            portfolio.ApplyFill("margin-1", partialSale);
+            AssertStage(94_000m - expectedInterest, 6_000m, 12_000m, expectedInterest, entries: 4);
+            portfolio.ApplyFill("margin-1", finalSale);
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+
+            // Once flat, another period accrues nothing and cannot charge repaid principal.
+            portfolio.AccrueMarginInterest(annualRate: 0.073m, days: days, asOf: accruedAt.AddDays(days));
+            AssertStage(100_000m - expectedInterest, 0m, 0m, expectedInterest, entries: 5);
+            ledger.Journal.Should().ContainSingle(entry => entry.Description.Contains("Margin interest"));
+            ledger.Journal.SelectMany(entry => entry.Lines)
+                .Where(line => line.Account == LedgerAccounts.MarginLoanPayable)
+                .Sum(line => line.Debit).Should().Be(10_000m, "repayment must retire only the original principal");
+
+            // Generated posting IDs and the constructor's wall-clock timestamp are not
+            // economic inputs. Every fill/accrual timestamp and every ledger amount is.
+            return ledger.Journal.SelectMany(entry => entry.Lines.Select(line =>
+                (entry.Description.StartsWith("Initial capital", StringComparison.Ordinal) ? DateTimeOffset.MinValue : entry.Timestamp,
+                    entry.Description, line.Account, line.Debit, line.Credit))).ToArray();
+
+            void AssertStage(decimal cash, decimal principal, decimal securities, decimal expense, int entries)
+            {
+                portfolio.Cash.Should().Be(cash);
+                portfolio.MarginBalance.Should().Be(principal);
+                portfolio.PortfolioValue.Should().Be(100_000m - expense);
+                ledger.GetBalance(LedgerAccounts.Cash).Should().Be(cash);
+                ledger.GetBalance(LedgerAccounts.MarginLoanPayable).Should().Be(principal);
+                ledger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(securities);
+                ledger.GetBalance(LedgerAccounts.MarginInterestExpense).Should().Be(expense);
+                ledger.Journal.Should().HaveCount(entries).And.OnlyContain(entry => entry.IsBalanced);
+            }
+        }
+    }
+
     [Fact]
     public void AccrueMarginInterest_CashAccount_NoChange()
     {

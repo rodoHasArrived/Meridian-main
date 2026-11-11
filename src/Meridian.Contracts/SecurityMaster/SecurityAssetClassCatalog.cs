@@ -413,7 +413,11 @@ public static class SecurityAssetClassCatalog
             ReadableTermsVersion: 5,
             SupportsProfileBackedTerms: true,
             Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity) { StampFloor = 2 },
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity)
+        {
+            StampFloor = 2,
+            ReclassifyingProfileIds = ["structured-credit-io-po"]
+        },
         new(
             AssetClass: "PrivateFundInterest",
             AssetPackIds: ["private-fund-partnership"],
@@ -431,7 +435,12 @@ public static class SecurityAssetClassCatalog
             SupportsProfileBackedTerms: true,
             // Spellings the private-fund pack planned and Asset Operations used to accept by name;
             // existing subjects carrying them keep resolving to this class.
-            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"]) { AccountingOutsideSlice = true },
+            Aliases: ["PrivateFund", "PartnershipInterest", "LimitedPartnershipInterest"])
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["PrivateFunds"],
+            ReclassifyingProfileIds = ["private-fund-interest"]
+        },
         new(
             AssetClass: "PrivateCompanyEquity",
             AssetPackIds: ["private-fund-partnership"],
@@ -447,7 +456,12 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["PrivateEquity"],
+            ReclassifyingProfileIds = ["private-company-equity"]
+        },
         new(
             AssetClass: "RealEstateHolding",
             AssetPackIds: ["real-estate"],
@@ -462,7 +476,12 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["RealEstate", "RealEstateInterest"],
+            ReclassifyingProfileIds = ["real-estate-holding"]
+        },
         new(
             AssetClass: "CommitmentGuarantee",
             AssetPackIds: ["commitment-guarantee"],
@@ -477,7 +496,12 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol
             ],
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.AlternativeAssetOperations,
-            SupportsProfileBackedTerms: true) { AccountingOutsideSlice = true },
+            SupportsProfileBackedTerms: true)
+        {
+            AccountingOutsideSlice = true,
+            ClassificationLabels = ["UnfundedCommitment", "Guarantee"],
+            ReclassifyingProfileIds = ["commitment-guarantee"]
+        },
         new(
             AssetClass: "Commodity",
             AssetPackIds: ["controlled-other-asset"],
@@ -862,6 +886,42 @@ public static class SecurityAssetClassCatalog
     /// <summary>The highest asset-class terms version this node admits on write; a document's S2 stamp may be lower.</summary>
     public static int GetTermsVersion(string? assetClass) => GetOrDefault(assetClass).TermsVersion;
 
+    /// <summary>
+    /// Whether <paramref name="value"/> is the routing key <paramref name="routingKey"/>: equal once
+    /// both are reduced to their letters and digits, ignoring case. <c>"Real Estate"</c>,
+    /// <c>"real-estate"</c> and <c>"RealEstate"</c> are one key; <c>"RealEstateFund"</c> is not.
+    /// </summary>
+    public static bool MatchesRoutingKey(string? value, string routingKey)
+    {
+        ArgumentNullException.ThrowIfNull(routingKey);
+        static string Token(string label) => new(label.Where(char.IsLetterOrDigit).ToArray());
+        return value is not null && string.Equals(Token(value), Token(routingKey), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// The catalogued classes that own a routing key equal to <paramref name="value"/>
+    /// (<see cref="SecurityAssetClassDescriptor.RoutingKeys"/>), in catalog order, each with the key
+    /// that matched. Empty when no class owns it.
+    /// </summary>
+    public static IReadOnlyList<(SecurityAssetClassDescriptor Descriptor, string RoutingKey)> ClassesOwningRoutingKey(string? value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return [];
+        }
+
+        var owners = new List<(SecurityAssetClassDescriptor, string)>();
+        foreach (var descriptor in All)
+        {
+            if (descriptor.RoutingKeys.FirstOrDefault(key => MatchesRoutingKey(value, key)) is { } matched)
+            {
+                owners.Add((descriptor, matched));
+            }
+        }
+
+        return owners;
+    }
+
     /// <summary>The S2 stamp floor of a document with no versioned declarations, including any later transform target.</summary>
     public static int GetStampFloor(string? assetClass) => GetStampFloor(GetOrDefault(assetClass));
 
@@ -1175,6 +1235,27 @@ public sealed record SecurityAssetClassDescriptor(
     /// <see cref="SecurityAssetClassCatalog.GetStampFloor(SecurityAssetClassDescriptor)"/> also accounts for later transform targets.
     /// </summary>
     public int StampFloor { get; init; } = TermsVersion;
+
+    /// <summary>
+    /// Labels, beyond the canonical name and <see cref="Aliases"/>, that name this class in a record's
+    /// classification metadata (<c>category</c>, <c>subType</c>, <c>accountingClassification</c>).
+    /// They are not aliases: a record cannot be created under one. They exist so metadata that names
+    /// this class is recognized as such when a profile resolves the record to a different class.
+    /// </summary>
+    public IReadOnlyList<string> ClassificationLabels { get; init; } = [];
+
+    /// <summary>
+    /// The registered custom-profile ids whose records resolve to this class instead of staying a
+    /// profile-backed CustomAsset. Only a profile id listed by exactly one class reclassifies.
+    /// </summary>
+    public IReadOnlyList<string> ReclassifyingProfileIds { get; init; } = [];
+
+    /// <summary>
+    /// The routing keys this class owns: its canonical name, its <see cref="Aliases"/> and its
+    /// <see cref="ClassificationLabels"/>. Compared whole, ignoring case and punctuation
+    /// (<see cref="SecurityAssetClassCatalog.MatchesRoutingKey"/>); never by substring.
+    /// </summary>
+    public IReadOnlyList<string> RoutingKeys => [AssetClass, .. Aliases ?? [], .. ClassificationLabels];
 
     /// <summary>Whether retained contracts support credit determination and linked auction settlement.</summary>
     public bool SupportsCreditLifecycle { get; init; }

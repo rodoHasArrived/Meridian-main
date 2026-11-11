@@ -223,6 +223,61 @@ public sealed class SecurityIdentifierHistoryPostgresTests(SecurityMasterDatabas
 
     private string Schema => fixture.Options.Schema;
 
+    [SecurityMasterDatabaseFact]
+    public async Task OneReplacement_StampsAllItsRevisionsWithOneRecordedTime_AfterEverythingTheSecurityAlreadyHolds()
+    {
+        // Migration 062 review, finding F3. A replacement that adds one identity, changes another and
+        // removes a third must sit wholly on one side of any recorded cutoff. The history is given a
+        // revision recorded an hour ahead, which is what a transaction that started earlier and
+        // committed later looks like to the next writer: stamping a new identity with the writer's own
+        // start time would then put it before the rest of the same replacement.
+        var store = Store();
+        var id = Guid.NewGuid();
+        var expiry = new DateTimeOffset(2026, 6, 30, 0, 0, 0, TimeSpan.Zero);
+        var figi = new SecurityIdentifierDto(SecurityIdentifierKind.Figi, $"BBG{id.ToString("N")[..9].ToUpperInvariant()}", false, ValidFrom);
+
+        await store.UpsertProjectionAsync(Projection(id, 1, Ticker(id), Isin(id)));
+        var created = await store.GetIdentifierRevisionsAsync(id, Later());
+        created.Select(static revision => revision.RecordedAt).Distinct().Should().ContainSingle();
+
+        await ExecuteAsync(
+            $"""
+            insert into {Schema}.security_identifier_revisions (
+                security_id, identifier_kind, identifier_value, valid_from, revision, change_kind,
+                normalized_identifier_value, provider, normalized_provider, is_primary, valid_to,
+                source, confidence, manual_override, recorded_by, recorded_at)
+            select security_id, identifier_kind, identifier_value, valid_from, revision + 1, 'Amended',
+                   normalized_identifier_value, provider, normalized_provider, is_primary, valid_to,
+                   'OperatorDesk', confidence, manual_override, 'earlier-transaction', now() + interval '1 hour'
+            from {Schema}.security_identifier_revisions
+            where security_id = @id and identifier_kind = 'Ticker'
+            """,
+            id);
+        var farCutoff = DateTimeOffset.UtcNow.AddHours(3);
+        var ahead = (await store.GetIdentifierRevisionsAsync(id, farCutoff)).Max(static revision => revision.RecordedAt);
+
+        await store.UpsertProjectionAsync(Projection(id, 2, Ticker(id) with { ValidTo = expiry }, figi));
+
+        var replacement = (await store.GetIdentifierRevisionsAsync(id, farCutoff))
+            .Where(revision => revision.RecordedAt > ahead)
+            .ToArray();
+        replacement.Select(static revision => (revision.IdentifierKind, revision.ChangeKind)).Should().BeEquivalentTo(new[]
+        {
+            ("Figi", SecurityIdentifierRevisionKinds.Added),
+            ("Isin", SecurityIdentifierRevisionKinds.Removed),
+            ("Ticker", SecurityIdentifierRevisionKinds.Expired)
+        });
+        var recordedAt = replacement.Select(static revision => revision.RecordedAt).Distinct().Should().ContainSingle(
+            "every revision of one replacement carries one recorded time").Subject;
+        recordedAt.Should().BeAfter(ahead, "the replacement is recorded after everything the security already holds");
+
+        // A cutoff just before the replacement sees none of it; a cutoff at it sees all of it.
+        (await store.GetIdentifiersRecordedAsOfAsync(id, recordedAt.AddTicks(-10))).Identifiers
+            .Select(static revision => revision.IdentifierKind).Should().BeEquivalentTo("Isin", "Ticker");
+        (await store.GetIdentifiersRecordedAsOfAsync(id, recordedAt)).Identifiers
+            .Select(static revision => revision.IdentifierKind).Should().BeEquivalentTo("Figi", "Ticker");
+    }
+
     private PostgresSecurityMasterStore Store() => new(fixture.Options);
 
     private static DateTimeOffset Later() => DateTimeOffset.UtcNow.AddMinutes(5);

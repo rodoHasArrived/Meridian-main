@@ -145,6 +145,11 @@ public sealed class ConfigJsonSchemaGenerator
                     ["items"] = CreateTypedSchema("string")
                 },
                 ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["GovernanceProfile"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["enum"] = new JsonArray("Standard", "Institutional")
+                },
                 ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
                 ["RequireIndependentProfileApprover"] = CreateTypedSchema("boolean"),
                 ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),

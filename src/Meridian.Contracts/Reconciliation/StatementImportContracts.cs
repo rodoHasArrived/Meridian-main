@@ -1,4 +1,4 @@
-namespace Meridian.Ui.Shared.Contracts.Reconciliation;
+namespace Meridian.Contracts.Reconciliation;
 
 public sealed record StatementImportSummaryDto(
     string ImportId,
