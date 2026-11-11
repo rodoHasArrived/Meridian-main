@@ -315,10 +315,16 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         return MarketEvent.AggregateBar(end, symbol, bar, source: "POLYGON");
     }
 
+    // The ledger identifies a trade by timestamp, price, size, aggressor and venue; the sequence
+    // number is not part of it. Stamping fixtures with the wall clock therefore let two trades
+    // built in the same clock tick collapse into one identity, which failed tests intermittently.
+    // Each sequence gets its own fixed timestamp instead.
+    private static readonly DateTimeOffset TradeFixtureEpoch = new(2026, 1, 5, 14, 30, 0, TimeSpan.Zero);
+
     private static MarketEvent CreateTradeEvent(string symbol, long sequence)
     {
         var trade = new Trade(
-            Timestamp: DateTimeOffset.UtcNow,
+            Timestamp: TradeFixtureEpoch.AddMilliseconds(sequence),
             Symbol: symbol,
             Price: 100.25m,
             Size: 100,
