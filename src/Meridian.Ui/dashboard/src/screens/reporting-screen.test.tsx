@@ -2507,6 +2507,127 @@ describe("ReportingScreen", () => {
     });
   });
 
+  it("starts a blank custom report from the builder and saves it as a new template draft", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        definition: {
+          templateId: { name: "custom-report-1", version: 1 },
+          displayName: "Custom report 1 Draft",
+          parameters: [],
+          sections: [],
+          grids: [],
+          accessPolicy: null
+        },
+        status: "Draft",
+        family: "CustomReport",
+        isBuiltIn: false,
+        isLatestApproved: false,
+        createdBy: "controller.admin",
+        createdAt: "2026-06-08T00:00:00Z",
+        updatedBy: "controller.admin",
+        updatedAt: "2026-06-08T00:00:00Z",
+        validationIssues: [],
+        auditTrail: []
+      })
+    });
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    const grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    expect(grid).toHaveTextContent("New report · not saved yet");
+    expect(within(grid).getByLabelText("Custom report 1 draft name")).toHaveValue("custom-report-1");
+    const sourceFields = within(grid).getByRole("list", { name: "Custom report 1 source fields" });
+    const transferStore = new Map<string, string>();
+    const dataTransfer = {
+      effectAllowed: "",
+      setData: vi.fn((type: string, value: string) => transferStore.set(type, value)),
+      getData: vi.fn((type: string) => transferStore.get(type) ?? "")
+    };
+    fireEvent.dragStart(within(sourceFields).getByText("Strategy").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Rows" }), { dataTransfer });
+    fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
+    fireEvent.drop(within(grid).getByRole("list", { name: "Custom report 1 Metrics" }), { dataTransfer });
+
+    await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as governed report template draft" }));
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/fund-structure/reporting/templates/drafts",
+      expect.objectContaining({ method: "POST" })
+    );
+    const [, request] = fetchMock.mock.calls[0];
+    const body = JSON.parse((request as RequestInit).body as string);
+    expect(body).toMatchObject({
+      name: "custom-report-1",
+      displayName: "Custom report 1 Draft",
+      family: "CustomReport",
+      basedOnVersion: null,
+      rationale: "New no-code custom report Custom report 1.",
+      grids: [
+        {
+          gridId: "grid-1",
+          title: "Custom report 1",
+          kind: "Pivot",
+          rowFields: ["strategy"],
+          metrics: [{ sourceField: "grossExposure", function: "Sum" }]
+        }
+      ]
+    });
+    await waitFor(() => {
+      expect(screen.getByRole("status", { name: "Save report-writer draft status" })).toHaveTextContent(
+        "Custom report 1 Draft draft saved."
+      );
+    });
+
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+  });
+
+  it("does not restore a discarded new report's edits into the next new report", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    let grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    fireEvent.change(within(grid).getByLabelText("Custom report 1 draft display name"), {
+      target: { value: "Edited then discarded" }
+    });
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    grid = screen.getAllByRole("group", { name: /new report-writer grid$/ })[0];
+    expect(within(grid).getByLabelText(/draft display name$/)).not.toHaveValue("Edited then discarded");
+  });
+
+  it("names a new custom report so it cannot collide with a retained template", async () => {
+    const user = userEvent.setup();
+    const retained = accounting.reporting.templates![0];
+    renderWithRouter(
+      <ReportingScreen
+        data={withReportTemplate({
+          ...retained,
+          templateId: "custom-report-1",
+          name: "Custom report 1",
+          family: "CustomReport",
+          isBuiltIn: false,
+          reportWriterGrids: []
+        })}
+      />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    const second = screen.getByRole("group", { name: "Custom report 2 new report-writer grid" });
+    expect(within(second).getByLabelText("Custom report 2 draft name")).toHaveValue("custom-report-2");
+    expect(screen.getByRole("group", { name: "Custom report 3 new report-writer grid" })).toBeInTheDocument();
+  });
+
   it("locks private no-code report-writer drafts to a user owner", async () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValueOnce({

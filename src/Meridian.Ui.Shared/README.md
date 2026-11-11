@@ -2072,6 +2072,9 @@ blocks report-writer formulas that reference unknown metrics/formulas, unsupport
 fields, or self/forward/circular formula dependencies before those templates can enter review or
 approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
 `basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
+Draft formula validation reads hyphenated bare references with the same
+`ReportWriterFormulaReferences` rule as the grid engine, so `pnl-fees` between two known metrics
+validates as subtraction while a real `net-pnl` metric stays one reference.
 `IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
 `ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
 period-close schedule's as-of date; the schedule service never derives a period selector from a

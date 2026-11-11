@@ -571,3 +571,20 @@ locks without waiting, and refuse a backfill above one million identifier rows u
 timeout exceeds thirty seconds (or is unlimited). The locks last through commit/rollback; the
 attestations describe deployment facts the database cannot infer. An already-applied 062 is not
 rechecked. The shipped SQL and checksum are unchanged. See the governed-edit rollout for settings.
+
+### Validation follow-up — 2026-11-11
+
+The follow-through moved the data and left 55 rules reading the per-class record in
+`validateCodecOnlyKindTerms`. With every field on a shared module those rules had a home, so
+they now sit on the definition surface with unchanged codes and messages, each ledgered and
+proven on both surfaces. The codec-only validator is removed: `validateKindTerms` is
+`validateDefinitionTerms` over the kind's modules, and the ledger is the complete list of
+term-rule codes.
+
+Two defects found in review of an earlier, superseded design of this stage also held here and
+are fixed. The retained-document fold no longer refills a value the flat row carries exactly
+and an amendment cleared (`FlatAuthoritativeFields`). And an option's exercise style must be
+one of the three spellings the flat decode reads back (`option_exercise_style_invalid`).
+
+One known limitation is recorded, not fixed: a directly built per-class record can set a
+module member its class's flat row does not persist. See the review record.

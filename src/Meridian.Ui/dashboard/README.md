@@ -1646,6 +1646,10 @@ version-approval workflow without adding browser-local lifecycle rules. Custom d
 post submit-for-review decisions to
 `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/submit`, and in-review
 rows post approval or rejection decisions to the matching `/approve` and `/reject` shared
+In Report Builder mode a `New custom report` control adds a blank, unsaved report-writer grid whose
+field palette comes from the first retained dataset source (or the preview fixture fields). Saving it
+posts a new `CustomReport` template draft with no base version; its preview renders the inline grid
+against an approved built-in template because the render endpoint requires an approved template.
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored

@@ -878,8 +878,8 @@ type SecurityMasterCommandFacade private () =
     static member ValidateDefinitionInvariants(typeName: string, modules: SecurityTermModules) =
         SecurityMaster.validateDefinitionInvariants typeName modules |> List.toArray
 
-    /// Per-class ledger of the validateKindTerms error codes the definition can express today;
-    /// every other code is codec-only until its subject data gains a module home.
+    /// Per-class ledger of the term-rule error codes, each of which the definition surface
+    /// expresses (complete since the stage-3 contraction: no code is codec-only).
     static member DefinitionExpressibleCodes =
         SecurityMaster.definitionExpressibleCodes
         |> Map.toSeq
