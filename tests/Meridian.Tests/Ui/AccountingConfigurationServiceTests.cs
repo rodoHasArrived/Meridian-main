@@ -5999,7 +5999,6 @@ public sealed partial class AccountingConfigurationServiceTests
     {
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
-        var service = CreateManualJournalEntryWorkbenchService(configuration);
         var draft = BalancedManualJournalEntry() with
         {
             EntryType = ManualJournalEntryTypeDto.CapitalCall,
@@ -6020,7 +6019,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: "settlement:fund-alpha:capital-call:20260630")
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft);
         var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -6238,7 +6237,6 @@ public sealed partial class AccountingConfigurationServiceTests
                 new DateTimeOffset(2026, 7, 2, 13, 0, 0, TimeSpan.Zero),
                 IsVoided: false,
                 RecordedBy: "cash-ops@example.com"));
-        var service = CreateManualJournalEntryWorkbenchService(configuration, bankTransactionSource: bankSource);
         var draft = BalancedManualJournalEntry() with
         {
             JournalEntryId = journalEntryId,
@@ -6265,7 +6263,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: settlementReference)
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft, bankSource);
         await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -6298,7 +6296,6 @@ public sealed partial class AccountingConfigurationServiceTests
     {
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
-        var service = CreateManualJournalEntryWorkbenchService(configuration);
         var journalEntryId = Guid.Parse("20202020-2020-2020-2020-202020202020");
         const string paymentIntentId = "payment:fund-alpha:capital-call:scoped-evidence";
         const string settlementReference = "settlement:fund-alpha:capital-call:scoped-evidence";
@@ -6331,7 +6328,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: settlementReference)
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft);
         await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -7780,7 +7777,8 @@ public sealed partial class AccountingConfigurationServiceTests
         bool includeDefaultJournalStore = true,
         IGovernedLedgerPostingTarget? postingTarget = null,
         IManualJournalEntryDraftStore? draftStore = null,
-        bool includeAuthoritativeSecurityMaster = true)
+        bool includeAuthoritativeSecurityMaster = true,
+        IPrivateCapitalStore? privateCapitalStore = null)
     {
         journalStore ??= includeDefaultJournalStore
             ? WritableManualJournalLedgerJournalStore.Default()
@@ -7796,7 +7794,8 @@ public sealed partial class AccountingConfigurationServiceTests
             journalStore: journalStore,
             reportPackWorkflowService: reportPackWorkflowService,
             bankTransactionSource: bankTransactionSource,
-            postingTarget: postingTarget);
+            postingTarget: postingTarget,
+            privateCapitalStore: privateCapitalStore);
     }
 
     private static async Task<ManualJournalCloseLockAuthorityFixture> CreateManualJournalCloseLockAuthorityFixtureAsync(

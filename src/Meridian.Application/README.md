@@ -27,6 +27,11 @@ Backfill resume checkpoints are written only after the final pipeline flush succ
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
 provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
 
+Storage composition registers the PostgreSQL private-capital authority alongside the ledger store.
+Its banking schema follows `BankingStartup.SchemaVariable`; funding requires retained banking rows
+in the same database as the ledger for atomic source validation. Business workflows remain owned
+by Financial Operations and shared workstation services, rather than this composition layer.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v3`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 and v2 through their original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no

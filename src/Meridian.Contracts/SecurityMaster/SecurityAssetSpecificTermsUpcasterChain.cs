@@ -360,7 +360,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
                 foreach (var leg in structuralLegs.EnumerateArray())
                 {
                     if (leg.ValueKind != JsonValueKind.Object
-                        || !leg.TryGetProperty("scheduleConventions", out var block)
+                        || !leg.TryGetProperty(SecurityVersionedTerms.ScheduleConventionsKey, out var block)
                         || block.ValueKind != JsonValueKind.Object)
                         continue;
                     if (block.EnumerateObject().Any(static member => member.Value.ValueKind != JsonValueKind.Null
@@ -386,12 +386,12 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
 
             // The frozen fill: at or above its Since the block key is present, null when nothing
             // is declared; below it the key is absent (ADR-024 decision 3).
-            if (conventionsSince is not null && stamp >= conventionsSince.Value && !HasExactScheduleField(exactDeclaredSchedule, "scheduleConventions"))
+            if (conventionsSince is not null && stamp >= conventionsSince.Value && !HasExactScheduleField(exactDeclaredSchedule, SecurityVersionedTerms.ScheduleConventionsKey))
             {
                 WriteScheduleConventions(writer, conventions);
             }
 
-            if ((writeSchedules || (callScheduleSince is { } schedulesVersion && stamp >= schedulesVersion)) && !HasExactScheduleField(exactDeclaredSchedule, "callSchedule"))
+            if ((writeSchedules || (callScheduleSince is { } schedulesVersion && stamp >= schedulesVersion)) && !HasExactScheduleField(exactDeclaredSchedule, SecurityVersionedTerms.CallScheduleKey))
             {
                 WriteCallSchedule(writer, callEntries, callModule);
                 WritePutSchedule(writer, putEntries);
@@ -1146,12 +1146,12 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     /// </summary>
     public static IReadOnlyList<string> RecoverableKeys(string assetClass)
         => TryGetClassFlattening(assetClass, out var mappings)
-            ? mappings.Select(static mapping => mapping.FlatKey).Concat(StructuralKeys(assetClass)).Concat(SecurityAssetTermsSchema.Field(assetClass, "callSchedule") is null ? [] : new[] { "scheduleConventions", "callSchedule", "putSchedule" }).Distinct(StringComparer.Ordinal).ToArray()
+            ? mappings.Select(static mapping => mapping.FlatKey).Concat(StructuralKeys(assetClass)).Concat(SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.CallScheduleKey) is null ? [] : new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey }).Distinct(StringComparer.Ordinal).ToArray()
             : [];
 
     private static IReadOnlyList<string> StructuralModuleKeys(string assetClass, string module) => (assetClass, module) switch
     {
-        ("Bond" or "CertificateOfDeposit" or "StructuredCredit", "declaredSchedule") => ["scheduleConventions", "callSchedule", "putSchedule"],
+        ("Bond" or "CertificateOfDeposit" or "StructuredCredit", "declaredSchedule") => [SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey],
         ("CreditDefaultSwap", "contractualRate") => ["fixedCouponBps", "paymentFrequency", "dayCount"],
         ("StructuredNote", "contractualRate") => ["couponRate", "paymentFrequency"],
         ("CommitmentGuarantee", "contractualRate") => ["feeRate"],

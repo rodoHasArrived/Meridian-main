@@ -179,6 +179,7 @@ classDiagram
         +IReadOnlyList~string~ Assumptions
         +IReadOnlyList~PortfolioCashScenarioDto~ AvailableScenarios
         +string BaseCurrency
+        +Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto? Blocker
         +IReadOnlyList~string~ BlockingReasons
         +IReadOnlyList~PortfolioCashLadderBucketDto~ Buckets
         +IReadOnlyList~PortfolioCashLadderContributionDto~ Contributions
@@ -186,7 +187,6 @@ classDiagram
         +DateTimeOffset GeneratedAt
         +int HorizonDays
         +bool IsDecisionReady
-        +decimal MinimumCashThreshold
     }
     class Meridian_Contracts_AssetOperations_PortfolioCashLadderPositionDto["PortfolioCashLadderPositionDto"] {
         +AssetOperationsDetailDto Operations
