@@ -1,13 +1,14 @@
 // Meridian DepthChart — order-book market depth (volume profile). Cumulative bid size rises as a
 // green step area toward the mid from the left; cumulative ask size rises red to the right. The
 // mid price marks the spread. Reads a live order book at a glance. Explicit-height svg.
+import { ChartSvg, type ChartA11yProps } from "./chart-a11y";
 
 export interface DepthLevel {
   price: number;
   size: number;
 }
 
-export interface DepthChartProps {
+export interface DepthChartProps extends ChartA11yProps {
   /** Bid levels — any order; cumulated outward from the mid. */
   bids: DepthLevel[];
   /** Ask levels — any order; cumulated outward from the mid. */
@@ -39,7 +40,10 @@ export function DepthChart({
   priceFmt = (p) => p.toFixed(2),
   sizeFmt = (s) => (s >= 1000 ? `${(s / 1000).toFixed(1)}k` : String(s)),
   sizeTicks = 4,
-  priceTicks = 7
+  priceTicks = 7,
+  ariaLabel = "Order-book depth chart",
+  ariaDescription,
+  accessibleData
 }: DepthChartProps) {
   const W = 960;
   const H = 360;
@@ -103,12 +107,12 @@ export function DepthChart({
   const priceLabels = Array.from({ length: pStep + 1 }, (_, i) => pLo + (i / pStep) * pSpan);
 
   return (
-    <svg
+    <ChartSvg
       viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
       style={{ width: "100%", height: "100%", display: "block" }}
-      role="img"
-      aria-label="Order-book depth chart"
+      ariaLabel={ariaLabel}
+      ariaDescription={ariaDescription}
+      accessibleData={accessibleData}
     >
       <rect x="0" y="0" width={W} height={H} fill={PLOT} />
       {[...new Set(sTicks)].map((s, k) => (
@@ -138,7 +142,7 @@ export function DepthChart({
         </text>
       ))}
       <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke={BORDER} strokeWidth="1.2" />
-    </svg>
+    </ChartSvg>
   );
 }
 
