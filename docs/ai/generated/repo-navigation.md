@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-11T07:36:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 39 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 20 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 10 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 9 |
-| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | `a970ac12` (2026-11-06T21:21:21+00:00) | 1 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `4e6151df` (2026-11-06T19:11:01+00:00) | 14 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `8b0e25ea` (2026-11-06T18:32:01+00:00) | 19 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 17 |
-| `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | `4cf61eca` (2026-11-06T18:25:31+00:00) | 7 |
-| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 8 |
-| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
-| `src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs` | Execution, Risk, and Strategies | `cd0070f4` (2026-11-06T18:11:29+00:00) | 7 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | `dcece77e` (2026-11-06T17:56:13+00:00) | 9 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `fb9ade8553` (2026-11-10T23:52:19Z) | 22 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `f11a27bc6f` (2026-11-10T23:51:41Z) | 51 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `f11a27bc6f` (2026-11-10T23:51:41Z) | 35 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 57 |
+| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 2 |
+| `src/Meridian.Application/README.md` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 55 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 50 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `7c25d353c8` (2026-11-10T23:18:00Z) | 26 |
+| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 24 |
+| `src/Meridian.Ui/README.md` | Unmapped | `7c25d353c8` (2026-11-10T23:18:00Z) | 14 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `7c25d353c8` (2026-11-10T23:18:00Z) | 12 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 11 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 10 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 6 |
 
