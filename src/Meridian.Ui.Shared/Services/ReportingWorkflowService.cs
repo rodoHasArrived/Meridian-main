@@ -805,7 +805,7 @@ public sealed class ReportTemplateRegistryService
         foreach (var formula in formulas)
         {
             var formulaName = formula.Name.Trim();
-            var references = ExtractFormulaReferences(formula.Expression);
+            var references = ExtractFormulaReferences(formula.Expression, availableRowReferences.Contains);
             foreach (var reference in references.RowReferences)
             {
                 if (!availableRowReferences.Contains(reference))
@@ -854,7 +854,9 @@ public sealed class ReportTemplateRegistryService
     private static IEnumerable<string> ResolveGeneratedFormulaReferences(ReportWriterGridDefinitionDto grid) =>
         grid.Kind == ReportWriterGridKindDto.Contribution ? ContributionGeneratedFields : [];
 
-    private static FormulaReferenceSet ExtractFormulaReferences(string expression)
+    private static FormulaReferenceSet ExtractFormulaReferences(
+        string expression,
+        Func<string, bool> isKnownRowReference)
     {
         var rowReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var totalReferences = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -907,7 +909,13 @@ public sealed class ReportTemplateRegistryService
                 continue;
             }
 
-            rowReferences.Add(identifier);
+            // Same hyphen rule as the grid engine: 'pnl-fees' is one reference only when that
+            // name is known; otherwise the known prefix is the reference and the rest is re-read.
+            var referenceLength = Meridian.Reporting.ReportWriterFormulaReferences.ResolveReferenceLength(
+                identifier,
+                isKnownRowReference);
+            rowReferences.Add(identifier[..referenceLength]);
+            position = identifierStart + referenceLength;
         }
 
         return new FormulaReferenceSet(rowReferences.ToArray(), totalReferences.ToArray());

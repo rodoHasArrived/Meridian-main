@@ -1,6 +1,6 @@
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
-import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { FileText, Landmark, Network, PencilLine, Plus, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -54,7 +54,8 @@ import {
   type ReportingTemplateLifecycleActionRow,
   type ReportingTemplateRow,
   type ReportingWriterGridRow,
-  type ReportingWriterToken
+  type ReportingWriterToken,
+  buildNewCustomReportWriterGrid
 } from "@/screens/reporting-screen.view-model";
 import { ReportingPrivateCapitalReadinessPanel } from "@/screens/reporting-screen.private-capital-readiness";
 import {
@@ -268,6 +269,21 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(reportingData));
   const reportWriterDatasetSources = reportingData?.reportWriterDatasetSources ?? [];
+  const [newCustomWriterGrids, setNewCustomWriterGrids] = useState<ReportingWriterGridRow[]>([]);
+  const newCustomReportOrdinal = useRef(0);
+  function addNewCustomWriterGrid() {
+    newCustomReportOrdinal.current += 1;
+    // Preview renders against an approved, accessible template; built-ins always qualify.
+    const host = vm.templateRows.find((template) => template.sourceLabel === "Built-in" && template.isAccessible)
+      ?? vm.templateRows.find((template) => template.canRunOnDemand)
+      ?? null;
+    const grid = buildNewCustomReportWriterGrid(
+      newCustomReportOrdinal.current,
+      reportWriterDatasetSources[0]?.fields,
+      host ? { templateId: host.templateName, templateVersion: host.version } : null
+    );
+    setNewCustomWriterGrids((current) => [grid, ...current]);
+  }
   const {
     writerDraftStatus,
     writerPreviewStatus,
@@ -353,7 +369,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     : reportBuilderFamilyTemplates.length > 0
       ? reportBuilderFamilyTemplates
       : vm.templateRows;
-  const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
+  const writerGrids = [...newCustomWriterGrids, ...writerTemplateRows.flatMap((template) => template.writerGrids)];
   const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
   const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
   const reportPackWorkflowRecord = [...(reportingData?.workflowRecords ?? [])]
@@ -1471,6 +1487,29 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         draft={brandingDraft}
         onDraftChange={updateBrandingDraft}
       />
+      ) : null}
+
+      {isReportBuilderTaskMode ? (
+        <section
+          aria-label="Start a custom report"
+          className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3"
+        >
+          <p className="min-w-0 text-xs leading-5 text-muted-foreground">
+            Start a blank report-writer grid, lay it out, then save it as a draft for controller review.
+          </p>
+          <span className="flex flex-wrap items-center gap-2">
+            {newCustomWriterGrids.length > 0 ? (
+              <Button type="button" size="sm" variant="ghost" onClick={() => setNewCustomWriterGrids([])}>
+                <XCircle className="h-4 w-4" aria-hidden="true" />
+                Discard new reports
+              </Button>
+            ) : null}
+            <Button type="button" size="sm" variant="outline" onClick={addNewCustomWriterGrid}>
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              New custom report
+            </Button>
+          </span>
+        </section>
       ) : null}
 
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (
@@ -2877,8 +2916,10 @@ function buildReportTemplateDraftRequest(
     sections: [],
     parameters: [],
     family: grid.family || "CustomReport",
-    basedOnVersion: parseReportTemplateVersion(grid.templateVersion),
-    rationale: `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
+    basedOnVersion: grid.isNew ? null : parseReportTemplateVersion(grid.templateVersion),
+    rationale: grid.isNew
+      ? `New no-code custom report ${grid.title}.`
+      : `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
     grids: [gridDefinition],
     accessPolicy: buildReportAccessPolicy(settings)
   };
@@ -2893,10 +2934,11 @@ function buildRenderReportTemplateRequest(
   formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
   const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings, chartDraft, formatRules);
+  const renderTemplate = grid.previewHost ?? grid;
   return {
     templateId: {
-      name: grid.templateId,
-      version: parseReportTemplateVersion(grid.templateVersion) ?? 1
+      name: renderTemplate.templateId,
+      version: parseReportTemplateVersion(renderTemplate.templateVersion) ?? 1
     },
     parameters: {
       period: "preview-period",

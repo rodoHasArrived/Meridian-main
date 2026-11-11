@@ -936,7 +936,7 @@ export function ReportWriterDesignerGrid({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="text-sm font-semibold text-foreground">{grid.title}</h3>
-          <p className="mt-1 text-[11px] text-muted-foreground">{presentReportingIdentifier(grid.templateId)} · v{grid.templateVersion}</p>
+          <p className="mt-1 text-[11px] text-muted-foreground">{grid.isNew ? "New report · not saved yet" : `${presentReportingIdentifier(grid.templateId)} · v${grid.templateVersion}`}</p>
         </div>
         <span className="flex flex-wrap items-center gap-1.5">
           <Badge variant="outline">{settings.gridKind}</Badge>

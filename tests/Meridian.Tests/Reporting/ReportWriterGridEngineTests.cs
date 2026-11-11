@@ -537,6 +537,54 @@ public sealed class ReportWriterGridEngineTests
         row.Values["acyclic"].Should().Be("200");
     }
 
+    [Fact]
+    public void RenderGrids_ReadsHyphenBetweenKnownFieldsAsSubtraction()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"), ("net-pnl", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "hyphen-grid",
+                "Hyphen Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    new ReportWriterMetricDefinitionDto("net-pnl", "net-pnl")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("afterFees", "pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("afterFeesLessOne", "pnl-fees-1"),
+                    // A real hyphenated field still wins over subtraction, bare or braced.
+                    new ReportWriterFormulaDefinitionDto("hyphenField", "net-pnl + 1"),
+                    new ReportWriterFormulaDefinitionDto("hyphenFieldLessFees", "net-pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("missing", "pnl-costs"),
+                    new ReportWriterFormulaDefinitionDto("unknownWhole", "gross-costs")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        var row = rendered.Rows.Single();
+        row.Values["afterFees"].Should().Be("11");
+        row.Values["afterFeesLessOne"].Should().Be("10");
+        row.Values["hyphenField"].Should().Be("101");
+        row.Values["hyphenFieldLessFees"].Should().Be("96");
+        row.Values["missing"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w => w.Contains("'missing'") && w.Contains("field 'costs' was not found"));
+        rendered.Warnings.Should().Contain(w => w.Contains("'unknownWhole'") && w.Contains("field 'gross-costs' was not found"));
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "afterFees").SourceFields
+            .Should().Equal("fees", "pnl");
+        rendered.Lineage.Formulas.Single(formula => formula.Name == "hyphenFieldLessFees").SourceFields
+            .Should().Equal("fees", "net-pnl");
+    }
+
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
         values.ToDictionary(static value => value.Key, static value => value.Value, StringComparer.OrdinalIgnoreCase);
 }
