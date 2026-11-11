@@ -279,6 +279,9 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "bond_step_rate_invalid",
                 "bond_step_dates_duplicate"
             ],
+            // The flat codec reads an exercise style it does not recognise as no style, so an
+            // unrecognised one reaches a kind only on a directly built record.
+            ["Option"] = ["option_exercise_style_invalid"],
             // The flat codec refuses a leg whose type or currency is blank and reads a blank
             // payment frequency as absent, so only a directly built record can carry one.
             ["Swap"] =

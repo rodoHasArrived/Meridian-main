@@ -278,3 +278,65 @@ let ``a definition that lacks a module fails its required rules and passes its o
     Assert.DoesNotContain("bond_principal_schedule_invalid", codes "Bond")
     Assert.DoesNotContain("structured_credit_attachment_point_invalid", codes "StructuredCredit")
     Assert.DoesNotContain("covenant_type_required", codes "DirectLoan")
+
+// The exercise module holds an option's style as text. The flat writer writes it verbatim and the
+// option decode reads any spelling but American, European or Bermudan as no style, so a directly
+// built record with another spelling would be accepted and then lose its style on the next read.
+// The flat codec cannot produce the case (it already reads an unrecognised style as none), so the
+// rule is pinned here.
+let private optionWithStyle (style: string option) : SecurityKind =
+    SecurityKind.Option {
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2027, 6, 18)) }
+        ListingDetail =
+            { OptChainId = None
+              SettlementType = None
+              IsAdjusted = None
+              LastTradingDt = None
+              RootSymbol = None
+              ContractMonth = None
+              FirstNoticeDt = None
+              DeliveryMonthDt = None
+              DeliveryLocationCode = None
+              IsRollTarget = None
+              RollWindowDays = None }
+        Exercise =
+            { OptionRight = Some "Call"
+              StrikePrice = Some 100m
+              StrikeRate = None
+              ExerciseStyle = style
+              UnderlyingSecurityId = Some (SecurityId (Guid.Parse "9e9e9e9e-0000-0000-0000-000000000005"))
+              PremiumAmount = None }
+        TradingParameters =
+            { LotSize = None
+              TickSize = None
+              ContractMultiplier = Some 100m
+              MarginRequirementPct = None
+              TradingHoursUtc = None
+              CircuitBreakerThresholdPct = None }
+    }
+
+[<Theory>]
+[<InlineData("American")>]
+[<InlineData("European")>]
+[<InlineData("Bermudan")>]
+let ``an option with a recognised exercise style passes both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle (Some style))
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``an option with no exercise style passes both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle None)
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("european")>]
+[<InlineData("Asian")>]
+[<InlineData(" ")>]
+let ``an option with an exercise style the flat codec would not read back is refused on both surfaces`` (style: string) =
+    let kindCodes, definitionCodes = bothSurfaces "Option" (optionWithStyle (Some style))
+    Assert.Contains("option_exercise_style_invalid", kindCodes)
+    Assert.Contains("option_exercise_style_invalid", definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)

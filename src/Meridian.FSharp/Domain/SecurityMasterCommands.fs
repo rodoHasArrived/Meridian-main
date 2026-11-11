@@ -196,6 +196,15 @@ module SecurityMaster =
                 (error "option_strike_invalid" "Option strike must be greater than zero.")
             @ require (contractMultiplier |> Option.exists (fun multiplier -> multiplier > 0m))
                 (error "option_multiplier_invalid" "Option multiplier must be greater than zero.")
+            // The exercise module holds the style as text, the flat writer writes it verbatim and
+            // the option decode reads any spelling but these three as no style, so another spelling
+            // would be accepted and then lost on the next read. The match is exact because the
+            // reader's is.
+            @ require
+                (modules.Exercise
+                 |> Option.bind (fun terms -> terms.ExerciseStyle)
+                 |> Option.forall (fun style -> List.contains style [ "American"; "European"; "Bermudan" ]))
+                (error "option_exercise_style_invalid" "Option ExerciseStyle must be American, European or Bermudan when present.")
         | "Future" ->
             []
             @ requireSupplied "expiry" (maturityDate.IsSome)
@@ -789,7 +798,9 @@ module SecurityMaster =
     /// list and the equivalence suite proves each entry on both surfaces.
     let definitionExpressibleCodes : Map<string, string list> =
         Map.ofList [
-            "Option", [ "required_module_value_missing"; "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_multiplier_invalid" ]
+            "Option",
+            [ "required_module_value_missing"; "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"
+              "option_multiplier_invalid"; "option_exercise_style_invalid" ]
             "Future",
             [ "required_module_value_missing"; "future_multiplier_invalid"; "future_root_symbol_required"
               "future_contract_month_required" ]
