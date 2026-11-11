@@ -621,6 +621,39 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_DoesNotSplitAForwardReferenceToAHyphenatedFormula()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "forward-grid",
+                "Forward Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("result", "pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("pnl-fees", "100")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["result"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w =>
+            w.Contains("'result'") && w.Contains("field 'pnl-fees' was not found or was not numeric"));
+    }
+
+    [Fact]
     public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
     {
         var rows = new[]

@@ -805,6 +805,12 @@ public static class ReportWriterGridEngine
         IReadOnlyDictionary<string, decimal> totals,
         ISet<string> warnings)
     {
+        // Every configured formula name is a known reference whether or not it has been evaluated
+        // yet, so a forward reference to a hyphenated formula stays an unavailable reference
+        // instead of being re-read as a subtraction.
+        var formulaNames = formulas
+            .Select(static formula => formula.Name)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
         foreach (var row in rows)
         {
             foreach (var formula in formulas)
@@ -821,7 +827,9 @@ public static class ReportWriterGridEngine
                         formula.Expression,
                         field => ResolveRowNumber(row, field),
                         field => totals.TryGetValue(field, out var value) ? value : null,
-                        field => row.NumericValues.ContainsKey(field) || row.Values.ContainsKey(field));
+                        field => row.NumericValues.ContainsKey(field)
+                                 || row.Values.ContainsKey(field)
+                                 || formulaNames.Contains(field));
                     var value = evaluator.Evaluate();
                     row.NumericValues[formula.Name] = value;
                     row.Values[formula.Name] = FormatDecimal(value);
