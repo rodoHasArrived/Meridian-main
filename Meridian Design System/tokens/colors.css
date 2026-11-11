@@ -107,6 +107,18 @@
   --navy-a20:           color-mix(in srgb, var(--navy)   20%, transparent);
 
   --blue-a10:           color-mix(in srgb, var(--purple) 10%, transparent);
+  /* Dropped in the 4.3.0 retone while the scaffold script, two cards and the workstation's
+     selection wash still read it, so each rendered its literal in every theme. */
+  --accent-a10:         color-mix(in srgb, var(--accent) 10%, transparent);
+
+  /* Text-safe variants for the three hues that had none. The terracotta signal, the Field
+     slate and the pending taupe are all under 4.5:1 as text on their own wash in light mode
+     (3.33, 4.14 and 4.21:1), and --accent-dim is a pressed FILL that sits lighter than the
+     signal, not a text ink. The Field and pending inks follow the 75% -dim rule, under the
+     names the browser workstation also declares; the signal ink is package-only. */
+  --brand-signal-text:  color-mix(in srgb, var(--accent)      72%, var(--dim-mix));
+  --brand-field-dim:    color-mix(in srgb, var(--brand-field) 75%, var(--dim-mix));
+  --pending-dim:        color-mix(in srgb, var(--pending)     75%, var(--dim-mix));
 
   /* ── Environment modes (Badge: live / paper / fixture) ── */
   --mode-live:          var(--red);
@@ -212,9 +224,8 @@
   --panel-strong-bg:  var(--ws-surface);
   --panel-soft-bg:    var(--ws-surface-subtle);
   --surface-input:    var(--ws-surface-subtle);
-  /* The ONE alias that deliberately does not mirror upstream's mapping: the app points
-     --cyan-focus at --ws-accent, and this system's focus law forbids the signal in a focus
-     rule, so it resolves to the interaction blue instead. Recorded in parity-manifest.json. */
+  /* Focus is the interaction blue; the focus law forbids the signal in a focus rule. The app
+     pointed --cyan-focus at --ws-accent until the 4.3.0 migration and now mirrors this. */
   --cyan-focus:       var(--focus);
 }
 
@@ -222,24 +233,28 @@
    The Meridian operator surfaces classify everything as a readiness state. These
    tokens drive the operations components (SeverityBadge, ReadinessPanel, GateRail,
    ValidationIssueList, EvidenceLink, TrustStrip). DERIVED from the Tier-2 semantic
-   palette so white-label and dark flow through automatically. Never hardcode a Tier-3 hex. */
+   palette so white-label and dark flow through automatically. Never hardcode a Tier-3 hex.
+   Every *-fg is chip TEXT, so it reads the 75% -dim/-ink variant of its hue, never the raw
+   hue: the raw hues measure 3.3-4.5:1 on their own wash in light mode. The workstation
+   (src/Meridian.Ui/dashboard) kept the -dim wiring through the 4.3.0 retone; this layer
+   follows it. Borders and washes keep the raw hue. */
 :root {
   /* Severity (operator status chips) — DERIVED from the semantic palette. */
-  --severity-blocked-fg: var(--red);    --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
-  --severity-action-fg:  var(--orange); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
-  --severity-review-fg:  var(--accent); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
-  --severity-ready-fg:   var(--green);  --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
+  --severity-blocked-fg: var(--red-dim); --severity-blocked-bd: color-mix(in srgb, var(--red) 40%, transparent);    --severity-blocked-bg: color-mix(in srgb, var(--red) 10%, transparent);
+  --severity-action-fg:  var(--orange-dim); --severity-action-bd:  color-mix(in srgb, var(--orange) 42%, transparent); --severity-action-bg:  color-mix(in srgb, var(--orange) 11%, transparent);
+  --severity-review-fg:  var(--brand-signal-text); --severity-review-bd:  color-mix(in srgb, var(--accent) 36%, transparent); --severity-review-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
+  --severity-ready-fg:   var(--green-dim); --severity-ready-bd:   color-mix(in srgb, var(--green) 36%, transparent);  --severity-ready-bg:   color-mix(in srgb, var(--green) 10%, transparent);
   --severity-info-fg:    var(--text-muted); --severity-info-bd: var(--border);   --severity-info-bg: var(--bg-medium);
 
   /* State (environment + evidence) — DERIVED from the semantic palette. */
-  --state-healthy-fg:  var(--green);      --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
-  --state-warn-fg:     var(--orange);     --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
-  --state-danger-fg:   var(--red);        --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
-  --state-paper-fg:    var(--brand-field);--state-paper-bd:    color-mix(in srgb, var(--brand-field) 34%, transparent); --state-paper-bg: color-mix(in srgb, var(--brand-field) 10%, transparent);
-  --state-strategy-fg: var(--purple);     --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
-  --state-live-fg:     var(--red);        --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
+  --state-healthy-fg:  var(--green-dim); --state-healthy-bd:  color-mix(in srgb, var(--green) 32%, transparent);  --state-healthy-bg:  color-mix(in srgb, var(--green) 10%, transparent);
+  --state-warn-fg:     var(--orange-dim); --state-warn-bd:     color-mix(in srgb, var(--orange) 38%, transparent); --state-warn-bg:     color-mix(in srgb, var(--orange) 11%, transparent);
+  --state-danger-fg:   var(--red-dim); --state-danger-bd:   color-mix(in srgb, var(--red) 35%, transparent);    --state-danger-bg:   color-mix(in srgb, var(--red) 10%, transparent);
+  --state-paper-fg:    var(--brand-field-dim);--state-paper-bd:    color-mix(in srgb, var(--brand-field) 34%, transparent); --state-paper-bg: color-mix(in srgb, var(--brand-field) 10%, transparent);
+  --state-strategy-fg: var(--purple-dim); --state-strategy-bd: color-mix(in srgb, var(--purple) 34%, transparent); --state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+  --state-live-fg:     var(--red-dim); --state-live-bd:     color-mix(in srgb, var(--red) 42%, transparent);    --state-live-bg:     color-mix(in srgb, var(--red) 12%, transparent);
   --state-muted-fg:    var(--text-muted); --state-muted-bd:    var(--border);                                     --state-muted-bg:    var(--bg-medium);
-  --state-pending-fg:  var(--pending);    --state-pending-bd:  color-mix(in srgb, var(--pending) 34%, transparent); --state-pending-bg: color-mix(in srgb, var(--pending) 10%, transparent);
+  --state-pending-fg:  var(--pending-dim); --state-pending-bd:  color-mix(in srgb, var(--pending) 34%, transparent); --state-pending-bg: color-mix(in srgb, var(--pending) 10%, transparent);
 }
 
 

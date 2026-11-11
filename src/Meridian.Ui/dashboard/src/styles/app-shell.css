@@ -51,7 +51,7 @@
   align-items: center;
   padding: 0 1rem;
   background: var(--theme-topbar-bg, var(--ws-masthead-bg, #29323A));
-  border-bottom: 1px solid var(--topbar-border, #2D2A25);
+  border-bottom: 1px solid var(--topbar-border, #3A444D);
   color: var(--theme-topbar-text, var(--ws-masthead-fg, #F1EFEA));
 }
 
@@ -206,7 +206,7 @@
   overflow: hidden;
   align-items: center;
   gap: 0.35rem;
-  border: 1px solid var(--topbar-border, #2D2A25);
+  border: 1px solid var(--topbar-border, #3A444D);
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
   color: var(--topbar-text);
@@ -385,7 +385,7 @@ a.workstation-trust-item:focus-visible {
   min-height: 28px;
   padding: 0 0.625rem;
   border-radius: 2px;
-  border: 1px solid var(--topbar-border, #2D2A25);
+  border: 1px solid var(--topbar-border, #3A444D);
   color: var(--ws-masthead-fg, #F1EFEA);
   font-size: 0.75rem;
   line-height: 1;
@@ -565,18 +565,18 @@ a.workstation-trust-item:focus-visible {
 }
 
 .shell-status-strip-warning {
-  border-color: var(--severity-action-bd, rgba(138, 92, 18, 0.42));
-  background: var(--severity-action-bg, rgba(138, 92, 18, 0.11));
+  border-color: var(--severity-action-bd, rgba(152, 103, 23, 0.42));
+  background: var(--severity-action-bg, rgba(152, 103, 23, 0.11));
 }
 
 .shell-status-strip-danger {
-  border-color: var(--severity-blocked-bd, rgba(168, 68, 60, 0.4));
-  background: var(--severity-blocked-bg, rgba(168, 68, 60, 0.1));
+  border-color: var(--severity-blocked-bd, rgba(181, 75, 66, 0.4));
+  background: var(--severity-blocked-bg, rgba(181, 75, 66, 0.1));
 }
 
 .shell-status-strip-loading {
-  border-color: var(--severity-review-bd, rgba(168, 84, 54, 0.36));
-  background: var(--severity-review-bg, rgba(168, 84, 54, 0.1));
+  border-color: var(--severity-review-bd, color-mix(in srgb, var(--ws-accent) 36%, transparent));
+  background: var(--severity-review-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
 }
 
 /* ── Status bar (28px near-black telemetry footer) ──────────────────────────── */
@@ -587,8 +587,8 @@ a.workstation-trust-item:focus-visible {
   min-height: 28px;
   padding: 0 12px;
   background: var(--statusbar-bg, #29323A);
-  border-top: 1px solid var(--topbar-border, #2D2A25);
-  color: var(--statusbar-text, #D8D3CA);
+  border-top: 1px solid var(--topbar-border, #3A444D);
+  color: var(--statusbar-text, #C9CFD4);
   font-family: var(--font-data, "IBM Plex Mono", ui-monospace, Consolas, monospace);
   font-size: 0.6875rem;
   font-variant-numeric: tabular-nums;
@@ -621,7 +621,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-statusbar-value {
-  color: var(--statusbar-text, #D8D3CA);
+  color: var(--statusbar-text, #C9CFD4);
 }
 
 .workstation-statusbar-dot {
@@ -632,7 +632,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-statusbar-dot-ok {
-  background: var(--chrome-ok, #56A37E);
+  background: var(--chrome-ok, #65A983);
 }
 
 .workstation-statusbar-dot-warn {
@@ -640,7 +640,7 @@ a.workstation-trust-item:focus-visible {
 }
 
 .workstation-statusbar-dot-err {
-  background: var(--chrome-err, #D1746B);
+  background: var(--chrome-err, #D97A70);
 }
 
 @media (max-width: 640px) {

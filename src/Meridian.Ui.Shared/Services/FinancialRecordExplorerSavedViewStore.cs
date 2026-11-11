@@ -166,7 +166,8 @@ public sealed class FileFinancialRecordExplorerSavedViewStore
         while (true)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(SnapshotPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(SnapshotPath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) when (DateTimeOffset.UtcNow < deadline) { await Task.Delay(25, ct).ConfigureAwait(false); }
         }
     }

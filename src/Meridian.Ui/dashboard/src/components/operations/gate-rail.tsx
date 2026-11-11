@@ -17,10 +17,10 @@ const CSS = `
   width:28px;height:28px;border-radius:50%;border:1.5px solid var(--severity-info-bd,#D2CDC3);
   background:var(--bg-panel,var(--bg-light,#F8F7F3));color:var(--severity-info-fg,#606870);
   font-family:var(--font-data,monospace);font-size:11px;font-weight:700;}
-.mds-gate--ready .mds-gate__node{border-color:var(--severity-ready-fg,#2C5C40);background:var(--severity-ready-bg,rgba(58,122,86,.10));color:var(--severity-ready-fg,#2C5C40);}
-.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#CB6E4E);background:var(--severity-review-bg,rgba(168,84,54,.10));color:var(--severity-review-fg,#CB6E4E);}
-.mds-gate--action .mds-gate__node{border-color:var(--severity-action-fg,#68450E);background:var(--severity-action-bg,rgba(138,92,18,.11));color:var(--severity-action-fg,#68450E);}
-.mds-gate--blocked .mds-gate__node{border-color:var(--severity-blocked-fg,#7E332D);background:var(--severity-blocked-bg,rgba(168,68,60,.10));color:var(--severity-blocked-fg,#7E332D);}
+.mds-gate--ready .mds-gate__node{border-color:var(--severity-ready-fg,#225840);background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
+.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#724D11);background:var(--severity-review-bg,rgba(152,103,23,.10));color:var(--severity-review-fg,#724D11);}
+.mds-gate--action .mds-gate__node{border-color:var(--severity-action-fg,#724D11);background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
+.mds-gate--blocked .mds-gate__node{border-color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
 .mds-gate__label{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--text-primary,#20252B);line-height:1.2;}
 .mds-gate__status{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;letter-spacing:.04em;
   text-transform:uppercase;color:var(--text-muted,#606870);}
@@ -63,7 +63,7 @@ export function GateRail({ gates = [], className }: GateRailProps) {
       {gates.map((g, i) => {
         const sev = normalizeSeverity(g.status);
         const prevReady = i > 0 && normalizeSeverity(gates[i - 1].status) === "ready";
-        const line = prevReady ? "var(--severity-ready-fg,#2C5C40)" : "var(--border-color,#D2CDC3)";
+        const line = prevReady ? "var(--severity-ready-fg,#225840)" : "var(--border-color,#D2CDC3)";
         const style = { "--mds-gate-line": line } as CSSProperties;
         return (
           <li

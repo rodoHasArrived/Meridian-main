@@ -2,6 +2,9 @@
 
 Date: 2026-11-11 UTC
 
+The original program audit below describes PR #3497's source branch. The combined
+Design System 4.3 integration is recorded at the end of this document.
+
 ## Outcome
 
 The browser UX program regenerated all **82 fixture-backed routes** at 1440 × 1100.
@@ -75,3 +78,25 @@ proof that every possible status or financial presentation is automatically chec
 The implementation and verification record is in
 [`browser-workstation-ux-program.md`](../engineering/plans/browser-workstation-ux-program.md).
 Hosted checks remain the integration authority.
+
+## Design System 4.3 integration verification
+
+The combined PR #3501 tree refreshed all 82 synthetic routes in four disjoint successful
+capture runs. Coverage, actual route identity, image quality and freshness passed validation.
+The existing WPF changes in #3501 are preserved; this browser program authors no WPF changes.
+
+Eighteen interaction groups passed at 1920 × 1080, 1440 × 900 and 1366 × 768. Eighteen axe
+scans reported no violations; manual incomplete checks remain. All 28 navigation mask checks
+passed in light, dark and forced-color appearances. Masthead text measured 11.34:1 in light
+appearance and 16.38:1 in dark appearance. All ten WOFF2 faces loaded and decoded without
+font errors. No runtime errors, missing assets or page-wide horizontal overflow were observed.
+
+Today has one local authoritative priority row and a default authorized queue. Source, scope,
+retained history, personal triage, complete exports and technical identities remain inspectable.
+Run identities stay copyable in collapsed technical details. Limit and Stop typing retain
+`188.0` → `188.05`; local review acknowledgement cannot carry into another account scope.
+Those input checks used synthetic data and prevented all API writes.
+
+These remain Linux Chromium and synthetic-data results. Windows, assistive technology, live
+providers and production activation are outside this evidence. See the implementation record
+linked above for builds, tests and remaining source limits.

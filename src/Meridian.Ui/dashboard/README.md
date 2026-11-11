@@ -11,6 +11,14 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui/dashboard
 
+The main order ticket retains local quantity and limit/stop-price text while the existing numeric
+model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.
+Instrument, order-type, account-scope and close/reset transitions discard stale editor text;
+account changes invalidate review acknowledgement in their first render. Numeric transport and
+server authority remain unchanged. Native number inputs can normalize characters before validation;
+the strict decimal parser validates the text the browser actually supplies. Focused coverage lives
+in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
+
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
 
@@ -2053,8 +2061,12 @@ surface). Light, auto-dark, manual-dark, and forced-light scopes take their valu
 `tokens/` files.
 
 `main.tsx` loads `src/design-system/fonts.css`, synchronized from the package,
-before the workstation stylesheet. IBM Plex Sans and Mono TTFs ship under
-`src/assets/fonts/`; their OFL notices ship through `public/licenses/`. Brand
+before the workstation stylesheet. The package ships IBM Plex Sans and Mono as TTF; the sync serves
+them as WOFF2 under `src/assets/fonts/` (about a third of the size) and rewrites the projected
+`fonts.css` sources to match. `woff2-sources.json` records each source TTF and WOFF2 SHA-256, so check
+mode stays pure Node while `npm run design-system:sync` reconverts changed fonts through
+`scripts/convert-fonts-to-woff2.py` (Python with `fonttools` and `brotli`; set `MERIDIAN_PYTHON` to
+pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
 assets for hosted and offline-capable deployments.
@@ -2065,6 +2077,13 @@ Asset drift is checked before dev/build and by Vite's build hook. Run
 `npm run design-system:test-assets` for the synchronization regression suite.
 Keep the package, synchronized assets, token bridge, and contract tests in the
 same reviewable change.
+
+Token values are checked from the package directory. `python3 scripts/check_token_parity.py`
+fails when a token name that `src/styles/index.css` and the package both declare resolves to a
+different value in light, auto-dark, manual-dark, or forced-light scope; a deliberate difference
+has to be listed in `tokens/parity-manifest.json` (currently only the Review severity hue).
+`python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
+brand art in all three tracks, and the WPF runtime palette.
 
 Auxiliary route and primitive styles consume the same roles: `--font-body` /
 `--font-display` for interface text, `--font-data` for values and identifiers,

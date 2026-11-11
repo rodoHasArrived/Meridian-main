@@ -39,7 +39,8 @@ public sealed class OperatorTriageAssignmentRecoveryTests
                 Category: ReconciliationBreakCategory.ExternalStatementMismatch, Status: ReconciliationBreakQueueStatus.Open,
                 Variance: 1m, Reason: "Retained source differs.", AssignedTo: null,
                 DetectedAt: now, LastUpdatedAt: now, Severity: ReconciliationBreakSeverity.Medium,
-                Version: 0) { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+                Version: 0)
+            { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
             Assert.True(await queue.CreateIfMissingAsync(scope, source));
             var initialSource = (await queue.GetByIdAsync(scope, source.BreakId))!;
             var durableMetadata = new FileOperatorTriageStore(Path.Combine(root, "metadata"));

@@ -143,11 +143,15 @@ public static partial class WorkstationEndpoints
                     return Results.Unauthorized();
                 }
 
-                if (!FinancialRecordExplorerReadService.IsKnownExplorerId(explorerId)) return Results.NotFound();
-                if (!CanReadFinancialRecordExplorer(context, explorerId)) return EndpointHelpers.Forbidden();
-                if (!TryResolveCurrentUser(context, out var actor)) return Results.Unauthorized();
+                if (!FinancialRecordExplorerReadService.IsKnownExplorerId(explorerId))
+                    return Results.NotFound();
+                if (!CanReadFinancialRecordExplorer(context, explorerId))
+                    return EndpointHelpers.Forbidden();
+                if (!TryResolveCurrentUser(context, out var actor))
+                    return Results.Unauthorized();
                 var store = context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>();
-                if (store is null) return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
+                if (store is null)
+                    return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
                 if (request.Filters?.Any(filter => filter is null || string.IsNullOrWhiteSpace(filter.FilterId)) == true)
                     return Results.BadRequest(new { error = "Saved-view filters require an identity." });
                 var filters = (request.Filters ?? []).GroupBy(filter => filter.FilterId)

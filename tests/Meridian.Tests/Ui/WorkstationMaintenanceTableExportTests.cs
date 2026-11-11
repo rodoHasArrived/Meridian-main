@@ -23,9 +23,11 @@ public sealed class WorkstationMaintenanceTableExportTests : IDisposable
         for (var index = 0; index < 40; index++)
             await history.RecordExecutionAsync(new MaintenanceExecution
             {
-                ExecutionId = $"retained-{index}", TaskType = MaintenanceTaskType.HealthCheck,
+                ExecutionId = $"retained-{index}",
+                TaskType = MaintenanceTaskType.HealthCheck,
                 Status = index % 10 == 0 ? MaintenanceExecutionStatus.Failed : MaintenanceExecutionStatus.Completed,
-                StartedAt = DateTimeOffset.UtcNow.AddMinutes(-index), FilesProcessed = index,
+                StartedAt = DateTimeOffset.UtcNow.AddMinutes(-index),
+                FilesProcessed = index,
                 CompletedAt = DateTimeOffset.UtcNow.AddMinutes(-index).AddSeconds(1)
             });
         var manager = new ArchiveMaintenanceScheduleManager(NullLogger<ArchiveMaintenanceScheduleManager>.Instance, _root, history);
@@ -39,7 +41,8 @@ public sealed class WorkstationMaintenanceTableExportTests : IDisposable
 
         var filtered = WorkstationEndpoints.BuildWorkstationDataTableExport("data-maintenance-executions", request with
         {
-            SearchText = "Failed", Filters = new Dictionary<string, string> { ["failedOnly"] = "true" }
+            SearchText = "Failed",
+            Filters = new Dictionary<string, string> { ["failedOnly"] = "true" }
         }, context, new(JsonSerializerDefaults.Web));
         filtered.Should().BeOfType<JsonHttpResult<WorkstationTableExportDto>>().Which.Value!.RowCount.Should().Be(4);
     }

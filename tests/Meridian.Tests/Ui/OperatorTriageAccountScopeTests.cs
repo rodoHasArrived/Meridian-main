@@ -41,8 +41,13 @@ public sealed class OperatorTriageAccountScopeTests
             "Reviewed retained evidence.");
         var legacyJson = JsonSerializer.Serialize(new
         {
-            command.CommandId, command.Action, command.ExpectedVersion, command.Reason,
-            command.AssigneeId, command.SnoozedUntil, command.ExpectedSourceVersion
+            command.CommandId,
+            command.Action,
+            command.ExpectedVersion,
+            command.Reason,
+            command.AssigneeId,
+            command.SnoozedUntil,
+            command.ExpectedSourceVersion
         });
         var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(legacyJson)));
         var retained = OperatorTriageState.Empty with
@@ -245,7 +250,8 @@ public sealed class OperatorTriageAccountScopeTests
         {
             Client.Dispose();
             await app.DisposeAsync();
-            if (Directory.Exists(root)) Directory.Delete(root, true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, true);
         }
     }
 

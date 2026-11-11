@@ -25,10 +25,10 @@ export interface DepthChartProps {
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
-const GRID = "var(--chart-grid, #D2CDC3)";
+const GRID = "var(--chart-grid, #E2DED5)";
 const AXIS = "var(--chart-axis, #606870)";
 const BORDER = "var(--chart-border, #AAA49A)";
-const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
+const CROSSHAIR = "var(--chart-crosshair, #C56343)";
 const UP = "var(--chart-equity, #2E7655)";
 const DOWN = "var(--chart-drawdown, #B54B42)";
 

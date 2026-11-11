@@ -68,7 +68,8 @@ public static class OperationsWorkflowAuditHashing
             draft.References,
             previousHash,
             currentHash,
-            draft.Outcome) { CloseChecklistSnapshot = draft.CloseChecklistSnapshot };
+            draft.Outcome)
+        { CloseChecklistSnapshot = draft.CloseChecklistSnapshot };
     }
 
     public static bool TryValidateTimeline(
@@ -94,7 +95,8 @@ public static class OperationsWorkflowAuditHashing
             entry.References,
             entry.PreviousHash,
             entry.CurrentHash,
-            entry.Outcome) { CloseChecklistSnapshot = entry.CloseChecklistSnapshot }).ToArray(), out blockerCode, out message);
+            entry.Outcome)
+        { CloseChecklistSnapshot = entry.CloseChecklistSnapshot }).ToArray(), out blockerCode, out message);
 
     public static bool TryValidateChain(
         IReadOnlyList<OperationsWorkflowAuditDto> timeline,
@@ -139,7 +141,8 @@ public static class OperationsWorkflowAuditHashing
 
             if (entry.CloseChecklistSnapshot is { } snapshot)
             {
-                try { OperationsWorkflowChecklistSnapshots.Validate(snapshot); }
+                try
+                { OperationsWorkflowChecklistSnapshots.Validate(snapshot); }
                 catch (InvalidDataException)
                 {
                     blockerCode = "AUDIT_CHAIN_INVALID";
@@ -196,7 +199,8 @@ public static class OperationsWorkflowAuditHashing
         var contentHash = ComputeBaseHash(auditId, occurredAtUtc, workflowId, fundAccountId, periodId, eventType,
             fromState, toState, gate, fromGateStatus, toGateStatus, actor, rationale, correlationId,
             correlationKeys, references, outcome, previousHash);
-        if (checklistSnapshot is null) return contentHash;
+        if (checklistSnapshot is null)
+            return contentHash;
         OperationsWorkflowChecklistSnapshots.Validate(checklistSnapshot);
         return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
             new OperationsWorkflowAuditChecklistHashInput(1, contentHash, checklistSnapshot),

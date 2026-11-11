@@ -16,7 +16,7 @@ function inject() {
 .ws-shell__main{flex:1;min-width:0;overflow:auto;position:relative;}
 .ws-shell__main--padded{padding:var(--space-lg,16px);box-sizing:border-box;}
 .ws-shell__aside{flex-shrink:0;box-sizing:border-box;height:100%;overflow:auto;background:var(--card-surface,#F8F7F3);border-left:1px solid var(--border,#D2CDC3);}
-.ws-shell__crash{margin:16px;padding:12px 14px;border:1px solid var(--red,#B54B42);border-radius:var(--radius-card,4px);background:var(--red-a10,rgba(166,67,63,.1));font-family:var(--font-data);font-size:12px;color:var(--red-dim,#8A3835);}
+.ws-shell__crash{margin:16px;padding:12px 14px;border:1px solid var(--red,#B54B42);border-radius:var(--radius-card,4px);background:var(--red-a10,rgba(181,75,66,.1));font-family:var(--font-data);font-size:12px;color:var(--red-dim,#883832);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "workstationshell");

@@ -242,6 +242,17 @@ describe("validateQuickTicket", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: "0" })).toMatch(/limit/i);
   });
 
+  it("rejects exponent, hex, and signed numeric text instead of coercing it", () => {
+    for (const malformed of ["1e3", "0x10", "+5", "1,000", "Infinity"]) {
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: malformed, limitPrice: "10" })).toBe(
+        "Enter a quantity greater than zero."
+      );
+      expect(validateQuickTicket({ side: "Buy", type: "Limit", quantity: "10", limitPrice: malformed })).toBe(
+        "Enter a limit price greater than zero."
+      );
+    }
+  });
+
   it("does not require limit price for market orders", () => {
     expect(validateQuickTicket({ side: "Buy", type: "Market", quantity: "10", limitPrice: "" })).toBeNull();
   });

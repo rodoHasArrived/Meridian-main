@@ -542,3 +542,9 @@
 .dense-data-table time,
 .entity-summary-field time { white-space: nowrap; }
 .dense-data-table td { font-variant-numeric: tabular-nums; }
+
+/* The wrap is a tab stop when its rows are not selectable, so it needs its own visible ring. */
+.dense-data-table-wrap:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--focus, #2D6FB3));
+  outline-offset: -2px;
+}

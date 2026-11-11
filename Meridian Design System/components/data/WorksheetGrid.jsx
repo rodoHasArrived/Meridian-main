@@ -15,26 +15,26 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);background:var(--card-surface,#fff);}
+.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);background:var(--card-surface,#F8F7F3);}
 .mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#D2CDC3);}
 .mds-ws__ref{width:60px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);font:600 13px var(--font-data);color:var(--text-primary,#20252B);}
-.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D2CDC3);font:italic 600 12px var(--font-display);color:var(--text-muted,#6B737B);}
+.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D2CDC3);font:italic 600 12px var(--font-display);color:var(--text-muted,#606870);}
 .mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#20252B);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-ws__scroll{overflow:auto;}
 .mds-ws__grid{display:inline-block;min-width:100%;outline:none;}
 .mds-ws__grid:focus-visible{outline:none;}
 .mds-ws__row{display:flex;}
 .mds-ws__corner{position:sticky;top:0;z-index:3;}
-.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border,#D2CDC3);font:13px var(--font-data);color:var(--text-primary,#20252B);background:var(--card-surface,#fff);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
+.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border,#D2CDC3);font:13px var(--font-data);color:var(--text-primary,#20252B);background:var(--card-surface,#F8F7F3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
 .mds-ws__cell:hover{background:var(--bg-hover,#EDEFF0);}
 .mds-ws__cell--active{outline:2px solid var(--interaction-selected,#496C8F);outline-offset:-2px;z-index:2;}
-.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#fff);}
+.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#F8F7F3);}
 .mds-ws__cell--error,.mds-ws__cell--error:hover{background:var(--red-a10);color:var(--red-dim);}
-.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#6B737B);background:var(--bg-medium,#EBE8E1);}
+.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);}
 .mds-ws__hdr{border-right:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border-strong,#AAA49A);letter-spacing:.06em;}
 .mds-ws__rownum{border-right:1px solid var(--border-strong,#AAA49A);border-bottom:1px solid var(--border,#D2CDC3);position:sticky;left:0;z-index:2;}
 .mds-ws__fxmark{position:absolute;top:0;left:0;width:0;height:0;border-top:6px solid var(--brand-signal,#C56343);border-right:6px solid transparent;}
-.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--brand-signal,#C56343);outline-offset:-2px;background:var(--card-surface,#fff);color:var(--text-primary,#20252B);font:13px var(--font-data);padding:0 6px;}
+.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--brand-signal,#C56343);outline-offset:-2px;background:var(--card-surface,#F8F7F3);color:var(--text-primary,#20252B);font:13px var(--font-data);padding:0 6px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "worksheet-grid");

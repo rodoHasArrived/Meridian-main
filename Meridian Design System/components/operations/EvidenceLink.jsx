@@ -15,17 +15,17 @@ function inject() {
   background:var(--bg-medium,#EBE8E1);padding:5px 9px;font-family:var(--font-body);font-size:12px;
   color:var(--text-primary,#20252B);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}
-.mds-evidence:hover{border-color:var(--border-hover,#AAA49A);background:var(--bg-hover,#EDEFF0);}
+.mds-evidence:hover{border-color:var(--border-hover,#BEB8AD);background:var(--bg-hover,#EDEFF0);}
 .mds-evidence:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#6B737B);}
-.mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#2E7655);}
-.mds-evidence--review .mds-evidence__dot{background:var(--state-paper-fg,#C56343);}
-.mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#986717);}
-.mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#B54B42);}
+.mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
+.mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
+.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#8E4730);}
+.mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
+.mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-evidence__route{font-family:var(--font-data,monospace);font-size:10px;color:var(--text-muted,#6B737B);
+.mds-evidence__route{font-family:var(--font-data,monospace);font-size:10px;color:var(--text-muted,#606870);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;}
-.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#6B737B);flex:0 0 auto;font-size:11px;}
+.mds-evidence__arrow{margin-left:auto;color:var(--text-muted,#606870);flex:0 0 auto;font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "evidence-link");

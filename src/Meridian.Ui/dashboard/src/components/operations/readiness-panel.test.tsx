@@ -51,4 +51,22 @@ describe("ReadinessPanel", () => {
     expect(panel).toHaveAttribute("aria-describedby", "ledger-gate-detail");
     expect(screen.getByText("Ledger evidence is incomplete.")).toHaveAttribute("id", "ledger-gate-detail");
   });
+
+  it("resolves the rail tint and the badge from the same vocabulary", () => {
+    const cases: Array<[string, string]> = [
+      ["Breached", "blocked"],
+      ["Matched", "ready"],
+      ["AwaitingApproval", "review"],
+      ["AtRisk", "action"],
+      ["Paused", "info"],
+      ["SomeStateTheServerInvented", "action"],
+    ];
+    for (const [state, severity] of cases) {
+      const { container, unmount } = render(<ReadinessPanel state={state} title={state} />);
+      const panel = container.querySelector(".mds-rpanel");
+      expect(panel).toHaveClass(`mds-rpanel--${severity}`);
+      expect(panel?.querySelector(`[data-severity="${severity}"]`)).not.toBeNull();
+      unmount();
+    }
+  });
 });

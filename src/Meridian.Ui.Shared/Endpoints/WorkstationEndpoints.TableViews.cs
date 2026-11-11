@@ -21,7 +21,8 @@ public static partial class WorkstationEndpoints
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationTableViews), async (
             string tableId, [FromServices] IFinancialRecordExplorerSavedViewStore store, HttpContext context) =>
         {
-            if (!CanReadWorkstationTable(context, tableId)) return EndpointHelpers.Forbidden();
+            if (!CanReadWorkstationTable(context, tableId))
+                return EndpointHelpers.Forbidden();
             if (!TryResolveRequiredTenantId(context, out var tenantId) || !TryResolveCurrentUser(context, out var actor))
                 return Results.Unauthorized();
             try
@@ -40,7 +41,8 @@ public static partial class WorkstationEndpoints
             string tableId, WorkstationTableViewSaveRequest request,
             [FromServices] IFinancialRecordExplorerSavedViewStore store, HttpContext context) =>
         {
-            if (!CanReadWorkstationTable(context, tableId)) return EndpointHelpers.Forbidden();
+            if (!CanReadWorkstationTable(context, tableId))
+                return EndpointHelpers.Forbidden();
             if (!TryResolveRequiredTenantId(context, out var tenantId) || !TryResolveCurrentUser(context, out var actor))
                 return Results.Unauthorized();
             try
@@ -65,19 +67,31 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationTableExport), async (
             string tableId, WorkstationTableExportRequest request, HttpContext context) =>
         {
-            if (!CanReadWorkstationTable(context, tableId)) return EndpointHelpers.Forbidden();
-            if (!TryResolveRequiredTenantId(context, out _) || !TryResolveCurrentUser(context, out _)) return Results.Unauthorized();
+            if (!CanReadWorkstationTable(context, tableId))
+                return EndpointHelpers.Forbidden();
+            if (!TryResolveRequiredTenantId(context, out _) || !TryResolveCurrentUser(context, out _))
+                return Results.Unauthorized();
             var dataExport = await TryExportWorkstationDataTableAsync(tableId, request, context, jsonOptions).ConfigureAwait(false);
-            if (dataExport is not null) return dataExport;
+            if (dataExport is not null)
+                return dataExport;
             var auditExport = await TryExportExecutionAuditAsync(tableId, request, context, jsonOptions).ConfigureAwait(false);
-            if (auditExport is not null) return auditExport;
-            if (tableId != "strategy-runs") return Results.Problem("A complete export adapter is not registered for this source.", statusCode: 501);
+            if (auditExport is not null)
+                return auditExport;
+            if (tableId != "strategy-runs")
+                return Results.Problem("A complete export adapter is not registered for this source.", statusCode: 501);
             var columns = new Dictionary<string, string>(StringComparer.Ordinal)
             {
-                ["strategy"] = "Strategy", ["mode"] = "Mode", ["engine"] = "Engine", ["status"] = "Status",
-                ["pnl"] = "P&L (retained run denomination)", ["sharpe"] = "Sharpe", ["drawdown"] = "Maximum drawdown (amount)",
-                ["updated"] = "Updated (UTC)", ["run-id"] = "Run ID"
-                , ["promotion"] = "Promotion state"
+                ["strategy"] = "Strategy",
+                ["mode"] = "Mode",
+                ["engine"] = "Engine",
+                ["status"] = "Status",
+                ["pnl"] = "P&L (retained run denomination)",
+                ["sharpe"] = "Sharpe",
+                ["drawdown"] = "Maximum drawdown (amount)",
+                ["updated"] = "Updated (UTC)",
+                ["run-id"] = "Run ID"
+                ,
+                ["promotion"] = "Promotion state"
             };
             if (request.ColumnIds is null || request.ColumnIds.Count is 0 or > 20 ||
                 request.ColumnIds.Any(column => !columns.ContainsKey(column)) ||
@@ -86,7 +100,8 @@ public static partial class WorkstationEndpoints
                 request.SortColumnId is not null && !columns.ContainsKey(request.SortColumnId) || request.Filters?.Count > 0)
                 return Results.BadRequest(new { error = "Unknown columns or invalid export query." });
             var service = context.RequestServices.GetService<StrategyRunReadService>();
-            if (service is null) return Results.Problem("Strategy run service is unavailable.", statusCode: 501);
+            if (service is null)
+                return Results.Problem("Strategy run service is unavailable.", statusCode: 501);
             var scope = ResolveStrategyRunReadScope(context);
             // This overload deliberately reads the complete authorized population, without the history endpoint's 500-row cap.
             var snapshot = await service.GetRunsAsync(strategyId: null, runType: null, scope, context.RequestAborted).ConfigureAwait(false);
@@ -99,11 +114,15 @@ public static partial class WorkstationEndpoints
                 return Results.Conflict(new { error = "The retained run population changed while preparing the export. Refresh and export again." });
             object? Cell(StrategyRunSummary row, string columnId) => columnId switch
             {
-                "strategy" => row.StrategyName, "mode" => row.Mode.ToString(), "engine" => row.Engine.ToString(),
-                "status" => row.Status.ToString(), "pnl" => row.NetPnl,
+                "strategy" => row.StrategyName,
+                "mode" => row.Mode.ToString(),
+                "engine" => row.Engine.ToString(),
+                "status" => row.Status.ToString(),
+                "pnl" => row.NetPnl,
                 "sharpe" => byId.GetValueOrDefault(row.RunId)?.SharpeRatio,
                 "drawdown" => byId.GetValueOrDefault(row.RunId)?.MaxDrawdown,
-                "updated" => row.LastUpdatedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture), "run-id" => row.RunId,
+                "updated" => row.LastUpdatedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
+                "run-id" => row.RunId,
                 "promotion" => row.Promotion?.State.ToString(),
                 _ => null
             };
@@ -116,7 +135,8 @@ public static partial class WorkstationEndpoints
             string[] metadataHeaders = ["Context · Source", "Context · Run ID", "Context · Source updated UTC", "Context · Exported at UTC", "Context · Denomination"];
             var lines = new List<string> { string.Join(',', request.ColumnIds.Select(column => CsvCell(columns[column])).Concat(metadataHeaders.Select(CsvCell))) };
             // Stable identity and snapshot time are explicit metadata columns, not a second unaudited source of financial truth.
-            foreach (var row in ordered) lines.Add(string.Join(',', request.ColumnIds.Select(column => CsvCell(Cell(row, column))).Concat(
+            foreach (var row in ordered)
+                lines.Add(string.Join(',', request.ColumnIds.Select(column => CsvCell(Cell(row, column))).Concat(
                 new[] { "Retained authorized strategy-run results", row.RunId, row.LastUpdatedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture), asOf.ToString("O", CultureInfo.InvariantCulture), "Unavailable in source contract" }.Select(CsvCell))));
             return Results.Json(new WorkstationTableExportDto($"strategy-runs-{asOf:yyyyMMddTHHmmssZ}.csv", string.Join("\r\n", lines), selected.Length, asOf), jsonOptions);
         }).WithName("ExportWorkstationTable").DeclareNonMutating("Exports the complete authorized retained table population without changing domain records.")
@@ -126,9 +146,11 @@ public static partial class WorkstationEndpoints
 
     private static string CsvCell(object? value)
     {
-        if (value is null) return string.Empty;
+        if (value is null)
+            return string.Empty;
         var text = value is IFormattable formattable ? formattable.ToString(null, CultureInfo.InvariantCulture) : value.ToString() ?? string.Empty;
-        if (value is string && text.TrimStart().FirstOrDefault() is '=' or '+' or '-' or '@' or '\t' or '\r') text = "'" + text;
+        if (value is string && text.TrimStart().FirstOrDefault() is '=' or '+' or '-' or '@' or '\t' or '\r')
+            text = "'" + text;
         return text.IndexOfAny([',', '"', '\r', '\n']) >= 0 ? '"' + text.Replace("\"", "\"\"", StringComparison.Ordinal) + '"' : text;
     }
 

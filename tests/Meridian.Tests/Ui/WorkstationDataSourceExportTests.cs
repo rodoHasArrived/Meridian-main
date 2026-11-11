@@ -72,13 +72,18 @@ public sealed class WorkstationDataSourceExportTests
     public void RemediationExport_UsesEveryRetainedExecutionBeforeFiltering()
     {
         var history = new BackfillExecutionHistory();
-        for (var index = 0; index < 150; index++) history.AddExecution(new BackfillExecutionLog
-        {
-            ExecutionId = $"retained-{index}", Symbols = [index % 2 == 0 ? "AAPL" : "MSFT"], Status = ExecutionStatus.Completed,
-            ScheduledAt = DateTimeOffset.UtcNow.AddMinutes(-index), FromDate = new(2026, 11, 1), ToDate = new(2026, 11, 2),
-            AutoRemediationSla = new(BackfillRemediationSlaTier.Standard, DateTimeOffset.UtcNow.AddHours(1), false,
+        for (var index = 0; index < 150; index++)
+            history.AddExecution(new BackfillExecutionLog
+            {
+                ExecutionId = $"retained-{index}",
+                Symbols = [index % 2 == 0 ? "AAPL" : "MSFT"],
+                Status = ExecutionStatus.Completed,
+                ScheduledAt = DateTimeOffset.UtcNow.AddMinutes(-index),
+                FromDate = new(2026, 11, 1),
+                ToDate = new(2026, 11, 2),
+                AutoRemediationSla = new(BackfillRemediationSlaTier.Standard, DateTimeOffset.UtcNow.AddHours(1), false,
                 "Data", "synthetic-gap", "stooq", AutoRemediationTriggerSource.DataQualityGap)
-        });
+            });
         using var services = new ServiceCollection().AddSingleton(history).BuildServiceProvider();
         var result = WorkstationEndpoints.ExportRetainedBackfillRemediation(new(["execution", "provider"], SearchText: "AAPL"),
             Context(services, UserPermission.ViewHistoricalData), new(JsonSerializerDefaults.Web));

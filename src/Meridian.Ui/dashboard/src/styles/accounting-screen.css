@@ -82,15 +82,15 @@
 
 .accounting-reference-badge-success,
 .accounting-reference-balance-badge.is-balanced {
-  border-color: var(--state-healthy-bd, rgba(58, 122, 86, 0.32));
-  background: var(--state-healthy-bg, rgba(58, 122, 86, 0.1));
-  color: var(--state-healthy-fg, #2C5C40);
+  border-color: var(--state-healthy-bd, rgba(46, 118, 85, 0.32));
+  background: var(--state-healthy-bg, rgba(46, 118, 85, 0.1));
+  color: var(--state-healthy-fg, #225840);
 }
 
 .accounting-reference-badge-warning {
-  border-color: var(--state-warn-bd, rgba(138, 92, 18, 0.38));
-  background: var(--state-warn-bg, rgba(138, 92, 18, 0.11));
-  color: var(--state-warn-fg, #68450E);
+  border-color: var(--state-warn-bd, rgba(152, 103, 23, 0.38));
+  background: var(--state-warn-bg, rgba(152, 103, 23, 0.11));
+  color: var(--state-warn-fg, #724D11);
 }
 
 .accounting-reference-balance-badge {
@@ -107,9 +107,9 @@
 }
 
 .accounting-reference-balance-badge.is-out {
-  border-color: var(--state-danger-bd, rgba(168, 68, 60, 0.35));
-  background: var(--state-danger-bg, rgba(168, 68, 60, 0.1));
-  color: var(--state-danger-fg, #7E332D);
+  border-color: var(--state-danger-bd, rgba(181, 75, 66, 0.35));
+  background: var(--state-danger-bg, rgba(181, 75, 66, 0.1));
+  color: var(--state-danger-fg, #883832);
 }
 
 /* ── Split-pane reconciliation (statement vs. ledger) ──────────────────────
@@ -544,17 +544,17 @@
 
 .accounting-journal-health-item.is-saved > span,
 .accounting-journal-health-item.is-recovered > span {
-  background: var(--state-positive, #18794e);
+  background: var(--state-positive, #225840);
 }
 
 .accounting-journal-health-item.is-unsaved > span,
 .accounting-journal-health-item.is-saving > span,
 .accounting-journal-health-item.is-warning > span {
-  background: var(--state-warning, #9a6700);
+  background: var(--state-warning, #724D11);
 }
 
 .accounting-journal-health-item.is-error > span {
-  background: var(--state-danger, #b42318);
+  background: var(--state-danger, #883832);
 }
 
 .accounting-journal-recovery-status {

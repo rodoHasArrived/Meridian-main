@@ -48,14 +48,16 @@ public sealed class FileOperatorTriageStore(string root) : IOperatorTriageStore
         while (true)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(path + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) when (DateTimeOffset.UtcNow < deadline) { await Task.Delay(25, ct).ConfigureAwait(false); }
         }
     }
 
     private static async Task<OperatorTriageState> LoadAsync(string path, CancellationToken ct)
     {
-        if (!File.Exists(path)) return OperatorTriageState.Empty;
+        if (!File.Exists(path))
+            return OperatorTriageState.Empty;
         await using var stream = File.OpenRead(path);
         return await JsonSerializer.DeserializeAsync<OperatorTriageState>(stream, Json, ct).ConfigureAwait(false)
             ?? throw new InvalidDataException("The retained triage state is empty.");

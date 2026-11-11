@@ -23,7 +23,7 @@ function inject() {
 .mds-editable__input--error{border-color:var(--red,#B54B42);}
 .mds-editable__input--error:focus{outline:2px solid color-mix(in srgb,var(--red) 55%,transparent);outline-offset:-2px;}
 .mds-editable__hint{position:absolute;top:100%;left:0;margin-top:4px;
-  font-family:var(--font-body);font-size:9px;color:var(--text-muted,#6B737B);
+  font-family:var(--font-body);font-size:9px;color:var(--text-muted,#606870);
   white-space:nowrap;pointer-events:none;opacity:0;transition:opacity 100ms ease;}
 .mds-editable--active .mds-editable__hint{opacity:1;}
 `;

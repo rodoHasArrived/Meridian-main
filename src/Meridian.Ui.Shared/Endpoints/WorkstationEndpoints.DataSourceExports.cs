@@ -44,7 +44,8 @@ public static partial class WorkstationEndpoints
 
     private static async Task<IResult> ExportDataWorkspaceSnapshotAsync(string tableId, WorkstationTableExportRequest request, HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage)) return EndpointHelpers.Forbidden();
+        if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage))
+            return EndpointHelpers.Forbidden();
         var columns = tableId == "data-backfill-queue"
             ? new Dictionary<string, string> { ["job"] = "Job", ["provider"] = "Provider", ["scope"] = "Scope", ["status"] = "Status", ["progress"] = "Progress", ["updated"] = "Updated" }
             : new Dictionary<string, string> { ["profile"] = "Profile", ["target"] = "Target", ["status"] = "Status", ["rows"] = "Rows", ["updated"] = "Updated" };
@@ -52,13 +53,14 @@ public static partial class WorkstationEndpoints
         if (invalid is not null || request.SortColumnId is not null)
             return Results.BadRequest(new { error = invalid ?? "This source does not declare a sort column." });
         var source = await BuildDataPayloadAsync(context).ConfigureAwait(false);
-        if (source is null) return Results.Problem("The authoritative Data workspace snapshot is unavailable.", statusCode: 503);
+        if (source is null)
+            return Results.Problem("The authoritative Data workspace snapshot is unavailable.", statusCode: 503);
         var rows = tableId == "data-backfill-queue"
             ? source.Backfills.Select(row => new DataSourceExportRow(row.JobId, new Dictionary<string, object?>
-              { ["job"] = row.JobId, ["provider"] = row.Provider, ["scope"] = row.Scope, ["status"] = row.Status, ["progress"] = row.Progress, ["updated"] = row.UpdatedAt },
+            { ["job"] = row.JobId, ["provider"] = row.Provider, ["scope"] = row.Scope, ["status"] = row.Status, ["progress"] = row.Progress, ["updated"] = row.UpdatedAt },
                 $"{row.JobId} {row.Provider} {row.Scope} {row.Status}", "authorized current workspace snapshot"))
             : source.Exports.Select(row => new DataSourceExportRow(row.ExportId, new Dictionary<string, object?>
-              { ["profile"] = row.Profile, ["target"] = row.Target, ["status"] = row.Status, ["rows"] = row.Rows, ["updated"] = row.UpdatedAt },
+            { ["profile"] = row.Profile, ["target"] = row.Target, ["status"] = row.Status, ["rows"] = row.Rows, ["updated"] = row.UpdatedAt },
                 $"{row.ExportId} {row.Profile} {row.Target} {row.Status}", "authorized current workspace snapshot"));
         var query = request.SearchText?.Trim() ?? string.Empty;
         return Results.Json(BuildDataSourceExport(tableId, columns, request.ColumnIds,
@@ -68,13 +70,15 @@ public static partial class WorkstationEndpoints
 
     internal static IResult ExportRetainedBackfillRemediation(WorkstationTableExportRequest request, HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)) return EndpointHelpers.Forbidden();
+        if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill))
+            return EndpointHelpers.Forbidden();
         var columns = new Dictionary<string, string> { ["execution"] = "Execution", ["provider"] = "Provider", ["tier"] = "SLA tier", ["status"] = "Status", ["deadline"] = "Deadline UTC", ["ownership"] = "Workflow / owner", ["outcome"] = "Outcome / evidence" };
         var invalid = ValidateDataSourceExport(request, columns);
         if (invalid is not null || request.SortColumnId is not (null or "tier" or "deadline"))
             return Results.BadRequest(new { error = invalid ?? "Unknown remediation sort column." });
         var history = context.RequestServices.GetService<BackfillExecutionHistory>();
-        if (history is null) return Results.Problem("Retained backfill execution history is unavailable.", statusCode: 503);
+        if (history is null)
+            return Results.Problem("Retained backfill execution history is unavailable.", statusCode: 503);
         var asOf = DateTimeOffset.UtcNow;
         var source = BackfillExecutionContractProjection.Build(history.GetRecentExecutions(int.MaxValue),
             context.RequestServices.GetService<IOptions<AutoGapRemediationPolicy>>()?.Value.DefaultProvider, asOf);
@@ -87,8 +91,11 @@ public static partial class WorkstationEndpoints
             : selected.OrderBy(row => row.AutoRemediationSla!.Tier == BackfillRemediationSlaTierDto.SameBusinessDay ? 0 : 1).ThenBy(row => row.AutoRemediationSla!.DueAtUtc);
         var exportRows = sorted.ThenBy(row => row.Id, StringComparer.Ordinal).Select(row => new DataSourceExportRow(row.Id, new Dictionary<string, object?>
         {
-            ["execution"] = row.Id, ["provider"] = row.AutoRemediationSla!.Provider, ["tier"] = row.AutoRemediationSla.Tier.ToString(),
-            ["status"] = row.AutoRemediationSla.Status.ToString(), ["deadline"] = row.AutoRemediationSla.DueAtUtc.ToString("O", CultureInfo.InvariantCulture),
+            ["execution"] = row.Id,
+            ["provider"] = row.AutoRemediationSla!.Provider,
+            ["tier"] = row.AutoRemediationSla.Tier.ToString(),
+            ["status"] = row.AutoRemediationSla.Status.ToString(),
+            ["deadline"] = row.AutoRemediationSla.DueAtUtc.ToString("O", CultureInfo.InvariantCulture),
             ["ownership"] = $"{row.AutoRemediationSla.DownstreamWorkflow}; {(row.AutoRemediationSla.RequiresOwnerAssignment ? "Assignment required" : "Not required")}",
             ["outcome"] = $"{row.AutoRemediationLastOutcome ?? row.Status}; {row.AutoRemediationSla.ReasonCode}; {row.AutoRemediationSla.TriggerSource}"
         }, string.Empty, "global host backfill history"));
@@ -98,15 +105,18 @@ public static partial class WorkstationEndpoints
 
     internal static async Task<IResult> ExportCorporateActionInboxAsync(WorkstationTableExportRequest request, HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewCorporateActions)) return EndpointHelpers.Forbidden();
+        if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewCorporateActions))
+            return EndpointHelpers.Forbidden();
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-        if (string.IsNullOrWhiteSpace(tenant.TenantId) || string.IsNullOrWhiteSpace(tenant.CompanyId)) return EndpointHelpers.Forbidden();
+        if (string.IsNullOrWhiteSpace(tenant.TenantId) || string.IsNullOrWhiteSpace(tenant.CompanyId))
+            return EndpointHelpers.Forbidden();
         var columns = new Dictionary<string, string> { ["event"] = "Event", ["deadline"] = "Ex-date", ["case"] = "Case / status", ["assignment"] = "Assignment", ["control"] = "Conflict / version", ["value"] = "Terms (source denomination)" };
         var invalid = ValidateDataSourceExport(request, columns, "search", "status", "assignment", "conflict");
         if (invalid is not null || request.SortColumnId is not null)
             return Results.BadRequest(new { error = invalid ?? "This source does not declare a sort column." });
         var store = context.RequestServices.GetService<ICorporateActionOperationsStore>();
-        if (store is null) return Results.Problem("Complete corporate-action export is unavailable.", statusCode: 503);
+        if (store is null)
+            return Results.Problem("Complete corporate-action export is unavailable.", statusCode: 503);
         try
         {
             var source = await store.ReadInboxExportSourceAsync(tenant.TenantId, tenant.CompanyId, context.RequestAborted).ConfigureAwait(false);
@@ -158,13 +168,22 @@ public static partial class WorkstationEndpoints
             var actionType = action?.EventType ?? "Not supplied";
             rows.Add(new(proposalId.ToString(), new Dictionary<string, object?>
             {
-                ["event"] = $"{actionType} {ticker}", ["deadline"] = action?.ExDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
-                ["case"] = $"{processingCase?.CaseId.ToString() ?? "Not supplied"}; {status}", ["assignment"] = assignment,
-                ["control"] = $"{conflict}; {version}", ["value"] = terms,
-                ["filter:status"] = status, ["filter:assignment"] = assignment, ["filter:conflict"] = conflict,
+                ["event"] = $"{actionType} {ticker}",
+                ["deadline"] = action?.ExDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                ["case"] = $"{processingCase?.CaseId.ToString() ?? "Not supplied"}; {status}",
+                ["assignment"] = assignment,
+                ["control"] = $"{conflict}; {version}",
+                ["value"] = terms,
+                ["filter:status"] = status,
+                ["filter:assignment"] = assignment,
+                ["filter:conflict"] = conflict,
                 ["source:securityId"] = action?.SecurityId.ToString() ?? processingCase?.SecurityId.ToString(),
-                ["source:proposalId"] = proposalId.ToString(), ["source:currency"] = action?.Currency, ["source:ticker"] = ticker,
-                ["source:actionType"] = actionType, ["source:caseId"] = processingCase?.CaseId.ToString() ?? "Not supplied", ["source:winningSource"] = winningSource
+                ["source:proposalId"] = proposalId.ToString(),
+                ["source:currency"] = action?.Currency,
+                ["source:ticker"] = ticker,
+                ["source:actionType"] = actionType,
+                ["source:caseId"] = processingCase?.CaseId.ToString() ?? "Not supplied",
+                ["source:winningSource"] = winningSource
             }, $"{ticker} {actionType} {status} {assignment}", evidenceScope, processingCase is null ? null : tenantId, processingCase is null ? null : companyId));
         }
     }

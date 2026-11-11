@@ -1,1 +1,0 @@
-import{n as e}from"./rolldown-runtime-WkwZ5CU-.js";import{Ls as t,f as n,m as r,p as i}from"./button-CSrUxsih.js";var a=e(t(),1),o=i(),s=(0,a.forwardRef)(({className:e,children:t,...i},a)=>(0,o.jsx)(`label`,{ref:a,className:r(`text-xs font-medium text-muted-foreground`,n(t)&&`uppercase tracking-[0.14em]`,e),...i,children:t}));s.displayName=`Label`;export{s as t};

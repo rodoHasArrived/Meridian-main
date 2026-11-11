@@ -7,7 +7,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
     <nav aria-label="breadcrumb" style={{
       display:"flex", alignItems:"center", gap:6,
       fontFamily:"var(--font-data)", fontSize:12,
-      color:"var(--text-muted,#6B737B)",
+      color:"var(--text-muted,#606870)",
       flexWrap:"wrap",
     }}>
       {items.map((item, i) => {

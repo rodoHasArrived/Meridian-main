@@ -16,13 +16,20 @@ public static partial class WorkstationEndpoints
     internal static async Task<IResult?> TryExportExecutionAuditAsync(string tableId, WorkstationTableExportRequest request,
         HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (tableId != "trading-execution-audit") return null;
+        if (tableId != "trading-execution-audit")
+            return null;
         if (!await AuditTrailHttpAuthority.CanReadExecutionFeedAsync(context).ConfigureAwait(false) ||
-            !TryResolveRequiredTenantId(context, out _) || !TryResolveCurrentUser(context, out _)) return EndpointHelpers.Forbidden();
+            !TryResolveRequiredTenantId(context, out _) || !TryResolveCurrentUser(context, out _))
+            return EndpointHelpers.Forbidden();
         var headers = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["column-1"] = "Occurred UTC", ["column-2"] = "Object", ["column-3"] = "Action", ["column-4"] = "Outcome",
-            ["column-5"] = "Actor", ["column-6"] = "Context", ["column-7"] = "Action ledger"
+            ["column-1"] = "Occurred UTC",
+            ["column-2"] = "Object",
+            ["column-3"] = "Action",
+            ["column-4"] = "Outcome",
+            ["column-5"] = "Actor",
+            ["column-6"] = "Context",
+            ["column-7"] = "Action ledger"
         };
         var knownFilters = new HashSet<string>(["runId", "category", "action", "outcome", "actor", "symbol", "correlationId", "objectKind", "objectId", "relatedObjectId", "fromUtc", "toUtc"], StringComparer.Ordinal);
         if (request.ColumnIds is null || request.ColumnIds.Count is < 1 or > 7 || request.ColumnIds.Any(column => !headers.ContainsKey(column)) ||
@@ -35,9 +42,11 @@ public static partial class WorkstationEndpoints
         {
             value = null;
             var text = Filter(key);
-            if (string.IsNullOrWhiteSpace(text)) return true;
+            if (string.IsNullOrWhiteSpace(text))
+                return true;
             if (!Regex.IsMatch(text, @"T.*(?:Z|[+-]\d{2}:\d{2})$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) ||
-                !DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed)) return false;
+                !DateTimeOffset.TryParse(text, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+                return false;
             value = parsed;
             return true;
         }
@@ -45,7 +54,8 @@ public static partial class WorkstationEndpoints
             return Results.BadRequest(new { error = "Audit date bounds require ordered ISO timestamps with explicit offsets." });
         var service = context.RequestServices.GetService<AuditTrailExplorerService>() ?? new AuditTrailExplorerService(
             context.RequestServices.GetService<ExecutionAuditTrailService>(), context.RequestServices.GetService<IOperationsContinuityWorkflowService>());
-        if (!service.HasSource) return Results.Problem("The retained audit source is unavailable; no export was produced.", statusCode: 503);
+        if (!service.HasSource)
+            return Results.Problem("The retained audit source is unavailable; no export was produced.", statusCode: 503);
         try
         {
             var query = new AuditTrailExplorerQueryDto(request.SearchText, Filter("runId"), Filter("category"), Filter("action"),
@@ -55,9 +65,13 @@ public static partial class WorkstationEndpoints
             object? Cell(AuditTrailTimelineEntryDto row, string column) => column switch
             {
                 "column-1" => row.OccurredAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-                "column-2" => $"{row.ObjectKind} {row.ObjectId}", "column-3" => $"{row.Category} · {row.Action}",
-                "column-4" => row.Outcome, "column-5" => row.Actor ?? "System", "column-6" => AuditExportContext(row),
-                "column-7" => string.IsNullOrWhiteSpace(row.CurrentActionHash) ? "Unchained" : $"{row.ActionLedgerStatus ?? "Recorded"} {(row.ActionLedgerSequence is { } sequence ? $"#{sequence}" : "no sequence")}", _ => null
+                "column-2" => $"{row.ObjectKind} {row.ObjectId}",
+                "column-3" => $"{row.Category} · {row.Action}",
+                "column-4" => row.Outcome,
+                "column-5" => row.Actor ?? "System",
+                "column-6" => AuditExportContext(row),
+                "column-7" => string.IsNullOrWhiteSpace(row.CurrentActionHash) ? "Unchained" : $"{row.ActionLedgerStatus ?? "Recorded"} {(row.ActionLedgerSequence is { } sequence ? $"#{sequence}" : "no sequence")}",
+                _ => null
             };
             IEnumerable<AuditTrailTimelineEntryDto> ordered = source.Entries;
             if (request.SortColumnId is not null)
@@ -70,8 +84,12 @@ public static partial class WorkstationEndpoints
             var metadata = new[] { "Context · Audit ID", "Context · Source namespace", "Context · Source population", "Context · Workflow ID", "Context · Fund account ID", "Context · Current action hash", "Context · Previous action hash", "Context · Evidence route", "Context · Source query", "Context · Read completed UTC" };
             var lines = new List<string> { string.Join(',', request.ColumnIds.Select(column => CsvCell(headers[column])).Concat(metadata.Select(CsvCell))) };
             var bytes = (long)Encoding.UTF8.GetByteCount(lines[0]) + 2;
-            var sourceQuery = JsonSerializer.Serialize(new { SearchText = request.SearchText ?? string.Empty,
-                Filters = request.Filters ?? new Dictionary<string, string>(), Population = "All authorized retained matches; browse limits do not apply" }, jsonOptions);
+            var sourceQuery = JsonSerializer.Serialize(new
+            {
+                SearchText = request.SearchText ?? string.Empty,
+                Filters = request.Filters ?? new Dictionary<string, string>(),
+                Population = "All authorized retained matches; browse limits do not apply"
+            }, jsonOptions);
             foreach (var row in ordered)
             {
                 context.RequestAborted.ThrowIfCancellationRequested();
@@ -85,7 +103,8 @@ public static partial class WorkstationEndpoints
                     row.CurrentActionHash, row.PreviousActionHash, row.EvidenceRoute, sourceQuery, source.AsOf.ToString("O", CultureInfo.InvariantCulture)
                 }.Select(CsvCell)));
                 bytes += Encoding.UTF8.GetByteCount(line) + 2;
-                if (bytes > 64L * 1024 * 1024) throw new AuditTrailExportLimitException("The complete audit CSV exceeds the response quota. Narrow source filters or select fewer columns; no partial export was produced.");
+                if (bytes > 64L * 1024 * 1024)
+                    throw new AuditTrailExportLimitException("The complete audit CSV exceeds the response quota. Narrow source filters or select fewer columns; no partial export was produced.");
                 lines.Add(line);
             }
             return Results.Json(new WorkstationTableExportDto($"execution-audit-{source.AsOf:yyyyMMddTHHmmssZ}.csv", string.Join("\r\n", lines), source.TotalMatched, source.AsOf), jsonOptions);

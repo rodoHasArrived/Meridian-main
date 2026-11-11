@@ -19,7 +19,7 @@ export function Sparkline({
   const range = max - min || 1;
   const padV = 2;
 
-  const xScale = (i) => (i / (n - 1)) * width;
+  const xScale = (i) => (n === 1 ? width / 2 : (i / (n - 1)) * width);
   const yScale = (v) => height - padV - ((v - min) / range) * (height - padV * 2);
 
   const pathD = points.map((v, i) =>

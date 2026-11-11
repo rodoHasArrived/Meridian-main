@@ -48,7 +48,8 @@ public static class OperationsCloseChecklistHistory
                 versionGaps.Add(new(priorVersion ?? 0, snapshot.WorkflowVersion, entry.AuditId));
                 gap = true;
             }
-            if (gap) segment++;
+            if (gap)
+                segment++;
             gap = false;
             observations.Add(new(entry.AuditId, entry.OccurredAtUtc, snapshot.WorkflowVersion,
                 snapshot.Gates.Count, snapshot.Gates.Count(gate => gate.Status != OperationsGateStatusDto.Passed),
@@ -60,6 +61,7 @@ public static class OperationsCloseChecklistHistory
             observations.Count == 0 ? "Historical audit events do not retain checklist snapshots. Coverage begins with new canonical committed transitions."
                 : partial ? "History contains gaps. The chart connects only observations in the same retained coverage segment." : null,
             observations.FirstOrDefault()?.RecordedAtUtc, observations.LastOrDefault()?.RecordedAtUtc,
-            partial, missing, observations) { VersionGaps = versionGaps };
+            partial, missing, observations)
+        { VersionGaps = versionGaps };
     }
 }

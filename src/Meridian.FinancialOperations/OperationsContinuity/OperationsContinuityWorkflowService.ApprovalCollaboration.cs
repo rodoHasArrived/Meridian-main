@@ -9,7 +9,8 @@ public sealed partial class OperationsContinuityWorkflowService
     public async Task<OperationsApprovalCollaborationDto?> GetApprovalCollaborationAsync(Guid workflowId, CancellationToken ct = default)
     {
         var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
-        if (workflow is null) return null;
+        if (workflow is null)
+            return null;
         var approval = workflow.Approvals.LastOrDefault();
         var active = approval is not null && workflow.ApprovalCollaborationBlocker(approval.ApprovalId) is null;
         return new(workflowId, workflow.Version, workflow.ApprovalState, approval?.ApprovalId, approval?.Operator, approval?.Reviewer,
@@ -26,7 +27,8 @@ public sealed partial class OperationsContinuityWorkflowService
             return Task.FromResult(Failure("VALIDATION_FAILED", "A comment of up to 4,000 characters and at most 50 mentioned operators is required.", []));
         return ApplyApprovalCollaborationAsync(workflowId, request.ExpectedVersion, request.ApprovalId, request.CommandId, request.Actor,
             request.Body.Trim(), "approval-comment-added", new { request.ApprovalId, Body = request.Body.Trim(), Mentions = mentions },
-            (workflow, now) => {
+            (workflow, now) =>
+            {
                 workflow.ApprovalComments.Add(new(Guid.NewGuid().ToString("N"), request.ApprovalId, request.Actor.Trim(),
                     OperationsContinuityWorkflowText.RedactSensitiveText(request.Body.Trim()) ?? string.Empty, mentions, now, request.CommandId));
                 return null;
@@ -52,17 +54,21 @@ public sealed partial class OperationsContinuityWorkflowService
             return Failure("VALIDATION_FAILED", "Approval identity, authenticated actor and a bounded command identity are required.", []);
         var fingerprint = Sha256Digest.Compute(JsonSerializer.SerializeToUtf8Bytes(new { EventType = eventType, Payload = payload }));
         var workflow = await _repository.GetAsync(workflowId, ct).ConfigureAwait(false);
-        if (workflow is null) return Failure("NOT_FOUND", "Workflow was not found.", []);
+        if (workflow is null)
+            return Failure("NOT_FOUND", "Workflow was not found.", []);
         var receipt = workflow.ApprovalCollaborationReceipts.FirstOrDefault(entry => entry.Actor == actor && entry.CommandId == commandId);
-        if (receipt is not null) return receipt.Fingerprint == fingerprint
+        if (receipt is not null)
+            return receipt.Fingerprint == fingerprint
             ? Success(await ToDtoAsync(workflow, ct).ConfigureAwait(false))
             : Failure("COMMAND_ID_REUSE", "This command identity already names a different approval change.", []);
         return await ApplyCommandAsync(workflowId, expectedVersion, actor, rationale, commandId, [], eventType,
             // Discussion does not invalidate checklist evidence or alter the approval gate.
             gate: null, requireIntactAuditChain: true,
             precondition: current => current.ApprovalCollaborationBlocker(approvalId),
-            command: (current, _, now) => {
-                if (mutation(current, now) is { } blocker) return blocker;
+            command: (current, _, now) =>
+            {
+                if (mutation(current, now) is { } blocker)
+                    return blocker;
                 current.ApprovalCollaborationReceipts.Add(new(actor, commandId, fingerprint));
                 return null;
             }, ct: ct).ConfigureAwait(false);

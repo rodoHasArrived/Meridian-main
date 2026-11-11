@@ -67,9 +67,17 @@ public sealed class ProviderVerificationHistoryTests : IDisposable
 
     private static string Entry(string time, string action, ProviderCredentialScope? scope) => JsonSerializer.Serialize(new
     {
-        timestamp = DateTimeOffset.Parse(time), providerId = "alpaca", action, actor = "synthetic-operator",
-        credentialState = 4, credentialSource = 1, verificationState = 1, fieldNames = Array.Empty<string>(),
-        environment = "paper", externalAccountId = "account-1", scope
+        timestamp = DateTimeOffset.Parse(time),
+        providerId = "alpaca",
+        action,
+        actor = "synthetic-operator",
+        credentialState = 4,
+        credentialSource = 1,
+        verificationState = 1,
+        fieldNames = Array.Empty<string>(),
+        environment = "paper",
+        externalAccountId = "account-1",
+        scope
     }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
 
     public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }

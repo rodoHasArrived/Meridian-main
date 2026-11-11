@@ -26,7 +26,8 @@ public sealed class PostedPeriodComparisonService(
         if (book.LedgerBookId != bookId)
             throw new UnauthorizedAccessException("The returned ledger book does not match the requested source identity.");
         var selectedBasis = accountingBasis ?? book.AccountingBasis;
-        if (!Enum.IsDefined(selectedBasis)) throw new ArgumentException("The selected accounting basis is unsupported.");
+        if (!Enum.IsDefined(selectedBasis))
+            throw new ArgumentException("The selected accounting basis is unsupported.");
         var owner = await tenancy.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
         if (owner is null || owner.FundProfileId != book.FundProfileId || owner.TenantId != tenantId || owner.CompanyId != companyId)
             throw new UnauthorizedAccessException("The retained ledger-book ownership does not match this operator scope.");
@@ -50,11 +51,13 @@ public sealed class PostedPeriodComparisonService(
                 return Result("Unavailable", "The prior fiscal period is ambiguous. Select an exact completed baseline.", null);
             baseline = candidates.FirstOrDefault();
         }
-        if (baseline is null) return Result("Unavailable", "No completed prior period is available for this ledger book.", null);
+        if (baseline is null)
+            return Result("Unavailable", "No completed prior period is available for this ledger book.", null);
         if (!IsCompleted(baseline) || baseline.EndDate >= current.StartDate)
             return Result("Incompatible", "The baseline must be a completed prior fiscal period in the same ledger book.", null);
         var windows = SelectWindows(current, baseline, asOf);
-        if (windows.Reason is not null) return Result("Unavailable", windows.Reason, windows.Baseline);
+        if (windows.Reason is not null)
+            return Result("Unavailable", windows.Reason, windows.Baseline);
         var currentWindow = windows.Current;
         var baselineWindow = windows.Baseline!;
         // Bracket both populations. A concurrent append cannot yield a silently mixed comparison.
@@ -96,9 +99,16 @@ public sealed class PostedPeriodComparisonService(
         var priorIds = baselineProjected.Select(entry => entry.JournalEntryId).Order().ToArray();
         var hash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            Version = "posted-period-comparison-v1", Book = book, AsOf = asOf, Current = currentWindow,
-            Baseline = baselineWindow, AccountingBasis = selectedBasis, Dimensions = dimensions, Lines = lines,
-            CurrentJournalIds = currentIds, BaselineJournalIds = priorIds
+            Version = "posted-period-comparison-v1",
+            Book = book,
+            AsOf = asOf,
+            Current = currentWindow,
+            Baseline = baselineWindow,
+            AccountingBasis = selectedBasis,
+            Dimensions = dimensions,
+            Lines = lines,
+            CurrentJournalIds = currentIds,
+            BaselineJournalIds = priorIds
         }));
         return new("Ready", null, DateTimeOffset.UtcNow, asOf, bookId, book.FundProfileId, book.DisplayName,
             selectedBasis, book.BaseCurrency, book.AccountingPolicyId, book.AccountingPolicyVersion,
@@ -164,31 +174,33 @@ public sealed class PostedPeriodComparisonService(
         var rows = current.SelectMany(entry => entry.Lines).Select(line => (Line: line, Current: true))
             .Concat(baseline.SelectMany(entry => entry.Lines).Select(line => (Line: line, Current: false)));
         return rows.GroupBy(row => JsonSerializer.Serialize(new
+        {
+            row.Line.AccountName,
+            row.Line.AccountType,
+            row.Line.Symbol,
+            FinancialAccountId = row.Line.FinancialAccountId?.ToUpperInvariant(),
+            Dimensions = row.Line.Dimensions is null ? null : row.Line.Dimensions with
             {
-                row.Line.AccountName, row.Line.AccountType, row.Line.Symbol,
-                FinancialAccountId = row.Line.FinancialAccountId?.ToUpperInvariant(),
-                Dimensions = row.Line.Dimensions is null ? null : row.Line.Dimensions with
-                {
-                    ExternalGlDimensions = row.Line.Dimensions.ExternalGlDimensions
+                ExternalGlDimensions = row.Line.Dimensions.ExternalGlDimensions
                         .OrderBy(pair => pair.Key, StringComparer.Ordinal).ToDictionary(pair => pair.Key, pair => pair.Value)
-                }
-            }), StringComparer.Ordinal).Select(group =>
-            {
-                var identity = group.First().Line;
-                if (!Enum.TryParse<LedgerAccountType>(identity.AccountType, out var accountType))
-                    throw new InvalidDataException("The posted account type is unsupported.");
-                var currentDebit = group.Where(row => row.Current).Sum(row => row.Line.Debit);
-                var currentCredit = group.Where(row => row.Current).Sum(row => row.Line.Credit);
-                var priorDebit = group.Where(row => !row.Current).Sum(row => row.Line.Debit);
-                var priorCredit = group.Where(row => !row.Current).Sum(row => row.Line.Credit);
-                var currentBalance = Meridian.Ledger.Ledger.CalculateNetBalance(accountType, currentDebit, currentCredit);
-                var priorBalance = Meridian.Ledger.Ledger.CalculateNetBalance(accountType, priorDebit, priorCredit);
-                var change = currentBalance - priorBalance;
-                return new PostedPeriodComparisonLineDto(Sha256Digest.ComputeUtf8(group.Key), identity.AccountName,
-                    identity.AccountType, identity.Symbol, identity.FinancialAccountId, currentDebit, currentCredit,
-                    currentBalance, priorDebit, priorCredit, priorBalance, change,
-                    priorBalance == 0 ? null : change / Math.Abs(priorBalance) * 100m, identity.Dimensions);
-            }).OrderBy(line => line.AccountType, StringComparer.Ordinal)
+            }
+        }), StringComparer.Ordinal).Select(group =>
+        {
+            var identity = group.First().Line;
+            if (!Enum.TryParse<LedgerAccountType>(identity.AccountType, out var accountType))
+                throw new InvalidDataException("The posted account type is unsupported.");
+            var currentDebit = group.Where(row => row.Current).Sum(row => row.Line.Debit);
+            var currentCredit = group.Where(row => row.Current).Sum(row => row.Line.Credit);
+            var priorDebit = group.Where(row => !row.Current).Sum(row => row.Line.Debit);
+            var priorCredit = group.Where(row => !row.Current).Sum(row => row.Line.Credit);
+            var currentBalance = Meridian.Ledger.Ledger.CalculateNetBalance(accountType, currentDebit, currentCredit);
+            var priorBalance = Meridian.Ledger.Ledger.CalculateNetBalance(accountType, priorDebit, priorCredit);
+            var change = currentBalance - priorBalance;
+            return new PostedPeriodComparisonLineDto(Sha256Digest.ComputeUtf8(group.Key), identity.AccountName,
+                identity.AccountType, identity.Symbol, identity.FinancialAccountId, currentDebit, currentCredit,
+                currentBalance, priorDebit, priorCredit, priorBalance, change,
+                priorBalance == 0 ? null : change / Math.Abs(priorBalance) * 100m, identity.Dimensions);
+        }).OrderBy(line => line.AccountType, StringComparer.Ordinal)
             .ThenBy(line => line.AccountName, StringComparer.Ordinal).ThenBy(line => line.AccountKey, StringComparer.Ordinal).ToArray();
     }
 }

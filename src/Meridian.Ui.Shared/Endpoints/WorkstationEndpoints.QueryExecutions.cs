@@ -17,9 +17,11 @@ public static partial class WorkstationEndpoints
     private static bool TryResolveQueryOwner(HttpContext context, out DataQueryOwner owner)
     {
         owner = null!;
-        if (!TryResolveRequiredTenantId(context, out var tenant) || !TryResolveCurrentUser(context, out var actor)) return false;
+        if (!TryResolveRequiredTenantId(context, out var tenant) || !TryResolveCurrentUser(context, out var actor))
+            return false;
         var company = EndpointAuthorization.ResolveCompanyId(context);
-        if (string.IsNullOrWhiteSpace(company)) return false;
+        if (string.IsNullOrWhiteSpace(company))
+            return false;
         owner = new(tenant, company, actor);
         return true;
     }
@@ -46,7 +48,8 @@ public static partial class WorkstationEndpoints
     internal static async Task<IResult?> TryExportRetainedDataQueryAsync(string tableId, WorkstationTableExportRequest request,
         HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (tableId != "data-query-results") return null;
+        if (tableId != "data-query-results")
+            return null;
         if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewHistoricalData) || !TryResolveQueryOwner(context, out var owner))
             return EndpointHelpers.Forbidden();
         if (request.Filters is null || request.Filters.Count != 1 || !request.Filters.TryGetValue("executionId", out var executionId) ||
@@ -56,7 +59,8 @@ public static partial class WorkstationEndpoints
             return Results.BadRequest(new { error = "Export requires an exact retained execution and valid column/query settings. SQL is never accepted or rerun by this operation." });
         var service = context.RequestServices.GetService<DuckDbQueryService>();
         var options = context.RequestServices.GetService<IOptionsMonitor<DataQueryOptions>>()?.CurrentValue ?? new DataQueryOptions();
-        if (service is null || !options.Enabled) return Results.Problem("Retained SQL exports are unavailable.", statusCode: 503);
+        if (service is null || !options.Enabled)
+            return Results.Problem("Retained SQL exports are unavailable.", statusCode: 503);
         try
         {
             var store = new RetainedDataQueryStore(options, service.QueryableRoot);
@@ -120,7 +124,8 @@ public static partial class WorkstationEndpoints
 
     internal static int CompareRetainedSqlCells(string? left, string? right, string type)
     {
-        if (left is null || right is null) return left is null ? right is null ? 0 : -1 : 1;
+        if (left is null || right is null)
+            return left is null ? right is null ? 0 : -1 : 1;
         if (IsRetainedSqlNumericType(type) && TryScaleRetainedDecimal(left, out var leftValue, out var leftScale) &&
             TryScaleRetainedDecimal(right, out var rightValue, out var rightScale))
         {
@@ -132,12 +137,15 @@ public static partial class WorkstationEndpoints
 
     private static bool TryScaleRetainedDecimal(string text, out BigInteger value, out int scale)
     {
-        value = default; scale = 0;
-        if (text.Length > 128 || !Regex.IsMatch(text, @"^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$", RegexOptions.CultureInvariant)) return false;
+        value = default;
+        scale = 0;
+        if (text.Length > 128 || !Regex.IsMatch(text, @"^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$", RegexOptions.CultureInvariant))
+            return false;
         var exponentIndex = text.IndexOfAny(['e', 'E']);
         var mantissa = exponentIndex < 0 ? text : text[..exponentIndex];
         var exponent = 0;
-        if (exponentIndex >= 0 && (!int.TryParse(text[(exponentIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out exponent) || Math.Abs((long)exponent) > 1024)) return false;
+        if (exponentIndex >= 0 && (!int.TryParse(text[(exponentIndex + 1)..], NumberStyles.Integer, CultureInfo.InvariantCulture, out exponent) || Math.Abs((long)exponent) > 1024))
+            return false;
         var point = mantissa.IndexOf('.');
         scale = (point < 0 ? 0 : mantissa.Length - point - 1) - exponent;
         return BigInteger.TryParse(mantissa.Replace(".", string.Empty, StringComparison.Ordinal), NumberStyles.Integer, CultureInfo.InvariantCulture, out value);

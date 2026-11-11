@@ -15,6 +15,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { ApiError } from "@/lib/api-errors";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import {
   getExecutionAccountSnapshot,
   getExecutionBlotter,
@@ -87,8 +88,8 @@ export function ExecutionBlotterPanel() {
   const rows = useMemo(() => (blotter?.positions ?? []).map(buildExecutionBlotterRow), [blotter]);
 
   async function submitUpsize(positionKey: string) {
-    const quantity = Number(upsizeQuantity);
-    if (!Number.isFinite(quantity) || quantity <= 0) {
+    const quantity = parsePositiveDecimal(upsizeQuantity);
+    if (quantity === null) {
       setError("Enter a positive quantity to add to the position.");
       return;
     }

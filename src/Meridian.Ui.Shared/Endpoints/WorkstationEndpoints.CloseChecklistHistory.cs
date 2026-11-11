@@ -13,12 +13,14 @@ public static partial class WorkstationEndpoints
     {
         group.MapGet("/operations/continuity/{workflowId:guid}/checklist/history", async (Guid workflowId, HttpContext context) =>
         {
-            if (!HasOperationsContinuityReadPermission(context)) return EndpointHelpers.Forbidden();
+            if (!HasOperationsContinuityReadPermission(context))
+                return EndpointHelpers.Forbidden();
             try
             {
                 // The same exact account/book/fund ownership seam used by approval collaboration.
                 var authority = await ResolveApprovalCollaborationAuthorityAsync(workflowId, context).ConfigureAwait(false);
-                if (authority is null) return EndpointHelpers.Forbidden();
+                if (authority is null)
+                    return EndpointHelpers.Forbidden();
                 var timeline = await authority.Value.Service.GetTimelineAsync(workflowId, context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(OperationsCloseChecklistHistory.Build(workflowId, timeline, DateTimeOffset.UtcNow), jsonOptions);
             }

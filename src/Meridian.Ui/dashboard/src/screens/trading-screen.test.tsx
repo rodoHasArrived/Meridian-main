@@ -989,6 +989,58 @@ describe("TradingScreen", () => {
     expect(screen.getByLabelText("Limit order price")).toBeInTheDocument();
   });
 
+  it.each(["Limit", "Stop"] as const)("preserves decimal %s price typing and submits its reviewed numeric value", async (orderType) => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/orders");
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), orderType);
+    const price = screen.getByLabelText(`${orderType} order price`) as HTMLInputElement;
+    // Chromium also retains the intermediate "188.0"; jsdom normalizes that display.
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(price).toHaveValue(188.05);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeDisabled();
+    expect(api.submitOrder).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i }));
+    expect(submit).toBeEnabled();
+    await user.click(submit);
+    await waitFor(() => expect(api.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: orderType, quantity: 25, limitPrice: 188.05 }));
+  });
+
+  it("invalidates reviewed decimal inputs before allowing another submission", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/orders");
+    await user.click(screen.getByRole("button", { name: "New order" }));
+    await user.type(screen.getByLabelText("Order symbol"), "AAPL");
+    await user.type(screen.getByLabelText("Order quantity"), "25");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Order type" }), "Limit");
+    const price = screen.getByLabelText("Limit order price") as HTMLInputElement;
+    await user.type(price, "188.05");
+    const acknowledgement = screen.getByRole("checkbox", { name: /I reviewed the order preview and risk warnings/i });
+    await user.click(acknowledgement);
+    const submit = screen.getByRole("button", { name: "Submit order request" });
+    expect(submit).toBeEnabled();
+
+    await user.clear(price);
+    await user.type(price, "0");
+    expect(price).toHaveAttribute("aria-invalid", "true");
+    expect(acknowledgement).not.toBeChecked();
+    expect(acknowledgement).toBeDisabled();
+    expect(submit).toBeDisabled();
+    fireEvent.submit(submit.closest("form")!);
+    expect(api.submitOrder).not.toHaveBeenCalled();
+
+    await user.clear(price);
+    await user.type(price, "188.05");
+    expect(price.value).toBe("188.05");
+    expect(acknowledgement).toBeEnabled();
+    expect(acknowledgement).not.toBeChecked();
+    expect(submit).toBeDisabled();
+  });
+
   it("renders the order impact preview with notional, position effect, and warnings", async () => {
     const user = userEvent.setup();
     await renderTradingScreen(data, "/trading/orders");

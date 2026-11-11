@@ -8,7 +8,7 @@
 <style id="__om-edit-overrides"></style>
 <style>
 body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
-a{color:var(--link,#2D6FB3);text-decoration:none}a:hover{color:var(--link-hover,#1F5286)}
+a{color:var(--link,#2A5F96);text-decoration:none}a:hover{color:var(--link-hover,#1F4A76)}
 code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
 .masthead{background:var(--topbar-bg);color:var(--topbar-text)}
 .masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
@@ -39,7 +39,7 @@ h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);
 .chip--blocked{color:var(--severity-blocked-fg);border:1px solid var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
 .chip--action{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
 .chip--review{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
-.chip--done{color:var(--severity-complete-fg,#10663F);border:1px solid var(--severity-complete-bd,#9DC4AE);background:var(--severity-complete-bg,#E9F2EC)}
+.chip--done{color:var(--severity-ready-fg,#225840);border:1px solid var(--severity-ready-bd,#2E7655);background:var(--severity-ready-bg,#2E7655)}
 .f__hd .chip{margin-left:auto}
 .ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
 .ev b{color:var(--text-primary);font-weight:600}
@@ -51,14 +51,14 @@ table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical
 table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap}
 table.rm td.n{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--text-secondary)}
 table.rm td.w{color:var(--text-muted);font-size:12.5px}
-.note{border-left:3px solid var(--brand-signal,#8C6D3F);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
+.note{border-left:3px solid var(--brand-signal,#C56343);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
 @media (max-width:900px){.f__body{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">STRATEGY FORMATION · INTERFACE REVIEW · 2026-09-20</span></div></div>
 <div class="lede"><div class="in">
-<p class="eyebrow">Review · <code>templates/strategy-formation/</code> · StrategyFormation · StrategyOnboarding · StrategyBuilder · <b style="color:var(--severity-complete-fg,#10663F)">F-01 · F-02 · F-05 · F-06 implemented</b></p>
+<p class="eyebrow">Review · <code>templates/strategy-formation/</code> · StrategyFormation · StrategyOnboarding · StrategyBuilder · <b style="color:var(--severity-ready-fg,#225840)">F-01 · F-02 · F-05 · F-06 implemented</b></p>
 <h1>The screen is well-modelled and badly budgeted.</h1>
 <p>The data model underneath Formation is the strongest in the suite: gates recomputed from live values, a material hash, hash-bound acknowledgment, freshness derived rather than stored. Almost none of that rigour reaches the eye. The interface spends its best real estate restating <em>which object you are looking at</em> and its worst on <em>the decision you came to make</em>.</p>
 <p>Twelve findings below, none of which require a new component. They are budget, arbitration, and affordance problems: vertical space spent on identity, one fact counted three different ways in three different places, and gates that describe a blockage without offering a way through it. Graded on the system's ladder: <b>Blocked</b> = the user is misinformed or stuck; <b>Action</b> = real friction with a known fix; <b>Review</b> = a judgement call worth making deliberately.</p>

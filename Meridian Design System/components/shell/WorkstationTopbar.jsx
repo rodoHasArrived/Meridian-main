@@ -65,21 +65,21 @@ function inject() {
   font-family:var(--font-body);}
 .ws-brand{display:inline-flex;align-items:center;gap:.5rem;min-width:0;}
 .ws-brand img{width:22px;height:22px;flex:0 0 auto;}
-.ws-brand__name{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--topbar-text,#EBE8E1);}
-.ws-brand__sep{color:var(--topbar-sep,#3A4048);}
-.ws-brand__mod{font-size:13px;color:var(--topbar-text-muted,#AEB7C0);}
+.ws-brand__name{font-family:var(--font-display);font-size:14px;font-weight:600;color:var(--topbar-text,#F1EFEA);}
+.ws-brand__sep{color:var(--topbar-sep,#4A545D);}
+.ws-brand__mod{font-size:13px;color:var(--topbar-text-muted,#A9B1B8);}
 .ws-crumbs{display:flex;align-items:center;gap:.5rem;min-width:0;}
 .ws-crumbs>*{display:inline-flex;align-items:center;gap:.5rem;min-width:0;}
-.ws-crumb{font-family:inherit;font-size:13px;color:var(--topbar-text-muted,#AEB7C0);
+.ws-crumb{font-family:inherit;font-size:13px;color:var(--topbar-text-muted,#A9B1B8);
   max-width:22ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 button.ws-crumb{background:none;border:0;padding:0;cursor:pointer;}
-button.ws-crumb:hover{color:var(--topbar-text,#EBE8E1);text-decoration:underline;text-underline-offset:2px;}
-.ws-crumb--current{color:var(--topbar-text,#EBE8E1);}
-.ws-crumb--domain{color:var(--topbar-text-faint,#8A929B);}
+button.ws-crumb:hover{color:var(--topbar-text,#F1EFEA);text-decoration:underline;text-underline-offset:2px;}
+.ws-crumb--current{color:var(--topbar-text,#F1EFEA);}
+.ws-crumb--domain{color:var(--topbar-text-faint,#969EA6);}
 .ws-back{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;
   flex:0 0 auto;margin-right:-.125rem;background:none;border:0;border-radius:var(--radius-button,2px);
-  color:var(--topbar-text-muted,#AEB7C0);font-size:15px;line-height:1;cursor:pointer;}
-.ws-back:hover{background:var(--topbar-field-bg,#0F1216);color:var(--topbar-text,#EBE8E1);}
+  color:var(--topbar-text-muted,#A9B1B8);font-size:15px;line-height:1;cursor:pointer;}
+.ws-back:hover{background:var(--topbar-field-bg,#20272D);color:var(--topbar-text,#F1EFEA);}
 /* Crumbs give way before the search field does, and they drop from the outside in: the domain
    first, then any grandparent, leaving parent › current. The thresholds are set for the band
    these screens are actually viewed in (~900–1000px preview panes), not for a full desktop. */
@@ -87,15 +87,15 @@ button.ws-crumb:hover{color:var(--topbar-text,#EBE8E1);text-decoration:underline
 @media (max-width:1040px){.ws-crumbs>.ws-crumbitem:not(:last-child):not(:nth-last-child(2)){display:none;}}
 @media (max-width:820px){.ws-crumbs>.ws-crumbitem:not(:last-child){display:none;}}
 .ws-search{display:flex;align-items:center;gap:.5rem;width:100%;max-width:560px;height:30px;
-  padding:0 .625rem;border:1px solid var(--topbar-field-border,#2C323A);border-radius:var(--radius-button,2px);
-  background:var(--topbar-field-bg,#0F1216);color:var(--topbar-text-faint,#8A929B);text-align:left;cursor:text;
+  padding:0 .625rem;border:1px solid var(--topbar-field-border,#38424B);border-radius:var(--radius-button,2px);
+  background:var(--topbar-field-bg,#20272D);color:var(--topbar-text-faint,#969EA6);text-align:left;cursor:text;
   font-family:var(--font-body);font-size:12px;transition:border-color .12s ease;}
-.ws-search:hover{border-color:var(--topbar-field-border-hover,#3A424B);}
+.ws-search:hover{border-color:var(--topbar-field-border-hover,#46515C);}
 .ws-search__txt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.ws-kbd{font-family:var(--font-data);font-size:10px;border:1px solid var(--topbar-field-border,#2C323A);
-  border-radius:var(--radius-chip,2px);padding:1px 5px;color:var(--topbar-text-faint,#8A929B);}
+.ws-kbd{font-family:var(--font-data);font-size:10px;border:1px solid var(--topbar-field-border,#38424B);
+  border-radius:var(--radius-chip,2px);padding:1px 5px;color:var(--topbar-text-faint,#969EA6);}
 .ws-status{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--font-data);
-  font-size:11px;color:var(--topbar-text-muted,#AEB7C0);font-variant-numeric:tabular-nums;}
+  font-size:11px;color:var(--topbar-text-muted,#A9B1B8);font-variant-numeric:tabular-nums;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "masthead");
@@ -163,7 +163,7 @@ export function WorkstationTopbar({
       <div className="ws-status">
         <span title={time.ok ? "Feeds healthy" : "A feed is lagging"} style={{
           width: 6, height: 6, borderRadius: 999, display: "inline-block",
-          background: time.ok ? "var(--chrome-ok, #6FAE8B)" : "var(--chrome-warn, #986717)",
+          background: time.ok ? "var(--chrome-ok, #65A983)" : "var(--chrome-warn, #C69B4D)",
           opacity: time.pulse ? 1 : 0.5, transition: "opacity .45s ease",
         }} />
         <span>{time.label}</span>

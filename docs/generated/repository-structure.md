@@ -7911,6 +7911,7 @@ Meridian-main
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
 │   │   │   │   ├── check-typography-floor.mjs
+│   │   │   │   ├── convert-fonts-to-woff2.py
 │   │   │   │   ├── design-system-ratchets.baseline.json
 │   │   │   │   ├── design-system-ratchets.d.mts
 │   │   │   │   ├── design-system-ratchets.mjs
@@ -7945,18 +7946,19 @@ Meridian-main
 │   │   │   │   │   │   ├── meridian-wordmark.svg
 │   │   │   │   │   │   └── README.md
 │   │   │   │   │   ├── fonts
-│   │   │   │   │   │   ├── IBMPlexMono-Bold.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Italic.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Medium.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-Regular.ttf
-│   │   │   │   │   │   ├── IBMPlexMono-SemiBold.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Bold.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Italic.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Medium.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-Regular.ttf
-│   │   │   │   │   │   ├── IBMPlexSans-SemiBold.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-Bold.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Italic.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Medium.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-Regular.woff2
+│   │   │   │   │   │   ├── IBMPlexMono-SemiBold.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Bold.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Italic.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Medium.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-Regular.woff2
+│   │   │   │   │   │   ├── IBMPlexSans-SemiBold.woff2
 │   │   │   │   │   │   ├── OFL-IBMPlexMono.txt
-│   │   │   │   │   │   └── OFL-IBMPlexSans.txt
+│   │   │   │   │   │   ├── OFL-IBMPlexSans.txt
+│   │   │   │   │   │   └── woff2-sources.json
 │   │   │   │   │   ├── icons
 │   │   │   │   │   │   ├── account-portfolio.svg
 │   │   │   │   │   │   ├── admin-maintenance.svg
@@ -8580,6 +8582,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── positive-decimal.test.ts
+│   │   │   │   │   ├── positive-decimal.ts
 │   │   │   │   │   ├── posted-period-comparison-api.test.ts
 │   │   │   │   │   ├── posted-period-comparison-api.ts
 │   │   │   │   │   ├── private-capital-notice-intent.test.ts

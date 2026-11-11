@@ -62,7 +62,8 @@ public sealed class AuditTrailExplorerService
             foreach (var workflow in workflows)
             {
                 ct.ThrowIfCancellationRequested();
-                if (canReadWorkflow is not null && !await canReadWorkflow(workflow, ct).ConfigureAwait(false)) continue;
+                if (canReadWorkflow is not null && !await canReadWorkflow(workflow, ct).ConfigureAwait(false))
+                    continue;
                 var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
                 if (canReadWorkflow is not null && timeline.Any(entry => entry.WorkflowId != workflow.WorkflowId || entry.FundAccountId != workflow.FundAccountId))
                     throw new InvalidDataException("An audit timeline did not match its authorized workflow/account identity.");

@@ -6,12 +6,13 @@ import {
   buildOrderTicketStatusAnnouncement,
   buildOrderTicketSubmitDisabledReason
 } from "./trading-screen.order-ticket-text";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type SetStateAction } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
+import { parsePositiveDecimal } from "@/lib/positive-decimal";
 import { useBrokerageRecoveryObservation } from "./trading-screen.brokerage-recovery-state";
 import type { ApiRequestOptions, ApprovePromotionRequest, RejectPromotionRequest } from "@/lib/api";
 import { evidenceWorkbenchPath, normalizeLocalWorkstationRoute, WORKSTATION_ROUTE_CATALOG, workflowTargetPath } from "@/lib/workspace";
@@ -3267,8 +3268,37 @@ export function useOrderTicketViewModel({
   const [riskWarnings, setRiskWarnings] = useState<string[]>([]);
   const [orderId, setOrderId] = useState<string | null>(null);
   const [errorText, setErrorText] = useState<string | null>(null);
-  const [acknowledged, setAcknowledged] = useState(false);
+  const normalizedAccountScope = normalizeFundAccountGuid(fundAccountId) ?? null;
+  const [editor, setEditor] = useState<{
+    scope: string | null;
+    values: Partial<Record<"quantity" | "limitPrice", string>>;
+    acknowledged: boolean;
+  }>(() => ({ scope: normalizedAccountScope, values: {}, acknowledged: false }));
+  const editorMatchesScope = editor.scope === normalizedAccountScope;
+  const acknowledged = editorMatchesScope && editor.acknowledged;
+  const editorValues = editorMatchesScope ? editor.values : {};
+  // Scope-bound derivation withholds the old text and acknowledgement in the first render.
+  // Discard the stored session too, so returning to that account cannot revive its review.
+  if (!editorMatchesScope) {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }
   const submittingRef = useRef(false);
+
+  const resetEditor = useCallback(() => {
+    setEditor({ scope: normalizedAccountScope, values: {}, acknowledged: false });
+  }, [normalizedAccountScope]);
+
+  const setAcknowledged = useCallback((next: SetStateAction<boolean>) => {
+    setEditor((current) => {
+      const sameScope = current.scope === normalizedAccountScope;
+      const previous = sameScope && current.acknowledged;
+      return {
+        scope: normalizedAccountScope,
+        values: sameScope ? current.values : {},
+        acknowledged: typeof next === "function" ? next(previous) : next
+      };
+    });
+  }, [normalizedAccountScope]);
 
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
@@ -3300,8 +3330,8 @@ export function useOrderTicketViewModel({
     setPhase("idle");
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, [phase]);
+    resetEditor();
+  }, [phase, resetEditor]);
 
   const toggleTicket = useCallback(() => {
     if (open) {
@@ -3314,11 +3344,22 @@ export function useOrderTicketViewModel({
 
   const updateField = useCallback((field: OrderTicketField, value: string) => {
     setForm((current) => updateOrderTicketForm(current, field, value));
+    // Keep local editor text such as "188.0" while the existing model parses it as 188.
+    // Rendering String(188) after that keystroke would make the next "5" become 1885.
+    setEditor((current) => {
+      const values = current.scope === normalizedAccountScope ? current.values : {};
+      return {
+        scope: normalizedAccountScope,
+        values: field === "quantity" || field === "limitPrice"
+          ? { ...values, [field]: value }
+          : field === "symbol" || field === "type" ? {} : values,
+        acknowledged: false
+      };
+    });
     setPhase((current) => current === "submitted" ? "idle" : current);
     setOrderId(null);
     setErrorText(null);
-    setAcknowledged(false);
-  }, []);
+  }, [normalizedAccountScope]);
 
   const normalizeSymbol = useCallback(() => {
     setForm((current) => ({
@@ -3379,7 +3420,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3395,7 +3436,7 @@ export function useOrderTicketViewModel({
         setRiskWarnings(result.riskWarnings ?? []);
         setErrorText(null);
         setOpen(false);
-        setAcknowledged(false);
+        resetEditor();
         setForm(emptyOrderTicketForm);
         await refreshAfterSettledOutcome();
         return;
@@ -3409,10 +3450,17 @@ export function useOrderTicketViewModel({
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, resetEditor, services]);
 
   return {
     ...state,
+    controls: {
+      ...state.controls,
+      quantity: { ...state.controls.quantity, value: editorValues.quantity ?? state.controls.quantity.value },
+      limitPrice: state.controls.limitPrice
+        ? { ...state.controls.limitPrice, value: editorValues.limitPrice ?? state.controls.limitPrice.value }
+        : null
+    },
     preview,
     openTicket,
     closeTicket,
@@ -3576,10 +3624,10 @@ export function updateOrderTicketForm(
   }
 
   if (field === "quantity") {
-    return { ...current, quantity: parsePositiveNumber(value) ?? 0 };
+    return { ...current, quantity: parsePositiveDecimal(value) ?? 0 };
   }
 
-  return { ...current, limitPrice: parsePositiveNumber(value) };
+  return { ...current, limitPrice: parsePositiveDecimal(value) };
 }
 
 export function buildOrderSubmitRequest(form: OrderSubmitRequest, fundAccountId?: string | null): OrderSubmitRequest {
@@ -3640,11 +3688,6 @@ function normalizeOrderSymbol(symbol: string): string {
 
 function orderTypeRequiresPrice(type: OrderSubmitRequest["type"]): boolean {
   return type === "Limit" || type === "Stop";
-}
-
-function parsePositiveNumber(value: string): number | null {
-  const parsed = Number(value);
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 export type OrderPreviewLevel = "info" | "warning" | "danger";

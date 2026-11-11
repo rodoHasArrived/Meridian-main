@@ -55,8 +55,12 @@ public static partial class WorkstationEndpoints
             var result = await ApplyOperatorTriageAsync(workItemId, request, context).ConfigureAwait(false);
             return Results.Json(result, jsonOptions, statusCode: result.Status switch
             {
-                "Applied" => 200, "Conflict" => 409, "NotFound" => 404,
-                "Forbidden" => 403, "Unavailable" => 503, _ => 400
+                "Applied" => 200,
+                "Conflict" => 409,
+                "NotFound" => 404,
+                "Forbidden" => 403,
+                "Unavailable" => 503,
+                _ => 400
             });
         }).WithName("ApplyOperatorInboxTriage").RequireAuthenticatedSession()
             .RequireWorkstationTenantCompanyScope().RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -97,19 +101,23 @@ public static partial class WorkstationEndpoints
 
     private static async Task<bool> CanReadTriageAccountAsync(Guid? fundAccountId, HttpContext context)
     {
-        if (fundAccountId is not { } accountId) return true;
+        if (fundAccountId is not { } accountId)
+            return true;
         // Trading readiness contains broker account evidence and retains its scoped read authority.
         if (EndpointAuthorization.HasPermission(context, UserPermission.ViewTrades))
             return await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(accountId, context).ConfigureAwait(false);
         // Accounting/strategy-only operators still use the selected shell account. They do not
         // contribute trading readiness; authorize that context through retained fund ownership.
-        if (!TryGetTriageContext(context, out var scope, out _)) return false;
+        if (!TryGetTriageContext(context, out var scope, out _))
+            return false;
         var accounts = context.RequestServices.GetService<IAccountQueryService>()
             ?? context.RequestServices.GetService<IFundAccountService>() as IAccountQueryService;
         var tenancy = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
-        if (accounts is null || tenancy is null) return false;
+        if (accounts is null || tenancy is null)
+            return false;
         var account = await accounts.GetAccountAsync(accountId, context.RequestAborted).ConfigureAwait(false);
-        if (account?.AccountId != accountId || account.FundId is not { } fundId || fundId == Guid.Empty) return false;
+        if (account?.AccountId != accountId || account.FundId is not { } fundId || fundId == Guid.Empty)
+            return false;
         var fundProfileId = fundId.ToString("D");
         var owner = await tenancy.ResolveAsync(fundProfileId, context.RequestAborted).ConfigureAwait(false);
         return owner?.FundProfileId == fundProfileId && owner.IsHeldBy(scope.TenantId)
@@ -138,7 +146,8 @@ public static partial class WorkstationEndpoints
     private static async Task<ReconciliationBreakQueueItem?> GetTriageReconciliationSourceAsync(OperatorWorkItemDto work, HttpContext context)
     {
         if (work.Kind != OperatorWorkItemKindDto.ReconciliationBreak || string.IsNullOrWhiteSpace(work.AuditReference)
-            || !TryResolveReconciliationBreakQueueScope(context, out var scope)) return null;
+            || !TryResolveReconciliationBreakQueueScope(context, out var scope))
+            return null;
         var repository = context.RequestServices.GetService<IReconciliationBreakQueueRepository>();
         return repository is null ? null
             : await repository.GetByIdAsync(scope, work.AuditReference, context.RequestAborted).ConfigureAwait(false);
@@ -170,20 +179,24 @@ public static partial class WorkstationEndpoints
         if (!await CanReadTriageAccountAsync(request.FundAccountId, context).ConfigureAwait(false))
             return new("Forbidden", workItemId, Error: "The selected fund account is not authorized.");
         var store = context.RequestServices.GetService<IOperatorTriageStore>();
-        if (store is null) return new("Unavailable", workItemId, Error: "Durable operator triage is not configured.");
+        if (store is null)
+            return new("Unavailable", workItemId, Error: "Durable operator triage is not configured.");
         try
         {
             // Rebuild the authorized inbox on every command. A browser-supplied ID is not read authority.
             var inbox = await BuildOperatorInboxAsync(request.FundAccountId, context).ConfigureAwait(false);
             var work = inbox.Items.FirstOrDefault(item => item.WorkItemId == workItemId);
-            if (work is null) return new("NotFound", workItemId, Error: "The item is no longer in the authorized queue.");
+            if (work is null)
+                return new("NotFound", workItemId, Error: "The item is no longer in the authorized queue.");
             var source = await GetTriageReconciliationSourceAsync(work, context).ConfigureAwait(false);
             await ObserveTriageSeverityAsync(store, scope, work, context.RequestAborted).ConfigureAwait(false);
             var sourceOwned = work.Kind == OperatorWorkItemKindDto.ReconciliationBreak;
             if (request.Action == OperatorTriageAction.Assign)
             {
-                if (!CanAssignTriage(work, context)) return new("Forbidden", workItemId, Error: "Assignment permission is required.");
-                if (sourceOwned && source is null) return new("Unavailable", workItemId, Error: "Source assignment authority is unavailable.");
+                if (!CanAssignTriage(work, context))
+                    return new("Forbidden", workItemId, Error: "Assignment permission is required.");
+                if (sourceOwned && source is null)
+                    return new("Unavailable", workItemId, Error: "Source assignment authority is unavailable.");
                 if (!string.Equals(request.AssigneeId, actor, StringComparison.Ordinal))
                 {
                     var assignee = context.RequestServices.GetService<UserProfileRegistry>()?.GetProfile(request.AssigneeId ?? string.Empty);

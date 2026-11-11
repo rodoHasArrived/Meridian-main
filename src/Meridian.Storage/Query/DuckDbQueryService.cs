@@ -89,7 +89,8 @@ public sealed partial class DuckDbQueryService(
             var rows = new List<string?[]>();
             var truncated = false;
             long totalRows = 0;
-            if (sink is not null) await sink.BeginAsync(sql!, columns, columnTypes, timeoutSource.Token).ConfigureAwait(false);
+            if (sink is not null)
+                await sink.BeginAsync(sql!, columns, columnTypes, timeoutSource.Token).ConfigureAwait(false);
             while (await reader.ReadAsync(timeoutSource.Token).ConfigureAwait(false))
             {
                 if (sink is null && rows.Count >= options.MaxRows)
@@ -107,10 +108,13 @@ public sealed partial class DuckDbQueryService(
                             ? ExactDecimalText(reader.GetFieldValue<DuckDBDecimal>(i))
                             : ExactScalarText(reader.GetValue(i));
                 }
-                if (sink is not null) await sink.WriteRowAsync(row, timeoutSource.Token).ConfigureAwait(false);
+                if (sink is not null)
+                    await sink.WriteRowAsync(row, timeoutSource.Token).ConfigureAwait(false);
                 totalRows++;
-                if (rows.Count < options.MaxRows) rows.Add(row);
-                else truncated = true;
+                if (rows.Count < options.MaxRows)
+                    rows.Add(row);
+                else
+                    truncated = true;
             }
 
             var receipt = sink is null ? null : await sink.CompleteAsync(totalRows, timeoutSource.Token).ConfigureAwait(false);

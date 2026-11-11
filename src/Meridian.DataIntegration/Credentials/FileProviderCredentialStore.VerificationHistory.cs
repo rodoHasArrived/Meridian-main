@@ -16,7 +16,8 @@ public sealed partial class FileProviderCredentialStore : IProviderVerificationH
         string providerId, ProviderCredentialScope scope, int limit = 100, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(scope);
-        if (limit is < 1 or > 500) throw new ArgumentOutOfRangeException(nameof(limit));
+        if (limit is < 1 or > 500)
+            throw new ArgumentOutOfRangeException(nameof(limit));
         var descriptor = RequireDescriptor(providerId);
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
@@ -36,24 +37,29 @@ public sealed partial class FileProviderCredentialStore : IProviderVerificationH
             using var reader = new StreamReader(new FileStream(_auditPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite));
             while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
             {
-                if (string.IsNullOrWhiteSpace(line)) continue;
+                if (string.IsNullOrWhiteSpace(line))
+                    continue;
                 // The audit also contains OAuth/migration events with another shape. Read only
                 // verification envelopes and refuse malformed JSON instead of silently dropping it.
                 using var document = JsonDocument.Parse(line);
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                     throw new InvalidDataException("Provider audit envelope is unavailable.");
-                if (!document.RootElement.TryGetProperty("action", out var action)) continue;
+                if (!document.RootElement.TryGetProperty("action", out var action))
+                    continue;
                 if (action.ValueKind != JsonValueKind.String)
                     throw new InvalidDataException("Provider audit action is unavailable.");
-                if (action.GetString() is not ("verify-success" or "verify-failure")) continue;
+                if (action.GetString() is not ("verify-success" or "verify-failure"))
+                    continue;
                 var entry = JsonSerializer.Deserialize<ProviderCredentialAuditEntry>(line, JsonOptions)
                     ?? throw new InvalidDataException("Provider verification audit entry is unavailable.");
-                if (entry.Scope != scope || !string.Equals(entry.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase)) continue;
+                if (entry.Scope != scope || !string.Equals(entry.ProviderId, descriptor.ProviderId, StringComparison.OrdinalIgnoreCase))
+                    continue;
                 if (entry.Timestamp == default || entry.Timestamp > asOf)
                     throw new InvalidDataException("Provider verification timestamp is unavailable.");
                 matched++;
                 observations.Enqueue(new(entry.Timestamp, entry.Action == "verify-success"), entry.Timestamp);
-                if (observations.Count > limit) observations.Dequeue();
+                if (observations.Count > limit)
+                    observations.Dequeue();
             }
             return new(scope.ConnectionId, descriptor.ProviderId, asOf,
                 observations.UnorderedItems.Select(item => item.Element).OrderBy(item => item.RecordedAtUtc).ToArray(), matched > limit);

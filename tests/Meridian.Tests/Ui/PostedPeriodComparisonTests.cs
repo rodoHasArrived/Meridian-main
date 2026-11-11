@@ -148,7 +148,8 @@ public sealed class PostedPeriodComparisonTests
             .ReturnsAsync((LedgerJournalEntryQuery query, CancellationToken _) => query.PeriodId == fixture.Current.PeriodId ? [record] : []);
         var projected = JournalDto() with
         {
-            JournalEntryId = journalId, PeriodId = fixture.Current.PeriodId,
+            JournalEntryId = journalId,
+            PeriodId = fixture.Current.PeriodId,
             Lines = rawLines.Select(line => new LedgerJournalEntryLineDto(line.EntryId, journalId, posted,
                 line.Account.Name, line.Account.AccountType.ToString(), null, null, line.Debit, line.Credit, line.Description)).ToArray()
         };

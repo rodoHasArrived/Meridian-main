@@ -54,8 +54,8 @@ render as small-caps rather than ALL-CAPS.
 - Radii: **2 / 4 / 6** — 2px chips, 4px controls and panels, 6px large sheets; never above 8. Structure
   comes from rules, not rounding
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
-- Shadows: surfaces are **flat — no card shadow**. The only elevation is a tight hard-edged
-  **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays. Everything else is borders.
+- Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight hard-edged
+  **menu** shadow `0 2px 8px rgba(17,23,29,.16)` on detached overlays. Everything else is borders.
 - Spacing rhythm (4px base): 64 report · 48 macro · 32 workspace · 24 section · 16 generous · 12 standard · 8 tight · 4 micro
 - Padding: card 20 · compact card 16 · metric 18
 - Chrome: 48px brand bar · 28px status bar · 224px nav rail · 36px standard row (dense 28 · review 44)

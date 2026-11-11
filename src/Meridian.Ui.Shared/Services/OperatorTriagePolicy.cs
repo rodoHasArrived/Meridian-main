@@ -17,7 +17,8 @@ public static class OperatorTriagePolicy
     {
         var invalidated = state.Personal.Where(personal => personal.SnoozedUntil > now
             && (tone == OperatorWorkItemToneDto.Critical || (int?)personal.SnoozedTone < (int)tone)).ToArray();
-        if (invalidated.Length == 0) return state;
+        if (invalidated.Length == 0)
+            return state;
         return state with
         {
             Version = state.Version + 1,
@@ -58,7 +59,8 @@ public static class OperatorTriagePolicy
             case OperatorTriageAction.Assign:
                 if (string.IsNullOrWhiteSpace(command.AssigneeId) || command.AssigneeId.Length > 256)
                     throw new OperatorTriageException("Rejected", "Select a valid operator to assign.");
-                if (!sourceOwnsAssignment) assignee = command.AssigneeId;
+                if (!sourceOwnsAssignment)
+                    assignee = command.AssigneeId;
                 break;
             case OperatorTriageAction.Acknowledge:
                 personal = personal with { AcknowledgedAt = now };

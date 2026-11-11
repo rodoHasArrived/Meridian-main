@@ -20,7 +20,8 @@ public static partial class LedgerEndpoints
             Guid ledgerBookId, Guid periodId, Guid? baselinePeriodId, DateTimeOffset? asOf,
             AccountingBasisKindDto? accountingBasis, HttpContext context) =>
         {
-            if (!HasLedgerReadPermission(context)) return EndpointHelpers.Forbidden();
+            if (!HasLedgerReadPermission(context))
+                return EndpointHelpers.Forbidden();
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             if (!HasAccountingPackageTenantScope(tenant) || !EndpointAuthorization.TryResolveActor(context, out _))
                 return EndpointHelpers.Forbidden();
@@ -73,7 +74,8 @@ public static partial class LedgerEndpoints
             if (dimension is "instrumentId" or "positionId")
             {
                 foreach (var key in new[] { dimension, "dimension" + char.ToUpperInvariant(dimension[0]) + dimension[1..] })
-                    if (query.TryGetValue(key, out var value) && !Guid.TryParse(value.ToString(), out _)) return true;
+                    if (query.TryGetValue(key, out var value) && !Guid.TryParse(value.ToString(), out _))
+                        return true;
             }
         }
         return query.Keys.Any(key => !known.Contains(key) && !key.StartsWith("externalGl.", StringComparison.OrdinalIgnoreCase));

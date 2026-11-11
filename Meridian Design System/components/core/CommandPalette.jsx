@@ -18,44 +18,44 @@ function inject() {
 .mds-cmd__field{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;flex:none;
   border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .mds-cmd__field:focus-within{outline:none;}
-.mds-cmd__glyph{font-size:15px;color:var(--text-muted,#6B737B);line-height:1;}
+.mds-cmd__glyph{font-size:15px;color:var(--text-muted,#606870);line-height:1;}
 .mds-cmd__input{flex:1;min-width:0;height:100%;border:none;background:transparent;outline:none;
   color:var(--text-primary,#20252B);font-family:var(--font-data,monospace);font-size:14px;}
 .mds-cmd__input::placeholder{color:var(--text-disabled,#A4ABB2);}
 .mds-cmd__esc{flex:none;font-family:var(--font-data,monospace);font-size:10px;font-weight:600;
-  color:var(--text-muted,#6B737B);border:1px solid var(--border,#D2CDC3);
+  color:var(--text-muted,#606870);border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);padding:2px 6px;border-radius:var(--radius-button,2px);}
 .mds-cmd__list{flex:1;min-height:0;overflow-y:auto;padding:4px 0;}
 .mds-cmd__group{padding:8px 14px 3px;font-family:var(--font-body);font-size:9px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.08em;color:var(--text-muted,#6B737B);}
+  font-variant:all-small-caps;letter-spacing:.08em;color:var(--text-muted,#606870);}
 .mds-cmd__row{display:flex;align-items:center;gap:10px;padding:7px 14px 7px 11px;cursor:pointer;
   border-left:3px solid transparent;}
 .mds-cmd__row--hl{border-left-color:var(--brand-signal,#C56343);background:var(--bg-hover,#EDEFF0);}
 .mds-cmd__row--danger.mds-cmd__row--hl{border-left-color:var(--red,#B54B42);}
 .mds-cmd__ico{flex:none;width:16px;height:16px;display:inline-flex;align-items:center;
-  justify-content:center;color:var(--text-muted,#6B737B);}
+  justify-content:center;color:var(--text-muted,#606870);}
 .mds-cmd__row--hl .mds-cmd__ico{color:var(--brand-signal,#C56343);}
 .mds-cmd__row--danger .mds-cmd__ico{color:var(--red,#B54B42);}
 .mds-cmd__label{flex:1;min-width:0;font-size:13px;color:var(--text-primary,#20252B);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-cmd__row--danger .mds-cmd__label{color:var(--red-dim,#7d3940);}
+.mds-cmd__row--danger .mds-cmd__label{color:var(--red-dim,#883832);}
 .mds-cmd__hint{flex:none;font-family:var(--font-data,monospace);font-size:11px;
-  color:var(--text-muted,#6B737B);}
+  color:var(--text-muted,#606870);}
 .mds-cmd__sc{flex:none;display:inline-flex;gap:3px;}
 .mds-cmd__key{font-family:var(--font-data,monospace);font-size:10px;font-weight:600;
   color:var(--text-secondary,#535C65);border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);padding:1px 5px;border-radius:var(--radius-button,2px);}
 .mds-cmd__mark{color:var(--brand-signal,#C56343);font-weight:700;}
-.mds-cmd__meta{margin-left:8px;font-family:var(--font-data,monospace);font-size:10.5px;color:var(--text-muted,#6B737B);}
+.mds-cmd__meta{margin-left:8px;font-family:var(--font-data,monospace);font-size:10.5px;color:var(--text-muted,#606870);}
 .mds-cmd__verbs{flex:none;display:none;gap:4px;}
 .mds-cmd__row--hl .mds-cmd__verbs{display:inline-flex;}
 .mds-cmd__verb{appearance:none;cursor:pointer;font:600 10px var(--font-body);padding:2px 7px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);border-radius:var(--radius-button,2px);}
 .mds-cmd__verb[data-on="true"]{border-color:var(--brand-signal,#C56343);color:var(--text-primary,#20252B);background:var(--bg,#F2F0EB);}
-.mds-cmd__empty{padding:22px 14px;text-align:center;font-size:12px;color:var(--text-muted,#6B737B);}
+.mds-cmd__empty{padding:22px 14px;text-align:center;font-size:12px;color:var(--text-muted,#606870);}
 .mds-cmd__foot{flex:none;display:flex;gap:16px;padding:7px 14px;border-top:1px solid var(--border,#D2CDC3);
   background:var(--bg-medium,#EBE8E1);font-family:var(--font-data,monospace);font-size:10px;
-  color:var(--text-muted,#6B737B);}
+  color:var(--text-muted,#606870);}
 .mds-cmd__foot kbd{font-family:inherit;font-weight:600;color:var(--text-secondary,#535C65);}
 `;
   const el = document.createElement("style");

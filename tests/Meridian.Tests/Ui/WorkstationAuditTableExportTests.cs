@@ -208,7 +208,8 @@ public sealed class WorkstationAuditTableExportTests
         public ServiceProvider Services(IScopedAuthorizationService? scoped = null)
         {
             var services = new ServiceCollection().AddSingleton(Explorer).AddSingleton(Books.Object).AddSingleton(Tenancy.Object);
-            if (scoped is not null) services.AddSingleton(scoped);
+            if (scoped is not null)
+                services.AddSingleton(scoped);
             return services.BuildServiceProvider();
         }
     }

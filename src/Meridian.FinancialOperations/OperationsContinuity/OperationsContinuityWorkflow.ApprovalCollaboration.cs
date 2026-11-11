@@ -17,15 +17,20 @@ public sealed partial class OperationsContinuityWorkflow
 
     public OperationsWorkflowBlockerDto? ReassignApprovalReviewer(string approvalId, string reviewer, string rationale)
     {
-        if (ApprovalCollaborationBlocker(approvalId) is { } blocker) return blocker;
+        if (ApprovalCollaborationBlocker(approvalId) is { } blocker)
+            return blocker;
         var submission = Approvals.Last();
         if (string.IsNullOrWhiteSpace(reviewer) || string.IsNullOrWhiteSpace(rationale))
             return new("APPROVAL_REASSIGN_METADATA_REQUIRED", "A reviewer and a reason are required.", OperationsGateKeyDto.Approval, "Error", []);
         if (string.Equals(submission.Operator?.Trim(), reviewer.Trim(), StringComparison.OrdinalIgnoreCase))
             return new("APPROVAL_INDEPENDENT_REVIEWER_REQUIRED", "The reviewer must differ from the original submitting operator.", OperationsGateKeyDto.Approval, "Error", []);
-        Approvals.Add(submission with {
-            ApprovalId = Guid.NewGuid().ToString("N"), Status = OperationsApprovalStateDto.ReviewerAssigned,
-            Reviewer = reviewer.Trim(), Rationale = rationale.Trim(), DecidedAtUtc = null
+        Approvals.Add(submission with
+        {
+            ApprovalId = Guid.NewGuid().ToString("N"),
+            Status = OperationsApprovalStateDto.ReviewerAssigned,
+            Reviewer = reviewer.Trim(),
+            Rationale = rationale.Trim(),
+            DecidedAtUtc = null
         });
         ApprovalState = OperationsApprovalStateDto.ReviewerAssigned;
         // Submission identity/evidence and the in-progress gate are preserved. This never approves.

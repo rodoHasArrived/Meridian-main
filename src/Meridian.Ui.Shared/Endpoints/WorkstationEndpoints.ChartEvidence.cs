@@ -22,9 +22,11 @@ public static partial class WorkstationEndpoints
             var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
             if (!tenant.HasTenantScope || !EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials))
                 return EndpointHelpers.Forbidden();
-            if (limit is < 1 or > 500) return Results.BadRequest(new { error = "History limit must be between 1 and 500." });
+            if (limit is < 1 or > 500)
+                return Results.BadRequest(new { error = "History limit must be between 1 and 500." });
             var service = context.RequestServices.GetService<ProviderConnectionLifecycleService>();
-            if (service is null) return Results.Problem("Provider history is not configured.", statusCode: 503);
+            if (service is null)
+                return Results.Problem("Provider history is not configured.", statusCode: 503);
             try
             {
                 var history = await service.GetVerificationHistoryForTenantAsync(connectionId, tenant.TenantId!, limit ?? 100, context.RequestAborted).ConfigureAwait(false);
@@ -48,7 +50,8 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             var query = context.RequestServices.GetService<IAccountQueryService>()
                 ?? context.RequestServices.GetService<IFundAccountService>() as IAccountQueryService;
-            if (query is null) return Results.Problem("Account history is not configured.", statusCode: 503);
+            if (query is null)
+                return Results.Problem("Account history is not configured.", statusCode: 503);
             var snapshots = await query.GetBalanceTimelineAsync(accountId, ct: context.RequestAborted).ConfigureAwait(false);
             if (snapshots.Any(snapshot => snapshot.AccountId != accountId))
                 return Results.Problem("Account history ownership could not be established.", statusCode: 503);

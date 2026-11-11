@@ -4836,10 +4836,13 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
             hashInput,
             new JsonSerializerOptions(JsonSerializerDefaults.Web));
         var contentHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonicalJson))).ToLowerInvariant();
-        if (audit.CloseChecklistSnapshot is null) return contentHash;
+        if (audit.CloseChecklistSnapshot is null)
+            return contentHash;
         var snapshotJson = JsonSerializer.Serialize(new
         {
-            SchemaVersion = 1, AuditContentHash = contentHash, ChecklistSnapshot = audit.CloseChecklistSnapshot
+            SchemaVersion = 1,
+            AuditContentHash = contentHash,
+            ChecklistSnapshot = audit.CloseChecklistSnapshot
         }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(snapshotJson))).ToLowerInvariant();
     }

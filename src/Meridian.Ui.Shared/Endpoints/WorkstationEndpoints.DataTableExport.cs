@@ -14,7 +14,8 @@ public static partial class WorkstationEndpoints
         string tableId, WorkstationTableExportRequest request, HttpContext context, JsonSerializerOptions jsonOptions)
     {
         var retainedQuery = await TryExportRetainedDataQueryAsync(tableId, request, context, jsonOptions).ConfigureAwait(false);
-        if (retainedQuery is not null) return retainedQuery;
+        if (retainedQuery is not null)
+            return retainedQuery;
         if (tableId == "data-corporate-action-queue")
             return await ExportCorporateActionInboxAsync(request, context, jsonOptions).ConfigureAwait(false);
         if (tableId is "data-backfill-queue" or "data-export-packages")
@@ -27,13 +28,20 @@ public static partial class WorkstationEndpoints
     internal static IResult? BuildWorkstationDataTableExport(
         string tableId, WorkstationTableExportRequest request, HttpContext context, JsonSerializerOptions jsonOptions)
     {
-        if (tableId != "data-maintenance-executions") return null;
+        if (tableId != "data-maintenance-executions")
+            return null;
         if (!EndpointAuthorization.HasPermission(context, UserPermission.AdminMaintenance))
             return EndpointHelpers.Forbidden();
         var headers = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["task"] = "Task", ["status"] = "Status", ["trigger"] = "Manual trigger", ["started"] = "Started UTC",
-            ["duration"] = "Duration", ["files"] = "Files processed", ["issues"] = "Issues resolved", ["reclaimed"] = "Bytes reclaimed"
+            ["task"] = "Task",
+            ["status"] = "Status",
+            ["trigger"] = "Manual trigger",
+            ["started"] = "Started UTC",
+            ["duration"] = "Duration",
+            ["files"] = "Files processed",
+            ["issues"] = "Issues resolved",
+            ["reclaimed"] = "Bytes reclaimed"
         };
         if (request.ColumnIds is null || request.ColumnIds.Count is < 1 or > 8
             || request.ColumnIds.Distinct(StringComparer.Ordinal).Count() != request.ColumnIds.Count
@@ -44,7 +52,8 @@ public static partial class WorkstationEndpoints
             || request.Filters?.TryGetValue("failedOnly", out var rawFailed) == true && rawFailed is not ("true" or "false"))
             return Results.BadRequest(new { error = "Unknown maintenance export columns or filters." });
         var service = context.RequestServices.GetService<ArchiveMaintenanceScheduleManager>();
-        if (service is null) return Results.Problem("Maintenance execution history is unavailable.", statusCode: 503);
+        if (service is null)
+            return Results.Problem("Maintenance execution history is unavailable.", statusCode: 503);
         var failedOnly = request.Filters?.GetValueOrDefault("failedOnly") == "true";
         // The source retains at most 1,000 executions. int.MaxValue selects that entire retained
         // population, bypassing only the browser's 25-row view window, not source retention.
@@ -54,10 +63,15 @@ public static partial class WorkstationEndpoints
             && (query.Length == 0 || $"{row.TaskType} {MaintenanceStatusLabel(row.Status)} {(row.ManualTrigger ? "Manual" : "Scheduled")} {row.ErrorMessage}".Contains(query, StringComparison.OrdinalIgnoreCase))).ToArray();
         object? Cell(MaintenanceExecution row, string column) => column switch
         {
-            "task" => row.TaskType.ToString(), "status" => row.Status.ToString(), "trigger" => row.ManualTrigger,
+            "task" => row.TaskType.ToString(),
+            "status" => row.Status.ToString(),
+            "trigger" => row.ManualTrigger,
             "started" => row.StartedAt.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture),
-            "duration" => row.Duration?.ToString("c", CultureInfo.InvariantCulture), "files" => row.FilesProcessed,
-            "issues" => row.IssuesResolved, "reclaimed" => row.BytesSaved, _ => null
+            "duration" => row.Duration?.ToString("c", CultureInfo.InvariantCulture),
+            "files" => row.FilesProcessed,
+            "issues" => row.IssuesResolved,
+            "reclaimed" => row.BytesSaved,
+            _ => null
         };
         IEnumerable<MaintenanceExecution> ordered = selected;
         if (request.SortColumnId is not null)

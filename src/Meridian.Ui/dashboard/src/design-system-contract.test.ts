@@ -1,7 +1,10 @@
+import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import postcss, { type AnyNode } from "postcss";
 import { describe, expect, it } from "vitest";
+// @ts-expect-error -- plain ESM build script without type declarations
+import { projectFontCss } from "../scripts/sync-design-system-assets.mjs";
 
 function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
@@ -660,7 +663,9 @@ describe("dashboard design-system contract", () => {
   it("loads the canonical local font closure without external font requests", () => {
     const styles = readDashboardStyles();
     const fonts = readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/fonts.css");
-    expect(fonts).toBe(readDesignSystemPackageFile("tokens/fonts.css"));
+    // The package ships TTF; the dashboard serves WOFF2 projected by scripts/sync-design-system-assets.mjs.
+    expect(fonts).toBe(projectFontCss(readDesignSystemPackageFile("tokens/fonts.css")));
+    expect(fonts).not.toMatch(/\.ttf\b|truetype/);
     expect(readDashboardEntry()).toContain('import "@/design-system/fonts.css";');
     expect(fonts).not.toMatch(/(?:url\(|@import)[^;]*https?:/i);
     expect(fonts).toContain('font-family: "IBM Plex Sans"');
@@ -679,12 +684,23 @@ describe("dashboard design-system contract", () => {
       expect(faces.filter((face) => face.family === `"${family}"`).map((face) => `${face.weight}/${face.style}`).sort())
         .toEqual(["400/italic", "400/normal", "500/normal", "600/normal", "700/normal"]);
     }
+    const provenance = JSON.parse(readFileSync(resolveDashboardAsset("fonts/woff2-sources.json"), "utf8")) as {
+      fonts: Record<string, { source: string; sourceSha256: string; woff2Sha256: string }>;
+    };
+    const sha256 = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
     for (const face of faces) {
       const filename = face.source.match(/url\(["']?[^"')]*assets\/fonts\/([^"')]+)/)?.[1];
-      expect(filename, `${face.family} ${face.weight}/${face.style} must include an offline font`).toBeTruthy();
-      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
-        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename!)));
+      expect(filename, `${face.family} ${face.weight}/${face.style} must include an offline font`).toMatch(/\.woff2$/);
+      expect(face.source).toContain('format("woff2")');
+      const record = provenance.fonts[filename!];
+      expect(record, `${filename} provenance`).toBeTruthy();
+      expect(record.source).toBe(`assets/fonts/${filename!.replace(/\.woff2$/, ".ttf")}`);
+      expect(sha256(readFileSync(resolve(process.cwd(), "../../../Meridian Design System", record.source))),
+        `${record.source} changed; run npm run design-system:sync`).toBe(record.sourceSha256);
+      expect(sha256(readFileSync(resolveDashboardAsset(`fonts/${filename}`))), `${filename} differs from its recorded conversion`)
+        .toBe(record.woff2Sha256);
     }
+    expect(readdirSync(resolveDashboardAsset("fonts")).filter((name) => /\.(ttf|otf|woff)$/.test(name))).toEqual([]);
     for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
       expect(readFileSync(resolve(process.cwd(), "public/licenses", filename)))
         .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));

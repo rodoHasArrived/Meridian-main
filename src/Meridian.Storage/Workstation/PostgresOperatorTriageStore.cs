@@ -20,9 +20,12 @@ public sealed class PostgresOperatorTriageStore : IOperatorTriageStore
         _options = options;
         _migrations = new PostgresMigrationRunner(new PostgresMigrationRunnerOptions
         {
-            ConnectionString = options.ConnectionString, Schema = options.Schema,
-            ScriptsSubdirectory = Path.Combine("Workstation", "Migrations"), DisplayName = "Operator triage",
-            LockScopeName = "operator_triage", ConnectionStringSettingName = "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
+            ConnectionString = options.ConnectionString,
+            Schema = options.Schema,
+            ScriptsSubdirectory = Path.Combine("Workstation", "Migrations"),
+            DisplayName = "Operator triage",
+            LockScopeName = "operator_triage",
+            ConnectionStringSettingName = "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
             LedgerTableName = "operator_triage_schema_migrations"
         });
     }

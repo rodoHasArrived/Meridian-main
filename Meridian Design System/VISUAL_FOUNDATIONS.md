@@ -60,12 +60,11 @@ render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner.
-  Structure comes from borders, not rounding; the named scale never exceeds 6px (`--radius-xl`,
-  large sheets only).
+- Radii: **2 / 4 / 6** — 2px chips, 4px controls and panels (`--radius-card`), 6px large sheets;
+  never above 8. Structure comes from rules, not rounding.
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
 - Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
-  hard-edged **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays that genuinely
+  hard-edged **menu** shadow `0 2px 8px rgba(17,23,29,.16)` on detached overlays that genuinely
   float above the plane. Everything else is borders.
 - Spacing rhythm: 24 section · 16 card · 12 compact · 8 tight
 - Padding: card 20 · compact card 16 · metric 18

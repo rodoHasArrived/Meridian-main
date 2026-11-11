@@ -36,15 +36,20 @@ PAIRS = [
     ("muted text on card",         "--text-muted",     "--bg-light",     4.5),
     ("muted text on header band",  "--text-muted",     "--bg-medium",    4.5),
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
-    ("accent text on card",        "--accent",         "--bg-light",     4.5),
-    ("accent-dim text on card",    "--accent-dim",     "--bg-light",     4.5),
+    # 4.3.0 retoned the accent to the terracotta signal (#C56343, 3.74:1 on the card) and made
+    # --accent-dim the pressed FILL, lighter than the signal. Neither is a text ink any more:
+    # the signal is held to the 3:1 non-text threshold and signal-coloured TEXT is --brand-signal-text.
+    # These rows used to hold --accent and --accent-dim to 4.5:1 as text and failed from the
+    # retone onward while the components still used both as text.
+    ("accent on card (non-text)",  "--accent",         "--bg-light",     3.0),
+    ("brand-signal-text text on card",    "--brand-signal-text",     "--bg-light",     4.5),
     # The header band is a third surface, and the accent is only 4.39:1 on it — which is why
-    # DenseDataTable's sort arrow and rank, which sit there, now take the dim variant. The
+    # DenseDataTable's sort arrow and rank, which sit there, now take the ink variant. The
     # accent keeps a non-text row on the band (borders, icons, the 3:1 threshold); text on the
-    # band is --accent-dim. Checking the accent only against the card and the canvas missed a
+    # band is --brand-signal-text. Checking the accent only against the card and the canvas missed a
     # pair that ships on every sorted table.
     ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
-    ("accent-dim text on header band",   "--accent-dim", "--bg-medium",  4.5),
+    ("brand-signal-text text on header band",   "--brand-signal-text", "--bg-medium",  4.5),
     ("primary button label",       "--text-on-accent", "--accent",       4.5),
     # The hover state was omitted here until 2026-09, so a hover fill that failed AA
     # shipped behind a green gate. All three button states are checked now.
@@ -80,11 +85,11 @@ WASH_PAIRS = [
     # An accent wash lifts the surface toward the accent, so the accent itself loses contrast on
     # it — 4.41:1 on a card, 4.07 on canvas, 3.87 on the header band, where the steel pair
     # cleared AA. Same shape as the header-band rows above: the accent is a borders-and-icons
-    # colour on its own wash, and wash *text* is --accent-dim.
+    # colour on its own wash, and wash *text* is --brand-signal-text.
     ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
-    ("accent-dim text on accent wash",   "--accent-dim", "--accent", 0.10, "--bg-light",  4.5),
-    ("accent-dim on accent wash, canvas","--accent-dim", "--accent", 0.10, "--bg",        4.5),
-    ("accent-dim on accent wash, band",  "--accent-dim", "--accent", 0.10, "--bg-medium", 4.5),
+    ("brand-signal-text text on accent wash",   "--brand-signal-text", "--accent", 0.10, "--bg-light",  4.5),
+    ("brand-signal-text on accent wash, canvas","--brand-signal-text", "--accent", 0.10, "--bg",        4.5),
+    ("brand-signal-text on accent wash, band",  "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -96,10 +101,12 @@ WASH_PAIRS = [
     ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
     ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
     ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
-    ("state-paper chip",       "--state-paper-fg",      "--accent", 0.10, "--bg-light",  4.5),
+    # Paper and pending are measured on their OWN wash: since 4.3.0 paper is the Field slate
+    # and pending is the warm taupe, not the accent and the information blue.
+    ("state-paper chip",       "--state-paper-fg",      "--brand-field", 0.10, "--bg-light",  4.5),
     ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
     ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
-    ("state-pending chip",     "--state-pending-fg",    "--purple", 0.10, "--bg-light",  4.5),
+    ("state-pending chip",     "--state-pending-fg",    "--pending", 0.10, "--bg-light",  4.5),
 ]
 
 
@@ -305,38 +312,68 @@ def check_brands(root: Path) -> list[str]:
     return failures
 
 
-# The browser workstation keeps a parallel --ws-* track in its own index.css, and its
-# DesignSystemButton reads --ws-accent-hover rather than the canonical --accent-hover. That
-# track shipped a 3.86:1 hover behind a green gate because nothing here looked at it.
-WS_STATES = [("base", "--ws-accent"), ("hover", "--ws-accent-hover"), ("pressed", "--ws-accent-pressed")]
+# The browser workstation keeps a parallel --ws-* track in its own index.css. Its primary
+# button used to be the accent with a white label, and its hover read --ws-accent-hover; that
+# track shipped a 3.86:1 hover behind a green gate because nothing here looked at it. Since
+# 4.3.0 the primary action is graphite (Tailwind --primary under --primary-foreground) and the
+# hover/pressed fills are 88% / 78% mixes of it toward the panel, exactly as Button.jsx does.
+# The button kept reading the accent states for hover and pressed through the retone, which put
+# a paper label on the lighter terracotta at 3.17:1; this now measures what the button paints
+# and fails if it reaches for an accent fill again.
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
-# Tailwind --primary-foreground, as HSL triples: white in light, near-black ink in dark.
-WS_LABEL = {"light": (255.0, 255.0, 255.0), "dark": (26.0, 21.0, 18.0)}
+WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
+HSL_TRIPLE = re.compile(r"^(-?[\d.]+)\s+([\d.]+)%\s+([\d.]+)%$")
+WS_PRIMARY_MIX = [("base", 1.0), ("hover", 0.88), ("pressed", 0.78)]
+
+
+def hsl_to_rgb(value: str) -> tuple[float, float, float] | None:
+    """A Tailwind `H S% L%` channel triple as RGB."""
+    found = HSL_TRIPLE.match(value.strip())
+    if not found:
+        return None
+    import colorsys
+    h, s_, l = float(found.group(1)) / 360.0, float(found.group(2)) / 100.0, float(found.group(3)) / 100.0
+    r, g, b = colorsys.hls_to_rgb(h % 1.0, l, s_)
+    return (r * 255.0, g * 255.0, b * 255.0)
 
 
 def check_workstation(root: Path) -> list[str]:
-    """Check the browser workstation's --ws-* button states, which are not in this package."""
+    """Check the browser workstation's primary button states, which are not in this package."""
     index = root.parent / WS_INDEX
     if not index.exists():
         return []  # package used standalone, without the monorepo around it
-    text = index.read_text(encoding="utf-8")
+    text = blank_comments(index.read_text(encoding="utf-8"))
     # First declaration of each token is the light block; the dark blocks follow.
-    blocks = {"light": {}, "dark": {}}
-    for m in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", text):
-        tok, val = m.group(1), m.group(2)
-        blocks["light"].setdefault(tok, val)
-    for m in re.finditer(r"prefers-color-scheme:\s*dark(.*)", text, re.S):
-        for d in re.finditer(r"(--ws-accent(?:-hover|-pressed)?)\s*:\s*(#[0-9A-Fa-f]{6})\s*;", m.group(1)):
-            blocks["dark"].setdefault(d.group(1), d.group(2))
-        break
+    wanted = ("--primary", "--primary-foreground", "--ws-surface")
+    blocks: dict[str, dict[str, str]] = {"light": {}, "dark": {}}
+    decl = re.compile(r"(--primary(?:-foreground)?|--ws-surface)\s*:\s*([^;]+);")
+    for m in decl.finditer(text):
+        blocks["light"].setdefault(m.group(1), m.group(2).strip())
+    dark = re.search(r"prefers-color-scheme:\s*dark(.*)", text, re.S)
+    if dark:
+        for m in decl.finditer(dark.group(1)):
+            blocks["dark"].setdefault(m.group(1), m.group(2).strip())
 
     failures: list[str] = []
+    button = root.parent / WS_BUTTON
+    if button.exists() and re.search(r"mds-btn--primary[^\n]*bg-\[var\(--ws-accent",
+                                     button.read_text(encoding="utf-8")):
+        failures.append("[workstation] the primary button paints an accent fill on hover/pressed; "
+                        "its label is the primary foreground, which fails AA on the signal")
+        print("[workstation] primary button reads --ws-accent-* as a fill: FAIL")
     for mode, tokens in blocks.items():
-        label = WS_LABEL[mode]
-        for state, tok in WS_STATES:
-            if tok not in tokens:
-                continue
-            value = ratio(label, hex_to_rgb(tokens[tok]))
+        if any(name not in tokens for name in wanted):
+            failures.append(f"[{mode} \u00b7 workstation] cannot read {', '.join(wanted)}")
+            continue
+        fill = hsl_to_rgb(tokens["--primary"])
+        label = hsl_to_rgb(tokens["--primary-foreground"])
+        surface = hex_to_rgb(tokens["--ws-surface"])
+        if fill is None or label is None or surface is None:
+            failures.append(f"[{mode} \u00b7 workstation] primary button tokens are not literals")
+            continue
+        for state, share in WS_PRIMARY_MIX:
+            mixed = tuple(fill[i] * share + surface[i] * (1 - share) for i in range(3))
+            value = ratio(label, mixed)
             status = "ok" if value >= 4.5 else "FAIL"
             print(f"[{mode} \u00b7 workstation] {state} button label: {value:.2f}:1 (min 4.5) {status}")
             if status == "FAIL":
@@ -486,6 +523,10 @@ def check_var_chains(root: Path) -> list[str]:
         for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
             if path != base and path.suffix not in CALL_SITE_SUFFIXES:
                 continue
+            # A test file quotes var() calls as strings it asserts on (Tailwind's own
+            # --tw-* and --text-* internals among them); it renders nothing.
+            if ".test." in path.name:
+                continue
             text = path.read_text(encoding="utf-8", errors="replace")
             if path.suffix == ".css":
                 text = blank_comments(text)
@@ -495,6 +536,10 @@ def check_var_chains(root: Path) -> list[str]:
                 for ref in BARE_REF.findall(line):
                     checked += 1
                     if ref in declared or ref in local or ref in KNOWN_UNDECLARED:
+                        continue
+                    # `var(--x)` is the placeholder the conformance normaliser substitutes for
+                    # any var() call before comparing rules; it is a string, never a style.
+                    if ref == "--x" and ".replace(" in line:
                         continue
                     failures.append(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) with "
                                     "no fallback names a token this track never declares — it "
@@ -783,7 +828,19 @@ def check_bundle_parity(root: Path) -> list[str]:
     bundle = bundle_path.read_text(encoding="utf-8", errors="replace")
     failures: list[str] = []
     checked = 0
+    # The bundle is built from the manifest's export list, so a source the manifest no longer
+    # exports (the table renderers DataGrid replaced in 4.0, the pre-Dialog Modal) is retained
+    # for migration and deliberately absent from the bundle. Holding those to bundle parity
+    # reported 35 "shipped component differs" findings for components that do not ship.
+    shipped: set[str] | None = None
+    manifest_path = root / "_ds_manifest.json"
+    if manifest_path.exists():
+        import json
+        shipped = {c.get("sourcePath", "") for c in
+                   json.loads(manifest_path.read_text(encoding="utf-8")).get("components", [])}
     for path in sorted((root / "components").rglob("*.jsx")):
+        if shipped is not None and path.relative_to(root).as_posix() not in shipped:
+            continue
         for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
             rule = line.strip()
             if not SOURCE_RULE.match(rule):
@@ -925,7 +982,9 @@ BRAND_RETIRED = frozenset({
     "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
     "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
 })
-BRAND_FONTS = ("Space Grotesk", "IBM Plex", "JetBrains Mono", "Inter")
+# Faces the package does NOT load. IBM Plex left this list in 4.3.0: tokens/fonts.css ships it,
+# and it is the face the identity art now names for its few live <text> runs.
+BRAND_FONTS = ("Space Grotesk", "JetBrains Mono", "Inter")
 
 
 def check_brand_assets(root: Path) -> list[str]:
@@ -995,7 +1054,7 @@ def check_accent_on_wash(root: Path) -> list[str]:
                     failures.append(
                         f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
                         f"{selector[:44]} puts --accent text on an accent-tinted surface "
-                        "(3.87–4.41:1) — wash text is --accent-dim")
+                        "(3.33:1) — wash text is --brand-signal-text")
     for f in failures[:10]:
         print(f)
     if not failures:

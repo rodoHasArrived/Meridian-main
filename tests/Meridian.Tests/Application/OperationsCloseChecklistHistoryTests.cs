@@ -19,9 +19,23 @@ public sealed class OperationsCloseChecklistHistoryTests
         Assert.Null(audit.CloseChecklistSnapshot);
         var json = JsonSerializer.Serialize(new
         {
-            audit.AuditId, audit.OccurredAtUtc, audit.WorkflowId, audit.FundAccountId, audit.PeriodId,
-            audit.EventType, audit.FromState, audit.ToState, audit.Gate, audit.FromGateStatus, audit.ToGateStatus,
-            audit.Actor, audit.Rationale, audit.CorrelationId, audit.CorrelationKeys, audit.References, audit.PreviousHash
+            audit.AuditId,
+            audit.OccurredAtUtc,
+            audit.WorkflowId,
+            audit.FundAccountId,
+            audit.PeriodId,
+            audit.EventType,
+            audit.FromState,
+            audit.ToState,
+            audit.Gate,
+            audit.FromGateStatus,
+            audit.ToGateStatus,
+            audit.Actor,
+            audit.Rationale,
+            audit.CorrelationId,
+            audit.CorrelationKeys,
+            audit.References,
+            audit.PreviousHash
         }, new JsonSerializerOptions(JsonSerializerDefaults.Web));
         Assert.Equal(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant(), audit.CurrentHash);
         Assert.True(OperationsWorkflowAuditHashing.TryValidateChain([audit], out _, out _));
@@ -145,5 +159,6 @@ public sealed class OperationsCloseChecklistHistoryTests
         => new(audit.AuditId, audit.OccurredAtUtc, audit.WorkflowId, audit.FundAccountId, audit.PeriodId,
             audit.EventType, audit.FromState, audit.ToState, audit.Gate, audit.FromGateStatus, audit.ToGateStatus,
             audit.Actor, audit.Rationale, audit.CorrelationId, audit.CorrelationKeys, audit.References,
-            audit.PreviousHash, audit.CurrentHash, audit.Outcome) { CloseChecklistSnapshot = audit.CloseChecklistSnapshot };
+            audit.PreviousHash, audit.CurrentHash, audit.Outcome)
+        { CloseChecklistSnapshot = audit.CloseChecklistSnapshot };
 }

@@ -24,7 +24,7 @@ function inject() {
 .mds-seg__btn:disabled{opacity:.45;cursor:not-allowed;}
 .mds-seg--sm .mds-seg__btn{padding:3px 9px;font-size:11px;min-height:24px;}
 .mds-seg__count{font-family:var(--font-data,monospace);font-size:11px;
-  color:var(--text-muted,#6B737B);font-weight:600;}
+  color:var(--text-muted,#606870);font-weight:600;}
 .mds-seg__btn--active .mds-seg__count{color:var(--interaction-selected,#496C8F);}
 `;
   const el = document.createElement("style");

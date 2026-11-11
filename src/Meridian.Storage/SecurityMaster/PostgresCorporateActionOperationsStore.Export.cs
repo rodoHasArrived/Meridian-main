@@ -21,7 +21,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
                 command.Parameters.AddWithValue("observed", CorporateActionSourceProposalStates.Observed);
                 command.Parameters.AddWithValue("review", CorporateActionSourceProposalStates.ReviewRequired);
                 await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                while (await reader.ReadAsync(ct).ConfigureAwait(false)) proposals.Add(ReadProposal(reader));
+                while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                    proposals.Add(ReadProposal(reader));
             }
             var cases = new List<CorporateActionProcessingCaseDto>();
             await using (var command = connection.CreateCommand())
@@ -31,7 +32,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
                 command.Parameters.AddWithValue("tenant", tenantId);
                 command.Parameters.AddWithValue("company", companyId);
                 await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                while (await reader.ReadAsync(ct).ConfigureAwait(false)) cases.Add(ReadCase(reader));
+                while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                    cases.Add(ReadCase(reader));
             }
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return new CorporateActionInboxExportSource(proposals, cases);
