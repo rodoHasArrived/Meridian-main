@@ -134,7 +134,7 @@ request contracts.
 
 ## Security Master governance controls (2026-11)
 
-- **Config schema.** `ConfigJsonSchemaGenerator` includes the boolean `SecurityMasterWorkbench:RequireIndependentProfileApprover` key, matching `config/appsettings.schema.json`.
+- **Config schema.** `ConfigJsonSchemaGenerator` includes the boolean `SecurityMasterWorkbench:RequireIndependentProfileApprover` key and the `SecurityMasterWorkbench:GovernanceProfile` key (`Standard` or `Institutional`), matching `config/appsettings.schema.json`.
 
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 

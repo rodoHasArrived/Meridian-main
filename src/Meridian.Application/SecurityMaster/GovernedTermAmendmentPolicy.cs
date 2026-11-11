@@ -1,11 +1,12 @@
-using Microsoft.Extensions.Options;
-
 namespace Meridian.Application.SecurityMaster;
 
 /// <summary>
 /// Whether direct term amendments are refused in favour of the governed workbench
 /// (Draft → Submitted → Approved → Published). One policy for every client so the web API and the
-/// WPF editor cannot disagree about <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>.
+/// WPF editor cannot disagree. It reads the effective requirement from
+/// <see cref="ISecurityMasterGovernanceRequirements"/>, so it refuses when
+/// <see cref="SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/> is on or the
+/// Institutional governance profile is in force.
 /// </summary>
 /// <remarks>
 /// <see cref="SecurityMasterService"/> enforces it on the operator-direct path
@@ -33,16 +34,16 @@ public sealed class GovernedTermAmendmentPolicy : IGovernedTermAmendmentPolicy
         + "Security Master workbench field-edit route and publish it through the governed "
         + "Draft → Submitted → Approved → Published lifecycle instead of amending terms directly.";
 
-    private readonly IOptionsMonitor<SecurityMasterWorkbenchOptions> _options;
+    private readonly ISecurityMasterGovernanceRequirements _requirements;
 
-    public GovernedTermAmendmentPolicy(IOptionsMonitor<SecurityMasterWorkbenchOptions> options)
+    public GovernedTermAmendmentPolicy(ISecurityMasterGovernanceRequirements requirements)
     {
-        _options = options ?? throw new ArgumentNullException(nameof(options));
+        _requirements = requirements ?? throw new ArgumentNullException(nameof(requirements));
     }
 
     /// <inheritdoc />
     public string? RefusalReason
-        => _options.CurrentValue.RequireGovernedTermAmendments ? $"{RefusalTitle} {RefusalDetail}" : null;
+        => _requirements.Current.RequireGovernedTermAmendments ? $"{RefusalTitle} {RefusalDetail}" : null;
 }
 
 /// <summary>The policy used when none is composed: direct amendments stay permitted.</summary>

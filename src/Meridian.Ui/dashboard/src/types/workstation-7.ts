@@ -5,6 +5,7 @@ import type {
   ProviderIntegrationManifestProvenance,
   ProviderIntegrationManifestReference,
   ProviderIntegrationReplayMode,
+  SecurityMasterDeclaredExerciseOutcome,
   SecurityMasterFactorPoint,
   SecurityMasterScheduleEvent,
   SecurityMasterScheduleProvenance,
@@ -24,6 +25,7 @@ export interface SecurityMasterScheduleBook {
   events: SecurityMasterScheduleEvent[];
   factorHistory: SecurityMasterFactorPoint[];
   provenanceHistory: SecurityMasterScheduleProvenance[];
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
 }
 
 export interface SecurityMasterLotModel {

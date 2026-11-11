@@ -100,6 +100,35 @@ public sealed class InstrumentTypeDescriptorDomainLabelTests
             .Should().Be(InstrumentTypeDescriptorCatalog.UnclassifiedSubTypeLabel);
     }
 
+    [Fact]
+    public async Task PassportClassificationFallback_ShowsADomainLabel_AndNeverADescriptorPlaceholder()
+    {
+        // Review D6: when a record's economic definition states no family or sub-type, the passport
+        // falls back to the instrument descriptor. A commodity's descriptor carries only placeholders
+        // (OtherFamily, OtherSubType), which name no domain classification and are not shown; a bond's
+        // descriptor carries domain labels, which are.
+        async Task<Meridian.Contracts.Workstation.InstrumentPassportClassificationProfileDto> ProfileAsync(string assetClass, object terms)
+        {
+            var detail = new SecurityDetailDto(Guid.NewGuid(), assetClass, SecurityStatusDto.Active, $"Fallback {assetClass}", "USD",
+                System.Text.Json.JsonSerializer.SerializeToElement(new { }), System.Text.Json.JsonSerializer.SerializeToElement(terms),
+                [], [], 1, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero), null);
+            var query = new Meridian.Tests.Ui.SecurityMasterWorkbenchScheduleBookHarness.StoredRowSecurityMasterQueryService(
+                Meridian.Tests.Ui.SecurityMasterWorkbenchScheduleBookHarness.ProjectionOf(detail), withEconomicDefinition: false);
+            var snapshot = await Meridian.Tests.Ui.SecurityMasterWorkbenchScheduleBookHarness.CreateService(query)
+                .GetTrustSnapshotAsync(detail.SecurityId, fundProfileId: null);
+            return snapshot!.InstrumentPassport!.ClassificationProfile!;
+        }
+
+        var commodity = await ProfileAsync("Commodity", new { commodityType = "Metal" });
+        commodity.AssetFamily.Should().BeNull();
+        commodity.SubType.Should().BeNull();
+
+        var bondDescriptor = InstrumentTypeDescriptorCatalog.All.First(static descriptor => descriptor.InstrumentType.ToString() == "Bond");
+        var bond = await ProfileAsync("Bond", new { maturity = "2031-01-15", couponType = "Fixed", couponRate = 5m });
+        bond.AssetFamily.Should().Be(bondDescriptor.SecurityMasterAssetFamily).And.NotBeNullOrWhiteSpace();
+        bond.SubType.Should().Be(bondDescriptor.SecurityMasterSubType);
+    }
+
     private static void AssertCovered(
         InstrumentTypeDescriptor descriptor,
         InstrumentTypeDescriptorLabelField field,
