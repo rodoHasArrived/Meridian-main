@@ -6,6 +6,7 @@
 using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
@@ -32,11 +33,13 @@ namespace Meridian.Infrastructure.Adapters.TwelveData;
     EnvironmentVariables = new[] { "TWELVEDATA_API_KEY", "TWELVEDATA__APIKEY" },
     DisplayName = "API Key",
     Description = "Twelve Data API key from https://twelvedata.com/account/api-keys")]
-public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvider
 {
     private const string BaseUrl = "https://api.twelvedata.com/time_series";
+    private const int MaximumDataPoints = 5000;
 
     private readonly string? _apiKey;
+    private readonly TimeProvider _timeProvider;
 
 
     public override string Name => "twelvedata";
@@ -55,10 +58,15 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
         HistoricalDataCapabilities.BarsOnly.WithMarkets("US", "UK", "EU", "CA", "AU");
 
 
-    public TwelveDataHistoricalDataProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null)
-        : base(httpClient, log)
+    public TwelveDataHistoricalDataProvider(
+        string? apiKey = null,
+        HttpClient? httpClient = null,
+        ILogger? log = null,
+        TimeProvider? timeProvider = null)
+        : base(httpClient, log, timeProvider: timeProvider)
     {
         _apiKey = apiKey ?? Environment.GetEnvironmentVariable("TWELVEDATA_API_KEY");
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public override Task<bool> IsAvailableAsync(CancellationToken ct = default)
@@ -80,6 +88,7 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
     {
         ThrowIfDisposed();
         ValidateSymbol(symbol);
+        ct.ThrowIfCancellationRequested();
 
         if (string.IsNullOrEmpty(_apiKey))
         {
@@ -87,61 +96,131 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
             return Array.Empty<HistoricalBar>();
         }
 
-        var startDate = from?.ToString("yyyy-MM-dd") ?? "2000-01-01";
-        var endDate = to?.ToString("yyyy-MM-dd") ?? DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd");
+        var startDate = from ?? new DateOnly(2000, 1, 1);
+        var endDate = to ?? DateOnly.FromDateTime(_timeProvider.GetUtcNow().UtcDateTime);
+        if (startDate > endDate)
+            throw new ArgumentException("The start date must not follow the end date.", nameof(from));
 
-        var url = $"{BaseUrl}?symbol={Uri.EscapeDataString(symbol)}&interval=1day" +
-                  $"&start_date={startDate}&end_date={endDate}" +
-                  $"&outputsize=5000&format=JSON&apikey={_apiKey}";
-
-        Log.Information("Requesting Twelve Data history for {Symbol} ({StartDate} to {EndDate})", symbol, startDate, endDate);
-
-        var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
-
-        if (string.IsNullOrEmpty(json))
+        // At most one daily bar exists per calendar date, including seven-day markets.
+        // Bounding by calendar days avoids relying on a short page to prove completeness.
+        // https://support.twelvedata.com/en/articles/5214728-getting-historical-data
+        // Keep results private until every date window has been read successfully.
+        var bars = new Dictionary<DateOnly, HistoricalBar>();
+        var windowStart = startDate;
+        while (true)
         {
-            Log.Warning("No data returned from Twelve Data for {Symbol}", symbol);
-            return Array.Empty<HistoricalBar>();
+            ct.ThrowIfCancellationRequested();
+            var windowEnd = DateOnly.FromDayNumber(Math.Min(
+                windowStart.DayNumber + MaximumDataPoints - 1, endDate.DayNumber));
+            var url = $"{BaseUrl}?symbol={Uri.EscapeDataString(symbol)}&interval=1day" +
+                      $"&start_date={windowStart.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" +
+                      $"&end_date={Uri.EscapeDataString(windowEnd.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) + " 23:59:59")}" +
+                      $"&outputsize={MaximumDataPoints}&format=JSON&apikey={Uri.EscapeDataString(_apiKey)}";
+
+            Log.Information("Requesting Twelve Data history for {Symbol} ({StartDate} to {EndDate})", symbol, windowStart, windowEnd);
+            var json = await ExecuteGetAndReadAsync(url, symbol, "daily bars", ct).ConfigureAwait(false);
+            // The shared HTTP helper returns null only for HTTP 404. Treat it like the
+            // body's unknown-symbol outcome, never as a successfully read date window.
+            if (json is null)
+            {
+                if (bars.Count > 0)
+                    throw InvalidResponse(symbol, "symbol disappeared during historical retrieval");
+                return Array.Empty<HistoricalBar>();
+            }
+
+            var page = ParseJsonResponse(json, symbol, windowStart, windowEnd);
+            foreach (var bar in page.Bars)
+            {
+                ct.ThrowIfCancellationRequested();
+                if (bars.TryGetValue(bar.SessionDate, out var existing) && existing != bar)
+                    throw InvalidResponse(symbol, "conflicting daily bars for the same session");
+                bars[bar.SessionDate] = bar;
+            }
+
+            // An unknown symbol applies to the whole request, unlike an empty date window.
+            if (page.UnknownSymbol)
+            {
+                if (bars.Count > 0)
+                    throw InvalidResponse(symbol, "symbol disappeared during historical retrieval");
+                return Array.Empty<HistoricalBar>();
+            }
+
+            if (windowEnd == endDate)
+                break;
+
+            // Overlap the boundary to accommodate the provider's date-boundary behavior.
+            // The next window always advances by MaximumDataPoints - 1 calendar days.
+            windowStart = windowEnd;
         }
 
-        var bars = ParseJsonResponse(json, symbol, from, to);
-
+        ct.ThrowIfCancellationRequested();
         Log.Information("Fetched {Count} bars for {Symbol} from Twelve Data", bars.Count, symbol);
-        return bars.OrderBy(b => b.SessionDate).ToArray();
+        return bars.Values.OrderBy(b => b.SessionDate).ToArray();
     }
 
-    private List<HistoricalBar> ParseJsonResponse(string json, string symbol, DateOnly? from, DateOnly? to)
+    private HistoricalPage ParseJsonResponse(string json, string symbol, DateOnly from, DateOnly to)
     {
         TwelveDataResponse? response;
         try
         {
-            response = JsonSerializer.Deserialize<TwelveDataResponse>(json);
+            response = JsonSerializer.Deserialize(json, TwelveDataHistoricalJsonContext.Default.TwelveDataResponse);
         }
         catch (JsonException ex)
         {
             Log.Error(ex, "Failed to parse Twelve Data response for {Symbol}", symbol);
-            return new List<HistoricalBar>();
+            throw InvalidResponse(symbol, "malformed JSON");
         }
 
-        if (response is null || response.Status != "ok" || response.Values is null || response.Values.Count == 0)
+        if (response is null)
+            throw InvalidResponse(symbol, "missing response envelope");
+
+        if (string.Equals(response.Status, "error", StringComparison.OrdinalIgnoreCase))
         {
-            Log.Warning("Twelve Data returned no usable data for {Symbol} (status={Status})", symbol, response?.Status ?? "null");
-            return new List<HistoricalBar>();
+            if (response.Code is 401 or 403)
+                throw new ConnectionException("Twelve Data rejected the historical request credentials or entitlement.", provider: Name);
+
+            if (response.Code == 429)
+            {
+                RecordRateLimitHit(RateLimitWindow);
+                RaiseRateLimitHit(GetRateLimitInfo());
+                throw new RateLimitException("Twelve Data historical request exceeded its quota.",
+                    provider: Name, symbol: symbol, retryAfter: RateLimitWindow);
+            }
+
+            // Other 400 errors (invalid parameters, unsupported intervals, etc.) are failures.
+            // Do not put provider-supplied messages in exceptions: they may echo credentials.
+            if (response.Code is 400 or 404 && response.Message is { } message)
+            {
+                if (message.Contains("symbol", StringComparison.OrdinalIgnoreCase)
+                    && message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+                    return new HistoricalPage([], UnknownSymbol: true);
+                if (message.StartsWith("No data is available", StringComparison.OrdinalIgnoreCase))
+                    return new HistoricalPage([], UnknownSymbol: false);
+            }
+
+            throw InvalidResponse(symbol, $"provider error code {response.Code?.ToString(CultureInfo.InvariantCulture) ?? "unknown"}");
         }
+
+        if (!string.Equals(response.Status, "ok", StringComparison.OrdinalIgnoreCase) || response.Values is null)
+            throw InvalidResponse(symbol, "missing success status or values");
+        if (response.Values.Count > MaximumDataPoints)
+            throw InvalidResponse(symbol, "daily window exceeded the response limit");
 
         var bars = new List<HistoricalBar>(response.Values.Count);
 
         foreach (var value in response.Values)
         {
+            if (value is null)
+                throw InvalidResponse(symbol, "null daily bar");
             if (string.IsNullOrEmpty(value.Datetime))
                 continue;
 
             if (!ProviderDateParsing.TryParseProviderDate(value.Datetime, "yyyy-MM-dd", out var sessionDate))
                 continue;
 
-            if (from.HasValue && sessionDate < from.Value)
+            if (sessionDate < from)
                 continue;
-            if (to.HasValue && sessionDate > to.Value)
+            if (sessionDate > to)
                 continue;
 
             if (!decimal.TryParse(value.Open, NumberStyles.Any, CultureInfo.InvariantCulture, out var open))
@@ -175,9 +254,15 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
                 SequenceNumber: sessionDate.DayNumber));
         }
 
-        return bars;
+        if (response.Values.Count > 0 && bars.Count == 0)
+            throw InvalidResponse(symbol, "response contained no usable daily bars");
+        return new HistoricalPage(bars, UnknownSymbol: false);
     }
 
+    private DataProviderException InvalidResponse(string symbol, string reason)
+        => new($"Twelve Data historical request failed: {reason}.", provider: Name, symbol: symbol);
+
+    private sealed record HistoricalPage(List<HistoricalBar> Bars, bool UnknownSymbol);
 
     private sealed class TwelveDataResponse
     {
@@ -186,6 +271,12 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
 
         [JsonPropertyName("values")]
         public List<TwelveDataBar>? Values { get; set; }
+
+        [JsonPropertyName("code")]
+        public int? Code { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
     }
 
     private sealed class TwelveDataBar
@@ -208,5 +299,9 @@ public sealed class TwelveDataHistoricalDataProvider : BaseHistoricalDataProvide
         [JsonPropertyName("volume")]
         public string? Volume { get; set; }
     }
+
+    [JsonSourceGenerationOptions(WriteIndented = false)]
+    [JsonSerializable(typeof(TwelveDataResponse))]
+    private sealed partial class TwelveDataHistoricalJsonContext : JsonSerializerContext;
 
 }
