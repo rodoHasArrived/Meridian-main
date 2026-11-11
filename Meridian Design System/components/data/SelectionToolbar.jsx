@@ -1,6 +1,6 @@
 // Meridian SelectionToolbar — a floating toolbar that appears when rows are selected in a table.
 // Shows selection count, "Select all" / "Clear" shortcuts, and one primary action + ghost options.
-// Animates in from the bottom with a subtle slide. Designed to sit above/below a DenseDataTable.
+// Animates in from the bottom with a subtle slide. Designed to sit above/below a DataGrid.
 import React from "react";
 
 let injected = false;
@@ -9,7 +9,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-seltb{display:none;position:relative;
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border,#E4E3DE);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-card,2px);padding:12px 14px;
   box-shadow:var(--shadow-card,none);
   margin-bottom:12px;}
@@ -18,10 +18,10 @@ function inject() {
 @keyframes mds-seltb-slide-in{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 .mds-seltb__count{display:flex;align-items:center;gap:12px;flex-shrink:0;}
 .mds-seltb__badge{font-family:var(--font-body);font-size:12px;font-weight:600;
-  color:var(--text-primary,#22252A);}
+  color:var(--text-primary,#20252B);}
 .mds-seltb__shortcuts{display:flex;gap:12px;}
 .mds-seltb__shortcut{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--accent,#A85436);
+  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--brand-signal,#C56343);
   text-decoration:underline;padding:0;line-height:1;}
 .mds-seltb__shortcut:hover{opacity:.8;}
 .mds-seltb__actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
@@ -29,16 +29,16 @@ function inject() {
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;padding:6px 12px;cursor:pointer;
   transition:background-color 100ms ease,border-color 100ms ease;}
-.mds-seltb__btn--primary{background:var(--accent,#A85436);border-color:var(--accent,#A85436);
+.mds-seltb__btn--primary{background:var(--brand-signal,#C56343);border-color:var(--brand-signal,#C56343);
   color:var(--text-on-accent,#fff);}
-.mds-seltb__btn--primary:hover{background:var(--accent-hover,#AF6143);border-color:var(--accent-hover,#AF6143);}
-.mds-seltb__btn--primary:active{background:var(--accent-dim,#8C4429);}
-.mds-seltb__btn--ghost{background:var(--bg-light,#FBFAF8);border-color:var(--border,#E4E3DE);
-  color:var(--text-primary,#22252A);}
-.mds-seltb__btn--ghost:hover{background:var(--bg-hover,#F0EEE9);border-color:var(--border-hover,#C6C3BB);}
-.mds-seltb__btn--danger{background:var(--bg-light,#FBFAF8);border-color:var(--border,#E4E3DE);
-  color:var(--red,#A8443C);}
-.mds-seltb__btn--danger:hover{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);}
+.mds-seltb__btn--primary:hover{background:var(--brand-signal-hover,#D2795A);border-color:var(--brand-signal-hover,#D2795A);}
+.mds-seltb__btn--primary:active{background:var(--brand-signal-dim,#A64E33);}
+.mds-seltb__btn--ghost{background:var(--bg-light,#F8F7F3);border-color:var(--border,#D2CDC3);
+  color:var(--text-primary,#20252B);}
+.mds-seltb__btn--ghost:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border-hover,#AAA49A);}
+.mds-seltb__btn--danger{background:var(--bg-light,#F8F7F3);border-color:var(--border,#D2CDC3);
+  color:var(--red,#B54B42);}
+.mds-seltb__btn--danger:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);}
 .mds-seltb__btn--danger:active{background:var(--red-a20,color-mix(in srgb,var(--red) 35%,transparent));}
 `;
   const el = document.createElement("style");

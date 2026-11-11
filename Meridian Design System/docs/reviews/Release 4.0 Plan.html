@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Release 4.0 Plan — Meridian Design System</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-dim)}
+code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border);margin-bottom:8px}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:80ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.chip--blocked{color:var(--severity-blocked-fg);border:1px solid var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.chip--action{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--review{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--done{color:var(--severity-complete-fg,#10663F);border:1px solid var(--severity-complete-bd,#9DC4AE);background:var(--severity-complete-bg,#E9F2EC)}
+.f__hd .chip{margin-left:auto}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.ev .pos{color:var(--severity-ready-fg,#2E7655)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong);white-space:nowrap}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap}
+table.rm td.n{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--text-secondary)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.note{border-left:3px solid var(--accent);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
+.phase{display:grid;grid-template-columns:96px 1fr;border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.phase .n{border-right:1px solid var(--border-divider);background:var(--bg-medium);padding:14px 16px}
+.phase .n .num{font-family:var(--font-data);font-size:20px;font-weight:600;color:var(--accent);line-height:1}
+.phase .n .lb{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);margin-top:6px}
+.phase .b{padding:14px 16px}
+.phase .b h3{margin:0 0 6px;font:600 14px var(--font-display);color:var(--text-primary)}
+.phase .b p{margin:0 0 8px;font-size:13px;line-height:20px;text-wrap:pretty}
+.gate{font-family:var(--font-data);font-size:11px;color:var(--text-secondary);border-top:1px solid var(--border-divider);padding-top:8px;margin:0}
+.gate b{color:var(--text-primary);font-weight:600}
+@media (max-width:900px){.f__body{grid-template-columns:1fr}.phase{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">RELEASE 4.0 PLAN · 2026-08-12</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Plan · major · breaking · supersedes the staged-additions tier</p>
+<h1>One way to state a value. One way to show a table.</h1>
+<p>3.1 shipped an operating layer nothing used, and 3.2–3.3 spent two releases adopting it. The staged consolidation tier — <code>ValueEnvelope</code>, <code>DataGrid</code>, <code>Figure</code>, <code>Registry</code>, <code>ScreenComposition</code> — is now in exactly the same position: contracts written, cards drawn, <b>one</b> screen migrated. Meanwhile the components it was meant to subsume are still public, still documented, and still what every other screen uses.</p>
+<p>4.0 does not add a capability. It finishes a migration and then deletes what the migration replaced, so a consumer opening this system finds one sanctioned way to build a table, one way to state a value with its condition and authority, and one way to declare a screen.</p>
+<div class="tally">
+<div><div class="v">26<span style="font-size:14px"> / 26</span></div><div class="l">Templates on the new stack</div></div>
+<div><div class="v">101<span style="font-size:14px"> / 268</span></div><div class="l">Exports no template uses</div></div>
+<div><div class="v">32 <span style="font-size:14px">→ 26</span></div><div class="l">Templates after merges</div></div>
+<div><div class="v">4.0</div><div class="l">Breaking, one release</div></div>
+</div>
+<div class="note"><b>Decisions taken.</b> Migrate all 32 templates · delete the demoted renderers outright rather than deprecate · cut bar is <i>no template and no card</i> · <code>dashboard-workstation</code> is rebuilt as the reference · five template merges · consumers get a written guide plus a codemod in <code>scripts/</code>. <b>Shipped at 26, not 24</b> — the two <code>WorksheetGrid</code> screens kept their own row rather than be folded into a row-table survivor.</div>
+</div></div>
+<div class="page">
+
+<h2 class="sec"><span>Evidence — measured, not asserted</span><span class="idx">01 / 05</span></h2>
+<p class="sub-lede">Counted from <code>_ds_manifest.json</code> against every template entry and every <code>@dsCard</code> source. Raw output: <code>docs/adoption-census-4.0.json</code>.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">E-01</span><span class="f__t">The consolidation tier is shipped and unadopted</span><span class="chip chip--done">Resolved · one deviation</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev">                     at plan   shipped
+<b>DataGrid</b>              2        11
+<b>ValueEnvelope</b>         2         6
+<b>ScreenComposition</b>     1         3
+<b>Figure</b>                2         <span class="neg">0</span>
+<b>DenseDataTable</b>       11     deleted
+<b>Expandable/Grouped/Filtered</b> 0 deleted
+<b>WorksheetGrid</b>         1        <span class="neg">kept</span></p>
+<p><b>Two deviations from this finding.</b> <code>WorksheetGrid</code> survived: it is a cell-addressable worksheet, not a row-record table, and <code>strategy-formation</code> needs it. <code>Figure</code> went the other way — its adoption fell to zero, because the screens that would have used it took <code>AnalyticalFigure</code> (the evidence container) and kept their domain ladders (the plot). See D-01.</p>
+<p>The readme calls these "staged additions" whose subsumed components "remain as renderers." No document says which one a consumer should reach for, and the templates answer the question the other way.</p>
+</div>
+<div class="col"><div class="h">Resolution</div>
+<p>Migrate all 32 templates onto <code>DataGrid</code> / <code>ValueEnvelope</code> / <code>ScreenComposition</code>, then delete <code>DenseDataTable</code>, <code>ExpandableDataTable</code>, <code>GroupedDataTable</code>, <code>FilteredDataTable</code> and <code>WorksheetGrid</code> from <code>components/data/</code>.</p>
+<p>Three of the five have zero template usage today and can be deleted in phase 1 with no migration at all. <code>DenseDataTable</code> is the only real work — eleven screens.</p>
+</div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">E-02</span><span class="f__t">37% of the public surface is used by no template</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev">                    at plan  shipped
+exports                 280    <b>268</b>
+used by ≥1 template     175      167
+<span class="neg">used by no template     105      101</span>
+  …but demoed in a card  75       79
+  <span class="neg">…and in no card either   30       22</span></p>
+<p>The remaining 22 are the E-03 exemption set, not a cut list — <code>exemptFromCutBar</code> in the census. The 79 card-only exports are the maintenance tail this release did not touch.</p>
+</div>
+<div class="col"><div class="h">Resolution</div>
+<p>The 30 that meet the chosen bar are almost entirely <b>constants and sub-parts</b>, not components — see E-03 before cutting them.</p>
+<p>The 75 card-only exports are the real maintenance tail. They survive this release under the agreed bar, but each one is a component the system promises and no screen demonstrates in situ.</p>
+</div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">E-03</span><span class="f__t">The cut bar hits the wrong 30</span><span class="chip chip--done">Recommendation taken</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>Would be cut:</b>
+CONDITIONS · TIME_ROLES · STRATEGY_LIFECYCLE
+DENSITY · SEVERITY · MATURITY_BUCKETS
+GEOMETRIES · CELL_FORMATS · AUTHORITIES
+ENVELOPE_MARKS · STRATEGY_RUN_AXES
+Glyph× 7 · Capsule{Header,Body,Footer}
+AxisChip · AXIS_FONT · ToolbarDivider
+ObjectModel · ContinuityStatus · FigureSet
+ChangeSetDiff · ChangeReviewBar · EnvelopeMark</p>
+</div>
+<div class="col"><div class="h">Reading</div>
+<p><code>CONDITIONS</code>, <code>TIME_ROLES</code>, <code>STRATEGY_LIFECYCLE</code> and <code>SEVERITY</code> are the <i>vocabularies</i> the normative guidelines are written against. They are unreferenced by templates because screens consume them through their components — deleting them breaks <code>OPERATING_LANGUAGE.md</code>, <code>TIME_SEMANTICS.md</code> and <code>DECISION_SEMANTICS.md</code> as written.</p>
+<p><b>Shipped as recommended.</b> Two whole-module deletions (<code>core/icons.js</code>, <code>operations/conditions.js</code>); the other 22 symbols are exempt and recorded as such, so <code>cut[]</code> in the census is empty by design.</p>
+<p><b>Recommendation:</b> exempt exported vocabularies and sub-part exports of a kept module; apply the bar only to whole modules. That leaves two clean deletions — <code>core/icons.js</code> and <code>operations/conditions.js</code> — and moves the rest to a documentation fix instead.</p>
+</div></div></div>
+
+<h2 class="sec"><span>The template set — 32 into 26</span><span class="idx">02 / 05</span></h2>
+<p class="sub-lede">Merges agreed. Each merged folder becomes one entry with the variants reachable as tweaks, not separate copies of a screen.</p>
+<table class="rm">
+<thead><tr><th>Merge</th><th>From</th><th>Into</th><th class="n">Δ</th><th class="w">How the variants survive</th></tr></thead>
+<tbody>
+<tr><td class="p">Reconciliation</td><td class="w">reconciliation-workstation · reconciliation-exception · close-tie-out</td><td class="p">reconciliation</td><td class="n">−2</td><td class="w">Queue → matcher → exception chain as workflow stages in one screen</td></tr>
+<tr><td class="p">Strategy</td><td class="w">strategy-onboarding · strategy-builder · strategy-runs · backtest-builder · backtest-compare · covered-call-lab · amx-governance</td><td class="p">strategy-formation · strategy-runs · strategy-governance</td><td class="n">−4</td><td class="w">Shared store already exists in <code>_strategy-executor/</code>; the seven screens are already one suite pretending to be seven templates</td></tr>
+<tr><td class="p">Close</td><td class="w">close-management · close-tie-out</td><td class="p">close-management</td><td class="n">−1</td><td class="w">Tie-out is the drill-in from a calendar task, not a separate surface</td></tr>
+<tr><td class="p">Backtest</td><td class="w">backtest-builder · backtest-compare</td><td class="p">(into strategy-runs)</td><td class="n">−1</td><td class="w">Run then compare is one flow with a tab</td></tr>
+<tr><td class="p">Accounting</td><td class="w">accounting-workstation · journaling-workstation</td><td class="p">accounting-workstation</td><td class="n">−1</td><td class="w">Journal posting becomes the GL screen's compose mode</td></tr>
+<tr><td class="p">New</td><td class="w">—</td><td class="p">ops-wall</td><td class="n">+1</td><td class="w">Terminal density, multi-monitor, glanceable — the cookbook recipe that ships no template</td></tr>
+</tbody>
+</table>
+<p class="note"><b>Note.</b> <code>close-tie-out</code> appears in two merges because it is currently the only screen on the new stack. Its <i>composition</i> — archetype-declared regions, <code>DataGrid</code> with a proof contract, <code>ValueEnvelope</code> cells — is what gets promoted into <code>dashboard-workstation</code> as the reference; its <i>content</i> folds into close-management.</p>
+
+<h2 class="sec"><span>Sequence</span><span class="idx">03 / 05</span></h2>
+<p class="sub-lede">Each phase ends at a gate that can fail. Nothing is deleted before the thing that replaces it is proven on a real screen.</p>
+
+<div class="phase"><div class="n"><div class="num">01</div><div class="lb">Free deletions</div></div><div class="b">
+<h3>Delete what nothing uses</h3>
+<p><code>ExpandableDataTable</code>, <code>GroupedDataTable</code>, <code>FilteredDataTable</code> — zero template usage. <code>core/icons.js</code> and <code>operations/conditions.js</code> — zero usage, zero cards. Remove modules, <code>.d.ts</code>, <code>.prompt.md</code> and card references.</p>
+<p class="gate"><b>Gate:</b> <code>check_design_system</code> clean · every template still renders · no card references a deleted symbol.</p>
+</div></div>
+
+<div class="phase"><div class="n"><div class="num">02</div><div class="lb">Reference</div></div><div class="b">
+<h3>Rebuild <code>dashboard-workstation</code> on the new stack</h3>
+<p>Archetype-declared regions via <code>ScreenComposition</code>; positions table on <code>DataGrid</code> with a stated proof; every money cell a <code>ValueEnvelope</code> carrying condition, authority and clock. It stays the "start here" screen, so it must be the best-argued one.</p>
+<p class="gate"><b>Gate:</b> the screen reads identically to today at all four densities, dark, and print — the migration is a substitution, not a redesign.</p>
+</div></div>
+
+<div class="phase"><div class="n"><div class="num">03</div><div class="lb">Migration</div></div><div class="b">
+<h3>The other 10 <code>DenseDataTable</code> screens, then the rest</h3>
+<p>Alerting · analytical-workbench · basket-builder · covered-call-lab · ingestion-operations · investment-event-ledger · security-master-registry · backtest ×2 · blank-workstation. Then the value-semantics pass: any money or metric that carries a condition today becomes a <code>ValueEnvelope</code>.</p>
+<p class="gate"><b>Gate:</b> zero references to a demoted renderer anywhere in <code>templates/</code>.</p>
+</div></div>
+
+<div class="phase"><div class="n"><div class="num">04</div><div class="lb">Deletion</div></div><div class="b">
+<h3>Delete <code>DenseDataTable</code> <span style="font-weight:400;color:var(--text-muted)">(amended: <code>WorksheetGrid</code> stays — see ledger)</span></h3>
+<p>Only after phase 3's gate passes. Docs, cookbook recipes, patterns decision tree and the readme inventory are rewritten in the same commit — a deleted component that survives in the cookbook is worse than one that survives in the bundle.</p>
+<p class="gate"><b>Gate:</b> no doc, card, guideline or prompt mentions a deleted symbol.</p>
+</div></div>
+
+<div class="phase"><div class="n"><div class="num">05</div><div class="lb">Curation</div></div><div class="b">
+<h3>Merge the template set, add the ops wall</h3>
+<p>Five merges, one new screen, picker regrouped by archetype. <code>PRODUCTION_SCREENS.md</code> becomes a map from Meridian surface → template + variant, so nothing that merged becomes unfindable.</p>
+<p class="gate"><b>Gate:</b> every merged screen's distinguishing state is reachable as a tweak on its survivor.</p>
+</div></div>
+
+<div class="phase"><div class="n"><div class="num">06</div><div class="lb">Handoff</div></div><div class="b">
+<h3><code>docs/UPGRADING_4.0.md</code> + <code>scripts/codemod_4_0.py</code></h3>
+<p>Per-symbol mapping table with the prop translation for each demoted renderer, and a codemod that rewrites the mechanical cases in a consumer tree and <i>reports</i> the ones needing judgement rather than guessing at them.</p>
+<p class="gate"><b>Gate:</b> the codemod run against this project's own pre-4.0 templates reproduces the hand migration.</p>
+</div></div>
+
+<h2 class="sec"><span>Breakage ledger</span><span class="idx">04 / 05</span></h2>
+<p class="sub-lede">What a 3.x consumer must change. This is the whole list — if something is not here, 4.0 did not touch it.</p>
+<table class="rm">
+<thead><tr><th>Removed</th><th>Replacement</th><th class="w">Migration</th></tr></thead>
+<tbody>
+<tr><td class="p">DenseDataTable</td><td class="p">DataGrid</td><td class="w"><code>columns</code> gains a format/schema key; <code>density</code> unchanged; add a <code>proof</code> or state <code>proof={null}</code> deliberately — codemod handles the mechanical case</td></tr>
+<tr><td class="p">ExpandableDataTable</td><td class="p">DataGrid <code>expand</code></td><td class="w">Row renderer moves to the <code>expand</code> prop — codemod</td></tr>
+<tr><td class="p">GroupedDataTable</td><td class="p">DataGrid <code>groupBy</code></td><td class="w">Codemod</td></tr>
+<tr><td class="p">FilteredDataTable</td><td class="p">DataGrid + Toolbar</td><td class="w">Filter chrome becomes explicit — manual, reported by the codemod</td></tr>
+<tr><td class="p">WorksheetGrid</td><td class="p"><b>Kept</b></td><td class="w">Amended during phase 4: a cell-addressable worksheet (formula bar, active cell) is not a row-record table — deleting it would force spreadsheets into row semantics. 4.0 ships one row table (DataGrid) and one worksheet (WorksheetGrid)</td></tr>
+<tr><td class="p">core/icons.js glyphs</td><td class="p">assets/icons/</td><td class="w">Seven inline glyph components; the icon module set already covers them</td></tr>
+<tr><td class="p">operations/conditions.js</td><td class="p">DataCondition</td><td class="w"><code>CONDITIONS</code> re-exported from <code>DataCondition</code> — import path only</td></tr>
+</tbody>
+</table>
+
+<h2 class="sec"><span>What this release deliberately does not do</span><span class="idx">05 / 05</span></h2>
+<p class="sub-lede">Named so they do not creep in.</p>
+<div class="f"><div class="f__hd"><span class="f__id">N-01</span><span class="f__t">No new visual design</span><span class="chip chip--done">Out of scope</span></div>
+<div class="f__body"><div class="col"><p>Every migrated screen must read the same as it does today. A migration that also restyles cannot be reviewed, because no diff distinguishes an intended change from a regression.</p></div>
+<div class="col"><p>The one exception is the ops wall, which is new work and gets its own review.</p></div></div></div>
+<div class="f"><div class="f__hd"><span class="f__id">N-02</span><span class="f__t">No token changes</span><span class="chip chip--done">Out of scope</span></div>
+<div class="f__body"><div class="col"><p>662 tokens stay as they are. 4.0 is a component-API major, not a retone; a consumer's overrides survive untouched.</p></div>
+<div class="col"><p>Foundations changes wait for 4.1 so the breakage ledger above stays the complete list.</p></div></div></div>
+<div class="f"><div class="f__hd"><span class="f__id">N-03</span><span class="f__t">No accessibility claim upgrade</span><span class="chip chip--review">Deferred again</span></div>
+<div class="f__body"><div class="col"><p>The NVDA and responsive matrix stays deferred, as in 3.5. Migrating 32 screens and running a full a11y validation in the same release means neither is trustworthy.</p></div>
+<div class="col"><p>It becomes the headline of 4.1, against a stack that has stopped moving.</p></div></div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">D-01</span><span class="f__t">Domain ladders vs. the parametric Figure</span><span class="chip chip--review">Deferred to 4.1</span></div>
+<div class="f__body">
+<div class="col"><div class="h">What shipped</div>
+<p><code>Figure</code>'s source claims it "retires" <code>CashFlowLadder</code>, <code>MaturityLadder</code>, <code>ScheduleLadder</code>, <code>IncomeSchedule</code> and <code>DurationContribution</code>. It did not: <code>alm-review</code> still renders all three of the ones it uses, because each carries a domain contract <code>Figure</code> does not model — a stated bucket definition, two-sided comparison mode, and (as of this release) per-bucket value envelopes.</p>
+</div>
+<div class="col"><div class="h">Decision</div>
+<p><code>Figure</code> stays as the sanctioned primitive for a <i>new</i> ladder, plate, distribution or trace, and its docstring is corrected to claim only that. Consolidating the five domain ladders onto it means moving three contracts into <code>Figure</code>'s prop surface — a component-API change, so it belongs in 4.1, not in the last phase of this one.</p>
+<p><b>Acceptance test for 4.1:</b> <code>Figure</code> models bucket definition, comparison mode and per-point envelopes; <code>alm-review</code> renders its three planes through it; the five named ladders are deleted.</p>
+</div></div></div>
+
+<p class="note"><b>Open call before phase 1.</b> E-03 — whether exported vocabularies (<code>CONDITIONS</code>, <code>TIME_ROLES</code>, <code>SEVERITY</code>, <code>STRATEGY_LIFECYCLE</code>) are exempt from the cut bar. My recommendation is yes, and that the bar applies to whole modules only. Answering it decides whether phase 1 deletes 2 modules or 30 symbols.</p>
+</div>
+</body>
+</html>

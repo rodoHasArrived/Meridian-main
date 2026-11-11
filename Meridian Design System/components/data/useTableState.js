@@ -1,5 +1,5 @@
 // Meridian useTableState — lightweight query/sort/filter state for data tables.
-// Syncs across the screen: one hook manages filter, sort, search; passed to FilteredDataTable.
+// Syncs across the screen: one hook manages filter, sort, search; passed to DataGrid.
 // Persists to localStorage under a key you provide. Sort supports a multi-column stack:
 // shift-toggleSort appends a secondary/tertiary key instead of replacing.
 import React from "react";
@@ -10,13 +10,14 @@ export function useTableState(initialData = [], localStorageKey = null) {
   const [sortBy, setSortBy] = React.useState(null); // { column, direction } — primary (compat)
   const [sortStack, setSortStack] = React.useState([]); // [{ column, direction }, ...] full multi-sort
   const [filters, setFilters] = React.useState({}); // { columnName: [values] }
+  const [groupBy, setGroupBy] = React.useState(null); // string | string[] | null — feeds DataGrid groupBy
 
   // Persist state to localStorage if key provided
   React.useEffect(() => {
     if (!localStorageKey) return;
-    const state = { query, sortStack, filters };
+    const state = { query, sortStack, filters, groupBy };
     localStorage.setItem(localStorageKey, JSON.stringify(state));
-  }, [query, sortStack, filters, localStorageKey]);
+  }, [query, sortStack, filters, groupBy, localStorageKey]);
 
   // Restore from localStorage on mount
   React.useEffect(() => {
@@ -30,6 +31,7 @@ export function useTableState(initialData = [], localStorageKey = null) {
         setSortStack(stack);
         setSortBy(stack[0] || null);
         setFilters(parsed.filters || {});
+        setGroupBy(parsed.groupBy || null);
       } catch (e) {
         // ignore parse errors
       }
@@ -120,16 +122,18 @@ export function useTableState(initialData = [], localStorageKey = null) {
     setSortBy(null);
     setSortStack([]);
     setFilters({});
+    setGroupBy(null);
   };
 
   // View snapshot in/out — what SavedViews captures and re-applies.
-  const getViewState = () => ({ query, sortStack, filters });
+  const getViewState = () => ({ query, sortStack, filters, groupBy });
   const applyViewState = (state = {}) => {
     setQuery(state.query || "");
     const stack = state.sortStack || [];
     setSortStack(stack);
     setSortBy(stack[0] || null);
     setFilters(state.filters || {});
+    setGroupBy(state.groupBy || null);
   };
 
   const exportCSV = (filename = "data.csv") => {
@@ -168,6 +172,8 @@ export function useTableState(initialData = [], localStorageKey = null) {
     filters,
     toggleFilter,
     setFilters,
+    groupBy,
+    setGroupBy,
     getViewState,
     applyViewState,
     clearAllFilters,

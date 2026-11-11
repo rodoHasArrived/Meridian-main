@@ -1,0 +1,37 @@
+<!-- @dsCard group="Shell" viewport="1280x760" name="Workspace layout" subtitle="Named, persisted arrangement — arrangement only, dirty state visible, dividers keyboard-operable" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Workspace layout</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.top{height:44px;background:var(--topbar-bg);color:var(--topbar-text);display:flex;align-items:center;gap:14px;padding:0 16px;font-weight:600;letter-spacing:.08em;font-size:11.5px}.wall{height:520px;padding:10px}.pane{padding:10px 12px;display:grid;gap:8px;align-content:start}.pane h3{margin:0;font-size:12px;font-weight:650}.pane p{margin:0;font-size:11.5px;line-height:1.45;color:var(--text-secondary)}.rowline{display:flex;justify-content:space-between;font-size:11.5px;padding:5px 0;border-bottom:1px solid var(--border-divider)}.rowline b{font-family:var(--font-data);font-weight:600}.note{padding:10px 14px;font-size:11.5px;line-height:1.5;color:var(--text-secondary);border-top:1px solid var(--border-divider);background:var(--card-surface-raised)}.note b{font-weight:650;color:var(--text-primary)}.note code{font-family:var(--font-data);font-size:10.5px}</style></head><body><div id="root"></div><script type="text/babel">
+const {WorkspaceLayoutProvider,WorkspaceLayoutBar,WorkspaceLayoutGrid,LayoutRegion,LayoutHooks,WorkspaceContextBar,SeverityBadge,Button}=window.MeridianDesignSystem_205d17;
+const {useWorkspaceLayout}=LayoutHooks;
+const REGIONS=[{id:"queue",size:1.25},{id:"case",size:1.5},{id:"evidence",size:.9,collapsed:true}];
+const PRESETS=[{name:"Breach triage",regions:{queue:{size:1.8},case:{size:1.2},evidence:{collapsed:false,size:1}}},{name:"Single case",regions:{queue:{collapsed:true},case:{size:2.4},evidence:{collapsed:false,size:1}}}];
+const BREAKS=[["REC-2026-07-CASH","Blocked","$331.68"],["REC-2026-07-POS","NeedsAttention","12 lots"],["REC-2026-07-INC","ReviewRequired","$1,204.00"],["REC-2026-07-FX","Ready","—"]];
+function Wall(){const l=useWorkspaceLayout();
+ return <>
+  <WorkspaceLayoutBar actions={<Button size="sm" variant="ghost" onClick={l.resetToDefault}>Default</Button>}/>
+  <div className="wall">
+   <WorkspaceLayoutGrid direction="row" style={{height:"100%"}}>
+    <LayoutRegion id="queue" label="Exception queue" minSize={.15}>
+     <div className="pane">{BREAKS.map(([id,st,amt])=><div key={id} className="rowline"><span>{id}</span><SeverityBadge status={st}/><b>{amt}</b></div>)}</div>
+    </LayoutRegion>
+    <LayoutRegion id="case" label="Case · REC-2026-07-CASH" onPopOut={(id)=>window.alert("Host opens "+id+" in its own window, inside the same linked selection and workspace context — or it does not open.")}>
+     <div className="pane">
+      <h3>July cash — General Account</h3>
+      <p>Custodian file arrived 92 minutes late. Variance $331.68 sits within the $500 policy tolerance and is operationally material on third recurrence.</p>
+      <div className="rowline"><span>Variance</span><b>$331.68</b></div>
+      <div className="rowline"><span>Tolerance</span><b>Within $500 · REC-CASH-01</b></div>
+      <div className="rowline"><span>Materiality</span><b>Operational</b></div>
+      <div className="rowline"><span>Evidence</span><b>3 of 3 confirmed</b></div>
+     </div>
+    </LayoutRegion>
+    <LayoutRegion id="evidence" label="Evidence">
+     <div className="pane"><p>Collapsed regions keep their identity: a labelled rail that focuses and expands by keyboard. An operator never loses a pane by dragging.</p></div>
+    </LayoutRegion>
+   </WorkspaceLayoutGrid>
+  </div>
+  <p className="note"><b>Arrangement only.</b> Sizes, collapse and the active layout name persist to <code>mds.workspace-layout.ops-wall</code>. Filters, selection, period and as-of never do — a layout that carries data context makes a stale figure look intentional. Drag a divider or focus it and press ← / → : the bar states <b>Modified</b> until you Save or Reset. Reload the card to see the arrangement return.</p>
+ </>}
+function Demo(){return <><div className="top"><span>MERIDIAN · OPS WALL</span></div>
+ <WorkspaceContextBar value={{entity:{type:"Portfolio",label:"General Account"},book:"STAT",basis:"Statutory",period:"2026-07",asOf:"2026-07-31 23:59 UTC",currency:"USD",scenario:"Actual",condition:"confirmed"}}/>
+ <WorkspaceLayoutProvider screenId="ops-wall" regions={REGIONS} layouts={PRESETS}><Wall/></WorkspaceLayoutProvider></>}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

@@ -1,0 +1,98 @@
+<!-- @dsCard group="Operations" viewport="1180x760" name="Value envelope" subtitle="One contract per figure — condition, authority, evidence, clocks, materiality — in three disclosure tiers" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Value envelope</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { ValueEnvelope, EnvelopePanel, EnvelopeCoherence, Eyebrow } = window.MeridianDesignSystem_205d17;
+function Panel({ eyebrow, title, note, children, style }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"74ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+const MARK = "4.35%";
+const DESK = {
+  label: "Muni AAA 10Y yield", value: MARK, condition: "overridden", detail: "desk mark", authority: "desk",
+  evidence: [{ label: "Desk note", ref: "MK-2211", href: "#" }, { label: "Comparable prints", ref: "3 obs", href: "#" }],
+  clocks: { asOf: "2026-08-11 20:00:00Z", evidenceAt: "2026-08-11 19:41:00Z", calculatedAt: "2026-08-11 19:55:00Z", valuation: "2026-08-11" },
+  materiality: { material: true, threshold: "5bp of NAV" },
+};
+const ROWS = [
+  { label: "US Treasury 10Y", value: "4.45%", condition: "confirmed", authority: "source",
+    clocks: { asOf: "2026-08-11 20:00:00Z" }, evidence: [{ label: "Primary feed", ref: "TR-88401" }] },
+  { label: "SOFR 3M", value: "4.34%", condition: "estimated", authority: "estimate",
+    clocks: { asOf: "2026-08-11 19:30:00Z", calculatedAt: "2026-08-11 19:31:00Z" } },
+  DESK,
+  { label: "Accrued interest", value: "182,400.00", condition: "provisional", authority: "derived",
+    clocks: { posting: "2026-07-02", reportingPeriod: { start: "2026-06-01", end: "2026-06-30" } },
+    evidence: [{ label: "Accrual run", ref: "AC-5512" }], materiality: { material: true, threshold: "0.5bp" } },
+  { label: "Liquidity score", value: null, condition: "missing" },
+  { label: "FX forward points", value: "0.0041", condition: "confirmed", authority: "source",
+    clocks: { trade: "2026-08-11", settlement: "2026-08-07" } },
+];
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1.25fr .85fr", gap:16, alignItems:"start", maxWidth:1140 }}>
+      <Panel eyebrow="Tier 1 + 2" title="The figure carries its own envelope"
+        note="A number renders with derived marks — condition, authority, evidence, clock, materiality — and reveals the rest on hover. Nothing is declared twice: the marks are read from one envelope object, so a figure cannot appear without its provenance.">
+        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+          <thead><tr>
+            {["Figure","Value + envelope"].map((h,i) => (
+              <th key={h} style={{ textAlign:i?"right":"left", fontSize:10, fontVariant:"all-small-caps", letterSpacing:".05em", color:"var(--text-muted)", padding:"0 0 6px", borderBottom:"1px solid var(--border-strong)" }}>{h}</th>
+            ))}
+          </tr></thead>
+          <tbody>
+            {ROWS.map((r) => (
+              <tr key={r.label}>
+                <td style={{ padding:"7px 0", borderBottom:"1px solid var(--border-divider)", color:"var(--text-secondary)" }}>{r.label}</td>
+                <td style={{ padding:"7px 0", borderBottom:"1px solid var(--border-divider)", textAlign:"right" }}>
+                  <ValueEnvelope {...r} align="right" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p style={{ fontSize:11, color:"var(--text-muted)", margin:"10px 0 0" }}>
+          FX forward points settle before they trade and the accrual posts outside its reporting period — both fail coherence on the data, not on the screen.
+        </p>
+      </Panel>
+      <Panel eyebrow="Tier 3" title="The whole envelope, in the inspector"
+        note="One panel, always the same five groups. It is the terminal disclosure for any figure on any surface.">
+        <EnvelopePanel envelope={DESK} />
+      </Panel>
+      <Panel eyebrow="Screen roll-up" title="Coherence runs on the values present"
+        note="Instead of each screen declaring its time roles in parallel, the surface asks its own envelopes what is impossible.">
+        <EnvelopeCoherence envelopes={ROWS} />
+      </Panel>
+      <Panel eyebrow="Authority" title="Who set this number"
+        note="Six authorities, one of them an accusation: a value with no recorded authority reads Unattributed and an override without authority fails coherence.">
+        <div style={{ display:"flex", flexDirection:"column", gap:9, alignItems:"flex-start" }}>
+          {["source","derived","desk","override","estimate","unattributed"].map((a) => (
+            <ValueEnvelope key={a} label={a} value="1,204.55" condition={a === "override" ? "overridden" : "confirmed"}
+              authority={a} clocks={{ asOf: "2026-08-11 20:00:00Z" }} />
+          ))}
+        </div>
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

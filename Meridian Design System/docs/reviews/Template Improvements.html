@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Template Improvements — Meridian Design System</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-dim)}
+code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border);margin-bottom:8px}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:80ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.chip--blocked{color:var(--severity-blocked-fg);border:1px solid var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.chip--action{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--review{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--done{color:var(--severity-complete-fg,#10663F);border:1px solid var(--severity-complete-bd,#9DC4AE);background:var(--severity-complete-bg,#E9F2EC)}
+.f__hd .chip{margin-left:auto}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong);white-space:nowrap}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap}
+table.rm td.n{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--text-secondary)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.note{border-left:3px solid var(--accent);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
+@media (max-width:900px){.f__body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">TEMPLATE IMPROVEMENTS · 2026-08-06</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Proposal · templates/ · 28 folders · <b style="color:var(--severity-ready-fg)">implemented 2026-08-06</b></p>
+<h1>The templates are good screens and weak templates.</h1>
+<p>Each folder renders a credible workstation. As <em>templates</em> — things a consumer copies, opens, and edits — they under-deliver in four repeatable ways: the markup is unreachable to the editor, the scaffolding has forked into five incompatible copies, the contract the README advertises is met by a minority of folders, and the set has grown overlapping surfaces nobody pruned.</p>
+<p>Nothing below asks for new visual design. It is consolidation, contract enforcement, and one structural change to how a template is authored. Graded on the system's own ladder: <b>Blocked</b> = a consumer is actively misled; <b>Action</b> = duplicated or dead weight; <b>Review</b> = a judgement call worth making on purpose.</p>
+<div class="tally">
+<div><div class="v">1<span style="font-size:14px"> / 28</span></div><div class="l">Converted to editable markup</div></div>
+<div><div class="v">1</div><div class="l">Canonical scaffold (was 5)</div></div>
+<div><div class="v">28<span style="font-size:14px"> / 28</span></div><div class="l">Badge · tweaks · data-state ladder</div></div>
+<div><div class="v">6</div><div class="l">New governance gates</div></div>
+</div>
+<div class="note" style="margin-top:20px"><b>Status.</b> Items 1–8 shipped in <code>1.25.0</code>: canonical <code>ds-base.js</code> + <code>sync_template_scaffold.py</code>, <code>$preview</code> and the density·theme·environment·dataState tweak set on every entry, the new <code>DataStateSwitch</code> component wired into all 28, the environment badge guaranteed by the loader, the two missing <code>&lt;h1&gt;</code>s, archetype-grouped names, the reconciliation merge, and six governance gates that assert the contract. Item 9 — rolling the markup-in-template conversion past <code>dashboard-workstation</code> — remains open, one template at a time.</div>
+</div></div>
+<div class="page">
+
+<h2 class="sec"><span>Blocked — the folder contradicts its own README</span><span class="idx">01 / 04</span></h2>
+<p class="sub-lede">These teach the wrong thing to anyone who copies a template and reads the docs beside it.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-01</span><span class="f__t">The template markup lives where the editor cannot reach it</span><span class="chip chip--done">Resolved · 2.1.0</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev">26 of 29 <b>.dc.html</b> entries are 19–20 lines:
+one <b>&lt;helmet&gt;</b> + one <b>&lt;x-import&gt;</b>.
+All screen markup sits in <b>screen.jsx</b>.
+README: "the entry … <b>Directly editable in the browser</b>." <span class="neg">False for 26/29.</span></div>
+<p>A JSX subtree mounted through <code>x-import</code> is opaque to direct manipulation: a consumer cannot click a heading and retype it, cannot delete a panel, cannot drag-reorder cards. They must open a JSX file and hand-edit React — the exact work a template exists to avoid.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p><b>Invert the ratio.</b> The screen's own layout — masthead copy, section headings, panel titles, table column labels, empty-state prose, the arrangement of panels — moves into the DC template as static markup. <code>screen.jsx</code> shrinks to what genuinely needs React: interactive tables, charts, dialogs, live state, each mounted as a small named <code>x-import</code>.</p>
+<p>Do it once properly on <code>dashboard-workstation</code> (the declared reference), publish it as the pattern, then convert in order of use. <code>asset-sheet</code>, <code>report-pack</code> and <code>investment-event-ledger</code> already work this way — they are the proof, not the exceptions.</p>
+<p><b>Resolved in 2.1.0.</b> All 28 entries now carry their screen content as directly editable markup; every <code>screen.jsx</code> monolith is deleted. The one helper that remains React is <code>security-master-registry/registry-table.jsx</code> — the column-managed data table, which is genuinely interactive.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-02</span><span class="f__t">"Every template composes its frame from WorkstationShell" — four do</span><span class="chip chip--blocked">Blocked</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev">WorkstationShell: <b>4 / 29</b>
+  blank · dashboard · alerting · journaling
+&lt;h1&gt; landmark absent: <b>2</b>
+  analytical-workbench · investment-event-ledger
+Env badge (Live/Paper/Fixture): <b>7 / 29</b>
+README contract claims all three, "enforced by
+scripts/check_design_system_governance.py". <span class="neg">It is not.</span></div>
+<p>Twenty-five folders hand-roll their own frame. Every one is a slightly different chrome a consumer may copy and propagate, and the <code>&lt;main&gt;</code> landmark the contract depends on comes from the shell.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p>Pick one and mean it. Either (a) migrate all 29 onto <code>WorkstationShell</code> and let the governance script fail the build when a template does not use it, or (b) admit the shell is optional, rewrite the contract to require only viewport + <code>&lt;main&gt;</code> + <code>&lt;h1&gt;</code> + env badge, and enforce <em>that</em>.</p>
+<p>(a) is the right answer — a shared shell is the reason a 29-template set looks like one product. Either way the governance script must actually assert the four rules; a contract nobody checks is a comment.</p></div>
+</div></div>
+
+<h2 class="sec"><span>Action — forked scaffolding and duplicated weight</span><span class="idx">02 / 04</span></h2>
+<p class="sub-lede">Mechanical, low-risk, and each one currently costs every future template a decision it should not have to make.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-03</span><span class="f__t">Five ds-base.js variants and five runtime versions</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev"><b>ds-base.js</b> — 5 distinct files:
+  13 tmpl · styles.css only
+  12 tmpl · 10 stylesheets incl. dark + print
+   2 tmpl · 6 stylesheets, no dark, no print
+   1 tmpl · 8 stylesheets
+   1 tmpl · truncated error message
+<b>support.js</b> — 5 versions, 53,959 → 69,134 bytes
+  oldest: accounting · split-pane (15 kB behind)</div>
+<p>Consequence: whether a copied template supports dark mode or prints correctly is decided by which folder the consumer happened to copy. Templates on the 53 kB runtime are two generations behind on DC behaviour.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p>One canonical <code>ds-base.js</code>, loading the full token set (dark and print included), written to all 29 folders by a script — <code>scripts/sync_template_scaffold.py</code> — that also refreshes <code>support.js</code> to the current runtime and fails CI when any folder drifts.</p>
+<p>Scaffolding is generated, not authored. Nobody should be reviewing a diff of a loader file again.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-04</span><span class="f__t">Three reconciliation surfaces; five strategy surfaces</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev">Reconciliation appears as:
+  <b>reconciliation-workstation/</b>  15 kB
+  <b>split-pane-reconciliation/</b>   36 kB
+  <b>accounting-workstation/views/ReconciliationView</b>
+Strategy appears as: builder · onboarding · runs
+  · backtest-builder · backtest-compare</div>
+<p>A consumer choosing between them has no basis for the choice — the picker shows 29 flat entries and three plausible reconciliation names.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p>Merge the two reconciliation templates into one (<code>reconciliation-workstation</code>, keeping the split-pane matcher as its dominant work plane); the accounting view stays, as a tab inside a larger workstation, which is a different job.</p>
+<p>Keep all five strategy templates — they are genuinely distinct steps — but say so in their descriptions: "step 1 of the strategy flow", "compare two completed runs". Net: 29 → 28 folders, zero ambiguity.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-05</span><span class="f__t">Missing preview sizes, missing tweaks, off-convention names</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev"><b>$preview</b> declared: 2 / 29
+<b>editor tweaks</b> declared: 5 / 29 (3–6 props each)
+Filename off-convention: <b>Split Pane Reconciliation.dc.html</b>
+  (spaces; rule is PascalCase)
+Stray <b>index.html</b> in: charting · dashboard ·
+  security-master-registry</div></div>
+<div class="col"><div class="h">Proposal</div>
+<p>Every template declares <code>$preview</code> at its true working size (1920×1080 for workstations, 1440×900 for sheets, Letter for report-pack) so the picker thumbnails stop guessing.</p>
+<p>Every template declares 2–3 tweaks that in-place editing cannot do: <b>density</b> (terminal/compact/spacious), <b>theme</b> (light/dark), <b>environment</b> (Live/Paper/Fixture). Those three exist as real token scopes and would demo the system's best feature on every screen. Rename the one off-convention file; delete or justify the three stray <code>index.html</code>s.</p></div>
+</div></div>
+
+<h2 class="sec"><span>Review — judgement calls worth making deliberately</span><span class="idx">03 / 04</span></h2>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-06</span><span class="f__t">Templates ship the happy path only</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<div class="ev"><b>EmptyState</b> used: 6 / 29
+<b>Skeleton*</b> used: 2 / 29
+error / degraded state: 3 / 29
+<b>@media</b> query anywhere in templates: <b>0</b>
+Blueprint doc specifies a "full data-state ladder".</div>
+<p><code>alerting-workstation</code> is the only folder that demonstrates the ladder end to end. Copy any other template and the loading, empty, and failed states are the consumer's problem — the states that are hardest to design and most often skipped.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p>Require the ladder in the contract: every template renders loading → empty → populated → error for its dominant work plane, switchable from a <code>dataState</code> tweak. It costs roughly 20 lines per template and makes the set worth copying for reasons beyond layout.</p>
+<p>On width: workstations are desktop instruments and 0 media queries may be correct — but decide it, write it into the blueprint as a stated non-goal, and stop leaving it implicit.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">T-07</span><span class="f__t">29 flat entries in the picker</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p>Templates surface as one undifferentiated "Templates" group. The blueprint already defines workspace archetypes — <code>monitor</code>, <code>reconcile</code>, and the rest — and templates pass one to <code>WorkstationShell</code>, but that classification is invisible at the point of choosing.</p></div>
+<div class="col"><div class="h">Proposal</div>
+<p>Group by archetype in the name field until the picker supports groups: <b>Monitor</b> (dashboard, trading desk, alerting, ingestion, strategy runs), <b>Investigate</b> (reconciliation, security master, analytical workbench, backtest compare), <b>Compose</b> (strategy builder, basket builder, field &amp; formula, journaling), <b>Report</b> (report pack, library, scheduler, asset sheet), <b>Admin</b> (settings, session start, governance, onboarding).</p>
+<p>Also front-load the descriptions: several run past 160 characters and are truncated exactly where the distinguishing detail sits.</p></div>
+</div></div>
+
+<h2 class="sec"><span>Proposed order of work</span><span class="idx">04 / 04</span></h2>
+<p class="sub-lede">Sequenced so the mechanical wins land first and the structural change happens once, on the reference template, before it is repeated 28 times.</p>
+<table class="rm">
+<thead><tr><th>#</th><th>Change</th><th>Scope</th><th>Effort</th><th class="w">Unlocks</th></tr></thead>
+<tbody>
+<tr><td class="p">1</td><td>Canonical <code>ds-base.js</code> + runtime sync script</td><td class="n">29 folders</td><td class="n">S</td><td class="w">Dark mode and print work everywhere; drift becomes a CI failure</td></tr>
+<tr><td class="p">2</td><td>Add <code>$preview</code>; rename off-convention file; remove stray <code>index.html</code></td><td class="n">29 folders</td><td class="n">S</td><td class="w">Correct picker thumbnails; folder anatomy matches its README</td></tr>
+<tr><td class="p">3</td><td>Make the governance script assert the four contract rules</td><td class="n">1 script</td><td class="n">S</td><td class="w">The README stops being aspirational</td></tr>
+<tr><td class="p">4</td><td>Fix the 2 missing <code>&lt;h1&gt;</code>s and 22 missing env badges</td><td class="n">24 folders</td><td class="n">M</td><td class="w">Contract passes clean under the new checks</td></tr>
+<tr><td class="p">5</td><td>Convert <code>dashboard-workstation</code> to markup-in-template; publish the pattern</td><td class="n">1 folder + docs</td><td class="n">M</td><td class="w">Direct editability — the single biggest gap</td></tr>
+<tr><td class="p">6</td><td>Standard tweak triad: density · theme · environment</td><td class="n">29 folders</td><td class="n">M</td><td class="w">Every template demos the token scopes it is built on</td></tr>
+<tr><td class="p">7</td><td>Merge the two reconciliation templates; regroup names by archetype</td><td class="n">2 folders + index</td><td class="n">M</td><td class="w">A choosable set instead of a list</td></tr>
+<tr><td class="p">8</td><td>Data-state ladder in every dominant work plane</td><td class="n">23 folders</td><td class="n">L</td><td class="w">Templates cover the states consumers skip</td></tr>
+<tr><td class="p">9</td><td>Roll the markup-in-template conversion across the set</td><td class="n">25 folders</td><td class="n">L</td><td class="w">Copy → open → edit, as advertised</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>The one thing to decide first:</b> item 5. Whether a Meridian template is a JSX screen with a thin HTML wrapper, or an editable HTML screen with JSX where interactivity demands it. Everything below it in the table is cheap and uncontroversial; that one choice determines whether the next 29 folders are worth copying.</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Large Improvements — Meridian Design System</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--link,#2D6FB3);text-decoration:none}a:hover{color:var(--link-hover,#1F5388)}
+code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border)}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline;gap:16px}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400;white-space:nowrap}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:82ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap;margin-left:auto}
+.chip--now{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--next{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--cheap{color:var(--severity-ready-fg,#2E7655);border:1px solid var(--severity-ready-bd,#9DC4AE);background:var(--severity-ready-bg,#E9F2EC)}
+.chip--open{color:var(--semantic-info,#2F648A);border:1px solid var(--severity-info-bd,#A8C0D2);background:var(--info-surface,#E8EEF3)}
+.chip--parked{color:var(--cond-restricted-fg,#6D757D);border:1px solid var(--cond-restricted-bd,#9AA0A6);background:var(--cond-restricted-bg,#EDEEEF)}
+.answer{border:1px solid var(--border-strong);background:var(--bg-medium);padding:13px 16px;margin:0 0 20px;font-size:13px;line-height:20px;text-wrap:pretty}
+.answer b.q{display:block;font-family:var(--font-data);font-size:10px;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin-bottom:5px}
+.verdict{font-weight:600;color:var(--text-primary)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.ev .pos{color:var(--severity-ready-fg,#2E7655)}
+.cost{font-family:var(--font-data);font-size:11px;color:var(--text-secondary);border-top:1px solid var(--border-divider);padding-top:8px;margin:9px 0 0}
+.cost b{color:var(--text-primary);font-weight:600}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong)}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.note{border-left:3px solid var(--brand-signal,#C56343);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:84ch;text-wrap:pretty}
+.seq{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);background:var(--bg-light);margin-top:20px}
+.seq>div{padding:14px 16px;border-right:1px solid var(--border-divider)}
+.seq>div:last-child{border-right:none}
+.seq .n{font-family:var(--font-data);font-size:11px;color:var(--text-muted)}
+.seq h3{margin:6px 0 6px;font:600 14px var(--font-display);color:var(--text-primary)}
+.seq p{margin:0 0 7px;font-size:12.5px;line-height:19px;text-wrap:pretty}
+.seq p:last-child{margin:0}
+.seq .w{font-family:var(--font-data);font-size:11px;color:var(--text-muted)}
+@media (max-width:900px){.f__body,.seq{grid-template-columns:1fr}.tally{flex-wrap:wrap}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">LARGE IMPROVEMENTS · 2026-08-27 · 4.1 IN PROGRESS</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Brainstorm · release-scale only · nothing decided</p>
+<h1>4.1 proved the component work was not done. It also proved that reading source is not a method.</h1>
+<p>The 14 Aug brainstorm opened with "the component work is done." Two weeks later 4.1 has fixed calendar dates that were a day early for every operator west of Greenwich, a <code>MultiSelect</code> whose "Select all" called <code>onClearSelection()</code>, a <code>DatePicker</code> with no keyboard support at all, a <code>Combobox</code> that hardcoded one DOM id for every instance, and a <code>SplitPane</code> writing localStorage on every <code>pointermove</code>. Excellent work, and every item was found the same way: a person opened the file.</p>
+<p>So the small items were never the risk — the <em>discovery method</em> is. Everything below is release-scale, and each one changes what the system can be wrong about rather than fixing one thing it is wrong about. Same bar as last time: every candidate starts from a fact in this repository, and each carries the argument against itself.</p>
+<p><span class="chip chip--now">do next</span> <span class="chip chip--next">the release after</span> <span class="chip chip--open">needs your call</span> <span class="chip chip--parked">argued and declined</span></p>
+<div class="tally">
+<div><div class="v">10</div><div class="l">Modules with <code>en-US</code> welded in</div></div>
+<div><div class="v">0</div><div class="l">Machine conformance runs</div></div>
+<div><div class="v">27</div><div class="l">Screens · none bound to data</div></div>
+<div><div class="v">101<span style="font-size:14px"> / 284</span></div><div class="l">Exports no screen uses</div></div>
+</div>
+</div></div>
+<div class="page">
+
+<h2 class="sec"><span>Correctness you cannot read your way to</span><span class="idx">01 / 03</span></h2>
+<p class="sub-lede">Two candidates, and they are the same argument twice: 4.1's defect list is a <em>taxonomy</em>, not a set of accidents. Both items convert a class of defect into something a build catches.</p>
+
+<div class="f" id="L-01"><div class="f__hd"><span class="f__id">L-01</span><span class="f__t">Numbers need the authority that <code>localDate.js</code> just became for dates</span><span class="chip chip--now">do next</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>Ten modules, one literal each</b>
+  BasisComparisonMatrix · RollforwardMatrix
+  PostingImpactPreview · ScheduleLadder
+  VarianceCell · TieOutPanel · CommitmentBar
+  MaturityLadder · CashFlowLadder
+  MaterialityAssessment
+    → new Intl.NumberFormat(<span class="neg">"en-US"</span>, …)
+
+<b>accounting/money.js</b>  takes <code>locale</code> — parameterized
+<b>core/Timestamp</b>       takes <code>locale</code> — parameterized
+<b>STATES_AND_ANTIPATTERNS</b> ❌ "formatting data by hand"</p>
+<p>The law already bans this by name — for dates and deltas. The accounting tier, which is the tier that formats money for a living, bypasses the one sanctioned helper and hardcodes a locale. (Count is from a single grep for <code>Intl.*Format</code>; bare <code>toLocaleString</code> callers are <em>not</em> in it, so ten is a floor.)</p>
+<p>This is not only an i18n gap. 4.1 fixed decimals by hand twice — a stale bundle serving the old <code>priceDecimals</code> default, then <code>trading-desk</code> hardcoding 2dp in four places — because precision has no owner either.</p></div>
+<div class="col"><div class="h">The move</div>
+<p><code>core/format.js</code> as the single numeric authority, exactly as <code>localDate.js</code> is now the calendar-date authority: money, quantity, price-to-tick, percent, basis points, compact, signed delta, accounting negatives, thin separators — one implementation, locale and currency from context, decimals from the instrument rather than the call site.</p>
+<p>Then a <code>FormatProvider</code> at the shell (locale · currency · numerals · negative style), per-surface override for the one table that must show source-currency, and the gate that makes it hold: <b>a bare <code>Intl.</code> constructor outside <code>core/format.js</code> is a governance violation</b> — the same shape of rule as "never route a calendar date through <code>toISOString()</code>," which is the only kind of rule this repo has found to stick.</p>
+<p>Where it pays off beyond locale: FX revaluation, the ALM ladders and the basis matrices are the surfaces most likely to be read by a desk that writes <code>1.234.567,89</code>, and they are precisely the ten files above.</p>
+<p class="cost"><b>Cost</b> a release · authority is a sitting, the sweep and the gate are the work · <b>Risk</b> every number on every screen moves at once — do it with the harness in L-02, not before it</p></div></div></div>
+
+<div class="f" id="L-02"><div class="f__hd"><span class="f__id">L-02</span><span class="f__t">A conformance harness over the 120 cards — the defect classes are all machine-detectable</span><span class="chip chip--now">do next</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>4.1's own findings, as classes</b>
+  duplicate hardcoded DOM id      Combobox
+  no keyboard model at all        DatePicker
+  missing aria-setsize/posinset   TreeView
+  row height pinned, density ignored
+                     Stepper 11px · Tree 30px
+  transition:all vs. the motion rule
+                     Stepper · MultiSelect
+  inline styles, no tokens        MultiSelect
+  storage write per pointermove   SplitPane
+  missing type="button" in a form DatePicker
+
+<b>_adherence.oxlintrc.json</b>  exists, generated,
+  <span class="neg">nothing in the repo runs it</span>
+<b>counts drifted again</b> since 17 Aug:
+  manifest <span class="pos">292 / 120</span> vs. docs 284 / 118</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Two gates, one scoreboard. <b>Static:</b> actually run the adherence ruleset the compiler already emits, extended with the classes above — literal ids, `transition:all`, hardcoded px row heights, inline-style components, bare `Intl.`, remote `@import`. Every one of those is a regex-grade rule, and each already has a shipped violation to test against.</p>
+<p><b>Dynamic:</b> assertion checks over the 120 specimen cards — every interactive card gets focus-order, accessible-name, role, `Escape`, and re-render-stability assertions. The cards exist; today they are looked at, not asserted against.</p>
+<p><b>Scoreboard:</b> a generated Documentation card and landing strip, so the conformance claim on the page <em>is</em> the last run — which also retires the count drift above, because the numbers stop being typed.</p>
+<p class="cost"><b>Cost</b> a release · <b>Payoff</b> subsumes I-01, I-02, I-03 and the parity checker from I-07 · <b>Risk</b> the first run fails loudly, in public, and that is the point</p></div></div></div>
+
+<h2 class="sec"><span>The gap between a design system and a workstation</span><span class="idx">02 / 03</span></h2>
+<p class="sub-lede">The system has an extraordinary vocabulary for the <em>provenance of a figure</em> — envelope, authority, condition, time role, evidence, coverage. It has almost none for the <em>fate of an instruction</em>, and no screen has ever met a network.</p>
+
+<div class="f" id="L-03"><div class="f__hd"><span class="f__id">L-03</span><span class="f__t">An action contract, then bind one screen to a real transport</span><span class="chip chip--now">do next</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>templates/</b>  27 screens · <span class="neg">zero I/O</span>
+  (the only <code>fetch</code> in the tree is generated
+   <code>support.js</code> loading the page's own source)
+<b>DEPLOYMENT_CHECKLIST_4_1</b> asks, in prose, per action:
+  endpoint · idempotency key · permission ·
+  optimistic-or-confirmed · failure surface
+  → <span class="neg">for 3 screens, answered by a human, once</span>
+<b>ADAPTER_SEMANTICS</b> "a failed adapter makes an
+  instruction <b>unlanded</b>" — stated for adapters,
+  <span class="neg">absent from every control that submits one</span>
+<b>trading-desk</b>  autoFill tweak: orders rest or fill
+  because a timer says so</p></div>
+<div class="col"><div class="h">The move</div>
+<p>Give the submitting side the vocabulary the reading side has. One primitive — call it an action envelope — where a mutating control <b>declares</b> its idempotency key, its permission, whether it is optimistic or confirmed, and what its failure surface is; and renders the four states the checklist implies: in flight · landed · <b>unlanded</b> · rejected-with-reason. <code>ActionGuard</code> answers <em>may I</em>; nothing answers <em>did it</em>.</p>
+<p>Then prove it: bind <code>trading-desk</code>'s order path and <code>ingestion-operations</code>' job queue to a local mock transport with latency, duplicate submits and a 500 — so the states are exercised rather than asserted, and a double-clicked Submit is a test rather than an incident.</p>
+<p><b>Argument against:</b> a design system that ships a transport is over-reaching, and the fixtures are what make the templates copyable. Answer: the contract is the deliverable; the mock lives in <code>tests/</code>, not in the templates, and every screen keeps its fixture.</p>
+<p class="cost"><b>Cost</b> a release · <b>Payoff</b> makes the deployment checklist mechanical instead of a promise · <b>Call</b> is there a real API to bind against, or is the mock the ceiling?</p></div></div></div>
+
+<div class="f" id="L-04"><div class="f__hd"><span class="f__id">L-04</span><span class="f__t">The archetype should own its collapse order — and the dock grips should stop lying</span><span class="chip chip--open">needs your call</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>TEMPLATE_CONTRACT</b>  states a narrow-viewport rule
+<b>reconciliation</b>  the only screen that implements it —
+  local helmet CSS at ≤1180px + its own switch
+<b>ScreenComposition</b>  declares regions, <span class="neg">not their
+  collapse order</span>
+<b>Capsule</b>  movable → ⠿ grip, no handler
+        resizable → ⌟, no handler   <span class="neg">since 3.2</span>
+<b>WorkspaceLayout</b> (4.1) persists arrangement — the
+  half that was missing is now shipped</p></div>
+<div class="col"><div class="h">The move</div>
+<p>4.1 changed the economics here: named, persisted, resizable screen arrangements now exist. What is still per-screen improvisation is the <em>automatic</em> half — which region folds first, into what, at what width. Regions already declare priority in an archetype; let <code>ARCHETYPES</code> declare collapse order and let one switch component execute it, so twenty-six screens do not write it twenty-six ways.</p>
+<p>Same release, two lines of deletion: <code>Capsule</code>'s <code>movable</code>/<code>resizable</code> have advertised a capability for three releases on the exact surface (an ops wall) where operators expect it. Either point them at <code>WorkspaceLayout</code> or delete the props — an affordance that renders a grip and does nothing is worse than no affordance.</p>
+<p class="cost"><b>Cost</b> a release across 26 screens (delete is one sitting) · <b>Prereq, unanswered since 14 Aug</b> are operators ever on a small viewport? If the answer is "no, it is a 27″ desk or two," this collapses to the deletion and stops</p></div></div></div>
+
+<h2 class="sec"><span>The shape of the system</span><span class="idx">03 / 03</span></h2>
+<p class="sub-lede">Three candidates about size and legibility. The first is the one I would argue hardest for; the third is the cheapest large thing here.</p>
+
+<div class="f" id="L-05"><div class="f__hd"><span class="f__id">L-05</span><span class="f__t">Subtract — and put a deletion budget in the release protocol</span><span class="chip chip--open">needs your call</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>101 of 284</b> exports used by no screen
+<b>79</b> live only in a specimen card
+<b>4.0</b>  curated templates 32 → 26
+<b>4.1</b>  added exports again (layout · trail ·
+      handover · adapters · disclosure)
+<b>net</b>  screens down, surface <span class="neg">up</span></p>
+<p>I-09 left this as "your call" and it stayed uncalled while the surface grew another release. Meanwhile <code>NotificationCenter</code> sits card-only while <code>alerting-workstation</code> hand-rolls its own triage rail.</p></div>
+<div class="col"><div class="h">The move</div>
+<p>The generated tier from I-09 — <b>demonstrated · offered · candidate</b> — is table stakes and cheap. The large version is a rule: <b>a minor release may not increase net public exports.</b> New capability arrives with either an adopting screen or a retirement, in the same release.</p>
+<p><b>Argument against, and it is real:</b> a card-only chart costs nothing at runtime — it is in the same monolithic bundle either way — so the cost is documentation and maintenance, not bytes. Measure that: exports touched by a fix in the last three releases, not exports counted. If the tail never changes, the tail is not what is expensive.</p>
+<p>Cheaper alternative to deletion, same effect: build the one screen that promotes four card-only charts at once (an exposure/attribution surface takes <code>Treemap</code>, <code>WaterfallChart</code>, <code>BarChart</code>, <code>ComparisonPlate</code>). Then the tail is a decision, not an accident.</p>
+<p class="cost"><b>Cost</b> tier is generated · promotion is a screen · deletion is a major · <b>Call</b> fewer components, or more screens?</p></div></div></div>
+
+<div class="f" id="L-06"><div class="f__hd"><span class="f__id">L-06</span><span class="f__t">Twelve normative documents, no index — number the law</span><span class="chip chip--next">the release after</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>guidelines/</b> 30 files · <b>docs/</b> 25 · Documentation cards 20
+<b>Normative, all of them:</b>
+  OPERATING_LANGUAGE · TIME_SEMANTICS
+  VISUALIZATION_GRAMMAR · PROGRESSIVE_DISCLOSURE
+  SESSION_CONTINUITY · ADAPTER_SEMANTICS
+  DECISION_SEMANTICS · VALUE_ENVELOPE
+  TABULAR_CONTRACT · STATES_AND_ANTIPATTERNS
+  TEMPLATE_CONTRACT · WORKSTATION_HIERARCHY
+<b>A component author</b> must know which of the twelve
+  bind them → <span class="neg">no index says</span></p></div>
+<div class="col"><div class="h">The move</div>
+<p>Not a rewrite — an <b>index and a citation contract</b>. Each normative statement gets an id (<code>R-nn</code>); each <code>&lt;Name&gt;.prompt.md</code> cites the rule ids it satisfies; the governance script checks that every component cites at least the rules its domain makes mandatory, and that every rule is cited by something. A rule nothing cites is either dead law or an unadopted capability, and today there is no way to tell which.</p>
+<p>The test of whether this earned its place: a component review can be conducted by rule id, and a new author asks "which rules bind a chart?" and gets a list instead of twelve documents.</p>
+<p><b>Argument against:</b> this is the candidate most likely to become bureaucracy. Mitigation — ids only for statements that are already imperative in the prose. If a guideline yields no imperatives, that is the finding.</p>
+<p class="cost"><b>Cost</b> half a release, mostly reading · <b>Payoff</b> the review of every future component gets shorter</p></div></div></div>
+
+<div class="f" id="L-07"><div class="f__hd"><span class="f__id">L-07</span><span class="f__t">A stated support window and a generated deprecation ledger</span><span class="chip chip--next">the release after</span></div>
+<div class="f__body">
+<div class="col"><div class="h">Evidence</div>
+<p class="ev"><b>codemod_4_0.py</b>  one release, one script
+<b>4.1</b>  shipped an intentional break (<code>MultiSelect</code>,
+      <code>SelectCheckbox</code> removed)
+<b>VarianceCell.tolerance</b>  deprecated, not removed
+<b>--accent</b>  "deprecated alias through 3.x"
+<b>Nowhere</b>  how long a deprecation survives</p></div>
+<div class="col"><div class="h">The move</div>
+<p>State the window (deprecate in a minor, remove in the next major, never inside a patch) and generate the ledger from source: export → deprecated in → removed in → codemod entry → replacement. A consumer on 3.x should be able to read one table and know what their upgrade costs.</p>
+<p>Small file, structural effect: it is the difference between a system that breaks consumers politely and one that breaks them unpredictably. It also makes L-05's deletions <em>possible</em> — right now there is no sanctioned way to remove anything.</p>
+<p class="cost"><b>Cost</b> one sitting for the policy, one for the generator · <b>Prereq for</b> L-05</p></div></div></div>
+
+<h2 class="sec"><span>Argued and declined</span><span class="idx">not this</span></h2>
+<table class="rm">
+<thead><tr><th style="width:22%">Candidate</th><th style="width:40%">Why it looks large</th><th>Why not</th></tr></thead>
+<tbody>
+<tr><td class="p">ESM subpath exports</td><td>1,141 KB raw bundle; a report surface pays for the trading tier.</td><td class="w">Answered 15 Aug: nothing embeds Meridian in a host, every template is a full-page shell. 247 KB cached is cheap for an all-day terminal. Still parked.</td></tr>
+<tr><td class="p">One DTCG token source generating XAML</td><td>662 tokens in ten hand-written CSS files, canonical values in the desktop app.</td><td class="w">The premise is wrong — <code>parity-manifest.json</code> declares <code>valuesShared: false</code> deliberately. What survives is the missing parity <em>checker</em>, which is inside L-02.</td></tr>
+<tr><td class="p">A performance release</td><td>Hand-typed KB figures were wrong once; a blotter has to hold 50k rows.</td><td class="w">Already handled where it counts: <code>DataGrid</code> virtualizes past 500 rows, <code>VirtualizedList</code> exists, row heights are tokens. The gap is that the numbers are typed, not measured — again L-02.</td></tr>
+<tr><td class="p">A third chart abstraction</td><td>32 chart modules, two competing shapes (<code>Figure</code>, <code>AnalyticalFigure</code>), <code>Figure</code> adopted by nothing.</td><td class="w">The answer is to finish or demote <code>Figure</code> (I-08), not to add. Any new geometry layer makes three.</td></tr>
+<tr><td class="p">More components</td><td>Every gap looks like a missing component.</td><td class="w">101 exports no screen uses. The system's scarcity is adoption, not surface.</td></tr>
+</tbody>
+</table>
+
+<h2 class="sec"><span>If it were three releases</span><span class="idx">sequencing</span></h2>
+<div class="seq">
+<div><div class="n">4.2 · correctness</div><h3>L-02 then L-01</h3><p>The harness first, because L-01 moves every number on every screen and there is currently nothing that would notice if it moved one wrongly. Then the formatting authority, swept under the gate.</p><p class="w">subsumes I-01 · I-02 · I-03 · I-07</p></div>
+<div><div class="n">4.3 · the instruction</div><h3>L-03 + L-07</h3><p>The action contract, bound to a mock transport on two screens; the deprecation ledger alongside it, since it is a sitting and it unblocks anything that wants to remove.</p><p class="w">makes the deployment checklist mechanical</p></div>
+<div><div class="n">4.4 · the shape</div><h3>L-04 + L-05 + L-06</h3><p>Collapse order in the archetypes (or just the deletion, if operators are never narrow), the export tier with a net-export rule, and the numbered law.</p><p class="w">needs two answers from you first</p></div>
+</div>
+
+<div class="note"><b>The one-line version.</b> The system's reading vocabulary is world-class and its writing vocabulary barely exists (<a href="#L-03">L-03</a>); its law is enforced by careful people rather than by builds (<a href="#L-02">L-02</a>, <a href="#L-01">L-01</a>); and it grows faster than it is adopted (<a href="#L-05">L-05</a>). Those are the three large things. Everything else on this page is downstream of one of them.</div>
+
+<div class="answer"><b class="q">Open question 1 — is there a real API to bind a screen against, or is a mock the ceiling?</b>
+L-03's contract is worth writing either way; what changes is whether 4.3 ends with a screen talking to Meridian, or a screen talking to a fixture that lies convincingly.</div>
+
+<div class="answer"><b class="q">Open question 2 — are operators ever on a narrow viewport? (asked 14 Aug, still open)</b>
+"No, it is a 27″ desk or two" collapses L-04 from a release to a two-line deletion. Nothing else in the backlog is this sensitive to one answer.</div>
+
+<div class="answer"><b class="q">Open question 3 — fewer components, or more screens?</b>
+L-05 needs a direction, not a number. More screens is the answer I would pick — a screen is the only thing that has ever promoted an export out of the tail — but it costs a release per screen, and it grows the surface it is meant to justify.</div>
+</div>
+</body>
+</html>

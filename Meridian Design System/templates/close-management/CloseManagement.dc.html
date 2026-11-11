@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Close Management" description="Close governance as one plane in three modes — calendar, dependencies, owners — over a single selection contract, with a persistent inspector carrying the blocker, its evidence, downstream impact, and the one resolution action. The tie-out proof — DataGrid with a Σ debit = Σ credit contract and ValueEnvelope figures — is the drill-in from the reconciliation controls." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="close-management">
+<style>html,body{margin:0;padding:0;height:100%}
+[data-cm-show="off"]{display:none}
+.cm-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
+.cm-frame{flex:1;min-height:0;display:flex}
+.cm-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.cm-screen>*{grid-column:2;min-width:0}
+.cm-screen>*{min-width:0}
+.cm-main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px 16px 0;overflow:hidden}
+.cm-main>*{flex:none}
+.cm-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.cm-head h1{font:600 20px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap}
+.cm-state{margin:0;font:14px/21px var(--font-body);color:var(--text-secondary);max-width:100ch;text-wrap:pretty}
+.cm-state b{color:var(--text-primary);font-weight:600}
+.cm-path{position:relative;border:1px solid var(--border);background:var(--card-surface);height:52px}
+.cm-days{display:flex;align-items:stretch;height:100%}
+.cm-day{flex:1;min-width:0;border-left:1px solid var(--border-divider);padding:5px 8px;font:10px var(--font-data);color:var(--text-muted);display:flex;flex-direction:column;justify-content:flex-end}
+.cm-day:first-child{border-left:0}
+.cm-day b{display:block;font:600 11px var(--font-body);color:var(--text-secondary);margin-top:2px}
+.cm-seg{display:flex;border:1px solid var(--border);border-radius:2px;overflow:hidden;flex:none}
+.cm-tab{appearance:none;border:0;border-left:1px solid var(--border);background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:7px 14px;cursor:pointer;min-height:34px}
+.cm-tab:first-child{border-left:0}
+.cm-tab[data-on="on"]{background:var(--interaction-selected-surface);color:var(--text-primary);font-weight:600;box-shadow:inset 0 -2px 0 var(--interaction-selected)}
+.cm-tab:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.cm-body{position:relative;flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:10px;padding-bottom:12px}
+.cm-plane{min-width:0;overflow:auto}
+.cm-rail{min-width:0;display:flex;flex-direction:column;gap:9px;border-left:1px solid var(--border);padding-left:12px;overflow-y:auto}
+.cm-rail>*{flex:none}
+.cm-h{font:600 11px var(--font-body);color:var(--text-muted);margin:0}
+.cm-title{font:600 15px var(--font-display);color:var(--text-primary);margin:0}
+.cm-sla{display:flex;gap:14px;flex-wrap:wrap;font:11px var(--font-data);color:var(--text-muted)}
+.cm-sla b{color:var(--text-primary);font-weight:600}
+.cm-list{display:flex;flex-direction:column;border:1px solid var(--border-strong);background:var(--card-surface-raised)}
+.cm-owner{border-bottom:1px solid var(--border)}
+.cm-owner:last-child{border-bottom:0}
+.cm-owner-h{display:flex;align-items:baseline;gap:10px;padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-divider)}
+.cm-owner-h b{font:600 13px var(--font-body);color:var(--text-primary)}
+.cm-owner-h span{font:11px var(--font-data);color:var(--text-muted)}
+.cm-row{display:flex;align-items:center;gap:12px;width:100%;text-align:left;appearance:none;border:0;border-bottom:1px solid var(--border-divider);background:none;padding:9px 12px;min-height:38px;cursor:pointer;font:13px var(--font-body);color:var(--text-secondary)}
+.cm-row:hover{background:var(--interaction-hover)}
+.cm-row[data-on="on"]{background:var(--interaction-selected-surface);box-shadow:inset 3px 0 0 var(--interaction-selected)}
+.cm-row:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.cm-row .cm-when{margin-left:auto;font:11px var(--font-data);color:var(--text-muted);white-space:nowrap}
+.cm-row .cm-st{font:600 10px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);min-width:88px}
+.cm-overlay{position:absolute;inset:0;z-index:5;background:var(--bg);border:1px solid var(--border-strong);padding:12px;overflow:auto}
+@media (max-width:900px){.cm-days{flex-wrap:wrap}.cm-main{overflow-y:auto;padding-bottom:12px}.cm-body{grid-template-columns:1fr}.cm-plane{overflow:visible}.cm-rail{border-left:0;border-top:1px solid var(--border);padding-left:0;padding-top:10px;overflow:visible}.cm-seg{width:100%}.cm-tab{flex:1;min-height:42px}.cm-path{height:auto;flex-wrap:wrap}.cm-day{min-width:33%}.cm-overlay{position:fixed;inset:auto 0 0 0;max-height:88vh}}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Close tasks" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextProvider" value="{{ context }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LinkedSelectionProvider" scope="task" value="{{ selection }}" items="{{ taskItems }}" url-param="task" on-change="{{ onSelectionChange }}" hint-size="100%,860px">
+<div data-screen-label="Close management" class="cm-screen">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Close Management" environment="{{ environment }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div class="cm-frame">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="close" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<div class="cm-pane">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
+<main class="cm-main">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ periodHeader }}" on-open-exceptions="{{ viewDeps }}" hint-size="100%,92px"></x-import>
+<div class="cm-head">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ closeStatus }}" hint-size="90px,18px"></x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="120px,28px">Export outline</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ attestDisabled }}" title="{{ attestTitle }}" onClick="{{ goAttest }}" hint-size="120px,28px">Attest close</x-import>
+</div>
+<p class="cm-state" data-cm-show="{{ blockedShow }}"><b>{{ blockedCount }} controls are blocked.</b> {{ rootBlocker }} is the root blocker. Resolving it releases <b>{{ downstreamCount }} downstream controls</b> and shortens the critical path from {{ criticalNow }} to {{ criticalIfResolved }}. Unresolved by the {{ deadlineLabel }} deadline, the close slips <b>{{ slipLabel }}</b>.</p>
+<p class="cm-state" data-cm-show="{{ clearShow }}">No control is blocked. The critical path to close attestation is <b>{{ criticalNow }}</b>, and the remaining work sits with {{ remainingOwners }}.</p>
+<div class="cm-path" aria-label="Critical path">
+<div class="cm-days"><sc-for list="{{ days }}" as="d" hint-placeholder-count="6"><div class="cm-day">{{ d.label }}<b>{{ d.summary }}</b></div></sc-for></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="current-time" orientation="vertical" position="{{ nowPos }}" label="Now" marker="{{ true }}" hint-size="1px,100%"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="target" orientation="vertical" position="{{ deadlinePos }}" label="Attestation due" label-placement="before" hint-size="1px,100%"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="selection" orientation="vertical" position="{{ selectedPos }}" hint-size="1px,100%"></x-import>
+</div>
+<div class="cm-seg" role="tablist">
+<button type="button" class="cm-tab" data-on="{{ calendarOn }}" onClick="{{ viewCalendar }}">Calendar</button>
+<button type="button" class="cm-tab" data-on="{{ depsOn }}" onClick="{{ viewDeps }}">Dependencies</button>
+<button type="button" class="cm-tab" data-on="{{ ownersOn }}" onClick="{{ viewOwners }}">Owners</button>
+</div>
+<div class="cm-body">
+<div class="cm-plane">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ContinuityFrame" state="{{ continuity }}" subject="Close controls" since="{{ snapshotSince }}" snapshot-at="16:05 UTC" coverage="{{ coverageLabel }} evidence items" hint-size="100%,520px">
+<div data-cm-show="{{ calendarShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CloseCalendar" title="Close calendar" period="July 2026" days="{{ days }}" tasks="{{ tasks }}" current-date="2026-08-01" current-time="16:05 UTC" selected-id="{{ selectedId }}" on-select="{{ commitTask }}" hint-size="100%,460px"></x-import>
+</div>
+<div data-cm-show="{{ depsShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ControlDependencyGraph" nodes="{{ nodes }}" edges="{{ edges }}" selected-id="{{ selectedId }}" on-select="{{ commitTask }}" view="{{ graphView }}" critical-path="{{ true }}" show-edge-labels="{{ true }}" title="July 2026 close controls" as-of="Aug 1, 2026 16:05 UTC" description="Eleven close controls from market-data receipt through close attestation. Price approval C-118 has failed, blocking valuation posting, ledger reconciliation, statutory reporting, and close attestation." hint-size="100%,560px"></x-import>
+</div>
+<div data-cm-show="{{ ownersShow }}">
+<div class="cm-list">
+<sc-for list="{{ ownerGroups }}" as="g" hint-placeholder-count="5">
+<div class="cm-owner">
+<div class="cm-owner-h"><b>{{ g.owner }}</b><span>{{ g.team }}</span><span style="margin-left:auto">{{ g.summary }}</span></div>
+<sc-for list="{{ g.tasks }}" as="t" hint-placeholder-count="2">
+<button type="button" class="cm-row" data-on="{{ t.on }}" onClick="{{ t.select }}"><span class="cm-st">{{ t.status }}</span><span>{{ t.title }}</span><span class="cm-when">{{ t.when }}</span></button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</x-import>
+</div>
+<aside class="cm-rail" aria-label="Selected control inspector">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ controlHeader }}" dense="{{ true }}" hint-size="100%,84px"></x-import>
+<div class="cm-sla"><span>Due <b>{{ selDue }}</b></span><span>SLA <b>{{ selSla }}</b></span></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ inspectorTone }}" title="{{ inspectorCalloutTitle }}" hint-size="100%,80px">{{ inspectorCallout }}</x-import>
+<h3 class="cm-h">Downstream impact</h3>
+<sc-for list="{{ downstream }}" as="d" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;gap:12px;padding:4px 0;border-bottom:1px solid var(--border-divider);font:12px var(--font-body)"><span>{{ d.label }}</span><span style="font:11px var(--font-data);color:var(--text-muted)">{{ d.detail }}</span></div>
+</sc-for>
+<h3 class="cm-h">Evidence</h3>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SourceCoverageSummary" title="{{ coverageTitle }}" sources="{{ coverageSources }}" compact="{{ true }}" freshness-threshold="4 hours for prices, 24 hours for statements" weighting="record" as-of="Aug 1, 2026 16:00 UTC" on-filter="{{ onCoverageFilter }}" selected-category="{{ coverageFilter }}" hint-size="100%,220px"></x-import>
+<div data-cm-show="{{ filterShow }}" style="border:1px solid var(--border);background:var(--card-surface);padding:8px 10px">
+<span class="cm-h" style="display:block;margin-bottom:5px">{{ filterHeading }}</span>
+<sc-for list="{{ filteredRows }}" as="r" hint-placeholder-count="3">
+<div style="display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--border-divider);font:11px/16px var(--font-data);color:var(--text-secondary)"><span>{{ r.label }}</span><span style="color:var(--text-muted)">{{ r.detail }}</span></div>
+</sc-for>
+</div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);padding:8px 0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ resolveDisabled }}" onClick="{{ openResolution }}" hint-size="150px,32px">Open resolution</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ noop }}" hint-size="100px,32px">Reassign</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ tieOutDisabled }}" title="{{ tieOutTitle }}" onClick="{{ openTieOut }}" hint-size="110px,32px">Open tie-out</x-import>
+</div>
+</aside>
+<div class="cm-overlay" data-cm-show="{{ resolutionShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Price approval C-118 failed validation" case-id="C-118" version="{{ 4 }}" severity="blocked" condition="stale" object="Pricing run PR-2026-07-31 · 3 securities" statement="Three evaluated prices for the July 31 run exceed the 4-hour freshness threshold and one security has no vendor price at all. Price approval cannot complete, which blocks valuation posting, ledger reconciliation, and close attestation." fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Rerun the vendor pricing pull for the three stale securities and record a documented manual price for CUSIP 46625HKA7, which the vendor does not cover." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-escalate="{{ noop }}" on-defer="{{ noop }}" on-request-evidence="{{ noop }}" on-back="{{ closeResolution }}" back-label="Back to close" hint-size="100%,700px"></x-import>
+</div>
+<div class="cm-overlay" data-cm-show="{{ attestShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="July statutory close" scope="Statutory close package · all entities" period="July 2026" object-id="CLOSE-STAT-2026-07" snapshot="snap-2026-08-01T16:05Z" version="{{ 18 }}" signatory-role="Controller" role="Controller" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="R. Delacroix" segregation="{{ true }}" certification="I attest that the above close package is complete and accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" superseded-by="{{ supersededBy }}" on-approve="{{ onApprove }}" on-request-changes="{{ noop }}" on-reject="{{ noop }}" hint-size="100%,700px"></x-import>
+<div style="display:flex;gap:8px;padding-top:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ closeAttest }}" hint-size="130px,32px">Back to close</x-import>
+</div>
+</div>
+<div class="cm-overlay" data-cm-show="{{ tieOutShow }}" style="padding:0;display:flex;flex-direction:column">
+<div style="position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ closeTieOut }}" hint-size="130px,32px">← Back to close</x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">Tie-out drill-in · custodian reconciliation</span>
+</div>
+<div style="flex:1;min-height:0;overflow:auto;padding:12px"><dc-import name="CloseTieOut" hint-size="100%,860px"></dc-import></div>
+</div>
+<div class="cm-overlay" data-cm-show="{{ doneShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="positive" title="July 2026 statutory close attested" hint-size="100%,86px">Version 18 binds the close package to the evidence set as of Aug 1, 2026 16:05 UTC. Any material change to an underlying record supersedes this attestation and reopens the affected controls.</x-import>
+<div style="display:flex;gap:8px;padding-top:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ closeDone }}" hint-size="130px,32px">Back to close</x-import>
+</div>
+</div>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;close&quot;,&quot;options&quot;:[&quot;close&quot;,&quot;tie-out&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+const TASKS=[
+  {id:"t1",title:"Market data received",date:"2026-07-29",due:"18:00 UTC",owner:"J. Iwu",team:"Data operations",status:"complete",evidence:"3 of 3 files",completedAt:"Jul 29 17:41 UTC"},
+  {id:"t2",title:"Security master validated",date:"2026-07-29",due:"20:00 UTC",owner:"J. Iwu",team:"Data operations",status:"complete",dependsOn:["t1"],evidence:"Validation report",completedAt:"Jul 29 19:22 UTC"},
+  {id:"t3",title:"Market data validated",date:"2026-07-30",due:"12:00 UTC",owner:"J. Iwu",team:"Data operations",status:"complete",dependsOn:["t1","t2"],evidence:"2 of 2 controls",completedAt:"Jul 30 11:05 UTC"},
+  {id:"t4",title:"Prices approved",date:"2026-07-31",due:"14:00 UTC",owner:"S. Grant",team:"Investment accounting",status:"blocked",dependsOn:["t3"],evidence:"96 of 100 sources",blocker:"3 stale prices, 1 uncovered security",signoff:"Investment accounting"},
+  {id:"t5",title:"Valuation journal posted",date:"2026-07-31",due:"18:00 UTC",owner:"M. Okafor",team:"Fund accounting",status:"waiting",dependsOn:["t4"],evidence:"Awaiting prices",signoff:"Fund accounting"},
+  {id:"t6",title:"Custodian reconciliation",date:"2026-08-01",due:"12:00 UTC",owner:"M. Okafor",team:"Fund accounting",status:"at-risk",dependsOn:["t5"],evidence:"Exception 00418 open",blocker:"Residual $331.68 unclassified"},
+  {id:"t7",title:"Ledger reconciled",date:"2026-08-01",due:"15:00 UTC",owner:"M. Okafor",team:"Fund accounting",status:"waiting",dependsOn:["t5","t6"],signoff:"Controller"},
+  {id:"t8",title:"Intercompany eliminations",date:"2026-08-01",due:"15:00 UTC",owner:"D. Ruiz",team:"Controller",status:"in-progress",dependsOn:["t5"],evidence:"Elimination schedule"},
+  {id:"t9",title:"Statutory reporting pack",date:"2026-08-02",due:"12:00 UTC",owner:"L. Byrne",team:"Reporting",status:"not-started",dependsOn:["t7","t8"],signoff:"Reporting"},
+  {id:"t10",title:"Disclosure review",date:"2026-08-02",due:"14:00 UTC",owner:"L. Byrne",team:"Reporting",status:"not-started",dependsOn:["t9"],evidence:"2 reviews pending"},
+  {id:"t11",title:"Close attested",date:"2026-08-03",due:"17:00 UTC",owner:"R. Delacroix",team:"Controller",status:"waiting",dependsOn:["t9","t10"],signoff:"Controller"},
+  {id:"t12",title:"Tax provision handoff",date:"2026-08-03",due:"18:00 UTC",owner:"D. Ruiz",team:"Controller",status:"waived",dependsOn:["t11"],evidence:"Waived — quarterly cadence"},
+];
+const DAYS=[
+  {date:"2026-07-29",label:"Day −3 · Jul 29"},
+  {date:"2026-07-30",label:"Day −2 · Jul 30"},
+  {date:"2026-07-31",label:"Day −1 · Jul 31"},
+  {date:"2026-08-01",label:"Close · Aug 1"},
+  {date:"2026-08-02",label:"Day +1 · Aug 2"},
+  {date:"2026-08-03",label:"Day +2 · Aug 3"},
+];
+const NODES=[
+  {id:"t1",label:"Market data received",type:"input",status:"complete",owner:"J. Iwu",due:"Jul 29 18:00"},
+  {id:"t2",label:"Security master validated",type:"validation",status:"complete",owner:"J. Iwu",due:"Jul 29 20:00"},
+  {id:"t3",label:"Market data validated",type:"validation",status:"complete",owner:"J. Iwu",due:"Jul 30 12:00"},
+  {id:"t4",label:"Prices approved",type:"approval",status:"failed",owner:"S. Grant",due:"Jul 31 14:00",blocker:"3 prices exceed the 4-hour freshness threshold; CUSIP 46625HKA7 has no vendor coverage."},
+  {id:"t5",label:"Valuation journal posted",type:"journal",status:"blocked",owner:"M. Okafor",due:"Jul 31 18:00",blocker:"Waiting on price approval"},
+  {id:"t6",label:"Custodian reconciliation",type:"reconciliation",status:"in-progress",owner:"M. Okafor",due:"Aug 1 12:00",blocker:"Exception 00418 residual unclassified"},
+  {id:"t7",label:"Ledger reconciled",type:"reconciliation",status:"blocked",owner:"M. Okafor",due:"Aug 1 15:00"},
+  {id:"t8",label:"Intercompany eliminations",type:"calculation",status:"in-progress",owner:"D. Ruiz",due:"Aug 1 15:00"},
+  {id:"t9",label:"Statutory reporting pack",type:"report",status:"blocked",owner:"L. Byrne",due:"Aug 2 12:00"},
+  {id:"t10",label:"Disclosure review",type:"review",status:"waiting",owner:"L. Byrne",due:"Aug 2 14:00"},
+  {id:"t11",label:"Close attested",type:"attestation",status:"blocked",owner:"R. Delacroix",due:"Aug 3 17:00"},
+];
+const EDGES=[
+  {from:"t1",to:"t2",type:"requires"},{from:"t1",to:"t3",type:"requires"},{from:"t2",to:"t3",type:"validates"},
+  {from:"t3",to:"t4",type:"requires"},{from:"t4",to:"t5",type:"approves",blocked:true},{from:"t5",to:"t6",type:"produces",blocked:true},
+  {from:"t5",to:"t7",type:"requires",blocked:true},{from:"t6",to:"t7",type:"requires"},{from:"t5",to:"t8",type:"requires",blocked:true},
+  {from:"t7",to:"t9",type:"requires",blocked:true},{from:"t8",to:"t9",type:"requires"},{from:"t9",to:"t10",type:"requires",blocked:true},
+  {from:"t9",to:"t11",type:"requires",blocked:true},{from:"t10",to:"t11",type:"approves",blocked:true},
+];
+const COVERAGE={
+  t4:{title:"Price coverage · pricing run PR-2026-07-31",counts:{confirmed:94,provisional:2,stale:3,missing:1,na:4}},
+  t6:{title:"Evidence coverage · custodian reconciliation",counts:{confirmed:41,provisional:1,stale:0,missing:1,na:2}},
+  default:{title:"Evidence coverage · selected control",counts:{confirmed:38,provisional:0,stale:1,missing:0,na:3}},
+};
+const FILTERED={
+  stale:[{label:"CUSIP 912828ZK5 · US Treasury 4.25% 2031",detail:"Priced Jul 31 09:12 · 7h old"},{label:"CUSIP 037833EJ8 · Apple 3.35% 2027",detail:"Priced Jul 31 08:40 · 7h old"},{label:"CUSIP 594918CA1 · Microsoft 2.92% 2029",detail:"Priced Jul 30 22:05 · 18h old"}],
+  missing:[{label:"CUSIP 46625HKA7 · private placement note",detail:"No vendor coverage · manual price required"}],
+  provisional:[{label:"CUSIP 91282CJL6 · TIPS 2033",detail:"Indicative quote awaiting confirmation"},{label:"CUSIP 78016EZ59 · SSB floating 2028",detail:"Broker quote, single source"}],
+  confirmed:[{label:"94 securities priced from ICE Evaluated",detail:"Within the 4-hour freshness threshold"}],
+  na:[{label:"4 cash and receivable balances",detail:"No external price required"}],
+};
+const SLA={t4:"Breached by 26h",t5:"Breached by 22h",t6:"4h remaining",t7:"Breached by 1h",t8:"1h remaining",t9:"20h remaining",t10:"22h remaining",t11:"49h remaining"};
+const START=Date.parse("2026-07-29T00:00:00Z"),END=Date.parse("2026-08-03T20:00:00Z"),NOW=Date.parse("2026-08-01T16:05:00Z");
+const pos=(t)=>Math.max(0,Math.min(1,(t-START)/(END-START)));
+const taskTime=(t)=>Date.parse(t.date+"T"+t.due.replace(" UTC","")+":00Z");
+
+class Component extends DCLogic {
+  // One committed selection for the whole screen, owned by LinkedSelectionProvider:
+  // calendar, dependency graph, owner list, and inspector all read and write it through
+  // `commitTask`. No view synchronises with another view.
+  state={selection:{id:"t4",label:"Prices approved"},view:"calendar",closeView:"calendar",graphView:"graph",
+         coverageFilter:null,resolutionOpen:false,priceFixed:false,attestOpen:false,attested:false,tieOutOpen:null,
+         rootCause:"stale-source",rootCauseNote:"",resReason:"",attestComment:"",continuity:"live"};
+
+  applyChrome(){
+    const html=document.documentElement;
+    html.setAttribute("data-theme",(window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme??"light"):(this.props.theme??"light")));
+    html.setAttribute("data-environment",(window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment??"PAPER").toUpperCase()):(String(this.props.environment??"PAPER").toUpperCase())));
+    if(document.body)document.body.setAttribute("data-theme-density",(window.MeridianPrefs?window.MeridianPrefs.density(this.props.density??"default"):(this.props.density??"default")));
+  }
+  componentDidMount(){this.applyChrome();
+    // Every close control, named once — a ?task= deep link then reads as its title in the
+    // masthead crumb rather than "Close task t4" (4.4 · E-1).
+    const M=window.MeridianAppMap;if(M&&M.nameObject)TASKS.forEach(t=>M.nameObject("task",t.id,t.title))}
+  componentDidUpdate(){this.applyChrome()}
+
+  descendants(id,tasks){
+    const out=new Set();const walk=(x)=>tasks.forEach(t=>{if((t.dependsOn||[]).includes(x)&&!out.has(t.id)){out.add(t.id);walk(t.id)}});walk(id);return [...out];
+  }
+
+  renderVals(){
+    this.applyChrome();
+    const s=this.state,noop=()=>{};
+    const selId=s.selection&&s.selection.id;
+    const tasks=TASKS.map(t=>s.priceFixed&&t.id==="t4"?{...t,status:"complete",blocker:undefined,evidence:"100 of 100 sources",completedAt:"Aug 1 16:20 UTC"}:s.priceFixed&&t.id==="t5"?{...t,status:"in-progress"}:t);
+    const nodes=NODES.map(n=>s.priceFixed&&n.id==="t4"?{...n,status:"complete",blocker:undefined}:s.priceFixed&&(n.id==="t5"||n.id==="t7")?{...n,status:"ready"}:n);
+    const edges=s.priceFixed?EDGES.map(e=>({...e,blocked:false})):EDGES;
+    const sel=tasks.find(t=>t.id===selId)||tasks[0];
+    const node=nodes.find(n=>n.id===selId);
+    const blockedTasks=tasks.filter(t=>t.status==="blocked"||t.status==="at-risk");
+    const complete=tasks.filter(t=>t.status==="complete").length;
+    const cov=COVERAGE[selId]||COVERAGE.default;
+    const filterRows=s.coverageFilter?FILTERED[s.coverageFilter]||[]:[];
+    const isBlocker=selId==="t4"&&!s.priceFixed;
+    const commit=(t)=>{const hit=tasks.find(x=>x.id===t.id);this.setState({selection:{id:t.id,label:hit?hit.title:t.label},coverageFilter:null})};
+    const view=(v)=>()=>this.setState({view:v});
+    const on=(v)=>s.view===v?"on":"off";
+    const down=this.descendants(selId,tasks);
+
+    const owners=[];
+    tasks.forEach(t=>{
+      let g=owners.find(o=>o.owner===t.owner);
+      if(!g){g={owner:t.owner,team:t.team,tasks:[]};owners.push(g)}
+      g.tasks.push({id:t.id,title:t.title,status:t.status,on:t.id===selId?"on":"off",
+        when:`${t.date.slice(5)} ${t.due}`,select:()=>commit(t)});
+    });
+    owners.forEach(g=>{
+      const open=g.tasks.filter(t=>t.status!=="complete"&&t.status!=="waived").length;
+      const blk=g.tasks.filter(t=>t.status==="blocked"||t.status==="at-risk").length;
+      g.summary=`${open} open · ${blk} blocked`;
+    });
+
+    const dayRows=DAYS.map(d=>{
+      const ts=tasks.filter(t=>t.date===d.date);
+      const doneN=ts.filter(t=>t.status==="complete").length;
+      const blk=ts.filter(t=>t.status==="blocked"||t.status==="at-risk").length;
+      return {...d,summary:blk?`${blk} blocked · ${ts.length} tasks`:`${doneN} of ${ts.length} complete`};
+    });
+
+    return {
+      noop,
+      dataState:this.props.dataState??"ready",
+      navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("close"):[]),
+      onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
+      environment:String(this.props.environment??"PAPER").toUpperCase(),
+      onRetry:()=>this.setState({continuity:"live"}),
+      continuity:s.continuity,
+      snapshotSince:Date.now()-5*60*1000,
+
+      context:{entity:{type:"Reporting group",label:"Meridian Group · all entities"},book:"Statutory",
+        basis:"Statutory · SSAP",period:"July 2026",asOf:"Aug 1, 2026 16:05 UTC",currency:"USD",
+        scenario:null,condition:s.priceFixed?"confirmed":"partial",locked:false},
+      contextCondition:s.priceFixed?"confirmed":"partial",
+
+      selection:s.selection,
+      taskItems:tasks.map(t=>({id:t.id,label:t.title})),
+      onSelectionChange:(v)=>{if(v&&v.id&&v.id!==selId){this.setState({selection:{id:v.id,label:v.label},coverageFilter:null});const M=window.MeridianAppMap;if(M&&M.nameObject)M.nameObject("task",v.id,v.label||v.id)}},
+      commitTask:commit,
+      selectedId:selId,
+
+      // Two objects, one contract: the period frames the screen, the selected control is the
+      // active object in the inspector. Neither screen region invents its own identity block.
+      periodHeader:{
+        type:"accountingPeriod",id:"2026-07",name:"July 2026 statutory close",
+        context:{entity:"Meridian Group · all entities",book:"Statutory",basis:"SSAP"},
+        value:{label:"Controls outstanding",amount:tasks.filter(t=>t.status!=="complete"&&t.status!=="waived").length,secondary:`of ${tasks.length} in the close`},
+        condition:s.priceFixed?"confirmed":"partial",asOf:"2026-08-01",version:"3.2",
+        coverage:{attached:s.priceFixed?100:96,required:100,label:"sources"},
+        exceptions:{count:blockedTasks.length,blocking:blockedTasks.length>0,label:"Blocked controls"},
+      },
+      controlHeader:{
+        type:"control",id:sel.id.toUpperCase(),name:sel.title,
+        context:{owner:`${sel.owner} · ${sel.team}`},
+        value:{label:"Dependent controls",amount:down.length,secondary:isBlocker?"26 hours on the critical path":null},
+        condition:sel.status==="complete"?"confirmed":sel.status==="blocked"?"exception":"pending",
+        asOf:sel.date,version:"3.2",
+      },
+
+      closeStatus:s.attested?"Attested":blockedTasks.length?"Blocked":"On track",
+      blockedShow:blockedTasks.length?"on":"off",
+      clearShow:blockedTasks.length?"off":"on",
+      blockedCount:blockedTasks.length,
+      rootBlocker:"Price approval C-118",
+      downstreamCount:this.descendants("t4",tasks).length,
+      criticalNow:s.priceFixed?"9h":"26h",
+      criticalIfResolved:"9h",
+      deadlineLabel:"Aug 3 17:00 UTC",
+      slipLabel:"17h",
+      remainingOwners:"reporting and the controller",
+      coverageLabel:s.priceFixed?"100 of 100":"96 of 100",
+
+      days:dayRows,tasks,nodes,edges,
+      nowPos:pos(NOW),
+      deadlinePos:pos(Date.parse("2026-08-03T17:00:00Z")),
+      selectedPos:pos(taskTime(sel)),
+
+      closeView:s.closeView,
+      onCloseView:v=>this.setState({closeView:v}),
+      graphView:s.graphView,
+      calendarOn:on("calendar"),depsOn:on("deps"),ownersOn:on("owners"),
+      calendarShow:on("calendar"),depsShow:on("deps"),ownersShow:on("owners"),
+      viewCalendar:view("calendar"),viewDeps:view("deps"),viewOwners:view("owners"),
+      ownerGroups:owners,
+
+      selTitle:sel.title,
+      selOwner:`${sel.owner} · ${sel.team}`,
+      selDue:`${sel.date.slice(5)} ${sel.due}`,
+      selSla:SLA[sel.id]||"Within SLA",
+      inspectorTone:isBlocker?"critical":sel.status==="complete"?"positive":"caution",
+      inspectorCalloutTitle:isBlocker?"Root blocker":sel.status==="complete"?"Complete":"Blocking reason",
+      inspectorCallout:sel.blocker||(node&&node.blocker)||(sel.status==="complete"?`Completed ${sel.completedAt||"on time"}. Downstream controls released.`:`Waiting on ${(sel.dependsOn||[]).map(id=>{const u=tasks.find(t=>t.id===id);return u?u.title:id}).join(", ")||"no upstream work"}.`),
+      downstream:down.length?down.map(id=>{const t=tasks.find(x=>x.id===id);return {label:t.title,detail:`${t.status} · due ${t.date.slice(5)} ${t.due}`}}):[{label:"Nothing downstream",detail:"This control releases no further work"}],
+
+      coverageTitle:cov.title,
+      coverageSources:(()=>{const counts=s.priceFixed&&selId==="t4"?{confirmed:99,provisional:0,stale:0,missing:0,na:4}:cov.counts;const out=[];Object.keys(counts).forEach(c=>{for(let i=0;i<counts[c];i++)out.push({id:`${c}-${i}`,condition:c,label:`${c} ${i+1}`})});return out})(),
+      coverageFilter:s.coverageFilter,
+      onCoverageFilter:cat=>this.setState(p=>({coverageFilter:p.coverageFilter===cat?null:cat})),
+      filterShow:s.coverageFilter&&filterRows.length?"on":"off",
+      filterHeading:s.coverageFilter?`${s.coverageFilter} population`:"",
+      filteredRows:filterRows,
+
+      tieOutShow:(s.tieOutOpen??(this.props.view==="tie-out"))?"on":"off",
+      tieOutDisabled:!(selId==="t6"||selId==="t7"),
+      tieOutTitle:(selId==="t6"||selId==="t7")?"Open the tie-out proof for this reconciliation":"Tie-out applies to the reconciliation controls",
+      openTieOut:()=>this.setState({tieOutOpen:true}),
+      closeTieOut:()=>this.setState({tieOutOpen:false}),
+      resolveDisabled:!isBlocker,
+      openResolution:()=>this.setState({resolutionOpen:true}),
+      closeResolution:()=>this.setState({resolutionOpen:false}),
+      resolutionShow:s.resolutionOpen&&!s.priceFixed?"on":"off",
+
+      resFields:[
+        {label:"Stale prices",value:"3 of 100",flag:true},
+        {label:"Uncovered securities",value:"1 · CUSIP 46625HKA7",flag:true},
+        {label:"Freshness threshold",value:"4 hours"},
+        {label:"Oldest price",value:"18 hours · Jul 30 22:05 UTC"},
+        {label:"Downstream blocked",value:"5 controls"},
+        {label:"Close impact",value:"26 hours on the critical path"},
+      ],
+      resEvidence:[
+        {id:"e1",label:"Pricing run report PR-2026-07-31",detail:"Vendor: ICE Evaluated",href:"#evidence"},
+        {id:"e2",label:"Freshness policy",detail:"Data governance · 4h for prices",href:"#evidence"},
+        {id:"e3",label:"Vendor coverage exception log",detail:"46625HKA7 out of scope",href:"#evidence"},
+        {id:"e4",label:"Manual price authorization",detail:"Not yet obtained",missing:true},
+      ],
+      rootCauses:[
+        {value:"stale-source",label:"Source exceeds freshness threshold"},
+        {value:"no-coverage",label:"Security not covered by vendor"},
+        {value:"vendor-outage",label:"Vendor delivery failure"},
+        {value:"mapping",label:"Identifier mapping error"},
+        {value:"policy",label:"Threshold policy needs revision"},
+      ],
+      rootCause:s.rootCause,
+      onRootCause:v=>this.setState({rootCause:v}),
+      rootCauseNote:s.rootCauseNote,
+      onRootCauseNote:v=>this.setState({rootCauseNote:v}),
+      resCorrection:[
+        {label:"Rerun required",value:"Yes · vendor pull for 3 securities"},
+        {label:"Manual price",value:"1 · requires documented rationale"},
+        {label:"Journal required",value:"No"},
+        {label:"Temporary or permanent",value:"Temporary for this close"},
+      ],
+      resImpact:[
+        {label:"Controls released",value:"C-118, C-204, C-418",flag:true},
+        {label:"Critical path",value:"26h → 9h"},
+        {label:"Valuation change",value:"Not material · under $2,000"},
+        {label:"Prior approvals",value:"None invalidated"},
+      ],
+      resOwnership:{assignee:"S. Grant",team:"Investment accounting",due:"Aug 1, 2026 18:00 UTC",age:"26h",escalation:"Escalated to controller at 14:00 UTC",handoffs:"Data operations → Investment accounting"},
+      resReason:s.resReason,
+      onResReason:v=>this.setState({resReason:v}),
+      onResolve:()=>this.setState({priceFixed:true,resolutionOpen:false,attestOpen:true}),
+
+      goAttest:()=>this.setState({attestOpen:true}),
+      closeAttest:()=>this.setState({attestOpen:false}),
+      closeDone:()=>this.setState({attested:false,attestOpen:false}),
+      attestDisabled:!s.priceFixed,
+      attestTitle:s.priceFixed?undefined:"Price approval C-118 must be resolved before the close can be attested",
+      attestShow:s.attestOpen&&!s.attested?"on":"off",
+      attestGates:[
+        {id:"g1",label:"Ledger balanced",status:"complete",detail:"Trial balance ties at 2026-07 close"},
+        {id:"g2",label:"Prices approved",status:s.priceFixed?"complete":"blocked",detail:s.priceFixed?"100 of 100 sources confirmed":"3 stale, 1 uncovered — C-118 failed",blocking:!s.priceFixed},
+        {id:"g3",label:"Custodian reconciliation signed",status:s.priceFixed?"complete":"pending",detail:s.priceFixed?"Exception 00418 resolved and attested":"Awaiting valuation posting",blocking:!s.priceFixed},
+        {id:"g4",label:"Intercompany eliminations",status:"complete",detail:"Schedule agreed across 4 entities"},
+        {id:"g5",label:"Disclosure reviews",status:"review",detail:"2 pending, non-blocking for statutory scope"},
+        {id:"g6",label:"Accounting period",status:"complete",detail:"2026-07 soft closed; locks Aug 5, 2026 18:00 UTC"},
+      ],
+      attestEvidence:{attached:s.priceFixed?100:96,required:100,label:"Close evidence set"},
+      signatories:[
+        {role:"Prepared by",name:"M. Okafor",at:"Aug 1, 2026 15:40 UTC",status:"complete"},
+        {role:"Reviewed by",name:"D. Ruiz",at:s.priceFixed?"Aug 1, 2026 16:30 UTC":"",status:s.priceFixed?"complete":"pending"},
+        {role:"Approved by",name:s.attested?"R. Delacroix":"",at:s.attested?"Aug 1, 2026 16:52 UTC":"",status:s.attested?"complete":"pending"},
+      ],
+      attestComment:s.attestComment,
+      onAttestComment:v=>this.setState({attestComment:v}),
+      attestState:s.attested?"approved":s.priceFixed?"ready":"blocked",
+      supersededBy:null,
+      onApprove:()=>this.setState({attested:true}),
+      doneShow:s.attested?"on":"off",
+    };
+  }
+}
+</script>
+</body>
+</html>

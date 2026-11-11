@@ -91,11 +91,13 @@
     </div>
   </div>
 
-  <!-- MultiSelect Demo -->
+  <!-- Bulk selection demo -->
   <div class="section">
-    <h2>MultiSelect — batch selection toolbar</h2>
+    <h2>Bulk selection — BulkActionBar</h2>
     <p style="color: var(--text-secondary); margin-bottom: 16px; font-size: 13px;">
-      Click checkboxes to select rows. Toolbar shows actions and selection count.
+      Acting on selected table rows is <strong>BulkActionBar</strong> (in Data), with
+      <strong>BulkSelectCheckbox</strong> as the tri-state header box. <strong>MultiSelect</strong> is
+      the multi-pick form field — see the Pickers card.
     </p>
     <div class="demo-card">
       <div id="multiselect-toolbar" style="margin-bottom: 16px;"></div>
@@ -130,7 +132,7 @@
         </tbody>
       </table>
       <p style="margin-top: 12px; font-size: 11px; color: var(--text-muted); font-style: italic;">
-        → Wire the MultiSelect toolbar above the table and SelectCheckbox into the first column.
+        → Wire BulkActionBar above the table and BulkSelectCheckbox into the first column.
       </p>
     </div>
   </div>
@@ -141,10 +143,10 @@
     <div class="demo-grid">
       <div class="demo-card">
         <div style="font-size: 12px; font-weight: 600; margin-bottom: 12px; color: var(--text-secondary);">Button</div>
-        <button style="padding: 8px 16px; background: var(--accent); color: var(--text-on-accent); border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
+        <button style="padding: 8px 16px; background: var(--brand-signal,#C56343); color: var(--text-on-accent); border: none; border-radius: 2px; cursor: pointer; font-size: 13px;">
           Primary
         </button>
-        <button style="padding: 8px 16px; background: transparent; color: var(--accent); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
+        <button style="padding: 8px 16px; background: transparent; color: var(--brand-signal,#C56343); border: 1px solid var(--border); border-radius: 2px; cursor: pointer; font-size: 13px; margin-left: 8px;">
           Ghost
         </button>
       </div>
@@ -186,7 +188,7 @@
           <button onclick="alert('Delete ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--red); background: transparent; border: 1px solid var(--red-a20); border-radius: 2px; cursor: pointer;">
             Delete
           </button>
-          <button onclick="alert('Export ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--accent); background: transparent; border: 1px solid var(--border); border-radius: 2px; cursor: pointer;">
+          <button onclick="alert('Export ' + ${selected.size} + ' items')" style="padding: 6px 12px; font-size: 12px; color: var(--interaction-selected,#496C8F); background: transparent; border: 1px solid var(--border); border-radius: 2px; cursor: pointer;">
             Export
           </button>
           <button onclick="selected.clear(); updateToolbar(); rows.forEach(r => r.querySelector('input').checked = false);" style="margin-left: auto; padding: 4px 8px; font-size: 11px; color: var(--text-muted); background: transparent; border: none; cursor: pointer; text-decoration: underline;">

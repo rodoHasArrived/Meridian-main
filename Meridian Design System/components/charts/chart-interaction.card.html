@@ -13,8 +13,8 @@
 <body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const DS = window.MeridianDesignSystem_4f61be;
-const { CandleChart, EquityCurve, ChartTooltip, Eyebrow } = DS;
+const DS = window.MeridianDesignSystem_205d17;
+const { CandleChart, EquityCurve, ChartTooltip, Eyebrow, Fmt } = DS;
 const { ChartCursorSync, useSyncedCursor } = DS.ChartCursor;
 
 // synthetic bars
@@ -28,12 +28,12 @@ const BARS = Array.from({ length: 60 }, (_, i) => {
 const EQ = BARS.map((b, i) => ({ t: b.t, v: 100000 + (b.c - 200) * 900 + i * 120 }));
 
 function PriceChart() {
-  const cx = useSyncedCursor(BARS.length);
+  const cx = useSyncedCursor(BARS.length, { rail: 64 });
   const b = cx.index != null ? BARS[cx.index] : null;
   return (
-    <div {...cx.bind} style={{ ...cx.bind.style, height: 300, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
-      <CandleChart bars={BARS} crosshairIndex={cx.index} showVolume={false} />
-      <ChartTooltip index={cx.index} count={BARS.length} title={b && b.t}
+    <div {...cx.bind} style={{ ...cx.bind.style, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
+      <CandleChart bars={BARS} crosshairIndex={cx.index} showVolume={false} height={300} />
+      <ChartTooltip index={cx.index} count={BARS.length} title={b && b.t} rail={64}
         rows={b ? [
           { label: "O", value: b.o.toFixed(2) },
           { label: "H", value: b.h.toFixed(2) },
@@ -47,8 +47,9 @@ function EqChart() {
   const cx = useSyncedCursor(EQ.length);
   const e = cx.index != null ? EQ[cx.index] : null;
   return (
-    <div {...cx.bind} style={{ ...cx.bind.style, height: 180, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
-      <EquityCurve series={EQ.map((d) => d.v)} crosshairIndex={cx.index} />
+    <div {...cx.bind} style={{ ...cx.bind.style, border: "1px solid var(--border)", background: "var(--chart-plot)" }}>
+      <EquityCurve series={[{ label: "Equity", color: "var(--chart-equity)", points: EQ.map((d) => d.v) }]}
+        labels={EQ.map((d) => d.t)} crosshairIndex={cx.index} height={180} showLegend={false} valueFmt={Fmt.currency} />
       <ChartTooltip index={cx.index} count={EQ.length} title={e && e.t}
         rows={e ? [{ label: "Equity", value: "$" + Math.round(e.v).toLocaleString() }] : []} />
     </div>

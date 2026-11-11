@@ -1,0 +1,164 @@
+/* Meridian — Visualization & Analytical Interaction layer (v2.1)
+   ──────────────────────────────────────────────────────────────
+   Implements the Visualization & Analytical Interaction System: color is
+   assigned by SERIES ROLE (never by chart instance), data carries an explicit
+   CONDITION (never a blank cell), and comparison geometry is a token contract
+   (plates share scale, padding, and label placement by construction).
+   Imported AFTER colors-dark.css so the role ledger wins the cascade tie in
+   both modes. Everything derives from the Tier-2 semantic palette, so
+   white-label and dark flow through automatically. */
+
+:root {
+  /* ── Material hierarchy (v2.1 nomenclature over the shipped surfaces) ──
+     Paper = application canvas · Plate = primary workspace · Well = data
+     surface · Recessed = inset/secondary · Rail = navigation & context ·
+     Overlay = dialogs & menus · Signal = brand & emphasis. */
+  --surface-paper:    var(--bg);
+  --surface-plate:    var(--bg-light);
+  --surface-well:     var(--card-surface-raised);
+  --surface-recessed: var(--bg-medium);
+  --surface-rail:     var(--bg-medium);
+  --surface-overlay:  var(--surface-overlay-base);
+  --signal:           var(--accent);
+
+  /* ── Series-role ledger — the ONLY legal source of chart line color ──
+     actual: graphite ink (paper in dark) · prior: slate · benchmark: neutral
+     dashed · scenario: terracotta dashed (brand, never loss) · target: dotted. */
+  --series-actual:      var(--brand-axis);
+  --series-prior:       var(--chart-compare-1);
+  --series-benchmark:   var(--chart-compare-2);
+  --series-scenario:    var(--accent);
+  --series-target:      var(--text-muted);
+  --series-positive:    var(--green);
+  --series-negative:    var(--red);
+  --series-warning:     var(--orange);
+  --series-information: var(--purple);
+  --series-estimated:   color-mix(in srgb, var(--series-actual) 62%, var(--bg-light));
+
+  /* Legacy chart alias now resolves THROUGH the ledger — one source of truth.
+     (--chart-compare-1/2 stay authored in colors.css so the ledger can read them.) */
+  --chart-primary:   var(--series-actual);
+  --chart-scenario:  var(--series-scenario);
+
+  /* App-compat chart names — what src/Meridian.Ui/dashboard authors against, resolved
+     THROUGH the ledger so app CSS pasted into a screen lands in this palette instead of
+     the console's steel/spruce/brick. Moving averages take the two tokens declared as
+     non-status ink (the Field slate, navy): an MA is derived observation, not a condition,
+     so it can never borrow a semantic hue. */
+  --chart-grid-major: var(--border);
+  --chart-up:         var(--series-positive);
+  --chart-dn:         var(--series-negative);
+  --chart-ma20:       var(--brand-field);
+  --chart-ma50:       var(--navy);
+  --chart-bench:      var(--series-benchmark);
+  --chart-band:       var(--viz-band-outer);
+  --chart-dd:         var(--red-a20);
+
+  /* ── Stroke, dash, marker — role redundancy for grayscale + color deficiency ── */
+  --viz-stroke-actual:        2.25px;
+  --viz-stroke-secondary:     1.5px;
+  --viz-stroke-selected:      2.5px;
+  --viz-stroke-grid:          1px;
+  --viz-stroke-zero:          1.25px;
+  --viz-stroke-datum:         2px;
+  --viz-stroke-edge:          1.25px;
+  --viz-stroke-edge-selected: 2px;
+
+  --viz-dash-actual:    none;  /* @kind other */
+  --viz-dash-prior:     none;  /* @kind other */
+  --viz-dash-benchmark: 4 4;   /* @kind other */
+  --viz-dash-scenario:  7 5;   /* @kind other */
+  --viz-dash-target:    2 4;   /* @kind other */
+  --viz-dash-estimated: 5 4;   /* @kind other */
+  --viz-dash-flow:      3 4;   /* @kind other */
+
+  --viz-marker:          4px;
+  --viz-marker-dense:    3px;
+  --viz-marker-selected: 6px;
+  --viz-hit-area:        18px;
+
+  /* ── Model uncertainty — NEVER shares treatment with observed data state ── */
+  --viz-band-outer:   color-mix(in srgb, var(--series-prior) 14%, transparent);
+  --viz-band-inner:   color-mix(in srgb, var(--series-prior) 28%, transparent);
+  --viz-band-outline: color-mix(in srgb, var(--series-prior) 70%, var(--dim-mix));
+
+  /* ── Plot furniture ── */
+  --viz-plot-bg:     var(--bg-light);
+  --viz-grid:        var(--border-divider);
+  --viz-axis:        var(--text-muted);
+  --viz-frame:       var(--border);
+  --viz-zero:        var(--border-strong);
+  --viz-halo:        var(--bg-light);   /* text outline behind direct labels */
+  --viz-annotation:  var(--text-secondary);
+  --viz-select-surface: var(--selected-surface);
+  --viz-select-rail:    var(--selected);
+
+  /* ── Visualization type scale (independent of the UI ramp) ── */
+  --viz-type-axis:       11px;
+  --viz-type-label:      12px;
+  --viz-type-annotation: 12px;
+  --viz-type-micro:      10px;
+
+  /* ── Comparison-plate geometry contract — identical for every plate in a set ── */
+  --plate-min-width:  208px;
+  --plate-plot-h:     124px;
+  --plate-pad:        12px;
+  --plate-gap:        12px;
+  --plate-label-offset: 8px;
+  --plate-annotation-offset: 12px;
+
+  /* ── Evidence inspector ── */
+  --inspector-width:         352px;
+  --inspector-width-compact: 312px;
+  --inspector-section-gap:   20px;
+  --inspector-rail:          4px;
+
+  /* ── Responsive contract (documentation + container queries) ── */
+  --viz-bp-desktop: 1180px;
+  --viz-bp-tablet:  860px;
+  --viz-bp-mobile:  560px;
+
+  /* ── Data conditions — eleven named conditions, each fg / border / wash.
+     A condition is ALWAYS text + marker; the wash is optional emphasis. ── */
+  --cond-confirmed-fg:   var(--green);      --cond-confirmed-bd:   color-mix(in srgb, var(--green) 34%, transparent);   --cond-confirmed-bg:   color-mix(in srgb, var(--green) 10%, transparent);
+  --cond-provisional-fg: var(--purple);     --cond-provisional-bd: color-mix(in srgb, var(--purple) 34%, transparent);  --cond-provisional-bg: color-mix(in srgb, var(--purple) 10%, transparent);
+  --cond-estimated-fg:   var(--navy);       --cond-estimated-bd:   color-mix(in srgb, var(--navy) 32%, transparent);    --cond-estimated-bg:   color-mix(in srgb, var(--navy) 8%, transparent);
+  --cond-stale-fg:       var(--orange);     --cond-stale-bd:       color-mix(in srgb, var(--orange) 38%, transparent);  --cond-stale-bg:       color-mix(in srgb, var(--orange) 11%, transparent);
+  --cond-overridden-fg:  var(--accent);     --cond-overridden-bd:  color-mix(in srgb, var(--accent) 38%, transparent);  --cond-overridden-bg:  color-mix(in srgb, var(--accent) 10%, transparent);
+  --cond-missing-fg:     var(--red);        --cond-missing-bd:     color-mix(in srgb, var(--red) 38%, transparent);     --cond-missing-bg:     color-mix(in srgb, var(--red) 10%, transparent);
+  --cond-na-fg:          var(--text-muted); --cond-na-bd:          var(--border);                                       --cond-na-bg:          transparent;
+  --cond-pending-fg:     var(--pending);    --cond-pending-bd:     color-mix(in srgb, var(--pending) 32%, transparent);  --cond-pending-bg:     transparent;
+  --cond-exception-fg:   var(--red);        --cond-exception-bd:   color-mix(in srgb, var(--red) 42%, transparent);     --cond-exception-bg:   color-mix(in srgb, var(--red) 12%, transparent);
+  --cond-reconciled-fg:  var(--green);      --cond-reconciled-bd:  color-mix(in srgb, var(--green) 40%, transparent);   --cond-reconciled-bg:  color-mix(in srgb, var(--green) 12%, transparent);
+  /* Restricted is entitlement, not error and not absence: neutral ink, the strongest
+     border of any condition (a stated wall), and a visible wash so it can never be
+     mistaken for `na`, whose wash is transparent. */
+  --cond-restricted-fg:  var(--neutral);    --cond-restricted-bd:  color-mix(in srgb, var(--neutral) 55%, transparent); --cond-restricted-bg:  color-mix(in srgb, var(--neutral) 14%, transparent);
+
+  /* ── Connection states — the last-known-good contract ── */
+  --link-live-fg:    var(--green);
+  --link-delayed-fg: var(--orange);
+  --link-partial-fg: var(--purple);
+  --link-offline-fg: var(--text-muted);
+  --link-error-fg:   var(--red);
+}
+
+/* ── Dark mode — the ledger inverts through the base tokens (brand-axis becomes
+   paper ink, compare slates lift), so only the derived band outline needs a
+   nudge. Duplicated across the OS query and the attribute so both paths carry it. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --series-estimated: color-mix(in srgb, var(--series-actual) 55%, var(--bg-light));
+    --viz-band-outline: color-mix(in srgb, var(--series-prior) 78%, var(--dim-mix));
+  }
+}
+:root[data-theme="dark"] {
+  --series-estimated: color-mix(in srgb, var(--series-actual) 55%, var(--bg-light));
+  --viz-band-outline: color-mix(in srgb, var(--series-prior) 78%, var(--dim-mix));
+}
+
+/* Reduced motion: analytical relationships must survive without animation. */
+@media (prefers-reduced-motion: reduce) {
+  :root { --viz-reflow: 0ms; --viz-trace: 0ms; }
+}
+:root { --viz-reflow: var(--motion-slow, 240ms); --viz-trace: var(--motion-slower, 300ms); }

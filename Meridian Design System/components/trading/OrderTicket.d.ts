@@ -17,7 +17,21 @@ export interface OrderTicketOrder {
   limitPrice: number | null;
   tif: string;
   environment: string;
+  notional: number | null;
 }
+/** Seed for the draft — applied once per distinct `token` (a ladder click, an amend). */
+export interface OrderTicketPrefill {
+  side?: "buy" | "sell";
+  qty?: number | string;
+  type?: "market" | "limit";
+  limitPrice?: number | string | null;
+  tif?: string;
+  /** Changing this re-seeds the draft; equal tokens leave the operator's typing alone. */
+  token?: string | number;
+}
+/**
+ * 
+ */
 export interface OrderTicketProps {
   symbol?: string;
   /** Drives the header readout and market-order notional estimate. */
@@ -28,7 +42,15 @@ export interface OrderTicketProps {
   defaultSide?: "buy" | "sell";
   /** @default ["DAY","GTC","IOC","FOK"] */
   tifOptions?: string[];
-  /** Fired with the composed order when submit is pressed and valid. */
+  /** Tick precision for the limit field — seeded and blur-formatted to this many decimals. @default 2 */
+  priceDecimals?: number;
+  /** Seeds the draft from outside (ladder price click, amend of a working order). */
+  prefill?: OrderTicketPrefill | null;
+  /** Pre-trade checks rendered as an `ActionGuardList`; any `blocking` guard disables submit. */
+  guards?: import("../operations/ActionGuard").ActionGuardValue[];
+  /** Fired on every draft edit — wire a risk panel or notional readout to the live draft. */
+  onDraftChange?: (draft: { symbol: string; side: string; qty: number | null; type: string; limitPrice: number | null; tif: string; notional: number | null; valid: boolean }) => void;
+  /** Fired with the composed order when submit is pressed and valid. The draft clears after. */
   onSubmit?: (order: OrderTicketOrder) => void;
 }
 export declare function OrderTicket(props: OrderTicketProps): JSX.Element;

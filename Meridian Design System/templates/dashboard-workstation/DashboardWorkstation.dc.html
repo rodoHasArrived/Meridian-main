@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,257 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Dashboard Workstation" description="Portfolio overview — metrics, equity curve, positions drill-in" -->
+<!-- @template name="Monitor · Dashboard Workstation" description="Portfolio overview on the 4.0 stack — the reference migration: monitor regions declared via ScreenComposition, one DataGrid with a stated proof, P&L stated as ValueEnvelopes." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="dashboard-workstation">
+<style>.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}.kpi-row .mds-metric{padding:14px}.kpi-row .mds-metric__value{font-size:20px}.kpi-row .mds-metric--hero{grid-column:span 2}.kpi-row .mds-metric--hero .mds-metric__value{font-size:26px}.kpi-row .mds-metric--hero .mds-metric__label{font-size:11px}</style>
 </helmet>
-<x-import component-from-global-scope="DashboardWorkstationScreen" from="./screen.jsx" hint-size="100%,780px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Positions" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="dashboard-workstation" persist="{{ true }}" storage="{{ sessionStore }}" default-entries="{{ trailSeed }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,760px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ScreenComposition" screen="{{ screen }}" data-screen-label="Portfolio overview" hint-size="100%,760px">
+<div data-region="context" style="display:flex;flex-direction:column;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrail" label="Positions" hint-size="100%,32px"></x-import>
+<x-import component="TrailBridge" from="../_scaffold/trail-bridge.jsx" on-api="{{ onTrailApi }}" hint-size="0px,0px"></x-import>
+<div style="display:flex;align-items:center;gap:10px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Portfolio overview</h1>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Kbd" hint-size="20px,18px">?</x-import>
+<span style="font:11px var(--font-data);color:var(--text-muted)">shortcuts</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onToggleEnv }}" hint-size="130px,28px">Switch environment</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onNewOrder }}" hint-size="90px,28px">New order</x-import>
+</div>
+</div>
+<div data-region="metrics" class="kpi-row">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" hero="{{ true }}" tone="info" label="Net liquidation" value="$1,284,002.18" delta="+1.84%" context="today" sparkline="{{ equityUp }}" hint-size="100%,96px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="danger" label="Day P&L" value="-$4,118.22" delta="-0.32%" sparkline="{{ dayPnlSpark }}" hint-size="100%,96px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="neutral" label="Buying power" value="$2,402,114.00" context="Reg-T margin" hint-size="100%,96px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="neutral" label="Open positions" value="5" context="1 short" hint-size="100%,96px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" tone="success" label="Data freshness" value="00:00:04" context="all healthy" hint-size="100%,96px"></x-import>
+</div>
+<div data-region="primary">
+<div style="display:flex;align-items:baseline;gap:10px;margin-bottom:6px">
+<span style="font:500 11px var(--font-data);color:var(--chart-secondary)">— — benchmark SPX</span>
+<span style="font:500 11px var(--font-data);color:var(--text-muted);margin-left:auto">+23.7% YTD</span>
+</div>
+<x-import component-from-global-scope="DashboardEquityChart" from="./chart.jsx" equity="{{ equity }}" bench="{{ bench }}" last-label="+23.7%" hint-size="100%,180px"></x-import>
+</div>
+<div data-region="secondary" style="display:flex;flex-direction:column;gap:10px;height:100%">
+<span style="font:600 11px var(--font-data);color:var(--interaction-selected,#496C8F)">{{ selectedSymbol }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EntitySummary" columns="{{ 2 }}" items="{{ summaryItems }}" hint-size="100%,120px"></x-import>
+<div style="display:flex;gap:8px;margin-top:auto">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="90px,28px">Open chart</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" hint-size="110px,28px">Close position</x-import>
+</div>
+</div>
+<div data-region="positions">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" columns="{{ columns }}" rows="{{ rows }}" row-key="symbol" density="{{ gridDensity }}" active-key="{{ selectedSymbol }}" sort-key="{{ sortKey }}" sort-dir="{{ sortDir }}" on-sort="{{ onSort }}" on-row-click="{{ onRowClick }}" proof="{{ pnlProof }}" hint-size="100%,220px"></x-import>
+</div>
+<div data-region="status">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="success" title="All data providers healthy" detail="Polygon 4s · IBKR 2s · last gap scan 13:50:00Z — 0 gaps" hint-size="100%,48px"></x-import>
+</div>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="dashboard-workstation" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Dashboard · keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
+</x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase()):(String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  // The bundle can land after first paint — re-render once it does, so
+  // ValueEnvelope cells and shell chrome fill in (same pattern as close-tie-out).
+  componentDidMount() {
+    this.applyChrome();
+    this._untick = window.MeridianWorld && window.MeridianWorld.tick(this);
+    if (this.ds().ValueEnvelope) return;
+    let tries = 0;
+    this._t = setInterval(() => {
+      if (this.ds().ValueEnvelope || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); }
+    }, 60);
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
+  componentDidUpdate() { this.applyChrome(); }
+
+  state = { selectedKey: "AAPL", sortKey: "unrealizedPnl", sortDir: "desc", env: null };
+
+  // Seed rows mirror the wire shape (guidelines/ENTITY_SCHEMAS.md › Position): numerics stay
+  // numeric — prices unrounded, pct as a fraction — and display formatting happens at render,
+  // so sorting works and no pre-formatted string ships (seed-data-shape gate).
+  positions = [
+    { symbol: "AAPL", qty: 400,  avgPrice: 182.44, lastPrice: 201.12, unrealizedPnl: 7472.00,  unrealizedPnlPct: 0.1024,  figi: "BBG000B9XRY4", exchange: "XNAS", openedAt: "2025-11-04" },
+    { symbol: "MSFT", qty: 150,  avgPrice: 411.02, lastPrice: 404.88, unrealizedPnl: -921.00,  unrealizedPnlPct: -0.0149, figi: "BBG000BPH459", exchange: "XNAS", openedAt: "2026-01-12" },
+    { symbol: "NVDA", qty: 80,   avgPrice: 118.33, lastPrice: 131.07, unrealizedPnl: 1019.20,  unrealizedPnlPct: 0.1077,  figi: "BBG000BBJQV0", exchange: "XNAS", openedAt: "2026-02-20" },
+    { symbol: "SPY",  qty: -200, avgPrice: 598.11, lastPrice: 601.44, unrealizedPnl: -666.00,  unrealizedPnlPct: -0.0056, figi: "BBG000BDTBL9", exchange: "ARCX", openedAt: "2026-05-30" },
+    { symbol: "TLT",  qty: 320,  avgPrice: 88.21,  lastPrice: 91.05,  unrealizedPnl: 908.80,   unrealizedPnlPct: 0.0322,  figi: "BBG000BJKYW3", exchange: "XNAS", openedAt: "2026-03-17" },
+  ];
+  equity = [62,60,61,58,55,57,54,50,52,47,44,46,41,43,38,36,39,33,30,32,27,25,28,22,20];
+  bench  = [62,61,61,60,58,58,57,55,56,53,52,52,50,51,49,48,49,46,45,46,43,42,43,41,40];
+  asOf = "2026-08-12 14:32:08Z";
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  env() { return String(this.state.env ?? this.props.environment ?? "PAPER").toUpperCase(); }
+
+  // Operator layer (track D): nav promises become bindings + palette rows; positions are resolvable
+  // objects (type a symbol → open · pin); the trail records what was opened, session-only.
+  // The rail is the suite app map (templates/_scaffold/app-map.js) — one address book, so this
+  // screen lists exactly what every other screen lists.
+  get navSections() { return (window.MeridianAppMap ? window.MeridianAppMap.sections("dashboard") : []); };
+  // Navigation is the app map’s job — one address book for the whole suite.
+  go(id) { window.MeridianAppMap && window.MeridianAppMap.go(id); }
+  toast(kind, title, detail) { const t = window.MeridianToast; if (t && t[kind]) t[kind](title, detail); }
+  selectSymbol(symbol) {
+    this.setState({ selectedKey: symbol });
+    const r = this.positions.find((p) => p.symbol === symbol);
+    if (this._trail && r) this._trail.visit({ type: "position", id: r.symbol, label: r.symbol + " · " + r.qty + " @ " + r.avgPrice.toFixed(2), meta: r.exchange, at: this.asOf });
+  }
+  stepSelection(delta) {
+    const rows = this.sortedRows(); const i = rows.findIndex((r) => r.symbol === this.state.selectedKey);
+    const next = rows[Math.min(rows.length - 1, Math.max(0, (i < 0 ? 0 : i) + delta))];
+    if (next) this.selectSymbol(next.symbol);
+  }
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null, resolve: undefined, placeholder: undefined };
+    return L.build({
+      screenId: "dashboard-workstation", sections: this.navSections, activeId: "dashboard", go: (id) => this.go(id),
+      actions: [
+        { id: "new-order", label: "New order", keys: "n", keywords: ["ticket", "buy", "sell"], run: () => this.toast("info", "New order", "Opens the trading desk ticket seeded with " + this.state.selectedKey + ".") },
+        { id: "next", label: "Next position", keys: "j", run: () => this.stepSelection(1) },
+        { id: "prev", label: "Previous position", keys: "k", run: () => this.stepSelection(-1) },
+        { id: "sort-pnl", label: "Sort by unrealized P&L", keys: "s p", run: () => this.setState({ sortKey: "unrealizedPnl", sortDir: "desc" }) },
+        { id: "sort-sym", label: "Sort by symbol", keys: "s s", run: () => this.setState({ sortKey: "symbol", sortDir: "asc" }) },
+        { id: "env", label: "Switch environment (PAPER ⇄ LIVE)", keys: "shift+e", run: () => this.setState({ env: this.env() === "PAPER" ? "LIVE" : "PAPER" }) },
+        { id: "close", label: "Close selected position…", danger: true, keys: "shift+x", run: () => this.toast("warning", "Close " + this.state.selectedKey, "Guarded flow — confirm on the trading desk.") },
+      ],
+      objects: this.positions.map((p) => ({ type: "position", id: p.symbol, label: p.symbol + " · " + p.qty + " @ " + p.avgPrice.toFixed(2), keywords: [p.figi, p.exchange], open: () => this.selectSymbol(p.symbol) })),
+      verbs: [
+        { id: "open", label: "Open", run: (o) => this.selectSymbol(o.id) },
+        { id: "pin", label: "Pin", run: (o) => { this.selectSymbol(o.id); this._trail && this._trail.pin({ type: "position", id: o.id, label: o.label }); } },
+        { id: "chart", label: "Chart", run: (o) => { window.location.href = "../charting-workstation/ChartingWorkstation.dc.html?symbol=" + o.id; } },
+      ],
+    });
+  }
+
+  // Render-edge formatters — content rules: mono tabular, prices 4dp, explicit signs on deltas.
+  fmtAmt = { format: (v) => window.MeridianDesignSystem_205d17.Format.number(v, { decimals: 2 }) };
+  signedAmt(v) { return (v < 0 ? "\u2212" : "+") + this.fmtAmt.format(Math.abs(v)); }
+  signedPct(v) { return (v < 0 ? "\u2212" : "+") + this.fmtAmt.format(Math.abs(v) * 100) + "%"; }
+
+  sortedRows() {
+    const { sortKey, sortDir } = this.state;
+    return [...this.positions].sort((a, b) => {
+      const av = a[sortKey], bv = b[sortKey];
+      const cmp = typeof av === "number" && typeof bv === "number" ? av - bv : String(av).localeCompare(String(bv));
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const { WorkstationTopbar, NavRail, StatusBar, ValueEnvelope } = this.ds();
+    const rows = this.sortedRows();
+    const row = rows.find((r) => r.symbol === this.state.selectedKey) || rows[0];
+    const el = React.createElement;
+    const tone = (v) => (v < 0 ? "var(--red-dim)" : "var(--green-dim)");
+    // Every stated P&L is a ValueEnvelope: value + condition + authority + clock,
+    // so the figure cannot render without its provenance. Marks disclose on hover.
+    const pnlEnvelope = (r) => ValueEnvelope
+      ? el(ValueEnvelope, {
+          value: this.signedAmt(r.unrealizedPnl), condition: "confirmed", authority: "derived",
+          detail: "mark-to-last", label: r.symbol + " unrealized P&L", align: "right",
+          clocks: { valuation: this.asOf, asOf: this.asOf },
+          style: { color: tone(r.unrealizedPnl) },
+        })
+      : el("span", { style: { color: tone(r.unrealizedPnl) } }, this.signedAmt(r.unrealizedPnl));
+    const layer = this.operatorLayer();
+    const L = window.MeridianOperatorLayer;
+    return {
+      dataState: this.props.dataState ?? "ready",
+      environment: this.env(),
+      onRetry: () => {},
+      // Operator layer — palette, hotkeys, trail. Trail persistence is session-only by decision.
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder,
+      hotkeyBindings: layer.bindings,
+      sessionStore: L ? L.sessionStore() : undefined,
+      trailSeed: [{ type: "position", id: row.symbol, label: row.symbol + " · " + row.qty + " @ " + row.avgPrice.toFixed(2), meta: row.exchange, at: this.asOf }],
+      onTrailApi: this._onTrailApi || (this._onTrailApi = (api) => { this._trail = api; }),
+      onTrailNavigate: (entry) => { if (entry && entry.type === "position") this.setState({ selectedKey: entry.id }); },
+      onNewOrder: () => this.toast("info", "New order", "Opens the trading desk ticket seeded with " + row.symbol + "."),
+      // The screen is a declaration: monitor archetype, regions by role. The extra
+      // full-width "positions" region reuses the primary role at span 12.
+      screen: {
+        id: "dashboard-workstation", archetype: "monitor",
+        regions: [
+          { id: "context", role: "context", span: 12 },
+          { id: "metrics", role: "metrics", span: 12 },
+          { id: "primary", role: "primary", span: 8, title: "Equity curve · YTD" },
+          { id: "secondary", role: "secondary", span: 4, title: "Selected position" },
+          { id: "positions", role: "primary", span: 12, title: "Positions" },
+          { id: "status", role: "status", span: 12 },
+        ],
+      },
+      // Chrome comes from renderVals on purpose: topbar / rail / status bar are frame, not content.
+      topbar: WorkstationTopbar && el(WorkstationTopbar, {
+        moduleLabel: "Portfolio Overview", environment: this.env(), 
+        brandSrc: "../../assets/brand/meridian-mark-light.svg",
+      }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "ok", label: "Connected", value: "IBKR · Polygon · Databento" },
+        { label: "Sync", value: (window.MeridianWorld ? window.MeridianWorld.feed("ibkr").text : "4s ago") },
+        { label: "Positions", value: String(this.positions.length) },
+        { label: "Session", value: (window.MeridianWorld ? window.MeridianWorld.CALENDAR.tradingSession + " · " + window.MeridianWorld.clock() : "RTH · 14:32:08 UTC") },
+        { status: "ok", label: "Latency", value: "12ms", push: true },
+      ] }),
+      nav: NavRail && el(NavRail, { activeId: "dashboard", onSelect: (id) => this.go(id), sections: this.navSections }),
+      equity: this.equity,
+      bench: this.bench,
+      equityUp: [...this.equity].reverse(),
+      dayPnlSpark: [9, 8, 8, 7, 7, 6, 6, 5, 4],
+      rows,
+      gridDensity: { default: "standard", compact: "dense", terminal: "terminal", spacious: "review" }[this.props.density ?? "default"] || "standard",
+      sortKey: this.state.sortKey,
+      sortDir: this.state.sortDir,
+      selectedSymbol: row.symbol,
+      // The grid states its own arithmetic: Σ unrealized P&L, printed by the proof strip.
+      pnlProof: { type: "sum", column: "unrealizedPnl", label: "\u03A3 unrealized P&L" },
+      summaryItems: [
+        { label: "Symbol", value: row.symbol },
+        { label: "FIGI", value: row.figi },
+        { label: "Exchange", value: row.exchange },
+        { label: "Held since", value: row.openedAt },
+        { label: "Unrlzd P&L", value: this.signedAmt(row.unrealizedPnl), color: tone(row.unrealizedPnl) },
+        { label: "Return", value: this.signedPct(row.unrealizedPnlPct), color: tone(row.unrealizedPnlPct) },
+      ],
+      columns: [
+        { key: "symbol", label: "Symbol", format: "text" },
+        { key: "qty", label: "Qty", align: "right", format: "num" },
+        { key: "avgPrice", label: "Avg cost", align: "right", format: "price" },
+        { key: "lastPrice", label: "Last", align: "right", format: "price" },
+        { key: "unrealizedPnl", label: "Unrlzd P&L", align: "right", cell: pnlEnvelope },
+        { key: "unrealizedPnlPct", label: "Return", align: "right",
+          cell: (r) => el("span", { style: { color: tone(r.unrealizedPnlPct) } }, this.signedPct(r.unrealizedPnlPct)) },
+      ],
+      onRowClick: (r, k) => this.selectSymbol(k),
+      onSort: (key) => this.setState((s) => (
+        key === s.sortKey ? { sortDir: s.sortDir === "asc" ? "desc" : "asc" } : { sortKey: key, sortDir: "desc" }
+      )),
+      onToggleEnv: () => this.setState({ env: this.env() === "PAPER" ? "LIVE" : "PAPER" }),
+    };
+  }
+}
+</script>
 </body>
 </html>

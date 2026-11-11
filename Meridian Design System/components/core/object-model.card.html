@@ -1,0 +1,36 @@
+<!-- @dsCard group="Core" viewport="1180x820" name="Object model — ObjectHeader" subtitle="Sixteen financial objects, one identity contract: type, identifier, name, context, condition, as-of, material value, version, coverage, exceptions" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Object model</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}.wrap{display:grid;gap:16px;max-width:1140px}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.plane{border:1px solid var(--border);background:var(--bg-light);padding:0 14px 12px}.stub{margin-top:12px;border:1px dashed var(--border);background:var(--card-surface-raised);padding:14px;font:11px var(--font-data);color:var(--text-muted);text-align:center;letter-spacing:.04em}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.panel{border:1px solid var(--border);background:var(--bg-light);padding:12px;display:grid;gap:8px}.eyebrow{font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}.muted{font:12px/18px var(--font-body);color:var(--text-muted);margin:0;text-wrap:pretty}table{border-collapse:collapse;width:100%;font:11px var(--font-data);color:var(--text-secondary)}th{text-align:left;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);padding:4px 8px 4px 0}td{border-bottom:1px solid var(--border-subtle,var(--border));padding:3px 8px 3px 0;vertical-align:top}td b{color:var(--text-primary);font-weight:600}@media(max-width:820px){body{padding:12px}.grid{grid-template-columns:1fr}}</style></head><body><div id="root"></div><script type="text/babel">
+const {ObjectHeader,ObjectHooks,SegmentedControl}=window.MeridianDesignSystem_205d17;
+const RECORDS={
+  position:{type:"position",id:"91282CKQ3",identifierLabel:"CUSIP",name:"US Treasury 4.375% 05/15/34",context:{portfolio:"General Account",book:"STAT"},value:{label:"Market value",amount:"$46.9M",secondary:"Par $48.2M"},condition:"confirmed",asOf:"2026-07-31",version:4,coverage:{attached:99,required:100,label:"sources"},exceptions:{count:1,blocking:true}},
+  journal:{type:"journal",id:"JE-2026-07-4418",name:"Accrued interest — fixed income, July",context:{entity:"Meridian Life",book:"STAT"},value:{amount:"$1,204,880.00",secondary:"Balanced · 14 lines"},condition:"provisional",asOf:"2026-07-31",version:2,coverage:{attached:12,required:14,label:"documents"},exceptions:0},
+  exception:{type:"exception",id:"EX-1182",name:"Custody cash does not tie to ledger cash",context:{entity:"Meridian Life",book:"GAAP"},value:{label:"Residual",amount:"$331.68",secondary:"of $1,381.68 difference"},condition:"exception",asOf:"2026-07-31",version:1,coverage:{attached:3,required:3,label:"sources"},exceptions:{count:1,blocking:true,label:"Blocks control"}},
+  control:{type:"control",id:"C-118",name:"Price approval — level 3 securities",context:{entity:"Meridian Life",owner:"R. Okafor"},value:{label:"Dependent controls",amount:"5",secondary:"17h of critical path"},condition:"pending",asOf:"2026-08-01",version:"3.2",coverage:{attached:2,required:4,label:"approvals"},exceptions:{count:2,blocking:true}},
+};
+const LEDGER=ObjectHooks.OBJECT_TYPES;
+function Demo(){
+  const [which,setWhich]=React.useState("position");
+  const rec=RECORDS[which];
+  return <div className="wrap">
+    <div className="controls"><SegmentedControl size="sm" value={which} onChange={setWhich} options={[{value:"position",label:"Position"},{value:"journal",label:"Journal entry"},{value:"exception",label:"Exception"},{value:"control",label:"Control"}]}/><span className="muted">Four object types, one identity contract — the facets never reorder.</span></div>
+    <div className="plane">
+      <ObjectHeader {...rec} onOpenEvidence={()=>{}} onOpenExceptions={()=>{}}/>
+      <div className="stub">Dominant work plane — the header states identity, never competes with it</div>
+    </div>
+    <div className="grid">
+      <div className="panel"><span className="eyebrow">The object ledger</span>
+        <table><thead><tr><th>Object</th><th>Identifier</th><th>“How much”</th></tr></thead><tbody>
+          {LEDGER.map(t=><tr key={t.id}><td><b>{t.label}</b></td><td>{t.identifierLabel}</td><td>{t.material}</td></tr>)}
+        </tbody></table>
+      </div>
+      <div className="panel"><span className="eyebrow">The contract</span>
+        <p className="muted">Ten facets, one order: <b>type · identifier · name · context · condition · as-of · material value · version · evidence coverage · open exceptions</b>. A facet the object does not carry is absent, never blank — an empty “Version —” asserts that the object is unversioned.</p>
+        <p className="muted">“How much” is never assumed to be currency. A control’s magnitude is the number of controls it blocks; an evidence item’s is how complete its extraction is.</p>
+        <p className="muted">Evidence coverage and open exceptions are the only interactive facets, because they are the only ones that lead somewhere — the evidence rail and the exception queue. Both flag negative when incomplete or blocking.</p>
+        <p className="muted">It is a pattern, not a card: one rule, no fill, no shadow. It sits under <b>WorkspaceContextBar</b> — screen scope stays in the bar; the header carries only what qualifies this object. <code>describeObject</code> normalizes any record into the same contract, so a chip, a breadcrumb, and a search result say the same thing.</p>
+      </div>
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

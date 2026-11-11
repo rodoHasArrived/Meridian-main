@@ -25,20 +25,20 @@ export function EmptyState({
       gap: compact ? 8 : 12,
       fontFamily:"var(--font-body)", textAlign:"center",
     }}>
-      <span style={{ color:"var(--text-disabled,#94999F)" }}
+      <span style={{ color:"var(--text-disabled,#A4ABB2)" }}
         dangerouslySetInnerHTML={{ __html: svg }} />
-      <div style={{ fontSize: compact ? 13 : 14, fontWeight:600, color:"var(--text-secondary,#4E5258)" }}>
+      <div style={{ fontSize: compact ? 13 : 14, fontWeight:600, color:"var(--text-secondary,#535C65)" }}>
         {title}
       </div>
       {detail && (
-        <div style={{ fontSize:12, color:"var(--text-muted,#5E666F)", maxWidth:280, lineHeight:1.5 }}>
+        <div style={{ fontSize:12, color:"var(--text-muted,#6B737B)", maxWidth:280, lineHeight:1.5 }}>
           {detail}
         </div>
       )}
       {action && onAction && (
-        <button onClick={onAction} style={{
+        <button type="button" onClick={onAction} style={{
           marginTop:4, padding:"7px 16px",
-          background:"var(--accent,#A85436)", color:"white",
+          background:"var(--brand-signal,#C56343)", color:"white",
           border:"none", borderRadius:"var(--radius-button,2px)",
           fontFamily:"var(--font-body)", fontSize:12, fontWeight:600, cursor:"pointer",
           transition:"background .12s ease",

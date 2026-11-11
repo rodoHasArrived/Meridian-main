@@ -1,33 +1,81 @@
-// Meridian DateRangePicker — start/end date selection, functional only.
+// Meridian DateRangePicker — start/end selection over two months. Functional only, no transitions.
+// Local calendar dates throughout (see ./localDate) — the previous build ran dates through
+// toISOString(), shifting every range back a day for users west of UTC.
+// Preset ranges (MTD/QTD/YTD…) sit beside the calendar because that is how a desk actually picks.
 import React from "react";
-const { useState, useRef } = React;
+import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-drange-wrap{position:relative;display:inline-block;width:100%;}
-.mds-drange-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#5E666F);margin-bottom:5px;}
-.mds-drange-input{width:100%;height:32px;padding:7px 10px;border:1px solid var(--border,#E4E3DE);
-  background:var(--bg-light,#FBFAF8);color:var(--text-primary,#22252A);font-family:var(--font-data);
-  font-size:13px;cursor:pointer;}
-.mds-drange-input:focus{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-drange-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:100;background:var(--bg-light,#FBFAF8);
-  border:1px solid var(--border,#E4E3DE);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.mds-drange-month{width:280px;}
-.mds-drange-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;
-  font-family:var(--font-body);font-size:12px;font-weight:600;}
-.mds-drange-nav{cursor:pointer;padding:4px 8px;border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);}
-.mds-drange-nav:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-drange-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.mds-drange-dow{font-family:var(--font-body);font-size:10px;font-weight:600;text-align:center;color:var(--text-muted,#5E666F);}
-.mds-drange-day{width:32px;height:32px;display:flex;align-items:center;justify-content:center;
-  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);cursor:pointer;font-size:12px;}
-.mds-drange-day:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-drange-day--inrange{background:var(--blue-a10,rgba(168,84,54,.10));}
-.mds-drange-day--start,.mds-drange-day--end{background:var(--accent,#A85436);color:var(--text-on-accent,#fff);border-color:var(--accent,#A85436);}
+.mds-dr-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);margin-bottom:5px;}
+.mds-dr-wrap{position:relative;display:block;width:100%;}
+.mds-dr-field{display:flex;align-items:center;width:100%;box-sizing:border-box;height:32px;
+  border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);}
+.mds-dr-field:hover{border-color:var(--border-hover,#BEB8AD);}
+.mds-dr-field:focus-within{border-color:var(--border-focus,#C56343);outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
+.mds-dr-field--error{border-color:var(--red,#B54B42);}
+.mds-dr-field--disabled{background:var(--bg-medium,#EBE8E1);opacity:.6;}
+.mds-dr-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
+  color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
+  font-variant-numeric:tabular-nums;text-align:left;cursor:pointer;display:flex;align-items:center;}
+.mds-dr-input--empty{color:var(--text-disabled,#A4ABB2);}
+.mds-dr-btn{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
+  color:var(--text-muted,#6B737B);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
+.mds-dr-btn:hover{color:var(--text-primary,#20252B);}
+.mds-dr-btn:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.mds-dr-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:var(--z-dropdown,100);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);display:flex;
+  box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+.mds-dr-cal--above{top:auto;bottom:calc(100% + 4px);}
+.mds-dr-cal--right{left:auto;right:0;}
+.mds-dr-presets{flex:0 0 auto;display:flex;flex-direction:column;gap:2px;padding:10px;
+  border-right:1px solid var(--border-divider,#E2DED5);min-width:96px;}
+.mds-dr-preset{text-align:left;padding:4px 8px;border:1px solid transparent;background:none;cursor:pointer;
+  font-family:var(--font-body);font-size:11px;color:var(--text-secondary,#535C65);}
+.mds-dr-preset:hover{background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B);}
+.mds-dr-preset:focus-visible{outline:var(--focus-ring);outline-offset:-1px;}
+.mds-dr-preset--on{background:var(--bg-active,#E7EDF2);color:var(--interaction-selected,#496C8F);font-weight:600;}
+.mds-dr-months{display:flex;gap:16px;padding:10px;}
+.mds-dr-month{flex:0 0 auto;}
+.mds-dr-header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:8px;height:24px;}
+.mds-dr-title{font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-primary,#20252B);
+  flex:1;text-align:center;white-space:nowrap;}
+.mds-dr-nav{flex:0 0 auto;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
+  cursor:pointer;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
+  color:var(--text-secondary,#535C65);font-size:11px;padding:0;}
+.mds-dr-nav:hover:not(:disabled){background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B);}
+.mds-dr-nav:focus-visible{outline:var(--focus-ring);outline-offset:1px;}
+.mds-dr-nav:disabled{opacity:.4;cursor:not-allowed;}
+.mds-dr-nav--ghost{visibility:hidden;}
+.mds-dr-grid{border-collapse:collapse;}
+.mds-dr-dow{font-family:var(--font-body);font-size:10px;font-weight:600;text-align:center;
+  color:var(--text-muted,#6B737B);padding:0 0 4px;width:30px;}
+.mds-dr-cell{padding:0;}
+.mds-dr-day{width:30px;height:28px;display:flex;align-items:center;justify-content:center;padding:0;
+  border:1px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-data);
+  font-size:12px;font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B);}
+.mds-dr-day:hover:not(:disabled){background:var(--bg-hover,#EDEFF0);}
+.mds-dr-day:focus-visible{outline:var(--focus-ring);outline-offset:-1px;}
+.mds-dr-day--other{color:var(--text-disabled,#A4ABB2);}
+.mds-dr-day--today{border-color:var(--interaction-selected,#496C8F);font-weight:600;}
+.mds-dr-cell--inrange{background:var(--blue-a10,rgba(47,111,143,.10));}
+.mds-dr-cell--preview{background:var(--bg-hover,#EDEFF0);}
+.mds-dr-day--edge{background:var(--interaction-selected,#496C8F);color:var(--text-on-accent,#fff);
+  border-color:var(--interaction-selected,#496C8F);font-weight:600;}
+.mds-dr-day:disabled{color:var(--text-disabled,#A4ABB2);cursor:not-allowed;text-decoration:line-through;}
+.mds-dr-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;
+  border-top:1px solid var(--border-divider,#E2DED5);}
+.mds-dr-hint{font-family:var(--font-data);font-size:10px;color:var(--text-muted,#6B737B);}
+.mds-dr-foot button{padding:4px 10px;border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);
+  font-family:var(--font-body);font-size:11px;color:var(--text-secondary,#535C65);cursor:pointer;}
+.mds-dr-foot button:hover{background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B);}
+.mds-dr-error{font-family:var(--font-body);font-size:11px;color:var(--red-dim,#7D322F);margin-top:5px;}
+.mds-dr-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;}
+@media (max-width:720px){.mds-dr-months .mds-dr-month:last-child{display:none;}}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "daterangepicker");
@@ -35,106 +83,260 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function DateRangePicker({ label, start, end, onChange }) {
+let uid = 0;
+function useUid() {
+  if (React.useId) return React.useId().replace(/:/g, "");
+  return React.useMemo(() => "mdsdr" + ++uid, []);
+}
+
+const short = (iso) => {
+  const d = fromISO(iso);
+  return d ? d.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) : null;
+};
+
+export function DateRangePicker({
+  label,
+  start,
+  end,
+  onChange,
+  min,
+  max,
+  disabledDate,
+  presets,
+  showPresets = true,
+  months = 2,
+  weekStartsOn = 0,
+  disabled = false,
+  error,
+  clearable = true,
+  id,
+  "aria-label": ariaLabel,
+  ...rest
+}) {
   inject();
-  const [open, setOpen] = useState(false);
-  const [month, setMonth] = useState(new Date());
-  const ref = useRef(null);
+  const auto = useUid();
+  const base = id || auto;
+  const errorId = `${base}-error`;
+
+  const startD = React.useMemo(() => fromISO(start), [start]);
+  const endD = React.useMemo(() => fromISO(end), [end]);
+  const minD = React.useMemo(() => fromISO(min), [min]);
+  const maxD = React.useMemo(() => fromISO(max), [max]);
+
+  const [open, setOpen] = React.useState(false);
+  const [cursor, setCursor] = React.useState(() => startD || new Date());
+  const [anchor, setAnchor] = React.useState(null); // first click of an in-progress range
+  const [hover, setHover] = React.useState(null);
+  const [placement, setPlacement] = React.useState("");
+  const rootRef = React.useRef(null);
+  const calRef = React.useRef(null);
+  const triggerRef = React.useRef(null);
+  const dayRef = React.useRef(null);
+  const [focusDay, setFocusDay] = React.useState(() => startD || new Date());
+
+  const presetList = React.useMemo(() => presets || rangePresets(), [presets]);
+
+  React.useEffect(() => { if (startD) { setCursor(startD); setFocusDay(startD); } }, [start]);
+
+  const isBlocked = React.useCallback((d) => {
+    if (minD && d < minD) return true;
+    if (maxD && d > maxD) return true;
+    return !!disabledDate?.(toISO(d), d);
+  }, [minD, maxD, disabledDate]);
 
   React.useEffect(() => {
-    const handler = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
+    if (!open) return;
+    const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) close(false); };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
-  const formatDate = (d) => d ? d.toISOString().split('T')[0] : null;
-  const displayStart = start ? new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'Start';
-  const displayEnd = end ? new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'End';
+  React.useLayoutEffect(() => {
+    if (!open || !calRef.current) return;
+    const r = calRef.current.getBoundingClientRect();
+    let p = "";
+    if (r.bottom > window.innerHeight && r.top - r.height > 0) p += " mds-dr-cal--above";
+    if (r.right > window.innerWidth) p += " mds-dr-cal--right";
+    setPlacement(p);
+  }, [open]);
 
-  const getDaysInMonth = (date) => {
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-    const days = [];
-    for (let i = 0; i < 42; i++) {
-      const d = new Date(startDate);
-      d.setDate(d.getDate() + i);
-      days.push(d);
+  React.useEffect(() => { if (open) dayRef.current?.focus(); }, [open, focusDay]);
+
+  const close = (refocus = true) => {
+    setOpen(false);
+    setAnchor(null);
+    setHover(null);
+    setPlacement("");
+    if (refocus) triggerRef.current?.focus();
+  };
+
+  // Two clicks make a range; the first click sets the anchor, the second closes it out. Clicking
+  // a completed range starts a new one rather than silently extending the old.
+  const pick = (d) => {
+    if (isBlocked(d)) return;
+    const iso = toISO(d);
+    if (anchor == null) { setAnchor(iso); onChange?.({ start: iso, end: null }); return; }
+    if (iso < anchor) onChange?.({ start: iso, end: anchor });
+    else onChange?.({ start: anchor, end: iso });
+    setAnchor(null);
+    setHover(null);
+    close();
+  };
+
+  const applyPreset = (p) => { onChange?.({ start: p.start, end: p.end }); setAnchor(null); close(); };
+  const activePreset = presetList.find((p) => p.start === start && p.end === end);
+
+  const onGridKey = (e) => {
+    const k = e.key;
+    let next = null;
+    if (k === "ArrowLeft") next = addDays(focusDay, -1);
+    else if (k === "ArrowRight") next = addDays(focusDay, 1);
+    else if (k === "ArrowUp") next = addDays(focusDay, -7);
+    else if (k === "ArrowDown") next = addDays(focusDay, 7);
+    else if (k === "Home") next = addDays(focusDay, -((focusDay.getDay() - weekStartsOn + 7) % 7));
+    else if (k === "End") next = addDays(focusDay, 6 - ((focusDay.getDay() - weekStartsOn + 7) % 7));
+    else if (k === "PageUp") next = addMonths(focusDay, e.shiftKey ? -12 : -1);
+    else if (k === "PageDown") next = addMonths(focusDay, e.shiftKey ? 12 : 1);
+    else if (k === "Enter" || k === " ") { e.preventDefault(); pick(focusDay); return; }
+    else if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+    else if (k === "Tab") { close(false); return; }
+    if (next) {
+      e.preventDefault();
+      setFocusDay(next);
+      setHover(toISO(next));
+      if (next.getMonth() !== cursor.getMonth() && next < cursor) setCursor(addMonths(cursor, -1));
+      else if (next > addMonths(cursor, months - 1)) setCursor(addMonths(cursor, 1));
     }
-    return days;
   };
 
-  const handleDayClick = (d) => {
-    const dateStr = formatDate(d);
-    if (!start || (start && end)) {
-      onChange({ start: dateStr, end: null });
-    } else if (dateStr < start) {
-      onChange({ start: dateStr, end: start });
-    } else {
-      onChange({ start, end: dateStr });
-      setOpen(false);
-    }
-  };
+  // While a range is in progress, shade from the anchor to whatever the pointer/keyboard is on.
+  const lo = anchor && hover ? (hover < anchor ? hover : anchor) : start;
+  const hi = anchor && hover ? (hover < anchor ? anchor : hover) : end;
+  const previewing = !!(anchor && hover);
 
-  const isInRange = (d) => {
-    const dateStr = formatDate(d);
-    if (!start || !end) return false;
-    return dateStr >= start && dateStr <= end;
-  };
-
-  const days1 = getDaysInMonth(month);
-  const days2 = getDaysInMonth(new Date(month.getFullYear(), month.getMonth() + 1));
+  const dow = React.useMemo(() => dowLabels(weekStartsOn), [weekStartsOn]);
+  const today = new Date();
+  const prevBlocked = minD && new Date(cursor.getFullYear(), cursor.getMonth(), 0) < minD;
+  const nextBlocked = maxD && new Date(cursor.getFullYear(), cursor.getMonth() + months, 1) > maxD;
+  const summary = start ? `${short(start)} — ${end ? short(end) : "…"}` : null;
 
   return (
-    <div ref={ref}>
-      {label && <label className="mds-drange-label">{label}</label>}
-      <div className="mds-drange-wrap">
-        <input
-          type="text"
-          className="mds-drange-input"
-          value={`${displayStart} — ${displayEnd}`}
-          readOnly
-          onClick={() => setOpen(!open)}
-        />
+    <div ref={rootRef} {...rest}>
+      {label && <span className="mds-dr-label" id={`${base}-label`}>{label}</span>}
+      <div className="mds-dr-wrap">
+        <div className={`mds-dr-field${error ? " mds-dr-field--error" : ""}${disabled ? " mds-dr-field--disabled" : ""}`}>
+          <button
+            ref={triggerRef}
+            type="button"
+            id={base}
+            className={`mds-dr-input${summary ? "" : " mds-dr-input--empty"}`}
+            disabled={disabled}
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            aria-labelledby={label ? `${base}-label ${base}` : undefined}
+            aria-label={!label ? (ariaLabel || "Date range") : undefined}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorId : undefined}
+            onClick={() => (open ? close() : setOpen(true))}
+          >{summary || "Select range…"}</button>
+          {clearable && start && !disabled && (
+            <button type="button" className="mds-dr-btn" tabIndex={-1} aria-label="Clear range"
+              onClick={() => onChange?.({ start: null, end: null })}>✕</button>
+          )}
+          <button type="button" className="mds-dr-btn" disabled={disabled} tabIndex={-1}
+            aria-hidden="true" onClick={() => (open ? close() : setOpen(true))}>▦</button>
+        </div>
         {open && (
-          <div className="mds-drange-cal">
-            {[days1, days2].map((days, idx) => {
-              const m = new Date(month);
-              m.setMonth(m.getMonth() + idx);
-              return (
-                <div key={idx} className="mds-drange-month">
-                  <div className="mds-drange-header">
-                    {idx === 0 && <button className="mds-drange-nav" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() - 1))}>←</button>}
-                    {idx === 0 && <span></span>}
-                    <span>{m.toLocaleDateString('en-US', { year: 'numeric', month: 'long' })}</span>
-                    {idx === 1 && <button className="mds-drange-nav" onClick={() => setMonth(new Date(month.getFullYear(), month.getMonth() + 1))}>→</button>}
-                    {idx === 1 && <span></span>}
-                  </div>
-                  <div className="mds-drange-grid">
-                    {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => <div key={d} className="mds-drange-dow">{d}</div>)}
-                    {days.map((d, i) => {
-                      const dateStr = formatDate(d);
-                      const isStart = start && dateStr === start;
-                      const isEnd = end && dateStr === end;
-                      const inRange = isInRange(d);
-                      return (
-                        <button
-                          key={i}
-                          className={`mds-drange-day${inRange ? " mds-drange-day--inrange" : ""}${isStart ? " mds-drange-day--start" : ""}${isEnd ? " mds-drange-day--end" : ""}`}
-                          onClick={() => handleDayClick(d)}
-                        >
-                          {d.getDate()}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+          <div ref={calRef} className={`mds-dr-cal${placement}`} role="dialog" aria-modal="false"
+            aria-label={label ? `${label} range` : "Choose date range"} onKeyDown={onGridKey}>
+            {showPresets && presetList.length > 0 && (
+              <div className="mds-dr-presets">
+                {presetList.map((p) => (
+                  <button key={p.id} type="button"
+                    className={`mds-dr-preset${activePreset?.id === p.id ? " mds-dr-preset--on" : ""}`}
+                    aria-pressed={activePreset?.id === p.id}
+                    onClick={() => applyPreset(p)}>{p.label}</button>
+                ))}
+              </div>
+            )}
+            <div>
+              <div className="mds-dr-months" onMouseLeave={() => !anchor && setHover(null)}>
+                {Array.from({ length: months }, (_, mi) => {
+                  const mCursor = addMonths(cursor, mi);
+                  const weeks = weeksFor(mCursor, weekStartsOn);
+                  return (
+                    <div key={mi} className="mds-dr-month">
+                      <div className="mds-dr-header">
+                        <button type="button" disabled={prevBlocked}
+                          className={`mds-dr-nav${mi === 0 ? "" : " mds-dr-nav--ghost"}`}
+                          aria-label="Previous month" aria-hidden={mi !== 0}
+                          tabIndex={mi === 0 ? 0 : -1}
+                          onClick={() => setCursor(addMonths(cursor, -1))}>‹</button>
+                        <span className="mds-dr-title">{monthTitle(mCursor)}</span>
+                        <button type="button" disabled={nextBlocked}
+                          className={`mds-dr-nav${mi === months - 1 ? "" : " mds-dr-nav--ghost"}`}
+                          aria-label="Next month" aria-hidden={mi !== months - 1}
+                          tabIndex={mi === months - 1 ? 0 : -1}
+                          onClick={() => setCursor(addMonths(cursor, 1))}>›</button>
+                      </div>
+                      <table className="mds-dr-grid" role="grid" aria-label={monthTitle(mCursor)}>
+                        <thead>
+                          <tr>{dow.map((d) => <th key={d} className="mds-dr-dow" scope="col">{d}</th>)}</tr>
+                        </thead>
+                        <tbody>
+                          {weeks.map((week, wi) => (
+                            <tr key={wi} role="row">
+                              {week.map((d) => {
+                                const iso = toISO(d);
+                                const other = d.getMonth() !== mCursor.getMonth();
+                                const isEdge = iso === lo || iso === hi;
+                                const inRange = lo && hi && iso >= lo && iso <= hi;
+                                const blocked = isBlocked(d);
+                                const isFocus = sameDay(d, focusDay);
+                                return (
+                                  <td key={iso} role="gridcell" aria-selected={isEdge || inRange}
+                                    className={`mds-dr-cell${inRange && !isEdge ? (previewing ? " mds-dr-cell--preview" : " mds-dr-cell--inrange") : ""}`}>
+                                    <button
+                                      type="button"
+                                      ref={isFocus ? dayRef : undefined}
+                                      tabIndex={isFocus ? 0 : -1}
+                                      disabled={blocked}
+                                      aria-current={sameDay(d, today) ? "date" : undefined}
+                                      aria-label={longDate(d)}
+                                      className={`mds-dr-day${other ? " mds-dr-day--other" : ""}${isEdge ? " mds-dr-day--edge" : ""}${sameDay(d, today) && !isEdge ? " mds-dr-day--today" : ""}`}
+                                      onMouseEnter={() => setHover(iso)}
+                                      onFocus={() => setFocusDay(d)}
+                                      onClick={() => pick(d)}
+                                    >{d.getDate()}</button>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="mds-dr-foot">
+                <span className="mds-dr-hint">
+                  {anchor ? "Pick the end date" : summary || "Pick the start date"}
+                </span>
+                {clearable && (
+                  <button type="button" onClick={() => { onChange?.({ start: null, end: null }); setAnchor(null); close(); }}>Clear</button>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
+      {error && <div className="mds-dr-error" id={errorId}>{error}</div>}
+      <span className="mds-dr-sr" role="status" aria-live="polite">
+        {open ? (anchor ? `Start ${short(anchor)}. Pick the end date.` : summary || "") : ""}
+      </span>
     </div>
   );
 }
+
+DateRangePicker.displayName = "DateRangePicker";

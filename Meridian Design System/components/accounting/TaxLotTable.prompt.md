@@ -1,4 +1,4 @@
-Cost-basis lot table — acquisition date, days held, quantity, basis, market value/proceeds, and gain/loss, with an automatic short/long-term badge (amber/teal) derived from `longTermDays`.
+Cost-basis lot table — acquisition date, days held, quantity, basis, market value/proceeds, and gain/loss, with an automatic short/long-term badge (amber/terracotta) derived from `longTermDays`.
 
 ```jsx
 <TaxLotTable

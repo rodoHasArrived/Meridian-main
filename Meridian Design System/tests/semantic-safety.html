@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — semantic safety</title>
+<link rel="stylesheet" href="../styles.css">
+<style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px;max-width:104ch;line-height:1.55}table{border-collapse:collapse;width:100%;max-width:1080px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}#stage{position:absolute;left:-9999px;top:0;width:900px}</style>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="../_ds_bundle.js"></script>
+</head>
+<body>
+<h1>Meridian — semantic safety: the negative paths</h1>
+<p class="sub">The positive path was already tested. This suite asserts what must NOT happen: a missing input reading as tied, an undeclared attestation reading as ready, an unvalidated transport answer reading as confirmed, a re-preparation erasing the signatures it voided, a changed reviewed snapshot leaving a pending action live, balanced arithmetic being mistaken for permission to post. Each suite carries a positive control, so a rule that blocks everything fails too. <code>window.__testResults</code> for machines; <code>document.title</code> reads PASS/FAIL.</p>
+<div id="sum">running…</div>
+<table><thead><tr><th>#</th><th>suite</th><th>assertion</th><th>result</th></tr></thead><tbody id="out"></tbody></table>
+<div id="stage" aria-hidden="true"></div>
+<script>
+const rows=[],out=document.getElementById("out");let suite="";
+function record(name,ok,note){rows.push({suite,name,ok,note});const tr=document.createElement("tr");tr.dataset.ok=ok?"1":"0";tr.innerHTML=`<td>${rows.length}</td><td>${suite}</td><td>${name}</td><td>${ok?"PASS":"FAIL "+(note||"")}</td>`;out.appendChild(tr);}
+async function t(name,fn){let ok=false,note="";try{const r=await fn();ok=r===true||r===undefined;if(typeof r==="string"){ok=false;note=r;}}catch(e){note=String(e&&e.message||e);}record(name,ok,note);}
+const eq=(a,b)=>{if(a!==b)throw new Error(`expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`)};
+const ok=(v,m)=>{if(!v)throw new Error(m||"falsy")};
+const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+const NS=window.MeridianDesignSystem_205d17||{};
+const {TieOutPanel,AttestationPanel,JournalEntryForm,ActionQueue,ActionEnvelopeProvider,ActionHooks,DecisionSnapshot,Assurance}=NS;
+const stage=document.getElementById("stage");
+async function render(el){const host=document.createElement("div");stage.appendChild(host);const root=ReactDOM.createRoot(host);root.render(el);await sleep(90);return{host,txt(){return host.textContent},btn(re){return[...host.querySelectorAll("button")].find(b=>re.test(b.textContent))},unmount(){root.unmount();host.remove()}}}
+async function mountProvider(props){const host=document.createElement("div");stage.appendChild(host);const root=ReactDOM.createRoot(host);let api=null;root.render(React.createElement(ActionEnvelopeProvider,props,(a)=>{api=a;return React.createElement("span",null,"·")}));await sleep(90);return{host,get api(){return api},unmount(){root.unmount();host.remove()}}}
+
+async function main(){
+  suite="exports";
+  await t("every component under test is on the namespace",()=>ok(TieOutPanel&&AttestationPanel&&JournalEntryForm&&ActionQueue&&ActionEnvelopeProvider&&ActionHooks&&DecisionSnapshot&&Assurance,"missing export"));
+
+  suite="tie-out · a missing input is not a zero";
+  {
+    const r=await render(React.createElement(TieOutPanel,{title:"Custodian cash tie-out",sourceA:{label:"Ledger balance",value:12441284.12,condition:"confirmed"},sourceB:{label:"Custodian statement",condition:"missing"},tolerance:500,onAccept:()=>{},onInvestigate:()=>{}}));
+    await t("an absent source does not read as tied",()=>{ok(!/Tied out/.test(r.txt()),"read as tied");ok(/input missing/i.test(r.txt()),"gap not stated")});
+    await t("the unusable input is named",()=>ok(/Custodian statement has no value/.test(r.txt()),r.txt().slice(0,120)));
+    await t("no residual is presented",()=>ok(/Cannot tie out/.test(r.txt())&&/not a zero/.test(r.txt())));
+    await t("acceptance is unavailable, not merely unlabelled",()=>{const b=r.btn(/Accept within tolerance/);ok(b&&b.disabled,"accept still actionable")});
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(TieOutPanel,{sourceA:{label:"Ledger",value:100,condition:"confirmed"},sourceB:{label:"Custodian",value:100,condition:"stale"},status:"tied"}));
+    await t("a caller-declared status cannot outrank an unusable condition",()=>{ok(!/Tied out/.test(r.txt()),"declared status won");ok(/Custodian is stale/.test(r.txt()))});
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(TieOutPanel,{sourceA:{label:"Ledger",value:100,condition:"confirmed"},sourceB:{label:"Custodian",value:90,condition:"confirmed"},items:[{label:"In-transit wire",value:-10,condition:"confirmed"}],onAccept:()=>{}}));
+    await t("complete inputs still tie out (positive control)",()=>ok(/Tied out/.test(r.txt()),r.txt().slice(0,160)));
+    r.unmount();
+  }
+
+  suite="attestation · readiness is asserted, never assumed";
+  const FULL={title:"July STAT close",objectId:"CLOSE-2026-07",snapshot:"snap-2026-08-01T07:14Z",version:18,signatoryRole:"Controller",gates:[{label:"Ledger balanced",status:"complete",detail:"11:42Z"}],evidence:{attached:12,required:12,label:"Close binder"},signatories:[{role:"Preparer",name:"M. Okafor",at:"08-01 07:20Z"}],onApprove:()=>{}};
+  {
+    const r=await render(React.createElement(AttestationPanel,{title:"July STAT close",onApprove:()=>{}}));
+    await t("an undeclared panel is not ready",()=>{ok(!/Ready for attestation/.test(r.txt()),"empty panel read as ready");ok(/under-declared/i.test(r.txt()))});
+    await t("approve is disabled",()=>{const b=r.btn(/Approve and attest/);ok(b&&b.disabled,"approve enabled with nothing declared")});
+    await t("each absent declaration is named",()=>{const x=r.txt();ok(/no readiness gates declared/.test(x)&&/evidence set not declared/.test(x)&&/not bound to a reviewed snapshot/.test(x),x.slice(0,200))});
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(AttestationPanel,FULL));
+    await t("a fully declared, satisfied attestation is ready (positive control)",()=>{ok(/Ready for attestation/.test(r.txt()),r.txt().slice(0,200));const b=r.btn(/Approve and attest/);ok(b&&!b.disabled,"approve blocked when everything is satisfied")});
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(AttestationPanel,{...FULL,state:"ready",snapshotFindings:[{field:"object.version",was:18,now:19,effect:"void",note:"The object changed after the decision."}]}));
+    await t("a changed reviewed snapshot voids the pending signature",()=>{ok(/snapshot changed/i.test(r.txt()),"change not announced");const b=r.btn(/Approve and attest/);ok(b&&b.disabled,"approve survived the change")});
+    await t("a caller-declared 'ready' does not survive it",()=>ok(!/Ready for attestation/.test(r.txt())));
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(AttestationPanel,{...FULL,currentUser:"M. Okafor"}));
+    await t("the preparer cannot also attest",()=>{ok(/Segregation of duties/.test(r.txt()));const b=r.btn(/Approve and attest/);ok(b&&b.disabled)});
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(AttestationPanel,{...FULL,evidence:{attached:9,required:12}}));
+    await t("an incomplete evidence set blocks, with the count",()=>{ok(/9 of 12/.test(r.txt()));const b=r.btn(/Approve and attest/);ok(b&&b.disabled)});
+    r.unmount();
+  }
+
+  suite="snapshot · what was reviewed";
+  const snap=DecisionSnapshot.capture({object:{id:"JE-1042",version:4},evidence:[{id:"E1",version:1}],context:{entity:"FUND-I",period:"2026-07"}});
+  await t("a version change is void, not stale",()=>{const f=DecisionSnapshot.verify(snap,{object:{id:"JE-1042",version:5}});ok(f.length===1&&f[0].effect==="void",JSON.stringify(f))});
+  await t("an evidence-set change is void",()=>ok(DecisionSnapshot.verify(snap,{evidence:[{id:"E1",version:2}]}).some(x=>x.field==="evidence"&&x.effect==="void")));
+  await t("a context change asks for a re-read, not a void",()=>{const f=DecisionSnapshot.verify(snap,{context:{entity:"FUND-II"}});ok(f.length===1&&f[0].effect==="review",JSON.stringify(f))});
+  await t("an unchanged record leaves the seal intact (positive control)",()=>eq(DecisionSnapshot.verify(snap,{object:{id:"JE-1042",version:4},evidence:[{id:"E1",version:1}],context:{entity:"FUND-I",period:"2026-07"}}).length,0));
+  await t("the snapshot is frozen on capture",()=>{ok(Object.isFrozen(snap));try{snap.object.version=9}catch(e){}eq(String(snap.object.version),"4")});
+
+  suite="assurance · a re-preparation keeps the history it voided";
+  {
+    let rec=Assurance.sign(undefined,{actor:"R. Chen",authority:"Preparer",balance:96881.5,at:"2026-06-30T18:02:11Z"});
+    rec=Assurance.sign(rec,{actor:"M. Okafor",authority:"Reviewer",balance:96881.5,at:"2026-06-30T19:40:53Z"});
+    await t("two stages climbed, two signatures",()=>{eq(rec.signatures.length,2);eq(Assurance.state(rec,96881.5).stage,"reviewed")});
+    const moved=Assurance.state(rec,95761.5);
+    await t("a movement voids the chain without deleting it",()=>{ok(moved.voided,"not voided");eq(moved.stage,"unprepared");eq(moved.signatures.length,2);eq(moved.history.length,2);eq(moved.live.length,0)});
+    rec=Assurance.sign(rec,{actor:"R. Chen",authority:"Preparer",balance:95761.5,at:"2026-07-01T09:00:00Z"});
+    await t("the re-preparation RETAINS both earlier signatures",()=>{eq(rec.signatures.length,3);const st=Assurance.state(rec,95761.5);eq(st.stage,"prepared");eq(st.live.length,1);eq(st.history.length,2)});
+    await t("history is readable as a whole, oldest first",()=>{const h=Assurance.history(rec);eq(h.length,3);eq(h[0].actor,"R. Chen");eq(h[2].balance,95761.5)});
+    await t("stages cannot be skipped",()=>{let threw=false;try{Assurance.sign(undefined,{stage:"certified",actor:"X",balance:1})}catch(e){threw=true}ok(threw,"a skip did not throw")});
+    await t("coverage counts a voided signature as uncovered",()=>{const cov=Assurance.coverage([{code:"1100",name:"Cash",material:true}],{1100:rec},{1100:95761.5},{requiredStage:"certified"});eq(cov.complete,false);eq(cov.uncovered.length,1)});
+  }
+
+  suite="posting · arithmetic is a precondition, not permission";
+  const LINES=[{account:"1100",debit:1120},{account:"4200",credit:1120}];
+  {
+    const r=await render(React.createElement(JournalEntryForm,{initialLines:LINES,blockers:[{label:"Reviewed snapshot changed",detail:"object.version 4 → 5"}],onPost:()=>{}}));
+    await t("a balanced entry with a blocker cannot post",()=>{ok(/Balanced/.test(r.txt()),"not balanced");const b=r.btn(/Post entry/);ok(b&&b.disabled,"posted over a blocker")});
+    await t("the blocker is named on the form",()=>ok(/Reviewed snapshot changed/.test(r.txt())&&/Cannot post/.test(r.txt())));
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(JournalEntryForm,{initialLines:LINES,onPost:()=>{}}));
+    await t("without blockers a balanced entry posts (positive control)",()=>{const b=r.btn(/Post entry/);ok(b&&!b.disabled,"balanced entry blocked")});
+    r.unmount();
+  }
+
+  suite="transport answers · nothing unvalidated becomes confirmed";
+  {
+    const ra=ActionHooks.readAnswer;
+    await t("no answer is unlanded",()=>eq(ra(undefined).state,"unlanded"));
+    await t("a bare object is unlanded",()=>eq(ra({}).state,"unlanded"));
+    await t("a bare `true` is unlanded",()=>eq(ra(true).state,"unlanded"));
+    await t("a refusal without a reason is unlanded, not rejected",()=>eq(ra({ok:false}).state,"unlanded"));
+    await t("a refusal with a reason is rejected (positive control)",()=>eq(ra({ok:false,reason:"desk limit"}).state,"rejected"));
+    await t("ok with no receipt lands, marked unreceipted",()=>{const o=ra({ok:true});eq(o.state,"landed");ok(o.unreceipted)});
+    await t("the receipt id comes from the adapter, never minted",()=>{eq(ra({ok:true,id:"ADP-7"}).receiptId,"ADP-7");eq(ra({ok:true}).receiptId,null)});
+  }
+  {
+    const m=await mountProvider({actions:{"close.post":{label:"Post close entry"}}});
+    const r=await m.api.submit("close.post");
+    await t("a provider with no transport lands nothing",()=>{eq(r.state,"unlanded");ok(/no transport/i.test(r.reason||""),r.reason)});
+    await t("the unresolved instruction stays unresolved",()=>eq(m.api.unresolved.length,1));
+    m.unmount();
+  }
+  {
+    const m=await mountProvider({actions:{"close.post":{label:"Post close entry"}}});
+    const r=await m.api.retry("close.post");
+    await t("a retry with nothing to retry mints no instruction and no key",()=>{eq(r,null);eq(m.api.instructions.length,0)});
+    m.unmount();
+  }
+  {
+    const answered=async()=>({ok:true});
+    const m=await mountProvider({actions:{"ord.submit":{label:"Submit order",idempotencyKey:"ORD-1"}},transport:answered});
+    const r=await m.api.submit("ord.submit");
+    await t("an acknowledgement with no receipt is not resolved",()=>{eq(r.state,"landed");ok(!r.receipt.id,"a receipt was invented");eq(m.api.unresolved.length,1)});
+    m.unmount();
+  }
+
+  suite="queue rungs · read off the answer, never off a clock";
+  const inst=(o)=>({id:o.id||"I1",action:"post",label:o.label||"Post journal entry",idempotencyKey:"K1",keyDeclared:true,state:o.state,receipt:o.receipt,reason:o.reason});
+  {
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{attempt:1,at:"2026-09-14 09:00:00Z"}})]}));
+    await t("landed without a receipt id is acknowledged, not confirmed",()=>{ok(/Acknowledged/.test(r.txt()));ok(!/Confirmed$/.test(r.txt().trim()));ok(/has not confirmed/.test(r.txt()))});
+    await t("and it counts as unresolved",()=>ok(/1 unresolved/.test(r.txt()),r.txt().slice(0,140)));
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"unlanded",receipt:{attempt:1,at:"2026-09-14 09:00:00Z"}})],onRetry:()=>{}}));
+    await t("no answer is 'timed out', and the ladder claims no acknowledgement",()=>{ok(/Timed out/.test(r.txt()));ok(!/Acknowledged/.test(r.txt()),"the ladder drew an acknowledgement that never happened")});
+    await t("the retry is offered on the same key",()=>ok(/same key/.test(r.txt())));
+    r.unmount();
+  }
+  {
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{id:"ADP-7",attempt:1,at:"2026-09-14 09:00:00Z"}})]}));
+    await t("landed WITH an adapter receipt is confirmed (positive control)",()=>{ok(/Confirmed/.test(r.txt()));ok(/ADP-7/.test(r.txt()))});
+    await t("and nothing is left unresolved",()=>ok(/0 unresolved/.test(r.txt()),r.txt().slice(0,140)));
+    r.unmount();
+  }
+
+  const pass=rows.filter(r=>r.ok).length;
+  document.getElementById("sum").textContent=`${pass} / ${rows.length} passing — ${rows.length-pass} failing`;
+  document.title=(pass===rows.length?"PASS":"FAIL")+` — semantic safety (${pass}/${rows.length})`;
+  window.__testResults={total:rows.length,pass,fail:rows.length-pass,rows};
+}
+main();
+</script>
+</body>
+</html>

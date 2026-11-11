@@ -13,7 +13,7 @@
 <body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const DS = window.MeridianDesignSystem_4f61be;
+const DS = window.MeridianDesignSystem_205d17;
 const { AsyncCombobox, FormField, Input, Stepper, Button, Badge, Eyebrow } = DS;
 const { useDirtyState, useAsyncValidation, useWizard } = DS.FormHooks;
 const { useState } = React;
@@ -58,7 +58,15 @@ function App() {
       </Box>
 
       <Box t="useWizard — gated step flow (pick a symbol to advance)">
-        <Stepper steps={wizard.steps.map((s, i) => ({ label: s }))} activeIndex={wizard.step} />
+        <Stepper
+          steps={wizard.steps.map((s, i) => ({
+            id: s,
+            label: s,
+            locked: i > wizard.step,
+          }))}
+          activeStep={wizard.step}
+          onStepChange={(i) => { if (i < wizard.step) wizard.goTo ? wizard.goTo(i) : null; }}
+        />
         <div style={{ display: "flex", gap: 8 }}>
           <Button variant="ghost" size="sm" disabled={wizard.isFirst} onClick={wizard.back}>Back</Button>
           <Button variant="primary" size="sm" disabled={!wizard.canAdvance} onClick={wizard.next}>{wizard.isLast ? "Finish" : "Next"}</Button>

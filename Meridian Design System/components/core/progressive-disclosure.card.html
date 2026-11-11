@@ -1,0 +1,89 @@
+<!-- @dsCard group="Core" viewport="1280x760" name="Progressive disclosure" subtitle="One dial per screen, regions that report themselves while collapsed, and row → drawer → audit depth" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Progressive disclosure</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.top{height:44px;background:var(--topbar-bg);color:var(--topbar-text);display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-weight:600;letter-spacing:.08em;font-size:11.5px}.top .dial{display:flex;align-items:center;gap:10px}.top .dial em{font-style:normal;font-size:9.5px;letter-spacing:.06em;color:var(--topbar-text-muted,#B9C2CC)}.ctx{display:flex;gap:18px;align-items:baseline;padding:8px 16px;background:var(--bg-light);border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:10.5px;color:var(--text-muted)}.ctx b{font-weight:600;color:var(--text-primary)}.page{display:grid;grid-template-columns:1.55fr .9fr;gap:14px;padding:14px 16px 16px;align-items:start}.plane{display:grid;gap:12px}.rail{display:grid;gap:0}.hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.hd h1{margin:0;font-size:17px;font-weight:650}.hd span{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted)}.band{border:1px solid var(--border);background:var(--bg-light);padding:12px}.note{grid-column:1/-1;font-size:11.5px;line-height:1.55;color:var(--text-secondary);border-top:1px solid var(--border-divider);padding-top:10px;margin:2px 0 0}.note b{color:var(--text-primary);font-weight:650}.note code{font-family:var(--font-data);font-size:10.5px}.dd{display:grid;gap:10px;font-size:12px}.dd h3{margin:0;font-size:11px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--text-secondary)}.dd .kv{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-family:var(--font-data);font-size:11.5px}.dd .kv i{font-style:normal;color:var(--text-muted)}.dd a{color:var(--link);font-size:11.5px}</style></head><body><div id="root"></div><script type="text/babel">
+const {DisclosureProvider,DetailDial,DisclosureRegion,DisclosureHooks,DataGrid,EntitySummary,KeyValueGrid,Drawer,Button,Badge}=window.MeridianDesignSystem_205d17;
+const {useDisclosure}=DisclosureHooks;
+
+const BREAKS=[
+ {id:"BRK-4417",account:"General Account · Cash",source:"Custodian",residual:-18240.55,age:"2d",owner:"J. Ahn",rule:"CASH-TIE-02",opened:"07-29",basis:"STAT",cls:"Timing"},
+ {id:"BRK-4418",account:"General Account · Cash",source:"Bank",residual:4120.00,age:"1d",owner:"J. Ahn",rule:"CASH-TIE-02",opened:"07-30",basis:"STAT",cls:"Unmatched"},
+ {id:"BRK-4421",account:"Separate Account A · Cash",source:"Custodian",residual:-902.13,age:"5h",owner:"M. Ruiz",rule:"CASH-TIE-07",opened:"07-31",basis:"GAAP",cls:"FX"},
+ {id:"BRK-4423",account:"Separate Account A · Cash",source:"Bank",residual:0,age:"3h",owner:"M. Ruiz",rule:"CASH-TIE-07",opened:"07-31",basis:"GAAP",cls:"Cleared"}];
+
+const COLUMNS=[
+ {key:"id",label:"Break",width:96},
+ {key:"account",label:"Account"},
+ {key:"residual",label:"Residual",format:"money",align:"right",width:118,total:"sum"},
+ {key:"age",label:"Age",width:56,align:"right"},
+ {key:"cls",label:"Class",width:88,tier:"full"},
+ {key:"rule",label:"Control",width:104,tier:"full"},
+ {key:"basis",label:"Basis",width:64,tier:"full"},
+ {key:"owner",label:"Owner",width:84,tier:"full"}];
+
+function Screen(){
+ const d=useDisclosure();
+ const [drill,setDrill]=React.useState(null);
+ const level=d.detailFor("breaks");
+ return <>
+  <div className="top"><span>MERIDIAN · RECONCILIATION</span>
+   <span className="dial"><em>DETAIL</em><DetailDial/></span></div>
+  <div className="ctx"><span>ENTITY <b>Meridian Life</b></span><span>BOOK <b>STAT</b></span><span>PERIOD <b>2026-07</b></span><span>AS OF <b>2026-07-31 17:00 ET</b></span><span>CCY <b>USD</b></span></div>
+  <div className="page">
+   <main className="plane">
+    <div className="hd"><h1>July cash — General Account</h1><span>REC-2026-07-CASH · v12</span></div>
+    <div className="band"><EntitySummary columns={4} detail={d.detail} onReveal={(v)=>d.setDetail(v)} items={[
+      {label:"Reconciliation",value:"REC-2026-07-CASH"},
+      {label:"Condition",value:"3 breaks open",color:"var(--red)"},
+      {label:"Residual",value:"(15,022.68)"},
+      {label:"Coverage",value:"98.4%"},
+      {label:"Control",value:"CASH-TIE-02",tier:"full"},
+      {label:"Preparer",value:"J. Ahn",mono:false,tier:"full"},
+      {label:"Reviewer",value:"M. Ruiz",mono:false,tier:"full"},
+      {label:"Last run",value:"09:41 ET",tier:"full"}]}/></div>
+    <DisclosureRegion id="breaks" title="Breaks" kicker="custodian ↔ bank" count={4} countLabel="rows" severity="critical" severityLabel="1 material" freshness="09:41" dial bare>
+     <DataGrid rows={BREAKS} columns={COLUMNS} rowKey="id" density="dense" detail={level}
+       onDetailChange={(v)=>d.setDetailFor("breaks",v)} onDrill={(r)=>setDrill(r)}
+       onRowClick={(r)=>setDrill(r)} activeKey={drill&&drill.id} label="Open breaks"
+       proof={{type:"sum",column:"residual",label:"Σ residual"}}/>
+    </DisclosureRegion>
+    <DisclosureRegion id="evidence" title="Evidence" secondary count={2} countLabel="sources" severity="warning" severityLabel="1 partial" freshness="09:41" withheld={3}>
+     <KeyValueGrid columns={3} detail={level} onReveal={(v)=>d.setDetailFor("evidence",v)} items={[
+      {label:"Custodian file",value:"CUST-0731.csv"},{label:"Bank file",value:"BANK-0731.mt940"},{label:"Matched",value:"1,204 / 1,223"},
+      {label:"Match rule",value:"amount + date ±1d",tier:"full"},{label:"Tolerance",value:"USD 25.00",tier:"full"},{label:"Loaded",value:"07-31 06:12",tier:"full"}]}/>
+    </DisclosureRegion>
+    <DisclosureRegion id="audit" title="Audit history" secondary count={14} countLabel="events" freshness="10:12">
+     <div style={{fontFamily:"var(--font-data)",fontSize:11.5,color:"var(--text-secondary)",display:"grid",gap:4}}>
+      <span>10:12 · M. Ruiz reopened BRK-4417 — tolerance override withdrawn</span>
+      <span>09:41 · run 118 completed — 4 breaks raised, 1 cleared</span>
+      <span>06:12 · custodian file loaded — 1,223 lines</span>
+     </div>
+    </DisclosureRegion>
+   </main>
+   <aside className="rail">
+    <DisclosureRegion id="consequence" title="Consequence" count={2} countLabel="controls blocked" severity="critical" severityLabel="close blocked">
+     <div style={{fontSize:12,lineHeight:1.5,color:"var(--text-secondary)",display:"grid",gap:8}}>
+      <span>CASH-TIE-02 cannot sign while <b>(15,022.68)</b> stands. Period close waits on it.</span>
+      <div style={{display:"flex",gap:8}}><Button size="sm">Resolve break</Button><Button size="sm" variant="ghost">Escalate</Button></div>
+     </div>
+    </DisclosureRegion>
+    <DisclosureRegion id="assumptions" title="Assumptions" secondary count={5} countLabel="in force" freshness="07-31">
+     <div style={{fontSize:12,lineHeight:1.5,color:"var(--text-secondary)"}}>FX at 4pm WMR · settlement T+1 · tolerance USD 25 · weekend dates rolled forward · intraday sweeps excluded.</div>
+    </DisclosureRegion>
+   </aside>
+   <p className="note"><b>Depth, not concealment.</b> Every collapsed region still reports how much is inside, the worst severity in it, and when it was last observed — <code>Evidence</code> says <i>1 partial</i> while shut, so nothing material can hide behind a caret. At summary depth a grid states <code>4 columns withheld</code> with the way back, and the dial is one control in the chrome rather than a per-panel preference. <b>Three steps, no more:</b> the row expands or drills to a drawer over the plane, and only the audit tier earns its own screen.</p>
+  </div>
+  <Drawer open={!!drill} onClose={()=>setDrill(null)} side="right" size="380px" title={drill?`${drill.id} · ${drill.cls}`:""}>
+   {drill?<div className="dd">
+    <h3>Residual</h3>
+    <div className="kv"><i>Amount</i><span>{drill.residual.toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2})}</span><i>Source</i><span>{drill.source}</span><i>Opened</i><span>{drill.opened}</span><i>Control</i><span>{drill.rule}</span><i>Owner</i><span>{drill.owner}</span></div>
+    <h3>Why it is open</h3>
+    <p style={{margin:0,fontSize:12,lineHeight:1.5,color:"var(--text-secondary)"}}>Matched on amount but not on date: the custodian booked value 07-29, the bank 07-30. Outside the ±1d window by one calendar day.</p>
+    <div style={{display:"flex",gap:8,alignItems:"center"}}><Badge variant="warning">Timing</Badge><Badge variant="neutral">Tolerance USD 25</Badge></div>
+    <a href="#audit">Open full audit history →</a>
+   </div>:null}
+  </Drawer>
+ </>}
+
+function Demo(){
+ return <DisclosureProvider screenId="card-disclosure" persist={false} urlParam={null} defaultDetail="summary"><Screen/></DisclosureProvider>}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

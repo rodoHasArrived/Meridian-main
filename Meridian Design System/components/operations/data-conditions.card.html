@@ -1,0 +1,103 @@
+<!-- @dsCard group="Operations" viewport="1140x760" name="Data conditions" subtitle="The eleven conditions, value notation, and the live/delayed/partial/offline/error contract" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Data conditions</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { DataCondition, DataConditionValue, DataConditionLegend, ConnectionState, Eyebrow } =
+  window.MeridianDesignSystem_205d17;
+
+const KEYS = ["confirmed","provisional","estimated","stale","overridden","missing","na","pending","exception","reconciled","restricted"];
+const ROWS = [
+  { inst:"US Treasury 2Y",  val:"4.20%", cond:"confirmed" },
+  { inst:"US Treasury 10Y", val:"4.45%", cond:"confirmed" },
+  { inst:"US Treasury 30Y", val:"4.81%", cond:"stale", detail:"18m" },
+  { inst:"SOFR 3M",         val:"4.34%", cond:"estimated" },
+  { inst:"Muni AAA 10Y",    val:"3.61%", cond:"overridden", detail:"desk mark" },
+  { inst:"Liquidity score", val:null,    cond:"missing" },
+  { inst:"Call schedule",   val:null,    cond:"na" },
+  { inst:"Counterparty exposure", val:"88,410,220", cond:"restricted", detail:"Desk policy" },
+];
+
+function Panel({ eyebrow, title, note, children, style }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"72ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1.15fr 1fr", gap:16, alignItems:"start", maxWidth:1100 }}>
+      <Panel eyebrow="Vocabulary" title="Eleven conditions, always text plus marker"
+        note="Color is never the only signal: each condition carries a glyph and a label, so the state survives grayscale, color-vision deficiency, and a printed export.">
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:8 }}>
+          {KEYS.map((k) => <DataCondition key={k} condition={k} chip />)}
+        </div>
+      </Panel>
+      <Panel eyebrow="Notation" title="A value carries its condition"
+        note="A blank cell never stands for a condition. Missing prints Missing; not-applicable prints an em dash; estimates and stale values keep their qualifier next to the number. Restricted prints Restricted and the policy that withheld it — note the row below passes a real value and it is still not rendered.">
+        <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+          <thead>
+            <tr>
+              <th style={{ textAlign:"left", fontSize:10, fontVariant:"all-small-caps", letterSpacing:".05em", color:"var(--text-muted)", padding:"0 0 6px", borderBottom:"1px solid var(--border-strong)" }}>Instrument</th>
+              <th style={{ textAlign:"right", fontSize:10, fontVariant:"all-small-caps", letterSpacing:".05em", color:"var(--text-muted)", padding:"0 0 6px", borderBottom:"1px solid var(--border-strong)" }}>Yield</th>
+              <th style={{ textAlign:"left", fontSize:10, fontVariant:"all-small-caps", letterSpacing:".05em", color:"var(--text-muted)", padding:"0 0 6px 14px", borderBottom:"1px solid var(--border-strong)" }}>Condition</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ROWS.map((r) => (
+              <tr key={r.inst}>
+                <td style={{ padding:"6px 0", borderBottom:"1px solid var(--border-divider)", color:"var(--text-secondary)" }}>{r.inst}</td>
+                <td style={{ padding:"6px 0", borderBottom:"1px solid var(--border-divider)", textAlign:"right" }}>
+                  <DataConditionValue value={r.val} condition={r.cond} detail={r.detail} align="right" />
+                </td>
+                <td style={{ padding:"6px 0 6px 14px", borderBottom:"1px solid var(--border-divider)" }}>
+                  <DataCondition condition={r.cond} detail={r.detail} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Panel>
+      <Panel eyebrow="Inspector block" title="The data-state contract"
+        note="Every analytical surface declares which of its inputs are observed, which are modelled, and which are absent — in the inspector, next to the evidence.">
+        <DataConditionLegend items={[
+          { label:"Price observation", condition:"confirmed" },
+          { label:"Scenario result", condition:"estimated" },
+          { label:"Reference attributes", condition:"stale", state:"Stale 18m" },
+          { label:"Custody match", condition:"pending", state:"Awaiting Jun 2" },
+          { label:"Optional liquidity field", condition:"missing" },
+        ]} />
+      </Panel>
+      <Panel eyebrow="Connection" title="Last known good stays on screen"
+        note="A view that has rendered valid data never reverts to a skeleton. State the age, name what is missing, and offer the recovery.">
+        <div style={{ display:"flex", flexDirection:"column", gap:8, alignItems:"flex-start" }}>
+          <ConnectionState state="live" subject="Prices" age="42s" cadence="15s" />
+          <ConnectionState state="delayed" subject="Custodian feed" age="6m" detail="expected every 5m" />
+          <ConnectionState state="partial" detail="3 of 11 tenors missing — plotted series marked" />
+          <ConnectionState state="offline" age="11:29:42 UTC" actionLabel="Reconnect" onAction={() => {}} />
+          <ConnectionState state="error" block detail="Curve builder v14.7 failed — observations remain valid"
+            actionLabel="Retry" onAction={() => {}} />
+        </div>
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

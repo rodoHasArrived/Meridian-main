@@ -2,39 +2,46 @@
 // indented line items, per-section subtotals, and a strong grand total. Supports one or two
 // amount columns for period comparison. Accounting negatives in parentheses. Light theme.
 import React from "react";
-import { AmountCell } from "./AmountCell";
+import { AmountCell, splitEnvelopeValue } from "./AmountCell";
+
+// An amount may arrive as an envelope-shaped object; the dash test reads the figure inside it.
+const isBlank = (v) => {
+  const f = splitEnvelopeValue(v).value;
+  return f == null || f === "";
+};
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.stm-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
+.stm-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
-.stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EDEAE4);
+.stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EBE8E1);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border,#E4E3DE);text-align:right;}
+  letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  border-bottom:1px solid var(--border,#D2CDC3);text-align:right;}
 .stm thead th.stm--l{text-align:left;}
 .stm__section td{padding:10px 14px 5px;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#4E5258);
-  border-top:1px solid var(--border,#E4E3DE);}
+  font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#535C65);
+  border-top:1px solid var(--border,#D2CDC3);}
 .stm__section--first td{border-top:none;}
-.stm__item td{padding:9px 14px;color:var(--text-primary,#22252A);height:40px;}
-.stm__item td.stm--l{color:var(--text-secondary,#4E5258);}
+.stm__item td{padding:9px 14px;color:var(--text-primary,#20252B);height:40px;}
+.stm__item td.stm--l{color:var(--text-secondary,#535C65);}
 .stm__item td.stm--num{text-align:right;}
-.stm__item--muted td.stm--l{color:var(--text-muted,#5E666F);}
-.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#E4E3DE);
-  background:var(--card-surface-raised,#F6F4F0);}
+.stm__item--muted td.stm--l{color:var(--text-muted,#6B737B);}
+.stm__empty{padding:16px 14px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
+.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#D2CDC3);
+  background:var(--card-surface-raised,#FCFBF8);}
 .stm__sub td.stm--l{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-primary,#22252A);}
+  font-size:11px;color:var(--text-primary,#20252B);}
 .stm__sub td.stm--num{text-align:right;}
-.stm__total td{padding:10px 14px;font-weight:600;background:var(--bg-medium,#EDEAE4);
-  border-top:2px solid var(--border-strong,#AFABA1);
-  border-bottom:3px double var(--border-strong,#AFABA1);}
+.stm__total td{padding:10px 14px;font-weight:600;background:var(--bg-medium,#EBE8E1);
+  border-top:2px solid var(--border-strong,#AAA49A);
+  border-bottom:3px double var(--border-strong,#AAA49A);}
 .stm__total td.stm--l{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;
-  font-size:12px;color:var(--text-primary,#22252A);}
+  font-size:12px;color:var(--text-primary,#20252B);}
 .stm__total td.stm--num{text-align:right;}
 `;
   const el = document.createElement("style");
@@ -44,12 +51,13 @@ function inject() {
 }
 
 export function StatementTable({
-  sections,
+  sections = [],
   total,
   columns,                 // [{ key, label }] — defaults to one unlabeled "value" column
   currency = "USD",
   parens = true,
   pnl = false,             // color amounts as gains/losses
+  caption,
 }) {
   inject();
   const cols = columns && columns.length ? columns : [{ key: "value", label: "" }];
@@ -61,17 +69,20 @@ export function StatementTable({
   };
 
   return (
-    <div className="stm-wrap" role="table" aria-label="Financial statement">
+    <div className="stm-wrap" role="region" aria-label={caption || "Financial statement"}>
       <table className="stm">
         <thead>
           <tr>
-            <th className="stm--l">&nbsp;</th>
+            <th className="stm--l" scope="col" aria-label="Line item">&nbsp;</th>
             {cols.map((c) => (
-              <th key={c.key}>{c.label}</th>
+              <th key={c.key} scope="col">{c.label}</th>
             ))}
           </tr>
         </thead>
         <tbody>
+          {sections.length === 0 && (
+            <tr><td className="stm__empty" colSpan={cols.length + 1}>No line items</td></tr>
+          )}
           {sections.map((sec, si) => (
             <React.Fragment key={si}>
               {sec.label && (
@@ -86,8 +97,8 @@ export function StatementTable({
                   </td>
                   {valuesOf(row).map((v, vi) => (
                     <td key={vi} className="stm--num">
-                      {v == null || v === ""
-                        ? <span style={{ color: "var(--text-disabled,#94999F)" }}>&mdash;</span>
+                      {isBlank(v)
+                        ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
                         : <AmountCell value={v} currency={currency} parens={parens} mode={pnl ? "pnl" : "plain"} />}
                     </td>
                   ))}

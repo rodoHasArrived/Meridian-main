@@ -1,0 +1,31 @@
+<!-- @dsCard group="Operations" viewport="1180x820" name="Handover brief" subtitle="What moved on the operator's objects since the last-seen mark — breached, assigned, changed, resolved" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Handover brief</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;padding:18px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.wrap{display:grid;gap:14px;max-width:1140px}.bar{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;background:var(--topbar-bg);color:var(--topbar-text);font-weight:600;letter-spacing:.07em;font-size:11.5px}.bar .sp{flex:1}.two{display:grid;grid-template-columns:1fr 330px;gap:14px;align-items:start}.side{border:1px solid var(--border);background:var(--bg-light);padding:12px}.side h3{margin:0 0 8px;font:600 9px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}.side p{margin:0 0 9px;font-size:11.5px;line-height:1.5;color:var(--text-secondary)}.side p:last-child{margin:0}.side b{color:var(--text-primary);font-weight:650}.side code{font-family:var(--font-data);font-size:10.5px}</style></head><body><div id="root"></div><script type="text/babel">
+const {HandoverBrief,HandoverBriefChip}=window.MeridianDesignSystem_205d17;
+const ITEMS=[
+ {id:"1",kind:"breached",status:"Blocked",at:"11:04",actor:"system",object:{type:"Reconciliation",id:"REC-2026-07-CASH",label:"July cash — General Account"},statement:"Custodian file arrived 92 minutes late; the 14:00 delivery SLA is breached and the break is unassigned.",action:{label:"Open case",onClick:()=>{}}},
+ {id:"2",kind:"breached",status:"NeedsAttention",at:"12:20",actor:"system",object:{type:"Control",id:"CTL-VAL-07",label:"Price staleness — level 2 holdings"},statement:"Fourteen securities exceeded the 5-day staleness threshold while the vendor feed was degraded."},
+ {id:"3",kind:"assigned",status:"ReviewRequired",at:"10:47",actor:"m.chen",object:{type:"Journal",id:"JE-88213",label:"Amortization — July STAT"},statement:"Reassigned to you when the controller reopened the July period; v18 was approved, v21 is now in force.",action:{label:"Review diff",onClick:()=>{}}},
+ {id:"4",kind:"assigned",status:"InReview",at:"11:52",actor:"r.okafor",object:{type:"Attestation",id:"ATT-4471",label:"Q3 valuation certification"},statement:"You are now the second signer; the first signature was recorded at 11:50."},
+ {id:"5",kind:"changed",status:"NeedsAttention",at:"11:31",actor:"a.silva",object:{type:"Position",id:"91282CKQ3",label:"UST 4.375% 05/15/34"},statement:"Override on market value replaced by an approved amount $1,160 lower; your open note referenced the override.",action:{label:"See authority stack",onClick:()=>{}}},
+ {id:"6",kind:"changed",status:"Stale",at:"09:58",actor:"system",object:{type:"Calculation",id:"EIR-4.2",label:"Effective interest — cohort B"},statement:"Recalculated on the corrected day-count basis; three of your figures now trace to v4.2."},
+ {id:"7",kind:"resolved",status:"Ready",at:"12:41",actor:"j.abbott",object:{type:"Exception",id:"EXC-2211",label:"FX rate mismatch — EUR sleeve"},statement:"Closed with a compensating entry; no action left for you."}];
+function Demo(){const [ackAt,setAckAt]=React.useState(null);
+ return <div className="wrap">
+  <div className="bar"><span>MERIDIAN · SESSION START</span><span className="sp"/><HandoverBriefChip count={ITEMS.length} severity="blocked" since="09:12"/></div>
+  <div className="two">
+   <HandoverBrief since="09:12" elapsed="4h 18m" actor="a.patel" owned={14} items={ITEMS}
+     onOpen={()=>{}} onAcknowledge={()=>setAckAt("13:30 · mark moved to now")} acknowledgedAt={ackAt}
+     footNote="Mark stored per operator. Acknowledging moves the mark; it does not approve, attest, or act on anything listed."/>
+   <aside className="side">
+    <h3>Why this order</h3>
+    <p><b>breached → assigned → changed → resolved.</b> What broke outranks what arrived; what arrived outranks what moved. Severity sorts rows inside a kind. Good news never comes first.</p>
+    <p><b>The window is explicit.</b> <code>since</code> plus <code>elapsed</code>, anchored to the stored mark — never "now minus something", or two consecutive opens disagree about what <em>since</em> means.</p>
+    <p><b>Ownership is the filter.</b> Fourteen objects, seven events. A brief that reports everything is a firehose and will be dismissed on sight.</p>
+    <p><b>Every row carries its own clock and actor</b> — including <code>system</code>. A change with no time and no author cannot be handed over.</p>
+    <p><b>Acknowledge moves the mark and nothing else.</b> Press it: the button becomes a statement of when the mark moved. It is not an approval and never a bulk action on the objects listed.</p>
+    <p><b>Empty is a statement</b> — "nothing moved on your 14 objects since 09:12", never a blank panel, which reads as a failed load.</p>
+   </aside>
+  </div>
+ </div>}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

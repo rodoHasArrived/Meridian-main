@@ -1,0 +1,180 @@
+<!-- @dsCard group="Core" viewport="1100x920" name="Combobox · TreeView · Accordion · Callout · VirtualizedList" subtitle="Searchable select, hierarchy, disclosure, inline messaging, windowed list" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>New Components</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const {
+  Combobox, TreeView, Accordion, Callout, VirtualizedList
+} = window.MeridianDesignSystem_205d17;
+const { useState } = React;
+
+function Section({ title, children, span }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:6,
+      padding:16, gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+    </div>
+  );
+}
+
+const SYMBOLS = [
+  { value:"AAPL",  label:"AAPL · Apple",             meta:"228.14", group:"Technology" },
+  { value:"MSFT",  label:"MSFT · Microsoft",         meta:"431.60", group:"Technology" },
+  { value:"NVDA",  label:"NVDA · NVIDIA",            meta:"118.02", group:"Technology" },
+  { value:"GOOGL", label:"GOOGL · Alphabet",          meta:"166.20", group:"Technology" },
+  { value:"META",  label:"META · Meta Platforms",     meta:"559.11", group:"Technology" },
+  { value:"JPM",   label:"JPM · JPMorgan Chase",      meta:"221.39", group:"Financials" },
+  { value:"V",     label:"V · Visa",                  meta:"289.04", group:"Financials" },
+  { value:"BRK.B", label:"BRK.B · Berkshire Hathaway", meta:"halted", group:"Financials", disabled:true },
+  { value:"MA",    label:"MA · Mastercard",           meta:"495.72", group:"Financials" },
+  { value:"JNJ",   label:"JNJ · Johnson & Johnson",   meta:"162.88", group:"Health care" },
+  { value:"UNH",   label:"UNH · UnitedHealth",        meta:"584.30", group:"Health care" },
+  { value:"LLY",   label:"LLY · Eli Lilly",           meta:"911.45", group:"Health care" },
+  { value:"XOM",   label:"XOM · Exxon Mobil",         meta:"117.63", group:"Energy" },
+  { value:"CVX",   label:"CVX · Chevron",             meta:"148.29", group:"Energy" },
+];
+
+const ACCOUNTS = [
+  { id:"1000", label:"1000 · Assets", meta:"$4.2M", children:[
+    { id:"1100", label:"1100 · Cash & equivalents", meta:"$1.1M", children:[
+      { id:"1110", label:"1110 · Operating account", meta:"$820K" },
+      { id:"1120", label:"1120 · Settlement account", meta:"$280K" },
+    ]},
+    { id:"1200", label:"1200 · Securities", meta:"$3.1M", hasChildren:true, childCount:214 },
+  ]},
+  { id:"2000", label:"2000 · Liabilities", meta:"$1.4M", children:[
+    { id:"2100", label:"2100 · Margin payable", meta:"$1.4M" },
+  ]},
+  { id:"4000", label:"4000 · Revenue", meta:"$880K" },
+  { id:"9000", label:"9000 · Suspense", meta:"—", disabled:true },
+];
+
+// Lazy branch: 1200's children arrive only once it is first expanded.
+const SECURITIES = [
+  { id:"1210", label:"1210 · Equities", meta:"$2.4M" },
+  { id:"1220", label:"1220 · Fixed income", meta:"$0.6M" },
+  { id:"1230", label:"1230 · Derivatives", meta:"$0.1M" },
+];
+
+const BIG = Array.from({ length: 50000 }, function(_, i){
+  return { id:i, sym: SYMBOLS[i % SYMBOLS.length], px: (50 + (i*7 % 9000)/100).toFixed(2) };
+});
+
+function Demo() {
+  const [sym, setSym] = useState("NVDA");
+  const [acct, setAcct] = useState("1110");
+  const [open, setOpen] = useState(["1000","1100"]);
+  const [accounts, setAccounts] = useState(ACCOUNTS);
+
+  // onToggle is the lazy-load hook: mark the branch busy, then splice children in.
+  function loadSecurities() {
+    const patch = function(extra){
+      setAccounts(function(prev){
+        return prev.map(function(a){
+          if (a.id !== "1000") return a;
+          return Object.assign({}, a, { children: a.children.map(function(c){
+            return c.id === "1200" ? Object.assign({}, c, extra) : c;
+          })});
+        });
+      });
+    };
+    patch({ loading:true });
+    setTimeout(function(){ patch({ loading:false, children: SECURITIES }); }, 550);
+  }
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1040 }}>
+
+      <Section title="Combobox · type-to-filter select">
+        <div style={{ maxWidth:300 }}>
+          <Combobox
+            label="Symbol"
+            options={SYMBOLS}
+            value={sym}
+            onChange={setSym}
+            placeholder="Search symbols…"
+            clearable
+            required
+            error={!sym ? "Pick a symbol to price the order" : undefined}
+          />
+          <div style={{ marginTop:12, fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)" }}>
+            Selected: <strong style={{ color:"var(--text-primary)" }}>{sym || "—"}</strong>
+          </div>
+        </div>
+      </Section>
+
+      <Section title="TreeView · chart of accounts">
+        <TreeView
+          items={accounts}
+          expanded={open}
+          onExpandedChange={setOpen}
+          selectedId={acct}
+          onSelect={function(n){ setAcct(n.id); }}
+          onToggle={function(node, isOpen){
+            if (isOpen && node.id === "1200" && !node.children) loadSecurities();
+          }}
+          aria-label="Chart of accounts"
+        />
+        <div style={{ marginTop:12, paddingTop:10, borderTop:"1px solid var(--border-divider)",
+          fontFamily:"var(--font-data)", fontSize:10, lineHeight:1.7, color:"var(--text-muted)" }}>
+          Row selects · caret or double-click toggles · ↑↓ move · → expand · ← collapse ·<br />
+          type to jump · <b>*</b> expands siblings · 1200 loads children on first expand · 9000 disabled
+        </div>
+      </Section>
+
+      <Section title="Callout · inline messaging" span={2}>
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          <Callout tone="info" title="Paper environment">Orders are simulated — no capital is committed.</Callout>
+          <Callout tone="success" title="Reconciled">All 128 transactions matched within ±$0.01 tolerance.</Callout>
+          <Callout tone="warning" title="Provider latency">Polygon last seen 14:02:11Z — quotes may be stale.</Callout>
+          <Callout tone="danger" title="Live environment">Orders placed here execute against real capital.</Callout>
+        </div>
+      </Section>
+
+      <Section title="Accordion · disclosure">
+        <Accordion
+          defaultOpen={[0]}
+          items={[
+            { title:"Data providers", badge:"3 active", content:"Polygon, IBKR, and Databento are connected. Backfill priority follows configured order." },
+            { title:"Quality scans", badge:"0 gaps", content:"Last scan completed 14:00Z across 412,008 bars with no detected gaps." },
+            { title:"Report packs", badge:"weekly", content:"Statement and tax-lot packs render every Friday 20:00Z and deliver to the operator inbox." },
+          ]}
+        />
+      </Section>
+
+      <Section title="VirtualizedList · 50,000 rows">
+        <VirtualizedList
+          items={BIG}
+          rowHeight={30}
+          height={220}
+          renderRow={function(r){
+            return (
+              <div style={{ display:"flex", justifyContent:"space-between", width:"100%" }}>
+                <span>{r.sym}</span>
+                <span style={{ color:"var(--text-muted)", fontVariantNumeric:"tabular-nums" }}>${r.px}</span>
+              </div>
+            );
+          }}
+        />
+        <div style={{ marginTop:8, fontSize:11, color:"var(--text-muted)" }}>
+          Only the visible window renders — smooth at any size.
+        </div>
+      </Section>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

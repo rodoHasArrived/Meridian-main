@@ -1,0 +1,63 @@
+<!-- @dsCard group="Trading" viewport="900x620" name="TimeAndSalesTape" subtitle="The market-wide print tape — tick-direction price, size emphasis tiers, tagged block prints" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TimeAndSalesTape</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:24px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);color:var(--text-primary,#20252B)">
+<div style="max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:20px">
+<div>
+<h2 style="margin:0 0 4px;font:600 22px var(--font-display)">TimeAndSalesTape</h2>
+<p style="margin:0;font-size:13px;color:var(--text-secondary,#535C65);max-width:70ch">Every print on the instrument, newest first — the public tape beside <code>FillsFeed</code>, which shows only the desk's own executions. Tick direction is derived per symbol from the prior print; size crossing a bucket raises emphasis; prints at or above <code>blockSize</code> are washed and tagged.</p>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+<div>
+<p style="margin:0 0 8px;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted,#6B737B)">Single instrument · venue shown</p>
+<div id="single"></div>
+</div>
+<div>
+<p style="margin:0 0 8px;font:600 10px var(--font-body);font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted,#6B737B)">Multi-instrument · block prints tagged</p>
+<div id="multi"></div>
+</div>
+</div>
+</div>
+<script type="text/babel">
+const { TimeAndSalesTape } = window.MeridianDesignSystem_205d17;
+
+const t = (s) => `2026-06-30T14:3${s}Z`;
+const SINGLE = [
+  { time: t("2:41.220"), price: 201.14, size: 1800, venue: "XNAS" },
+  { time: t("2:40.905"), price: 201.14, size: 400, venue: "ARCX" },
+  { time: t("2:40.118"), price: 201.11, size: 6200, venue: "XNAS" },
+  { time: t("2:39.884"), price: 201.12, size: 300, venue: "EDGX" },
+  { time: t("2:39.002"), price: 201.09, size: 12500, venue: "XNAS" },
+  { time: t("2:38.551"), price: 201.10, size: 900, venue: "BATS" },
+  { time: t("2:37.940"), price: 201.10, size: 200, venue: "XNAS" },
+];
+const MULTI = [
+  { time: t("2:42.006"), symbol: "AAPL", price: 201.14, size: 24000 },
+  { time: t("2:41.771"), symbol: "MSFT", price: 438.62, size: 1200 },
+  { time: t("2:41.203"), symbol: "AAPL", price: 201.11, size: 700 },
+  { time: t("2:40.664"), symbol: "NVDA", price: 118.44, size: 5400 },
+  { time: t("2:40.117"), symbol: "MSFT", price: 438.70, size: 300 },
+  { time: t("2:39.502"), symbol: "NVDA", price: 118.41, size: 18000 },
+];
+
+ReactDOM.render(
+  <TimeAndSalesTape prints={SINGLE} showVenue sizeBuckets={[1000, 5000]} maxHeight={280} />,
+  document.getElementById("single")
+);
+ReactDOM.render(
+  <TimeAndSalesTape prints={MULTI} showSymbol blockSize={10000} sizeBuckets={[1000, 5000]} maxHeight={280} />,
+  document.getElementById("multi")
+);
+</script>
+</body>
+</html>

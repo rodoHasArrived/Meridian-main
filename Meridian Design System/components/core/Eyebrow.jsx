@@ -6,7 +6,7 @@ export function Eyebrow({ children, className = "", style = {}, ...rest }) {
     <div className={className} style={{
       fontFamily: "var(--font-body)", fontSize: 10, fontWeight: 600,
       fontVariant: "all-small-caps", letterSpacing: "0.03em",
-      color: "var(--text-muted, #5E666F)", ...style
+      color: "var(--text-muted, #6B737B)", ...style
     }} {...rest}>{children}</div>
   );
 }

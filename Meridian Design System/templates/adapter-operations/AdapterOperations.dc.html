@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Monitor · Adapter Operations" description="The outbound-integration screen: adapter posture, retry schedules, verbatim errors and signing-key clocks beside the log that produced them. Adopts session continuity — a named, persisted workspace layout and a per-operator object trail." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="adapter-operations">
+<style>html,body{margin:0;padding:0;height:100%}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Adapter diagnostics" action-label="Retry" on-action="{{ noop }}" hint-size="100%,880px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="investigate" labelled-by="screen-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,880px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="adapter-operations" default-entries="{{ trailSeed }}" default-pinned="{{ trailPinned }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,880px">
+<div style="height:100%;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)">
+<div style="flex:none;display:flex;align-items:baseline;gap:12px;padding:11px 14px 7px">
+<h1 id="screen-title" style="font:600 20px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Adapter operations</h1>
+<span style="font:11px var(--font-data);color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">outbound integrations — what left, what landed, what is next</span>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AdapterPostureChip" posture="retrying" next-attempt="14:33:12Z" hint-size="150px,20px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AdapterPostureChip" posture="degraded" hint-size="86px,20px"></x-import>
+<span style="font:600 15px var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;white-space:nowrap">{{ clockLabel }}</span>
+</div>
+<div style="flex:none;padding:0 14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrail" hint-size="100%,32px"></x-import>
+</div>
+<div style="flex:1;min-height:0;padding:9px 14px 12px;display:flex;flex-direction:column">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="adapter-operations" regions="{{ regions }}" layouts="{{ layouts }}" slots="{{ slots }}" style="flex:1;min-height:0" hint-size="100%,620px">
+<div style="height:100%;overflow:auto">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AdapterDiagnostics" adapters="{{ adapters }}" as-of="14:32:08Z" scope="{{ scopeLabel }}" budget-note="acknowledgement budget stated per adapter" sort-by-posture="{{ sortByPosture }}" selected-id="{{ selectedId }}" on-select="{{ onSelect }}" on-retry-now="{{ onRetryNow }}" on-suspend="{{ onSuspend }}" on-resume="{{ onResume }}" on-rotate-key="{{ onRotateKey }}" foot-note="Suspend and resume are compensatable, not free: a suspension is undone by a resume, but instructions that did not land during it are not." hint-size="100%,520px"></x-import>
+</div>
+<div style="height:100%;overflow:auto;display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LogTail" title="{{ logTitle }}" height="{{ 240 }}" entries="{{ logEntries }}" hint-size="100%,240px"></x-import>
+<div style="border:1px solid var(--border);background:var(--bg-light)">
+<div style="padding:7px 11px;border-bottom:1px solid var(--border);font:600 9px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)">Interventions · this adapter</div>
+<sc-for list="{{ interventions }}" as="ev" hint-placeholder-count="3">
+<div style="display:grid;grid-template-columns:78px 1fr;gap:2px 10px;padding:8px 11px;border-bottom:1px solid var(--border-divider,#E2DED5)">
+<span style="font:600 10.5px var(--font-data);color:var(--text-secondary);white-space:nowrap">{{ ev.at }}</span>
+<span style="font-size:12px;font-weight:600;color:var(--text-primary)">{{ ev.what }}</span>
+<span style="grid-column:2;font:10.5px var(--font-data);color:var(--text-muted)">{{ ev.who }}</span>
+<span style="grid-column:2;font-size:11.5px;line-height:1.45;color:var(--text-secondary)">{{ ev.detail }}</span>
+</div>
+</sc-for>
+<div style="padding:7px 11px;font:10px var(--font-data);color:var(--text-muted)">The panel states posture, the log states evidence, this states intervention. Three different questions.</div>
+</div>
+</div>
+</x-import>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1000},&quot;scope&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE + PAPER&quot;,&quot;options&quot;:[&quot;LIVE + PAPER&quot;,&quot;LIVE&quot;,&quot;PAPER&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapters&quot;},&quot;sortByPosture&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Adapters&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "LIVE").toUpperCase()):(String(this.props.environment ?? "LIVE").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "compact"):(this.props.density ?? "compact")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    this._untick = window.MeridianWorld && window.MeridianWorld.tick(this);
+    if (this.ds().AdapterDiagnostics) return;
+    let tries = 0;
+    this._t = setInterval(() => {
+      if (this.ds().AdapterDiagnostics || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); }
+    }, 60);
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
+  componentDidUpdate() { this.applyChrome(); }
+  clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC"; }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+
+  state = { selectedId: "ibkr-live", rows: null };
+
+  ROWS = [
+    { id: "ibkr-live", name: "IBKR order adapter", venue: "IBKR", environment: "LIVE", route: "FIX 4.4 · gw-3", posture: "retrying",
+      statement: "Session dropped mid-heartbeat; the adapter holds 14 instructions and is inside its retry ladder.",
+      lastRoundTrip: "6m 12s ago", cadence: "heartbeat 30s", latency: { p50: 88, p99: 412, budget: 250 },
+      outbound: { inFlight: 2, queued: 14, oldest: "6m", onResume: "queue replays oldest first, idempotency keys preserved" },
+      retry: { attempt: 4, of: 8, backoff: "30s → 60s", nextAt: "14:33:12Z", lastAttemptAt: "14:32:42Z", onExhaustion: "suspend + page the desk" },
+      lastError: { code: "WS-1006", message: "websocket closed abnormally (no close frame received)\nlast seq 88412 acked, 88413 unacknowledged", at: "14:32:42Z", count: 4, correlationId: "corr-7f21ab" },
+      key: { id: "oms-sig-2026-07", algorithm: "Ed25519", age: "41d", rotatesAt: "2026-08-20", overdue: false }, version: 18 },
+    { id: "custodian-bny", name: "Custodian submission", venue: "BNY Mellon", environment: "LIVE", route: "SFTP · nightly + intraday", posture: "degraded",
+      statement: "Round trips succeed, but the venue acknowledges outside budget since their 14:00 batch window opened.",
+      lastRoundTrip: "38s ago", latency: { p50: 310, p99: 690, budget: 400 }, venueStatus: "batch window open",
+      outbound: { inFlight: 1, queued: 3, oldest: "2m" },
+      retry: { attempt: 1, of: 5, backoff: "15s", nextAt: "14:33:04Z" },
+      lastError: { code: "ACK-TIMEOUT", message: "acknowledgement not received within 400ms budget; instruction accepted on retry 1", at: "14:29:51Z", count: 11 },
+      key: { id: "bny-sig-2026-05", algorithm: "RSA-2048", age: "96d", rotatesAt: "2026-08-14", overdue: true }, version: 7 },
+    { id: "posting-export", name: "Posting export", venue: "NetSuite", environment: "LIVE", route: "REST", posture: "retrying",
+      statement: "Failing on authentication with no next attempt scheduled — the ladder was never armed.",
+      lastRoundTrip: "51m ago", latency: { p50: 210, p99: 240, budget: 600 },
+      outbound: { inFlight: 0, queued: 41, oldest: "51m" },
+      retry: { attempt: 3, of: 3, backoff: "exhausted" },
+      lastError: { code: "AUTH-401", message: "invalid_client: signature verification failed for key posting-sig-2026-04", at: "13:41:19Z", count: 3 },
+      key: { id: "posting-sig-2026-04", algorithm: "RSA-2048", age: "133d", rotatesAt: "2026-07-31", overdue: true }, version: 11 },
+    { id: "reportdelivery", name: "Report delivery", venue: "Sendgrid + S3", environment: "LIVE", route: "HTTPS", posture: "suspended",
+      statement: "Suspended by hand after two packs were delivered with pre-restatement figures.",
+      lastRoundTrip: "2h 41m ago", latency: { p50: 120, p99: 180, budget: 500 },
+      outbound: { inFlight: 0, queued: 6, oldest: "2h 38m", onResume: "6 packs re-render before delivery" },
+      lastError: { code: "CONTENT-STALE", message: "pack MER-Q3-014 rendered from ledger v41; v42 restated three accounts", at: "11:51:08Z", count: 2 },
+      key: { id: "delivery-sig-2026-08", algorithm: "Ed25519", age: "9d", rotatesAt: "2026-11-06", overdue: false },
+      suspendedBy: "r.okafor", suspendedAt: "11:53:20Z", version: 4 },
+    { id: "ibkr-paper", name: "IBKR order adapter", venue: "IBKR", environment: "PAPER", route: "FIX 4.4 · gw-1", posture: "linked",
+      lastRoundTrip: "1.2s ago", cadence: "heartbeat 30s", latency: { p50: 74, p99: 184, budget: 250 },
+      outbound: { inFlight: 0, queued: 0 },
+      key: { id: "oms-sig-2026-07", algorithm: "Ed25519", age: "41d", rotatesAt: "2026-08-20", overdue: false }, version: 18 },
+    { id: "webhook-risk", name: "Risk webhook sink", venue: "Internal · risk-svc", environment: "LIVE", posture: "unconfigured",
+      statement: "No route registered for this desk. Nothing is queued and nothing is failing.", version: 1 },
+  ];
+
+  LOG = {
+    "ibkr-live": [
+      { ts: Date.now() - 402000, level: "info", source: "fix", text: "logon accepted · seq reset 88001 · gw-3" },
+      { ts: Date.now() - 388000, level: "debug", source: "fix", text: "heartbeat 30s · rtt 84ms" },
+      { ts: Date.now() - 372000, level: "error", source: "conn", text: "WS-1006 websocket closed abnormally (no close frame) · seq 88413 unacknowledged" },
+      { ts: Date.now() - 340000, level: "warn", source: "retry", text: "attempt 2 of 8 · backoff 30s · 14 instructions held" },
+      { ts: Date.now() - 120000, level: "warn", source: "retry", text: "attempt 3 of 8 · backoff 30s · venue reachable, logon rejected" },
+      { ts: Date.now() - 26000, level: "warn", source: "retry", text: "attempt 4 of 8 · next 14:33:12Z · on exhaustion suspend + page" },
+    ],
+    "custodian-bny": [
+      { ts: Date.now() - 300000, level: "info", source: "sftp", text: "batch window opened at venue · 14:00Z" },
+      { ts: Date.now() - 160000, level: "warn", source: "ack", text: "ACK-TIMEOUT 400ms budget exceeded · p99 690ms · accepted on retry 1" },
+      { ts: Date.now() - 38000, level: "info", source: "sftp", text: "instruction 4471 accepted · 612ms" },
+      { ts: Date.now() - 20000, level: "warn", source: "key", text: "signing key bny-sig-2026-05 rotation overdue since 2026-08-14" },
+    ],
+    "posting-export": [
+      { ts: Date.now() - 3100000, level: "error", source: "auth", text: "AUTH-401 invalid_client: signature verification failed for key posting-sig-2026-04" },
+      { ts: Date.now() - 3080000, level: "warn", source: "retry", text: "attempt 3 of 3 · ladder exhausted · no next attempt scheduled" },
+      { ts: Date.now() - 3000000, level: "info", source: "queue", text: "41 postings held · oldest 51m · nothing draining" },
+    ],
+    "reportdelivery": [
+      { ts: Date.now() - 9500000, level: "error", source: "render", text: "CONTENT-STALE pack MER-Q3-014 built from ledger v41 · v42 restated 3 accounts" },
+      { ts: Date.now() - 9400000, level: "info", source: "ops", text: "adapter suspended by r.okafor · 6 packs held" },
+    ],
+    "ibkr-paper": [
+      { ts: Date.now() - 60000, level: "debug", source: "fix", text: "heartbeat 30s · rtt 71ms" },
+      { ts: Date.now() - 1200, level: "info", source: "fix", text: "order 5512 acked · 74ms" },
+    ],
+    "webhook-risk": [{ ts: Date.now() - 86400000, level: "info", source: "config", text: "no route registered for desk MER-EQ-1" }],
+  };
+
+  EVENTS = {
+    "ibkr-live": [
+      { at: "14:32:44Z", what: "Retry ladder armed", who: "system", detail: "8 attempts, 30s → 60s backoff. On exhaustion: suspend and page the desk." },
+      { at: "14:31:10Z", what: "Desk notified", who: "system → a.patel", detail: "14 instructions unlanded. Notification carries the correlation id, not a screenshot." },
+      { at: "09:14:02Z", what: "Budget raised to 250ms", who: "m.chen", detail: "Was 180ms. Change recorded against the adapter, not the venue." },
+    ],
+    "custodian-bny": [
+      { at: "14:00:00Z", what: "Venue batch window opened", who: "venue", detail: "Latency degradation expected until 15:30Z; posture stays degraded, not retrying." },
+      { at: "08:02:41Z", what: "Rotation reminder acknowledged", who: "r.okafor", detail: "Key rotation deferred once. It is now overdue — the clock says so on the row." },
+    ],
+    "posting-export": [
+      { at: "13:41:22Z", what: "Ladder exhausted", who: "system", detail: "No next attempt was scheduled. The row is retrying in name and suspended in fact." },
+      { at: "07:30:00Z", what: "Key expired", who: "system", detail: "posting-sig-2026-04 passed its rotation date on 2026-07-31. Nothing blocked the send until it failed." },
+    ],
+    "reportdelivery": [
+      { at: "11:53:20Z", what: "Suspended", who: "r.okafor", detail: "Compensatable: resuming re-renders the 6 held packs. The two already delivered need a restatement notice." },
+    ],
+    "ibkr-paper": [{ at: "06:00:00Z", what: "Session start", who: "system", detail: "Paper twin of the LIVE adapter. Separate row, separate posture, no toggle." }],
+    "webhook-risk": [{ at: "—", what: "Never configured", who: "—", detail: "Unconfigured is an absence of intent, not a fault. It is not rendered in a failure colour." }],
+  };
+
+  rows() { return this.state.rows || this.ROWS; }
+
+  patch(id, fn) {
+    this.setState((s) => ({ rows: (s.rows || this.ROWS).map((r) => (r.id === id ? fn(r) : r)) }));
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const { WorkstationTopbar, StatusBar } = this.ds();
+    const el = React.createElement;
+    const scope = this.props.scope ?? "LIVE + PAPER";
+    const all = this.rows();
+    const visible = scope === "LIVE + PAPER" ? all : all.filter((r) => (r.environment || "LIVE") === scope);
+    const sel = visible.some((r) => r.id === this.state.selectedId) ? this.state.selectedId : (visible[0] && visible[0].id) || null;
+    const selRow = all.find((r) => r.id === sel);
+    const tally = { retrying: 0, degraded: 0, suspended: 0 };
+    for (const r of visible) if (tally[r.posture] != null) tally[r.posture]++;
+
+    return {
+      dataState: this.props.dataState ?? "ready",
+      clockLabel: this.clockLabel(),
+      noop: () => {},
+      adapters: visible,
+      scopeLabel: scope,
+      sortByPosture: this.props.sortByPosture ?? true,
+      selectedId: sel,
+      onSelect: (id) => this.setState({ selectedId: id }),
+      onRetryNow: (row) => this.patch(row.id, (r) => ({ ...r, retry: { ...(r.retry || {}), attempt: (r.retry && r.retry.attempt ? r.retry.attempt : 0) + 1, backoff: "immediate", nextAt: "14:33:52Z" }, statement: "Manual attempt fired ahead of the schedule; the ladder resumes after it." })),
+      onSuspend: (row) => this.patch(row.id, (r) => ({ ...r, posture: "suspended", retry: undefined, suspendedBy: "you", suspendedAt: "14:33:40Z", statement: "Suspended from this panel. The queue holds and nothing retries until resumed." })),
+      onResume: (row) => this.patch(row.id, (r) => ({ ...r, posture: "retrying", suspendedBy: undefined, suspendedAt: undefined, retry: { attempt: 1, of: 8, backoff: "30s", nextAt: "14:34:10Z", onExhaustion: "suspend + page the desk" }, statement: "Resumed. The queue replays oldest first; instructions that did not land while suspended are not recovered by this." })),
+      onRotateKey: (row) => this.patch(row.id, (r) => ({ ...r, key: { ...(r.key || {}), id: "rotated-2026-08-15", age: "0d", rotatesAt: "2026-11-13", overdue: false }, statement: "Signing key rotated; the next attempt signs with the new key." })),
+
+      regions: [{ id: "adapters", size: 1.7 }, { id: "evidence", size: 1 }],
+      layouts: [
+        { name: "Incident review", regions: { adapters: { size: 1 }, evidence: { size: 1.35, collapsed: false, hidden: false } } },
+        { name: "Adapters only", regions: { adapters: { size: 1 }, evidence: { hidden: true } } },
+      ],
+      slots: [
+        { id: "adapters", label: "Adapters · posture, schedule, keys", minSize: 0.34 },
+        { id: "evidence", label: "Evidence · log and interventions", minSize: 0.22, onPopOut: () => {} },
+      ],
+
+      logTitle: selRow ? `${selRow.name.toLowerCase()} · ${(selRow.environment || "live").toLowerCase()}` : "adapter log",
+      logEntries: (sel && this.LOG[sel]) || [],
+      interventions: (sel && this.EVENTS[sel]) || [],
+
+      trailSeed: [
+        { type: "adapter", typeLabel: "Adapter", id: "posting-export", label: "Posting export — NetSuite", version: 11, currentVersion: 11, meta: "41 queued · ladder exhausted", at: "13:44" },
+        { type: "adapter", typeLabel: "Adapter", id: "ibkr-live", label: "IBKR order adapter — LIVE", version: 18, currentVersion: 18, meta: "retrying · attempt 4 of 8", at: "14:32" },
+      ],
+      trailPinned: [
+        { type: "adapter", typeLabel: "Adapter", id: "ibkr-live", label: "IBKR order adapter — LIVE", version: 18, currentVersion: 18, meta: "retrying · attempt 4 of 8" },
+        { type: "reconciliation", id: "REC-2026-07-CASH", label: "July cash — General Account", version: 12, currentVersion: 14, meta: "3 breaks open", at: "11:20" },
+      ],
+      onTrailNavigate: (entry) => { if (entry && this.LOG[entry.id]) this.setState({ selectedId: entry.id }); },
+
+      nav: this.ds().NavRail && el(this.ds().NavRail, { activeId: "adapters", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("adapters") : []) }),
+      topbar: WorkstationTopbar && el(WorkstationTopbar, {
+        moduleLabel: "Adapter Ops", environment: String(this.props.environment ?? "LIVE").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg",
+      }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: tally.retrying ? "error" : "ok", label: "Retrying", value: `${tally.retrying} adapter${tally.retrying === 1 ? "" : "s"}` },
+        { status: tally.degraded ? "warn" : "ok", label: "Degraded", value: String(tally.degraded) },
+        { status: tally.suspended ? "warn" : "ok", label: "Suspended", value: String(tally.suspended) },
+        { label: "Unlanded", value: `${visible.reduce((n, r) => n + ((r.outbound && r.outbound.queued) || 0), 0)} instructions` },
+        { status: "warn", label: "Keys", value: `${visible.filter((r) => r.key && r.key.overdue).length} rotation overdue`, push: true },
+      ] }),
+    };
+  }
+}
+</script>
+</body>
+</html>

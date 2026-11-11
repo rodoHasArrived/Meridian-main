@@ -4,7 +4,7 @@
  * Items are `start` (absolute bar from zero), `delta` (floats from the running level — green
  * up, red down), or `total` (drops the running level back to zero, accent). A computed total
  * bar labeled `totalLabel` is appended unless the items already include one. Dashed connectors
- * carry the running level across gaps. Flat, token-driven.
+ * carry the running level across gaps. Renders through ChartFrame (real-pixel geometry).
  */
 import * as React from "react";
 
@@ -32,5 +32,13 @@ export interface WaterfallChartProps {
   valueTicks?: number;
   /** Dashed level connectors between bars. @default true */
   showConnectors?: boolean;
+  /** SVG height in px. @default 300 */
+  height?: number;
+  /** 3.5 · Forwarded to ChartFrame — names the figure (svg role="img"). */
+  ariaLabel?: string;
+  /** 3.5 · Forwarded to ChartFrame — linked description. */
+  ariaDescription?: string;
+  /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
+  accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
 export declare function WaterfallChart(props: WaterfallChartProps): JSX.Element;

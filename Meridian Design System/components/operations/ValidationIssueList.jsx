@@ -11,25 +11,25 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-issues{display:flex;flex-direction:column;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-card,2px);overflow:hidden;background:var(--bg-light,#FBFAF8);}
-.mds-issues__empty{padding:14px;text-align:center;color:var(--text-muted,#5E666F);
+.mds-issues{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-card,2px);overflow:hidden;background:var(--bg-light,#F8F7F3);}
+.mds-issues__empty{padding:14px;text-align:center;color:var(--text-muted,#6B737B);
   font-family:var(--font-body);font-size:12px;}
 .mds-issue{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:baseline;
-  padding:9px 12px;border-top:1px solid var(--border,#E4E3DE);}
+  padding:9px 12px;border-top:1px solid var(--border,#D2CDC3);}
 .mds-issue:first-child{border-top:0;}
 .mds-issue--dense{padding:6px 10px;}
 .mds-issue__dot{align-self:center;width:7px;height:7px;border-radius:50%;flex:0 0 auto;
-  background:var(--severity-info-fg,#5E666F);}
-.mds-issue--blocked .mds-issue__dot{background:var(--severity-blocked-fg,#7E332D);}
-.mds-issue--action .mds-issue__dot{background:var(--severity-action-fg,#68450E);}
-.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#8C4429);}
-.mds-issue--ready .mds-issue__dot{background:var(--severity-ready-fg,#2C5C40);}
+  background:var(--severity-info-fg,#6B737B);}
+.mds-issue--blocked .mds-issue__dot{background:var(--severity-blocked-fg,#B54B42);}
+.mds-issue--action .mds-issue__dot{background:var(--severity-action-fg,#986717);}
+.mds-issue--review .mds-issue__dot{background:var(--severity-review-fg,#C56343);}
+.mds-issue--ready .mds-issue__dot{background:var(--severity-ready-fg,#2E7655);}
 .mds-issue__code{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
-  color:var(--text-secondary,#4E5258);white-space:nowrap;}
-.mds-issue__msg{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#22252A);line-height:1.4;min-width:0;}
+  color:var(--text-secondary,#535C65);white-space:nowrap;}
+.mds-issue__msg{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);line-height:1.4;min-width:0;}
 .mds-issue__gate{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.04em;color:var(--text-muted,#5E666F);white-space:nowrap;}
+  letter-spacing:.04em;color:var(--text-muted,#6B737B);white-space:nowrap;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "validation-issues");

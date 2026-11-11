@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Report · Asset Sheet" description="Branded asset sheet — sidebar page rail, keyboard paging, real content wells, corporate footer." -->
+<helmet><script src="./ds-base.js"></script></helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Sheet" hint-size="100%,780px">
+<div style="height:100vh;background:var(--bg);box-sizing:border-box;font-family:var(--font-body);color:var(--text-primary);display:flex;overflow:hidden">
+<aside style="width:214px;flex:none;border-right:1px solid var(--border-strong);background:var(--bg-light);display:flex;flex-direction:column;padding:26px 0">
+<div style="display:flex;align-items:center;gap:12px;padding:0 22px 20px">
+<img src="../../assets/brand/meridian-mark.svg" alt="Meridian mark" style="width:38px;height:38px;flex:none"></img>
+<div>
+<div style="font-size:15px;font-weight:600;letter-spacing:.3em">MERIDIAN</div>
+<div style="font-family:var(--font-data);font-size:8px;letter-spacing:.22em;color:var(--text-muted);margin-top:3px">{{ sheetKicker }}</div>
+</div>
+</div>
+<div style="height:1px;background:var(--border);margin:0 22px"></div>
+<nav aria-label="Sheet pages" style="display:flex;flex-direction:column;padding:12px 0;gap:2px">
+<sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="3">
+<sc-if value="{{ nv.active }}">
+<div role="button" tabindex="0" aria-current="page" onClick="{{ nv.select }}" onKeyDown="{{ nv.key }}" style="display:flex;align-items:baseline;gap:12px;padding:9px 22px 9px 19px;cursor:pointer;border-left:3px solid var(--interaction-selected,#496C8F);background:var(--bg)" style-hover="background:var(--bg-hover)">
+<span style="font-family:var(--font-data);font-size:10px;color:var(--brand-signal,#C56343)">{{ nv.num }}</span>
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.16em;color:var(--text-primary)">{{ nv.label }}</span>
+</div>
+</sc-if>
+<sc-if value="{{ nv.inactive }}" hint-placeholder-val="{{ true }}">
+<div role="button" tabindex="0" onClick="{{ nv.select }}" onKeyDown="{{ nv.key }}" style="display:flex;align-items:baseline;gap:12px;padding:9px 22px 9px 19px;cursor:pointer;border-left:3px solid transparent;background:transparent" style-hover="background:var(--bg-hover)">
+<span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted)">{{ nv.num }}</span>
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.16em;color:var(--text-secondary)">{{ nv.label }}</span>
+</div>
+</sc-if>
+</sc-for>
+</nav>
+<div style="padding:6px 22px 0">
+<div style="display:flex;gap:2px;height:2px">
+<sc-for list="{{ progressSegments }}" as="sg" hint-placeholder-count="3">
+<sc-if value="{{ sg.filled }}"><div style="flex:1;height:2px;background:var(--brand-signal,#C56343);border-radius:1px"></div></sc-if>
+<sc-if value="{{ sg.empty }}" hint-placeholder-val="{{ true }}"><div style="flex:1;height:2px;background:var(--border);border-radius:1px"></div></sc-if>
+</sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);margin-top:7px">
+<span>{{ pageIndicator }}</span>
+<span>&larr; &rarr; PAGE</span>
+</div>
+</div>
+<div style="flex:1"></div>
+<div style="padding:0 22px;font-family:var(--font-data);font-size:10px;letter-spacing:.28em;color:var(--text-secondary);line-height:2">MEASURE<br></br>UNDERSTAND<br></br>CONVERGE</div>
+</aside>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column;padding:26px 32px 22px">
+<header style="display:flex;align-items:center;gap:22px;padding-bottom:16px">
+<div style="flex:none">
+<h1 style="font-size:25px;font-weight:600;letter-spacing:.38em;margin:0;color:var(--text-primary)">MERIDIAN</h1>
+<div style="font-size:13px;font-weight:600;letter-spacing:.3em;color:var(--brand-signal,#C56343);margin-top:4px">{{ sheetTitle }}</div>
+</div>
+<div style="width:1px;align-self:stretch;background:var(--border-strong);flex:none"></div>
+<p style="margin:0;max-width:420px;font-size:12.5px;line-height:1.55;color:var(--text-secondary);flex:1;text-wrap:pretty">{{ description }}</p>
+<div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:7px">
+<span data-environment-badge style="font-family:var(--font-data);font-size:9px;letter-spacing:.2em;padding:3px 8px;border:1px solid var(--border-strong);border-radius:2px;color:var(--text-secondary)">{{ environment }}</span>
+<div style="text-align:right;font-family:var(--font-data);font-size:10px;letter-spacing:.2em;color:var(--text-muted);line-height:1.8">{{ pageNum }}<br></br>{{ currentPageTitle }}</div>
+</div>
+</header>
+<div style="height:1px;background:var(--border-strong)"></div>
+<main style="flex:1;min-height:0;padding:20px 0;overflow:auto">
+<sc-if value="{{ page1 }}" hint-placeholder-val="{{ true }}">
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary)">01&nbsp;&nbsp;OVERVIEW</span>
+<span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted)">{{ asOf }}</span>
+</div>
+<p style="margin:0;max-width:760px;font-size:15px;line-height:1.6;color:var(--text-primary);text-wrap:pretty">The accounting domain turns positions and postings into statements a reviewer can sign. Eighteen components share one money primitive, so every figure in the system rounds, aligns, and reads the same way &mdash; from a single amount in a cell to a period-end trial balance that proves itself.</p>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)">
+<div style="background:var(--bg-light);padding:14px 16px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-muted)">DOMAIN</div>
+<div style="font-size:17px;font-weight:600;margin-top:6px">Accounting</div>
+<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">components/accounting</div>
+</div>
+<div style="background:var(--bg-light);padding:14px 16px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-muted)">COMPONENTS</div>
+<div style="font-family:var(--font-data);font-size:17px;font-weight:600;margin-top:6px">18</div>
+<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">plus the money helpers</div>
+</div>
+<div style="background:var(--bg-light);padding:14px 16px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-muted)">DATA INK</div>
+<div style="font-size:17px;font-weight:600;margin-top:6px">Navy</div>
+<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">terracotta = action only</div>
+</div>
+<div style="background:var(--bg-light);padding:14px 16px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-muted)">STATUS</div>
+<div style="font-size:17px;font-weight:600;margin-top:6px;color:var(--green-dim)">Stable</div>
+<div style="font-size:11px;color:var(--text-secondary);margin-top:3px">reviewed for this release</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;padding-top:4px">
+<div>
+<div style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary);padding-bottom:9px;border-bottom:1px solid var(--border)">WHEN TO USE</div>
+<ul style="margin:12px 0 0;padding-left:18px;font-size:13px;line-height:1.75;color:var(--text-secondary)">
+<li>The shape is a <strong style="color:var(--text-primary);font-weight:600">statement</strong>, not a list of rows.</li>
+<li>A figure must tie to another figure and the arithmetic has to be visible.</li>
+<li>Negatives, currencies, and rounding carry consequences.</li>
+<li>The surface will be printed, exported, or signed off.</li>
+</ul>
+</div>
+<div>
+<div style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary);padding-bottom:9px;border-bottom:1px solid var(--border)">WHAT IT REPLACES</div>
+<ul style="margin:12px 0 0;padding-left:18px;font-size:13px;line-height:1.75;color:var(--text-secondary)">
+<li>Generic data tables carrying money in body text.</li>
+<li>Per-screen currency formatting and ad-hoc rounding.</li>
+<li>Totals computed in the view with no proof of balance.</li>
+<li>Red and green applied by hand, inconsistently, per team.</li>
+</ul>
+</div>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{ page2 }}" hint-placeholder-val="{{ false }}">
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary)">02&nbsp;&nbsp;COMPONENTS IN CONTEXT</span>
+<span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted)">{{ asOf }}</span>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:9px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted)">STATEMENTTABLE &mdash; TWO-PERIOD P&amp;L</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatementTable" sections="{{ pnlSections }}" total="{{ pnlTotal }}" columns="{{ pnlColumns }}" currency="USD" caption="Operating result" hint-size="100%,300px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+<div style="display:flex;flex-direction:column;gap:9px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted)">TRIALBALANCE &mdash; PERIOD-END PROOF</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TrialBalance" rows="{{ tbRows }}" currency="USD" hint-size="100%,220px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:9px">
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted)">ROLLFORWARDTRACE &mdash; ONE BALANCE, PROVED</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.RollforwardTrace" opening="{{ rfOpening }}" closing="{{ rfClosing }}" movements="{{ rfMovements }}" currency="USD" hint-size="100%,140px"></x-import>
+</div>
+</div>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{ page3 }}" hint-placeholder-val="{{ false }}">
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary)">03&nbsp;&nbsp;SPECIFICATIONS</span>
+<span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted)">{{ asOf }}</span>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:24px;align-items:start">
+<div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-bottom:8px">STATEMENTTABLE &mdash; PUBLIC PROPS</div>
+<table style="width:100%;border-collapse:collapse;font-size:12px">
+<thead>
+<tr>
+<th scope="col" style="text-align:left;padding:8px 10px;background:var(--bg-medium);border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:9px;letter-spacing:.14em;font-weight:400;color:var(--text-muted)">PROP</th>
+<th scope="col" style="text-align:left;padding:8px 10px;background:var(--bg-medium);border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:9px;letter-spacing:.14em;font-weight:400;color:var(--text-muted)">TYPE</th>
+<th scope="col" style="text-align:left;padding:8px 10px;background:var(--bg-medium);border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:9px;letter-spacing:.14em;font-weight:400;color:var(--text-muted)">DEFAULT</th>
+<th scope="col" style="text-align:left;padding:8px 10px;background:var(--bg-medium);border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:9px;letter-spacing:.14em;font-weight:400;color:var(--text-muted)">NOTES</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary)">sections</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Section[]</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">[]</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Label, rows, optional subtotal. Empty renders &ldquo;No line items.&rdquo;</td>
+</tr>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary)">columns</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{key,label}[]</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">one column</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Period comparison; rows then carry <code style="font-family:var(--font-data)">values</code>.</td>
+</tr>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary)">total</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Row</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">&mdash;</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Double-ruled grand total in the footer.</td>
+</tr>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary)">parens</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">boolean</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">true</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Accounting negatives &mdash; (1,234.00).</td>
+</tr>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-primary)">pnl</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">boolean</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">false</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">Tone amounts as gains and losses. Off for balance sheets.</td>
+</tr>
+<tr>
+<th scope="row" style="text-align:left;font-family:var(--font-data);font-size:11.5px;font-weight:400;padding:8px 10px;color:var(--text-primary)">caption</th>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;color:var(--text-secondary)">string</td>
+<td style="font-family:var(--font-data);font-size:11px;padding:8px 10px;color:var(--text-muted)">&mdash;</td>
+<td style="padding:8px 10px;color:var(--text-secondary)">Accessible name of the statement region.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-bottom:8px">TOKENS CONSUMED</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-size:11.5px;align-items:baseline">
+<span style="font-family:var(--font-data);color:var(--text-primary)">--bg-light</span><span style="color:var(--text-secondary)">table surface</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--bg-medium</span><span style="color:var(--text-secondary)">header, grand total</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--border-strong</span><span style="color:var(--text-secondary)">total rules</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--font-data</span><span style="color:var(--text-secondary)">every figure, tabular</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--green-dim</span><span style="color:var(--text-secondary)">gain, P&amp;L mode</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--red-dim</span><span style="color:var(--text-secondary)">loss, P&amp;L mode</span>
+<span style="font-family:var(--font-data);color:var(--text-primary)">--text-disabled</span><span style="color:var(--text-secondary)">null cell dash</span>
+</div>
+</div>
+<div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-bottom:8px">REVIEW AND SIGN-OFF</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div>
+<div style="height:26px;border-bottom:1px solid var(--border-strong)"></div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-top:5px">DESIGN &nbsp;&middot;&nbsp; DATE</div>
+</div>
+<div>
+<div style="height:26px;border-bottom:1px solid var(--border-strong)"></div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-top:5px">ENGINEERING &nbsp;&middot;&nbsp; DATE</div>
+</div>
+<div>
+<div style="height:26px;border-bottom:1px solid var(--border-strong)"></div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.16em;color:var(--text-muted);padding-top:5px">CONTROLLER &nbsp;&middot;&nbsp; DATE</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</sc-if>
+<sc-if value="{{ page4 }}" hint-placeholder-val="{{ false }}">
+<section style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;align-items:baseline;justify-content:space-between">
+<span style="font-family:var(--font-data);font-size:10px;letter-spacing:.14em;color:var(--text-secondary)">04&nbsp;&nbsp;{{ page4Heading }}</span>
+<span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted)">{{ asOf }}</span>
+</div>
+<div style="border:1px dashed var(--border-hover);border-radius:2px;min-height:300px;display:flex;align-items:center;justify-content:center">
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">spare page &mdash; name it with the page4Title tweak, then replace this well with content</span>
+</div>
+</section>
+</sc-if>
+</main>
+<div style="height:1px;background:var(--border-strong)"></div>
+<footer style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding-top:14px">
+<div style="display:flex;align-items:center;gap:12px">
+<div style="width:32px;height:32px;border:1px solid var(--text-primary);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-data);font-size:13px;flex:none">M</div>
+<div style="font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-secondary);line-height:1.8">MERIDIAN SYSTEMS INC.<br></br>FINANCIAL RESEARCH &amp; ANALYTICS PLATFORM</div>
+</div>
+<div style="display:flex;align-items:center;gap:14px">
+<sc-if value="{{ atFirst }}">
+<button type="button" disabled="{{ true }}" aria-label="Previous page" style="font-family:var(--font-data);font-size:11px;background:transparent;border:1px solid var(--border-strong);border-radius:2px;padding:4px 10px;cursor:default;color:var(--text-disabled)">&larr;</button>
+</sc-if>
+<sc-if value="{{ notFirst }}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{ goPrev }}" aria-label="Previous page" style="font-family:var(--font-data);font-size:11px;background:transparent;border:1px solid var(--border-strong);border-radius:2px;padding:4px 10px;cursor:pointer;color:var(--text-primary)" style-hover="background:var(--bg-hover)">&larr;</button>
+</sc-if>
+<span style="font-family:var(--font-data);font-size:9px;letter-spacing:.24em;color:var(--text-muted)">{{ pageIndicator }}</span>
+<sc-if value="{{ atLast }}">
+<button type="button" disabled="{{ true }}" aria-label="Next page" style="font-family:var(--font-data);font-size:11px;background:transparent;border:1px solid var(--border-strong);border-radius:2px;padding:4px 10px;cursor:default;color:var(--text-disabled)">&rarr;</button>
+</sc-if>
+<sc-if value="{{ notLast }}" hint-placeholder-val="{{ true }}">
+<button type="button" onClick="{{ goNext }}" aria-label="Next page" style="font-family:var(--font-data);font-size:11px;background:transparent;border:1px solid var(--border-strong);border-radius:2px;padding:4px 10px;cursor:pointer;color:var(--text-primary)" style-hover="background:var(--bg-hover)">&rarr;</button>
+</sc-if>
+</div>
+<div style="text-align:right;font-family:var(--font-data);font-size:9px;letter-spacing:.18em;color:var(--text-secondary);line-height:1.8">{{ footerRight }}<br></br>{{ footerDate }}</div>
+</footer>
+</div>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;sheetTitle&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;ASSET SHEET&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Masthead&quot;},&quot;sheetKicker&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;DESIGN SYSTEM ASSET&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Masthead&quot;},&quot;description&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;A canonical presentation of one design-system domain with context, live components, and specifications—so institutional teams can review and sign off with precision.&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Masthead&quot;},&quot;page1Title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;OVERVIEW&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pages&quot;},&quot;page2Title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;COMPONENTS&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pages&quot;},&quot;page3Title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;SPECIFICATIONS&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pages&quot;},&quot;page4Title&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Pages&quot;},&quot;asOf&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;DATA AS OF 2026-08-05 11:30Z&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;footerRight&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;ACCOUNTING DOMAIN&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Footer&quot;},&quot;footerDate&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;V1.1 / AUG 2026&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Footer&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { page: 0 };
+
+  componentDidMount() {
+    this.applyChrome();
+    this.onKey = (e) => {
+      if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      if (e.key === "ArrowRight") this.step(1);
+      else if (e.key === "ArrowLeft") this.step(-1);
+    };
+    window.addEventListener("keydown", this.onKey);
+  }
+  componentWillUnmount() { window.removeEventListener("keydown", this.onKey); }
+  componentDidUpdate() { this.applyChrome(); }
+
+  // Chrome tweaks — theme/density drive the token scopes; environment drives the badge.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+
+  // Page list is data-driven: a blank title drops the page, so consumers add pages by naming them.
+  titles() {
+    return [
+      this.props.page1Title ?? "OVERVIEW",
+      this.props.page2Title ?? "COMPONENTS",
+      this.props.page3Title ?? "SPECIFICATIONS",
+      this.props.page4Title ?? "",
+    ].filter((s) => String(s).trim() !== "");
+  }
+  step(d) {
+    const n = this.titles().length;
+    this.setState((s) => ({ page: Math.max(0, Math.min(n - 1, s.page + d)) }));
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const titles = this.titles();
+    const page = Math.min(this.state.page, titles.length - 1);
+    const navItems = titles.map((label, i) => {
+      const active = i === page;
+      const select = () => this.setState({ page: i });
+      return {
+        num: String(i + 1).padStart(2, "0"),
+        label,
+        select,
+        key: (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(); } },
+        active,
+        inactive: !active,
+      };
+    });
+    const atFirst = page === 0, atLast = page === titles.length - 1;
+    return {
+      dataState: this.props.dataState ?? "ready",
+      environment: String(this.props.environment ?? "PAPER").toUpperCase(),
+      sheetTitle: this.props.sheetTitle ?? "ASSET SHEET",
+      sheetKicker: this.props.sheetKicker ?? "DESIGN SYSTEM ASSET",
+      description: this.props.description ?? "A canonical presentation of one design-system domain with context, live components, and specifications\u2014so institutional teams can review and sign off with precision.",
+      asOf: this.props.asOf ?? "DATA AS OF 2026-08-05 11:30Z",
+      footerRight: this.props.footerRight ?? "ACCOUNTING DOMAIN",
+      footerDate: this.props.footerDate ?? "V1.1 / AUG 2026",
+      navItems,
+      page1: page === 0, page2: page === 1, page3: page === 2, page4: page === 3,
+      page4Heading: this.props.page4Title ?? "",
+      pageNum: "PAGE " + String(page + 1).padStart(2, "0"),
+      currentPageTitle: titles[page],
+      pageIndicator: String(page + 1).padStart(2, "0") + " / " + String(titles.length).padStart(2, "0"),
+      progressSegments: titles.map((_, i) => ({ filled: i <= page, empty: i > page })),
+      goPrev: () => this.step(-1),
+      goNext: () => this.step(1),
+      atFirst, atLast,
+      notFirst: !atFirst, notLast: !atLast,
+
+      // Page 02 — live specimen data for the showcased accounting components.
+      pnlColumns: [{ key: "cur", label: "Q2 2026" }, { key: "prv", label: "Q1 2026" }],
+      pnlSections: [
+        { label: "Revenue", rows: [
+          { label: "Management fees", values: { cur: 4128400, prv: 3980200 } },
+          { label: "Performance fees", values: { cur: 812900, prv: 1244050 } },
+          { label: "Interest income", values: { cur: 96420, prv: 88110 }, indent: 1, muted: true },
+        ], subtotal: { label: "Total revenue", values: { cur: 5037720, prv: 5312360 } } },
+        { label: "Operating expenses", rows: [
+          { label: "Compensation", values: { cur: -2410000, prv: -2380000 } },
+          { label: "Market data and research", values: { cur: -318600, prv: -302400 } },
+          { label: "Custody and clearing", values: { cur: -74210, prv: -71880 } },
+          { label: "Professional fees", values: { cur: -142500, prv: null } },
+        ], subtotal: { label: "Total operating expenses", values: { cur: -2945310, prv: -2754280 } } },
+      ],
+      pnlTotal: { label: "Operating income", values: { cur: 2092410, prv: 2558080 } },
+      tbRows: [
+        { code: "1010", account: "Cash — operating", type: "asset", balance: 4128005.50 },
+        { code: "1200", account: "Fees receivable", type: "asset", balance: 812900 },
+        { code: "1550", account: "Accum. amortization", type: "contra-asset", balance: 142100 },
+        { code: "2100", account: "Accrued compensation", type: "liability", balance: 984200 },
+        { code: "3000", account: "Partners' capital", type: "equity", balance: 3814605.50 },
+      ],
+      rfOpening: 9875000,
+      rfClosing: 9878812.40,
+      rfMovements: [
+        { label: "Discount accretion", value: 3812.40, note: "effective interest · 4.28%" },
+        { label: "Principal movement", value: 0 },
+        { label: "Impairment", value: 0 },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

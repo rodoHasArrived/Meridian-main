@@ -1,0 +1,85 @@
+<!-- @dsCard group="Shell" viewport="1180x780" name="Screen composition" subtitle="A screen is an archetype plus declared regions — not a fork of a template" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Screen composition</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { ScreenComposition, defineScreen, ARCHETYPES, DataGrid, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
+function Panel({ eyebrow, title, note, children, style }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"74ch" }}>{note}</p> : null}
+      {children}
+    </section>
+  );
+}
+
+const tieOut = defineScreen({
+  name: "Close tie-out", archetype: "investigate",
+  regions: [
+    { id:"context", title:"Period and entity" },
+    { id:"claim", title:"The claim under review" },
+    { id:"primary", title:"Trial balance" },
+    { id:"evidence", title:"Evidence" },
+    { id:"action", title:"Disposition" },
+  ],
+});
+const drift = defineScreen({ name:"Drifted screen", archetype:"report", regions:["masthead","primary","evidence","notes"] });
+
+const TB = [
+  { code:"1000", account:"Cash", debit:4820115.22, credit:0 },
+  { code:"2100", account:"Payables", debit:0, credit:2904118.44 },
+  { code:"3900", account:"Retained earnings", debit:0, credit:1916000.00 },
+];
+
+function Demo() {
+  return (
+    <div style={{ display:"grid", gap:16, maxWidth:1140 }}>
+      <Panel eyebrow="Declaration" title="Investigate archetype, five regions"
+        note="defineScreen states the manifest; ScreenComposition lays it on the 12-column grid and fills each region from slots. Changing the archetype changes every screen that declares it — one edit instead of thirty-one.">
+        <ScreenComposition screen={tieOut} showRoles slots={{
+          context: <span style={{ fontSize:12, color:"var(--text-secondary)" }}>Meridian Core Fund · June 2026 · close deadline Jul 10</span>,
+          claim: <span style={{ fontSize:13, color:"var(--text-primary)" }}>The June trial balance ties to the custodian statement within tolerance.</span>,
+          primary: <DataGrid schema="trialBalance" rows={TB} rowKey="code" density="dense" />,
+          evidence: <ValueEnvelope label="Custodian NAV" value="189,318,396.32" condition="confirmed" authority="source"
+            evidence={[{ label:"Statement", ref:"CS-0626" }]} clocks={{ asOf:"2026-07-01 06:00:00Z" }} />,
+          action: <span style={{ fontSize:12, color:"var(--text-secondary)" }}>Sign off · Escalate · Return to preparer</span>,
+        }} />
+      </Panel>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, alignItems:"start" }}>
+        <Panel eyebrow="Validation" title="Drift is reported, not absorbed"
+          note="A region outside its archetype is named on the screen, so a fork announces itself the moment it happens.">
+          <ScreenComposition screen={drift} showRoles slots={{ masthead: <span style={{ fontSize:12 }}>Quarterly report</span> }} />
+        </Panel>
+        <Panel eyebrow="Archetypes" title="Six shapes for thirty-one screens"
+          note="Every production screen declares one of these. The region list is the contract.">
+          <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
+            <tbody>
+              {Object.keys(ARCHETYPES).map((k) => (
+                <tr key={k}>
+                  <td style={{ padding:"6px 12px 6px 0", borderBottom:"1px solid var(--border-divider)", color:"var(--text-primary)", whiteSpace:"nowrap" }}>{ARCHETYPES[k].label}</td>
+                  <td style={{ padding:"6px 0", borderBottom:"1px solid var(--border-divider)", color:"var(--text-muted)", fontFamily:"var(--font-data)", fontSize:11 }}>{ARCHETYPES[k].regions.join(" · ")}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Panel>
+      </div>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

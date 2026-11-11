@@ -62,7 +62,7 @@ const FieldInput = ({ label, value, onChange, onBlur, validators, hint, placehol
 .mds-field-input{padding:8px 12px;border:1px solid var(--border);background:var(--bg-light);
   color:var(--text-primary);font-family:var(--font-body);font-size:13px;border-radius:var(--radius-chip,2px);
   transition:border-color .12s,box-shadow .12s;}
-.mds-field-input:focus{outline:none;border-color:var(--accent);outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
+.mds-field-input:focus{outline:none;border-color:var(--interaction-focus,#2D6FB3);outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-field-input--error{border-color:var(--red);}
 .mds-field-input--error:focus{outline:2px solid color-mix(in srgb,var(--red) 55%,transparent);outline-offset:1px;}
 .mds-field-hint{font-size:11px;color:var(--text-muted);line-height:1.4;}
@@ -97,7 +97,7 @@ const FormErrorSummary = ({ errors, fields }) => {
   if (errorList.length === 0) return null;
 
   const css = `
-.mds-form-errors{background:var(--red-a10,rgba(168,68,60,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
+.mds-form-errors{background:var(--red-a10,rgba(166,67,63,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
   padding:12px;margin-bottom:16px;}
 .mds-form-errors-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px;}
 .mds-form-errors-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}

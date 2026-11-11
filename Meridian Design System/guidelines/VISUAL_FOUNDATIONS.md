@@ -1,97 +1,88 @@
 # Meridian — Visual Foundations
 
-Grounded in the desktop app `src/Meridian.Wpf/Styles/*.xaml`. The language is **"Institutional
-Ops"**: a warm paper workstation, hairline structure, one copper accent, desaturated
+Grounded in the desktop app `src/Meridian.Wpf/Styles/*.xaml`. The language is **"Programmed Institutionalism"**: a light paper workstation, hairline structure, one terracotta accent, desaturated
 semantics, no gradients or glow.
 
 ## Color
 
-**Canvas & surfaces** (`ThemeTokens.xaml`)
-*Programmed Institutionalism v2.0 — warm paper, not cool concrete. The interface material is
-drafting stock: surfaces are separated by fine rules and tonal steps, never by shadow.*
+**Canvas & surfaces** — the v2.1 material hierarchy
+- **Paper** `#F2F0EB` — the application canvas everything sits on
+- **Rail / recessed** `#EBE8E1` — command bands, nav rail, sticky headers, inset wells
+- **Plate** `#F8F7F3` — the primary workspace surface (panels, cards)
+- **Well** `#FCFBF8` — data surfaces and raised cells; data reads brightest
+- **Overlay** `#FFFFFF` — dialogs, menus, popovers
+- Row hover `#EDEFF0`; selected surface `#E7EDF2` (interaction blue, not the brand)
+- Chrome (brand bar + status bar) graphite `#29323A`, text `#F1EFEA`
 
-- Window canvas `#F2F0EC` (Soft Stone) — the drafting table everything sits on
-- Command bars / wells `#EDEAE4`
-- Card / panel `#FBFAF8` (Architect White); raised (metric tiles, inspector rails) `#F6F4F0`
-- Row hover `#F0EEE9`; pressed / selected wash `#F2E3DB`
-- Chrome (brand bar + status bar) warm black `#1F1D1A`, text `#F4F2ED`
+**Borders** carry the structure — `#D2CDC3` default, `#BEB8AD` hover, `#AAA49A` strong,
+`#E2DED5` subtle divider. **Focus is blue** `#2D6FB3` — the system talking, not the brand.
 
-**Borders** carry the structure — `#E4E3DE` default, `#C6C3BB` hover, `#AFABA1` strong,
-`#A85436` focus. 1px rules do the separating; 2px only for emphasis.
+**Text** — primary `#20252B`, secondary `#535C65`, muted `#606870`, disabled `#A4ABB2`.
 
-**Text** — primary `#22252A` (Carbon), secondary `#4E5258` (Warm Graphite), muted `#5E666F`
-(Slate), disabled `#94999F`.
+**Signal** — a single terracotta `#C56343` (active identity marker, crosshair, scenario series,
+report covers). Controlled variant `#CB6E4E`, pointer-emphasized variant `#D2795A`. Use one
+purposeful signal occurrence per composition. Primary actions are graphite; terracotta is never a
+loss, error, action, or focus color.
 
-**Accent** — a single copper `#A85436` (primary buttons, focus rings, active nav, crosshair).
-Pressed `#8C4429`, hover `#AF6143` (opaque — 4.55:1 under the white label). One accented
-action per screen. Deliberately *not* blue.
+**Interaction family** — focus `#2D6FB3`, selection `#496C8F`, selected surface `#E7EDF2`,
+interaction hover `#DDE5EC`. Selection and focus are structural feedback, so they stay blue in
+every brand skin.
 
-> The source brief proposed Terracotta `#D16A4A` or Copper `#B76841`. Both fail this package's
-> WCAG AA gate as text on a card (3.43:1 and 3.97:1 against a 4.5:1 floor), so the hue is kept
-> and the value taken down to `#A85436` — 5.05:1 as text, 5.27:1 under a white label. The lighter
-> `#D16A4A` survives as `--accent-figure`, for the Meridian Field motif and report covers, where
-> it never sits behind text.
+**Semantic accents** are desaturated and always rendered as a **trio** — dim text · solid 1px
+border · alpha-10 fill. Never solid fills.
+- Success green `#2E7655`
+- Danger red `#B54B42`
+- Warning amber `#986717`
+- Pending purple `#2F648A`
 
-**Semantic accents** are desaturated, independent of the brand accent, and always rendered as a
-**trio** — dim text · solid 1px border · alpha-10 fill. Never solid fills. Never use the accent
-for positive/negative values.
-- Success, muted forest `#3A7A56`
-- Danger, brick `#A8443C`
-- Warning, amber ochre `#8A5C12`
-- Pending, slate-violet `#5D5486`
-
-**Environment modes** — always visible: Live brick `#A8443C` (real money), Paper copper `#A85436`
-(simulated), Fixture ochre `#8A5C12` (replay/recorded).
-
-**Dark mode** is material, not luminous: warm black `#14120F` canvas, graphite `#201D19` panels,
-paper-white `#EFEBE4` text, and a lifted copper `#D98A64` carrying dark ink `#1A1511`. No glowing
-grids, no saturated gradients, no glass.
+**Environment modes** — always visible: Live red `#B54B42` (real money), Paper slate `#5D7286`
+(simulated), Fixture amber `#986717` (replay/recorded).
 
 ## Type (`ThemeTypography.xaml`)
 
-- Display — Segoe UI Variable Display / Semibold, weight 600
-- Body / UI — Segoe UI Variable Text, 13px / 20px line
-- Data — Cascadia Mono / JetBrains Mono / Consolas, tabular-nums, for every price, id,
+- Display — IBM Plex Sans / Semibold, weight 600
+- Body / UI — IBM Plex Sans, 14px / 20px line
+- Data — IBM Plex Mono / Consolas, tabular-nums, for every price, id,
   timestamp, count
 
-Ramp (px): page title 22 · section 15 · card title 14 · body 13 · **metric 24 (mono 600)** ·
-data value 18 (mono 600) · label 10 (small-caps, muted). Labels use `AllSmallCaps`, so they
+Ramp (px): page title 24 · section 16 · card title 13 · body 13 · **metric 28 (mono 700)** ·
+data value 16 (mono 600) · label 9 (small-caps, muted). Labels use `AllSmallCaps`, so they
 render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: unified **2px** across chips, controls, and cards/panels — one tight corner.
-  Structure comes from borders, not rounding; the named scale never exceeds 6px (`--radius-xl`,
-  large sheets only).
+- Radii: **2 / 4 / 6** — 2px chips, 4px controls and panels, 6px large sheets; never above 8. Structure
+  comes from rules, not rounding
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
-- Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
-  hard-edged **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays that genuinely
-  float above the plane. Everything else is borders.
-- Spacing rhythm: 24 section · 16 card · 12 compact · 8 tight
+- Shadows: surfaces are **flat — no card shadow**. The only elevation is a tight hard-edged
+  **menu** shadow `0 2px 6px rgba(0,0,0,.18)` on detached overlays. Everything else is borders.
+- Spacing rhythm (4px base): 64 report · 48 macro · 32 workspace · 24 section · 16 generous · 12 standard · 8 tight · 4 micro
 - Padding: card 20 · compact card 16 · metric 18
-- Chrome: 48px brand bar · 28px status bar · 224px nav rail · ~34px dense row
+- Chrome: 48px brand bar · 28px status bar · 224px nav rail · 36px standard row (dense 28 · review 44)
 
 ## Interaction & motion
 
-- Primary button: hover = `--accent-hover` **opaque** (never accent @ α — compositing eats the
-  label contrast), press = `--accent-dim` (no movement, no offset shadow)
-- Ghost button: hover `#F0EEE9`, press `#F2E3DB`, border darkens to focus on press
-- Nav item: active = `#F2E3DB` wash + **3px copper left indicator**; hover `#F0EEE9`
-- Table row: hover/selected = `#F2E3DB` + `inset 3px 0 0 #A85436` left rail; zebra at `#F6F4F0`
-- Input: hover darkens border; focus = copper border + 2px ring; error = red border
-- Motion: 100–150ms ease on color/background/border only. No springs, no entrance animation,
+- Primary button: hover = accent @ 80% α, press = `--accent-dim` (no movement, no offset shadow)
+- Ghost button: hover `#EDEFF0`, press `#E7EDF2`, border darkens to focus on press
+- Nav item: active = `#E7EDF2` wash + **3px terracotta left indicator**; hover `#EDEFF0`
+- Table row: hover/selected = `#E7EDF2` + `inset 3px 0 0 #496C8F` left rail; zebra at `#FCFBF8`
+- Input: hover darkens border; focus = blue border + 2px ring; error = red border
+- Motion: 120–300ms standard cubic on color/background/border only. No springs, no entrance animation,
   no decorative loops. Live numbers update silently.
 
 ## Backgrounds
 
 Flat solid surfaces. **No gradients, no textures, no photography, no glow.** The only
 decorative asset is `assets/brand/meridian-hero.svg`. Depth is carried entirely by visible,
-load-bearing borders — surfaces are flat, with no card shadow.
+load-bearing borders \u2014 surfaces are flat, with no card shadow.
 
 ## Charts
 
-Paper plot `#FBFAF8`, surround `#F2F0EC`, grid `#E4E3DE`, axis text `#5E666F`, border `#AFABA1`.
-The crosshair is chrome, not a series: it takes `--text-secondary` `#4E5258` so it separates from
-the loss series by chroma rather than hue, which it crosses in every candle and equity plot.
-Series: equity green `#3A7A56`, drawdown red `#A8443C`, primary line copper `#A85436`,
-secondary/benchmark `--text-muted` `#5E666F` (dashed), warning ochre `#8A5C12`.
+Panel-white plot, grid `#E2DED5`, axis text `#606870`, frame rules `#AAA49A`, crosshair terracotta.
+**Data ink is navy `#2E4B6E`** (`--chart-primary`) — the accent never draws an observed series.
+Time recession: Today navy → “1M ago” steel (`--chart-compare-1`) → “3M ago” gray
+(`--chart-compare-2`). Hypothetical/shocked curves are **dashed terracotta** (`--chart-scenario`)
+so a scenario can never be read as observed data. Realized/unrealized splits pair navy with light
+gray (`--chart-realized` / `--chart-unrealized`). Signed values keep the independent semantics:
+equity/up green `#2E7655`, drawdown/down red `#B54B42`, warning ochre `#986717`; benchmark
+`--chart-secondary` gray, dashed.

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Analytical Workbench" description="Reference for the visualization grammar — claim-led viewport, evidence inspector." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
+<meta name="dc-template" content="analytical-workbench">
+<style>html,body{margin:0;padding:0;height:100%;}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Analysis" hint-size="100%,780px">
+<div data-screen-label="Analytical workbench" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Analytical Workbench" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+  <div style="display:flex;flex:1;min-height:0;">
+    <x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="{{ navActive }}" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+    <main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;">
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="analytical-workbench" persist="{{ true }}" storage="{{ sessionStore }}" default-entries="{{ trailSeed }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,32px">
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrail" label="Evidence" hint-size="100%,32px"></x-import>
+        <x-import component="TrailBridge" from="../_scaffold/trail-bridge.jsx" on-api="{{ onTrailApi }}" hint-size="0px,0px"></x-import>
+      </x-import>
+      <h1 style="margin:0;font:600 11px var(--font-body);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);">Analytical workbench · yield-curve evidence</h1>
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ClaimHeader" context="{{ claimContext }}" claim="The belly steepened while the long end remained anchored." note="Current versus one-month prior on a shared tenor scale. The scenario curve is model-derived and labelled as such — it is not an observation." states="{{ claimStates }}" hint-size="100%,86px">
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ view }}" options="{{ viewOptions }}" on-change="{{ onView }}" hint-size="200px,26px"></x-import>
+      </x-import>
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="analytical-workbench" storage="{{ sessionStore }}" regions="{{ layoutRegions }}" layouts="{{ layoutPresets }}" slots="{{ layoutSlots }}" direction="row" gap="{{ 12 }}" style="flex:1;min-height:0" hint-size="100%,900px">
+        <div style="display:flex;flex-direction:column;gap:14px;min-width:0;padding:10px;">
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px 14px 8px;">
+            <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:10px;">
+              <div style="min-width:0;">
+                <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Primary evidence</div>
+                <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 3px;">US Treasury curve: current, prior, and scenario</h2>
+                <p style="font-size:12px;line-height:17px;color:var(--text-muted);margin:0;max-width:76ch;">Direct labels, one shared scale, visible source state, and a selected-point datum replace detached legends and hover-only discovery.</p>
+              </div>
+            </div>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.TraceChart" categories="{{ tenors }}" series="{{ series }}" annotations="{{ annotations }}" selected="{{ selected }}" on-select="{{ onSelectPoint }}" height="{{ chartHeight }}" y-unit="Yield (%)" x-unit="Tenor" y-format="{{ pct }}" description="US Treasury curve: current, one-month prior, and bull-steepener scenario by tenor." hint-size="100%,300px"></x-import>
+            <div style="display:flex;gap:10px;border-top:1px solid var(--border-divider);padding-top:10px;margin-top:6px;flex-wrap:wrap;">
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="10Y yield" value="{{ selectedValue }}" delta="{{ selectedDelta }}" hint-size="180px,64px"></x-import>
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="2s10s" value="+25 bp" delta="+17 bp" hint-size="180px,64px"></x-import>
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="5s30s" value="+57 bp" delta="+6 bp" hint-size="180px,64px"></x-import>
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="Curve regime" value="Steepening" delta="Bull · model classification" hint-size="180px,64px"></x-import>
+            </div>
+            <div style="padding:10px 0 4px;">
+              <x-import component-from-global-scope="MeridianDesignSystem_205d17.ConnectionState" state="live" subject="Prices" age="42s" cadence="15s" detail="Reference attributes stale 18m — last known good shown" hint-size="420px,26px"></x-import>
+            </div>
+          </section>
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Standardized comparison plates</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 3px;">Peer curves preserve scale, order, and annotation geometry</h2>
+            <p style="font-size:12px;line-height:17px;color:var(--text-muted);margin:0 0 12px;max-width:76ch;">Every plate uses the same domain and the same four tenors, so differences stay comparable rather than aesthetically normalized.</p>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.PlateGrid" plates="{{ plates }}" categories="{{ plateTenors }}" domain="{{ plateDomain }}" format="{{ plateFormat }}" selected-id="{{ plateId }}" on-select="{{ onPlate }}" hint-size="100%,190px"></x-import>
+          </section>
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Exact values</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 10px;">Rate instruments — shared units, explicit conditions</h2>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" row-key="index" columns="{{ tableColumns }}" rows="{{ tableRows }}" active-key="{{ tableIndex }}" on-row-click="{{ onRow }}" hint-size="100%,260px"></x-import>
+          </section>
+          <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
+            <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);">Layered graph · orthogonal routing</div>
+            <h2 style="font:600 15px var(--font-display);color:var(--text-primary);margin:4px 0 3px;">Provenance and downstream dependency</h2>
+            <p style="font-size:12px;line-height:17px;color:var(--text-muted);margin:0 0 12px;max-width:76ch;">Directional flow uses a stable layered layout. Node placement, edge routing, selection, and the text outline are separate contracts.</p>
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.LineageGraph" nodes="{{ nodes }}" edges="{{ edges }}" selected-id="{{ nodeId }}" on-select="{{ onNode }}" height="{{ graphHeight }}" hint-size="100%,320px"></x-import>
+          </section>
+        </div>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceInspector" value="{{ selectedValue }}" caption="{{ selectedCaption }}" condition="{{ selectedCondition }}" hint-size="352px,620px">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Evidence" fields="{{ evidenceFields }}" hint-size="100%,120px"></x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Data-state contract" hint-size="100%,140px">
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataConditionLegend" items="{{ contract }}" hint-size="100%,120px"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="10Y model range" note="Intervals describe the scenario model, not observed market-data uncertainty." hint-size="100%,120px">
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.IntervalBar" rows="{{ intervals }}" domain="{{ intervalDomain }}" format="{{ intervalFormat }}" hint-size="100%,70px"></x-import>
+          </x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceSection" title="Provenance trace" hint-size="100%,180px">
+            <x-import component-from-global-scope="MeridianDesignSystem_205d17.ProvenanceTrace" steps="{{ traceSteps }}" selected-id="{{ nodeId }}" on-select="{{ onNode }}" hint-size="100%,160px"></x-import>
+          </x-import>
+        </x-import>
+      </x-import>
+    </main>
+  </div>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="analytical-workbench" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Workbench · keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1000},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  componentDidMount() { this.applyChrome(); this._untick = window.MeridianWorld && window.MeridianWorld.tick(this); }
+  componentWillUnmount() { this._untick && this._untick(); }
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidUpdate() { this.applyChrome(); }
+
+  state = { view: "all", index: 8, plateId: "ust", nodeId: "y10" };
+  TENORS = ["1M","3M","6M","1Y","2Y","3Y","5Y","7Y","10Y","20Y","30Y"];
+  NODES = [["refinitiv","Refinitiv rates"],["bloomberg","Bloomberg rates"],["clean","Clean & normalize"],["curve","Curve builder v14.7"],["y10","10Y yield"],["valuation","Portfolio valuation"],["risk","Risk engine"],["report","Daily rates report"]];
+  PLATES = [["ust","United States · UST"],["gilt","United Kingdom · GILT"],["bund","Germany · BUND"],["jgb","Japan · JGB"]];
+
+  // Operator layer — tenors, lineage nodes and plates are the screen's objects: type "10Y", "curve",
+  // "bund" in the palette and jump. Every arrival is recorded in the session trail.
+  visit(entry) { if (this._trail) this._trail.visit(entry); }
+  selectTenor(i) { this.setState({ index: i }); this.visit({ type: "tenor", typeLabel: "Tenor", id: this.TENORS[i], label: "UST " + this.TENORS[i], meta: "current curve" }); }
+  selectNode(id) { this.setState({ nodeId: id }); const n = this.NODES.find((x) => x[0] === id); if (n) this.visit({ type: "lineage", typeLabel: "Lineage", id, label: n[1] }); }
+  selectPlate(id) { this.setState({ plateId: id }); const p = this.PLATES.find((x) => x[0] === id); if (p) this.visit({ type: "plate", typeLabel: "Plate", id, label: p[1] }); }
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const views = ["all", "prior", "cur"];
+    return L.build({
+      screenId: "analytical-workbench", sections: this.navSections(), activeId: "workbench", go: () => {},
+      actions: [
+        { id: "tenor-next", label: "Next tenor", keys: "l", run: () => this.selectTenor(Math.min(this.TENORS.length - 1, this.state.index + 1)) },
+        { id: "tenor-prev", label: "Previous tenor", keys: "h", run: () => this.selectTenor(Math.max(0, this.state.index - 1)) },
+        { id: "view-cycle", label: "Cycle series view (All · Vs 1M · Current)", keys: "v", run: () => this.setState({ view: views[(views.indexOf(this.state.view) + 1) % views.length] }) },
+        { id: "view-all", label: "Show all series", keys: "1", run: () => this.setState({ view: "all" }) },
+        { id: "view-prior", label: "Current vs 1M prior", keys: "2", run: () => this.setState({ view: "prior" }) },
+        { id: "view-cur", label: "Current only", keys: "3", run: () => this.setState({ view: "cur" }) },
+        { id: "pin", label: "Pin selected tenor to the trail", keys: "p", run: () => this._trail && this._trail.pin({ type: "tenor", typeLabel: "Tenor", id: this.TENORS[this.state.index], label: "UST " + this.TENORS[this.state.index] }) },
+      ],
+      objects: [
+        ...this.TENORS.map((t, i) => ({ type: "tenor", typeLabel: "Tenor", id: t, label: "UST " + t, keywords: ["treasury", "yield"], open: () => this.selectTenor(i) })),
+        ...this.NODES.map(([id, label]) => ({ type: "lineage", typeLabel: "Lineage", id, label, keywords: ["provenance", "node"], open: () => this.selectNode(id) })),
+        ...this.PLATES.map(([id, label]) => ({ type: "plate", typeLabel: "Plate", id, label, keywords: ["curve", "peer"], open: () => this.selectPlate(id) })),
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open(o) }, { id: "pin", label: "Pin", run: (o) => { o.open(o); this._trail && this._trail.pin({ type: o.type, typeLabel: o.typeLabel, id: o.id, label: o.label }); } }],
+    });
+  }
+  // The rail is the suite app map, not a per-screen invention (app-map.js).
+  navSections() { return (window.MeridianAppMap ? window.MeridianAppMap.sections("workbench") : []); }
+
+  renderVals() {
+    this.applyChrome();
+    const TENORS = this.TENORS;
+    const layer = this.operatorLayer();
+    const L = window.MeridianOperatorLayer;
+    const CURRENT = [4.30,4.34,4.35,4.28,4.20,4.18,4.24,4.32,4.45,4.72,4.81];
+    const PRIOR = [4.36,4.38,4.36,4.26,4.09,4.05,4.11,4.20,4.34,4.63,4.74];
+    const SCENARIO = [4.22,4.27,4.29,4.33,4.36,4.39,4.42,4.50,4.60,4.74,4.88];
+    const i = this.state.index;
+    const bp = Math.round((CURRENT[i] - PRIOR[i]) * 100);
+    const R = React;
+    const el = (Name, props) => R.createElement(window.MeridianDesignSystem_205d17[Name], props);
+
+    return {
+      dataState: this.props.dataState ?? "ready",
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      clockLabel: window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC",
+      navActive: "workbench",
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("workbench") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      sessionStore: L ? L.sessionStore() : undefined,
+      // Workspace layout (track A-1) — arrangement only, session-scoped: evidence column vs inspector.
+      layoutRegions: [{ id: "evidence", size: 2.6 }, { id: "inspector", size: 1 }],
+      layoutPresets: [{ name: "Wide inspector", regions: { evidence: { size: 1.6 }, inspector: { size: 1 } } }, { name: "Evidence only", regions: { evidence: { size: 1 }, inspector: { collapsed: true } } }],
+      layoutSlots: [{ id: "evidence", label: "Evidence", minSize: 0.4, chrome: false }, { id: "inspector", label: "Inspector", minSize: 0.18 }],
+      trailSeed: [{ type: "tenor", typeLabel: "Tenor", id: TENORS[i], label: "UST " + TENORS[i], meta: "current curve" }],
+      onTrailApi: this._onTrailApi || (this._onTrailApi = (api) => { this._trail = api; }),
+      onTrailNavigate: (entry) => {
+        if (!entry) return;
+        if (entry.type === "tenor") this.setState({ index: Math.max(0, TENORS.indexOf(entry.id)) });
+        else if (entry.type === "lineage") this.setState({ nodeId: entry.id });
+        else if (entry.type === "plate") this.setState({ plateId: entry.id });
+      },
+      claimContext: ["Rates", "United States Treasury", "14 May 2026"],
+      claimStates: [
+        { condition: "confirmed", label: "Prices live", detail: "42s" },
+        { condition: "stale", label: "Reference", detail: "18m" },
+        { condition: "estimated", label: "Scenario" },
+      ],
+      view: this.state.view,
+      viewOptions: [
+        { value: "all", label: "All" },
+        { value: "prior", label: "Vs 1M" },
+        { value: "cur", label: "Current" },
+      ],
+      onView: (v) => this.setState({ view: v }),
+      tenors: TENORS,
+      chartHeight: 300,
+      graphHeight: 300,
+      pct: (v) => v.toFixed(1) + "%",
+      series: [
+        { id: "cur", label: "Current", role: "actual", values: CURRENT },
+        { id: "prior", label: "1M prior", role: "prior", values: PRIOR, hidden: this.state.view === "cur" },
+        { id: "scen", label: "Bull steepener", role: "scenario", values: SCENARIO, hidden: this.state.view !== "all" },
+      ],
+      annotations: [
+        { type: "range", from: 4, to: 6, label: "2Y–5Y belly" },
+        { type: "bracket", from: 4, to: 6, at: 4.42, label: "Belly +11–13 bp vs 1M" },
+      ],
+      selected: { seriesId: "cur", index: i },
+      onSelectPoint: (s) => this.selectTenor(s.index),
+      selectedValue: CURRENT[i].toFixed(2) + "%",
+      selectedDelta: (bp >= 0 ? "+" : "\u2212") + Math.abs(bp) + " bp vs 1M",
+      selectedCaption: "Current \u00b7 " + TENORS[i] + " \u00b7 " + (bp >= 0 ? "+" : "\u2212") + Math.abs(bp) + " bp vs 1M",
+      selectedCondition: "confirmed",
+      evidenceFields: [
+        { label: "Source", value: "Refinitiv" },
+        { label: "Observed", value: observedAt },
+        { label: "Field", value: "YLD_YTM_MID" },
+        { label: "Quality", value: "Confirmed \u00b7 98%" },
+      ],
+      contract: [
+        { label: "Price observation", condition: "confirmed" },
+        { label: "Scenario result", condition: "estimated" },
+        { label: "Reference attributes", condition: "stale", state: "Stale 18m" },
+        { label: "Optional liquidity field", condition: "missing" },
+      ],
+      intervals: [
+        { label: "90%", lo: 4.07, hi: 4.91, mid: 4.49, wide: true },
+        { label: "50%", lo: 4.29, hi: 4.68, mid: 4.49 },
+        { label: "Mean", lo: 4.49, hi: 4.49, mid: 4.49 },
+      ],
+      intervalDomain: [3.95, 5.05],
+      intervalFormat: (v) => v.toFixed(2),
+      traceSteps: [
+        { id: "refinitiv", label: "Refinitiv rates feed", meta: "Snapshot " + observedAt },
+        { id: "clean", label: "Clean & normalize", meta: "Holiday and outlier rules" },
+        { id: "curve", label: "Curve builder v14.7", meta: "Bootstrapped par curve" },
+        { id: "y10", label: "10Y yield", meta: "Derived field \u00b7 " + CURRENT[8].toFixed(2) + "%" },
+      ],
+      plateTenors: ["2Y", "5Y", "10Y", "30Y"],
+      plateDomain: [0, 6],
+      plateFormat: (v) => v.toFixed(0),
+      plates: [
+        { id: "ust", title: "United States", tag: "UST", values: [4.20, 4.24, 4.45, 4.81], footerLabel: "10Y change", footerValue: "+11 bp" },
+        { id: "gilt", title: "United Kingdom", tag: "GILT", values: [4.11, 4.05, 4.12, 4.68], footerLabel: "10Y change", footerValue: "+10 bp" },
+        { id: "bund", title: "Germany", tag: "BUND", values: [2.42, 2.31, 2.38, 2.98], footerLabel: "10Y change", footerValue: "+9 bp" },
+        { id: "jgb", title: "Japan", tag: "JGB", values: [0.42, 0.71, 1.12, 2.32], footerLabel: "10Y change", footerValue: "+9 bp" },
+      ],
+      plateId: this.state.plateId,
+      onPlate: (id) => this.selectPlate(id),
+      tableColumns: [
+        { key: "instrument", label: "Instrument" },
+        { key: "yield", label: "Yield", align: "right", cell: (r) => el("DataConditionValue", { value: r.yield == null ? null : r.yield.toFixed(2) + "%", condition: r.condition, detail: r.detail, align: "right" }) },
+        { key: "delta", label: "\u0394 1M", align: "right", cell: (r) => r.delta == null ? "—" : (r.delta >= 0 ? "+" : "−") + Math.abs(r.delta) + " bp" },
+        { key: "state", label: "State", cell: (r) => el("DataCondition", { condition: r.condition, detail: r.detail }) },
+        { key: "source", label: "Source" },
+      ],
+      tableRows: [
+        { instrument: "US Treasury 2Y", yield: 4.20, delta: 11, condition: "confirmed", source: "Refinitiv" },
+        { instrument: "US Treasury 5Y", yield: 4.24, delta: 13, condition: "confirmed", source: "Refinitiv" },
+        { instrument: "US Treasury 10Y", yield: 4.45, delta: 11, condition: "confirmed", source: "Refinitiv" },
+        { instrument: "US Treasury 30Y", yield: 4.81, delta: 7, condition: "stale", detail: "18m", source: "Refinitiv" },
+        { instrument: "SOFR 3M", yield: 4.34, delta: -1, condition: "estimated", source: "Model" },
+        { instrument: "Liquidity score", yield: null, delta: null, condition: "missing", source: "\u2014" },
+      ],
+      tableIndex: 2,
+      onRow: () => {},
+      nodeId: this.state.nodeId,
+      onNode: (id) => this.selectNode(id),
+      nodes: [
+        { id: "refinitiv", label: "Refinitiv rates", kind: "source", meta: "Source \u00b7 live" },
+        { id: "bloomberg", label: "Bloomberg rates", kind: "source", meta: "Source \u00b7 live" },
+        { id: "clean", label: "Clean & normalize", kind: "transformation", meta: "Transformation" },
+        { id: "curve", label: "Curve builder v14.7", kind: "model", meta: "Model" },
+        { id: "y10", label: "10Y yield", kind: "field", meta: "Derived field \u00b7 " + CURRENT[8].toFixed(2) + "%" },
+        { id: "valuation", label: "Portfolio valuation", kind: "consumer", meta: "Consumer" },
+        { id: "risk", label: "Risk engine", kind: "consumer", meta: "Consumer" },
+        { id: "report", label: "Daily rates report", kind: "output", meta: "Output \u00b7 PDF/API" },
+      ],
+      edges: [
+        { from: "refinitiv", to: "clean", label: "feeds", dashed: true },
+        { from: "bloomberg", to: "clean", label: "feeds", dashed: true },
+        { from: "clean", to: "curve", label: "normalizes" },
+        { from: "curve", to: "y10", label: "derives" },
+        { from: "curve", to: "valuation", label: "publishes" },
+        { from: "y10", to: "risk", label: "consumed by" },
+        { from: "y10", to: "valuation", label: "consumed by" },
+        { from: "valuation", to: "report", label: "summarizes" },
+      ],
+      statusItems: [
+        { label: "Source", value: "Refinitiv" },
+        { label: "As of", value: observedAt },
+        { label: "Selection", value: TENORS[i] },
+        { label: "View", value: "URL-backed" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

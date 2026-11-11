@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="966" height="240" viewBox="0 0 966 240" role="img" aria-label="Meridian monochrome mark">
+      <title>Meridian monochrome mark</title>
+      
+      <path d="M 85.00 120.67 A 55.00 55.00 0 0 1 195.00 120.67" fill="none" stroke="#20252B" stroke-width="1.24" stroke-linecap="round"></path>
+<path d="M 64.83 120.67 A 75.17 75.17 0 0 1 215.17 120.67" fill="none" stroke="#20252B" stroke-width="1.24" stroke-linecap="round"></path>
+<path d="M 44.67 120.67 A 95.33 95.33 0 0 1 235.33 120.67" fill="none" stroke="#20252B" stroke-width="1.24" stroke-linecap="round"></path>
+<circle cx="52.00" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="77.67" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="103.33" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="129.00" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="154.67" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="180.33" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="206.00" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="231.67" cy="117.00" r="4.03" fill="#20252B"></circle>
+<circle cx="52.00" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="77.67" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="103.33" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="129.00" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="154.67" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="180.33" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="206.00" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="231.67" cy="142.67" r="4.03" fill="#20252B"></circle>
+<circle cx="52.00" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="77.67" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="103.33" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="129.00" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="154.67" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="180.33" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="206.00" cy="168.33" r="4.03" fill="#20252B"></circle>
+<circle cx="77.67" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="103.33" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="129.00" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="154.67" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="180.33" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="206.00" cy="194.00" r="4.03" fill="#20252B"></circle>
+<circle cx="103.33" cy="219.67" r="4.03" fill="#20252B"></circle>
+<circle cx="129.00" cy="219.67" r="4.03" fill="#20252B"></circle>
+<circle cx="154.67" cy="219.67" r="4.03" fill="#20252B"></circle>
+<circle cx="180.33" cy="219.67" r="4.03" fill="#20252B"></circle>
+<line x1="140.00" y1="32.67" x2="140.00" y2="225.17" stroke="#20252B" stroke-width="1.83" stroke-linecap="round"></line>
+<circle cx="140.00" cy="32.67" r="3.85" fill="#20252B"></circle>
+<circle cx="140.00" cy="225.17" r="3.85" fill="#20252B"></circle>
+<circle cx="231.67" cy="168.33" r="4.86" fill="#20252B"></circle><path d="M148 0H326V864C326 965 324 1093 320 1216C377 1068 425 940 456 864L804 0H952L1298 864C1330 944 1380 1080 1437 1238C1434 1108 1431 971 1431 864V0H1608V1490H1362L990 528C964 459 913 327 881 237C848 327 798 459 771 528L393 1490H148Z" fill="#20252B" transform="translate(310.000 142.000) scale(0.0527344 -0.0527344)"></path>
+<path d="M148 0H1117V160H328V683H1059V843H328V1330H1117V1490H148Z" fill="#20252B" transform="translate(424.202 142.000) scale(0.0527344 -0.0527344)"></path>
+<path d="M148 0H328V585H687C692 585 696 585 701 585L1015 0H1225L890 614C1085 674 1207 825 1207 1038C1207 1316 1012 1490 701 1490H148ZM328 745V1330H695C902 1330 1029 1219 1029 1038C1029 857 903 745 697 745Z" fill="#20252B" transform="translate(508.397 142.000) scale(0.0527344 -0.0527344)"></path>
+<path d="M328 1490H148V0H328Z" fill="#20252B" transform="translate(598.288 142.000) scale(0.0527344 -0.0527344)"></path>
+<path d="M608 0C1062 0 1322 282 1322 748C1322 1210 1062 1490 628 1490H148V0ZM328 160V1330H616C966 1330 1142 1108 1142 748C1142 384 966 160 596 160Z" fill="#20252B" transform="translate(644.990 142.000) scale(0.0527344 -0.0527344)"></path>
+      <line x1="741.05" y1="44.80" x2="741.05" y2="161.44" stroke="#20252B" stroke-width="1.94" stroke-linecap="round"></line>
+      <circle cx="741.05" cy="44.80" r="2.92" fill="#20252B"></circle>
+      <circle cx="741.05" cy="93.91" r="3.35" fill="#20252B"></circle>
+      <circle cx="741.05" cy="161.44" r="2.92" fill="#20252B"></circle>
+    <path d="M20 0H208L358 418H980L1126 0H1318L774 1490H570ZM415 578 530 898C568 1003 608 1123 672 1321C736 1123 776 1003 813 898L925 578Z" fill="#20252B" transform="translate(766.971 142.000) scale(0.0527344 -0.0527344)"></path>
+<path d="M148 0H328V864C328 930 326 1058 319 1243C426 1064 510 926 551 862L1097 0H1306V1490H1126V528C1126 478 1129 349 1132 245C1072 351 1004 464 969 520L355 1490H148Z" fill="#20252B" transform="translate(859.129 142.000) scale(0.0527344 -0.0527344)"></path>
+    </svg>

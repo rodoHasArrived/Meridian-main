@@ -1,4 +1,4 @@
-<!-- @dsCard group="Charts" viewport="640x560" name="P&L Calendar" subtitle="Month-grid daily P&L heat view with statement total" -->
+<!-- @dsCard group="Charts" viewport="640x640" name="P&L Calendar" subtitle="Month-grid daily P&L — signed values, intraday micro-bars, statement total" -->
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
@@ -13,7 +13,7 @@
 <body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { PnLCalendar, Eyebrow } = window.MeridianDesignSystem_4f61be;
+const { PnLCalendar, Eyebrow } = window.MeridianDesignSystem_205d17;
 // Deterministic demo month — weekdays only.
 const VALUES = {};
 const seed = [1240, -3180, 890, 2210, -450, 1875, -925, 3320, 140, -1610,
@@ -24,11 +24,16 @@ for (let d = 1; d <= 30; d++) {
   if (wd === 0 || wd === 6) continue;
   VALUES[`2026-06-${String(d).padStart(2, "0")}`] = seed[i++ % seed.length];
 }
+const BARS = {};
+Object.entries(VALUES).forEach(([k, v], di) => {
+  BARS[k] = Array.from({ length: 8 }, (_, j) =>
+    Math.round(v / 8 + Math.sin((di + 1) * (j + 3) * 2.17) * Math.abs(v) / 4));
+});
 function App() {
   return (
     <div style={{ maxWidth: 600, display: "flex", flexDirection: "column", gap: 8 }}>
       <Eyebrow>Daily P&L · June 2026 · strategy momentum.v4</Eyebrow>
-      <PnLCalendar month="2026-06" values={VALUES} />
+      <PnLCalendar month="2026-06" values={VALUES} bars={BARS} heat={false} cellHeight={58} />
     </div>
   );
 }

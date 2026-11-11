@@ -4,28 +4,29 @@
 // row, with DPI / TVPI derived when distributions and NAV are present. Cent math is
 // done on Numbers the contract already provides; formatting is compact currency.
 import React from "react";
+import { formatMoneyCompact } from "../core/format.js";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-cmt{display:flex;flex-direction:column;gap:8px;font-family:var(--font-body,"Segoe UI Variable Text",sans-serif);}
+.mds-cmt{display:flex;flex-direction:column;gap:8px;font-family:var(--font-body,"IBM Plex Sans",sans-serif);}
 .mds-cmt__head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}
-.mds-cmt__label{font-size:12px;font-weight:600;color:var(--text-primary,#22252A);
+.mds-cmt__label{font-size:12px;font-weight:600;color:var(--text-primary,#20252B);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mds-cmt__vintage{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:9.5px;font-weight:700;
-  letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#5E666F);white-space:nowrap;}
-.mds-cmt__bar{position:relative;height:8px;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-medium,#EDEAE4);overflow:hidden;}
-.mds-cmt__called{position:absolute;inset:0 auto 0 0;background:var(--accent,#A85436);}
+.mds-cmt__vintage{font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:9.5px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;color:var(--text-muted,#6B737B);white-space:nowrap;}
+.mds-cmt__bar{position:relative;height:8px;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-medium,#EBE8E1);overflow:hidden;}
+.mds-cmt__called{position:absolute;inset:0 auto 0 0;background:var(--brand-signal,#C56343);}
 .mds-cmt__figs{display:flex;flex-wrap:wrap;gap:0 18px;row-gap:6px;}
 .mds-cmt__fig{display:flex;flex-direction:column;gap:1px;min-width:72px;}
 .mds-cmt__k{font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;
-  color:var(--text-muted,#5E666F);}
-.mds-cmt__v{font-family:var(--font-data,"Cascadia Mono",monospace);font-size:11.5px;font-weight:600;
-  color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;}
-.mds-cmt__v small{font-size:9.5px;font-weight:500;color:var(--text-muted,#5E666F);margin-left:3px;}
+  color:var(--text-muted,#6B737B);}
+.mds-cmt__v{font-family:var(--font-data,"IBM Plex Mono",monospace);font-size:11.5px;font-weight:600;
+  color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;}
+.mds-cmt__v small{font-size:9.5px;font-weight:500;color:var(--text-muted,#6B737B);margin-left:3px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "commitment-bar");
@@ -34,14 +35,8 @@ function inject() {
 }
 
 function fmt(v, currency) {
-  if (v == null || Number.isNaN(Number(v))) return "—";
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency", currency, notation: "compact", maximumFractionDigits: 1,
-    }).format(Number(v));
-  } catch {
-    return String(v);
-  }
+  if (v == null || Number.isNaN(Number(v))) return "\u2014";
+  return formatMoneyCompact(Number(v), { currency, decimals: 1 });
 }
 
 export function CommitmentBar({

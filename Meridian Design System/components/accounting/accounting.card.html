@@ -1,4 +1,4 @@
-<!-- @dsCard group="Accounting" viewport="820x420" name="Ledger & money" subtitle="AmountCell encodings + LedgerTable double-entry rows" -->
+<!-- @dsCard group="Accounting" viewport="820x470" name="Ledger & money" subtitle="AmountCell encodings + envelope-carrying figures + LedgerTable double-entry rows" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,7 +23,7 @@
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
-const { AmountCell, LedgerTable } = window.MeridianDesignSystem_4f61be;
+const { AmountCell, LedgerTable } = window.MeridianDesignSystem_205d17;
 const Enc = ({ k, children }) => <><span className="k">{k}</span><span>{children}</span></>;
 ReactDOM.createRoot(document.getElementById("root")).render(
   <div className="grid">
@@ -39,6 +39,19 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Enc k="zero-dash">      <AmountCell value={0} currency="$" /></Enc>
         <Enc k="emphasis">       <AmountCell value={1284002.18} currency="$" emphasis /></Enc>
       </div>
+      <p className="lbl" style={{ marginTop: 6 }}>… carrying an envelope</p>
+      <div className="enc">
+        <Enc k="clean">          <AmountCell value={82440} currency="$" align="left"
+          envelope={{ condition: "confirmed", authority: "source", label: "Client settlement" }} /></Enc>
+        <Enc k="estimated">      <AmountCell value={1290} currency="$" align="left"
+          envelope={{ condition: "estimated", detail: "declared rate", authority: "estimate", label: "Dividend receivable",
+            evidence: [{ label: "Dividend notice", ref: "DIV-0609" }] }} /></Enc>
+        <Enc k="overridden">     <AmountCell value={318.5} currency="$" align="left"
+          envelope={{ condition: "overridden", detail: "voided — duplicate", authority: "desk", label: "Commission" }} /></Enc>
+        <Enc k="material">       <AmountCell value={-64120} currency="$" mode="pnl" align="left"
+          envelope={{ condition: "confirmed", authority: "source", label: "NVDA buy", materiality: { material: true, threshold: "50,000.00" },
+            clocks: { trade: "2026-06-16", settlement: "2026-06-18" } }} /></Enc>
+      </div>
     </div>
     <div className="col">
       <p className="lbl">LedgerTable — cash account, running balance</p>
@@ -47,8 +60,11 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         rows={[
           { date: "2026-06-02", ref: "JV-1031", account: "Trading fees", memo: "IBKR commissions · May", debit: 1840.00 },
           { date: "2026-06-04", ref: "DEP-220",  account: "Wire deposit", credit: 250000.00 },
-          { date: "2026-06-06", ref: "JV-1037", account: "Market-data lease", memo: "Polygon · Q2", debit: 9600.00 },
-          { date: "2026-06-09", ref: "SET-884",  account: "Settled P&L", credit: 41180.22 },
+          { date: "2026-06-06", ref: "JV-1037", account: "Market-data lease", memo: "Polygon · Q2", debit: 9600.00,
+            envelope: { condition: "estimated", detail: "accrued — invoice pending", authority: "estimate",
+              evidence: [{ label: "Vendor contract", ref: "CT-2210" }] } },
+          { date: "2026-06-09", ref: "SET-884",  account: "Settled P&L", credit: 41180.22,
+            envelope: { condition: "confirmed", authority: "derived", detail: "mark-to-settle" } },
           { date: "2026-06-11", ref: "JV-1041", account: "Custody charges", debit: 312.50 },
         ]}
       />

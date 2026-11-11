@@ -1,0 +1,105 @@
+<!-- @dsCard group="Documentation" viewport="1000x760" name="Visualization Grammar" subtitle="Reading path · series-role ledger · eleven data conditions · prohibited deviations" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<title>Visualization grammar</title>
+<link rel="stylesheet" href="../styles.css" />
+<style>
+  body{margin:0;padding:24px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary);}
+  .wrap{max-width:940px;display:flex;flex-direction:column;gap:18px;}
+  h1{font:600 20px var(--font-display);margin:0;}
+  .lede{font-size:12.5px;line-height:18px;color:var(--text-muted);margin:0;max-width:80ch;text-wrap:pretty;}
+  h2{font:600 11px var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin:0 0 8px;}
+  .path{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;}
+  .step{border:1px solid var(--border);background:var(--bg-light);padding:9px 10px;display:flex;flex-direction:column;gap:4px;}
+  .step b{font-size:11px;}
+  .step span{font-size:10.5px;color:var(--text-secondary);line-height:1.4;}
+  .step code{font-family:var(--font-data);font-size:9.5px;color:var(--brand-signal-dim,#A64E33);}
+  table{width:100%;border-collapse:collapse;font-size:11.5px;background:var(--bg-light);border:1px solid var(--border);}
+  th{text-align:left;font-size:10px;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);
+    padding:6px 10px;border-bottom:1px solid var(--border-strong);background:var(--bg-medium);}
+  td{padding:6px 10px;border-bottom:1px solid var(--border-divider);color:var(--text-secondary);vertical-align:middle;}
+  tr:last-child td{border-bottom:0;}
+  svg.spec{display:block;}
+  .conds{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .cond{border:1px solid var(--border);background:var(--bg-light);padding:8px 9px;display:flex;flex-direction:column;gap:3px;}
+  .cond b{font-size:11px;display:flex;align-items:center;gap:5px;}
+  .cond b i{font-style:normal;font-size:9px;}
+  .cond span{font-size:10px;color:var(--text-muted);line-height:1.35;}
+  .cond code{font-family:var(--font-data);font-size:10px;color:var(--text-primary);}
+  .no{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .no div{border:1px solid var(--border);border-left:3px solid var(--red);padding:7px 10px;font-size:11px;
+    color:var(--text-secondary);background:var(--bg-light);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <h1>Visualization &amp; analytical grammar</h1>
+    <p class="lede">Every Meridian visualization answers what changed, compared with what, how certain and current it is, and what to inspect next — in the default view, without hover, detached legends, or explanatory prose. Full law: <code>guidelines/VISUALIZATION_GRAMMAR.md</code>.</p>
+  </div>
+
+  <div>
+    <h2>Reading path — build in this order</h2>
+    <div class="path">
+      <div class="step"><b>1 · Claim</b><span>A testable statement, not a topic</span><code>ClaimHeader</code></div>
+      <div class="step"><b>2 · Evidence</b><span>One dominant surface, 60–75% width</span><code>TraceChart</code></div>
+      <div class="step"><b>3 · Comparison</b><span>Prior, benchmark, peer, scenario</span><code>PlateGrid</code></div>
+      <div class="step"><b>4 · State</b><span>Freshness, uncertainty, missingness</span><code>DataCondition</code></div>
+      <div class="step"><b>5 · Detail</b><span>Selected value and its evidence</span><code>EvidenceInspector</code></div>
+      <div class="step"><b>6 · Action</b><span>Filter, resolve, save, export</span><code>Toolbar</code></div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Series-role ledger — color is assigned by role, never by chart</h2>
+    <table>
+      <thead><tr><th style="width:150px">Role</th><th style="width:130px">Treatment</th><th>Meaning</th><th style="width:190px">Token</th></tr></thead>
+      <tbody>
+        <tr><td>Actual / current</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-actual)" stroke-width="2.25"/><circle cx="55" cy="6" r="3.5" fill="var(--series-actual)"/></svg></td><td>Primary observed evidence</td><td><code>--series-actual</code></td></tr>
+        <tr><td>Prior period</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-prior)" stroke-width="1.5"/><circle cx="55" cy="6" r="3" fill="var(--series-prior)"/></svg></td><td>Historical comparison</td><td><code>--series-prior</code></td></tr>
+        <tr><td>Benchmark</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-benchmark)" stroke-width="1.5" stroke-dasharray="4 4"/></svg></td><td>External reference</td><td><code>--series-benchmark</code></td></tr>
+        <tr><td>Scenario</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-scenario)" stroke-width="1.5" stroke-dasharray="7 5"/><circle cx="55" cy="6" r="3" fill="var(--bg-light)" stroke="var(--series-scenario)" stroke-width="1.5"/></svg></td><td>Model or user alternate — <b>never loss</b></td><td><code>--series-scenario</code></td></tr>
+        <tr><td>Target / threshold</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-target)" stroke-width="1" stroke-dasharray="2 4"/></svg></td><td>Goal, limit, policy boundary</td><td><code>--series-target</code></td></tr>
+        <tr><td>Estimate</td><td><svg class="spec" width="110" height="12"><line x1="2" y1="6" x2="108" y2="6" stroke="var(--series-estimated)" stroke-width="1.5" stroke-dasharray="5 4"/></svg></td><td>Model-derived — carries <code>Est.</code></td><td><code>--series-estimated</code></td></tr>
+        <tr><td>Model interval</td><td><svg class="spec" width="110" height="12"><rect x="2" y="1" width="106" height="10" fill="var(--viz-band-outer)"/><rect x="20" y="1" width="70" height="10" fill="var(--viz-band-inner)"/></svg></td><td>Uncertainty — never data freshness</td><td><code>--viz-band-*</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div>
+    <h2>Eleven data conditions — text + marker, never color alone, never a blank cell</h2>
+    <div class="conds">
+      <div class="cond"><b style="color:var(--cond-confirmed-fg)"><i>●</i>Confirmed</b><span>Observed and validated</span><code>4.35%</code></div>
+      <div class="cond"><b style="color:var(--cond-provisional-fg)"><i>◐</i>Provisional</b><span>Subject to revision</span><code>4.35%p</code></div>
+      <div class="cond"><b style="color:var(--cond-estimated-fg)"><i>○</i>Estimated</b><span>Model-derived</span><code>4.35% Est.</code></div>
+      <div class="cond"><b style="color:var(--cond-stale-fg)"><i>◔</i>Stale</b><span>Past freshness policy</span><code>4.35% · Stale 18m</code></div>
+      <div class="cond"><b style="color:var(--cond-overridden-fg)"><i>◆</i>Overridden</b><span>Operator value in force</span><code>4.35% *</code></div>
+      <div class="cond"><b style="color:var(--cond-missing-fg)"><i>■</i>Missing</b><span>Required, not supplied</span><code>Missing</code></div>
+      <div class="cond"><b style="color:var(--cond-na-fg)"><i>—</i>Not applicable</b><span>Does not apply</span><code>—</code></div>
+      <div class="cond"><b style="color:var(--cond-pending-fg)"><i>◇</i>Pending</b><span>Awaiting an upstream event</span><code>Pending</code></div>
+      <div class="cond"><b style="color:var(--cond-exception-fg)"><i>▲</i>Exception</b><span>Failed a control</span><code>Exception</code></div>
+      <div class="cond"><b style="color:var(--cond-reconciled-fg)"><i>✓</i>Reconciled</b><span>Agreed to an independent source</span><code>Reconciled</code></div>
+      <div class="cond"><b style="color:var(--cond-restricted-fg)"><i>▨</i>Restricted</b><span>Not entitled to see it</span><code>Restricted · Desk policy</code></div>
+    </div>
+  </div>
+
+  <div>
+    <h2>Prohibited deviations</h2>
+    <div class="no">
+      <div>Equal-weight dashboard tiles instead of one dominant viewport</div>
+      <div>A detached legend as the only series key</div>
+      <div>Hover-only essential values</div>
+      <div>Independently scaled comparison plates</div>
+      <div>Force-directed layout for ownership or lineage</div>
+      <div>Terracotta reused as the default loss / error color</div>
+      <div>Blank cells standing for missing or not-applicable data</div>
+      <div>Model uncertainty and data freshness sharing one treatment</div>
+      <div>Mobile settings placed before the main evidence</div>
+      <div>Solving density by shrinking labels</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

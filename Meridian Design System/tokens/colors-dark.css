@@ -1,9 +1,11 @@
-/* Meridian — Dark Mode
+/* Meridian — Dark Mode (Programmed Institutionalism v2.1)
    ─────────────────────
-   Dark overrides the FINAL component tokens directly (not the --theme-* source),
-   so it wins cleanly regardless of white-label brand. All derived tints/dims
-   (--green-a10, --red-dim, …) are color-mix() off these base tokens in colors.css,
-   so they re-derive automatically — we only flip the ~24 base tokens + --dim-mix.
+   Cool graphite-slate: the same paper/plate/well material logic, inverted onto a
+   blue-black canvas. Dark overrides the FINAL component tokens directly (not the
+   --theme-* source), so it wins cleanly regardless of white-label brand. All
+   derived tints/dims (--green-a10, --red-dim, …) are color-mix() off these base
+   tokens in colors.css, so they re-derive automatically — we only flip the base
+   tokens + --dim-mix.
 
    IMPORTANT: this file must be @imported LAST (after theme.css) so these
    rules win the specificity tie against theme.css's :root map.
@@ -12,12 +14,6 @@
      1. @media (prefers-color-scheme: dark) :root          → auto (OS) dark
      2. :root[data-theme="dark"]                            → manual dark
      3. :root[data-theme="light"]                           → forced-light opt-out
-
-   Forcing light under OS dark: <html data-theme="light"> re-asserts the light
-   base values (block 3, specificity 0,2,0) over the auto-dark block (:root inside
-   the media query, 0,1,0). Block 3 is unconditional and harmless under OS light
-   (it just re-states the colors.css defaults). The two dark blocks share one
-   identical token set.
 */
 
 /* ── 1. Auto (OS) dark ── */
@@ -25,53 +21,84 @@
   :root {
     color-scheme: dark;
 
-    /* Backgrounds — warm graphite — material, not luminous */
-    --bg:                 #14120F;  /* canvas — graphite black */
-    --bg-light:           #201D19;  /* card — charcoal panel, lifts off canvas */
-    --bg-medium:          #292520;  /* headers — structural band */
-    --bg-hover:           #2E2A24;  /* hover — flat shift up */
-    --bg-active:          #3A2E26;  /* active — cool selection */
-    --card-surface-raised:#252119;  /* raised — lifts ABOVE panel (zebra reads) */
+    /* Surfaces — cool carbon, flat */
+    --bg:                 #11171D;  /* canvas */
+    --bg-light:           #171E25;  /* plate — panel surface */
+    --bg-medium:          #1D252D;  /* recessed / rail — headers, nav */
+    --bg-hover:           #25303A;  /* hover */
+    --bg-active:          #2C4054;  /* selected surface — interaction blue */
+    --card-surface-raised:#1F2831;  /* well — raised data cells lift off the plate */
+    --surface-overlay-base:#222B34; /* overlay — dialogs, menus */
 
-    /* Borders — structural & present in dark too */
-    --border:             #4A443C;  /* line — clearly visible, load-bearing */
-    --border-hover:       #5F584E;  /* hover — firm */
-    --border-focus:       #D98A64;  /* focus */
-    --border-strong:      #736B60;  /* heavy rule — totals / headers */
-    --border-divider:     #302B25;  /* divider */
+    /* Rules — structural and present in dark too */
+    --border:             #2C3640;
+    --border-hover:       #3C4854;
+    --border-focus:       #5C9FE5;
+    --border-strong:      #46515C;
+    --border-divider:     #26313B;
 
-    /* Text — warmer, less harsh */
-    --text-primary:       #EFEBE4;  /* headings — warm white */
-    --text-secondary:     #B5AEA4;  /* secondary */
-    --text-muted:         #9A9289;  /* muted — lifted 2026-07 so it clears AA on --bg-hover rows too (4.67:1 hover · 5.75:1 panel) */
-    --text-disabled:      #6A635A;  /* disabled */
+    /* Ink — cool paper inks */
+    --text-primary:       #F1EFEA;
+    --text-secondary:     #BEC4CA;
+    --text-muted:         #929CA6;
+    --text-disabled:      #5F6A73;
+    --ink-inverse:        #20252B;
 
-    /* Accent — copper, lifted for dark. Illuminated, never glowing. */
-    --accent:             #D98A64;  /* copper */
-    --accent-dim:         #E39A77;  /* pressed — dark ink stays AA (dark pressed goes LIGHTER, between accent and hover; the old #3C6688 left --text-on-accent at 3.11:1 and failed as text on panels) */
-    --accent-hover:       #E6A585;  /* hover */
-    --accent-ghost:       #2A211B;  /* ghost bg */
-    --text-on-accent:     #1A1511;  /* dark ink — white on the lighter dark-mode accent is only ~3.45:1, fails AA */
+    /* Signal — terracotta, lifted for dark legibility */
+    --accent:             #D88466;
+    --accent-dim:         #E19479;  /* pressed — dark pressed goes LIGHTER so dark ink stays AA */
+    --accent-hover:       #E5A088;  /* hover */
+    --accent-ghost:       #35251F;  /* ghost bg */
+    --text-on-accent:     #14100E;  /* dark ink — white on the lighter dark accent fails AA */
+    --text-on-fill:       #14100E;
 
-    /* Semantics — desaturated, industrial (dark-tuned) */
-    --green:              #5FA37C;  /* success — muted spruce */
-    --red:                #CE7068;  /* danger — muted brick */
-    --orange:             #C29A4A;  /* warning — muted ochre */
-    --purple:             #9089B5;  /* pending — muted slate-violet */
+    /* Interaction family */
+    --focus:              #5C9FE5;
+    --selected:           #7F9DB8;
+    --selected-surface:   #2C4054;
+    --interaction-hover:  #25303A;
+    --link:               #7FB6EC;
+    --link-hover:         #A7CDF4;
+
+    /* Semantics — dark-tuned */
+    --green:              #65A983;
+    --red:                #D97A70;
+    --orange:             #C69B4D;
+    --purple:             #79A8C8;
+    --pending:            #A39374;
+    --neutral:            #9AA2A9;
+    --missing:            #D4776C;
+    --navy:               #85A3C4;
+    --brand-field:        #7F9DB8;
+    --brand-axis:         #F1EFEA;  /* the primary trace becomes paper on dark */
+
+    /* Semantic surfaces */
+    --green-surface:      #20372D;
+    --red-surface:        #402624;
+    --orange-surface:     #3B3222;
+    --info-surface:       #20303B;
 
     /* Dim mix flips white so tinted-chip text goes lighter, not darker */
     --dim-mix:            #FFFFFF;
 
-    /* Chrome — even darker than the light-mode near-black */
-    --topbar-bg:          #1A1511;
-    --topbar-text:        #EDE9E2;
-    --statusbar-bg:       #1A1511;
-    --statusbar-text:     #BDB7AE;
-    --statusbar-border:   #2B2721;
+    /* Chrome — deeper than the plate */
+    --topbar-bg:          #0D1217;
+    --topbar-text:        #F1EFEA;
+    --statusbar-bg:       #0D1217;
+    --statusbar-text:     #BEC4CA;
+    --statusbar-border:   #26313B;
+    --topbar-field-bg:    #161D24;
+    --topbar-field-border:#2C3640;
+    --topbar-field-border-hover: #3C4854;
+    --topbar-text-muted:  #9AA2A9;
+    --topbar-text-faint:  #7F8993;
+    --topbar-sep:         #3C4854;
 
-    --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+    --scrim:              rgba(4, 8, 12, 0.66);  /* stronger over already-dark content */
 
-    --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
+    /* Chart furniture — the ledger flips with the tokens above */
+    --chart-compare-1:    #7F9DB8;
+    --chart-compare-2:    #9AA2A9;
   }
 }
 
@@ -79,46 +106,74 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg:                 #14120F;
-  --bg-light:           #201D19;
-  --bg-medium:          #292520;
-  --bg-hover:           #2E2A24;
-  --bg-active:          #3A2E26;
-  --card-surface-raised:#252119;
+  --bg:                 #11171D;
+  --bg-light:           #171E25;
+  --bg-medium:          #1D252D;
+  --bg-hover:           #25303A;
+  --bg-active:          #2C4054;
+  --card-surface-raised:#1F2831;
+  --surface-overlay-base:#222B34;
 
-  --border:             #4A443C;
-  --border-hover:       #5F584E;
-  --border-focus:       #D98A64;
-  --border-strong:      #736B60;
-  --border-divider:     #302B25;
+  --border:             #2C3640;
+  --border-hover:       #3C4854;
+  --border-focus:       #5C9FE5;
+  --border-strong:      #46515C;
+  --border-divider:     #26313B;
 
-  --text-primary:       #EFEBE4;
-  --text-secondary:     #B5AEA4;
-  --text-muted:         #9A9289;
-  --text-disabled:      #6A635A;
+  --text-primary:       #F1EFEA;
+  --text-secondary:     #BEC4CA;
+  --text-muted:         #929CA6;
+  --text-disabled:      #5F6A73;
+  --ink-inverse:        #20252B;
 
-  --accent:             #D98A64;
-  --accent-dim:         #E39A77;
-  --accent-hover:       #E6A585;
-  --accent-ghost:       #2A211B;
-  --text-on-accent:     #1A1511;
+  --accent:             #D88466;
+  --accent-dim:         #E19479;
+  --accent-hover:       #E5A088;
+  --accent-ghost:       #35251F;
+  --text-on-accent:     #14100E;
+  --text-on-fill:       #14100E;
 
-  --green:              #5FA37C;
-  --red:                #CE7068;
-  --orange:             #C29A4A;
-  --purple:             #9089B5;
+  --focus:              #5C9FE5;
+  --selected:           #7F9DB8;
+  --selected-surface:   #2C4054;
+  --interaction-hover:  #25303A;
+    --link:               #7FB6EC;
+    --link-hover:         #A7CDF4;
+
+  --green:              #65A983;
+  --red:                #D97A70;
+  --orange:             #C69B4D;
+  --purple:             #79A8C8;
+  --pending:            #A39374;
+  --neutral:            #9AA2A9;
+  --missing:            #D4776C;
+  --navy:               #85A3C4;
+  --brand-field:        #7F9DB8;
+  --brand-axis:         #F1EFEA;
+
+  --green-surface:      #20372D;
+  --red-surface:        #402624;
+  --orange-surface:     #3B3222;
+  --info-surface:       #20303B;
 
   --dim-mix:            #FFFFFF;
 
-  --topbar-bg:          #1A1511;
-  --topbar-text:        #EDE9E2;
-  --statusbar-bg:       #1A1511;
-  --statusbar-text:     #BDB7AE;
-  --statusbar-border:   #2B2721;
+  --topbar-bg:          #0D1217;
+  --topbar-text:        #F1EFEA;
+  --statusbar-bg:       #0D1217;
+  --statusbar-text:     #BEC4CA;
+  --statusbar-border:   #26313B;
+  --topbar-field-bg:    #161D24;
+  --topbar-field-border:#2C3640;
+  --topbar-field-border-hover: #3C4854;
+  --topbar-text-muted:  #9AA2A9;
+  --topbar-text-faint:  #7F8993;
+  --topbar-sep:         #3C4854;
 
-  --scrim:              rgba(0, 0, 0, 0.62);  /* stronger over already-dark content */
+  --scrim:              rgba(4, 8, 12, 0.66);
 
-  --chart-crosshair:    #9A9289;  /* warm neutral hairline, as in the workstation */
+  --chart-compare-1:    #7F9DB8;
+  --chart-compare-2:    #9AA2A9;
 }
 
 /* ── 3. Forced light — opt out of OS dark by re-asserting the light base values
@@ -128,42 +183,72 @@
 :root[data-theme="light"] {
   color-scheme: light;
 
-  --bg:                 #F2F0EC;
-  --bg-light:           #FBFAF8;
-  --bg-medium:          #EDEAE4;
-  --bg-hover:           #F0EEE9;
-  --bg-active:          #F2E3DB;
-  --card-surface-raised:#F6F4F0;
+  --bg:                 #F2F0EB;
+  --bg-light:           #F8F7F3;
+  --bg-medium:          #EBE8E1;
+  --bg-hover:           #EDEFF0;
+  --bg-active:          #E7EDF2;
+  --card-surface-raised:#FCFBF8;
+  --surface-overlay-base:#FFFFFF;
 
-  --border:             #E4E3DE;
-  --border-hover:       #C6C3BB;
-  --border-focus:       #A85436;
-  --border-strong:      #AFABA1;
-  --border-divider:     #DAD8D3;
+  --border:             #D2CDC3;
+  --border-hover:       #BEB8AD;
+  --border-focus:       #2D6FB3;
+  --border-strong:      #AAA49A;
+  --border-divider:     #E2DED5;
 
-  --text-primary:       #22252A;
-  --text-secondary:     #4E5258;
-  --text-muted:         #5E666F;
-  --text-disabled:      #94999F;
+  --text-primary:       #20252B;
+  --text-secondary:     #535C65;
+  --text-muted:         #606870;
+  --text-disabled:      #A4ABB2;
+  --ink-inverse:        #F5F3EE;
 
-  --accent:             #A85436;
-  --accent-dim:         #8C4429;
-  --accent-hover:       #AF6143;
-  --accent-ghost:       #F4E7E0;
-  --text-on-accent:     #FFFFFF;
+  --accent:             #C56343;
+  --accent-dim:         #CB6E4E;
+  --accent-hover:       #D2795A;
+  --accent-ghost:       #F6E6DF;
+  --text-on-accent:     #0D1217;
+  --text-on-fill:       #FFFFFF;
 
-  --green:              #3A7A56;
-  --red:                #A8443C;
-  --orange:             #8A5C12;
-  --purple:             #5D5486;
+  --focus:              #2D6FB3;
+  --selected:           #496C8F;
+  --selected-surface:   #E7EDF2;
+  --interaction-hover:  #DDE5EC;
+  --link:               #2A5F96;
+  --link-hover:         #1F4A76;
+
+  --green:              #2E7655;
+  --red:                #B54B42;
+  --orange:             #986717;
+  --purple:             #2F648A;
+  --pending:            #7A6B52;
+  --neutral:            #6D757D;
+  --missing:            #A34A42;
+  --navy:               #2E4B6E;
+  --brand-field:        #5D7286;
+  --brand-axis:         #29323A;
+
+  --green-surface:      #E4EEE8;
+  --red-surface:        #F5E5E2;
+  --orange-surface:     #F2EAD8;
+  --info-surface:       #E3ECF2;
 
   --dim-mix:            #000;
 
-  --topbar-bg:          #1F1D1A;
-  --topbar-text:        #F4F2ED;
-  --statusbar-bg:       #1F1D1A;
-  --statusbar-text:     #D8D3CA;
-  --statusbar-border:   #2E2A24;
+  --topbar-bg:          #29323A;
+  --topbar-text:        #F1EFEA;
+  --statusbar-bg:       #29323A;
+  --statusbar-text:     #C9CFD4;
+  --statusbar-border:   #3A444D;
+  --topbar-field-bg:    #20272D;
+  --topbar-field-border:#38424B;
+  --topbar-field-border-hover: #46515C;
+  --topbar-text-muted:  #A9B1B8;
+  --topbar-text-faint:  #969EA6;
+  --topbar-sep:         #4A545D;
 
-  --scrim:              rgba(20, 18, 15, 0.5);
+  --scrim:              rgba(17, 23, 29, 0.52);
+
+  --chart-compare-1:    #7890A4;
+  --chart-compare-2:    #8C918F;
 }

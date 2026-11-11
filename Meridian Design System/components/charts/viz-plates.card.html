@@ -1,0 +1,87 @@
+<!-- @dsCard group="Charts" viewport="1280x720" name="Plates & lineage" subtitle="Shared-scale comparison plates and the layered provenance graph" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Plates and lineage</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { PlateGrid, LineageGraph, EvidenceInspector, EvidenceSection, Eyebrow } = window.MeridianDesignSystem_205d17;
+
+const PLATES = [
+  { id:"ust",  title:"United States",  tag:"UST",  values:[4.20,4.24,4.45,4.81], footerLabel:"10Y change", footerValue:"+11 bp" },
+  { id:"gilt", title:"United Kingdom", tag:"GILT", values:[4.11,4.05,4.12,4.68], footerLabel:"10Y change", footerValue:"+10 bp" },
+  { id:"bund", title:"Germany",        tag:"BUND", values:[2.42,2.31,2.38,2.98], footerLabel:"10Y change", footerValue:"+9 bp" },
+  { id:"jgb",  title:"Japan",          tag:"JGB",  values:[0.42,0.71,1.12,2.32], footerLabel:"10Y change", footerValue:"+9 bp" },
+];
+const NODES = [
+  { id:"refinitiv", label:"Refinitiv rates",  kind:"source", meta:"Source · live" },
+  { id:"bloomberg", label:"Bloomberg rates",  kind:"source", meta:"Source · live" },
+  { id:"clean",     label:"Clean & normalize", kind:"transformation", meta:"Transformation" },
+  { id:"curve",     label:"Curve builder v14.7", kind:"model", meta:"Model" },
+  { id:"y10",       label:"10Y yield", kind:"field", meta:"Derived field · 4.45%" },
+  { id:"valuation", label:"Portfolio valuation", kind:"consumer", meta:"Consumer" },
+  { id:"risk",      label:"Risk engine", kind:"consumer", meta:"Consumer" },
+  { id:"report",    label:"Daily rates report", kind:"output", meta:"Output · PDF/API" },
+];
+const EDGES = [
+  { from:"refinitiv", to:"clean", label:"feeds", dashed:true },
+  { from:"bloomberg", to:"clean", label:"feeds", dashed:true },
+  { from:"clean", to:"curve", label:"normalizes" },
+  { from:"curve", to:"y10", label:"derives" },
+  { from:"curve", to:"valuation", label:"publishes" },
+  { from:"y10", to:"risk", label:"consumed by" },
+  { from:"y10", to:"valuation", label:"consumed by" },
+  { from:"valuation", to:"report", label:"summarizes" },
+];
+
+function Panel({ eyebrow, title, note, children }) {
+  return (
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14 }}>
+      <Eyebrow>{eyebrow}</Eyebrow>
+      <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
+      <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"78ch" }}>{note}</p>
+      {children}
+    </section>
+  );
+}
+
+function Demo() {
+  const [plate, setPlate] = React.useState("ust");
+  const [node, setNode] = React.useState("y10");
+  const n = NODES.find((x) => x.id === node);
+  return (
+    <div style={{ display:"flex", flexDirection:"column", gap:16, maxWidth:1240 }}>
+      <Panel eyebrow="Standardized comparison plates" title="Peer curves preserve scale, order, and annotation geometry"
+        note="Every plate uses the same 0–6% domain and the same four tenors, so differences stay comparable rather than aesthetically normalized. Selecting a plate rails and tints it — it is never resized.">
+        <PlateGrid categories={["2Y","5Y","10Y","30Y"]} domain={[0,6]} format={(v) => v.toFixed(0)}
+          plates={PLATES} selectedId={plate} onSelect={setPlate} />
+      </Panel>
+      <Panel eyebrow="Layered graph / orthogonal routing" title="Provenance and downstream dependency"
+        note="Directional data flow uses a stable layered layout. Node placement, edge routing, selection, and the text outline are separate contracts — the outline is the non-visual path, not an afterthought.">
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:14, alignItems:"start" }}>
+          <LineageGraph nodes={NODES} edges={EDGES} selectedId={node} onSelect={setNode} height={300} />
+          <EvidenceInspector eyebrow="Selected graph node" value={n.label} caption={n.meta}>
+            <EvidenceSection title="Node" fields={[
+              { label:"Owner", value:"Rates Data" },
+              { label:"Freshness", value:"42 seconds" },
+              { label:"Quality", value:"98%" },
+              { label:"Consumers", value:String(EDGES.filter((e) => e.from === n.id).length) },
+            ]} />
+          </EvidenceInspector>
+        </div>
+      </Panel>
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

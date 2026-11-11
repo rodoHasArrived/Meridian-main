@@ -125,7 +125,7 @@ describe("dashboard design-system contract", () => {
     );
 
     expect(componentSourceByName.get("Button")).toBe("components/core/Button.jsx");
-    expect(componentSourceByName.get("DenseDataTable")).toBe("components/data/DenseDataTable.jsx");
+    expect(componentSourceByName.get("DataGrid")).toBe("components/data/DataGrid.jsx");
     expect(componentSourceByName.get("WorkstationTopbar")).toBe("components/shell/WorkstationTopbar.jsx");
     expect(componentSourceByName.get("StatusBar")).toBe("components/shell/StatusBar.jsx");
     expect(componentSourceByName.get("SessionControls")).toBe("components/shell/SessionControls.jsx");
@@ -133,11 +133,11 @@ describe("dashboard design-system contract", () => {
     expect(componentSourceByName.get("AgingTable")).toBe("components/accounting/AgingTable.jsx");
     expect(componentSourceByName.get("ReconciliationPanel")).toBe("components/accounting/ReconciliationPanel.jsx");
     expect(defaultThemeTokenByName.get("--theme-bg-canvas")).toMatchObject({
-      value: "#F2F0EC",
+      value: "#F2F0EB",
       definedIn: "tokens/theme.css"
     });
     expect(defaultThemeTokenByName.get("--theme-accent")).toMatchObject({
-      value: "#A85436",
+      value: "#C56343",
       definedIn: "tokens/theme.css"
     });
 
@@ -241,10 +241,11 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
     const designSystemTheme = readDesignSystemPackageFile("tokens/theme.css");
 
-    // Warm paper canvas #F2F0EC → 40 19% 94%; terracotta accent #A85436 → 16 51% 44%.
-    expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EC");
-    expect(designSystemTheme).toContain("--theme-accent: #A85436");
-    expect(designSystemTheme).toContain("--theme-border: #E4E3DE");
+    // Design-system package 4.3.0: paper canvas #F2F0EB, terracotta signal #C56343, rule #D2CDC3.
+    // The dashboard tokens below still carry the pre-4.3.0 values until the dashboard palette is migrated.
+    expect(designSystemTheme).toContain("--theme-bg-canvas: #F2F0EB");
+    expect(designSystemTheme).toContain("--theme-accent: #C56343");
+    expect(designSystemTheme).toContain("--theme-border: #D2CDC3");
     expect(styles).toContain("--background: 40 19% 94%");
     expect(styles).toContain("--foreground: 218 11% 15%");
     expect(styles).toContain("--primary: 16 51% 44%");

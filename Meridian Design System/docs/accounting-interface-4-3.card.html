@@ -1,0 +1,141 @@
+<!-- @dsCard group="Documentation" viewport="1280x1120" name="Books interface proposal · toward 4.3" subtitle="The unorganized axes — assurance carried on balances, entity as a structure with consolidation as a surface, and the second clock of knowledge time — plus six concepts" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Documentation — Books interface proposal 4.3</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.wrap{max-width:1240px;display:grid;gap:13px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--border-heavy,#AAA49A);padding-bottom:10px}
+h1{font-size:16px;font-weight:650;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+.headnote{font-family:var(--font-data);font-size:10px;color:var(--text-muted);text-align:right;line-height:1.6;white-space:nowrap}
+.thesis{font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:100ch;margin:0}
+.thesis strong{color:var(--text-primary);font-weight:600}
+.spine{border:1px solid var(--border);border-radius:2px;background:var(--bg-well,#FCFBF8);padding:11px 12px;display:grid;gap:8px}
+.spine h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0}
+.tmpls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tmpl{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:6px 9px;font-family:var(--font-data);font-size:10px;color:var(--text-secondary);display:flex;justify-content:space-between;gap:8px}
+.tmpl b{color:var(--text-primary);font-weight:600}
+.tmpl span{color:var(--text-muted)}
+.bus{display:flex;align-items:center;gap:10px;border:1px solid var(--border-heavy,#AAA49A);border-radius:2px;background:var(--bg-inset,#EBE8E1);padding:6px 10px;font-family:var(--font-data);font-size:10.5px}
+.bus .k{font-weight:700;color:var(--text-primary)}
+.bus .seg{color:var(--text-secondary)}
+.bus .seg b{color:var(--accent,#C56343);font-weight:700}
+.bus .new{color:var(--positive-fg,#2E7655);font-weight:700}
+.bus .note{margin-left:auto;color:var(--text-muted);font-size:9.5px}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:11px 12px 12px;display:grid;gap:8px;align-content:start}
+.ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.ptitle h2{font-size:12px;font-weight:650;margin:0}
+.q{font-size:11.5px;line-height:1.45;color:var(--text-secondary);font-style:italic;margin:0}
+.panel p{margin:0;font-size:11.5px;line-height:1.45}
+.panel p b{font-weight:650}
+.ev{display:block;font-family:var(--font-data);font-size:9.5px;line-height:1.5;color:var(--text-muted);margin-top:3px}
+.pill{display:inline-block;font-family:var(--font-data);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:2px;border:1px solid;white-space:nowrap}
+.pill--absent{color:var(--severity-blocked-fg);border-color:var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.pill--once{color:var(--severity-review-fg);border-color:var(--severity-review-bd);background:var(--severity-review-bg)}
+.pill--law{color:var(--severity-info-fg,#2F648A);border-color:var(--severity-info-bd,#9FB6C6);background:var(--severity-info-bg,#EAF0F5)}
+.pill--new{color:var(--severity-action-fg);border-color:var(--severity-action-bd);background:var(--severity-action-bg)}
+.cgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.chip-demo{font-family:var(--font-data);font-size:9.5px;color:var(--text-secondary);border:1px solid var(--border);border-radius:2px;background:var(--bg-well,#FCFBF8);padding:4px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip-demo b{font-weight:700;color:var(--text-primary)}
+.chip-demo .neg{color:var(--negative-fg,#B54B42)}
+.chip-demo .ok{color:var(--positive-fg,#2E7655)}
+.waves{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);background:var(--bg-well,#FCFBF8)}
+.wave{padding:9px 11px;border-right:1px solid var(--border);display:grid;gap:4px;align-content:start}
+.wave:last-child{border-right:0}
+.wave .w{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.wave .ids{font-family:var(--font-data);font-size:11px;font-weight:600;color:var(--text-primary)}
+.wave .why{font-size:10.5px;line-height:1.4;color:var(--text-secondary)}
+.foot{font-size:10.5px;line-height:1.55;color:var(--text-muted);margin:0}
+.foot code{font-family:var(--font-data);font-size:10px}
+a{color:var(--focus,#2D6FB3)}a:hover{color:var(--text-primary)}
+</style>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Proposal · not law · toward 4.3 · continues 4.2</div>
+      <h1>The unorganized axes — assurance, the group, the second clock</h1>
+    </div>
+    <div class="headnote">baseline: 4.2 proposal (O-1–O-3 · C-1–C-6)<br>full report: docs/ACCOUNTING_INTERFACE_4_3.md</div>
+  </div>
+
+  <p class="thesis">4.2 organized the books by <strong>scope</strong> and <strong>obligation</strong> and made figures prove their arithmetic. Three axes remain unorganized: <strong>assurance</strong> — sign-off machinery is complete (AttestationPanel, ValueAuthority, ProvenanceChip) yet no balance carries who vouched for it; <strong>the group</strong> — entity is a flat parameter while eliminations live as two task strings and report-pack prints "Consolidated" from nowhere; <strong>knowledge time</strong> — reopened means "prior approvals may be invalid" as a tooltip, never a computation. Three reorganizations, six concepts.</p>
+
+  <div class="spine">
+    <h2>The spine grows — three carried states join period × basis × entity</h2>
+    <div class="tmpls">
+      <div class="tmpl"><b>Who vouched</b><span>assurance per account × period</span></div>
+      <div class="tmpl"><b>Whose books</b><span>entity as a path in the ownership tree</span></div>
+      <div class="tmpl"><b>As known when</b><span>asAt — the knowledge instant</span></div>
+    </div>
+    <div class="bus"><span class="k">_books/ store</span><span class="seg">period <b>2026-06</b></span><span class="seg">basis <b>GAAP</b></span><span class="seg">entity <b>MER-GROUP ▸ FUND-I</b></span><span class="new">assurance 182/240 reviewed</span><span class="new">asAt latest</span><span class="note">4.2's O-1 store, three new keys</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="ptitle"><h2>O-4 · The assurance ledger</h2><span class="pill pill--absent">No surface</span></div>
+      <p class="q">"Which of these TB lines has a preparer even looked at?"</p>
+      <p>Certification as carried state per account × period × basis — <b>unprepared → prepared → reviewed → certified</b>, each stage a signature bound to a balance snapshot. Assurance column on TrialBalance; strip on the Account Sheet; a <b>CertificationMatrix</b> in close-management. The lock gate derives from certification coverage.<span class="ev">today sign-off exists only at object level: close tasks, change sets, whole-close attestation · ObjectModel already defines the attestation lifecycle</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>O-5 · The group</h2><span class="pill pill--absent">Two strings today</span></div>
+      <p class="q">"Group net income = Σ entities − eliminations — show me."</p>
+      <p>Entity becomes a path in the ownership tree; a consolidation view renders statement lines × entity columns plus an <b>eliminations column</b> — every figure traces to its JE pair — summing to the group. Never silently pre-summed.<span class="ev">today: eliminations = close-task strings t8/g4 · OwnershipGraph draws the structure no books view consumes · report-pack prints "Consolidated portfolio" from nowhere</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>O-6 · The second clock</h2><span class="pill pill--once">Prose, not computation</span></div>
+      <p class="q">"Show me the June TB as R. Chen signed it."</p>
+      <p><b>asAt</b> — a knowledge instant — joins the spine: any books view renders a period as it was known then, archive-toned. Per period, a <b>RestatementDiary</b>: every post-close movement, the figures it moved, the signatures it invalidated.<span class="ev">TimeContext declares the two clock families · checkTimeCoherence predicts "expect a restatement" · attestation snapshots are already versioned anchors</span></p>
+    </div>
+  </div>
+
+  <div class="cgrid">
+    <div class="panel">
+      <div class="ptitle"><h2>C-7 · SinceYouSigned</h2><span class="pill pill--new">Snapshot diff</span></div>
+      <p>Reopening as computed invalidation: every figure that moved since the last attestation snapshot carries its delta; the diary lists the signatures it invalidates. The cheap first slice of O-6.<span class="ev">AttestationPanel binds version + snapshot today</span></p>
+      <div class="chip-demo"><b>4400</b> <span class="neg">+12,480.00 since v18</span> · R. Chen sign-off <span class="neg">invalidated</span></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-8 · FluxNote</h2><span class="pill pill--new">Owned object</span></div>
+      <p>Movement beyond its materiality threshold demands an explanation object — text, author, basis, figure — rolling up so C-6's "unexplained movement" is countable and report-pack's commentary is data.<span class="ev">today: explained?: boolean on TieOutItem · one string in accounting-proofing</span></p>
+      <div class="chip-demo">income <span class="neg">+618,208.00</span> · <b>explained</b> · "July coupon run" · M. Okafor</div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-9 · SuspenseWatch</h2><span class="pill pill--law">Law + readout</span></div>
+      <p>Accounts that must die: suspense-class balances trend to zero by lock, carry age, and feed C-6's budget when they linger.<span class="ev">zero hits for suspense|clearing anywhere in the tree</span></p>
+      <div class="chip-demo"><b>1999 Suspense</b> · 12,441.00 · aged <span class="neg">9 days</span> · must clear by lock</div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-10 · DraftLens</h2><span class="pill pill--new">Lens</span></div>
+      <p>The books with pending writes applied: all armed journals restate the view pro-forma, shaded provisional, delta attributed per draft — C-5's impact preview at screen scope.<span class="ev">ValueEnvelope's provisional condition exists · answers "what will the books say once today's queue posts"</span></p>
+      <div class="chip-demo"><b>lens on</b> · 3 drafts applied · net income 1,284,120.00 → <b>1,301,376.38</b></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-11 · CarryMemory</h2><span class="pill pill--law">Law + store</span></div>
+      <p>The books repeat; the interface should know: every recurring object renders its prior-period twin one gesture away; standing journals propose themselves with prior amounts — never auto-post, C-5 still gates.<span class="ev">close tasks have no last-period link · JournalEntryForm has no standing-entry concept</span></p>
+    </div>
+    <div class="panel">
+      <div class="ptitle"><h2>C-12 · IntercompanyZero</h2><span class="pill pill--new">Joins the TieBar</span></div>
+      <p>Mirror pairs as a tie: entity A receivable vs entity B payable, netted and materiality-colored, feeding O-5's elimination column and C-2's strip.<span class="ev">data contract = TieOutPanel's two-source shape with entities as sources</span></p>
+      <div class="chip-demo">FUND-I ↔ GP: 250,000.00 / (250,000.00) · net <span class="ok">0.00 tied</span></div>
+    </div>
+  </div>
+
+  <div class="waves">
+    <div class="wave"><span class="w">WAVE 1</span><span class="ids">O-4 · C-7</span><span class="why">Both key off attestation snapshots; the store work is shared</span></div>
+    <div class="wave"><span class="w">WAVE 2</span><span class="ids">C-8 · C-9</span><span class="why">Cell- and law-level; both feed C-6's budget; no new screens</span></div>
+    <div class="wave"><span class="w">WAVE 3</span><span class="ids">O-5 · C-12</span><span class="why">The structure and its zero law ship together</span></div>
+    <div class="wave"><span class="w">WAVE 4</span><span class="ids">O-6 · C-10 · C-11</span><span class="why">Lenses and memory need the snapshotted foundation</span></div>
+  </div>
+
+  <p class="foot">Nothing removes an API; everything assumes 4.2's spine. New exports: <code>CertificationMatrix</code> · consolidation view · <code>RestatementDiary</code> · <code>FluxNote</code> · <code>SuspenseWatch</code> · IC pair monitor, plus store state (assurance · asAt · drafts · memory) in <code>_books/</code>. Method follows <code>UX_DEPTH_4_1.md</code>: every item is a gap with evidence from the tree.</p>
+</div>
+</body>
+</html>

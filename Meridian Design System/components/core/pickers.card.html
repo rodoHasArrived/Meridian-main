@@ -1,0 +1,122 @@
+<!-- @dsCard group="Core" viewport="1180x900" name="DatePicker · DateRangePicker · MultiSelect" subtitle="Local-date pickers and the multi-pick field" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Meridian — Pickers</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_ds_bundle.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>body{background:var(--bg);padding:24px;font-family:var(--font-body);color:var(--text-primary);margin:0}</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { DatePicker, DateRangePicker, MultiSelect } = window.MeridianDesignSystem_205d17;
+const { useState } = React;
+
+function Section({ title, note, children, span }) {
+  return (
+    <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:6,
+      padding:16, gridColumn: span ? `span ${span}` : undefined }}>
+      <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
+        color:"var(--text-muted)", marginBottom:14 }}>{title}</div>
+      {children}
+      {note && <div style={{ marginTop:12, paddingTop:10, borderTop:"1px solid var(--border-divider)",
+        fontFamily:"var(--font-data)", fontSize:10, lineHeight:1.7, color:"var(--text-muted)" }}>{note}</div>}
+    </div>
+  );
+}
+
+function Out({ label, value }) {
+  return (
+    <div style={{ marginTop:12, fontFamily:"var(--font-data)", fontSize:12, color:"var(--text-secondary)" }}>
+      {label} <strong style={{ color:"var(--text-primary)" }}>{value || "—"}</strong>
+    </div>
+  );
+}
+
+// A fixed holiday set + weekends, the usual settlement-calendar shape.
+const HOLIDAYS = new Set(["2026-09-07","2026-11-26","2026-12-25","2026-01-01"]);
+const isClosed = (iso, d) => d.getDay() === 0 || d.getDay() === 6 || HOLIDAYS.has(iso);
+
+const BOOKS = [
+  { value:"EQ-CORE",  label:"EQ-CORE · Equity Core",      meta:"$1.2B", group:"Equities" },
+  { value:"EQ-STAT",  label:"EQ-STAT · Stat Arb",         meta:"$340M", group:"Equities" },
+  { value:"EQ-INDEX", label:"EQ-INDEX · Index Tracking",  meta:"$880M", group:"Equities" },
+  { value:"FI-GOVT",  label:"FI-GOVT · Sovereigns",       meta:"$2.1B", group:"Fixed income" },
+  { value:"FI-CRED",  label:"FI-CRED · Credit",           meta:"$760M", group:"Fixed income" },
+  { value:"FI-MUNI",  label:"FI-MUNI · Municipals",       meta:"closed", group:"Fixed income", disabled:true },
+  { value:"FX-MAJ",   label:"FX-MAJ · G10 Majors",        meta:"$410M", group:"FX" },
+  { value:"FX-EM",    label:"FX-EM · EM Crosses",         meta:"$120M", group:"FX" },
+];
+
+function App() {
+  const [trade, setTrade] = useState("2026-08-26");
+  const [settle, setSettle] = useState("");
+  const [range, setRange] = useState({ start:null, end:null });
+  const [books, setBooks] = useState(["EQ-CORE","FI-GOVT"]);
+  const [capped, setCapped] = useState([]);
+
+  return (
+    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1120 }}>
+
+      <Section title="DatePicker · typeable, local dates"
+        note={<>Type <b>2026-09-04</b>, <b>4 Sep 2026</b> or <b>9/4/2026</b> · ↑↓←→ move a day<br />
+        PageUp/Dn month · Shift+PageUp/Dn year · Enter picks · Esc closes</>}>
+        <div style={{ maxWidth:260 }}>
+          <DatePicker label="Trade date" value={trade} onChange={setTrade} max="2026-12-31" />
+        </div>
+        <Out label="value =" value={trade} />
+      </Section>
+
+      <Section title="DatePicker · constrained to settlement days"
+        note="min = trade date · weekends and holidays struck through · required until picked">
+        <div style={{ maxWidth:260 }}>
+          <DatePicker
+            label="Settlement date"
+            value={settle}
+            onChange={setSettle}
+            min={trade}
+            disabledDate={isClosed}
+            required
+            error={!settle ? "Pick a business day on or after the trade date" : undefined}
+          />
+        </div>
+        <Out label="value =" value={settle} />
+      </Section>
+
+      <Section title="DateRangePicker · presets first, calendar for the exception" span={2}
+        note="Presets act immediately · two clicks make a range and the span shades live from the anchor · a third click starts over">
+        <div style={{ maxWidth:320 }}>
+          <DateRangePicker label="Reporting period" start={range.start} end={range.end}
+            onChange={setRange} max="2026-12-31" />
+        </div>
+        <Out label="range =" value={range.start ? `${range.start} → ${range.end || "…"}` : ""} />
+      </Section>
+
+      <Section title="MultiSelect · grouped, with bulk on the filtered set"
+        note={<>Type <b>FI</b> then <b>Select matches</b> · Backspace clears the last chip<br />
+        FI-MUNI is disabled · chips collapse to +N past four</>}>
+        <MultiSelect label="Books" options={BOOKS} value={books} onChange={setBooks} placeholder="Search books…" />
+        <Out label="value =" value={books.join(", ")} />
+      </Section>
+
+      <Section title="MultiSelect · capped selection"
+        note="maxSelected=3 · past the cap the remaining options go unselectable and the count reads n / 3">
+        <MultiSelect label="Compare against (max 3)" options={BOOKS} value={capped} onChange={setCapped}
+          maxSelected={3} maxChips={3} placeholder="Search books…"
+          required error={!capped.length ? "Pick at least one book" : undefined} />
+        <Out label="value =" value={capped.join(", ")} />
+      </Section>
+
+    </div>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

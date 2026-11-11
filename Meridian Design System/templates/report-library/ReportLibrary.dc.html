@@ -7,12 +7,323 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Report Library" description="Plain report catalog — search/category/period filters over a dense report table (readiness, required inputs, last run) with a set-parameters dialog to run; advanced fields stay tucked behind row details" -->
+<!-- @template name="Report · Report Library" description="Report catalog — filters over readiness, inputs and last run, with a parameter dialog. Frame, filters, table and rail are editable markup." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="report-library">
+<style>html,body{margin:0;padding:0;height:100%}tr[data-rl-detail="closed"]{display:none}tr[data-rl-row="open"]{background:var(--selected-surface,#E7EDF2)}</style>
 </helmet>
-<x-import component-from-global-scope="ReportLibraryScreen" from="./screen.jsx" hint-size="100%,900px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Report catalog" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="inspect" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Report library" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Report Library</h1>
+<div style="display:flex;align-items:flex-end;gap:10px;flex-wrap:wrap">
+<label style="flex:1;min-width:220px;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Search</span>
+<input type="text" placeholder="Search reports…" value="{{ query }}" onChange="{{ onQuery }}" style="padding:8px 12px;border:1px solid var(--border);background:var(--bg-light);font-size:13px;font-family:var(--font-body)" style-focus="outline:none;border-color:var(--border-focus);box-shadow:0 0 0 2px rgba(47,111,143,.2)">
+</label>
+<label style="width:200px;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Category</span>
+<select value="{{ category }}" onChange="{{ onCategory }}" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg-light);font-size:12px;cursor:pointer;font-family:var(--font-body)">
+<option value="all">All categories</option>
+<option value="Financial Statements">Financial Statements</option>
+<option value="Investor Reporting">Investor Reporting</option>
+<option value="Reconciliation">Reconciliation</option>
+<option value="Operations">Operations</option>
+<option value="Exceptions">Exceptions</option>
+<option value="Tax">Tax</option>
+<option value="Audit">Audit</option>
+<option value="Custom">Custom</option>
+</select>
+</label>
+<label style="width:180px;display:flex;flex-direction:column;gap:4px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Period</span>
+<select value="{{ period }}" onChange="{{ onPeriod }}" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg-light);font-size:12px;cursor:pointer;font-family:var(--font-body)">
+<option value="Jun 2026 (open)">Jun 2026 (open)</option>
+<option value="May 2026">May 2026</option>
+<option value="Apr 2026">Apr 2026</option>
+<option value="Q2 2026">Q2 2026</option>
+<option value="FY 2025">FY 2025</option>
+</select>
+</label>
+</div>
+<div style="display:flex;gap:16px;flex:1;min-height:0;align-items:flex-start">
+<div style="flex:1;min-width:0;overflow-x:auto">
+<sc-if value="{{ hasResults }}" hint-placeholder-val="{{ true }}">
+<table style="width:100%;border-collapse:collapse;font-size:13px">
+<thead>
+<tr>
+<th style="background:var(--bg-medium);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px">Report</th>
+<th style="background:var(--bg-medium);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px">Category</th>
+<th style="background:var(--bg-medium);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px">Last run</th>
+<th style="background:var(--bg-medium);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px">Required inputs</th>
+<th style="background:var(--bg-medium);padding:9px 12px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px">Readiness</th>
+<th style="background:var(--bg-medium);padding:9px 12px;border-bottom:1px solid var(--border-strong);width:130px"></th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ reportRows }}" as="r" hint-placeholder-count="4">
+<tr data-rl-row="{{ r.openState }}" onClick="{{ r.toggle }}" style="cursor:pointer;transition:background 120ms" style-hover="background:var(--bg-hover)">
+<td style="padding:9px 12px;border-bottom:1px solid var(--border)"><span style="font-family:var(--font-data);font-size:10px;color:var(--text-muted);margin-right:6px">{{ r.chev }}</span><span style="font-weight:600;color:var(--text-primary)">{{ r.name }}</span></td>
+<td style="padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ r.category }}</td>
+<td style="padding:9px 12px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);white-space:nowrap">{{ r.lastRun }}</td>
+<td style="padding:9px 12px;border-bottom:1px solid var(--border);font-size:11.5px;color:var(--text-muted)">{{ r.requires }}</td>
+<td style="padding:9px 12px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ r.status }}" label="{{ r.statusLabel }}" hint-size="80px,18px"></x-import></td>
+<td style="padding:9px 12px;border-bottom:1px solid var(--border);text-align:right"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ r.openParams }}" hint-size="110px,26px">Set parameters</x-import></td>
+</tr>
+<tr data-rl-detail="{{ r.openState }}">
+<td colspan="6" style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--bg-medium)">
+<div style="display:grid;grid-template-columns:1.6fr 1fr;gap:20px">
+<div>
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);margin-bottom:5px">Produces</div>
+<p style="font-size:12.5px;line-height:1.55;color:var(--text-secondary);margin:0 0 12px">{{ r.produces }}</p>
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);margin-bottom:5px">Requires</div>
+<div style="display:flex;flex-wrap:wrap;gap:6px">
+<sc-for list="{{ r.reqList }}" as="d" hint-placeholder-count="2">
+<span style="display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--bg-light);color:var(--text-secondary);font-family:var(--font-data);font-size:10.5px;padding:2px 7px;border-radius:2px;white-space:nowrap">{{ d }}</span>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px;font-size:12px">
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Owner</span><span style="color:var(--text-secondary);text-align:right">{{ r.owner }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Formats</span><span style="font-family:var(--font-data);color:var(--text-secondary)">{{ r.formats }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Readiness</span><span style="color:var(--text-secondary);text-align:right">{{ r.statusDetail }}</span></div>
+</div>
+<div style="grid-column:1 / -1;border-top:1px solid var(--border);padding-top:10px">
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);margin-bottom:6px">Technical details</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 20px;font-size:11.5px">
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Template ID</span><span style="font-family:var(--font-data);color:var(--text-secondary)">{{ r.templateId }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Manifest path</span><span style="font-family:var(--font-data);color:var(--text-secondary)">{{ r.manifestPath }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Provenance</span><span style="color:var(--text-secondary);text-align:right">{{ r.provenance }}</span></div>
+<div style="display:flex;justify-content:space-between;gap:10px"><span style="color:var(--text-muted)">Distribution job</span><span style="font-family:var(--font-data);color:var(--text-secondary)">{{ r.distJob }}</span></div>
+</div>
+</div>
+</div>
+</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</sc-if>
+<sc-if value="{{ noResultsCustom }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="docs" title="No custom reports in this library yet" detail="Custom report configurations you save will appear here for one-click reruns." compact="{{ true }}" hint-size="100%,140px"></x-import>
+</sc-if>
+<sc-if value="{{ noResultsGeneric }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="search" title="No reports match" detail="Try a different search term or category." compact="{{ true }}" hint-size="100%,140px"></x-import>
+</sc-if>
+</div>
+<div style="width:280px;flex-shrink:0;display:flex;flex-direction:column;gap:12px">
+<div style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px">
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin-bottom:10px">Readiness</div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary)"><span style="width:7px;height:7px;border-radius:50%;background:var(--green-dim)"></span>Ready</span><span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ readyCount }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)"><span style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary)"><span style="width:7px;height:7px;border-radius:50%;background:var(--brand-signal,#C56343)"></span>Needs review</span><span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ reviewCount }}</span></div>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0"><span style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-secondary)"><span style="width:7px;height:7px;border-radius:50%;background:var(--red-dim)"></span>Blocked</span><span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ blockedCount }}</span></div>
+<div style="display:flex;flex-direction:column;gap:6px;margin-top:12px">
+<sc-for list="{{ attention }}" as="a" hint-placeholder-count="2">
+<button onClick="{{ a.jump }}" style="display:flex;justify-content:space-between;gap:8px;align-items:baseline;background:none;border:none;padding:4px 0;text-align:left;cursor:pointer;font-family:var(--font-body)" style-hover="color:var(--brand-signal,#C56343)">
+<span style="font-size:12px;color:var(--text-primary);text-decoration:underline;text-decoration-color:var(--border-strong)">{{ a.name }}</span>
+<span style="font-size:10.5px;color:var(--text-muted);white-space:nowrap">{{ a.note }}</span>
+</button>
+</sc-for>
+</div>
+</div>
+<div style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px">
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin-bottom:10px">Recent runs</div>
+<sc-for list="{{ recent }}" as="x" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+<button onClick="{{ x.jump }}" style="background:none;border:none;padding:0;text-align:left;cursor:pointer;font-family:var(--font-body);font-size:12px;color:var(--text-primary)" style-hover="color:var(--link,#2A5F96);text-decoration:underline">{{ x.name }}</button>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">{{ x.time }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Dialog" open="{{ dialogOpen }}" on-close="{{ onDialogClose }}" size="sm" title="{{ dialogTitle }}" hint-size="0px,0px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DialogBody" hint-size="0px,0px">
+<sc-if value="{{ dlgWarn }}" hint-placeholder-val="{{ false }}">
+<div style="margin-bottom:14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ dlgTone }}" title="{{ dlgToneTitle }}" hint-size="100%,60px">{{ dlgDetail }}</x-import>
+</div>
+</sc-if>
+<label style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Period</span>
+<select value="{{ dlgPeriod }}" onChange="{{ onDlgPeriod }}" style="padding:8px 10px;border:1px solid var(--border);background:var(--bg-light);font-size:12px;cursor:pointer;font-family:var(--font-body)">
+<option value="Jun 2026 (open)">Jun 2026 (open)</option>
+<option value="May 2026">May 2026</option>
+<option value="Apr 2026">Apr 2026</option>
+<option value="Q2 2026">Q2 2026</option>
+<option value="FY 2025">FY 2025</option>
+</select>
+</label>
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);margin-bottom:8px">Output format</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<sc-for list="{{ dlgFormats }}" as="f" hint-placeholder-count="2">
+<label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-secondary);cursor:pointer">
+<input type="checkbox" checked="{{ f.on }}" onChange="{{ f.toggle }}" style="accent-color:var(--interaction-selected,#496C8F)">
+<span style="font-family:var(--font-data)">{{ f.name }}</span>
+</label>
+</sc-for>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DialogFooter" hint-size="0px,0px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onDialogClose }}" hint-size="60px,26px">Cancel</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ runDisabled }}" on-click="{{ onRunReport }}" hint-size="90px,26px">Run report</x-import>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); }
+  componentDidUpdate() { this.applyChrome(); }
+
+  reports = [
+    { id: "trial-balance", name: "Trial Balance", category: "Financial Statements",
+      produces: "Debit/credit balances for every GL account as of a selected date, proving total debits equal total credits.",
+      requiredData: ["General ledger", "Chart of accounts"], lastRun: "2026-06-30 21:05:00Z",
+      owner: "Controller — J. Alvarez", format: ["PDF", "XLSX"], status: "ready",
+      templateId: "rpt.trial-balance.v3", manifestPath: "reports/manifests/trial-balance.json",
+      provenance: "General ledger export → close snapshot", distJob: "dist-queue.reports.std.daily" },
+    { id: "balance-sheet", name: "Balance Sheet", category: "Financial Statements",
+      produces: "Statement of financial position — assets, liabilities, and net assets as of period end, with prior-period comparative.",
+      requiredData: ["General ledger", "Chart of accounts", "Prior-period close"], lastRun: "2026-06-30 21:06:00Z",
+      owner: "Controller — J. Alvarez", format: ["PDF", "XLSX"], status: "ready",
+      templateId: "rpt.balance-sheet.v4", manifestPath: "reports/manifests/balance-sheet.json",
+      provenance: "GL export → close snapshot → statement engine", distJob: "dist-queue.reports.std.daily" },
+    { id: "income-statement", name: "Income Statement", category: "Financial Statements",
+      produces: "Revenue, expenses, and realized/unrealized gains for the period, rolled to net income.",
+      requiredData: ["General ledger", "Trade blotter"], lastRun: "2026-06-30 21:06:00Z",
+      owner: "Controller — J. Alvarez", format: ["PDF", "XLSX"], status: "ready",
+      templateId: "rpt.income-statement.v4", manifestPath: "reports/manifests/income-statement.json",
+      provenance: "GL export → close snapshot → statement engine", distJob: "dist-queue.reports.std.daily" },
+    { id: "cash-activity", name: "Cash Activity", category: "Financial Statements",
+      produces: "Cash receipts, disbursements, and transfers across custodial accounts for the period.",
+      requiredData: ["Bank feed", "General ledger"], lastRun: "2026-06-29 06:00:00Z",
+      owner: "Treasury — M. Okafor", format: ["PDF", "CSV"], status: "ready",
+      templateId: "rpt.cash-activity.v2", manifestPath: "reports/manifests/cash-activity.json",
+      provenance: "Bank feed sync → GL cash accounts", distJob: "dist-queue.reports.std.daily" },
+    { id: "investor-statement", name: "Investor Statement", category: "Investor Reporting",
+      produces: "Investor-facing summary — NAV, performance, and capital activity for the reporting period.",
+      requiredData: ["Capital account statement", "NAV pack"], lastRun: "2026-05-31 22:00:00Z",
+      owner: "Investor Relations — S. Patel", format: ["PDF"], status: "review",
+      statusDetail: "Needs review · NAV pack for 2026-06 not yet published",
+      templateId: "rpt.investor-statement.v5", manifestPath: "reports/manifests/investor-statement.json",
+      provenance: "Capital account statement → NAV pack → statement engine", distJob: "dist-queue.reports.investor.monthly" },
+    { id: "capital-account-statement", name: "Capital Account Statement", category: "Investor Reporting",
+      produces: "Per-investor capital roll-forward — contributions, distributions, allocated P&L, ending capital.",
+      requiredData: ["Investor ledger", "Allocation run", "Capital calls"], lastRun: "2026-06-28 18:20:00Z",
+      owner: "Investor Relations — S. Patel", format: ["PDF"], status: "review",
+      statusDetail: "Needs review · Q2 allocation pending sign-off",
+      templateId: "rpt.capital-account-statement.v3", manifestPath: "reports/manifests/capital-account-statement.json",
+      provenance: "Investor ledger → allocation run → capital calls", distJob: "dist-queue.reports.investor.monthly" },
+    { id: "reconciliation-summary", name: "Reconciliation Summary", category: "Reconciliation",
+      produces: "Cross-source tie-out — book vs. custodian vs. bank — with each open break and its age.",
+      requiredData: ["General ledger", "Custodian feed", "Bank feed"], lastRun: "2026-06-30 05:00:00Z",
+      owner: "Ops — D. Chen", format: ["PDF", "XLSX"], status: "ready",
+      templateId: "rpt.reconciliation-summary.v2", manifestPath: "reports/manifests/reconciliation-summary.json",
+      provenance: "GL export → custodian feed diff → bank feed diff", distJob: "dist-queue.reports.ops.daily" },
+    { id: "exception-report", name: "Exception Report", category: "Exceptions",
+      produces: "Open data-quality, reconciliation, and posting exceptions across all workstations, by severity.",
+      requiredData: ["Reconciliation breaks", "Data quality scans", "Unposted entries"], lastRun: "2026-06-30 21:10:00Z",
+      owner: "Ops — D. Chen", format: ["PDF", "CSV"], status: "ready",
+      templateId: "rpt.exception-report.v3", manifestPath: "reports/manifests/exception-report.json",
+      provenance: "Reconciliation breaks → data quality scans → unposted entries", distJob: "dist-queue.reports.ops.daily" },
+    { id: "evidence-binder", name: "Evidence Binder", category: "Audit",
+      produces: "Compiled evidence package for a control or period — source documents, approvals, and reconciliation proof, indexed.",
+      requiredData: ["Evidence links", "Approval trail", "Reconciliation summary"], lastRun: "2026-06-15 14:00:00Z",
+      owner: "Audit — L. Novak", format: ["PDF"], status: "blocked",
+      statusDetail: "Blocked · 2 reconciliations missing signed attestations",
+      templateId: "rpt.evidence-binder.v2", manifestPath: "reports/manifests/evidence-binder.json",
+      provenance: "Evidence links → approval trail → reconciliation summary", distJob: "dist-queue.reports.audit.ondemand" },
+  ];
+
+  state = { category: "all", period: "Jun 2026 (open)", query: "", openId: null, dlgId: null, dlgPeriod: "Jun 2026 (open)", dlgFormats: {}, lastRuns: {} };
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  labels = { ready: "Ready", review: "Needs Review", blocked: "Blocked" };
+  details = { ready: "Ready to run", review: "Needs review", blocked: "Blocked" };
+  lastRunOf(r) { return this.state.lastRuns[r.id] || r.lastRun || "Never run"; }
+
+  filtered() {
+    const { category, query } = this.state;
+    let list = this.reports;
+    if (category !== "all") list = list.filter((r) => r.category === category);
+    const q = query.trim().toLowerCase();
+    if (q) list = list.filter((r) => r.name.toLowerCase().includes(q) || r.produces.toLowerCase().includes(q) || r.requiredData.some((d) => d.toLowerCase().includes(q)));
+    return list;
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const { WorkstationTopbar, NavRail, StatusBar } = this.ds();
+    const el = React.createElement;
+    const filtered = this.filtered();
+    const counts = { ready: 0, review: 0, blocked: 0 };
+    this.reports.forEach((r) => { counts[r.status] = (counts[r.status] || 0) + 1; });
+    const jump = (name) => () => this.setState({ category: "all", query: name });
+    const d = this.reports.find((r) => r.id === s.dlgId);
+    const anyFormat = d && d.format.some((f) => s.dlgFormats[f]);
+    return {
+      dataState: this.props.dataState ?? "ready",
+      onRetry: () => {},
+      topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Report Library", environment: String(this.props.environment ?? "PAPER").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
+      nav: NavRail && el(NavRail, { activeId: "report-library", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("report-library") : []) }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "ok", label: "Connected", value: "General ledger · Custodian · Bank feed" },
+        { label: "Period", value: s.period },
+        { label: "Reports", value: String(this.reports.length), push: true },
+      ] }),
+      query: s.query, onQuery: (e) => this.setState({ query: e.target.value }),
+      category: s.category, onCategory: (e) => this.setState({ category: e.target.value }),
+      period: s.period, onPeriod: (e) => this.setState({ period: e.target.value }),
+      hasResults: filtered.length > 0,
+      noResultsCustom: filtered.length === 0 && s.category === "Custom" && !s.query,
+      noResultsGeneric: filtered.length === 0 && !(s.category === "Custom" && !s.query),
+      reportRows: filtered.map((r) => ({
+        name: r.name, category: r.category, lastRun: this.lastRunOf(r),
+        requires: r.requiredData.join(" · "), reqList: r.requiredData,
+        status: r.status, statusLabel: this.labels[r.status],
+        statusDetail: r.statusDetail || this.details[r.status],
+        produces: r.produces, owner: r.owner, formats: r.format.join(" · "),
+        templateId: r.templateId, manifestPath: r.manifestPath, provenance: r.provenance, distJob: r.distJob,
+        openState: s.openId === r.id ? "open" : "closed",
+        chev: s.openId === r.id ? "▾" : "▸",
+        toggle: () => this.setState({ openId: s.openId === r.id ? null : r.id }),
+        openParams: (ev) => { if (ev && ev.stopPropagation) ev.stopPropagation(); this.setState({ dlgId: r.id, dlgPeriod: s.period, dlgFormats: Object.fromEntries(r.format.map((f) => [f, true])) }); },
+      })),
+      readyCount: String(counts.ready), reviewCount: String(counts.review), blockedCount: String(counts.blocked),
+      attention: this.reports.filter((r) => r.status !== "ready").map((r) => ({ name: r.name, note: this.labels[r.status], jump: jump(r.name) })),
+      recent: [...this.reports].filter((r) => this.lastRunOf(r) !== "Never run").sort((a, b) => (this.lastRunOf(a) < this.lastRunOf(b) ? 1 : -1)).slice(0, 5)
+        .map((r) => ({ name: r.name, time: this.lastRunOf(r).slice(0, 16), jump: jump(r.name) })),
+      dialogOpen: !!d,
+      dialogTitle: d ? "Set parameters — " + d.name : "",
+      onDialogClose: () => this.setState({ dlgId: null }),
+      dlgWarn: !!d && d.status !== "ready",
+      dlgTone: d && d.status === "blocked" ? "danger" : "warning",
+      dlgToneTitle: d ? this.labels[d.status] : "",
+      dlgDetail: d ? (d.statusDetail || this.details[d.status]) : "",
+      dlgPeriod: s.dlgPeriod, onDlgPeriod: (e) => this.setState({ dlgPeriod: e.target.value }),
+      dlgFormats: d ? d.format.map((f) => ({ name: f, on: !!s.dlgFormats[f], toggle: () => this.setState((p) => ({ dlgFormats: { ...p.dlgFormats, [f]: !p.dlgFormats[f] } })) })) : [],
+      runDisabled: !d || d.status === "blocked" || !anyFormat,
+      onRunReport: () => {
+        if (!d) return;
+        const now = new Date().toISOString().slice(0, 19).replace("T", " ") + "Z";
+        this.setState((p) => ({ lastRuns: { ...p.lastRuns, [d.id]: now }, dlgId: null }));
+        const t = window.MeridianToast; if (t && t.success) t.success("Report queued", d.name + " · " + s.dlgPeriod);
+      },
+    };
+  }
+}
+</script>
 </body>
 </html>

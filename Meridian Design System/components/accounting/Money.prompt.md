@@ -1,7 +1,7 @@
 Carrier object for the shared money arithmetic — the same functions every accounting component uses internally, so figures you compute agree to the cent with what the tables render. Reach it like `TableHooks`:
 
 ```jsx
-const { allocateAmount, roundMoney, convertAmount, formatBps } = window.MeridianDesignSystem_4f61be.Money;
+const { allocateAmount, roundMoney, convertAmount, formatBps } = window.MeridianDesignSystem_205d17.Money;
 
 allocateAmount(10000, [50, 30, 20]);       // [5000, 3000, 2000] — always sums exactly
 allocateAmount(100, [1, 1, 1]);            // [33.34, 33.33, 33.33] — no lost cent

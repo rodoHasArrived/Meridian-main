@@ -1,0 +1,52 @@
+<!-- @dsCard group="Operations" viewport="1100x720" name="Action queue" subtitle="ActionQueue · ActionQueueChip — every unresolved instruction stays on screen: submitted → acknowledged → confirmed | rejected | timed out" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Action queue</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
+.wrap{display:grid;grid-template-columns:280px 1fr;gap:16px;max-width:1060px;align-items:start}
+.rail h1{margin:0 0 6px;font-size:14px;color:var(--text-primary)}
+.rail p{margin:0;font:11px/17px var(--font-body);color:var(--text-muted);text-wrap:pretty}
+.acts{display:grid;gap:6px;margin-top:14px}
+.acts button{text-align:left;padding:7px 10px;border:1px solid var(--border-strong);background:var(--bg-light);cursor:pointer;font:600 11px var(--font-body);color:var(--text-primary)}
+.acts button span{display:block;font:9.5px/14px var(--font-data);font-weight:400;color:var(--text-muted)}
+.acts button:hover{background:var(--bg-hover)}
+.main{display:grid;gap:12px;min-width:0}
+.bar{display:flex;align-items:center;gap:14px;height:28px;padding:0 10px;border:1px solid var(--border);background:var(--bg-medium);font:10.5px var(--font-data);color:var(--text-secondary)}
+.note{margin:0;font:10px/15px var(--font-body);color:var(--text-muted)}
+</style></head><body><div id="root"></div><script type="text/babel">
+const {ActionEnvelopeProvider,ActionQueue,ActionQueueChip,ActionHooks}=window.MeridianDesignSystem_205d17;
+const ACTIONS={
+  "basket.commit":{label:"Commit basket · IG Credit Core (42 lines)",endpoint:"POST /v1/baskets/commit",permission:{required:"basket.commit",held:true},posture:"confirmed",failureSurface:"Action queue · status bar"},
+  "settings.save":{label:"Save settings · cfg-2214 → cfg-2215",endpoint:"PUT /v1/config",permission:{required:"admin.config",held:true},posture:"confirmed",failureSurface:"Action queue"},
+  "pack.deliver":{label:"Deliver pack RP-2026-06 · 14 recipients",endpoint:"POST /v1/reports/deliver",permission:{required:"report.deliver",held:true},posture:"confirmed",failureSurface:"Action queue · delivery log"},
+};
+let n=0;
+const transport=(behaviour)=>async(inst)=>{
+  await new Promise(r=>setTimeout(r,behaviour==="slow"?3200:behaviour==="silent"?9000:900));
+  if(behaviour==="reject")return{ok:false,reason:"Recipient list changed since the pack was approved — re-approve before delivery."};
+  return{ok:true,id:"RCPT-"+(++n)};
+};
+function Card(){
+  const [mode,setMode]=React.useState("ok");
+  const ref=React.useRef(mode);ref.current=mode;
+  const t=React.useMemo(()=>(inst)=>transport(ref.current)(inst),[]);
+  return <ActionEnvelopeProvider actions={ACTIONS} transport={t} timeoutMs={4000}>
+    {(api)=><div className="wrap">
+      <div className="rail">
+        <h1>Actions in flight</h1>
+        <p>Between “operator pressed Post” and “the ledger agrees” there was no surface. The queue keeps every unresolved instruction visible: submitted → acknowledged → confirmed, or rejected with its reason, or timed out with a same-key retry.</p>
+        <div className="acts">
+          <button onClick={()=>{setMode("ok");api.submit("basket.commit",{idempotencyKey:"BSK-"+Date.now()})}}>Commit basket<span>answers in 0.9 s → confirmed</span></button>
+          <button onClick={()=>{setMode("slow");api.submit("settings.save",{idempotencyKey:"CFG-"+Date.now()})}}>Save settings<span>answers in 3.2 s → acknowledged, then confirmed</span></button>
+          <button onClick={()=>{setMode("reject");api.submit("pack.deliver",{idempotencyKey:"RP-"+Date.now()})}}>Deliver report pack<span>refused with a reason → rejected</span></button>
+          <button onClick={()=>{setMode("silent");api.submit("pack.deliver",{idempotencyKey:"RP-SILENT-"+Date.now()})}}>Deliver pack · adapter silent<span>no answer in 4 s → timed out, retry same key</span></button>
+        </div>
+      </div>
+      <div className="main">
+        <ActionQueue docked="inline" hideWhenEmpty={false} />
+        <div className="bar"><span>Config · synced</span><span>Providers · 3 connected</span><span style={{marginLeft:"auto"}}>Actions · <ActionQueueChip /></span></div>
+        <p className="note">Confirmed rows leave after 6 s. A rejected row leaves once acknowledged. A timed-out row never leaves on its own — its fate is unknown, and “Retry · same key” asks whether the first attempt landed rather than sending a second one.</p>
+      </div>
+    </div>}
+  </ActionEnvelopeProvider>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Card />);
+</script></body></html>

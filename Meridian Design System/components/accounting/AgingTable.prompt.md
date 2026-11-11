@@ -1,7 +1,7 @@
 AR/AP aging — counterparty rows spread across age buckets, row totals, and a footer with bucket totals plus each bucket's share of the whole. Late buckets escalate: amber wash from `warnFrom` (default bucket 2), red on the last bucket — zero cells stay unwashed dashes.
 
 ```jsx
-const { AgingTable, Money } = window.MeridianDesignSystem_4f61be;
+const { AgingTable, Money } = window.MeridianDesignSystem_205d17;
 
 <AgingTable
   currency="USD"

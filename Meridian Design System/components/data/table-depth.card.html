@@ -13,8 +13,8 @@
 <body style="margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const DS = window.MeridianDesignSystem_4f61be;
-const { DenseDataTable, ColumnManager, SeverityBadge, Timestamp, Eyebrow, Button, SelectionToolbar } = DS;
+const DS = window.MeridianDesignSystem_205d17;
+const { DataGrid, ColumnManager, SeverityBadge, Timestamp, Eyebrow, Button, SelectionToolbar } = DS;
 const { useTableColumns, useTableState, useRowSelection, useAsyncTableData } = DS.TableHooks;
 const { useState } = React;
 
@@ -33,12 +33,12 @@ const ALL = Array.from({ length: 240 }, (_, i) => ({
 
 const BASE_COLS = [
   { key: "id", label: "Order", width: 110, pinned: true },
-  { key: "time", label: "Time", width: 96, render: (r) => <Timestamp value={r.time} format="time" /> },
+  { key: "time", label: "Time", width: 96, cell: (r) => <Timestamp value={r.time} format="time" /> },
   { key: "symbol", label: "Symbol", width: 90 },
-  { key: "side", label: "Side", width: 70, render: (r) => <span style={{ color: r.side === "Buy" ? "var(--green-dim)" : "var(--red-dim)", fontWeight: 600, fontVariant: "all-small-caps" }}>{r.side}</span> },
+  { key: "side", label: "Side", width: 70, cell: (r) => <span style={{ color: r.side === "Buy" ? "var(--green-dim)" : "var(--red-dim)", fontWeight: 600, fontVariant: "all-small-caps" }}>{r.side}</span> },
   { key: "qty", label: "Qty", width: 90, align: "right" },
   { key: "px", label: "Price", width: 110, align: "right" },
-  { key: "status", label: "Status", width: 150, render: (r) => <SeverityBadge status={{ "Filled": "Complete", "Working": "Running", "Partially filled": "InProgress", "Rejected": "Rejected" }[r.status]} label={r.status} /> },
+  { key: "status", label: "Status", width: 150, cell: (r) => <SeverityBadge status={{ "Filled": "Complete", "Working": "Running", "Partially filled": "InProgress", "Rejected": "Rejected" }[r.status]} label={r.status} /> },
 ];
 
 function App() {
@@ -57,7 +57,7 @@ function App() {
         <SelectionToolbar count={sel.count === "all" ? ts.data.length : sel.count} onClear={sel.clear}
           actions={[{ label: "Cancel orders", onClick: () => {} }, { label: "Export", onClick: () => ts.exportCSV("orders.csv") }]} />
       )}
-      <DenseDataTable
+      <DataGrid rowKey="index"
         columns={cols.visibleColumns}
         rows={ts.data}
         sortInfo={ts.sortInfo}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,172 +7,102 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Blank Workstation" description="Shell-only template: masthead, nav rail, status bar with an empty content canvas. Start here for a custom layout." -->
+<!-- @template name="Start · Blank Workstation" description="The reference shell, nothing else — WorkstationShell frame with an empty content canvas. Copy, declare your archetype, build the work plane." -->
 <helmet>
-  <script src="./ds-base.js"></script>
+<script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
+<meta name="dc-template" content="blank-workstation">
 </helmet>
-
-<div style="display: flex; flex-direction: column; height: 100vh; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body, 'Segoe UI Variable Text', system-ui, sans-serif); color: var(--text-primary, #22252A);">
-  <!-- Masthead -->
-  <div style="
-    min-height: 48px;
-    background: var(--topbar-bg, #1F1D1A);
-    border-bottom: 1px solid var(--topbar-border, #2E2A24);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 12px;
-    flex-shrink: 0;
-  ">
-    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--topbar-text, #F4F2ED);">
-      <span style="letter-spacing: 0.02em;">Meridian</span>
-      <span style="opacity: 0.4;">/</span>
-      <span style="opacity: 0.85;">Untitled Workstation</span>
-    </div>
-
-    <div style="flex: 1;"></div>
-
-    <div style="
-      font-family: var(--font-data, 'Cascadia Mono', monospace);
-      font-size: 11px;
-      color: var(--statusbar-text, #D8D3CA);
-      opacity: 0.8;
-      letter-spacing: 0.04em;
-    " id="utcClock">00:00:00Z</div>
-
-    <div style="
-      padding: 3px 10px;
-      background: var(--mode-live, #A8443C);
-      border: 1px solid var(--mode-live, #A8443C);
-      border-radius: var(--radius-chip, 2px);
-      font-family: var(--font-data, 'Cascadia Mono', monospace);
-      font-size: 10px;
-      font-weight: 700;
-      text-transform: uppercase;
-      color: var(--text-on-accent, #FFFFFF);
-      letter-spacing: 0.08em;
-    ">Live</div>
-  </div>
-
-  <!-- Body -->
-  <div style="display: flex; flex: 1; overflow: hidden;">
-    <!-- Nav rail -->
-    <div style="
-      width: 224px;
-      background: var(--sidebar-bg, #EDEAE4);
-      border-right: 1px solid var(--border, #E4E3DE);
-      display: flex;
-      flex-direction: column;
-      padding: 12px;
-      gap: 4px;
-      overflow-y: auto;
-      flex-shrink: 0;
-    ">
-      <div style="
-        font-size: 9px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: var(--text-muted, #5E666F);
-        padding: 8px 10px 4px;
-      ">Workspaces</div>
-
-      <div style="
-        padding: 9px 10px;
-        border-radius: var(--radius-button, 6px);
-        background: var(--sidebar-active, #F2E3DB);
-        box-shadow: inset 3px 0 0 var(--accent, #A85436);
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--text-primary, #22252A);
-      ">Trading</div>
-
-      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4E5258); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F0EEE9)'" onmouseout="this.style.background='transparent'">Portfolio</div>
-      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4E5258); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F0EEE9)'" onmouseout="this.style.background='transparent'">Accounting</div>
-      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4E5258); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F0EEE9)'" onmouseout="this.style.background='transparent'">Reporting</div>
-      <div style="padding: 9px 10px; border-radius: var(--radius-button, 6px); cursor: pointer; font-size: 13px; color: var(--text-secondary, #4E5258); transition: background-color 120ms ease;" onmouseover="this.style.background='var(--bg-hover, #F0EEE9)'" onmouseout="this.style.background='transparent'">Data</div>
-
-      <div style="flex: 1;"></div>
-
-      <div style="padding-top: 8px; border-top: 1px solid var(--border, #E4E3DE);">
-        <button style="
-          width: 100%;
-          padding: 7px 12px;
-          border: 1px solid var(--border, #E4E3DE);
-          border-radius: var(--radius-button, 6px);
-          background: transparent;
-          font-family: var(--font-body, system-ui);
-          font-size: 11px;
-          font-weight: 600;
-          text-transform: uppercase;
-          letter-spacing: 0.04em;
-          cursor: pointer;
-          color: var(--text-secondary, #4E5258);
-          transition: background-color 120ms ease;
-        " onmouseover="this.style.background='var(--bg-hover, #F0EEE9)'" onmouseout="this.style.background='transparent'">Compact density</button>
-      </div>
-    </div>
-
-    <!-- Content canvas -->
-    <main style="flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg-canvas, #F2F0EC);">
-      <h1 style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap;">Untitled Workstation</h1>
-      <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 32px;">
-        <div style="
-          max-width: 420px;
-          text-align: center;
-          border: 1px dashed var(--border-strong, #AFABA1);
-          border-radius: var(--radius-card, 2px);
-          background: var(--bg-light, #FBFAF8);
-          padding: 28px 32px;
-        ">
-          <div style="font-size: 9px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted, #5E666F); margin-bottom: 10px;">Content canvas</div>
-          <div style="font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--text-primary, #22252A);">Build your layout here</div>
-          <div style="font-size: 13px; line-height: 1.5; color: var(--text-secondary, #4E5258);">Compose with Grid / Flex / Stack and drop in DenseDataTable, MetricCard, ChartCard, and the rest of the Meridian library.</div>
-        </div>
-      </div>
-
-      <!-- Status bar -->
-      <div style="
-        height: 28px;
-        background: var(--statusbar-bg, #1F1D1A);
-        border-top: 1px solid var(--statusbar-border, #2E2A24);
-        display: flex;
-        align-items: center;
-        padding: 0 16px;
-        gap: 24px;
-        font-family: var(--font-data, 'Cascadia Mono', monospace);
-        font-size: 10px;
-        color: var(--statusbar-text, #D8D3CA);
-        flex-shrink: 0;
-      ">
-        <div style="opacity: 0.7;">Connection: <span style="color: var(--green, #3A7A56); opacity: 1;">live</span></div>
-        <div style="opacity: 0.7;">Sync: <span style="opacity: 1;">0ms</span></div>
-        <div style="opacity: 0.7;">Records: <span style="opacity: 1;">—</span></div>
-        <div style="flex: 1;"></div>
-        <div style="opacity: 0.7;">PAPER</div>
-      </div>
-    </main>
-  </div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Blank workstation" style="height:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Untitled workstation</h1>
+<div style="margin-left:auto">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DensityToggle" hint-size="120px,28px"></x-import>
 </div>
-
-<script>
-  function updateClock() {
-    const el = document.getElementById('utcClock');
-    if (el) el.textContent = new Date().toISOString().substring(11, 19) + 'Z';
-  }
-  updateClock();
-  setInterval(updateClock, 1000);
-</script>
-
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Work plane" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,560px">
+<div style="height:100%;min-height:420px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--border-strong, #AAA49A);background:var(--card-surface-raised, #FCFBF8)">
+<div style="max-width:460px;padding:28px 32px;text-align:center;display:flex;flex-direction:column;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Content canvas</x-import>
+<div style="font:600 14px var(--font-body);color:var(--text-primary)">Build the dominant work plane here</div>
+<p style="margin:0;font-size:13px;line-height:1.55;font-family:var(--font-body);color:var(--text-secondary)">Declare the archetype on <code>WorkstationShell</code>, then compose with Grid / Flex / Stack and drop in DataGrid, MetricCard, ChartCard, and the rest of the library. Pass an <code>aside</code> for the evidence rail — the shell keeps it crash-isolated.</p>
+<p style="margin:4px 0 0;font-size:12px;line-height:1.55;font-family:var(--font-body);color:var(--text-muted)">The operator layer is already wired: <code>Ctrl K</code> opens the palette, <code>?</code> the shortcut sheet, <code>G</code>-chords follow the rail. Add your screen's actions and objects in <code>operatorLayer()</code>.</p>
+</div>
+</div>
+</x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" scope="blank-workstation" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Keyboard shortcuts" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1920, &quot;height&quot;: 1080}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(this.env()):(this.env())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    // No private clock: the masthead reads the one shared world instant and ticks itself (4.4 · C-1).
+    // A screen that runs its own wall clock puts a second "now" on the page.
+    this._untick = window.MeridianWorld ? window.MeridianWorld.tick(this) : null;
+  }
+  componentWillUnmount() { if (this._untick) this._untick(); }
+  componentDidUpdate() { this.applyChrome(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  env() { return String(this.props.environment ?? "PAPER").toUpperCase(); }
+
+  state = { section: "trading" };
+  clock() { return window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC"; }
+
+  // Operator layer — the keyboard & command contract every screen carries. Nav shortcuts become
+  // "G x" bindings + palette rows automatically; list your screen's actions (and objects, for
+  // lookup) here. See dashboard-workstation for the full pattern incl. object resolution + trail.
+  // The rail is the suite's one address book — never a per-screen list. Copy this screen and the
+  // rail already knows every destination, under the same section names as everywhere else.
+  get navSections() { return (window.MeridianAppMap ? window.MeridianAppMap.sections("blank") : []); }
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const t = (k, a, b) => { const T = window.MeridianToast; if (T && T[k]) T[k](a, b); };
+    return L.build({
+      screenId: "blank-workstation", sections: this.navSections, activeId: this.state.section, go: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      actions: [
+        { id: "new", label: "New…", keys: "n", run: () => t("info", "New", "Bind your screen's primary create action here.") },
+        { id: "refresh", label: "Refresh data", keys: "r", run: () => t("success", "Refreshed", this.clock()) },
+      ],
+    });
+  }
+
   renderVals() {
-    return {};
+    this.applyChrome();
+    const { WorkstationTopbar, NavRail, StatusBar } = this.ds();
+    const el = React.createElement;
+    const layer = this.operatorLayer();
+    return {
+      dataState: this.props.dataState ?? "ready",
+      onRetry: () => {},
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      topbar: WorkstationTopbar && el(WorkstationTopbar, {
+        moduleLabel: "Untitled Workstation", environment: this.env(),
+        brandSrc: "../../assets/brand/meridian-mark-light.svg",
+      }),
+      nav: NavRail && el(NavRail, {
+        activeId: this.state.section, onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: this.navSections,
+      }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "ok", label: "Connection", value: "live" },
+        { label: "Sync", value: "0ms" },
+        { label: "Records", value: "—" },
+        { label: "Environment", value: this.env(), push: true },
+      ] }),
+    };
   }
 }
-
 </script>
 </body>
 </html>

@@ -1,1 +1,3 @@
 A worksheet cell. Addressed by `"<column key><row number>"` (e.g. `"E2"`), row numbers 1-based. `type` drives presentation: `label`/`text` render in the body font (left-aligned by default); everything else renders mono + right-aligned. `formula` cells get an accent corner mark and surface their `formula` in the formula bar; `error` cells tint with the red wash.
+
+A11y (3.5): complete grid semantics (row/column headers, `gridcell` with row+col indices), `aria-activedescendant` navigation from one tab stop, named cells (ref, value, formula, error), `aria-invalid` on error cells, focus returns to the grid after a keyboard edit commits or cancels. New `label` prop names the grid.

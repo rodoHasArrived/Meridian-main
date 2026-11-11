@@ -1,0 +1,122 @@
+<!-- @dsCard group="Core" viewport="1000x800" name="Dialog System" subtitle="Dialog, DialogHeader/Body/Footer, DialogForm — one overlay, three widths (sm 420 · md 520 · lg 720)" -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dialog System</title>
+  <link rel="stylesheet" href="../../styles.css" />
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="../../_ds_bundle.js"></script>
+</head>
+<body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EB); font-family: var(--font-body);">
+  <div style="max-width: 1000px; margin: 0 auto;">
+    <h2 style="margin: 0 0 4px 0; font-size: 22px; color: var(--text-primary, #20252B);">Dialog System</h2>
+    <p style="margin: 0 0 24px 0; font-size: 13px; color: var(--text-secondary, #535C65); max-width: 74ch;">One overlay implementation — one scrim, one focus trap, one title-id contract. Width is the <code>size</code> prop, never a second component.</p>
+
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+      <div id="demo-confirm"></div>
+      <div id="demo-form"></div>
+      <div id="demo-alert"></div>
+    </div>
+  </div>
+
+  <script type="text/babel">
+    const { Dialog, DialogBody, DialogFooter, DialogForm, Button } = window.MeridianDesignSystem_205d17;
+    const { useState } = React;
+
+    // 1. Confirmation — size="sm"
+    function ConfirmDemo() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open confirm</Button>
+          <Dialog open={open} onClose={() => setOpen(false)} size="sm" title="Delete transaction?">
+            <DialogBody>
+              This action cannot be undone. Transaction TXN-1847 will be permanently removed from the ledger.
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="danger" onClick={() => setOpen(false)}>Delete entry</Button>
+            </DialogFooter>
+          </Dialog>
+        </div>
+      );
+    }
+
+    // 2. Form takeover — DialogForm size="lg"
+    function FormDemo() {
+      const [open, setOpen] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const handleSubmit = async () => {
+        setLoading(true);
+        await new Promise(r => setTimeout(r, 800));
+        setLoading(false);
+        setOpen(false);
+      };
+      const field = (label, placeholder) => (
+        <label style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, fontVariant: "all-small-caps", letterSpacing: "0.03em", color: "var(--text-muted)" }}>{label}</span>
+          <input type="text" placeholder={placeholder} style={{ padding: "7px 10px", border: "1px solid var(--border)", borderRadius: "var(--radius-input, 4px)", fontFamily: "var(--font-data)", fontSize: 13, background: "var(--bg-light)", color: "var(--text-primary)" }} />
+        </label>
+      );
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open form</Button>
+          <DialogForm
+            open={open}
+            onClose={() => setOpen(false)}
+            size="lg"
+            title="Create journal entry"
+            onSubmit={handleSubmit}
+            submitLabel="Post entry"
+            loading={loading}
+          >
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              {field("Debit account", "1100 · Cash")}
+              {field("Amount (USD)", "0.00")}
+              {field("Credit account", "2100 · Margin payable")}
+              {field("Reference", "JE-")}
+            </div>
+          </DialogForm>
+        </div>
+      );
+    }
+
+    // 3. Result — default size="md"
+    function AlertDemo() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <Button variant="primary" onClick={() => setOpen(true)}>Open result</Button>
+          <Dialog open={open} onClose={() => setOpen(false)} title="Reconciliation complete">
+            <DialogBody>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <p style={{ margin: 0 }}>All 47 items matched · 0 breaks</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>Cash on hand · $82,440.00</p>
+                <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>Ledger balance · $82,440.00</p>
+              </div>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="primary" onClick={() => setOpen(false)}>Done</Button>
+            </DialogFooter>
+          </Dialog>
+        </div>
+      );
+    }
+
+    const panel = (label, node) => (
+      <div>
+        <h4 style={{ margin: "0 0 12px 0", fontSize: 13, fontWeight: 600 }}>{label}</h4>
+        {node}
+      </div>
+    );
+
+    ReactDOM.createRoot(document.getElementById("demo-confirm")).render(panel('Confirmation · size="sm"', <ConfirmDemo />));
+    ReactDOM.createRoot(document.getElementById("demo-form")).render(panel('Form takeover · size="lg"', <FormDemo />));
+    ReactDOM.createRoot(document.getElementById("demo-alert")).render(panel('Result · size="md"', <AlertDemo />));
+  </script>
+</body>
+</html>

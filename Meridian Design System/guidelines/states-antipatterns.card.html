@@ -14,7 +14,7 @@
   .st { border: 1px solid var(--border); background: var(--bg-light); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
   .st b { font-size: 11px; font-variant: all-small-caps; letter-spacing: .03em; }
   .st span { font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
-  .st code { font-family: var(--font-data); font-size: 10px; color: var(--accent-dim); }
+  .st code { font-family: var(--font-data); font-size: 10px; color: var(--brand-signal-dim,#A64E33); }
   .anti { display: flex; flex-direction: column; gap: 8px; }
   .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: stretch; }
   .cell { border: 1px solid var(--border); padding: 8px 10px; font-family: var(--font-data); font-size: 11px; line-height: 1.4; }
@@ -31,8 +31,8 @@
     <h2>The five states every data surface owes</h2>
     <div class="states">
       <div class="st"><b style="color:var(--text-muted)">Loading</b><span>Shape-preserving skeleton</span><code>SkeletonTable</code></div>
-      <div class="st"><b style="color:var(--accent-dim)">Empty · no data</b><span>Zero-state + action</span><code>EmptyState</code></div>
-      <div class="st"><b style="color:var(--accent-dim)">Empty · filtered</b><span>Distinct copy + Clear</span><code>EmptyState</code></div>
+      <div class="st"><b style="color:var(--brand-signal-dim,#A64E33)">Empty · no data</b><span>Zero-state + action</span><code>EmptyState</code></div>
+      <div class="st"><b style="color:var(--brand-signal-dim,#A64E33)">Empty · filtered</b><span>Distinct copy + Clear</span><code>EmptyState</code></div>
       <div class="st"><b style="color:var(--red-dim)">Error</b><span>Banner + retry, no stale rows</span><code>StatusBanner</code></div>
       <div class="st"><b style="color:var(--green-dim)">Ready</b><span>The component</span><code>—</code></div>
     </div>

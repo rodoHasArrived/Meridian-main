@@ -1,0 +1,105 @@
+<!-- @dsCard group="Shell" viewport="1180x720" name="GlobalSearch" subtitle="The masthead search field, made real — screen objects plus every destination in the app map" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Shell — GlobalSearch</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../_ds_bundle.js"></script>
+<style>
+body{margin:0;padding:18px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+a{color:var(--accent,#C56343)}a:hover{color:var(--text-primary)}
+.wrap{max-width:1140px;display:grid;gap:12px}
+.head{border-bottom:1px solid var(--border-heavy,#AAA49A);padding-bottom:9px}
+h1{font-size:15px;font-weight:650;margin:0}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px;margin-bottom:4px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+p.lede{margin:6px 0 0;font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:96ch}
+p.lede b{color:var(--text-primary);font-weight:600}
+.stage{position:relative;height:420px;border:1px solid var(--border);background:var(--bg-medium);overflow:hidden}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.panel{border:1px solid var(--border);background:var(--bg-light);padding:10px 12px 12px}
+.panel h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0 0 7px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.panel p{margin:0 0 7px;font-size:11.5px;line-height:1.5;color:var(--text-secondary)}
+.panel p:last-child{margin-bottom:0}
+code{font-family:var(--font-data);font-size:10.5px}
+pre{margin:0;font-family:var(--font-data);font-size:10.5px;line-height:1.6;color:var(--text-secondary);background:var(--bg-well,#FCFBF8);border:1px solid var(--border);padding:8px 10px;overflow:auto}
+.hint{font-size:10.5px;color:var(--text-muted);line-height:1.5;margin:7px 0 0}
+</style>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Shell · suite chrome</div>
+    <h1>GlobalSearch</h1>
+    <p class="lede">The masthead has always rendered a full-width field reading “Search symbols, runs, commands…”. Until 4.4 it had <b>no handler on any screen in the suite</b> — the widest affordance in the chrome was a picture. This is what it opens: a typeahead over the <b>current screen’s objects</b> plus <b>every destination in the app map</b>, grouped, keyboard-first. <code>ds-base.js</code> mounts it and binds both the field and <code>/</code>, so screens write nothing.</p>
+  </div>
+  <div class="stage" id="stage"></div>
+  <div class="grid2">
+    <div class="panel">
+      <h2>Where the rows come from</h2>
+      <p><b>Objects</b> — the screen’s own. <code>MeridianOperatorLayer.build()</code> publishes its resolver to <code>.current</code>, so a screen that already declares <code>objects</code> is searchable with no extra work. A screen that declares none says so in the empty state rather than pretending.</p>
+      <p><b>Go to</b> — every non-hidden screen in <code>templates/_scaffold/app-map.js</code>, with its <code>G</code> chord as the right-hand meta. Identical on all 27 screens, because it is one list.</p>
+    </div>
+    <div class="panel">
+      <h2>Mounting it yourself</h2>
+      <pre>&lt;x-import component-from-global-scope=
+  "MeridianDesignSystem_205d17.GlobalSearch"
+  open="{{ searchOpen }}"
+  on-close="{{ closeSearch }}"
+  resolve="{{ resolveObjects }}"
+  destinations="{{ destinations }}"
+  hint-size="0,0"&gt;&lt;/x-import&gt;</pre>
+      <p class="hint">Only needed to place it somewhere other than the masthead — the default mount is automatic.</p>
+    </div>
+  </div>
+</div>
+<script>
+(function () {
+  function boot() {
+    var ns = window.MeridianDesignSystem_205d17, R = window.React, RD = window.ReactDOM;
+    if (!ns || !ns.GlobalSearch || !R || !RD) return setTimeout(boot, 60);
+    var objects = [
+      { id: "s1", group: "Securities", label: "AAPL · Apple Inc.", meta: "US0378331005" },
+      { id: "s2", group: "Securities", label: "AAPL 27 Jun 260 C", meta: "OPT · 412 lots" },
+      { id: "s3", group: "Breaks", label: "Cash break · custody vs ledger", meta: "BRK-2291" },
+      { id: "s4", group: "Breaks", label: "Position break · AAPL 400 vs 380", meta: "BRK-2287" },
+      { id: "s5", group: "Runs", label: "Nightly valuation · 2026-08-12", meta: "RUN-8841" }
+    ];
+    var destinations = [
+      { id: "d1", label: "Portfolio Overview", meta: "G D" },
+      { id: "d2", label: "Trading Desk", meta: "G T" },
+      { id: "d3", label: "Reconciliation", meta: "G R" },
+      { id: "d4", label: "General Ledger", meta: "G L" },
+      { id: "d5", label: "Security Master", meta: "G S" },
+      { id: "d6", label: "Analytical Workbench", meta: "G N" }
+    ];
+    function Demo() {
+      var st = R.useState(true), open = st[0], setOpen = st[1];
+      return R.createElement("div", { style: { position: "absolute", inset: 0 } },
+        R.createElement("div", { style: { position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" } },
+          open ? null : R.createElement("button", {
+            onClick: function () { setOpen(true); },
+            style: { font: "12px var(--font-body)", padding: "7px 13px", cursor: "pointer", border: "1px solid var(--border-strong)", background: "var(--bg-light)", color: "var(--text-primary)" }
+          }, "Open search")),
+        R.createElement(ns.GlobalSearch, {
+          open: open,
+          onClose: function () { setOpen(false); },
+          resolve: function (q) {
+            var t = q.toLowerCase();
+            return objects.filter(function (r) { return (r.label + " " + r.meta).toLowerCase().indexOf(t) >= 0; })
+              .map(function (r) { return Object.assign({}, r, { run: function () {} }); });
+          },
+          destinations: destinations.map(function (d) { return Object.assign({}, d, { run: function () {} }); }),
+          scopeLabel: "reconciliation"
+        })
+      );
+    }
+    var host = document.getElementById("stage");
+    RD.createRoot ? RD.createRoot(host).render(R.createElement(Demo)) : RD.render(R.createElement(Demo), host);
+  }
+  boot();
+})();
+</script>
+</body>
+</html>

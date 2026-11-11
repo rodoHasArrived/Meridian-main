@@ -1,0 +1,86 @@
+<!-- @dsCard group="Operations" viewport="1280x900" name="Action envelope" subtitle="ActionEnvelope · ActionStateChip · InstructionLedger — what became of the instruction: in flight, landed, unlanded, rejected" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Action envelope</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
+.wrap{display:grid;grid-template-columns:300px 1fr;gap:16px;max-width:1240px;align-items:start}
+.rail{display:grid;gap:12px}
+.rail h1{margin:0;font-size:14px;color:var(--text-primary)}
+.rail p{margin:0;font:11px/17px var(--font-body);color:var(--text-muted);text-wrap:pretty}
+.fates{display:grid;gap:0;border:1px solid var(--border);background:var(--bg-light)}
+.fates div{display:grid;gap:2px;padding:7px 9px;border-bottom:1px solid var(--border-divider)}
+.fates div:last-child{border-bottom:0}
+.fates b{font:600 11px var(--font-body);color:var(--text-primary)}
+.fates span{font:10px/15px var(--font-body);color:var(--text-muted)}
+.modes{display:grid;gap:4px}
+.modes h2{margin:0;font:600 9px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted)}
+.modes button{text-align:left;padding:6px 9px;border:1px solid var(--border);background:var(--bg-light);cursor:pointer;font:11px var(--font-body);color:var(--text-primary)}
+.modes button:hover{background:var(--bg-hover)}
+.modes button[aria-pressed="true"]{border-color:var(--selected,#496C8F);background:var(--bg-active,#E7EDF2)}
+.modes button span{display:block;font:9.5px/14px var(--font-data);color:var(--text-muted)}
+.main{display:grid;gap:14px;min-width:0}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:9px 10px;border:1px solid var(--border);background:var(--bg-light)}
+.chips b{font:600 9px var(--font-data);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted);margin-right:4px}
+.note{margin:0;font:10px/15px var(--font-body);color:var(--text-muted)}
+@media(max-width:1040px){.wrap,.pair{grid-template-columns:1fr}}
+</style></head><body><div id="root"></div><script type="text/babel">
+const {ActionEnvelope,ActionEnvelopeProvider,InstructionLedger,ActionStateChip,ACTION_STATES}=window.MeridianDesignSystem_205d17;
+
+// A card is a specimen, so the transport is inline and tiny. The real mock — latency, replay,
+// lost answers, silence — lives in tests/mock-transport.js, never in the design system.
+function makeTransport(getMode){
+  const landed=new Map();let n=0;
+  return async(inst)=>{
+    const mode=getMode();
+    await new Promise(r=>setTimeout(r,mode==="silent"?9000:520));
+    const seen=landed.get(inst.idempotencyKey);
+    if(seen)return{ok:true,id:seen,duplicateOf:seen};
+    if(mode==="reject")return{ok:false,reason:"Order exceeds the desk limit · 5,000,000 USD notional. Raise the limit or split the order."};
+    if(mode==="lost"){const id="ORD-"+(++n);landed.set(inst.idempotencyKey,id);throw new Error("HTTP 502 · answer lost after the write");}
+    if(mode==="silent")return{ok:true,id:"ORD-"+(++n)};
+    const id=(inst.action==="ingest.backfill"?"BF-":"ORD-")+(++n);landed.set(inst.idempotencyKey,id);return{ok:true,id};
+  };
+}
+
+const MODES=[
+  {id:"ok",label:"Answers · 520 ms",note:"landed with a receipt"},
+  {id:"reject",label:"Refuses · 4xx + reason",note:"rejected — a decision was made"},
+  {id:"lost",label:"Writes, loses the answer",note:"unlanded → retry replays the same key"},
+  {id:"silent",label:"Says nothing",note:"unlanded at the 3 s timeout"},
+];
+
+function Card(){
+  const [mode,setMode]=React.useState("ok");
+  const modeRef=React.useRef(mode);modeRef.current=mode;
+  const transport=React.useMemo(()=>makeTransport(()=>modeRef.current),[]);
+  const actions={
+    "order.submit":{label:"Submit order · AAPL 1,200 @ 189.4200",endpoint:"POST /v1/orders",idempotencyKey:"ORD-TOK-7F3A",permission:{required:"trade.submit",held:true,actor:"k.ito"},posture:"confirmed",failureSurface:"Blotter row · status bar · instruction ledger",payload:{symbol:"AAPL",qty:1200,limit:189.42}},
+    "ingest.backfill":{label:"Enqueue backfill · AAPL 2019–2026",endpoint:"POST /v1/backfills",idempotencyKey:"BF-AAPL-20190101-20260827",permission:{required:"ingest.run",held:true,actor:"k.ito"},posture:"optimistic",failureSurface:"Run log · queue row",payload:{symbol:"AAPL"}},
+  };
+  return <div className="wrap">
+    <div className="rail">
+      <div>
+        <h1>The fate of an instruction</h1>
+        <p><code>ActionGuard</code> answers <i>may I</i>. This answers <i>did it</i> — and it declares the endpoint, key, permission, posture and failure surface before the attempt, so the deployment checklist is answered by the component.</p>
+      </div>
+      <div className="fates">{ACTION_STATES.filter(s=>s.id!=="idle").map(s=><div key={s.id}><b>{s.glyph} {s.label}</b><span>{s.meaning}</span></div>)}</div>
+      <div className="modes">
+        <h2>Transport behaviour</h2>
+        {MODES.map(m=><button key={m.id} type="button" aria-pressed={mode===m.id} onClick={()=>setMode(m.id)}>{m.label}<span>{m.note}</span></button>)}
+      </div>
+      <p className="note">Submit twice quickly under “answers”: one instruction, one transport call. The key is the identity of the instruction, not a send-time detail.</p>
+    </div>
+    <div className="main">
+      <ActionEnvelopeProvider actions={actions} transport={transport} timeoutMs={3000}>
+        <div className="pair">
+          <ActionEnvelope action="order.submit" submitLabel="Send order" />
+          <ActionEnvelope action="ingest.backfill" submitLabel="Enqueue" />
+        </div>
+        <div className="chips"><b>inline</b>{ACTION_STATES.map(s=><ActionStateChip key={s.id} state={s.id} />)}<ActionStateChip state="unlanded" attempt={2} idempotencyKey="ORD-TOK-7F3A" /></div>
+        <InstructionLedger />
+      </ActionEnvelopeProvider>
+      <p className="note">A rejection without a reason is treated as unlanded — “no” and “no answer” are different facts, and only one of them is safe to retry.</p>
+    </div>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Card />);
+</script></body></html>

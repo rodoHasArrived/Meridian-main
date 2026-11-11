@@ -19,7 +19,7 @@ export interface AccountTreeProps {
   currency?: string;
   /** Branches at or above this depth start expanded (root = 0). @default 1 */
   defaultExpandedDepth?: number;
-  /** Code of the row to highlight with the cyan rail. */
+  /** Code of the row to highlight with the terracotta rail. */
   selectedCode?: string;
   /** Row click handler — makes rows selectable. */
   onSelect?: (node: AccountNode) => void;

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,12 +7,176 @@
 </head>
 <body>
 <x-dc>
-<!-- @template name="Field & Formula" description="Formula composer — field picker, live autocomplete with keyboard nav, and a signature detail panel" -->
+<!-- @template name="Compose · Field & Formula" description="Field picker and formula composer editing the same shared worksheet statements as Builder and Formation." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
 <meta name="dc-template" content="field-formula">
+<style>html,body{margin:0;padding:0;height:100%}
+.ff-sug{display:flex;align-items:center;gap:10px;padding:7px 10px;border-left:2px solid transparent;border-bottom:1px solid var(--border);cursor:pointer;background:none;width:100%;text-align:left;font:inherit;color:inherit}
+.ff-sug:hover,.ff-sug[data-on="true"]{border-left-color:var(--brand-signal,#C56343);background:var(--bg-active,#EDEFF0)}
+.ff-sug:last-child{border-bottom:none}
+.ff-ref{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.ff-ref:hover code{text-decoration:underline;text-underline-offset:2px}
+</style>
 </helmet>
-<x-import component-from-global-scope="FieldFormulaScreen" from="./screen.jsx" hint-size="100%,820px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Formula" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<div data-screen-label="Field &amp; Formula" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Field &amp; Formula" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="fields" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Field &amp; Formula</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="90px,18px">{{ cellChip }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ liveVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ liveLabel }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onInsert }}" hint-size="140px,28px">Insert {{ field }}(cusip)</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ applyDisabled }}" on-click="{{ onApply }}" hint-size="140px,28px">Apply to worksheet</x-import>
+</div>
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" hint-size="100%,80px">
+<div style="padding:12px;display:flex;align-items:flex-end;gap:10px">
+<div style="width:220px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Worksheet statement" value="{{ cellRef }}" on-change="{{ onCellPick }}" options="{{ cellOptions }}" hint-size="100%,52px"></x-import></div>
+<div style="flex:1"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Combobox" label="Field picker — search &amp; insert" options="{{ fieldOptions }}" value="{{ field }}" on-change="{{ onField }}" hint-size="100%,52px"></x-import></div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" hint-size="100%,220px">
+<div style="display:flex;align-items:center;gap:8px;padding:8px 12px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">Formula editor</x-import>
+<div style="flex:1"></div>
+<span style="font:11px var(--font-data);color:var(--text-muted)">1 : {{ charCount }}</span>
+</div>
+<div style="padding:12px;display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" aria-label="Formula for the selected statement" value="{{ editor }}" on-change="{{ onEditor }}" style="font-family:var(--font-data)" hint-size="100%,32px"></x-import>
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ checkStatus }}" label="{{ checkLabel }}" hint-size="70px,18px"></x-import>
+<span style="font:12px var(--font-body);color:var(--text-secondary)">{{ checkMessage }}</span>
+</div>
+<div style="border:1px solid var(--border);background:var(--card-surface)">
+<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border);background:var(--bg-medium)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Suggestions</x-import>
+<div style="flex:1"></div>
+<span style="font-size:11px;color:var(--text-muted)">click to insert</span>
+</div>
+<sc-for list="{{ suggestions }}" as="it" hint-placeholder-count="3">
+<button type="button" class="ff-sug" onClick="{{ it.insert }}">
+<code style="font:13px var(--font-data);color:var(--text-primary);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.sig }}</code>
+<span style="font-size:11px;color:var(--text-muted);white-space:nowrap">{{ it.desc }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ it.tone }}" hint-size="44px,18px">{{ it.cat }}</x-import>
+</button>
+</sc-for>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" hint-size="100%,240px">
+<div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Signature</x-import>
+<code style="font:13px var(--font-data);color:var(--brand-signal,#C56343)">{{ selSig }}</code>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ selTone }}" hint-size="44px,18px">{{ selCat }}</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 1 }}" items="{{ signatureItems }}" hint-size="100%,110px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" hint-size="100%,44px">{{ selNotes }}</x-import>
+</div>
+</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" hint-size="320px,560px">
+<div style="padding:14px;display:flex;flex-direction:column;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="130px,14px">Function reference</x-import>
+<sc-for list="{{ refGroups }}" as="g" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font:600 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--text-muted)">{{ g.label }}</div>
+<sc-for list="{{ g.items }}" as="it" hint-placeholder-count="3">
+<button type="button" class="ff-ref" onClick="{{ it.pick }}">
+<code style="font:12px var(--font-data);color:var(--text-primary);white-space:nowrap">{{ it.sig }}</code>
+<span style="font-size:11px;color:var(--text-muted)">{{ it.desc }}</span>
+</button>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</x-import>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, cellRef: null, editor: "", field: "YTM" };
+  K() { return window.MeridianExecutorKit; }
+  componentDidMount() { const wait = setInterval(() => { if (this.K()) { clearInterval(wait); this.K().applyChrome(this.props, "PAPER"); this.K().boot(this, (X, idn) => { const d = X.getStrategy(idn.strategyId); const ws = d.portfolioRules.worksheet || []; const first = ws.find((c) => c.status === "error") || ws[0]; return { draft: d, cellRef: first ? first.ref : null, editor: first ? first.formula : "" }; }); } }, 30); this._wait = wait; }
+  componentWillUnmount() { clearInterval(this._wait); this.K() && this.K().unboot(this); }
+  componentDidUpdate() { this.K() && this.K().applyChrome(this.props, "PAPER"); }
+  renderVals() {
+    const K = this.K(), env = String(this.props.environment ?? "PAPER").toUpperCase();
+    if (!K) return { dataState: "loading" };
+    const base = { dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")), onRetry: () => window.location.reload(), envLabel: env, navSections: K.NAV_SECTIONS, onNav: (id) => K.nav(id) };
+    if (!this.state.booted) return { ...base, statusItems: [{ label: "Formula", value: "Loading" }].concat(K.statusTail(env)), suggestions: [], refGroups: [], cellOptions: [], fieldOptions: [], signatureItems: [] };
+    const X = K.X(), SM = K.ds().StrategyModel, d = this.state.draft;
+    const ws = d.portfolioRules.worksheet || [];
+    const errs = ws.filter((c) => c.status === "error");
+    const check = X.validateFormula(this.state.editor);
+    const sel = K.FIELD_META.find((f) => f.name === this.state.field) || K.FIELD_META[0];
+    const cur = ws.find((c) => c.ref === this.state.cellRef);
+    const dirty = cur && cur.formula !== this.state.editor;
+    const storage = X.storageNotice();
+    const token = (this.state.editor.match(/([A-Z][A-Z_0-9]*)$/) || [])[1] || "";
+    const sugs = (token ? K.FIELD_META.filter((f) => f.name.startsWith(token)) : K.FIELD_META.filter((f) => f.cat === sel.cat)).slice(0, 5);
+    const insertText = (name) => { const e = this.state.editor; this.setState({ editor: token && name.startsWith(token) ? e.replace(/([A-Z][A-Z_0-9]*)$/, name + "(cusip)") : e + (e && !e.endsWith(" ") ? " " : "") + name + "(cusip)", field: name }); };
+    const cats = ["Price", "Yield", "Risk", "Signal", "Data"];
+    return {
+      ...base,
+      statusItems: [
+        { status: errs.length ? "err" : "ok", label: "Statements", value: ws.length + " · " + errs.length + " error" + (errs.length === 1 ? "" : "s") },
+        { label: "Draft", value: K.hash8(SM.materialHash(d)) },
+        { status: check.status === "ok" ? "ok" : "err", label: "Editor", value: check.status === "ok" ? "valid" : "invalid" },
+      ].concat(K.statusTail(env)),
+      cellChip: "cell " + (this.state.cellRef || "—") + (dirty ? " · edited" : ""),
+      liveVariant: errs.length ? "warning" : "success", liveLabel: errs.length ? errs.length + " blocked" : "AMX live",
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      onInsert: () => insertText(this.state.field),
+      applyDisabled: !this.state.cellRef || !dirty,
+      onApply: () => {
+        const t = window.MeridianToast;
+        const next = X.updateWorksheetCell(d.id, this.state.cellRef, this.state.editor);
+        this.setState({ draft: next });
+        const c = (next.portfolioRules.worksheet || []).find((x) => x.ref === this.state.cellRef);
+        if (c && c.status === "ok") { t && t.success && t.success("Applied to " + this.state.cellRef, "Shared worksheet updated · material " + K.hash8(SM.materialHash(next))); }
+        else { t && t.error && t.error("Applied with error", c ? c.message : "Statement does not evaluate."); }
+      },
+      cellRef: this.state.cellRef,
+      onCellPick: (ref) => { const c = ws.find((x) => x.ref === ref); this.setState({ cellRef: ref, editor: c ? c.formula : "" }); },
+      cellOptions: ws.map((c) => ({ value: c.ref, label: c.ref + " · " + (c.status === "error" ? "▲ error" : "✓ ok") })),
+      field: this.state.field, onField: (v) => this.setState({ field: v }),
+      fieldOptions: K.FIELD_META.map((f) => ({ value: f.name, label: f.name + " — " + f.desc })),
+      editor: this.state.editor, onEditor: (e) => this.setState({ editor: e.target.value }),
+      charCount: String(this.state.editor.length),
+      checkStatus: check.status === "ok" ? "Ready" : "Blocked", checkLabel: check.status === "ok" ? "valid" : "error",
+      checkMessage: check.status === "ok" ? "Statement parses · functions resolve against the AMX catalog." : check.message,
+      suggestions: sugs.map((f) => ({ sig: f.sig, desc: f.desc, cat: f.cat, tone: f.tone, insert: () => insertText(f.name) })),
+      selSig: sel.sig, selCat: sel.cat, selTone: sel.tone,
+      signatureItems: [
+        { label: "Returns", value: sel.cat === "Data" ? "value" : "number" },
+        { label: "Frequency", value: sel.freqLabel },
+        { label: "Owner", value: sel.owner },
+        { label: "Since", value: "AMX " + sel.since },
+        { label: "Fallback", value: sel.fallback },
+      ],
+      selNotes: sel.name + " carries its AMX lineage and documented fallback — visible in the catalog and in every run trace that uses it.",
+      refGroups: cats.map((cat) => ({ label: cat, items: K.FIELD_META.filter((f) => f.cat === cat).map((f) => ({ sig: f.sig, desc: f.desc, pick: () => this.setState({ field: f.name }) })) })),
+    };
+  }
+}
+</script>
 </body>
 </html>
