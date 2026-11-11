@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="720" viewBox="0 0 1600 720" role="img" aria-label="Meridian editorial hero">
       <title>Meridian editorial hero</title>
       <rect width="100%" height="100%" fill="#F2F0EB"></rect>
-      
+
 <defs>
   <pattern id="grid" width="32" height="32" patternUnits="userSpaceOnUse">
     <path d="M 32 0 L 0 0 0 32" fill="none" stroke="#E2DED5" stroke-width="1"></path>

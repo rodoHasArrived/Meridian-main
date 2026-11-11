@@ -25,7 +25,7 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-corr{display:inline-grid;gap:1px;background:var(--border,#D2CDC3);
+.mds-corr{display:inline-grid;gap:1px;background:var(--border-color,#D2CDC3);
   border:1px solid var(--border-strong,#AAA49A);font-family:var(--font-data,monospace);}
 .mds-corr__h{background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);
   font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;

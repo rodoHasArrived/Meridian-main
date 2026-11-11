@@ -250,7 +250,7 @@ export const COMPARE_SYMBOL_LIMIT = 3;
 export const COMPARE_SERIES_COLORS: ReadonlyArray<string> = [
   "var(--chart-compare-1, #7890A4)",
   "var(--chart-compare-2, #8C918F)",
-  "var(--chart-compare-3, #2E7655)"
+  "var(--chart-compare-3, #29323A)"
 ];
 
 export type CompareSeriesStatus = "loading" | "ready" | "error" | "empty";

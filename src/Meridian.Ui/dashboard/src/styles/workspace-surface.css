@@ -95,8 +95,8 @@ body {
 
 .workspace-directory-rail a:hover,
 .workspace-directory-rail a[aria-current="page"] {
-  background: var(--ws-rail-active);
-  color: var(--brand-signal-text);
+  background: var(--interaction-selected-surface);
+  color: var(--ws-text);
 }
 
 .workspace-table-inspector-layout {
@@ -167,9 +167,9 @@ body {
 .toolbar-chip.active,
 .operator-mode-toggle [aria-pressed="true"],
 .operator-mode-toggle [aria-current="page"] {
-  border-color: color-mix(in srgb, var(--ws-accent) 34%, transparent);
-  background: color-mix(in srgb, var(--ws-accent) 10%, transparent);
-  color: var(--brand-signal-text);
+  border-color: var(--interaction-selected);
+  background: var(--interaction-selected-surface);
+  color: var(--interaction-link);
 }
 
 .development-fixture-path-link,

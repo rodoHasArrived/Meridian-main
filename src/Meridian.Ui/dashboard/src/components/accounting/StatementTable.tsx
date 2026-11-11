@@ -50,23 +50,23 @@ function inject(): void {
   const css = `
 .stm-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
 .stm__empty{padding:16px 14px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
-.stm-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
+.stm-wrap{overflow-x:auto;border:1px solid var(--border-color,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .stm thead th{padding:9px 14px;white-space:nowrap;background:var(--bg-medium,#EBE8E1);
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);
-  border-bottom:1px solid var(--border,#D2CDC3);text-align:right;}
+  border-bottom:1px solid var(--border-color,#D2CDC3);text-align:right;}
 .stm thead th.stm--l{text-align:left;}
 .stm__section td{padding:10px 14px 5px;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-secondary,#535C65);
-  border-top:1px solid var(--border,#D2CDC3);}
+  border-top:1px solid var(--border-color,#D2CDC3);}
 .stm__section--first td{border-top:none;}
 .stm__item td{padding:9px 14px;color:var(--text-primary,#20252B);height:40px;}
 .stm__item td.stm--l{color:var(--text-secondary,#535C65);}
 .stm__item td.stm--num{text-align:right;}
 .stm__item--muted td.stm--l{color:var(--text-muted,#606870);}
-.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border,#D2CDC3);
+.stm__sub td{padding:10px 14px;font-weight:600;border-top:1px solid var(--border-color,#D2CDC3);
   background:var(--card-surface-raised,#FCFBF8);}
 .stm__sub td.stm--l{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-primary,#20252B);}

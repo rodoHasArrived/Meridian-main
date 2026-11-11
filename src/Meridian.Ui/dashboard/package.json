@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "design-system:check": "node scripts/sync-design-system-assets.mjs --check",
+    "design-system:sync": "node scripts/sync-design-system-assets.mjs --write",
+    "design-system:test-assets": "node --test scripts/sync-design-system-assets.test.mjs",
+    "predev": "npm run design-system:check",
+    "prebuild": "npm run design-system:check",
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1 --outDir ../wwwroot/workstation",
     "build": "tsc --noEmit && vite build",
@@ -16,7 +21,8 @@
     "test:watch": "vitest",
     "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts",
     "ratchets": "node scripts/design-system-ratchets.mjs",
-    "ratchets:update": "node scripts/design-system-ratchets.mjs --write"
+    "ratchets:update": "node scripts/design-system-ratchets.mjs --write",
+    "smoke:design-system": "node scripts/smoke-design-system.mjs"
   },
   "dependencies": {
     "lucide-react": "1.65.0",

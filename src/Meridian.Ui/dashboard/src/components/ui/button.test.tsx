@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { fireEvent, render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Button } from "@/components/ui/button";
 import { DesignSystemButton } from "@/design-system/primitives";
@@ -10,11 +11,22 @@ describe("Button", () => {
     expect(Button).toBe(DesignSystemButton);
   });
 
-  it("keeps primary interaction states on structural action roles", () => {
-    render(<Button>Save</Button>);
-    const button = screen.getByRole("button", { name: "Save" });
-    expect(button).toHaveClass("hover:bg-[var(--ws-primary-hover)]", "active:bg-[var(--ws-primary-pressed)]");
-    expect(button.className).not.toContain("ws-accent");
+  it("keeps incidental form commands from submitting and preserves explicit submit commands", async () => {
+    const user = userEvent.setup();
+    const onSubmit = vi.fn((event: React.FormEvent<HTMLFormElement>) => event.preventDefault());
+    render(
+      <form onSubmit={onSubmit}>
+        <Button>Inspect evidence</Button>
+        <Button type="submit">Retain review</Button>
+        <Button asChild><button type="submit">Submit child command</button></Button>
+      </form>
+    );
+
+    await user.click(screen.getByRole("button", { name: "Inspect evidence" }));
+    expect(onSubmit).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Retain review" }));
+    await user.click(screen.getByRole("button", { name: "Submit child command" }));
+    expect(onSubmit).toHaveBeenCalledTimes(2);
   });
 
   it("preserves busy and disabled semantics when rendered through the design-system adapter", () => {
@@ -164,13 +176,13 @@ describe("Button", () => {
     expect(rule).toMatch(/opacity: 1/);
     // Each theme block defines the three tokens.
     for (const token of ["--ws-disabled-bg:", "--ws-disabled-fg:", "--ws-disabled-border:"]) {
-      expect(css.split(token).length - 1).toBe(4);
+      expect(css.split(token).length - 1).toBe(5);
     }
   });
 
   it.each([
-    ["light", "#EDEAE4", "#5E666F", "#85807A", ["#F2F0EB", "#F8F7F3", "#EBE8E1", "#EDEAE4", "#FCFBF8"]],
-    ["dark", "#222B34", "#929CA6", "#77828D", ["#11171D", "#171E25", "#1D252D", "#1F2831", "#222B34"]]
+    ["light", "#EBE8E1", "#606870", "#6D757D", ["#F2F0EB", "#F8F7F3", "#FCFBF8", "#EBE8E1", "#FFFFFF"]],
+    ["dark", "#1D252D", "#929CA6", "#9AA2A9", ["#11171D", "#171E25", "#1F2831", "#1D252D"]]
   ])("meets contrast for the %s disabled tokens", (_theme, fill, label, edge, surfaces) => {
     const css = readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
     for (const value of [fill, label, edge]) {

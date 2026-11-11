@@ -13,7 +13,7 @@ This is it, scoped to what is actually shared with the upstream app:
             default theme graph, the dark value in BOTH dark blocks of
             colors-dark.css, and the light value re-asserted in the forced-light block.
 
-  4 THEME    The ten --theme-* contract names (and --theme-border-focus) are Tier-1
+  4 THEME    The ten --theme-* contract names (plus focus and chrome inputs) are Tier-1
             inputs authored as light literals. Both dark blocks must re-point each one at its flipped
             component token, and the forced-light block must state that component
             token as a literal — otherwise the name stays light on a dark screen.
@@ -115,8 +115,10 @@ THEME_MIRRORS = {
     "--theme-primary-text": "--text-primary", "--theme-secondary-text": "--text-secondary",
     "--theme-muted-text": "--text-muted", "--theme-accent": "--accent",
     # Not in the ten-name theme tier, but the same kind of input with the same fault: the
-    # workstation flips it and this package left it on the light focus blue.
+    # workstation flips these and this package left them on their light values.
     "--theme-border-focus": "--border-focus",
+    "--theme-topbar-bg": "--topbar-bg", "--theme-topbar-text": "--topbar-text",
+    "--theme-statusbar-bg": "--statusbar-bg", "--theme-statusbar-text": "--statusbar-text",
 }
 HSL = re.compile(r"^(-?[\d.]+) ([\d.]+)% ([\d.]+)%$")
 HEX6 = re.compile(r"^#[0-9a-f]{6}$")

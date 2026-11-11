@@ -42,7 +42,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(within(detail).getByText("Impacts")).toBeInTheDocument();
     expect(within(detail).getByRole("link", { name: "Full record" })).toHaveAttribute("href", "/api/workstation/runs/run-1/ledger/trial-balance");
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Controller review; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Controller review; record Revenue"
     })).toHaveAttribute(
       "href",
       "/?frexExplorer=ledger&frexView=system-ledger-default&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -410,7 +410,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: view Income symbols; search aapl; filter Account Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexView=operator-income-symbols&frexSearch=aapl&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -430,7 +430,7 @@ describe("FinancialRecordExplorerShell", () => {
     expect(screen.queryByRole("row", { name: /cash assets/i })).not.toBeInTheDocument();
     expect(screen.getByRole("dialog", { name: "Revenue proof detail" })).toBeInTheDocument();
     expect(screen.getByRole("link", {
-      name: "Share Ledger Explorer evidence state: filter Type equals Income; record Revenue"
+      name: "Share state — Ledger Explorer evidence state: filter Type equals Income; record Revenue"
     })).toHaveAttribute(
       "href",
       "/accounting?frexExplorer=ledger&frexFilter=accountType%3AIncome&frexRecord=ledger%3Arun-1%3Arevenue"
@@ -479,7 +479,7 @@ describe("FinancialRecordExplorerShell", () => {
 
     expect(window.location.pathname).toBe("/accounting");
     expect(window.location.search).toBe("?period=2026-06");
-    expect(screen.getByRole("link", { name: /share ledger explorer evidence state/i })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /share state.*ledger explorer evidence state/i })).toHaveAttribute(
       "href",
       "/accounting?period=2026-06&frexExplorer=ledger&frexView=system-ledger-default&frexSearch=aapl&frexRecord=ledger%3Arun-1%3Arevenue"
     );

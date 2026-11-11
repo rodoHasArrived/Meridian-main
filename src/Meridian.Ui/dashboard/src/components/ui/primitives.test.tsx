@@ -19,7 +19,7 @@ describe("design-system UI primitives", () => {
       </PanelSurface>
     );
 
-    expect(screen.getByLabelText("Security panel")).toHaveClass("rounded-[2px]");
+    expect(screen.getByLabelText("Security panel")).toHaveClass("rounded-[var(--radius-card)]");
     expect(screen.getByText("Security Master")).toHaveAttribute("aria-current", "page");
   });
 

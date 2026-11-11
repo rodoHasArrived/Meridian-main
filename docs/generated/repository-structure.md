@@ -7875,6 +7875,9 @@ Meridian-main
 │   ├── Meridian.Ui
 │   │   ├── dashboard
 │   │   │   ├── public
+│   │   │   │   ├── licenses
+│   │   │   │   │   ├── OFL-IBMPlexMono.txt
+│   │   │   │   │   └── OFL-IBMPlexSans.txt
 │   │   │   │   └── notices
 │   │   │   │       ├── OFL-IBMPlexMono.txt
 │   │   │   │       └── OFL-IBMPlexSans.txt
@@ -7886,14 +7889,23 @@ Meridian-main
 │   │   │   │   ├── design-system-ratchets.d.mts
 │   │   │   │   ├── design-system-ratchets.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
+│   │   │   │   ├── smoke-design-system.mjs
 │   │   │   │   ├── smoke-workstation.mjs
+│   │   │   │   ├── sync-design-system-assets.d.mts
+│   │   │   │   ├── sync-design-system-assets.mjs
+│   │   │   │   ├── sync-design-system-assets.test.mjs
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   └── vitest-evidence.test.mjs
 │   │   │   ├── src
 │   │   │   │   ├── assets
 │   │   │   │   │   ├── brand
+│   │   │   │   │   │   ├── identity-sheet.png
+│   │   │   │   │   │   ├── identity-sheet.svg
 │   │   │   │   │   │   ├── meridian-hero.svg
+│   │   │   │   │   │   ├── meridian-lockup-light.svg
+│   │   │   │   │   │   ├── meridian-lockup-monochrome.svg
+│   │   │   │   │   │   ├── meridian-lockup.svg
 │   │   │   │   │   │   ├── meridian-mark-light.svg
 │   │   │   │   │   │   ├── meridian-mark-monochrome.svg
 │   │   │   │   │   │   ├── meridian-mark.svg
@@ -8296,6 +8308,7 @@ Meridian-main
 │   │   │   │   │   ├── badge.tsx
 │   │   │   │   │   ├── button.tsx
 │   │   │   │   │   ├── design-system-ratchets.test.ts
+│   │   │   │   │   ├── fonts.css
 │   │   │   │   │   ├── label-case.ts
 │   │   │   │   │   ├── masthead.tsx
 │   │   │   │   │   ├── nav-rail.tsx

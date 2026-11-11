@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 /**
  * Primary interactive element for user actions.
  *
- * **Variants:** `"default"` (graphite/paper primary), `"secondary"` (muted surface),
+ * **Variants:** `"default"` (structural ink primary), `"secondary"` (muted surface),
  * `"outline"` (transparent with border), `"ghost"` (text-only), `"destructive"` (danger-toned).
  *
  * **Sizes:** `"sm"` (32 px), `"default"` (36 px), `"lg"` (44 px, for hero/full-width CTAs),
@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
  *
  * **Busy state:** pass `busy` to replace the label with a spinner and set `aria-busy`.
  * Pair with `busyLabel` to provide an accessible announcement (e.g. `"Saving..."`).
+ *
+ * **Form behavior:** defaults to `type="button"`; submit commands must explicitly use `type="submit"`.
  *
  * **Disabled reason:** pass `disabledReason` whenever a button can be disabled. It becomes the
  * button's tooltip and accessible description, so the operator learns what unblocks the action.
@@ -53,13 +55,14 @@ type ButtonChildProps = React.HTMLAttributes<HTMLElement> & {
   "data-design-system-component"?: string;
   tabIndex?: number;
   title?: string;
+  type?: React.ButtonHTMLAttributes<HTMLButtonElement>["type"];
 };
 
 const buttonVariantClasses: Record<NonNullable<DesignSystemButtonProps["variant"]>, string> = {
-  default: "mds-btn--primary border-primary bg-primary text-primary-foreground hover:bg-[var(--ws-primary-hover)] active:bg-[var(--ws-primary-pressed)]",
+  default: "mds-btn--primary border-[var(--brand-axis)] bg-[var(--brand-axis)] text-[var(--ink-inverse)] hover:bg-[color-mix(in_srgb,var(--brand-axis)_88%,var(--bg-light))] active:bg-[color-mix(in_srgb,var(--brand-axis)_78%,var(--bg-light))]",
   secondary: "mds-btn--ghost mds-btn--secondary border-border bg-secondary text-secondary-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
   outline: "mds-btn--ghost mds-btn--outline border-border bg-transparent text-foreground hover:border-[var(--border-hover)] hover:bg-[var(--ws-row-hover)] active:bg-[var(--ws-rail-active)]",
-  ghost: "mds-btn--link mds-btn--ghost-action border-transparent bg-transparent text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground active:bg-[var(--ws-rail-active)]",
+  ghost: "mds-btn--link mds-btn--ghost-action border-transparent bg-transparent text-[var(--interaction-link)] hover:bg-[var(--ws-row-hover)] hover:text-[var(--interaction-link-hover)] active:bg-[var(--ws-rail-active)]",
   destructive: "mds-btn--danger border-danger/60 bg-danger/10 text-danger hover:bg-danger/15"
 };
 
@@ -81,6 +84,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
     busyLabel = null,
     disabled = false,
     disabledReason = null,
+    type,
     title,
     onClick,
     tabIndex,
@@ -88,7 +92,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
   }, ref) => {
     const vm = buildButtonCommandViewModel({ disabled, busy, busyLabel, disabledReason, title });
     const classes = cn(
-      "mds-btn inline-flex items-center justify-center gap-2 rounded-[2px] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+      "mds-btn inline-flex items-center justify-center gap-2 rounded-[var(--radius-button)] border font-semibold transition-[background-color,border-color,color] duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
       buttonVariantClasses[variant],
       buttonSizeClasses[size],
       className
@@ -113,6 +117,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
 
       return cloneElement(child, {
         ...props,
+        ...(child.type === "button" ? { type: type ?? child.props.type ?? "button" } : {}),
         className: cn(classes, child.props.className),
         "aria-busy": vm.ariaBusy,
         "aria-disabled": vm.ariaDisabled,
@@ -126,6 +131,7 @@ export const DesignSystemButton = forwardRef<HTMLButtonElement, DesignSystemButt
     return (
       <button
         ref={ref}
+        type={type ?? "button"}
         className={classes}
         disabled={vm.disabled}
         aria-busy={vm.ariaBusy}

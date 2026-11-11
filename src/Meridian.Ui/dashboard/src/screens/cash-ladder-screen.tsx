@@ -30,13 +30,13 @@ import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 import { formatNumber } from "@/lib/format";
 
 const SOURCE_PALETTE = [
-  "var(--chart-series-1, #2E7655)",
+  "var(--chart-series-1, #29323A)",
   "var(--chart-series-2, #5D7286)",
-  "var(--chart-series-3, #2F648A)",
-  "var(--chart-series-4, #2E4B6E)",
-  "var(--chart-series-5, #B54B42)",
-  "var(--chart-series-6, #986717)",
-  "var(--chart-series-7, #6D757D)"
+  "var(--chart-series-3, #2E4B6E)",
+  "var(--chart-series-4, #7890A4)",
+  "var(--chart-series-5, #8C918F)",
+  "var(--chart-series-6, #4B5C6B)",
+  "var(--chart-series-7, #606870)"
 ] as const;
 
 const GRID = "var(--chart-grid, #E2DED5)";

@@ -20,7 +20,7 @@
     "valuesSharedSince": "4.3.0",
     "nameSurfaceRecordedAt": "2026-09-01",
     "nameSurfaceRecordedFromTree": "fa43d2e476a0",
-    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (194 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
+    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (224 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
   },
   "aliasContract": [
     "--ws-page-bg",
@@ -56,10 +56,10 @@
   },
   "upstreamValueDivergences": [
     {
-      "names": ["--radius", "--radius-button", "--radius-card", "--radius-md", "--radius-lg"],
-      "upstream": "unified 2px corner (3px / 4px on the two larger steps)",
-      "here": "2 / 4 / 6 instrument-control scale",
-      "why": "The workstation keeps its unified 2px corner on purpose: dense tables and stacked panels read as one ruled sheet. The package scale is for consumers composing looser surfaces. A product decision, not drift."
+      "names": ["--severity-review-fg", "--severity-review-bd", "--severity-review-bg"],
+      "upstream": "ochre (--orange), the same hue as Action",
+      "here": "terracotta signal (--accent) with the --brand-signal-text ink",
+      "why": "An open product decision, not drift. The workstation moved Review off the signal so terracotta stays brand-only; that leaves Review and Action on one hue, told apart by label alone. The package keeps the distinct hue until the owner picks one rule for both."
     }
   ],
   "tokens": {

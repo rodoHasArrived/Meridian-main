@@ -9,7 +9,7 @@ import { normalizeSeverity } from "./status";
 
 const CSS = `
 .mds-evidence{display:inline-flex;align-items:center;gap:8px;max-width:100%;
-  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+  border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-chip,2px);
   background:var(--bg-medium,#EBE8E1);padding:5px 9px;font-family:var(--font-body);font-size:12px;
   color:var(--text-primary,#20252B);text-decoration:none;cursor:pointer;
   transition:border-color 120ms ease,background-color 120ms ease;}
@@ -17,7 +17,7 @@ const CSS = `
 .mds-evidence:focus-visible{outline:var(--focus-ring,2px solid var(--interaction-focus, #2D6FB3));outline-offset:var(--focus-ring-offset,2px);}
 .mds-evidence__dot{width:7px;height:7px;border-radius:50%;flex:0 0 auto;background:var(--state-muted-fg,#606870);}
 .mds-evidence--ready .mds-evidence__dot{background:var(--state-healthy-fg,#225840);}
-.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#8E4730);}
+.mds-evidence--review .mds-evidence__dot{background:var(--severity-review-fg,#724D11);}
 .mds-evidence--action .mds-evidence__dot{background:var(--state-warn-fg,#724D11);}
 .mds-evidence--blocked .mds-evidence__dot{background:var(--state-danger-fg,#883832);}
 .mds-evidence__label{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
