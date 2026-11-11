@@ -11,6 +11,7 @@ import * as api from "@/lib/api/private-capital.api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { presentCapitalCallRunOutcome } from "@/screens/capital-call-issuance-screen.view-model";
 import { CapitalCallPlanForm, CapitalCommitmentForm, CapitalFundingForm } from "@/screens/capital-call-issuance-screen.forms";
+import { CapitalCallNoticeAction } from "@/screens/capital-call-notice-action";
 import { CapitalCallLines, capitalAmount, capitalCallIsOverdue, capitalIsPositive, capitalJournalRoute, type CapitalMutation } from "@/screens/private-capital-presenters";
 import type { CapitalCallIssuanceIntakeRunResult } from "@/lib/api/capital-call-issuance.api";
 import type { LedgerBook, SessionInfo } from "@/types";
@@ -167,6 +168,7 @@ function CommitmentRegister({ rows, currency, bookId, locked, mutate }: { rows: 
 
 function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: PrivateCapitalCall; generatedAtUtc: string; notices: PrivateCapitalNotice[]; locked: boolean; mutate: CapitalMutation }) {
   const [confirmIssuance, setConfirmIssuance] = useState(false);
+  const callNotices = (notices ?? []).filter(notice => notice.callId === call.callId);
   return <section className="space-y-3" aria-label={`Call ${call.callId}`}>
     <p className="text-sm">Notice {call.noticeDate} · Due {call.dueDate} · {call.purpose ?? "No purpose specified"}</p>
     {capitalCallIsOverdue(call, generatedAtUtc) ? <StatusBanner role="status" tone="warning" title="Overdue receivable" detail={`A posted receivable remains outstanding after ${call.dueDate}. Evaluated at server observation ${generatedAtUtc}.`} /> : null}
@@ -179,15 +181,17 @@ function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: P
     </div>
     <CapitalFundingForm call={call} locked={locked} mutate={mutate} />
     <section className="space-y-2" aria-label="Investor notices"><h3 className="text-sm font-semibold">Investor notices</h3>
-      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Release and delivery use the governed Reporting workflow and remain separate from cash.</p>
-      <div className="flex flex-wrap gap-2">{[...new Set(call.lines.filter(line => capitalIsPositive(line.issuedAmount)).map(line => line.investorId))].map(investorId =>
-        <Button key={investorId} variant="outline" disabled={locked} onClick={() => void mutate("Notice draft generation", signal => api.generatePrivateCapitalNotice(call.scope.ledgerBookId, call.callId, investorId, { signal }))}>Generate notice for {investorId}</Button>)}</div>
-      {(notices ?? []).filter(notice => notice.callId === call.callId).map(notice => <div key={notice.runId} className="rounded border border-border p-2 text-sm">
+      <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the governed Reporting workflow and remain separate from cash.</p>
+      <div className="flex flex-wrap gap-2">{[...new Set(call.lines.filter(line => capitalIsPositive(line.issuedAmount)).map(line => line.investorId))].map(investorId => {
+        const regenerate = callNotices.some(notice => notice.investorId === investorId);
+        return <CapitalCallNoticeAction key={investorId} scope={call.scope} callId={call.callId} investorId={investorId} hasNotice={regenerate} locked={locked} mutate={mutate} />;
+      })}</div>
+      {callNotices.map(notice => <div key={notice.runId} className="rounded border border-border p-2 text-sm">
         <p>{notice.investorId} · Governance: {notice.governanceState} · Delivery: {notice.deliveryState}</p>
         <p className="text-xs text-muted-foreground">Package {notice.packageId ?? "not released"}</p>
         {/^\/reporting(?:\/|\?|$)/.test(notice.route) ? <Link className="text-primary underline" to={notice.route}>Inspect notice run {notice.runId}</Link> : <span>Reporting route unavailable</span>}
       </div>)}
-      {!(notices ?? []).some(notice => notice.callId === call.callId) ? <p className="text-sm">No retained notice run for this call. No delivery is inferred.</p> : null}
+      {!callNotices.length ? <p className="text-sm">No retained notice run for this call. No delivery is inferred.</p> : null}
     </section>
   </section>;
 }

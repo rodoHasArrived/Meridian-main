@@ -89,7 +89,7 @@ public sealed class PrivateCapitalLifecycleService(IPrivateCapitalStore store, T
             new InvestorCommitment(x.CommitmentId, scope.FundProfileId, scope.LedgerBookId, x.CapitalAccountId,
                 x.InvestorId, scope.Currency, x.TotalCommitment, x.CommitmentDate, x.InvestmentPeriodEndDate,
                 CommitmentStatus.Active),
-            receipts.Where(r => r.CommitmentId == x.CommitmentId && r.Kind == "Issuance")
+            receipts.Where(r => r.CommitmentId == x.CommitmentId && r.Kind == "Issuance" && r.EffectiveDate <= request.NoticeDate)
                 .Select(r => new CommitmentActivityEvent(r.PostingId, ManualJournalEntryTypeDto.CapitalCall,
                     r.EffectiveDate, r.Amount)).ToArray())).ToArray();
         var plan = CapitalCallPlanBuilder.Build(new CapitalCallPlanRequest(callId, scope.FundProfileId,
@@ -99,6 +99,16 @@ public sealed class PrivateCapitalLifecycleService(IPrivateCapitalStore store, T
             .Select(x => x.Message));
         if (!plan.IsExecutable && blockers.Count == 0)
             blockers.Add("The requested call exceeds callable capacity or cannot be allocated exactly.");
+        if (blockers.Count > 0)
+            return new(null, false, blockers);
+        foreach (var line in plan.Lines)
+        {
+            var issue = PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation(line.Commitment.CommitmentId, revisions,
+                receipts.Where(x => x.CommitmentId == line.Commitment.CommitmentId && x.Kind == "Issuance")
+                    .Select(x => (x.EffectiveDate, x.Amount)), request.NoticeDate, line.CallAmount);
+            if (issue is not null)
+                blockers.Add(issue);
+        }
         if (blockers.Count > 0)
             return new(null, false, blockers);
         var byId = selected.ToDictionary(x => x.CommitmentId, StringComparer.Ordinal);

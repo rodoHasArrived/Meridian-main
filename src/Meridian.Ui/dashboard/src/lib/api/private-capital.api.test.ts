@@ -52,4 +52,15 @@ describe("Authoritative native private capital API", () => {
     post.mockResolvedValue({ ...capitalBankObservationImport, documentId: "foreign-document" });
     await expect(native.importPrivateCapitalBankObservation(CAPITAL_BOOK_ID, { evidenceLink: CAPITAL_EVIDENCE, documentId: capitalBankObservationImport.documentId })).rejects.toThrow("does not match the reviewed source identity");
   });
+  it("sends the caller-retained notice operation identity unchanged", async () => {
+    const request = Object.freeze({ operationId: "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66" });
+    post.mockResolvedValue({ run: { runId: "capital-call-notice-op-8f7c8a521a444f4e9a2b6f0d5a7c9e66" } });
+    await native.generatePrivateCapitalNotice(CAPITAL_BOOK_ID, "call-a", "investor-a", request);
+    expect(post).toHaveBeenCalledWith(`/api/ledger/private-capital/calls/call-a/investors/investor-a/notice?ledgerBookId=${CAPITAL_BOOK_ID}`, request, { allowDevelopmentFallback: false });
+    expect(post.mock.calls[0][1]).toBe(request);
+  });
+  it("rejects a notice result associated with a different operation", async () => {
+    post.mockResolvedValue({ run: { runId: "capital-call-notice-op-9f7c8a521a444f4e9a2b6f0d5a7c9e77" } });
+    await expect(native.generatePrivateCapitalNotice(CAPITAL_BOOK_ID, "call-a", "investor-a", { operationId: "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66" })).rejects.toThrow("does not match the original operation");
+  });
 });

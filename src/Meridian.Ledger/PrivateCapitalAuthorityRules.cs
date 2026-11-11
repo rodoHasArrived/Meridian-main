@@ -56,4 +56,53 @@ public static class PrivateCapitalAuthorityRules
         scope = NormalizeScope(scope);
         return $"private-capital|{scope.TenantId}|{scope.CompanyId}|{scope.FundProfileId}|{scope.LedgerBookId:D}|{Id(commitmentId, nameof(commitmentId))}";
     }
+
+    /// <summary>Checks every effective revision and issuance date, including approved future reductions.</summary>
+    public static string? FindIssuanceTimelineViolation(
+        string commitmentId,
+        IEnumerable<PrivateCapitalCommitmentDto> revisions,
+        IEnumerable<(DateOnly EffectiveDate, decimal Amount)> postedIssuances,
+        DateOnly? candidateDate = null,
+        decimal candidateAmount = 0m)
+    {
+        var approved = revisions.Where(x => x.CommitmentId == commitmentId
+                && x.ApprovalStatus == PrivateCapitalCommitmentApprovalStatus.Approved)
+            .GroupBy(x => x.EffectiveFrom)
+            .Select(x => x.MaxBy(revision => revision.Revision)!)
+            .OrderBy(x => x.EffectiveFrom).ToArray();
+        var issuances = postedIssuances.ToList();
+        if (candidateDate is { } date)
+        {
+            if (candidateAmount <= 0m)
+                return "Capital-call issuance requires a positive amount.";
+            issuances.Add((date, candidateAmount));
+        }
+        var checkpoints = approved.Select(x => x.EffectiveFrom)
+            .Concat(issuances.Select(x => x.EffectiveDate)).Distinct().Order().ToArray();
+        try
+        {
+            var events = issuances.GroupBy(x => x.EffectiveDate)
+                .ToDictionary(x => x.Key, x => x.Sum(item => item.Amount));
+            var called = 0m;
+            PrivateCapitalCommitmentDto? active = null;
+            var nextRevision = 0;
+            foreach (var checkpoint in checkpoints)
+            {
+                while (nextRevision < approved.Length && approved[nextRevision].EffectiveFrom <= checkpoint)
+                    active = approved[nextRevision++];
+                called = checked(called + events.GetValueOrDefault(checkpoint));
+                if (called == 0m)
+                    continue;
+                if (active is null)
+                    return $"Capital-call issuance on {checkpoint:yyyy-MM-dd} has no approved effective commitment authority.";
+                if (called > active.TotalCommitment)
+                    return FormattableString.Invariant($"Capital called would exceed approved commitment '{commitmentId}' revision {active.Revision} effective {checkpoint:yyyy-MM-dd}: {called} exceeds {active.TotalCommitment}.");
+            }
+        }
+        catch (OverflowException)
+        {
+            return "Capital-call cumulative amounts exceed supported decimal precision.";
+        }
+        return null;
+    }
 }

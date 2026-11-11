@@ -1,5 +1,8 @@
 namespace Meridian.Contracts.Ledger;
 
+/// <summary>A stable generation intent; retry the same operation and use a new ID for deliberate regeneration.</summary>
+public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId);
+
 /// <summary>Explicit authority scope shared by commitment, call, and receipt records.</summary>
 public sealed record PrivateCapitalScopeDto(
     string TenantId,

@@ -38,10 +38,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 && item.ApprovalStatus == PrivateCapitalCommitmentApprovalStatus.Approved
                 && item.EffectiveFrom <= authority.EffectiveDate)
             .OrderByDescending(item => item.EffectiveFrom).ThenByDescending(item => item.Revision).FirstOrDefault();
+        var issued = (await _privateCapitalAuthorityStore.ListPostingReceiptsAsync(authority.Scope, ct).ConfigureAwait(false))
+            .Where(item => item.CommitmentId == authority.CommitmentId && item.Kind == "Issuance").ToArray();
+        var calledAsOf = issued.Where(item => item.EffectiveDate <= authority.EffectiveDate).Sum(item => item.Amount);
         if (current is null || current.Revision != authority.CommitmentRevision || !current.IsActive
             || current.InvestorId != line.InvestorId || current.CapitalAccountId != line.CapitalAccountId
-            || current.UncalledAmount != line.UncalledBefore || authority.Amount != line.Amount)
+            || current.TotalCommitment - calledAsOf != line.UncalledBefore || authority.Amount != line.Amount)
             return "Approved commitment terms or available capital changed; recreate the call from a fresh preview.";
-        return null;
+        return PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation(authority.CommitmentId, terms,
+            issued.Select(item => (item.EffectiveDate, item.Amount)), authority.EffectiveDate, authority.Amount);
     }
 }

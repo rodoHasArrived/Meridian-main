@@ -149,7 +149,7 @@ public static partial class LedgerEndpoints
             }).ConfigureAwait(false)).WithName("ImportPrivateCapitalBankObservation"));
 
         CapitalMutation(app.MapPost(PrivateCapitalRoute + "/calls/{callId}/investors/{investorId}/notice", async (
-            Guid ledgerBookId, string callId, string investorId, HttpContext context) =>
+            Guid ledgerBookId, string callId, string investorId, GeneratePrivateCapitalNoticeRequest request, HttpContext context) =>
             await ExecutePrivateCapitalAsync(context, ledgerBookId, true, async (scope, service, actor) =>
             {
                 if (!EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageReporting, UserPermission.AdminMaintenance)
@@ -162,8 +162,16 @@ public static partial class LedgerEndpoints
                 var access = PrivateCapitalReportAccess(context, scope, actor);
                 var caller = new ReportingGovernanceCallerContext(actor, scope.TenantId, scope.CompanyId, permissions,
                     ReportingCommandOrigin.HumanOperator, context.TraceIdentifier, groups);
-                return Results.Json(await notices.GenerateAsync(scope, callId, investorId, actor, access, caller,
-                    context.RequestAborted).ConfigureAwait(false), json);
+                try
+                {
+                    return Results.Json(await notices.GenerateAsync(scope, callId, investorId, request.OperationId, actor, access, caller,
+                        context.RequestAborted).ConfigureAwait(false), json);
+                }
+                catch (ReportingNoticeOperationFailedException exception)
+                {
+                    return Results.Json(new { code = "notice_operation_failed", runId = exception.RunId }, json,
+                        statusCode: StatusCodes.Status409Conflict);
+                }
             }).ConfigureAwait(false)).WithName("GeneratePrivateCapitalCallNotice")
             .RequireAnyPermission(UserPermission.ManageReporting, UserPermission.AdminMaintenance));
     }

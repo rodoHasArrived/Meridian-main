@@ -2,11 +2,20 @@
 
 # `ledger-contracts` data objects - page 5 of 5
 
-Objects 321-361 of 361. References crossing pages remain available in the dependency manifest.
+Objects 321-362 of 362. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalEvidenceCategoryDto["PrivateCapitalEvidenceCategoryDto"] {
+        +string CategoryId
+        +int EvidenceLinkCount
+        +IReadOnlyList~string~ EvidenceLinks
+        +bool IsReady
+        +string Label
+        +IReadOnlyList~string~ RequiredEvidence
+        +string Summary
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto["PrivateCapitalFundEventCommandCenterDto"] {
         +int BlockedLaneCount
         +string CommandCenterRoute
@@ -450,6 +459,7 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterSupportPackageDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventCommandCenterDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto
+    Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalEvidenceCategoryDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerReadinessDto
     Meridian_Contracts_Ledger_PrivateCapitalFundEventLedgerRecordDto --> Meridian_Contracts_Ledger_PrivateCapitalLedgerImpactDto

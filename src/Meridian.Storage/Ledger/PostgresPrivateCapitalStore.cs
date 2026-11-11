@@ -128,14 +128,18 @@ public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
         if (await HasLegacyAsync(connection, transaction, scope, current.InvestorId, ct).ConfigureAwait(false))
             throw new InvalidOperationException("Historical capital activity requires opening reconciliation before this commitment can be approved.");
         var receipts = await ReadReceiptsAsync(connection, transaction, scope, ct).ConfigureAwait(false);
-        if (receipts.Where(x => x.CommitmentId == commitmentId && x.Kind == "Issuance").Sum(x => x.Amount) > current.TotalCommitment)
-            throw new InvalidOperationException("The approved commitment cannot be reduced below capital already called.");
         var approved = current with
         {
             ApprovalStatus = PrivateCapitalCommitmentApprovalStatus.Approved,
             ApprovedBy = actor.Trim(),
             ApprovedAtUtc = approvedAtUtc
         };
+        var approvalIssue = PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation(commitmentId,
+            revisions.Where(x => x.Revision != revision).Append(approved),
+            receipts.Where(x => x.CommitmentId == commitmentId && x.Kind == "Issuance")
+                .Select(x => (x.EffectiveDate, x.Amount)));
+        if (approvalIssue is not null)
+            throw new InvalidOperationException(approvalIssue);
         await using var command = new NpgsqlCommand($"""
             update {_schema}.private_capital_commitments set document=cast(@document as jsonb)
             where {ScopePredicate} and commitment_id=@id and revision=@revision;
@@ -204,12 +208,18 @@ public sealed class PostgresPrivateCapitalStore : IPrivateCapitalStore
             var current = revisions.Where(x => x.CommitmentId == line.CommitmentId
                     && x.ApprovalStatus == PrivateCapitalCommitmentApprovalStatus.Approved && x.EffectiveFrom <= call.NoticeDate)
                 .OrderByDescending(x => x.EffectiveFrom).ThenByDescending(x => x.Revision).FirstOrDefault();
-            var called = receipts.Where(x => x.CommitmentId == line.CommitmentId && x.Kind == "Issuance").Sum(x => x.Amount);
+            var called = receipts.Where(x => x.CommitmentId == line.CommitmentId && x.Kind == "Issuance"
+                && x.EffectiveDate <= call.NoticeDate).Sum(x => x.Amount);
             if (current is null || !current.IsActive || current.Revision != line.CommitmentRevision
                 || current.InvestorId != line.InvestorId || current.CapitalAccountId != line.CapitalAccountId
                 || current.TotalCommitment - called != line.UncalledBefore
                 || line.UncalledAfter != line.UncalledBefore - line.Amount || line.UncalledAfter < 0m)
                 throw new InvalidOperationException("Commitment authority or called capital changed. Preview and review the call again.");
+            var timelineIssue = PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation(line.CommitmentId, revisions,
+                receipts.Where(x => x.CommitmentId == line.CommitmentId && x.Kind == "Issuance")
+                    .Select(x => (x.EffectiveDate, x.Amount)), call.NoticeDate, line.Amount);
+            if (timelineIssue is not null)
+                throw new InvalidOperationException(timelineIssue);
         }
         await using var command = new NpgsqlCommand($"""
             insert into {_schema}.private_capital_calls

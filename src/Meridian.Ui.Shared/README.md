@@ -45,6 +45,10 @@ intake alone retains `PrivateCapitalAuthorityJson`; client edits cannot replace 
 checks scope, dates, amounts and retained bank evidence, while final storage repeats authority and
 ceiling checks atomically. Unavailable authority and changed or voided funding sources refuse
 intake/review rather than falling back to attested totals.
+Native issuance derives called capital from posting receipts for the exact commitment as of the
+notice date, so two approved commitments sharing an investor and capital account retain independent
+callable balances. Shared approval and posting checks also protect future effective commitment terms
+and already-posted future issuance throughout the retained timeline.
 
 ## Commitment-to-cash authority
 
@@ -84,6 +88,20 @@ Unrelated close-queue changes do not alter that immutable issuance proof; the de
 branch checks exact notice, investor, commitment and source bindings before accepting it.
 Generation, approval, release, delivery and cash settlement remain distinct outcomes. Workbench
 notice summaries come from retained reporting and delivery records, never browser-local status.
+
+The notice POST body requires `{ "operationId": "<UUID>" }`. A retry reuses that identity and
+recovers the exact retained run before reading current call or ledger inputs. The server binds it
+to the authenticated actor and full scope/call/investor identity; collisions refuse. Deliberate
+regeneration uses a new UUID. Durable PostgreSQL Reporting create claims and the original
+certified parameters preserve one run across concurrent hosts and lost responses; current access
+and permissions are still checked on recovery. Configure `MERIDIAN_REPORTING_CONNECTION_STRING`
+(or its documented ledger fallback) so `IReportingRunStore` resolves to
+`PostgresReportingRunStore`; file-backed compatibility stores do not support notice generation.
+This slice supports exactly one complete posted installment per investor per call.
+An authenticated recovery of an exact retained Failed operation returns HTTP 409 with
+`code: notice_operation_failed` and its exact `runId`; the failed manifest and audit remain intact.
+For a pending intent, only that confirmed terminal outcome permits the UI's explicit
+new-generation action. Other errors retain the original pending intent for recovery.
 
 Focused validation uses the `PrivateCapital` and `CapitalCall` test filters in `Meridian.Tests`,
 with `EnableWindowsTargeting=true` and a configured PostgreSQL ledger test connection.

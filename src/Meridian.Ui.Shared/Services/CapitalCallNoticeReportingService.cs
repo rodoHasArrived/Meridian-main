@@ -1,5 +1,6 @@
 using System.Collections.Immutable;
 using System.Globalization;
+using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
@@ -192,11 +193,18 @@ public sealed class CapitalCallNoticeReportingService(
     }
 
     public async Task<ReportingRunResultDto> GenerateAsync(PrivateCapitalScopeDto scope,
-        string callId, string investorId, string actor, ReportAccessQueryContext access,
+        string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access,
         ReportingGovernanceCallerContext caller, CancellationToken ct = default)
     {
+        scope = PrivateCapitalAuthorityRules.NormalizeScope(scope);
+        callId = PrivateCapitalAuthorityRules.Id(callId, nameof(callId));
+        investorId = PrivateCapitalAuthorityRules.Id(investorId, nameof(investorId));
         if (!access.RequireBoundScope || access.TenantId != scope.TenantId || access.CompanyId != scope.CompanyId)
             throw new UnauthorizedAccessException("The notice scope must match the authenticated tenant and company.");
+        var operation = BuildOperation(scope, callId, investorId, operationId, actor);
+        if (await reporting.TryRecoverOperationAsync(TemplateId, operation, actor, access, caller, ct)
+                .ConfigureAwait(false) is { } recovered)
+            return recovered;
         var resolved = await source.ResolveAsync(scope, callId, investorId, ct).ConfigureAwait(false);
         var book = await journals.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false)
             ?? throw new ReportingAuthoritativeSourceUnavailableException("The authoritative notice book is unavailable.");
@@ -222,8 +230,26 @@ public sealed class CapitalCallNoticeReportingService(
             ReportingFinalityDto.Draft, true, true,
             BuildTemplateParameters(resolved.Call, resolved.Line, resolved.Commitment, resolved.Recipient, resolved.ReviewGroup));
         await ReconcilePostedIssuanceAsync(parameters, access, ct).ConfigureAwait(false);
-        return await reporting.RunAsync(new ReportingRunRequestDto(TemplateId, Parameters: parameters),
-            actor, access, caller, ct).ConfigureAwait(false);
+        return await reporting.RunOperationAsync(new ReportingRunRequestDto(TemplateId, Parameters: parameters),
+            operation, actor, access, caller, ct).ConfigureAwait(false);
+    }
+
+    internal static ReportingRunOperation BuildOperation(PrivateCapitalScopeDto scope, string callId,
+        string investorId, Guid operationId, string actor)
+    {
+        if (operationId == Guid.Empty)
+            throw new ArgumentException("A nonempty notice operation ID is required.", nameof(operationId));
+        ArgumentException.ThrowIfNullOrWhiteSpace(actor);
+        scope = PrivateCapitalAuthorityRules.NormalizeScope(scope);
+        var requestIdentity = JsonSerializer.Serialize(new
+        {
+            TemplateId,
+            Scope = scope,
+            CallId = PrivateCapitalAuthorityRules.Id(callId, nameof(callId)),
+            InvestorId = PrivateCapitalAuthorityRules.Id(investorId, nameof(investorId)),
+            Actor = actor.Trim()
+        });
+        return new ReportingRunOperation($"capital-call-notice-op-{operationId:N}", Sha256Digest.ComputeUtf8(requestIdentity));
     }
 
     /// <summary>

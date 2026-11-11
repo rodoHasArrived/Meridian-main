@@ -163,6 +163,13 @@ readiness-approved run enters this module's certification and governance lifecyc
 shared client-document renderer and secure distribution after independent release.
 
 The `capital-call-notice` template consumes only the exact investor's posted issuance journal.
+Its generation operation uses one caller-supplied UUID, bound by the server to the authenticated
+actor and exact tenant/company/entity/fund/book/currency/call/investor scope. Replaying that
+operation recovers the original certified manifest and retained package, including after restart
+or a lost response, before querying current accounting inputs. A deliberate regeneration requires
+a new UUID. PostgreSQL run-store create claims fence competing hosts; file-backed compatibility
+stores cannot run this operation. The first notice slice requires exactly one complete posted
+installment for the investor within the selected call.
 UI Shared resolves the frozen call plan, approved commitment revision, and atomic posting receipt;
 the authoritative source then filters by investor, capital account, call ID, and issuance kind and
 checks journal identity and balanced call amount. Notice certification retains the call plan hash,

@@ -1,3 +1,4 @@
+using System.Data;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Banking;
@@ -27,6 +28,10 @@ public sealed partial class PostgresLedgerJournalStore
             return;
         if (json is null)
             throw new LedgerValidationException("Capital-call posting requires retained approved commitment and call authority.");
+        // An older RepeatableRead snapshot can hide a newly approved successor even after the
+        // commitment advisory lock is acquired. ReadCommitted refreshes it; Serializable detects it.
+        if (transaction.IsolationLevel is not (IsolationLevel.ReadCommitted or IsolationLevel.Serializable))
+            throw new LedgerValidationException("Capital-call posting requires ReadCommitted or Serializable transaction isolation.");
         var authority = PrivateCapitalPostingAuthority.Deserialize(json);
         var scope = PrivateCapitalAuthorityRules.NormalizeScope(authority.Scope);
         if (scope != authority.Scope || scope.LedgerBookId != period.LedgerBookId
@@ -108,7 +113,7 @@ public sealed partial class PostgresLedgerJournalStore
         {
             totals.Transaction = transaction;
             totals.CommandText = $"""
-                select coalesce(sum(amount) filter (where kind = 'Issuance'),0),
+                select coalesce(sum(amount) filter (where kind = 'Issuance' and effective_date <= @date),0),
                     coalesce(sum(amount) filter (where kind = 'Issuance' and call_id = @call),0),
                     coalesce(sum(amount) filter (where kind = 'Funding' and call_id = @call),0)
                 from {Qualified("private_capital_postings")}
@@ -118,6 +123,7 @@ public sealed partial class PostgresLedgerJournalStore
             AddCapitalScopeParameters(totals, scope);
             totals.Parameters.AddWithValue("commitment", authority.CommitmentId);
             totals.Parameters.AddWithValue("call", authority.CallId);
+            totals.Parameters.AddWithValue("date", authority.EffectiveDate);
             await using var reader = await totals.ExecuteReaderAsync(ct).ConfigureAwait(false);
             await reader.ReadAsync(ct).ConfigureAwait(false);
             called = reader.GetDecimal(0);
@@ -126,6 +132,11 @@ public sealed partial class PostgresLedgerJournalStore
         }
         if (authority.Kind == "Issuance")
         {
+            var postedIssuances = await ReadCapitalIssuanceTimelineAsync(connection, transaction, scope, authority.CommitmentId, ct).ConfigureAwait(false);
+            var timelineIssue = PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation(authority.CommitmentId,
+                revisions, postedIssuances, authority.EffectiveDate, authority.Amount);
+            if (timelineIssue is not null)
+                throw new LedgerValidationException(timelineIssue);
             var current = revisions.Where(item => item.ApprovalStatus == PrivateCapitalCommitmentApprovalStatus.Approved
                     && item.EffectiveFrom <= authority.EffectiveDate)
                 .OrderByDescending(item => item.EffectiveFrom).ThenByDescending(item => item.Revision).FirstOrDefault();
@@ -189,6 +200,25 @@ public sealed partial class PostgresLedgerJournalStore
         return json is null ? throw new LedgerValidationException("The retained capital-call plan is unavailable.")
             : JsonSerializer.Deserialize<PrivateCapitalCallDto>(json, CapitalJsonOptions)
                 ?? throw new LedgerValidationException("The retained capital-call plan is invalid.");
+    }
+
+    private async Task<IReadOnlyList<(DateOnly EffectiveDate, decimal Amount)>> ReadCapitalIssuanceTimelineAsync(
+        NpgsqlConnection connection, NpgsqlTransaction transaction, PrivateCapitalScopeDto scope, string commitmentId, CancellationToken ct)
+    {
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            select effective_date,amount from {Qualified("private_capital_postings")}
+            where tenant_id=@tenant and company_id=@company and fund_profile_id=@fund
+                and ledger_book_id=@book and commitment_id=@commitment and kind='Issuance'
+            """;
+        AddCapitalScopeParameters(command, scope);
+        command.Parameters.AddWithValue("commitment", commitmentId);
+        var result = new List<(DateOnly EffectiveDate, decimal Amount)>();
+        await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            result.Add((reader.GetFieldValue<DateOnly>(0), reader.GetDecimal(1)));
+        return result;
     }
 
     private async Task<IReadOnlyList<PrivateCapitalCommitmentDto>> ReadCapitalCommitmentsForPostingAsync(

@@ -33,6 +33,7 @@ internal static class CapitalIntakeAuthorityFixture
         var store = Substitute.For<IPrivateCapitalStore>();
         store.GetCallAsync(scope, request.CallId, Arg.Any<CancellationToken>()).Returns(call);
         store.ListCommitmentsAsync(scope, Arg.Any<CancellationToken>()).Returns(terms);
+        store.ListPostingReceiptsAsync(scope, Arg.Any<CancellationToken>()).Returns(Array.Empty<PrivateCapitalPostingReceiptDto>());
         foreach (var term in terms)
             store.GetCommitmentAsync(scope, term.CommitmentId, 1, Arg.Any<CancellationToken>()).Returns(term);
         return store;

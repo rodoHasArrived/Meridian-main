@@ -204,6 +204,69 @@ public sealed class CapitalCallIssuanceIntakeTests
         await act.Should().ThrowAsync<InvalidOperationException>().WithMessage("*consistency checks only*");
     }
 
+    [Theory]
+    [InlineData("cmt-a", true)]
+    [InlineData("cmt-b", false)]
+    public async Task NativeIssuance_SharesInvestorAndAccount_CountsOnlyTheSelectedCommitmentsReceipts(
+        string calledCommitmentId, bool expectedReady)
+    {
+        var request = BuildRequest(100m, Commitment("cmt-b", "lp-1", 100m));
+        var priorEventId = $"fund-event:{FundProfileId}:capital-call:prior-call:{calledCommitmentId}";
+        var fixture = await CreateFixtureAsync(approvedRequest: request,
+            postedFundEvents: [PostedCapitalCall(priorEventId, "ca-lp-1", "lp-1", 60m)]);
+        var scope = new PrivateCapitalScopeDto(request.TenantId!, request.CompanyId!, request.EntityId!,
+            request.FundProfileId, BookId, request.Currency);
+        var approvedB = (await fixture.Authority!.GetCommitmentAsync(scope, "cmt-b", 1))!;
+        var approvedA = approvedB with { CommitmentId = "cmt-a" };
+        fixture.Authority.ListCommitmentsAsync(scope, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            approvedA with { CalledAmount = calledCommitmentId == "cmt-a" ? 60m : 0m },
+            approvedB with { CalledAmount = calledCommitmentId == "cmt-b" ? 60m : 0m }
+        });
+        fixture.Authority.GetCommitmentAsync(scope, "cmt-a", 1, Arg.Any<CancellationToken>()).Returns(approvedA);
+        fixture.Authority.ListPostingReceiptsAsync(scope, Arg.Any<CancellationToken>()).Returns(new[]
+        {
+            new PrivateCapitalPostingReceiptDto($"capital-call:{calledCommitmentId}:prior-call:{calledCommitmentId}",
+                scope, calledCommitmentId, "prior-call", $"prior-call:{calledCommitmentId}", "Issuance",
+                60m, Guid.NewGuid(), NoticeDate.AddDays(-1))
+        });
+
+        var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(request);
+
+        if (!expectedReady)
+        {
+            result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+            result.ReadinessBlockers.Should().Contain(reason => reason.Contains("exceeds total uncalled capacity"));
+            result.Intake.Created.Should().BeEmpty();
+            return;
+        }
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        var draft = result.Intake.Created.Should().ContainSingle().Subject;
+        draft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        draft.TotalDebits.Should().Be(100m);
+        draft.TotalCredits.Should().Be(100m);
+        draft.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+        draft.TreasuryContext!.IdempotencyKey.Should().Be("capital-call:cmt-b:call-1:cmt-b");
+        PrivateCapitalPostingAuthority.Deserialize(draft.PrivateCapitalAuthorityJson!).CommitmentId.Should().Be("cmt-b");
+        result.EvidenceAssessments![draft.TreasuryContext.IdempotencyKey!].Reasons.Should()
+            .Contain(reason => reason.Contains("commitment 'cmt-b'"));
+    }
+
+    [Fact]
+    public async Task NativeIssuance_UnavailableCommitmentReceiptSource_BlocksWithoutDrafting()
+    {
+        var request = BuildRequest(100m, Commitment("cmt-b", "lp-1", 100m));
+        var fixture = await CreateFixtureAsync(approvedRequest: request);
+        fixture.Authority!.ListPostingReceiptsAsync(Arg.Any<PrivateCapitalScopeDto>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<IReadOnlyList<PrivateCapitalPostingReceiptDto>>(new InvalidOperationException("source unavailable")));
+
+        var result = await fixture.Runner.RunCapitalCallIssuanceIntakeAsync(request);
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().Contain(reason => reason.Contains("commitment receipt source could not be read"));
+        result.Intake.Created.Should().BeEmpty();
+    }
+
     [Fact]
     public void Produce_OverCallAgainstPostedActivity_FailsClosed()
     {
@@ -263,7 +326,8 @@ public sealed class CapitalCallIssuanceIntakeTests
         IPrivateCapitalStore? Authority);
 
     private static async Task<Fixture> CreateFixtureAsync(bool includeWorkbenchSource = true,
-        RunCapitalCallIssuanceDraftIntakeRequest? approvedRequest = null, bool includeAuthority = true)
+        RunCapitalCallIssuanceDraftIntakeRequest? approvedRequest = null, bool includeAuthority = true,
+        PrivateCapitalFundEventDto[]? postedFundEvents = null)
     {
         var configurationStore = new InMemoryAccountingConfigurationStore();
         await configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
@@ -296,7 +360,9 @@ public sealed class CapitalCallIssuanceIntakeTests
         var runner = new AutomatedJournalIntakeRunner(
             intake,
             new FeeScheduleAccrualEventProducer(),
-            manualJournalWorkbench: includeWorkbenchSource ? workbench : null,
+            manualJournalWorkbench: includeWorkbenchSource
+                ? postedFundEvents is null ? workbench : new PostedActivityManualJournalWorkbench(workbench, postedFundEvents, [])
+                : null,
             privateCapitalStore: capitalAuthority);
         return new Fixture(runner, workbench, capitalAuthority);
     }

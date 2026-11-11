@@ -8326,6 +8326,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.GeneratedPostingLineDto"
     },
     {
@@ -23477,6 +23483,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
       "kind": "contract-set-member",
@@ -57641,7 +57653,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "c7f7436927bb19eef35904271cda75303a192b812089f57207f6f562b137d96f",
+  "fingerprint": "90065de28a208ac8573aafbba2d4f2af2eed9129890a494f966b8d22af53f688",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -66015,6 +66027,12 @@
       "id": "contract:Meridian.Contracts.Ledger.FinancialStatementPackageDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.FinancialStatementPackageDto"
+    },
+    {
+      "classification": "request",
+      "id": "contract:Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.GeneratePrivateCapitalNoticeRequest"
     },
     {
       "classification": "dto",
@@ -84470,10 +84488,10 @@
   ],
   "summary": {
     "contract_references": 3652,
-    "contract_set_memberships": 4596,
-    "edges": 9577,
+    "contract_set_memberships": 4598,
+    "edges": 9579,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4656
+    "nodes": 4657
   }
 }

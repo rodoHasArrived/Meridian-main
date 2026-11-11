@@ -1,10 +1,12 @@
 import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { noticeOperationRunId } from "@/lib/private-capital-notice-intent";
+import { ApiError } from "@/lib/api-errors";
 import type { LedgerBook } from "@/types";
 import type { CapitalCallIssuanceIntakeRunResult } from "@/lib/api/capital-call-issuance.api";
 import type {
-  CreatePrivateCapitalCommitment, ImportPrivateCapitalBankObservation, PreviewPrivateCapitalCall, PrivateCapitalCall,
-  PrivateCapitalBankObservationImport, PrivateCapitalCallPreview, PrivateCapitalCommitment, PrivateCapitalFundingRequest, PrivateCapitalWorkbench
+  CreatePrivateCapitalCommitment, GeneratePrivateCapitalNoticeRequest, ImportPrivateCapitalBankObservation, PreviewPrivateCapitalCall, PrivateCapitalCall,
+  PrivateCapitalBankObservationImport, PrivateCapitalCallPreview, PrivateCapitalCommitment, PrivateCapitalFundingRequest, PrivateCapitalNoticeGenerationResult, PrivateCapitalWorkbench
 } from "@/types/private-capital";
 
 const base = "/api/ledger/private-capital";
@@ -55,8 +57,21 @@ export function intakePrivateCapitalCall(bookId: string, callId: string, options
 export function intakePrivateCapitalFunding(request: PrivateCapitalFundingRequest, options: ApiRequestOptions = {}) {
   return apiPostJson<CapitalCallIssuanceIntakeRunResult>(endpoint(request.ledgerBookId, `calls/${encodeURIComponent(request.callId)}/funding-intake`), request, authoritative(options));
 }
-export function generatePrivateCapitalNotice(bookId: string, callId: string, investorId: string, options: ApiRequestOptions = {}) {
-  return apiPostJson<unknown>(endpoint(bookId, `calls/${encodeURIComponent(callId)}/investors/${encodeURIComponent(investorId)}/notice`), {}, authoritative(options));
+export async function generatePrivateCapitalNotice(bookId: string, callId: string, investorId: string, request: GeneratePrivateCapitalNoticeRequest, options: ApiRequestOptions = {}) {
+  const result = await apiPostJson<PrivateCapitalNoticeGenerationResult>(endpoint(bookId, `calls/${encodeURIComponent(callId)}/investors/${encodeURIComponent(investorId)}/notice`), request, authoritative(options));
+  const expectedRunId = noticeOperationRunId(request.operationId);
+  if (result?.run?.runId !== expectedRunId) throw new Error("The retained notice result does not match the original operation. Recover the original notice operation before starting another run.");
+  return result;
+}
+/** Only the scoped, authorized terminal response permits an explicit replacement operation. */
+export function isConfirmedPrivateCapitalNoticeFailure(cause: unknown, operationId: string) {
+  if (!(cause instanceof ApiError) || cause.status !== 409 || !cause.responseBody) return false;
+  try {
+    const result: unknown = JSON.parse(cause.responseBody);
+    return !!result && typeof result === "object" && !Array.isArray(result)
+      && "code" in result && result.code === "notice_operation_failed"
+      && "runId" in result && result.runId === noticeOperationRunId(operationId);
+  } catch { return false; }
 }
 export async function importPrivateCapitalBankObservation(bookId: string, request: ImportPrivateCapitalBankObservation, options: ApiRequestOptions = {}) {
   const result = await apiPostJson<PrivateCapitalBankObservationImport>(endpoint(bookId, "bank-observations"), request, authoritative(options));

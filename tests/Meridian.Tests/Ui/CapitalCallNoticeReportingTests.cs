@@ -18,6 +18,34 @@ public sealed class CapitalCallNoticeReportingTests
     private static readonly DateOnly NoticeDate = new(2026, 11, 10);
 
     [Fact]
+    public void NoticeOperationIdentity_BindsEveryAuthorityAndTargetField()
+    {
+        var operationId = Guid.NewGuid();
+        var original = CapitalCallNoticeReportingService.BuildOperation(Scope, "call-a", "investor-a", operationId, "operator");
+        CapitalCallNoticeReportingService.BuildOperation(Scope, " CALL-A ", " INVESTOR-A ", operationId, "operator")
+            .Should().Be(original);
+        var alteredScopes = new[]
+        {
+            Scope with { TenantId = "tenant-b" }, Scope with { CompanyId = "company-b" },
+            Scope with { EntityId = "entity-b" }, Scope with { FundProfileId = "fund-b" },
+            Scope with { LedgerBookId = Guid.NewGuid() }, Scope with { Currency = "EUR" }
+        };
+        foreach (var scope in alteredScopes)
+            CapitalCallNoticeReportingService.BuildOperation(scope, "call-a", "investor-a", operationId, "operator")
+                .RequestHash.Should().NotBe(original.RequestHash);
+        CapitalCallNoticeReportingService.BuildOperation(Scope, "call-b", "investor-a", operationId, "operator")
+            .RequestHash.Should().NotBe(original.RequestHash);
+        CapitalCallNoticeReportingService.BuildOperation(Scope, "call-a", "investor-b", operationId, "operator")
+            .RequestHash.Should().NotBe(original.RequestHash);
+        CapitalCallNoticeReportingService.BuildOperation(Scope, "call-a", "investor-a", operationId, "another-operator")
+            .RequestHash.Should().NotBe(original.RequestHash);
+        CapitalCallNoticeReportingService.BuildOperation(Scope, "call-a", "investor-a", Guid.NewGuid(), "operator")
+            .RunId.Should().NotBe(original.RunId);
+        var empty = () => CapitalCallNoticeReportingService.BuildOperation(Scope, "call-a", "investor-a", Guid.Empty, "operator");
+        empty.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public async Task ResolveAsync_UsesExactApprovedRevisionAndExplicitRecipientMapping()
     {
         var (validator, store) = Setup();

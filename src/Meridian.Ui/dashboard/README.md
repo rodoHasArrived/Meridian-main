@@ -2272,6 +2272,22 @@ Import conflicts preserve existing cash fields and never create local balances o
 The bounded funding workflow uses the call's accounting period; closed-period or different-period
 receipts require a separately supported correction or receipt workflow and remain blocked here.
 Notice generation creates a Reporting draft; governance and delivery states remain separate.
+Each deliberate Generate/Regenerate notice action creates one operation UUID. An unconfirmed
+request retains that exact body for retry, recovering the original Reporting run; a deliberate
+regeneration creates a new operation and run. The shared mutation lock rejects duplicate clicks.
+Before sending, the original operation and exact tenant/company/entity/fund/book/currency/call/
+investor target are retained in this tab's session storage; no amounts or authority are stored.
+Reloading the original tab offers Recover original notice without sending automatically. The
+record clears only after the response identifies that operation's exact retained run. Missing
+storage blocks sending, and malformed records are removed with an explicit review notice.
+Browser reload recovery lasts while the original tab session retains its intent; server restart
+recovery requires that known operation ID and the authenticated scope to remain available.
+Only an authorized terminal-failure response matching the original operation's exact run enables
+Generate new notice after confirmed failure. The original intent stays retained until that
+explicit action safely retains a new UUID; generic conflicts, denied access, in-flight and unknown
+outcomes keep the original. Failure confirmation is not persisted: after reload, Recover original
+notice must obtain a fresh server confirmation before a new operation is offered. Failed run
+audit history remains on the server.
 
 Changing book selection disables the previous scope until Apply. Scope/session changes discard
 old results, input changes cancel pending previews, and unconfirmed writes retain the same request

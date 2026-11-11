@@ -380,6 +380,131 @@ public sealed class PrivateCapitalAuthorityPostgresTests
     }
 
     [LedgerDatabaseFact]
+    public async Task FutureApprovedReduction_BlocksBackdatedPreviewAndRetention()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        await fixture.ApproveRevisionAsync("a", 2, 50m, new(2026, 5, 20));
+        var service = new Meridian.FinancialOperations.PrivateCapital.PrivateCapitalLifecycleService(fixture.Capital);
+        var preview = await service.PreviewCallAsync(fixture.Scope,
+            new("preview-call", 80m, NoticeDate, NoticeDate.AddDays(10), fixture.Period.PeriodId.ToString("D"), ["a"]));
+        preview.IsReady.Should().BeFalse();
+        preview.Blockers.Should().ContainSingle(x => x.Contains("revision 2 effective 2026-05-20", StringComparison.Ordinal));
+        var retain = () => fixture.Capital.SaveCallAsync(fixture.Call("call-backdated", ("a", 80m, 100m)));
+        await retain.Should().ThrowAsync<InvalidOperationException>().WithMessage("*revision 2 effective 2026-05-20*");
+        (await fixture.Capital.ListCallsAsync(fixture.Scope)).Should().BeEmpty();
+        (await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope)).Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FutureApprovedReduction_BlocksAlreadyRetainedBackdatedCallAtFinalAppend()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        var call = fixture.Call("call-backdated", ("a", 80m, 100m));
+        await fixture.Capital.SaveCallAsync(call);
+        await fixture.ApproveRevisionAsync("a", 2, 50m, new(2026, 5, 20));
+        var post = () => fixture.PostAsync(fixture.Issuance(call, "a"));
+        await post.Should().ThrowAsync<LedgerValidationException>().WithMessage("*revision 2 effective 2026-05-20*");
+        (await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope)).Should().BeEmpty();
+        (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
+        (await fixture.Capital.GetCommitmentAsync(fixture.Scope, "a"))!.UncalledAmount.Should().Be(50m);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FutureIncreaseAndLaterPostedCall_PreserveValidBackdatedAllocation()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        var early = fixture.At(fixture.Call("early", ("a", 80m, 100m)), new(2026, 5, 5));
+        await fixture.Capital.SaveCallAsync(early);
+        await fixture.PostAsync(fixture.Issuance(early, "a"));
+        await fixture.ApproveRevisionAsync("a", 2, 150m, new(2026, 5, 20));
+        var later = fixture.At(fixture.Call("later", ("a", 50m, 70m)), new(2026, 5, 25), 2);
+        await fixture.Capital.SaveCallAsync(later);
+        await fixture.PostAsync(fixture.Issuance(later, "a"));
+
+        var service = new Meridian.FinancialOperations.PrivateCapital.PrivateCapitalLifecycleService(fixture.Capital);
+        var request = new PreviewPrivateCapitalCallRequest("backdated", 20m, NoticeDate, NoticeDate.AddDays(10),
+            fixture.Period.PeriodId.ToString("D"), ["a"]);
+        var preview = await service.PreviewCallAsync(fixture.Scope, request);
+        preview.IsReady.Should().BeTrue();
+        preview.Call!.Lines.Single().UncalledBefore.Should().Be(20m);
+        preview.Call.Lines.Single().CommitmentRevision.Should().Be(1);
+        var retained = await service.CreateCallAsync(fixture.Scope, new(request, preview.Call.PlanHash), "preparer");
+        await fixture.PostAsync(fixture.Issuance(retained, "a"));
+
+        var receipts = await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope);
+        receipts.Where(x => x.EffectiveDate <= NoticeDate).Sum(x => x.Amount).Should().Be(100m);
+        receipts.Sum(x => x.Amount).Should().Be(150m);
+        (await fixture.Capital.GetCommitmentAsync(fixture.Scope, "a"))!.UncalledAmount.Should().Be(0m);
+        (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId)).Should().HaveCount(3);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task SupersededReductionAtSameEffectiveDate_DoesNotConstrainBackdatedCall()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        await fixture.ApproveRevisionAsync("a", 2, 50m, new(2026, 5, 20));
+        await fixture.ApproveRevisionAsync("a", 3, 150m, new(2026, 5, 20));
+        var call = fixture.Call("call-backdated", ("a", 80m, 100m));
+        await fixture.Capital.SaveCallAsync(call);
+        await fixture.PostAsync(fixture.Issuance(call, "a"));
+        (await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope)).Should().ContainSingle().Which.Amount.Should().Be(80m);
+        (await fixture.Capital.GetCommitmentAsync(fixture.Scope, "a"))!.UncalledAmount.Should().Be(70m);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task FutureReductionApprovalAndBackdatedPosting_SerializeWithoutOvercallingEitherTimeline()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        var call = fixture.Call("call-backdated", ("a", 80m, 100m));
+        await fixture.Capital.SaveCallAsync(call);
+        await fixture.Capital.SaveCommitmentDraftAsync(fixture.Commitment("a", 50m) with
+        { Revision = 2, EffectiveFrom = new(2026, 5, 20) }, 1);
+
+        var outcomes = await Task.WhenAll(
+            AttemptAsync(() => fixture.PostAsync(fixture.Issuance(call, "a"))),
+            AttemptAsync(() => new PostgresPrivateCapitalStore(fixture.Database.Options)
+                .ApproveCommitmentAsync(fixture.Scope, "a", 2, "reviewer", Now)));
+
+        outcomes.Count(x => x is null).Should().Be(1);
+        var approved = (await fixture.Capital.ListCommitmentsAsync(fixture.Scope))
+            .Where(x => x.ApprovalStatus == PrivateCapitalCommitmentApprovalStatus.Approved).ToArray();
+        var receipts = await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope);
+        PrivateCapitalAuthorityRules.FindIssuanceTimelineViolation("a", approved,
+            receipts.Select(x => (x.EffectiveDate, x.Amount))).Should().BeNull();
+        if (approved.Any(x => x.Revision == 2))
+            receipts.Should().BeEmpty();
+        else
+            receipts.Should().ContainSingle().Which.Amount.Should().Be(80m);
+    }
+
+    [LedgerDatabaseFact]
+    public async Task RepeatableReadSnapshotCannotHideNewlyApprovedFutureReductionFromExternalAppend()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.ApproveAsync("a", 100m);
+        var call = fixture.Call("call-backdated", ("a", 80m, 100m));
+        await fixture.Capital.SaveCallAsync(call);
+        await using var connection = new NpgsqlConnection(fixture.Database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead);
+        await using (var snapshot = new NpgsqlCommand(
+            $"select count(*) from \"{fixture.Database.Options.SchemaName}\".private_capital_commitments", connection, transaction))
+            (await snapshot.ExecuteScalarAsync()).Should().Be(1L);
+        // The old snapshot cannot see this inserted and approved successor row.
+        await fixture.ApproveRevisionAsync("a", 2, 50m, new(2026, 5, 20));
+        var append = () => fixture.Database.JournalStore.AppendAsync(connection, transaction, fixture.Issuance(call, "a"));
+        await append.Should().ThrowAsync<LedgerValidationException>().WithMessage("*transaction isolation*");
+        await transaction.RollbackAsync();
+        (await fixture.Capital.ListPostingReceiptsAsync(fixture.Scope)).Should().BeEmpty();
+        (await fixture.Database.JournalStore.GetByPeriodAsync(fixture.Period.PeriodId)).Should().BeEmpty();
+    }
+
+    [LedgerDatabaseFact]
     public async Task ExternalTransactionRollback_RollsBackJournalAndReceiptAndAllowsExactRecovery()
     {
         await using var fixture = await Fixture.CreateAsync();
@@ -476,6 +601,23 @@ public sealed class PrivateCapitalAuthorityPostgresTests
             await Capital.ApproveCommitmentAsync(Scope, id, 1, "reviewer", Now);
         }
 
+        public async Task ApproveRevisionAsync(string id, int revision, decimal amount, DateOnly effectiveFrom)
+        {
+            await Capital.SaveCommitmentDraftAsync(Commitment(id, amount) with { Revision = revision, EffectiveFrom = effectiveFrom }, revision - 1);
+            await Capital.ApproveCommitmentAsync(Scope, id, revision, "reviewer", Now);
+        }
+
+        public PrivateCapitalCallDto At(PrivateCapitalCallDto call, DateOnly noticeDate, int revision = 1)
+        {
+            call = call with
+            {
+                NoticeDate = noticeDate,
+                DueDate = noticeDate.AddDays(5),
+                Lines = call.Lines.Select(x => x with { CommitmentRevision = revision }).ToArray()
+            };
+            return call with { PlanHash = PrivateCapitalCallPlanHash.Compute(call) };
+        }
+
         public PrivateCapitalCallDto Call(string id, params (string Commitment, decimal Amount, decimal Uncalled)[] lines)
         {
             var call = new PrivateCapitalCallDto(id, Scope, Period.PeriodId.ToString("D"), NoticeDate, NoticeDate.AddDays(10),
@@ -506,8 +648,9 @@ public sealed class PrivateCapitalAuthorityPostgresTests
             decimal amount, string? receipt = null, BankTransactionDto? bank = null)
         {
             var line = call.Lines.Single(x => x.CommitmentId == commitmentId);
+            var effectiveDate = kind == "Issuance" ? call.NoticeDate : bank?.EffectiveDate ?? call.NoticeDate;
             var authority = new PrivateCapitalPostingAuthorityDto(Scope, call.CallId, commitmentId, line.CommitmentRevision,
-                call.PlanHash, kind, amount, NoticeDate, receipt, bank?.BankTransactionId.ToString("D"),
+                call.PlanHash, kind, amount, effectiveDate, receipt, bank?.BankTransactionId.ToString("D"),
                 bank is null ? null : PrivateCapitalPostingAuthority.BankTransactionHash(bank));
             var journalId = Guid.NewGuid();
             var key = kind == "Issuance" ? $"capital-call:{commitmentId}:{line.InstallmentId}"
@@ -526,7 +669,7 @@ public sealed class PrivateCapitalAuthorityPostgresTests
                     ["capitalActivityKind"] = kind == "Issuance" ? "CapitalCallIssuance" : "CapitalCallFunding"
                 }
             };
-            var metadata = new JournalEntryMetadata(ProjectId: Scope.FundProfileId, EffectiveDate: NoticeDate,
+            var metadata = new JournalEntryMetadata(ProjectId: Scope.FundProfileId, EffectiveDate: effectiveDate,
                 IdempotencyKey: key, FundEventId: $"fund-event:{Scope.FundProfileId}:capital-call:{line.InstallmentId}",
                 FundEventType: "CapitalCall", CapitalAccountId: line.CapitalAccountId, InvestorId: line.InvestorId,
                 Tags: new Dictionary<string, string>
@@ -545,7 +688,7 @@ public sealed class PrivateCapitalAuthorityPostgresTests
                 new(Guid.NewGuid(), journalId, Now, credit, 0m, amount, "Synthetic capital activity", dimensions)
             ], metadata);
             var aggregate = Guid.NewGuid();
-            var command = new AccountingPostingCommandDto(Guid.NewGuid(), aggregate, Period.PeriodId, NoticeDate, Now, key,
+            var command = new AccountingPostingCommandDto(Guid.NewGuid(), aggregate, Period.PeriodId, effectiveDate, Now, key,
                 ExpectedVersion: Period.Version, ApprovalState: AccountingPostingApprovalStateDto.Approved,
                 ApprovalId: "reviewed-capital-activity", OperatorRationale: "Reviewed synthetic fixture", LedgerBookId: Scope.LedgerBookId)
             { Actor = "operator", Provenance = DataProvenance.Simulated };

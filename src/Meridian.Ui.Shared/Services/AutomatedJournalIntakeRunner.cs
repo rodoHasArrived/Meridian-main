@@ -577,9 +577,9 @@ public sealed partial class AutomatedJournalIntakeRunner
     }
 
     /// <summary>
-    /// Plans a fund-level capital call over the operator-attested commitment register and admits
+    /// Plans a fund-level capital call over approved commitment authority and admits
     /// the per-LP issuance drafts into the human approval queue. The called-to-date basis is
-    /// recomputed server-side from posted private-capital fund events before planning; runs whose
+    /// recomputed server-side from exact commitment posting receipts before planning; runs whose
     /// evidence or capacity cannot be corroborated return Blocked with reasons instead of drafts.
     /// Posting remains exclusively available via the governed workbench lifecycle.
     /// </summary>
@@ -607,10 +607,12 @@ public sealed partial class AutomatedJournalIntakeRunner
                 "The posted private-capital activity source is unavailable; capital-call issuance cannot corroborate the commitment register.");
         }
 
-        IReadOnlyList<PrivateCapitalFundEventDto> postedFundEvents;
+        IReadOnlyList<PrivateCapitalPostingReceiptDto> postedCommitmentReceipts;
         try
         {
-            var activity = await _manualJournalWorkbench
+            // Retain the operator projection's availability check, but it cannot establish
+            // commitment attribution when multiple commitments share one investor/account.
+            _ = await _manualJournalWorkbench
                 .GetPrivateCapitalActivityAsync(
                     request.FundProfileId,
                     request.LedgerBookId,
@@ -618,7 +620,8 @@ public sealed partial class AutomatedJournalIntakeRunner
                     request.TenantId,
                     request.CompanyId)
                 .ConfigureAwait(false);
-            postedFundEvents = activity.FundEvents;
+            postedCommitmentReceipts = await _privateCapitalStore!
+                .ListPostingReceiptsAsync(nativeCall.Scope, ct).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -630,10 +633,11 @@ public sealed partial class AutomatedJournalIntakeRunner
                 runKey,
                 CapitalCallIssuanceDraftProducer.AssessmentCode,
                 "Capital-call issuance",
-                "The posted private-capital activity projection could not be read; capital-call issuance is blocked.");
+                "The posted private-capital activity or commitment receipt source could not be read; capital-call issuance is blocked.");
         }
 
-        var production = CapitalCallIssuanceDraftProducer.Produce(request, postedFundEvents, evaluatedAtUtc);
+        var production = CapitalCallIssuanceDraftProducer.ProduceFromCommitmentReceipts(
+            request, nativeCall.Scope, postedCommitmentReceipts, evaluatedAtUtc);
         production = production with { Drafts = BindCapitalDrafts(production.Drafts, nativeCall, "Issuance", null) };
         if (!production.IsReady)
         {

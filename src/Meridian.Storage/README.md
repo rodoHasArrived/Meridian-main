@@ -27,6 +27,13 @@ the WAL holding it.
 Native capital-call journals require approved commitment/call authority at the final PostgreSQL
 append boundary. Posting serializes with commitment amendments, rechecks the effective revision,
 unchanged allocation basis and remaining capacity, and commits one receipt with the journal.
+Commitment approval, call retention, and final issuance validate cumulative called capital at every
+posted issuance and effective-revision date under that same lock. Allocation is measured as of the
+notice date while approved future reductions and later posted calls remain binding on the timeline.
+External capital-call append transactions must use `ReadCommitted` or `Serializable`; repeatable-read
+and other unsupported isolation levels refuse before any capital write because their retained
+snapshot can hide a successor approval after the commitment lock is acquired. Ordinary journals
+retain their existing transaction contract.
 Competing drafts reserve no capacity. Funding additionally locks the retained `CapitalCallFunding`
 bank transaction in the same database and enforces unique receipt/bank-line consumption. The
 `PrivateCapitalBankingSchema` ledger option defaults to `banking`; absent or separate-database

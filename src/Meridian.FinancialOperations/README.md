@@ -19,6 +19,8 @@ latest-import and latest-reconciliation reads have no side effects.
 
 `PrivateCapitalLifecycleService` coordinates commitment revision review, effective approved terms,
 pro-rata call previews, and retention of the exact reviewed plan over `IPrivateCapitalStore`.
+Previews allocate over posted calls effective by the notice date, then validate the full approved
+commitment/issuance timeline, including future reductions and later posted calls.
 The first slice supports one fund/book/currency per call. It does not reserve capacity at preview
 or post journals itself. Missing evidence and unmatched historical capital activity block adoption
 until opening reconciliation; no legacy commitment balances are guessed or automatically migrated.

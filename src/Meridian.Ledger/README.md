@@ -27,6 +27,10 @@ receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validat
 and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
 posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
 requires source-backed opening authority instead of inferring commitments from assignments.
+Call allocation uses called capital as of its notice date. The shared authority rule also walks
+all posted issuance dates and approved effective-date checkpoints, so backdated calls cannot break
+a future reduction and later increases cannot authorize an earlier overcall. At one effective date,
+the highest approved revision owns the cap; superseded and draft terms do not constrain the timeline.
 
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,

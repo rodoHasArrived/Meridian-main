@@ -35,6 +35,10 @@ export interface PrivateCapitalNotice {
   runId: string; callId: string; investorId: string; governanceState: string;
   packageId: string | null; deliveryState: string; route: string;
 }
+export interface GeneratePrivateCapitalNoticeRequest {
+  readonly operationId: string;
+}
+export interface PrivateCapitalNoticeGenerationResult { run: { runId: string } }
 export interface CreatePrivateCapitalCommitment {
   commitmentId: string; investorId: string; capitalAccountId: string; totalCommitment: CapitalDecimal;
   commitmentDate: string; effectiveFrom: string; investmentPeriodEndDate: string | null;
