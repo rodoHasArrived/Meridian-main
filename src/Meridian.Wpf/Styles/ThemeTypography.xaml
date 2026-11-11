@@ -4,9 +4,9 @@
 
     <!-- Self-hosted Design System 4.3.0 families, embedded by Assets\**\*.
          Package faces include regular, italic, medium, semibold, and bold; preserve symbol fonts. -->
-    <FontFamily x:Key="MeridianDisplayFontFamily">pack://application:,,,/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Sans</FontFamily>
-    <FontFamily x:Key="MeridianBodyFontFamily">pack://application:,,,/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Sans</FontFamily>
-    <FontFamily x:Key="MeridianDataFontFamily">pack://application:,,,/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Mono</FontFamily>
+    <FontFamily x:Key="MeridianDisplayFontFamily">/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="MeridianBodyFontFamily">/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Sans</FontFamily>
+    <FontFamily x:Key="MeridianDataFontFamily">/Meridian.Desktop;component/Assets/Fonts/#IBM Plex Mono</FontFamily>
 
     <Style x:Key="PageTitleStyle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource MeridianDisplayFontFamily}" />
