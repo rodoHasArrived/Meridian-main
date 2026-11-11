@@ -68,6 +68,7 @@ export function createCheckPlan({ dashboardRoot = defaultDashboardRoot, python =
         env: { MERIDIAN_BROWSER_RESULTS_DIR: path.join(repositoryRoot, "artifacts/design-system/source-check") }
       },
       node("Gallery model tests", packageRoot, "--test", "tests/gallery.test.mjs"),
+      pythonCheck("Shared token parity", "scripts/check_token_parity.py"),
       pythonCheck("Contrast resolution tests", "-m", "unittest", "tests.test_contrast.ContrastMathTest", "tests.test_contrast.CssColorResolutionTest", "tests.test_contrast.PrimaryActionContrastTest", "tests.test_contrast.LegacyGateCompatibilityTest"),
       pythonCheck("Primary action contrast", "scripts/check_contrast.py", "--actions-only"),
       node("Generated package freshness", packageRoot, "scripts/build_package.mjs", "--check"),

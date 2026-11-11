@@ -468,6 +468,12 @@
   --theme-muted-text: var(--ws-row-selected-text-secondary);
   --text-muted: var(--ws-row-selected-text-secondary);
   --fg-muted: var(--ws-row-selected-text-secondary);
+  /* Tinted severity badges add another wash above selection; strengthen their
+     semantic ink locally while retaining each status hue and fill. */
+  --severity-blocked-fg: color-mix(in srgb, var(--ws-row-selected-danger-text) 90%, var(--dim-mix));
+  --severity-action-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-review-fg: color-mix(in srgb, var(--ws-row-selected-warning-text) 90%, var(--dim-mix));
+  --severity-ready-fg: color-mix(in srgb, var(--ws-row-selected-success-text) 90%, var(--dim-mix));
   background: var(--ws-row-selected);
   box-shadow: inset 3px 0 0 var(--interaction-selected);
 }

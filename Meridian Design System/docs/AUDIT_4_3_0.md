@@ -402,3 +402,85 @@ and optimistic-observer Chromium regressions, source/build freshness, and export
 integrity. These fixes close the earlier selector and synchronous observer gaps;
 the remaining chart disclosure and legacy governance limitations above remain
 explicit.
+
+
+## Developer integration and accessibility completion
+
+The follow-up retains concurrent integration and token-reconciliation commits
+through `2b3822d20a`, without rewriting the shared PR history. It preserves the
+4.3.0 identity, component APIs, native adapters, seven root workspaces, operator
+preferences, financial statuses, and production workflows.
+
+- The package gallery reads all 135 cards and their groups/metadata from the
+  manifest. Search and group filters combine, counts and direct links remain
+  visible, catalogue/preview failures offer Retry, and browsing starts with no
+  preview. At most one specimen document is loaded. A loaded document is explicitly
+  distinguished from component conformance and existing specimen runtimes remain.
+- `/workstation/__design-system` is lazy-loaded only in fixture-only Vite
+  development, before application data providers mount. It uses actual native
+  buttons, badges, validation, dense-table and inspector adapters with three fixed
+  synthetic USD records. Appearance, density, explicit-light surface, data state,
+  and button state are URL controls. Reset restores defaults. Runtime probes
+  verify zero API requests, storage reads/writes, and companion broadcasts.
+- Selected rows use interaction-blue rails and surface-specific secondary and
+  semantic text roles. Existing darker semantic shades keep text readable on
+  selected/tinted surfaces without changing status hues or fills. Destructive
+  button text uses the existing red text shade. Actual-cascade probes measured
+  minimum selected semantic contrast 4.77:1 and destructive label contrast 6.02:1.
+- `ratchets:update` validates the existing baseline, rejects new offenders and
+  per-file growth even when another file improves, treats equality as a no-op,
+  and writes valid reductions atomically. Rejected updates preserve baseline bytes.
+- `check:design-system` at the root/dashboard verifies locked installed direct
+  dependencies before consistency, focused contracts, gallery, contrast, package
+  freshness and export-integrity checks. It never installs, regenerates checked-in
+  assets, updates a baseline, or launches a browser. Its separate browser command
+  reuses the maintained workstation Playwright smoke infrastructure.
+- Primary-action contrast resolves actual package/workstation base, hover,
+  pressed and foreground roles across automatic/manual dark and forced light.
+  HSL channels, aliases and sRGB color mixes are supported; required unresolved
+  values fail. All 24 required pairs pass, minimum 6.00:1.
+
+The source command passes 23 tooling tests, 126 focused workstation assertions,
+five gallery model tests, 17 contrast-resolution tests and 13 release-integrity
+tests, alongside consistency/freshness gates. Tooling cases cover malformed and
+stale dependencies, stage failure propagation, paths containing spaces and
+shrink-only baseline failure/reduction behavior. The retained ScenarioSelector
+and optimistic-observer source regressions cover keyboard navigation and
+transport/observer fault separation; their public contracts remain unchanged.
+
+The retained whole-package governance gate and broad Python suite remain
+separate from this focused integration command. No baseline was increased or
+rule suppressed to obtain a passing focused result. The full monorepo CI script
+was not run locally. Real Windows builds/tests and required hosted checks remain
+the merge authority; Linux stub builds are not WPF evidence.
+
+After the concurrent reconciliation, the full contrast checker reports 18
+retained brand-theme findings (custom focus/dark identity/required branded pairs).
+The whole-package governance result remains 67 failures and 25 warnings. The
+unfiltered Python suite runs 45 tests with one legacy contrast failure and 14
+obsolete governance-API errors; the 17 focused contrast and 13 integrity tests
+pass separately. These broader findings are visible and do not change the
+focused command's scope.
+
+
+The final dashboard sweep covers all **430 current test files and 4,947 passing
+assertions**, taking the latest passing result per file. Earlier attempts remain
+in the local evidence: two Trading class assertions were aligned with the
+contrast-corrected destructive variant, and one Reporting accessibility timeout
+passed on retry. The missing-mode workbench gate and incoming Data/Settings
+contrast changes also pass focused regressions. Lint reports zero errors and 97
+existing hook warnings; typography debt remains 539 allowlisted occurrences,
+with no increase.
+
+The merged package passes ScenarioSelector/observer and financial-agency browser
+regressions, 22 standalone accessibility states, four desktop viewports, 200%
+zoom and the 135-card gallery journey. These package scenes report zero remote
+requests and uncaught runtime errors. Workstation build provenance uses the
+committed dashboard lockfile under Node 24; all ten production fonts are WOFF2
+with checked TTF-source provenance and local OFL notices. The native workbench
+module is absent from the production asset closure.
+
+A separate redacted scan of all 29 PR-history commits reports two findings in
+`c77ced17b0` build-provenance files. Both are the independently recomputed public
+`KeyValueGrid.jsx` SHA-256, not a credential. Existing scanner configuration and
+baselines were preserved; hosted Secret Scan passes on the reconciled baseline.

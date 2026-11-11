@@ -69,6 +69,7 @@ styles.walkRules((rule) => {
   const automaticDark = rule.parent?.type === "atrule" && rule.parent.name === "media";
   scopes.push({ name: `${automaticDark ? "system dark " : ""}${rule.selector}`, tokens });
 });
+const defaultTokens = scopes.find(({ name }) => name === ":root")!.tokens;
 
 let selected: Tokens = new Map();
 tableStyles.walkRules((rule) => {
@@ -98,6 +99,15 @@ describe("selected and tinted workstation text", () => {
       expect(contrast(rgb("var(--ws-header-text-secondary)", tokens), rgb("var(--ws-surface-subtle)", tokens))).toBeGreaterThanOrEqual(4.5);
       for (const { role } of semanticText) {
         expect(contrast(rgb(`var(${role})`, tokens), selectedSurface), role).toBeGreaterThanOrEqual(4.5);
+      }
+      // Severity badges add their own semantic tint above the selected row.
+      const badgeTokens = new Map([...defaultTokens, ...rowTokens]);
+      for (const severity of ["blocked", "action", "review", "ready"]) {
+        const backgroundToken = badgeTokens.get(`--severity-${severity}-bg`)!;
+        const tint = backgroundToken.match(/^color-mix\(in srgb,\s*(var\(--[\w-]+\))\s+([\d.]+)%,\s*transparent\)$/);
+        if (!tint) throw new Error(`Unsupported severity background: ${backgroundToken}`);
+        const background = blend(rgb(tint[1], badgeTokens), selectedSurface, Number(tint[2]) / 100);
+        expect(contrast(rgb(`var(--severity-${severity}-fg)`, badgeTokens), background), `selected ${severity} badge`).toBeGreaterThanOrEqual(4.5);
       }
 
       // FigureDifferenceNote applies a 10% primary/warning wash to the canvas.
