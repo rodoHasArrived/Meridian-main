@@ -94,11 +94,39 @@ internal sealed class GroupCommitJsonlLog : IAsyncDisposable
     /// </summary>
     public bool TryReserve()
     {
+        if (TryClaimCapacity())
+            return true;
+
+        Interlocked.Increment(ref _lost);
+        return false;
+    }
+
+    /// <summary>
+    /// Like <see cref="TryReserve"/>, but when the log is full it first gives the retained lines
+    /// another write attempt (honouring the retry back-off) and then claims the capacity that
+    /// frees. Without this a full log would never recover on its own: every caller would be
+    /// turned away before reaching the append that retries, so the backlog would only be written
+    /// by an explicit flush or disposal even after the file became writable again.
+    /// </summary>
+    public async ValueTask<bool> TryReserveAfterRetryAsync(CancellationToken ct)
+    {
+        if (TryClaimCapacity())
+            return true;
+
+        await DrainAsync(retryNow: false, ct).ConfigureAwait(false);
+        if (TryClaimCapacity())
+            return true;
+
+        Interlocked.Increment(ref _lost);
+        return false;
+    }
+
+    private bool TryClaimCapacity()
+    {
         if (Interlocked.Increment(ref _pending) <= _maxPendingLines)
             return true;
 
         Interlocked.Decrement(ref _pending);
-        Interlocked.Increment(ref _lost);
         return false;
     }
 
