@@ -150,8 +150,17 @@ internal static class CapitalCallDefaultInterestDraftProducer
             // The called amount and every receipt come from posted ledger lines, never the request.
             var called = 0m;
             var receipts = new List<CapitalCallFundingReceipt>();
-            foreach (var impact in ledgerImpacts.Where(impact => IsSettled(impact) &&
-                         string.Equals(impact.FundEventId, callEventId, StringComparison.OrdinalIgnoreCase)))
+            var callImpacts = ledgerImpacts.Where(impact => IsSettled(impact) &&
+                string.Equals(impact.FundEventId, callEventId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            // Only the issuance debits the call receivable. A second journal that does is a
+            // correction (a reversed receipt), which is neither more called capital nor datable here.
+            if (callImpacts.Count(impact => impact.Lines.Any(line =>
+                    line.Side == AccountingTemplateLineSideDto.Debit && IsAccount(line, CallReceivable, investorId))) > 1)
+            {
+                blockers.Add($"Posted call '{callId}' for commitment '{commitmentId}' has a correction journal against its receivable; default interest cannot be calculated from it automatically.");
+                continue;
+            }
+            foreach (var impact in callImpacts)
             {
                 foreach (var line in impact.Lines.Where(line => IsAccount(line, CallReceivable, investorId)))
                 {

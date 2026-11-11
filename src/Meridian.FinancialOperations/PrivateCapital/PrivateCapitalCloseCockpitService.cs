@@ -943,7 +943,10 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             var queue = await _recurringJournalQueueSource
                 .GetQueueAsync(fund, bookId, entity, ct, tenant, company)
                 .ConfigureAwait(false);
-            rows = queue.Occurrences.Where(row => MatchesPeriod(row.EffectiveDate, periodId)).ToArray();
+            // The close scope may name the period by its authoritative id or by calendar month.
+            rows = queue.Occurrences.Where(row =>
+                (!string.IsNullOrWhiteSpace(row.PeriodId) && string.Equals(row.PeriodId.Trim(), periodId?.Trim(), StringComparison.OrdinalIgnoreCase)) ||
+                MatchesPeriod(row.EffectiveDate, periodId)).ToArray();
         }
         catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
         {

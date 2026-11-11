@@ -73,6 +73,31 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task DefaultInterest_CallWithAReversedReceipt_BlocksInsteadOfCountingItAsCalledCapital()
+    {
+        var funding = CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 500_000m, new(2026, 4, 9));
+        var reversal = funding with
+        {
+            LedgerImpactId = "journal-entry:reversal",
+            JournalEntryId = Guid.NewGuid(),
+            EffectiveDate = new DateOnly(2026, 4, 20),
+            Lines = funding.Lines.Select(line => line with
+            {
+                Side = line.Side == AccountingTemplateLineSideDto.Debit ? AccountingTemplateLineSideDto.Credit : AccountingTemplateLineSideDto.Debit
+            }).ToArray()
+        };
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate), funding, reversal]);
+
+        var result = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("correction journal against its receivable");
+        result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task DefaultInterest_PostedAccrualThatWasReversed_IsOwedAgain()
     {
         // April's 8,219.18 was posted and then reversed, so May owes the whole cumulative amount.

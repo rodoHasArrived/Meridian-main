@@ -35,6 +35,22 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     }
 
     [Fact]
+    public async Task RecurringJournalInAPeriodNamedByItsId_StillGatesClose()
+    {
+        // Production occurrences retain the accounting period's id, not a calendar-month label.
+        var periodId = Guid.NewGuid().ToString("D");
+        var activity = BuildActivity();
+        var service = RecurringCockpit(activity,
+            [Occurrence(activity.LedgerBookId!.Value, new(2026, 6, 30), "Blocked", null) with { PeriodId = periodId }]);
+
+        var cockpit = await service.GetCockpitAsync(FundProfileId, activity.LedgerBookId, FundAccountId, periodId, EntityId,
+            tenantId: RecurringTenant, companyId: RecurringCompany);
+
+        cockpit.Lanes.Should().ContainSingle(item => item.LaneId == "recurring-journals").Which.IsReady.Should().BeFalse();
+        cockpit.IsReadyToClose.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task RecurringJournalsOutsideThePeriod_AddNoLaneAndDoNotGateClose()
     {
         var activity = BuildActivity();

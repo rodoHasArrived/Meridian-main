@@ -152,7 +152,8 @@ intakes that admit approval drafts the same way:
   are operator-attested with retained evidence. Interest is accrued to its cumulative amount
   through the requested date and only the part not already posted is drafted; an earlier
   default-interest draft still awaiting approval blocks a further accrual, a posted reversal of
-  an earlier accrual is netted off what counts as posted, and requests are
+  an earlier accrual is netted off what counts as posted, a call with a correction journal
+  against its receivable (such as a reversed receipt) is blocked, and requests are
   handled one at a time on a host.
 - **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
   investor's distribution is split by the European waterfall. The tiers already paid come from
