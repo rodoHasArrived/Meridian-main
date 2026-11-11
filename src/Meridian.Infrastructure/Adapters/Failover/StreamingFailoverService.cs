@@ -28,6 +28,8 @@ public sealed class StreamingFailoverService : IDisposable
     private readonly ConcurrentDictionary<string, Action<FailoverTransitionRequest>> _transitionHandlers =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<Guid, FailoverTransitionRequest> _pendingTransitions = new();
+    private readonly ConcurrentDictionary<string, Func<string, StreamingTransportLiveness>> _transportProbes =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly IConnectionHealthMonitor _healthMonitor;
     private readonly object _failoverGate = new();
     private readonly CancellationTokenSource _shutdownCts = new();
@@ -168,6 +170,41 @@ public sealed class StreamingFailoverService : IDisposable
 
         lock (_failoverGate)
             return !_isDisposed && _transitionHandlers.ContainsKey(ruleId);
+    }
+
+    /// <summary>
+    /// Registers the runtime's view of its current transport for a rule. The health monitor only
+    /// infers liveness from recorded activity, so a quiet feed looks identical to a dead one;
+    /// the probe lets inferred silence be checked against the connection that actually exists.
+    /// </summary>
+    internal IDisposable RegisterTransportProbe(
+        string ruleId,
+        Func<string, StreamingTransportLiveness> probe)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ruleId);
+        ArgumentNullException.ThrowIfNull(probe);
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+        if (!_transportProbes.TryAdd(ruleId, probe))
+        {
+            throw new InvalidOperationException(
+                $"A streaming transport probe is already registered for rule '{ruleId}'.");
+        }
+
+        return new TransportProbeRegistration(_transportProbes, ruleId, probe);
+    }
+
+    /// <summary>
+    /// Records transport-level liveness for a provider's current connection. This keeps the
+    /// connection's inactivity window open without counting as a successful operation, so a quiet
+    /// but connected feed stays healthy and recovery evidence is not inflated by heartbeats.
+    /// </summary>
+    public void RecordHeartbeat(string providerId)
+    {
+        if (_isDisposed)
+            return;
+
+        _healthMonitor.RecordHeartbeat(ProviderIdentity.NormalizeId(providerId));
     }
 
     /// <summary>
@@ -762,6 +799,18 @@ public sealed class StreamingFailoverService : IDisposable
 
     private void HandleConnectionLost(ConnectionLostEvent evt)
     {
+        switch (ProbeTransport(evt.ConnectionId))
+        {
+            case StreamingTransportLiveness.Live:
+                // The monitor inferred the loss from silence, but the transport is still up.
+                // Re-registering restores the monitored connection without raising a recovery.
+                _healthMonitor.RegisterConnection(evt.ConnectionId, evt.ProviderName);
+                _healthMonitor.RecordHeartbeat(evt.ConnectionId);
+                return;
+            case StreamingTransportLiveness.NotCurrent:
+                return;
+        }
+
         RecordFailure(evt.ConnectionId, evt.Reason ?? "Connection lost");
     }
 
@@ -772,10 +821,50 @@ public sealed class StreamingFailoverService : IDisposable
 
     private void HandleHeartbeatMissed(HeartbeatMissedEvent evt)
     {
+        switch (ProbeTransport(evt.ConnectionId))
+        {
+            case StreamingTransportLiveness.Live:
+                // Quiet but connected: the transport itself is the heartbeat.
+                _healthMonitor.RecordHeartbeat(evt.ConnectionId);
+                return;
+            case StreamingTransportLiveness.NotCurrent:
+                // A standby (or superseded) provider has no transport to go quiet; its silence
+                // must not consume the failure budget it needs to be a viable failover target.
+                return;
+        }
+
         if (evt.MissedCount >= 2)
         {
             RecordFailure(evt.ConnectionId, $"Heartbeat missed ({evt.MissedCount} consecutive)");
         }
+    }
+
+    /// <summary>
+    /// Resolves the registered runtimes' view of a provider's transport. With no runtime
+    /// registered the answer is <see cref="StreamingTransportLiveness.Unknown"/> and the monitor's
+    /// inference stands unchanged.
+    /// </summary>
+    private StreamingTransportLiveness ProbeTransport(string providerId)
+    {
+        var result = StreamingTransportLiveness.Unknown;
+        foreach (var probe in _transportProbes.Values)
+        {
+            StreamingTransportLiveness observed;
+            try
+            {
+                observed = probe(providerId);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Streaming transport probe failed for provider {ProviderId}", providerId);
+                continue;
+            }
+
+            if (observed > result)
+                result = observed;
+        }
+
+        return result;
     }
 
     private void RaiseFailoverTriggered(FailoverTriggeredEvent evt)
@@ -816,6 +905,7 @@ public sealed class StreamingFailoverService : IDisposable
 
         _evaluationTimer?.Dispose();
         _transitionHandlers.Clear();
+        _transportProbes.Clear();
         _healthMonitor.OnConnectionLost -= HandleConnectionLost;
         _healthMonitor.OnConnectionRecovered -= HandleConnectionRecovered;
         _healthMonitor.OnHeartbeatMissed -= HandleHeartbeatMissed;
@@ -842,6 +932,42 @@ public sealed class StreamingFailoverService : IDisposable
                 handlers.TryRemove(ruleId, out _);
         }
     }
+
+    private sealed class TransportProbeRegistration(
+        ConcurrentDictionary<string, Func<string, StreamingTransportLiveness>> probes,
+        string ruleId,
+        Func<string, StreamingTransportLiveness> probe) : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
+            probes.TryRemove(
+                new KeyValuePair<string, Func<string, StreamingTransportLiveness>>(ruleId, probe));
+        }
+    }
+}
+
+/// <summary>
+/// A streaming runtime's view of one provider's transport, ordered so that the strongest
+/// evidence wins when several runtimes are asked about the same provider.
+/// </summary>
+internal enum StreamingTransportLiveness
+{
+    /// <summary>No runtime is registered, so nothing is known beyond the monitor's inference.</summary>
+    Unknown = 0,
+
+    /// <summary>The provider is not the runtime's current connection (standby or superseded).</summary>
+    NotCurrent = 1,
+
+    /// <summary>The provider is the current connection and its transport is not connected.</summary>
+    Down = 2,
+
+    /// <summary>The provider is the current connection and its transport is connected.</summary>
+    Live = 3
 }
 
 /// <summary>
