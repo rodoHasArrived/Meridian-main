@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 507. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 510. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -31,6 +31,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermField["SecurityAssetTermField"] {
         +IReadOnlyList~string~ Aliases
         +IReadOnlyList~string~ AllowedValues
+        +bool AuthoringEnabled
         +bool CarriesUndeclaredValueVerbatim
         +SecurityTermConventionKind Convention
         +SecurityAssetTermVocabularyEscape? Escape
@@ -88,6 +89,10 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior["SecurityCashFlowBehavior"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowBehaviorExtensions["SecurityCashFlowBehaviorExtensions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto["SecurityCashFlowBlockerDto"] {
+        +string Code
+        +string Reason
     }
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt["SecurityCashFlowCalculationReceipt"] {
         +string ContentSha256
@@ -375,6 +380,9 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityIncomeComponent["SecurityIncomeComponent"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityInterestSupport["SecurityInterestSupport"] {
+        +SecurityCashFlowBlockerDto NegativeInterestBlocker
+    }
     class Meridian_Contracts_SecurityMaster_SecurityListingIdentity["SecurityListingIdentity"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityListingIdentityFinding["SecurityListingIdentityFinding"] {
@@ -413,12 +421,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictRouting["SecurityMasterConflictRouting"] {
-        +IReadOnlySet~string~ ProviderEvidenceSegments
-        +IReadOnlySet~string~ TermContainers
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -455,5 +457,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBehavior
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowGap
+    Meridian_Contracts_SecurityMaster_SecurityInterestSupport --> Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
 ```

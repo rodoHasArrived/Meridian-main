@@ -11800,6 +11800,7 @@ Meridian-main
 │   │   │   ├── SecurityReferenceModuleContractionReplayTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityRequiredModuleValueTests.cs
+│   │   │   ├── SecurityRetainedFoldClearedValueTests.cs
 │   │   │   ├── SecurityScalarModuleContractionReplayTests.cs
 │   │   │   ├── SecurityScheduleAuthoringParityTests.cs
 │   │   │   ├── SecurityStructuralModuleContractionReplayTests.cs
