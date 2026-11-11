@@ -433,14 +433,15 @@ public sealed class DataGapAnalyzer
     {
         var lower = fileName.ToLowerInvariant();
 
-        if (lower.Contains("1min") || lower.Contains("minute1"))
-            return DataGranularity.Minute1;
-        if (lower.Contains("5min") || lower.Contains("minute5"))
-            return DataGranularity.Minute5;
+        // Longer tokens first: "15min" contains "5min", and "minute15" contains "minute1".
         if (lower.Contains("15min") || lower.Contains("minute15"))
             return DataGranularity.Minute15;
         if (lower.Contains("30min") || lower.Contains("minute30"))
             return DataGranularity.Minute30;
+        if (lower.Contains("1min") || lower.Contains("minute1"))
+            return DataGranularity.Minute1;
+        if (lower.Contains("5min") || lower.Contains("minute5"))
+            return DataGranularity.Minute5;
         if (lower.Contains("1hour") || lower.Contains("hour1") || lower.Contains("hourly"))
             return DataGranularity.Hour1;
         if (lower.Contains("4hour") || lower.Contains("hour4"))

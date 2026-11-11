@@ -41,7 +41,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
 
         self.assertEqual(parse.returncode, 0, parse.stderr)
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "build" / "scripts" / "install" / "install-web-workstation.ps1"
             script_copy.parent.mkdir(parents=True)
@@ -89,7 +89,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "build" / "scripts" / "install" / "install-web-workstation.ps1"
             script_copy.parent.mkdir(parents=True)
@@ -187,7 +187,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "build" / "scripts" / "install" / "install-web-workstation.ps1"
             script_copy.parent.mkdir(parents=True)
@@ -284,7 +284,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             script_copy = repo_root / "build" / "scripts" / "install" / "install-web-workstation.ps1"
             script_copy.parent.mkdir(parents=True)
@@ -489,7 +489,7 @@ class WebWorkstationInstallerScriptTests(unittest.TestCase):
         self.assertIn("$webSucceeded = $?", root_script)
         self.assertIn("$webExitCode -ne 0", root_script)
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             install_dir = repo_root / "build" / "scripts" / "install"
             install_dir.mkdir(parents=True)

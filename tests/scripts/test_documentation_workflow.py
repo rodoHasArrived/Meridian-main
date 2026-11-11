@@ -236,7 +236,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
         # producer cannot reach a green freshness gate, and a stale-output verdict
         # cannot be swallowed by a later successful validator or EXIT summary.
         for failure in ("run-maintained-generation.py", "check-generated-output.py"):
-            with self.subTest(failure=failure), tempfile.TemporaryDirectory() as temporary:
+            with self.subTest(failure=failure), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
                 root = Path(temporary)
                 (root / "scripts").mkdir()
                 shutil.copyfile(REPO_ROOT / "scripts/ci.sh", root / "scripts/ci.sh")

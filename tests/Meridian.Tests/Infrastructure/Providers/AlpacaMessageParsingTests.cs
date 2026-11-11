@@ -258,6 +258,54 @@ public sealed class AlpacaMessageParsingTests
     }
 
     [Fact]
+    public void HandleMessage_DistinctTradeIdsWithSameContent_BothForwarded()
+    {
+        // Arrange — two real prints at the same price, size, and exchange timestamp. Only the
+        // trade id tells them apart; a content-only key collapsed them into one.
+        var json1 = """{"T":"t","S":"AAPL","p":185.50,"s":100,"i":301,"x":"V","t":"2024-06-15T14:30:00Z"}""";
+        var json2 = """{"T":"t","S":"AAPL","p":185.50,"s":100,"i":302,"x":"V","t":"2024-06-15T14:30:00Z"}""";
+
+        // Act
+        Dispatch(json1);
+        Dispatch(json2);
+
+        // Assert
+        var tradeEvents = Published.Where(e => e.Type == MarketEventType.Trade).ToList();
+        tradeEvents.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void HandleMessage_SameTradeIdOnDifferentVenues_BothForwarded()
+    {
+        // Arrange — trade ids are assigned per venue, so the same id on two venues is two trades.
+        var json1 = """{"T":"t","S":"AAPL","p":185.50,"s":100,"i":401,"x":"V","t":"2024-06-15T14:30:00Z"}""";
+        var json2 = """{"T":"t","S":"AAPL","p":185.50,"s":100,"i":401,"x":"Q","t":"2024-06-15T14:30:00Z"}""";
+
+        // Act
+        Dispatch(json1);
+        Dispatch(json2);
+
+        // Assert
+        var tradeEvents = Published.Where(e => e.Type == MarketEventType.Trade).ToList();
+        tradeEvents.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public void HandleMessage_RedeliveredTradeWithIdAndVenue_SecondIsSuppressed()
+    {
+        // Arrange — a reconnect re-delivers the identical message, id and venue included.
+        var json = """{"T":"t","S":"AAPL","p":185.50,"s":100,"i":501,"x":"V","t":"2024-06-15T14:30:00Z"}""";
+
+        // Act
+        Dispatch(json);
+        Dispatch(json);
+
+        // Assert
+        var tradeEvents = Published.Where(e => e.Type == MarketEventType.Trade).ToList();
+        tradeEvents.Should().HaveCount(1);
+    }
+
+    [Fact]
     public void HandleMessage_TradesWithDifferentTimestamps_BothForwarded()
     {
         // Arrange — same symbol/price/size but different timestamps and unique IDs → not duplicates.
