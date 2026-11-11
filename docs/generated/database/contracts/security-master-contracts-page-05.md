@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 504. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 507. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -375,6 +375,13 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityIncomeComponent["SecurityIncomeComponent"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityListingIdentity["SecurityListingIdentity"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityListingIdentityFinding["SecurityListingIdentityFinding"] {
+        +string Code
+        +string FieldPath
+        +string Message
+    }
     class Meridian_Contracts_SecurityMaster_SecurityLotModel["SecurityLotModel"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor["SecurityLotUnitDescriptor"] {
@@ -408,32 +415,9 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictKinds["SecurityMasterConflictKinds"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
-        +string Actor
-        +CorporateActionDto CorporateAction
-        +string? CorrelationId
-        +string? FundProfileId
-        +string? Reason
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto["SecurityMasterCorporateActionAppendResultDto"] {
-        +SecurityMasterCorporateActionAuditDto Audit
-        +CorporateActionDto CorporateAction
-        +SecurityMasterCorporateActionRestatementDto? Restatement
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto["SecurityMasterCorporateActionAuditDto"] {
-        +string Actor
-        +string AuditId
-        +Guid CorporateActionId
-        +string? CorrelationId
-        +string EventType
-        +string? Reason
-        +DateTimeOffset RecordedAtUtc
-        +Guid SecurityId
-        +string? SourceRecordId
-        +string SourceSystem
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictRouting["SecurityMasterConflictRouting"] {
+        +IReadOnlySet~string~ ProviderEvidenceSegments
+        +IReadOnlySet~string~ TermContainers
     }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -472,5 +456,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlow
     Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowScheduleDto --> Meridian_Contracts_SecurityMaster_SecurityIncomeCashFlowGap
     Meridian_Contracts_SecurityMaster_SecurityLotUnitDescriptor --> Meridian_Contracts_SecurityMaster_SecurityLotUnitKind
-    Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
 ```

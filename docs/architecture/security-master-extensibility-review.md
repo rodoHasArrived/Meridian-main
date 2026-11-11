@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-09
-**Review history:** increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-11
+**Review history:** owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -189,6 +189,9 @@ unconsumed. Deployment defaults and legacy draft handling (a draft's author is r
 - **Publish outcome.** `SecurityMasterPublishResultDto.CanonicalMerge` reports `Merged`, `AlreadyCanonical`, `OverlayOnly` or `NotApplicable`, so operators can see whether the golden record changed. The revision link in `SourceRecordId` is kept.
 - **Still open.** Recovering the maker and checker from retained lineage still depends on the workflow's approval evidence, because revision transitions overwrite the actor.
 
+*2026-11-10:* the deployment defaults are decided and an Institutional governance profile makes all
+three requirements mandatory; see the [close-out pass](#close-out-pass--2026-11-10).
+
 ### D6 — Classification labels: still open, including historical payload policy
 
 [SecurityEconomicDefinitionAdapter](../../src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs)
@@ -247,6 +250,8 @@ test fails when a descriptor label is neither a domain label nor listed. No desc
 changes, so passport fallbacks still show the placeholder; mapping placeholders to no label there
 would change output and is left for a separate decision. A stored value whose whole text is exactly `None` still reads
 as no label, because that is the retired rendering of an absent family.
+*(2026-11-10: that decision is made; the passport shows no label for a placeholder. See the
+[close-out pass](#close-out-pass--2026-11-10).)*
 
 Validation (local, Linux, Release): `dotnet test tests/Meridian.Tests` filtered to
 `Classification|CertifiedReporting|SecurityEconomicDefinitionAdapter|InstrumentTypeDescriptor|ReportGenerationService|SecurityMasterAggregateRebuilder`
@@ -318,6 +323,10 @@ row-classification audit is not.
   protection design for other economic tables beyond `security_events`; override-expiry and
   patch-version acceptance proof. Migration 062 and its truncate-trigger waiver still need the
   repository's independent schema/storage review; this disposition grants no waiver.
+  *(2026-11-10: an agent-run review found and fixed one defect and recorded apply conditions; the
+  owner's authorization is still not recorded. See the [close-out pass](#close-out-pass--2026-11-10).)*
+  *(2026-11-11: the repository owner authorized the waiver. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
 
 ### D8 — Identifier normalization and listing identity: still open, scoped carefully
 
@@ -331,6 +340,8 @@ no production caller was found in this pass. Consolidate authority at a dependen
 pin F#, C# and SQL compatibility, without introducing a project-reference cycle. Listing MIC,
 ListingId and venue identifiers represent different concepts; preserve their semantics and define
 consistency rules rather than flatten them into one free-string field.
+*(2026-11-10: the three concepts and their consistency rules are declared in
+`SecurityListingIdentity`; see the [close-out pass](#close-out-pass--2026-11-10).)*
 
 ### D9 — Profile routing, term aliases and pack policy: remaining extensibility work
 
@@ -359,6 +370,8 @@ StructuredNote still has no explicit accounting class, and `ResolveAccountingIns
 fall back to a supplied taxonomy. Pin actual caller precedence and distinguish an intentionally
 outside-slice class from a missing mapping. Do not assert that every StructuredNote currently
 posts as a bond, or assign new accounting treatment through a documentation cleanup.
+*(2026-11-10: the canonical unit and StructuredNote's current outside-slice state are closed as
+decided; three choices remain the domain owner's. See the [close-out pass](#close-out-pass--2026-11-10).)*
 
 ### D11 — Later implementations supersede old structural absence claims
 
@@ -9617,3 +9630,238 @@ review found no blocking defect and raised five items. Each was checked against 
 | Schema-control `verify` against main | Pass; no manifest change was needed |
 | Maintained generation, `check-generated-output`, `validate-doc-hashes` | Generation converges (the UML step is advisory and needs Docker); generated output is clean; 0 hash errors after the Instruments, Ui, dashboard, Ui.Shared and Wpf modules were re-reviewed |
 | `verify-docs` lane and the generated-output repair pre-check against main | Pass; the pre-check reports `ready` with no changes |
+
+---
+
+## Close-out pass — 2026-11-10
+
+This pass records source on branch `claude/dreamy-rubin-u2n63a`, started from main at `f0021f5e`
+and last merged with main at `0668fc7d`. It acts on five requests from the repository owner. Three are
+done, one is partly done and one is not started; the last two are stated first so they are not
+read past.
+
+### Not done
+
+- **The per-class model and its bridge are not removed (ADR-027 S3-E).** Contracting
+  `SecurityKind`'s per-class records needs the module homes of pull request #3446. That pull
+  request was open while this pass's code was written, and nothing was stacked on it; it merged
+  to main on 2026-11-10 and this branch now contains it by merge. The contraction itself has not
+  started. Two limits apply to it: ADR-027 keeps `SecurityMasterLegacyUpgrade` as the permanent
+  read-only upcaster for legacy `SecurityProjection` events, so the bridge can be confined but
+  not deleted; and #3446 leaves bond coupon structures, principal schedules, swap legs, covenant
+  entries and a scalar remainder without module homes, so those record fields cannot go yet.
+  *(2026-11-11: the owner sequenced it as follow-up pull requests after this one merges. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
+  *(2026-11-11, follow-up pull request: the contraction landed as S3-E5, and every value in that
+  remainder gained a module home in S3-E6 to S3-E8, which also ended the codec-only validation
+  remainder; see those entries above. The per-class records remain, holding module references,
+  and the legacy upcaster stays, as ADR-027 requires.)*
+- **Migration 062's waiver is not authorized.** The waiver calls for an independent human
+  schema/storage review and the owner's authorization. An agent cannot give either. What was done
+  is an agent-run technical review, recorded below as evidence for that review.
+  *(2026-11-11: the owner authorized the waiver. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
+- **Three D10 choices are still the domain owner's.** They are listed under D10 below with a
+  recommendation each. None was decided here, because each sets how stored money values are read.
+  *(2026-11-11: the owner accepted all three recommendations. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
+
+### What landed
+
+| Request | What landed |
+| --- | --- |
+| Last four classes onto schema-driven decoding | ADR-027 S3-D is complete: Equity, Bond, InvestmentFund and CustomAsset read their scalars through the schema-bound reader, so `SchemaBoundDecodeClasses` names all 32 classes and a test holds it equal to the catalog. Fourteen reads the schema cannot bind are ledgered in `UnboundCompatibilityReads` and enforced at run time. No fixture, golden or corpus changed |
+| Default for approved term edits; required for institutional deployments | D5 below |
+| Typed blocked result on the schedule book | `DeclaredExercise` on the schedule summary and book; a blocked outcome now changes passport and close-readiness statuses. ADR-025 has the entry |
+| Full call/put schedules for CertificateOfDeposit and StructuredCredit | ADR-025 increment 8f: both classes are read from their declared schedule on the notice watch, the timeline and the schedule book |
+| Stable classification labels | D6 below |
+| MIC and listing identity | D8 below |
+| Rate units and accounting treatment | D10 below: two items closed as decided, three left to the owner |
+| Independent review of migration 062 | D7 below: an agent-run review, one defect fixed, one missing test added, apply conditions recorded; authorization still the owner's |
+| Split the workbench query service | Thirteen partial files by read model, every member moved verbatim; the largest is 880 lines and the service leaves the file-size baseline |
+| Word matching replaced by class-owned routing keys | D9 below |
+
+### D5 — governance defaults: decided
+
+- **Decision.** The code defaults of `RequireGovernedTermAmendments`, `RequireIndependentReviewer`
+  and `RequireIndependentProfileApprover` stay `false`. The supported local workstation has one
+  operator, and maker-checker with one actor can never approve anything, so defaulting on would
+  stop local use.
+- **Institutional profile.** `SecurityMasterWorkbench:GovernanceProfile` is `Standard` (default)
+  or `Institutional`. The effective profile is Institutional when the option says so or the host
+  is a production composition (`ProductionServiceRegistrationPolicy.IsProductionComposition`).
+  Under it all three requirements are in force and cannot be turned off.
+- **One seam.** `ISecurityMasterGovernanceRequirements` decides the effective values. The policy
+  class, the workbench command service, the profile governance service, the five direct-amendment
+  routes and the WPF host read it, so no reader can disagree.
+- **Contradictions fail closed.** With the Institutional profile in force, a configuration that
+  sets one of the three to `false`, or sets the profile to `Standard` on a production composition,
+  refuses host start and names the key. A reload to such a value never relaxes a requirement.
+- **The profile latches.** Once a process has run Institutional, a reload cannot return it to
+  Standard; a restart is required.
+- **Unchanged.** Governed publication and system ingest are not blocked. With no revision store
+  composed the governed publisher still fails closed. A revision or draft with no recorded maker
+  is handled as before: no maker is invented and it is not rechecked.
+- **Limits.** The latch is per process; nothing coordinates nodes. A host that maps the Security
+  Master routes without registering the seam now answers 500 on the five amendment routes, where
+  it used to read defaults. The sample configuration no longer sets
+  `RequireGovernedTermAmendments` explicitly, so a production host started from it runs governed
+  instead of refusing to start. The workbench read model does not yet show the effective profile.
+
+### D6 — classification labels: closed
+
+The one decision slice 3 left open was whether the passport should show a descriptor placeholder.
+It should not. The passport's classification fallback now shows the instrument descriptor's label
+only where it is a domain label; `OtherFamily` and `OtherSubType` placeholders (FX spot,
+Commodity, Crypto, Index, CFD) show no label. A record's own retained labels still come first and
+are still decoded by `ClassificationLabelReader`. No stored value, write label or report grouping
+changes. The reviewed approximations (Warrant `OptionContract`, FX spot `BankProduct`, Deposit
+`DemandDeposit`) are domain labels and are still shown.
+
+### D8 — MIC and listing identity: closed
+
+- **Three concepts, kept apart.** The primary listing market is `commonTerms.primaryListingMic`,
+  or failing that the `exchange` label where the bundled registry resolves it. A `ListingId`
+  identifier (`TICKER:MIC`) identifies one listing; a security can hold several and at most one is
+  primary at a time. A venue MIC (execution venue, underlying exchange) is an attribute of an
+  execution or an underlying and never identifies the security.
+- **One resolver.** `SecurityListingIdentity.ResolvePrimaryListingMic` is the rule; the store's
+  `listing_mic` column delegates to it.
+- **Consistency rules.** The data-quality scan raises `LI001` (a stated `primaryListingMic` that
+  is not a MIC, Error), `LI002` (an `exchange` label that resolves to another market, Warning) and
+  `LI003` (an active primary listing identifier that names another market, Error). A secondary
+  listing on another market is not an inconsistency, and venue MICs are never compared with the
+  listing market.
+- **Not write refusals.** Reads stay tolerant of an exchange label where the MIC is absent, as
+  migration 048 and the stored column already are. No write is newly refused.
+- **Limit.** The two venue MICs are economic-module members with no producer and no flat home, so
+  there is nothing stored to check them against yet.
+
+### D9 — routing by class-owned keys
+
+- **Workbench conflicts.** The passport chose its identity and terms panels, and conflict
+  severity, by substrings of the field path. `SecurityMasterConflictRouting` compares whole path
+  segments with declared facts: identifier names and kinds, provider-evidence segments, the
+  declared mismatch kinds, the terms containers, and the term keys and aliases the record's own
+  asset class declares in the terms schema.
+- **What that changes.** Paths conflict detection writes that the word lists missed now reach the
+  terms panel: `issueDate`, `principalFace`, `paymentFrequency`, `dayCountConvention`,
+  `principalSchedule`, `countryOfRisk` and most profile fields. A profile field is no longer
+  provider evidence because its name contains "provider". A bare field name is a terms conflict
+  only for a class that declares that key.
+- **Profile routing.** The labels that contradict a profile and the profile ids that reclassify a
+  record were a class-name switch and a literal map in the pack registry. Each descriptor now
+  declares `ClassificationLabels` and `ReclassifyingProfileIds`; `RoutingKeys` is the name,
+  aliases and labels, matched whole. The five profile ids, the labels and the write refusal are
+  unchanged.
+- **Left as they are.** The change-history heuristics that classify an event by its type or
+  source-system name (`InferChangeOrigin`, `IsManualSecurityChange`, `IsScheduleHistoryEvent`,
+  `ExtractChangedFields`) are not asset-class routing and were not changed. Resolver alias arrays
+  and cash-flow term roles (D9's other items) are also unchanged.
+
+### D10 — rate units and accounting: two closed, three for the owner
+
+*2026-11-11: the owner accepted the three recommendations below; see
+[owner decisions](#owner-decisions--2026-11-11). The text that follows is the pass as written.*
+
+Closed as decided, with no code change:
+
+- **Canonical unit.** The computational unit is the fraction `RateUnitNormalizer` returns. The
+  stored unit is whatever the record or the field declares. `SecurityRateFieldUnits` is the
+  per-field declaration of meaning, default unit, range and negative-rate policy, and stays as it
+  is: no field gains a default by this pass and magnitude never selects a unit.
+- **StructuredNote today.** It stays outside the Security Master accounting slice by decision,
+  not by backlog: it posts nothing through the bond fallback, and that is the intended state until
+  a treatment is chosen.
+
+Still the domain owner's, each with a recommendation:
+
+- **A repair path for undeclared legacy rates.** A CertificateOfDeposit cannot declare a coupon
+  unit at all, because a populated `scheduleConventions` block is refused for a class with no
+  schedule anchors, so its non-zero coupons block with no way to repair them. Recommendation: give
+  the classes that cannot carry a block a governed per-record unit field, written through the
+  governed edit lifecycle, and do not add a field default.
+- **Negative rates.** Readers still differ: the legacy projection floors a negative rate at zero,
+  the contractual preview pays signed interest, accounting posts nothing at or below zero, and the
+  declared floating leg blocks. Recommendation: where a field permits negatives, a reader that
+  does not model signed interest should block with a typed reason and never floor.
+- **StructuredNote accounting treatment.** Recommendation: fair value through profit or loss from
+  valuation marks, with no accrual posting, when a template is added.
+
+### D7 — migration 062: reviewed by an agent, not authorized
+
+*2026-11-11: the owner authorized the waiver; see
+[owner decisions](#owner-decisions--2026-11-11). The text that follows is the pass as written.*
+
+A separate fresh-context reviewer, which did not write the migration, reviewed it statically and
+against PostgreSQL 16.15, applying migrations 001 to 060 and then 062 to populated scratch
+databases (10 edge-case rows, 200,000 rows and 2,000,000 rows).
+
+| Finding | Disposition |
+| --- | --- |
+| F1. The Baseline backfill can deadlock with a writer that holds a `securities` row lock and has not yet upserted. Reproduced with three sessions; either side can be the victim, and the loser rolls back cleanly | Recorded as an apply condition: stop Security Master writers while 062 runs. Taking an exclusive lock on `securities` first removed the deadlock in the reviewer's run. It was not added, because 062's checksum is fixed and a lock in the runner would need its own concurrency test |
+| F2. Nothing ties `security_identifiers` writes to history, so a pre-062 binary or direct SQL changes the projection with no revision | Recorded as an apply condition: no pre-062 binary may write after 062 commits |
+| F3. One replacement's revisions did not share a recorded time, so a recorded-as-of read could return an identifier set the projection never held | Fixed. Every revision of one replacement now carries one recorded time, after everything the security already holds. A PostgreSQL test reproduces the case and fails against the previous writer |
+| F4. The backfill is one statement with a per-row foreign-key check and the runner sets no command timeout: 2.8 s at 200,000 rows, 37.9 s at 2,000,000 | Recorded as an apply condition above about one million identifier rows |
+| F5. No test ran 062's own backfill on a populated pre-062 schema | Added: `SecurityMasterIdentifierRevisionMigrationTests` covers failure, retry and restart |
+| F6. Ordinals 061 and 063 are skipped and not reserved | Not changed. The reservation register has no way to mark an ordinal retired |
+| F7. A pre-migration security with no identifier rows reports history as available before the migration | Not changed. The domain requires a primary identifier, so such a security should not exist |
+| F8. The waiver text omitted the index, comments and function, and stated no apply condition | Updated in `database/policies/migration-waivers.json`. It still says no owner authorization is recorded |
+
+Found sound: the DDL against the source table, the Baseline contents row for row, the append-only
+guards (update, delete, truncate, truncate cascade, upsert and merge are refused; the limits are
+those of migrations 038, 041 and 059), the single atomic write path, serialization of concurrent
+replacements, index use by every store query, and fresh install and upgrade.
+
+Not verified: the driver's default command timeout against a long backfill, production row counts
+and role privileges, logical replication, and whether 062 is already applied anywhere.
+
+### Behaviour changes to know
+
+- A blocked declared call/put schedule now reads `Review` in the passport's payment-schedule item,
+  its obligation and cash-flow sections, and close readiness. It read `Ready` before.
+- A CertificateOfDeposit or StructuredCredit that declares a schedule shows declared rows, or a
+  blocker and no row, where it showed the scalar call date or nothing.
+- More conflicts appear in the passport's terms panel, and some leave the provider panel.
+- A production composition refuses direct term amendments, self-review and self-approval.
+- FX spot, commodity, crypto, index and CFD passports show no family or sub-type where they
+  showed a placeholder.
+
+### Open risks
+
+- The typed outcome is not read by any dashboard screen or WPF view; both render the statuses.
+- The three new schedule-book row types are still shown by their raw type names in the browser.
+- No mutation run was made for this pass. The 062 regression test was checked against the
+  previous writer; the other new tests were not.
+- WPF sources changed (the governance registration and two log messages). WPF tests cannot run on
+  Linux; the hosted Windows lane is their gate.
+
+### Owner decisions — 2026-11-11
+
+The repository owner answered the three items this pass left open. The answers were given in the
+working session for this pass on 2026-11-11. No code changed with them; the waiver text and this
+record did.
+
+- **Migration 062 waiver: authorized.** The owner stated they had reviewed migration 062 and the
+  agent review's findings, and authorized the waiver. `database/policies/migration-waivers.json`
+  now records the authorization and its date. The three apply conditions stand unchanged: stop
+  every Security Master writer while the migration runs; let no pre-062 binary write after it
+  commits; and above about one million identifier rows raise the command timeout for that start.
+  The items listed as not verified under D7 are still not verified.
+- **D10: all three recommendations accepted as the decisions.**
+  - *Undeclared legacy rates.* Classes that cannot carry a `scheduleConventions` block get a
+    governed per-record rate-unit field, written through the governed edit lifecycle. No field
+    gains a default.
+  - *Negative rates.* Where a field permits negatives, a reader that does not model signed
+    interest blocks with a typed reason and never floors.
+  - *StructuredNote.* Fair value through profit or loss from valuation marks, with no accrual
+    posting, when its template is added. Until then it stays outside the accounting slice.
+
+  None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
+  with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
+  projection still floors a negative rate at zero.
+- **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
+  the two D10 decisions that need code, are done in pull requests that follow this one, not
+  stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
+  proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
+  work.

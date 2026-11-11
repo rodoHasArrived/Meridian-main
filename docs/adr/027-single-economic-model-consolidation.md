@@ -98,6 +98,11 @@ Every component above is existing evidence. Stage 1 is in progress as remediatio
 (per-module increments with their own proof obligations); stages 2 and 3 are accepted but not
 started.
 
+*Status at 2026-11-10:* stages 1 and 2 are complete. In stage 3 both codec arms are asserted from
+the schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). The record contraction
+(S3-E) has module homes for strikes, currency pairs, notionals and the profile envelope
+(pull request #3446); the contraction of the per-class records has not started.
+
 ## Preconditions the decision item names
 
 - **Payload-upgrade design.** Stage 1 is an ADR-024 decision-3 expand/contract rollout per class

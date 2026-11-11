@@ -9,7 +9,7 @@ using Microsoft.FSharp.Core;
 
 namespace Meridian.Application.SecurityMaster;
 
-internal static class SecurityMasterMapping
+internal static partial class SecurityMasterMapping
 {
     public static CreateSecurity ToCreateCommand(CreateSecurityRequest request)
         => new(
@@ -340,9 +340,9 @@ internal static class SecurityMasterMapping
         var kind = assetClass switch
         {
             "Equity" => SecurityKind.NewEquity(new EquityTerms(
-                ToOption(GetOptionalString(json, "shareClass")),
-                ToVotingRightsCatOption(GetOptionalString(json, "votingRightsCat")),
-                ToEquityClassificationOption(json, mode))),
+                ToOption(bound.OptionalString("shareClass")),
+                ToVotingRightsCatOption(bound.OptionalString("votingRightsCat")),
+                ToEquityClassificationOption(bound, mode))),
             "Option" => ToOptionKind(bound),
             "Future" => SecurityKind.NewFuture(new FutureTerms(
                 bound.RequiredString("rootSymbol"),
@@ -357,7 +357,7 @@ internal static class SecurityMasterMapping
                 bound.OptionalBoolean("isRollTarget") ?? false,
                 ToOption(bound.OptionalInt("rollWindowDays")))),
             "Bond" => SecurityKind.NewBond(ToBondTerms(
-                json,
+                bound,
                 mode,
                 economicSchedules!,
                 ReadScheduleConventions(json, assetClass, versionedTerms),
@@ -414,7 +414,7 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalDateOnly("maturity")),
                 ToOption(bound.OptionalString("issuerName")),
                 ToOption(bound.OptionalString("settlementType")))),
-            "CustomAsset" => ToCustomAssetKind(json, mode),
+            "CustomAsset" => ToCustomAssetKind(bound, mode),
             "Swap" => SecurityKind.NewSwap(new SwapTerms(
                 bound.RequiredDateOnly("effectiveDate"),
                 bound.RequiredDateOnly("maturityDate"),
@@ -429,7 +429,7 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalString("resetFrequency")),
                 ToFSharpList(economicSchedules!.PrincipalSchedule.SourceEntries.Select(static entry =>
                     new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
-                ToOption(GetOptionalString(json, "pricingSource")))),
+                ToOption(bound.OptionalString("pricingSource")))),
             "StructuredCredit" => SecurityKind.NewStructuredCredit(new StructuredCreditTerms(
                 boundTerms.RequiredString("tranche"),
                 ToOption(boundTerms.OptionalString("poolId")),
@@ -440,7 +440,7 @@ internal static class SecurityMasterMapping
                 ToOption(boundTerms.OptionalString("factorSchedule")),
                 ToFSharpList(economicSchedules!.FactorSchedule.SourceEntries.Select(static entry =>
                     new FactorScheduleEntry(entry.AsOfDate, entry.Factor))),
-                ToOption(GetOptionalDateOnly(terms, "maturity")),
+                ToOption(boundTerms.OptionalDateOnly("maturity")),
                 // Typed tranche terms are optional, but a WRITE must not read a malformed supplied
                 // value as absent: persisting null for a numeric kind, "1.5" months or an unparseable
                 // date would silently discard caller input. Reads stay tolerant so stored rows remain
@@ -557,12 +557,12 @@ internal static class SecurityMasterMapping
                 ToOption(bound.OptionalConventionString("paymentFrequency")),
                 ToOption(bound.OptionalStrictDecimal("barrierLevel")))),
             "InvestmentFund" => SecurityKind.NewInvestmentFund(new InvestmentFundTerms(
-                ToOption(GetOptionalString(json, "fundType")),
-                ToOption(GetOptionalString(json, "fundFamily")),
-                ToOption(GetOptionalString(json, "navCurrency")),
-                ToDistributionPolicyOption(GetOptionalString(json, "distributionPolicy")),
-                ToOption(GetOptionalBoolean(json, "isStableNav")),
-                ToOption(GetOptionalString(json, "pricingSource")))),
+                ToOption(bound.OptionalString("fundType")),
+                ToOption(bound.OptionalString("fundFamily")),
+                ToOption(bound.OptionalString("navCurrency")),
+                ToDistributionPolicyOption(bound.OptionalString("distributionPolicy")),
+                ToOption(bound.OptionalBoolean("isStableNav")),
+                ToOption(bound.OptionalString("pricingSource")))),
             // Read tolerance must not become write tolerance. On a create, an unrecognized class
             // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
             // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a
@@ -736,17 +736,16 @@ internal static class SecurityMasterMapping
     /// envelope lacks a numeric <c>profileVersion</c> or an object-valued <c>profileFields</c>, so
     /// the default can never mint a canonical record with an incomplete envelope.</para>
     /// </summary>
-    private static SecurityKind ToCustomAssetKind(JsonElement json, SecurityKindMappingMode mode)
+    private static SecurityKind ToCustomAssetKind(SchemaBoundTerms terms, SecurityKindMappingMode mode)
     {
-        if (json.ValueKind == JsonValueKind.Object
-            && json.TryGetProperty("customProfileId", out var customProfileId)
-            && customProfileId.ValueKind == JsonValueKind.String
-            && !string.IsNullOrWhiteSpace(customProfileId.GetString()))
+        if (terms.IsObject
+            && terms.OptionalString("customProfileId") is { } customProfileId
+            && !string.IsNullOrWhiteSpace(customProfileId))
         {
             return SecurityKind.NewCustomAsset(new ProfileEnvelopeTerms(
-                customProfileId.GetString()!,
-                GetOptionalInt(json, "profileVersion") ?? 1,
-                json.GetRawText()));
+                customProfileId,
+                terms.OptionalInt("profileVersion") ?? 1,
+                terms.RawText));
         }
 
         if (mode == SecurityKindMappingMode.Write)
@@ -756,12 +755,16 @@ internal static class SecurityMasterMapping
                 "Select an approved profile (or use asset class 'OtherSecurity' for unprofiled instruments) instead of submitting an envelope-less CustomAsset.");
         }
 
+        // The salvage reads the OtherSecurity shape off a row the CustomAsset schema describes only
+        // as a profile envelope: category and subType are declared for the class and bind; the
+        // other three are ledgered in UnboundCompatibilityReads.
+        var salvage = terms.Unbound;
         return SecurityKind.NewOtherSecurity(new OtherSecurityTerms(
-            GetOptionalString(json, "category") ?? "CustomAsset",
-            ToOption(GetOptionalString(json, "subType")),
-            ToOption(GetOptionalDateOnly(json, "maturity")),
-            ToOption(GetOptionalString(json, "issuerName")),
-            ToOption(GetOptionalString(json, "settlementType"))));
+            terms.OptionalString("category") ?? "CustomAsset",
+            ToOption(terms.OptionalString("subType")),
+            ToOption(salvage.OptionalDateOnly("maturity")),
+            ToOption(salvage.OptionalString("issuerName")),
+            ToOption(salvage.OptionalString("settlementType"))));
     }
 
     private static BondSubclass ParseBondSubclass(string? subclass) => subclass switch
@@ -793,37 +796,37 @@ internal static class SecurityMasterMapping
     /// is the serializer's own spelling for a plain fixed coupon, not an unreadable value.
     /// </summary>
     private static BondTerms ToBondTerms(
-        JsonElement json,
+        SchemaBoundTerms terms,
         SecurityKindMappingMode mode,
         SecurityEconomicScheduleValidation economicSchedules,
         ScheduleConventions scheduleConventions,
         CallPutSchedules callPutSchedules)
     {
-        var couponType = GetOptionalString(json, "couponType") ?? "Fixed";
+        var couponType = terms.OptionalString("couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
         {
             "Floating" => BondCouponStructure.NewFloating(
-                GetRequiredString(json, "floatingIndex"),
-                ToOption(GetOptionalDecimal(json, "spreadBps")),
-                ToOption(GetOptionalDecimal(json, "capRate")),
-                ToOption(GetOptionalDecimal(json, "floorRate")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
+                terms.RequiredString("floatingIndex"),
+                ToOption(terms.OptionalDecimal("spreadBps")),
+                ToOption(terms.OptionalDecimal("capRate")),
+                ToOption(terms.OptionalDecimal("floorRate")),
+                ToDayCountOption(terms.OptionalConventionString("dayCount"), mode)),
             "ZeroCoupon" => BondCouponStructure.ZeroCoupon,
             "Step" => BondCouponStructure.NewStep(
                 ToFSharpList(economicSchedules.StepCouponSchedule.SourceEntries.Select(static entry =>
                     new StepCouponEntry(entry.EffectiveDate, entry.Rate))),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
+                ToDayCountOption(terms.OptionalConventionString("dayCount"), mode)),
             // The scalar couponRate slot carries the inflation-linked REAL rate; couponType
             // discriminates, so a fixed-coupon read can never pick up an indexed rate.
             "InflationLinked" => BondCouponStructure.NewInflationLinked(
-                GetOptionalDecimal(json, "couponRate") ?? 0m,
-                GetRequiredString(json, "inflationIndex"),
-                ToOption(GetOptionalDecimal(json, "inflationBaseIndexValue")),
-                ToOption(GetOptionalDecimal(json, "inflationIndexRatio")),
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
+                terms.OptionalDecimal("couponRate") ?? 0m,
+                terms.RequiredString("inflationIndex"),
+                ToOption(terms.OptionalDecimal("inflationBaseIndexValue")),
+                ToOption(terms.OptionalDecimal("inflationIndexRatio")),
+                ToDayCountOption(terms.OptionalConventionString("dayCount"), mode)),
             "Fixed" => BondCouponStructure.NewFixed(
-                GetOptionalDecimal(json, "couponRate") ?? 0m,
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode)),
+                terms.OptionalDecimal("couponRate") ?? 0m,
+                ToDayCountOption(terms.OptionalConventionString("dayCount"), mode)),
             // A WRITE fails closed on an unrecognized coupon type: silently persisting a typo
             // ("Floter") as a fixed coupon would change the bond's economics and drop the fields
             // the named structure owns.
@@ -831,23 +834,23 @@ internal static class SecurityMasterMapping
                 throw new InvalidOperationException(UndeclaredDiscriminantValue("Bond", "couponType", couponType)),
             // Read tolerance: an unrecognized coupon type must not fail every read of the row.
             _ => BondCouponStructure.NewFixed(
-                GetOptionalDecimal(json, "couponRate") ?? 0m,
-                ToDayCountOption(GetOptionalString(json, "dayCount", mode), mode))
+                terms.OptionalDecimal("couponRate") ?? 0m,
+                ToDayCountOption(terms.OptionalConventionString("dayCount"), mode))
         };
         return new BondTerms(
-            GetRequiredDateOnly(json, "maturity"),
-            ToOption(GetOptionalDateOnly(json, "issueDate")),
+            terms.RequiredDateOnly("maturity"),
+            ToOption(terms.OptionalDateOnly("issueDate")),
             coupon,
-            GetOptionalBoolean(json, "isCallable") ?? false,
-            ToOption(GetOptionalDateOnly(json, "callDate")),
-            ToOption(GetOptionalString(json, "issuerName")),
-            ToOption(GetOptionalString(json, "seniority")),
-            ParseBondSubclass(GetOptionalString(json, "subclass")),
-            ToOption(GetOptionalDecimal(json, "par")),
-            ToPaymentFrequencyOption(GetOptionalString(json, "paymentFrequency")),
-            ToOption(GetOptionalDateOnly(json, "legalFinalMaturity")),
-            ToOption(GetOptionalDateOnly(json, "preRefundDate")),
-            ToOption(GetOptionalDateOnly(json, "mandatoryPutDate")),
+            terms.OptionalBoolean("isCallable") ?? false,
+            ToOption(terms.OptionalDateOnly("callDate")),
+            ToOption(terms.OptionalString("issuerName")),
+            ToOption(terms.OptionalString("seniority")),
+            ParseBondSubclass(terms.OptionalString("subclass")),
+            ToOption(terms.OptionalDecimal("par")),
+            ToPaymentFrequencyOption(terms.OptionalString("paymentFrequency")),
+            ToOption(terms.OptionalDateOnly("legalFinalMaturity")),
+            ToOption(terms.OptionalDateOnly("preRefundDate")),
+            ToOption(terms.OptionalDateOnly("mandatoryPutDate")),
             ToFSharpList(economicSchedules.PrincipalSchedule.SourceEntries.Select(static entry =>
                 new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount))),
             scheduleConventions,
@@ -1498,70 +1501,23 @@ internal static class SecurityMasterMapping
 
     /// <summary>
     /// ADR-027 stage 3 (S3-D): classes whose scalar decode reads run through the schema-bound
-    /// reader, so every key the codec reads is verified declared with the type it is read as —
-    /// codec/schema drift throws instead of silently reading past the table. Classes migrate
-    /// cohort by cohort; each migration is behavior-neutral by the decode/encode sweeps, the
-    /// write goldens and the replay corpus, and the sweep suite exercises every bound read
-    /// through the fully-populated twins.
+    /// reader (<c>SchemaBoundTerms</c>, in <c>SecurityMasterMapping.SchemaBound.cs</c>), so every
+    /// key the codec reads is verified declared with the type it is read as — codec/schema drift
+    /// throws instead of silently reading past the table. The migration is complete: the ledger
+    /// names every catalog class, and a sweep test holds it equal to the catalog so a class cannot
+    /// be added without a schema-bound decode. Each cohort was behavior-neutral by the
+    /// decode/encode sweeps, the write goldens and the replay corpus, and the sweep suite exercises
+    /// every bound read through the fully-populated twins. The reads the schema cannot bind are
+    /// not silent exceptions to this: they are ledgered in <see cref="UnboundCompatibilityReads"/>.
+    /// Structural decodes (coupon structures, schedules and their entries, the schedule-conventions
+    /// block, swap legs, covenants, the profile envelope) keep their bespoke readers.
     /// </summary>
     public static IReadOnlyList<string> SchemaBoundDecodeClasses { get; } =
         ["FxSpot", "Deposit", "MoneyMarketFund", "Commodity", "CryptoCurrency", "Cfd",
          "CertificateOfDeposit", "CommercialPaper", "TreasuryBill", "Repo", "CashSweep", "OtherSecurity", "Warrant",
          "Option", "Future", "FxForward", "NonDeliverableForward", "CreditDefaultSwap", "Swaption", "CapFloor", "StructuredNote",
-         "DirectLoan", "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee", "Swap"];
-
-    /// <summary>
-    /// The schema-bound view of a submitted or stored terms document for one asset class: each
-    /// read verifies, against <see cref="SecurityAssetTermsSchema"/>, that the key is declared
-    /// and that its declared type matches the type the codec reads it as. Requiredness stays the
-    /// codec's call — the tolerated absence defaults are ledgered in the S3-B sweep — so this
-    /// binds exactly the facts whose drift would corrupt a decode.
-    /// </summary>
-    private readonly struct SchemaBoundTerms(string assetClass, JsonElement json, SecurityKindMappingMode mode)
-    {
-        public string RequiredString(string key) => GetRequiredString(json, Declared(key, SecurityAssetTermFieldType.String));
-
-        public string? OptionalString(string key) => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String));
-
-        public string? OptionalConventionString(string key)
-            => GetOptionalString(json, Declared(key, SecurityAssetTermFieldType.String), mode);
-
-        public decimal? OptionalDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
-
-        public int? OptionalInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
-
-        public bool? OptionalBoolean(string key) => GetOptionalBoolean(json, Declared(key, SecurityAssetTermFieldType.Boolean));
-
-        public DateOnly? OptionalDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date));
-
-        public DateOnly RequiredDateOnly(string key) => GetRequiredDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date));
-
-        public Guid RequiredGuid(string key) => GetRequiredGuid(json, Declared(key, SecurityAssetTermFieldType.Guid));
-
-        public decimal RequiredDecimal(string key) => GetRequiredDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal));
-
-        public int RequiredInt(string key) => GetRequiredInt(json, Declared(key, SecurityAssetTermFieldType.Integer));
-
-        public decimal? OptionalStrictDecimal(string key) => GetOptionalDecimal(json, Declared(key, SecurityAssetTermFieldType.Decimal), mode);
-
-        public DateOnly? OptionalStrictDateOnly(string key) => GetOptionalDateOnly(json, Declared(key, SecurityAssetTermFieldType.Date), mode);
-
-        public int? OptionalStrictInt(string key) => GetOptionalInt(json, Declared(key, SecurityAssetTermFieldType.Integer), mode);
-
-        private string Declared(string key, SecurityAssetTermFieldType readAs)
-        {
-            var field = SecurityAssetTermsSchema.Field(assetClass, key)
-                ?? throw new InvalidOperationException(
-                    $"Codec/schema drift: the codec reads '{assetClass}.{key}', which the schema does not declare.");
-            if (field.Type != readAs)
-            {
-                throw new InvalidOperationException(
-                    $"Codec/schema drift: '{assetClass}.{key}' is declared {field.Type} but the codec reads it as {readAs}.");
-            }
-
-            return field.Key;
-        }
-    }
+         "DirectLoan", "StructuredCredit", "PrivateFundInterest", "PrivateCompanyEquity", "RealEstateHolding", "CommitmentGuarantee", "Swap",
+         "Equity", "Bond", "InvestmentFund", "CustomAsset"];
 
     private static JsonElement ResolveAssetTermsJson(JsonElement json)
         => json.TryGetProperty("profileFields", out var profileFields) && profileFields.ValueKind == JsonValueKind.Object
@@ -1764,67 +1720,74 @@ internal static class SecurityMasterMapping
             _ => throw new InvalidOperationException($"Unsupported dividend type '{raw}'.")
         };
 
-    private static FSharpOption<ParticipationTerms> ToParticipationTermsOption(JsonElement? json)
-        => json.HasValue
+    private static FSharpOption<ParticipationTerms> ToParticipationTermsOption(SchemaBoundTerms? terms)
+        => terms is { } participation
             ? FSharpOption<ParticipationTerms>.Some(new ParticipationTerms(
-                GetOptionalBoolean(json.Value, "participatesInCommonDividends") ?? false,
-                ToOption(GetOptionalDecimal(json.Value, "additionalDividendThreshold"))))
+                participation.OptionalBoolean("participatesInCommonDividends") ?? false,
+                ToOption(participation.OptionalDecimal("additionalDividendThreshold"))))
             : FSharpOption<ParticipationTerms>.None;
 
-    private static LiquidationPreference ToLiquidationPreference(JsonElement json)
-        => GetRequiredString(json, "kind") switch
+    private static LiquidationPreference ToLiquidationPreference(SchemaBoundTerms terms)
+        => terms.RequiredString("kind") switch
         {
             "Pari" => LiquidationPreference.Pari,
-            "Senior" => LiquidationPreference.NewSenior(GetRequiredDecimal(json, "multiple")),
+            "Senior" => LiquidationPreference.NewSenior(terms.RequiredDecimal("multiple")),
             "Subordinated" => LiquidationPreference.Subordinated,
             var raw => throw new InvalidOperationException($"Unsupported liquidation preference '{raw}'.")
         };
 
-    private static PreferredTerms ToPreferredTerms(JsonElement json)
-        => new(
-            ToOption(GetOptionalDecimal(json, "dividendRate")),
-            ToDividendType(GetRequiredString(json, "dividendType")),
-            ToOption(GetOptionalDecimal(json, "redemptionPrice")),
-            ToOption(GetOptionalDateOnly(json, "redemptionDate")),
-            ToOption(GetOptionalDateOnly(json, "callableDate")),
-            ToParticipationTermsOption(GetOptionalObject(json, "participationTerms")),
-            ToLiquidationPreference(GetRequiredObject(json, "liquidationPreference")));
+    // The schema declares preferredTerms as an object but registers no inner shape for it, so its
+    // members (and the two blocks nested in it) read through the ledgered view
+    // (UnboundCompatibilityReads) until the shape is declared.
+    private static PreferredTerms ToPreferredTerms(SchemaBoundTerms preferredTerms)
+    {
+        var terms = preferredTerms.Unbound;
+        return new(
+            ToOption(terms.OptionalDecimal("dividendRate")),
+            ToDividendType(terms.RequiredString("dividendType")),
+            ToOption(terms.OptionalDecimal("redemptionPrice")),
+            ToOption(terms.OptionalDateOnly("redemptionDate")),
+            ToOption(terms.OptionalDateOnly("callableDate")),
+            ToParticipationTermsOption(terms.OptionalObject("participationTerms")),
+            ToLiquidationPreference(terms.RequiredObject("liquidationPreference")));
+    }
 
-    private static ConvertibleTerms ToConvertibleTerms(JsonElement json)
+    // Bound to the inner shape the schema registers as Equity.convertibleTerms.
+    private static ConvertibleTerms ToConvertibleTerms(SchemaBoundTerms terms)
         => new(
-            SecurityId.NewSecurityId(GetRequiredGuid(json, "underlyingSecurityId")),
-            GetRequiredDecimal(json, "conversionRatio"),
-            ToOption(GetOptionalDecimal(json, "conversionPrice")),
-            ToOption(GetOptionalDateOnly(json, "conversionStartDate")),
-            ToOption(GetOptionalDateOnly(json, "conversionEndDate")));
+            SecurityId.NewSecurityId(terms.RequiredGuid("underlyingSecurityId")),
+            terms.RequiredDecimal("conversionRatio"),
+            ToOption(terms.OptionalDecimal("conversionPrice")),
+            ToOption(terms.OptionalDateOnly("conversionStartDate")),
+            ToOption(terms.OptionalDateOnly("conversionEndDate")));
 
     private static FSharpOption<EquityClassification> ToEquityClassificationOption(
-        JsonElement json, SecurityKindMappingMode mode)
+        SchemaBoundTerms terms, SecurityKindMappingMode mode)
     {
-        var raw = GetOptionalString(json, "classification");
+        var raw = terms.OptionalString("classification");
         return raw switch
         {
             "Common" => FSharpOption<EquityClassification>.Some(EquityClassification.Common),
             "Preferred" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewPreferred(ToPreferredTerms(GetRequiredObject(json, "preferredTerms")))),
+                EquityClassification.NewPreferred(ToPreferredTerms(terms.RequiredObject("preferredTerms")))),
             "Convertible" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewConvertible(ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+                EquityClassification.NewConvertible(ToConvertibleTerms(terms.RequiredObject("convertibleTerms")))),
             "ConvertiblePreferred" => FSharpOption<EquityClassification>.Some(
                 EquityClassification.NewConvertiblePreferred(
-                    ToPreferredTerms(GetRequiredObject(json, "preferredTerms")),
-                    ToConvertibleTerms(GetRequiredObject(json, "convertibleTerms")))),
+                    ToPreferredTerms(terms.RequiredObject("preferredTerms")),
+                    ToConvertibleTerms(terms.RequiredObject("convertibleTerms")))),
             // A write selecting "Other" must NAME the classification: defaulting a missing
             // otherClassification to the placeholder "Other" would persist an economically
             // meaningless label as the security's classification.
             "Other" when mode == SecurityKindMappingMode.Write =>
-                GetOptionalString(json, "otherClassification") is { } named && !string.IsNullOrWhiteSpace(named)
+                terms.OptionalString("otherClassification") is { } named && !string.IsNullOrWhiteSpace(named)
                     ? FSharpOption<EquityClassification>.Some(EquityClassification.NewOther(named))
                     : throw new InvalidOperationException(
                         "An equity classification of 'Other' requires a non-empty 'otherClassification' naming the " +
                         "classification. Supply it, or use one of the declared classifications " +
                         "(Common, Preferred, Convertible, ConvertiblePreferred)."),
             "Other" => FSharpOption<EquityClassification>.Some(
-                EquityClassification.NewOther(GetOptionalString(json, "otherClassification") ?? "Other")),
+                EquityClassification.NewOther(terms.OptionalString("otherClassification") ?? "Other")),
             null => FSharpOption<EquityClassification>.None,
             // A WRITE fails closed on an unrecognized discriminant: silently persisting a typo
             // ("Commmon") as Other(raw) would change the security's economic classification.

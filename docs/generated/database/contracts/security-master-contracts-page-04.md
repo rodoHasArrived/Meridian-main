@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 504. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 507. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -337,9 +337,9 @@ classDiagram
         +IReadOnlyList~string~? AssetPackIds
         +bool CarriesBondCouponStructure
         +SecurityCashFlowBehavior CashFlowBehavior
+        +IReadOnlyList~string~ ClassificationLabels
         +SecurityValuationModelKind DefaultValuationModel
         +IReadOnlyList~InstrumentType~? InstrumentTypes
-        +string? LotMultiplierTermKey
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassLabelResolution["SecurityAssetClassLabelResolution"] {
     }
@@ -370,7 +370,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetPackRegistry["SecurityAssetPackRegistry"] {
         +IReadOnlyDictionary~string__string~ ProfileAssetClasses
-        +IReadOnlyDictionary~string__IReadOnlyList~string~~ ProfileClassificationKeywords
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetProfileAccountingImpactHintDto["SecurityAssetProfileAccountingImpactHintDto"] {
     }

@@ -2,7 +2,7 @@
 
 **Status:** draft
 **Owner:** core-team
-**Reviewed:** 2026-11-09
+**Reviewed:** 2026-11-11
 **Scope:** Engineering
 **Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
 `fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
@@ -448,6 +448,14 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   externally (sweeps, write
   goldens, corpus — behavior-neutral by the full namespace sweep). Bespoke arms remain for the
   structural decodes (coupon structures, schedules, swap legs, profile envelopes).
+  *2026-11-10: S3-D is complete.* Equity, Bond, InvestmentFund and CustomAsset read their scalars
+  through the schema-bound reader, including the reads inside the bond, equity-classification and
+  profile-envelope decoders, so `SchemaBoundDecodeClasses` names all 32 catalog classes and a test
+  holds it equal to the catalog. The reader binds nested objects to the inner shape the schema
+  registers (`Equity.convertibleTerms`). Fourteen reads the schema cannot bind are committed in
+  `UnboundCompatibilityReads` and enforced at run time: three keys of the envelope-less CustomAsset
+  salvage, and the members of `Equity.preferredTerms`, for which the schema registers no inner
+  shape. No schema field was added and no fixture, golden or corpus changed.
 - **S3-E — shrink `SecurityKind`'s per-class records (scoped by census 2026-11-09).** The
   consumer census shows the precondition nearly holds already: outside the codec and domain
   spine, only four call sites touch any per-class record (`BondTerms` ×2,
@@ -523,3 +531,44 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     term-rule codes. The flatten recovers the flat `legs` array, stamping the row at the
     block's terms version only when a leg declares one, so an economic-only swap replays with
     its legs.
+  - **Remaining for S3-E.** The record-field contraction itself (removing per-class record
+    fields now that they have homes) and the residual codec-only complement listed in the
+    review record (structural decodes — bond coupon structures and principal schedules, swap
+    legs, covenant entries — plus the scalar remainder: CDS reference terms, structured-note
+    payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.
+    *2026-11-11:* the owner sequenced both as follow-up pull requests; see the close-out pass
+    below.
+    *2026-11-11 (S3-E5 to E8):* both are implemented above, in the follow-up pull request the
+    owner sequenced: the contraction as S3-E5, and module homes for the whole residual
+    complement as S3-E6 to E8. No codec-only rule remains.
+  *2026-11-10 (close-out pass):* the contraction has not started. Two limits apply when it does.
+  ADR-027 keeps `SecurityMasterLegacyUpgrade` as the permanent read-only upcaster for legacy
+  `SecurityProjection` events, so the bridge is confined, not deleted. And the residual complement
+  above still needs module homes before those record fields can go.
+
+## Close-out pass — 2026-11-10
+
+Recorded in the review's
+[close-out section](../../architecture/security-master-extensibility-review.md#close-out-pass--2026-11-10).
+It implements the typed blocked outcome and ADR-025 increment 8f, completes S3-D, decides the
+governance defaults (D5), closes the code-level parts of D6 and D8, moves conflict and profile
+routing onto class-owned keys (D9), and acts on an agent-run review of migration 062 (D7). Open
+after it: S3-E above; the owner's authorization of the migration 062 waiver; and the D10 choices
+that remain the domain owner's (a repair path for undeclared legacy rates, a signed-interest
+model, StructuredNote's accounting treatment).
+
+*2026-11-11 (owner decisions):* the owner authorized the migration 062 waiver, accepted the three
+D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
+after the close-out pull request merges. Recorded in the review's
+[owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+Remaining work, none of it started:
+
+- **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
+  proof, including module homes for the residual complement listed above.
+  *2026-11-11:* implemented as S3-E5 to E8 above; the items below have not started.
+- **D10, undeclared legacy rates:** a governed per-record rate-unit field for the classes that
+  cannot carry a `scheduleConventions` block, with no field default.
+- **D10, negative rates:** readers that do not model signed interest block with a typed reason
+  where the field permits negatives, and never floor.
+- **D10, StructuredNote:** fair value through profit or loss from valuation marks, with no accrual
+  posting, when its accounting template is added.
