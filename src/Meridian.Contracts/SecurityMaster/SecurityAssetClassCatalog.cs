@@ -159,7 +159,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]) { AccountingOutsideSlice = true },
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "MoneyMarketFund",
             AssetPackIds: ["cash-bank"],
@@ -198,7 +200,7 @@ public static class SecurityAssetClassCatalog
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
             // Version 2 adds the optional scheduleConventions block and version 3 the optional
             // callSchedule and putSchedule arrays; S2 keeps undeclared documents at floor 1 after the raise.
-            TermsVersion: 3,
+            TermsVersion: 5,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -207,9 +209,9 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 2,
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
-            ],
-            ReadableTermsVersion: 4) { StampFloor = 1 },
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ]) { StampFloor = 1 },
         new(
             AssetClass: "CommercialPaper",
             AssetPackIds: ["fixed-income"],
@@ -229,7 +231,9 @@ public static class SecurityAssetClassCatalog
             ],
             AmortizesTowardPar: true,
             RequiresMaturity: true,
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1 },
         new(
             AssetClass: "TreasuryBill",
             AssetPackIds: ["fixed-income"],
@@ -250,7 +254,9 @@ public static class SecurityAssetClassCatalog
             ],
             AmortizesTowardPar: true,
             RequiresMaturity: true,
-            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond),
+            AccountingInstrumentClass: SecurityAccountingInstrumentClasses.Bond,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1 },
         new(
             AssetClass: "Repo",
             TradesAsBilateralContract: true,
@@ -266,7 +272,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Isin,
                 SecurityIdentifierKind.Cusip
-            ]) { AccountingOutsideSlice = true },
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "CashSweep",
             AssetPackIds: ["cash-bank"],
@@ -280,7 +288,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.InternalCode,
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Ticker
-            ]) { AccountingOutsideSlice = true },
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "OtherSecurity",
             AssetPackIds: ["controlled-other-asset"],
@@ -341,14 +351,15 @@ public static class SecurityAssetClassCatalog
             RequiresMaturity: true,
             // Version 2 adds the optional scheduleConventions block to each leg; read ahead of write
             // (ADR-024).
+            TermsVersion: 4,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 1,
                     rationale: "Version 2 adds the optional scheduleConventions block to each leg and changes no version-1 term, so a version-1 payload reads it as unset on every leg (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
-            ],
-            ReadableTermsVersion: 3) { AccountingOutsideSlice = true },
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "DirectLoan",
             AssetPackIds: ["private-loan-credit", "mortgage-facility-intercompany"],
@@ -369,8 +380,10 @@ public static class SecurityAssetClassCatalog
             AssetOperationsCapabilities: AssetOperationsCapabilitySet.DirectLending,
             AmortizesTowardPar: true,
             Aliases: ["Loan", "AmortizingLoan", "BankLoan"],
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")],
-            ReadableTermsVersion: 2) { AccountingOutsideSlice = true },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 2, rationale: "Version 3 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
+            ],
+            TermsVersion: 3) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "StructuredCredit",
             AssetPackIds: ["fixed-income"],
@@ -396,7 +409,7 @@ public static class SecurityAssetClassCatalog
             // against the committed manifests. Version 3 adds the optional scheduleConventions block and
             // version 4 the optional callSchedule and putSchedule arrays. The contract-step writer admits
             // through version 4, while S2 retains floor 2 for documents that declare no schedules.
-            TermsVersion: 4,
+            TermsVersion: 6,
             TermsUpgrades:
             [
                 SecurityAssetClassTermsUpgrade.Identity(
@@ -408,9 +421,9 @@ public static class SecurityAssetClassCatalog
                 SecurityAssetClassTermsUpgrade.Identity(
                     fromVersion: 3,
                     rationale: "Version 4 adds the optional callSchedule and putSchedule arrays and changes no version-3 term, so a version-3 payload reads them as unset (ADR-024, 2026-10-25)."),
-                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29).")
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
+                SecurityAssetClassTermsUpgrade.Identity(fromVersion: 5, rationale: "Version 6 adds the optional governed scalar rateUnit declaration without changing earlier terms.")
             ],
-            ReadableTermsVersion: 5,
             SupportsProfileBackedTerms: true,
             Aliases: [.. SecurityCanonicalAssetHomes.SecuritizedLabels.Where(static label => label != "StructuredCredit")],
             AccountingInstrumentClass: SecurityAccountingInstrumentClasses.AssetBackedSecurity)
@@ -636,7 +649,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.ProviderSymbol,
                 SecurityIdentifierKind.Uti,
                 SecurityIdentifierKind.Upi
-            ]) { AccountingOutsideSlice = true },
+            ],
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "CapFloor",
             TradesAsBilateralContract: true,
@@ -653,7 +668,9 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Uti,
                 SecurityIdentifierKind.Upi
             ],
-            RequiresMaturity: true) { AccountingOutsideSlice = true },
+            RequiresMaturity: true,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "StructuredNote",
             AssetPackIds: ["fixed-income"],
@@ -670,7 +687,9 @@ public static class SecurityAssetClassCatalog
             // Outside the accounting slice by explicit disposition (review D10, slice 4): the note's
             // FixedIncome taxonomy must not route it into bond posting. Its accounting treatment is an
             // open domain-owner decision (D3); no bond treatment is assigned here.
-            RequiresMaturity: true) { AccountingOutsideSlice = true },
+            RequiresMaturity: true,
+            TermsVersion: 2,
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
         new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],

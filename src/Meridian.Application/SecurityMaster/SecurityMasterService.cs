@@ -116,7 +116,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     {
         ArgumentNullException.ThrowIfNull(request);
         await EnsureApprovedRevisionAuthorityAsync(request, ct).ConfigureAwait(false);
-        return await AmendTermsInternalAsync(request, eventType: "TermsAmended", ct).ConfigureAwait(false);
+        return await AmendTermsInternalAsync(request, eventType: "TermsAmended", ct, approvedPublication: true).ConfigureAwait(false);
     }
 
     private void EnsureDirectAmendmentPermitted()
@@ -168,7 +168,8 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
     private async Task<SecurityDetailDto> AmendTermsInternalAsync(
         AmendSecurityTermsRequest request,
         string eventType,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool approvedPublication = false)
     {
         await _termsCapabilityVerifier.VerifyAsync(ct).ConfigureAwait(false);
         var aliasProjection = await _store.GetProjectionAsync(request.SecurityId, ct).ConfigureAwait(false);
@@ -181,6 +182,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         // they run after the decode; a row this node cannot decode is a fault, and no amendment can
         // succeed here.
         EnsureAssetClassIsRecognizedHere(currentProjection);
+        await EnsureRateUnitAmendmentAuthorizedAsync(request, currentProjection, approvedPublication, ct).ConfigureAwait(false);
         EnsureClassificationTextIsUnambiguous(currentProjection.AssetClass, request.AssetSpecificTermsPatch);
         _ = MapRequestOrRefuse(() =>
         {
@@ -952,6 +954,7 @@ public sealed partial class SecurityMasterService : ISecurityMasterService, ISec
         SecurityProjectionRecord projection,
         JsonElement? assetSpecificTermsPatch = null)
     {
+        EnsureRateUnitRoundTripsSafely(projection, assetSpecificTermsPatch);
         SecurityDayCountWriteGuard.EnsureRoundTrip(projection, assetSpecificTermsPatch);
         EnsureDeclaredVocabulariesRoundTripSafely(projection, assetSpecificTermsPatch);
         EnsureBondCouponPayloadRoundTripsSafely(projection, assetSpecificTermsPatch);

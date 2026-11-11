@@ -16,8 +16,8 @@
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "d72f52150cf829e1b610d724879b1a40dadf7ecf6eeab794ab55a4d527faa934",
-      "source_hash": "81ac429510decf5d9b4de29f9010a8639cd22e141c8753ad0ce16261fe951a11"
+      "readme_hash": "17d8f85c5870f116f8bae8dcd23c2906fd820e23cca0f0a1b81bc05508e4909c",
+      "source_hash": "e6f2054e74bbb69357c12fc24961d860c4f6b541f6ae1074c2bb1d827730478b"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -51,8 +51,8 @@
       "id": "SRC-DESIGN-DATA-INTEGRATION",
       "path": "src/Meridian.DataIntegration",
       "readme": "src/Meridian.DataIntegration/README.md",
-      "readme_hash": "fb4e5970385f3494c6d66786938357f6e66deb341756e3c3e6b357e22da903c3",
-      "source_hash": "09c48f84db03d272a50d21cad6fb4a264e02a1916058fd6f776fd25e64010bc1"
+      "readme_hash": "0d709340142822accf84426cfe5424fcb0bbf0f14aef8114391b7c10114df186",
+      "source_hash": "cdbbf9134745a7ace67d3fd305e2c91f1c4d258b02fb1f25cde914fc03d7aed2"
     },
     {
       "id": "SRC-DESIGN-DOCUMENTS",
@@ -192,7 +192,7 @@
       "path": "src/Meridian.Infrastructure",
       "readme": "src/Meridian.Infrastructure/README.md",
       "readme_hash": "c5eb9f9a0e4c422d5952e4319e4eecdd5bb7473e07825a847eaa455399968aaa",
-      "source_hash": "d3fdcb7eaa05bc4b06e4c1a0a10c633b29a706fcc95899a13051f97de28a17f3"
+      "source_hash": "f84772ee98f515f7fbdd9d474305feca7c00b7f12ef6d9ba0e85f0a265063778"
     },
     {
       "id": "SRC-LAUNCHER",
@@ -289,8 +289,8 @@
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "73cc98844001bc609ca9134cf6ded711246410d2fa9e9fd90a7cccb9d636ce2e",
-      "source_hash": "69ae769ec1f5bb43d4c3480b2f46c1399394647ebb675a816088585d1d698834"
+      "readme_hash": "f11fe0a96147a6cd814dde9433364869ff4372182783c9909cd052fc5462af66",
+      "source_hash": "3612bdd5071e250cb046ea908358614d9588f51ce3baf1601b177ae86d70d4b4"
     }
   ],
   "schema": {

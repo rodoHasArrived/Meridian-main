@@ -49,11 +49,16 @@ public sealed record SecurityDeclaredConventionsRead(
 /// <param name="Through">The highest asset-class terms version whose versioned containers the payload decodes.</param>
 public readonly record struct SecurityVersionedTermDecoding(bool ProfileGoverned, int Through)
 {
+    /// <summary>Write validation skips readable modules whose authoring remains disabled.</summary>
+    public bool WriteMode { get; init; }
+
     /// <summary>Whether <paramref name="field"/> is decoded from the payload this decoding describes.</summary>
     public bool Decodes(SecurityAssetTermField field)
     {
         ArgumentNullException.ThrowIfNull(field);
-        return !SecurityVersionedTerms.IsVersionedContainer(field)
+        if (WriteMode && !field.AuthoringEnabled)
+            return false;
+        return (!SecurityVersionedTerms.IsVersionedContainer(field) && field.Key != SecurityRecordRateUnit.FieldKey)
                || (!ProfileGoverned && field.SinceTermsVersion <= Through);
     }
 }
@@ -113,7 +118,8 @@ public static class SecurityVersionedTerms
             SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, payload),
             writeMode
                 ? SecurityAssetClassCatalog.GetTermsVersion(assetClass)
-                : SecurityTermsEnvelope.ResolveAssetClassTermsVersion(payload));
+                : SecurityTermsEnvelope.ResolveAssetClassTermsVersion(payload))
+        { WriteMode = writeMode };
 
     /// <summary>
     /// Reads the <c>scheduleConventions</c> block under <paramref name="key"/> (exact case) of

@@ -14,26 +14,11 @@ open Meridian.FSharp.Domain
 
 let private structuredCredit entries : SecurityKind =
     SecurityKind.StructuredCredit {
-        Tranche = "A1"
-        PoolId = None
-        CollateralType = "CLO"
-        OriginalFace = 1000000m
-        CurrentFactor = Some 0.9m
-        CouponOrIndex = "SOFR+250"
-        FactorSchedule = None
-        FactorScheduleEntries = entries
-        Maturity = Some (DateOnly(2031, 6, 15))
-        Kind = None
-        Seniority = None
-        AttachmentPoint = None
-        DetachmentPoint = None
-        WeightedAverageCoupon = None
-        WeightedAverageMaturityMonths = None
-        WeightedAverageLoanAgeMonths = None
-        ReinvestmentPeriodEnd = None
-        NonCallPeriodEnd = None
-        ScheduleConventions = ScheduleConventions.empty
-        CallPutSchedules = CallPutSchedules.empty
+        Pool = { Factor = Some 0.9m; FactorDate = None; WeightedAvgCoupon = None; WeightedAvgMaturityMonths = None; WeightedAvgLoanAgeMos = None; CollateralType = Some ("CLO"); PoolIdentifier = None; TrancheClass = Some ("A1"); PrepaymentAssumption = None; AverageLifeYears = None; NotionalBalance = Some (1000000m); Originator = None; CreditEnhancementPct = None; FactorScheduleReference = None; IsInterestOnly = false; IsPrincipalOnly = false; FactorScheduleEntries = entries }
+        CouponTerms = { CouponType = Some (CouponKind.OtherCoupon ("SOFR+250")); CouponRate = None; PaymentFrequency = None; DayCount = None }; TrancheContract = { Kind = None; Seniority = None; AttachmentPoint = None; DetachmentPoint = None; ReinvestmentPeriodEnd = None; NonCallPeriodEnd = None }
+        Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (DateOnly(2031, 6, 15)) }
+        DeclaredSchedule = { DeclaredScheduleTerms.empty with Conventions = ScheduleConventions.empty }
+        RateConvention = None
     }
 
 let private codesOnBothSurfaces entries =
@@ -48,9 +33,11 @@ let private entry (date: DateOnly) factor : FactorScheduleEntry = { AsOfDate = d
 
 let private cfd leverage : SecurityKind =
     SecurityKind.Cfd {
-        UnderlyingAssetClass = "Equity"
-        UnderlyingDescription = None
-        Leverage = leverage
+        UnderlyingExposure = {
+            UnderlyingAssetClass = "Equity"
+            UnderlyingDescription = None
+            Leverage = leverage
+        }
     }
 
 [<Fact>]

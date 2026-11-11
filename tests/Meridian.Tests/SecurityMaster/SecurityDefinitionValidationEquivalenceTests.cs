@@ -253,8 +253,10 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         {
             covered.Should().ContainKey(assetClass, "every ledgered class needs mutation coverage");
             var fsharpCovered = CodesCoveredByFSharpTests.TryGetValue(assetClass, out var elsewhere) ? elsewhere : [];
-            covered[assetClass].Concat(fsharpCovered).Should().BeEquivalentTo(codes,
-                $"the mutation table (plus the F#-covered codes) must cover exactly the ledgered codes for {assetClass}, so the ledger and the proof stay in step");
+            var shapeCovered = SecurityRequiredModuleValueTests.RequiredShapeClasses.Contains(assetClass)
+                ? new[] { "required_module_value_missing" } : Array.Empty<string>();
+            covered[assetClass].Concat(fsharpCovered).Concat(shapeCovered).Should().BeEquivalentTo(codes,
+                $"the mutation table (plus the F# and direct-module required-value proofs) must cover exactly the ledgered codes for {assetClass}, so the ledger and the proof stay in step");
         }
 
         covered.Keys.Should().BeEquivalentTo(

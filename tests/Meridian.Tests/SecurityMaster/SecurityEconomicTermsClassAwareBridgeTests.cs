@@ -45,16 +45,15 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
 
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+
         if (assetClass == "Equity")
         {
-            // This fixture is ConvertiblePreferred. Its economic document cannot recover the
-            // classification or complete terms, so replay must refuse instead of degrading it.
-            Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
-            replay.Should().Throw<InvalidOperationException>().WithMessage("*requires retained legacy*");
+            // The exact typed capital module now carries every classification and nested term.
+            JsonElement.DeepEquals(rebuilt, original).Should().BeTrue("complete current equity capital is independently recoverable");
+            SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.WasFlattenedFromEconomicTerms(rebuilt).Should().BeFalse();
             return;
         }
-
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
         if (SecurityAssetClassCatalog.GetOrDefault(assetClass).RequiresProfileReference)
         {
@@ -164,11 +163,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("InterestOnly", "InterestOnly")]
     [InlineData("PrincipalOnly", "PrincipalOnly")]
     [InlineData("Clo", null)]
-    public void ReplayWithoutLegacyTerms_StructuredCreditRecoversStripKindsFromTheEconomicFlags(string kind, string? expectedRebuiltKind)
+    public void ReplayWithoutLegacyTerms_StructuredCreditKeepsExactKindsAndUsesFlagsOnlyForHistoricalSources(string kind, string? expectedHistoricalKind)
     {
-        // The economic document carries the typed kind only as the IO/PO flags, so replay can give
-        // an IO or PO strip its kind back; any other family is not recoverable and stays absent
-        // rather than being guessed.
+        // A current canonical document retains the precise family. Historical documents without
+        // that exact module keep their old IO/PO inference, and never invent another family.
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
             "StructuredCredit",
             new
@@ -183,15 +181,19 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", original));
 
-        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+        var current = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+        current.GetProperty("structuredCreditKind").GetString().Should().Be(kind);
+        current.EnumerateObject().Count(static property => property.NameEquals("structuredCreditKind")).Should().Be(1);
+        var historical = WithoutExactModule(economic, "trancheContract");
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(historical with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
 
-        if (expectedRebuiltKind is null)
+        if (expectedHistoricalKind is null)
         {
             rebuilt.TryGetProperty("structuredCreditKind", out _).Should().BeFalse("the economic document does not carry this family");
         }
         else
         {
-            rebuilt.GetProperty("structuredCreditKind").GetString().Should().Be(expectedRebuiltKind);
+            rebuilt.GetProperty("structuredCreditKind").GetString().Should().Be(expectedHistoricalKind);
         }
     }
 
@@ -222,7 +224,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Preferred", "Pari")]
     [InlineData("Preferred", "Senior")]
     [InlineData("ConvertiblePreferred", "Subordinated")]
-    public void PreferredReplay_PreservesRetainedTermsAndRefusesAnIncompleteFallback(string classification, string preference)
+    public void PreferredReplay_PreservesRetainedTermsAndRequiresCompleteCapitalForIndependentRecovery(string classification, string preference)
     {
         var payload = System.Text.Json.Nodes.JsonNode.Parse(JsonSerializer.Serialize(
             SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Equity"]))!;
@@ -235,7 +237,11 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText()
             .Should().Be(original.GetRawText());
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        var current = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity", current.AssetSpecificTerms)
+            .GetRawText().Should().Be(original.GetRawText());
+        var historical = WithoutExactModule(economic, "equityCapital");
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(historical with { LegacyAssetSpecificTerms = null });
         replay.Should().Throw<InvalidOperationException>().WithMessage("*complete classification*");
     }
 
@@ -274,7 +280,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     }
 
     [Fact]
-    public void CommonEquityReplay_RequiresRetainedTerms_BecauseStructuralMetadataDoesNotProveCommon()
+    public void CommonEquityReplay_RequiresExactCapitalOrRetainedTerms_BecauseStructuralMetadataDoesNotProveCommon()
     {
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity",
             new { shareClass = "A", classification = "Common", votingRightsCat = "FullVoting" });
@@ -282,7 +288,11 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original));
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText()
             .Should().Be(original.GetRawText());
-        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        var current = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain("Equity", current.AssetSpecificTerms)
+            .GetRawText().Should().Be(original.GetRawText());
+        var historical = WithoutExactModule(economic, "equityCapital");
+        Action replay = () => SecurityEconomicDefinitionAdapter.ToProjection(historical with { LegacyAssetSpecificTerms = null });
         replay.Should().Throw<InvalidOperationException>().WithMessage("*complete classification*",
             "legacy preferred equities carry the same structural Common metadata, so absence of preferred clues is ambiguous");
     }
@@ -304,35 +314,31 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [Fact]
     public void UnrecoverableKeys_NameWhatTheEconomicDocumentNeverCarried()
     {
-        // S3-E gave the option's strike, right and underlying a module home (exercise); what the
-        // economic document still never carries is the listing detail.
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Option")
+        // The listing-detail group now joins exercise as an economic-only replay home.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Option")
             .Should().Contain(["optChainId", "settlementType", "lastTradingDt"]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Option")
             .Should().Contain(["strike", "putCall", "underlyingId", "multiplier", "exerciseStyle"]);
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().Contain("subclass");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Swap").Should().Contain("legs");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Bond").Should().Contain(["subclass", "seniority", "par", "legalFinalMaturity", "preRefundDate", "mandatoryPutDate"]);
     }
 
     // ── Schedule conventions read ahead of write (ADR-024; Accrual rules frozen by ADR-025) ─────
 
     // The economic terms each fully-populated payload bridges to without a block, as pinned at base
-    // by SecurityTermsWriteGoldenTests. The block may change only the accrual module.
+    // by the reviewed SecurityTermsWriteGoldenTests fixture. Declared source is expected separately
+    // from the canonical flat keys, alongside the unchanged frozen accrual and call fills.
     private const string BondEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null,"exercise":null,"currencyPair":null,"notional":null,"profileEnvelope":null,"creditProtection":null,"structuredPayoff":null,"privateAssetValuation":null,"listingDetail":null,"bondCoupon":{"capRate":9.5,"couponRate":null,"couponType":"Floating","dayCount":"ACT/360","floatingIndex":"SOFR","floorRate":0.5,"inflationBaseIndexValue":null,"inflationIndex":null,"inflationIndexRatio":null,"spreadBps":185,"stepSchedule":[]},"principalSchedule":{"principalSchedule":[{"amount":400,"paymentDate":"2030-06-15"},{"amount":400,"paymentDate":"2031-06-15"}]},"swapLegs":null,"loanCovenants":null,"debtClassification":{"subclass":"Corporate","seniority":"SeniorSecured"},"bondRedemption":{"par":1000,"legalFinalMaturity":"2036-06-15","preRefundDate":"2033-06-15","mandatoryPutDate":"2031-06-15"}}""";
 
     private const string CertificateOfDepositEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null,"exercise":null,"currencyPair":null,"notional":null,"profileEnvelope":null,"creditProtection":null,"structuredPayoff":null,"privateAssetValuation":null,"listingDetail":null,"bondCoupon":null,"principalSchedule":null,"swapLegs":null,"loanCovenants":null}""";
 
     private const string StructuredCreditEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07","factorScheduleEntries":[{"asOfDate":"2026-06-01","factor":0.8412},{"asOfDate":"2026-07-01","factor":0.8235}]},"floatingRate":{"referenceIndex":"SOFR\u002B250","spreadBps":null,"resetFrequency":null,"floorRate":null,"capRate":null},"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07","factorScheduleEntries":[{"asOfDate":"2026-06-01","factor":0.8412},{"asOfDate":"2026-07-01","factor":0.8235}]},"floatingRate":{"referenceIndex":"SOFR\u002B250","spreadBps":null,"resetFrequency":null,"floorRate":null,"capRate":null},"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null,"exercise":null,"currencyPair":null,"notional":null,"profileEnvelope":null,"creditProtection":null,"structuredPayoff":null,"privateAssetValuation":null,"listingDetail":null,"bondCoupon":null,"principalSchedule":null,"swapLegs":null,"loanCovenants":null,"trancheContract":{"attachmentPoint":0.12,"detachmentPoint":0.20,"nonCallPeriodEnd":"2027-06-15","reinvestmentPeriodEnd":"2028-06-15","seniority":"Mezzanine","structuredCreditKind":"Clo"}}""";
 
     private const string SwapEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
-
-    // The S3-E module keys the serializer appends after sinkingFund; null for every class these
-    // fixtures cover. One constant, so a new module home extends every fixture in one place.
-    private const string S3ENullModules = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null,\"profileEnvelope\":null";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null,"exercise":null,"currencyPair":null,"notional":null,"profileEnvelope":null,"creditProtection":null,"structuredPayoff":null,"privateAssetValuation":null,"listingDetail":null,"bondCoupon":null,"principalSchedule":null,"swapLegs":{"legs":[{"currency":"USD","currentIndexRate":null,"dayCount":null,"direction":null,"exchangesPrincipal":false,"fixedRate":3.75,"index":null,"legId":null,"legType":"Fixed","notional":null,"notionalSchedule":[],"paymentFrequency":null,"resetSchedule":[],"scheduleConventions":{"accrualAdjusted":true,"businessDayConvention":"ModifiedFollowing","couponCashBasis":"DayCount","couponRateUnit":"Percent","direction":"Backward","endOfMonthRule":false,"firstRegularDate":"2026-07-15","lastRegularDate":"2030-07-15","paymentCalendars":["USNY"],"paymentLagBusinessDays":2,"rollConvention":"15","stubPolicy":"Short"},"spreadBps":null},{"currency":"USD","currentIndexRate":null,"dayCount":null,"direction":null,"exchangesPrincipal":false,"fixedRate":null,"index":"SOFR","legId":null,"legType":"Floating","notional":null,"notionalSchedule":[],"paymentFrequency":null,"resetSchedule":[],"scheduleConventions":{"accrualAdjusted":false,"businessDayConvention":"Following","couponCashBasis":"Level","couponRateUnit":"Fraction","direction":"Forward","endOfMonthRule":true,"firstRegularDate":"2026-04-15","lastRegularDate":"2030-10-15","paymentCalendars":["GBLO","USNY"],"paymentLagBusinessDays":1,"rollConvention":"Imm","stubPolicy":"Long"},"spreadBps":null}]},"loanCovenants":null}""";
 
     private const string NullAccrual = "\"accrual\":null";
 
@@ -340,13 +346,11 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond")]
     [InlineData("CertificateOfDeposit")]
     [InlineData("StructuredCredit")]
-    public void UnrecoverableKeys_IncludeTheScheduleConventionsBlock(string assetClass)
+    public void RecoverableKeys_IncludeTheCompleteScheduleConventionsBlock(string assetClass)
     {
-        // The economic document carries only the block's business-day convention and joint payment
-        // calendar (in Accrual), so the block as a whole is not recoverable on replay until a contract
-        // step maps it; a swap's leg blocks travel inside the already-unrecoverable legs.
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain("scheduleConventions");
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass).Should().NotContain("scheduleConventions");
+        // The exact source home now preserves the full block in addition to its frozen summary.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().NotContain("scheduleConventions");
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass).Should().Contain("scheduleConventions");
     }
 
     [Theory]
@@ -362,7 +366,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
 
-        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(economicTermsWithoutBlock, expectedAccrual));
+        economic.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(
+            WithAccrual(economicTermsWithoutBlock, expectedAccrual), assetClass,
+            SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass)));
     }
 
     [Theory]
@@ -386,7 +392,8 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", BondTwin(block)));
 
-        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(BondEconomicTerms, expectedAccrual));
+        economic.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(
+            WithAccrual(BondEconomicTerms, expectedAccrual), "Bond", BondTwin(block)));
     }
 
     [Fact]
@@ -401,9 +408,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
 
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection);
 
-        economic.EconomicTerms.GetRawText().Should().Be(WithAccrual(
+        economic.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(WithAccrual(
             BondEconomicTerms,
-            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"GBLO","dayCount":null}"""));
+            """{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":null,"holidayCalendar":"GBLO","dayCount":null}"""), "Bond", projection.AssetSpecificTerms));
 
         // Through the domain: the record decoded from the row, and the common terms it writes back,
         // keep the security's own calendar rather than the block's.
@@ -437,27 +444,29 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var twin = SecurityAssetTermsSchemaRoundTripTests.ReadableTwin(assetClass);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, twin));
-        var accrual = economic.EconomicTerms.GetProperty("accrual");
+        var historical = WithoutExactModule(economic, "declaredSchedule");
+        var accrual = historical.EconomicTerms.GetProperty("accrual");
         accrual.ValueKind.Should().Be(JsonValueKind.Object,
             "the historical twin declares schedule accrual information");
 
         // Since ADR-027 stage 1 increment 2, economic-only replay recovers the declared accrual
         // conventions into the scheduleConventions block (and, with increment 1, the schedule
         // lists into their arrays) instead of refusing; the source document stays retained.
-        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(historical with { LegacyAssetSpecificTerms = null });
         var block = recovered.AssetSpecificTerms.GetProperty("scheduleConventions");
         block.GetProperty("businessDayConvention").GetString()
             .Should().Be(accrual.GetProperty("businessDayConvention").GetString(), "the verbatim spelling is kept");
         string.Join("+", block.GetProperty("paymentCalendars").EnumerateArray().Select(static calendar => calendar.GetString()))
             .Should().Be(accrual.GetProperty("holidayCalendar").GetString(), "the joint calendar id splits back into its parts");
-        // Since ADR-027 stage 1 increment 6, a replay whose flattened candidate rebuilds the
-        // source document byte-for-byte sheds the retained carry — the flat row IS the document.
-        // The CertificateOfDeposit and StructuredCredit twins round-trip completely; the Bond
-        // twin does not yet rebuild byte-identically (its floating-coupon structure loses detail
-        // on the flat candidate), so it keeps the carry and the fold-on-read.
+        // The structural coupon and principal modules now close the bond's earlier loss too.
+        // Every class here must reconstruct its complete economic document without retained carry.
         SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
-            .Should().Be(assetClass == "Bond",
-                "the retained carry survives exactly where the flattened candidate cannot rebuild the source byte-for-byte");
+            .Should().BeFalse("the current module homes reconstruct every economic field");
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered);
+        WithoutExactModule(rebuilt, "declaredSchedule").EconomicTerms.GetRawText()
+            .Should().Be(historical.EconomicTerms.GetRawText(), "the frozen summary route keeps its original economic facts");
+        rebuilt.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(
+            historical.EconomicTerms.GetRawText(), assetClass, recovered.AssetSpecificTerms));
 
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText(),
             "the established retained-flat path preserves the complete declaration");
@@ -480,14 +489,13 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData("Bond")]
     [InlineData("CertificateOfDeposit")]
     [InlineData("StructuredCredit")]
-    public void UnrecoverableKeys_IncludeTheCallAndPutSchedules(string assetClass)
+    public void RecoverableKeys_IncludeTheCompleteCallAndPutSchedules(string assetClass)
     {
-        // The economic Call module keeps only each entry's date, a par price and a call type, so the
-        // arrays as a whole are not recoverable on replay until a contract step maps them.
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass).Should().Contain(["callSchedule", "putSchedule"]);
+        // The exact source retains windows, notices and basis independently of the legacy summary.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys(assetClass)
+            .Should().NotContain("callSchedule").And.NotContain("putSchedule");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys(assetClass)
-            .Should().NotContain("callSchedule")
-            .And.NotContain("putSchedule");
+            .Should().Contain(["callSchedule", "putSchedule"]);
     }
 
     [Fact]
@@ -511,8 +519,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", twin));
 
-        economic.EconomicTerms.GetRawText().Should().Be(
-            """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null},"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-06-15","callPx":101.5,"isParCall":false,"callType":"Bermudan"},{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"},{"callDt":"2032-06-15","callPx":null,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":25,"isPuttable":true,"putSchedule":[{"putDt":"2029-12-15","putPx":99.5},{"putDt":"2031-06-15","putPx":100},{"putDt":"2033-06-15","putPx":null}]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}");
+        economic.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(
+            WithCall(EconomicTermsOfTheScheduleTwin("Bond"),
+                """{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-06-15","callPx":101.5,"isParCall":false,"callType":"Bermudan"},{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"},{"callDt":"2032-06-15","callPx":null,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":25,"isPuttable":true,"putSchedule":[{"putDt":"2029-12-15","putPx":99.5},{"putDt":"2031-06-15","putPx":100},{"putDt":"2033-06-15","putPx":null}]}"""), "Bond", twin));
     }
 
     [Theory]
@@ -573,7 +582,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [InlineData(
         "CertificateOfDeposit", null, "[]", "[]",
         """{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]}""")]
-    public void DeclaredSchedules_ChangeOnlyTheEconomicCallModule_UnderTheFrozenRule(
+    public void DeclaredSchedules_RetainTheExactSourceAlongsideTheFrozenCallFill(
         string assetClass,
         string? scalarEdits,
         string? callSchedule,
@@ -586,7 +595,8 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, twin));
 
-        economic.EconomicTerms.GetRawText().Should().Be(WithCall(EconomicTermsOfTheScheduleTwin(assetClass), expectedCall));
+        economic.EconomicTerms.GetRawText().Should().Be(ExpectedWithDeclaredSchedule(
+            WithCall(EconomicTermsOfTheScheduleTwin(assetClass), expectedCall), assetClass, twin));
     }
 
     [Fact]
@@ -635,7 +645,8 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         // Since ADR-027 stage 1 increments 1 and 2, economic-only replay recovers both exercise
         // lists and the twin's accrual conventions instead of refusing; the scalar call date keeps
         // its own flat key, independent of the lists, and the source document stays retained.
-        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms;
+        var recoveredProjection = SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null });
+        var recovered = recoveredProjection.AssetSpecificTerms;
         recovered.GetProperty("callSchedule").GetArrayLength().Should().Be(2);
         recovered.GetProperty("putSchedule").GetArrayLength().Should().Be(1);
         recovered.GetProperty("scheduleConventions").ValueKind.Should().Be(JsonValueKind.Object);
@@ -648,7 +659,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             recovered.GetProperty("callDate").GetString().Should().Be(callDate);
         }
 
-        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered, out _).Should().BeTrue();
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered, out _).Should().BeFalse();
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recoveredProjection).EconomicTerms.GetRawText()
+            .Should().Be(economic.EconomicTerms.GetRawText(), "the structural modules preserve the complete economic image");
         SecurityEconomicDefinitionAdapter.ToProjection(economic).AssetSpecificTerms.GetRawText().Should().Be(twin.GetRawText());
     }
 
@@ -735,6 +748,25 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         return economicTerms[..start] + CallKey + call + economicTerms[end..];
     }
 
+    private static string ExpectedWithDeclaredSchedule(string baseline, string assetClass, JsonElement source)
+    {
+        var record = SecurityMasterMapping.ToRecord(SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, source));
+        using var canonical = JsonDocument.Parse(new SecurityMasterSnapshotWrapper(record).AssetSpecificTermsJson);
+        var flat = canonical.RootElement;
+        var hasBlock = flat.TryGetProperty("scheduleConventions", out var block) && block.ValueKind == JsonValueKind.Object;
+        var hasCalls = flat.TryGetProperty("callSchedule", out var calls) && calls.ValueKind == JsonValueKind.Array && calls.GetArrayLength() > 0;
+        var hasPuts = flat.TryGetProperty("putSchedule", out var puts) && puts.ValueKind == JsonValueKind.Array && puts.GetArrayLength() > 0;
+        if (!hasBlock && !hasCalls && !hasPuts)
+            return baseline;
+        var expected = JsonNode.Parse(baseline)!.AsObject();
+        var declaration = new JsonObject();
+        foreach (var key in new[] { "scheduleConventions", "callSchedule", "putSchedule" })
+            if (flat.TryGetProperty(key, out var value))
+                declaration[key] = JsonNode.Parse(value.GetRawText());
+        expected["declaredSchedule"] = declaration;
+        return JsonSerializer.SerializeToElement(expected).GetRawText();
+    }
+
     private static JsonElement ToElement(JsonNode node)
     {
         using var document = JsonDocument.Parse(node.ToJsonString());
@@ -748,4 +780,12 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         => accrual is null
             ? economicTermsWithoutBlock
             : economicTermsWithoutBlock.Replace(NullAccrual, $"\"accrual\":{accrual}", StringComparison.Ordinal);
+
+    private static SecurityEconomicDefinitionRecord WithoutExactModule(SecurityEconomicDefinitionRecord record, string module)
+    {
+        var document = JsonNode.Parse(record.EconomicTerms.GetRawText())!.AsObject();
+        document.Remove(module).Should().BeTrue("this current twin must carry the exact module before simulating the historical boundary");
+        return record with { EconomicTerms = JsonSerializer.SerializeToElement(document) };
+    }
+
 }

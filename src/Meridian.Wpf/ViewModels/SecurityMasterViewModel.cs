@@ -3323,6 +3323,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
             new SecurityMasterPresentationField("Economic terms", scheduleBook.HasEconomicScheduleTerms ? "Present" : "Not present"),
             new SecurityMasterPresentationField("Source", SecurityMasterTextHelpers.FirstNonEmpty(scheduleBook.SourceSummary, "Source summary unavailable"))
         ]);
+        AppendSchedulePolicyEvidence(snapshot);
 
         ReplaceCollection(ScheduleBookEvents, scheduleBook.Events.OrderBy(item => item.EffectiveDate));
         ReplaceCollection(ScheduleBookFactorHistory, scheduleBook.FactorHistory.OrderByDescending(item => item.EffectiveDate));

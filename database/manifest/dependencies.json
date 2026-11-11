@@ -12154,6 +12154,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt"
     },
     {
@@ -12460,6 +12466,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
     },
     {
@@ -12707,6 +12719,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
     },
     {
       "kind": "contract-set-member",
@@ -17639,6 +17657,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
     },
     {
       "kind": "contract-set-member",
@@ -26590,6 +26614,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt"
     },
     {
@@ -26896,6 +26926,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
     },
     {
@@ -27143,6 +27179,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
     },
     {
       "kind": "contract-set-member",
@@ -29601,6 +29643,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.AssetCashFlowProjectionRunDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.AssetLedgerProjectionDto",
       "target": "contract:Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto"
     },
@@ -30287,6 +30335,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.AssetOperations.PortfolioCashLadderDto",
       "target": "contract:Meridian.Contracts.AssetOperations.PortfolioCashScenarioDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.AssetOperations.PortfolioCashLadderDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
     },
     {
       "kind": "contract-reference",
@@ -40479,6 +40533,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitDescriptor",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityLotUnitKind"
     },
@@ -40774,6 +40834,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPostingResult",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowLedgerPosting"
     },
     {
@@ -40829,6 +40895,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationInput"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
     },
     {
       "kind": "contract-reference",
@@ -40895,6 +40967,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
+      "target": "contract:Meridian.Contracts.SecurityMaster.RateUnit"
     },
     {
       "kind": "contract-reference",
@@ -47158,6 +47236,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterIdentifierSummaryDto"
     },
     {
@@ -47177,6 +47261,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto",
       "target": "contract:Meridian.Contracts.Workstation.SecurityMasterRecommendedActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto",
+      "target": "contract:Meridian.Contracts.Workstation.SecurityMasterScheduleBlockerDto"
     },
     {
       "kind": "contract-reference",
@@ -57683,7 +57773,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "9821b9af2c7a98594e554ea7d89e26f1d090e095d4d1f215e3f4b71f9b51e8fb",
+  "fingerprint": "bcd7bd5037f091f591d60298f126985792db444473e72948a32a117f2418545f",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -69887,6 +69977,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowBehaviorExtensions"
     },
     {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto"
+    },
+    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
       "kind": "contract-type",
@@ -70194,6 +70290,12 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityInterestSupport",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityInterestSupport"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityListingIdentity",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityListingIdentity"
@@ -70443,6 +70545,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordProvenance",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityRecordProvenance"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityRecordRateUnit"
     },
     {
       "classification": "record",
@@ -75375,6 +75483,12 @@
       "id": "contract:Meridian.Contracts.Workstation.SecurityMasterFactorPointDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.SecurityMasterFactorPointDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Workstation.SecurityMasterGovernanceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Workstation.SecurityMasterGovernanceDto"
     },
     {
       "classification": "dto",
@@ -84529,11 +84643,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3655,
-    "contract_set_memberships": 4600,
-    "edges": 9584,
+    "contract_references": 3663,
+    "contract_set_memberships": 4607,
+    "edges": 9599,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4659
+    "nodes": 4663
   }
 }

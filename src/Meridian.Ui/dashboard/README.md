@@ -14,6 +14,15 @@ last_reviewed: 2026-10-28
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
 
+Security Master's Schedules tab renders the shared declared call/put outcome, including stable
+blocker codes and reasons, evaluation date, retained security version, resolved window count and
+notice diagnostics. An absent outcome keeps the undeclared distinction. The same panel shows the
+host's effective governance profile, its source and restart latch, edit/review requirements and
+ignored configuration. Missing governance evidence is explicit. Put and call/put notice-deadline
+rows use operator-facing labels. Focused coverage: `security-master-policy-evidence.test.tsx`.
+An independent cash-flow calculation blocker (including `NegativeInterestUnsupported`) stays visible
+even when the record's declared exercise dates resolved successfully.
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,
