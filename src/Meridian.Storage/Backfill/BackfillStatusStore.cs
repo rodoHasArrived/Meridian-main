@@ -7,13 +7,15 @@ using Meridian.Contracts.Backfill;
 namespace Meridian.Storage.Backfill;
 
 /// <summary>
-/// Storage-owned persistence for last backfill status and per-symbol checkpoint sidecars.
+/// Storage-owned persistence for last backfill status, per-symbol checkpoint sidecars and the
+/// verified coverage sidecar that resume decisions rely on.
 /// </summary>
 public sealed class BackfillStatusStore
 {
     private readonly string _path;
     private readonly string _symbolCheckpointsPath;
     private readonly string _symbolBarCountsPath;
+    private readonly string _symbolCoveragePath;
 
     public BackfillStatusStore(string dataRoot)
     {
@@ -22,6 +24,7 @@ public sealed class BackfillStatusStore
         _path = Path.Combine(statusDir, "backfill.json");
         _symbolCheckpointsPath = Path.Combine(statusDir, "backfill-symbol-checkpoints.json");
         _symbolBarCountsPath = Path.Combine(statusDir, "backfill-symbol-barcounts.json");
+        _symbolCoveragePath = Path.Combine(statusDir, "backfill-symbol-coverage.json");
     }
 
     public static BackfillStatusStore FromConfig(AppConfig cfg) => new(cfg.DataRoot);
@@ -223,7 +226,7 @@ public sealed class BackfillStatusStore
     }
 
     /// <summary>
-    /// Removes all per-symbol checkpoints and bar-count data.
+    /// Removes all per-symbol checkpoints, bar-count data and verified coverage.
     /// Call when starting a fresh (non-resume) backfill run.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(CancellationToken ct = default)
@@ -236,6 +239,9 @@ public sealed class BackfillStatusStore
 
             if (File.Exists(_symbolBarCountsPath))
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, "{}", ct);
+
+            if (File.Exists(_symbolCoveragePath))
+                await WriteCoverageDocumentAsync(new BackfillCoverageDocument(), ct).ConfigureAwait(false);
         }
         catch (IOException)
         {
@@ -248,7 +254,7 @@ public sealed class BackfillStatusStore
     }
 
     /// <summary>
-    /// Removes only the checkpoints and bar-count data associated with the requested
+    /// Removes only the checkpoints, bar-count data and verified coverage associated with the requested
     /// <paramref name="granularity"/>, preserving resume state for other backfill lanes.
     /// </summary>
     public async Task ClearSymbolCheckpointsAsync(DataGranularity granularity, CancellationToken ct = default)
@@ -279,6 +285,14 @@ public sealed class BackfillStatusStore
                     BackfillStatusStoreJsonContext.Default.DictionaryStringInt64);
                 await AtomicFileWriter.WriteAsync(_symbolBarCountsPath, barCountJson, ct);
             }
+
+            var coverage = TryReadCoverageDocument();
+            if (coverage is not null)
+            {
+                var lane = granularity.ToUiValue();
+                coverage.Entries.RemoveAll(entry => string.Equals(entry.Granularity, lane, StringComparison.OrdinalIgnoreCase));
+                await WriteCoverageDocumentAsync(coverage, ct).ConfigureAwait(false);
+            }
         }
         catch (IOException)
         {
@@ -289,6 +303,141 @@ public sealed class BackfillStatusStore
             _checkpointLock.Release();
         }
     }
+
+    // -----------------------------------------------------------------------
+    // Verified per-symbol coverage
+    // -----------------------------------------------------------------------
+
+    /// <summary>
+    /// Records, in one atomic write, the date ranges whose bars were durably written for each
+    /// symbol by <paramref name="provider"/> and <paramref name="feed"/>. Ranges merge with the
+    /// coverage already recorded for the same symbol, granularity, provider and feed.
+    /// Call only after the bars are on disk: a resumed run skips exactly these dates.
+    /// </summary>
+    public async Task WriteSymbolCoverageAsync(
+        DataGranularity granularity,
+        string provider,
+        string feed,
+        IReadOnlyCollection<BackfillCoverageUpdate> updates,
+        CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(feed);
+        ArgumentNullException.ThrowIfNull(updates);
+        if (updates.Count == 0)
+            return;
+
+        var lane = granularity.ToUiValue();
+        var providerKey = NormalizeCoverageIdentity(provider);
+        var feedKey = NormalizeCoverageIdentity(feed);
+
+        await _checkpointLock.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            var document = TryReadCoverageDocument() ?? new BackfillCoverageDocument();
+            foreach (var update in updates)
+            {
+                ArgumentException.ThrowIfNullOrWhiteSpace(update.Symbol);
+                if (update.Ranges.Count == 0)
+                    continue;
+
+                var symbol = update.Symbol.Trim().ToUpperInvariant();
+                var entry = document.Entries.FirstOrDefault(candidate =>
+                    string.Equals(candidate.Symbol, symbol, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(candidate.Granularity, lane, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(candidate.Provider, providerKey, StringComparison.Ordinal) &&
+                    string.Equals(candidate.Feed, feedKey, StringComparison.Ordinal));
+                if (entry is null)
+                {
+                    entry = new BackfillCoverageEntry { Symbol = symbol, Granularity = lane, Provider = providerKey, Feed = feedKey };
+                    document.Entries.Add(entry);
+                }
+
+                entry.Ranges = BackfillCoverageMath.Merge(entry.Ranges.Concat(update.Ranges)).ToList();
+                entry.Sources = entry.Sources
+                    .Concat(update.Sources.Where(static source => !string.IsNullOrWhiteSpace(source)).Select(static source => source.Trim()))
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(static source => source, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                entry.RecordedAt = DateTimeOffset.UtcNow;
+            }
+
+            await WriteCoverageDocumentAsync(document, ct).ConfigureAwait(false);
+        }
+        finally
+        {
+            _checkpointLock.Release();
+        }
+    }
+
+    /// <summary>
+    /// Returns the verified coverage recorded for <paramref name="provider"/> and
+    /// <paramref name="feed"/> in one granularity lane, keyed by symbol (case-insensitive), or
+    /// <c>null</c> when none is recorded. Coverage from another provider or feed, and legacy
+    /// date-only checkpoints, are never returned.
+    /// </summary>
+    public IReadOnlyDictionary<string, IReadOnlyList<BackfillCoverageRange>>? TryReadSymbolCoverage(
+        DataGranularity granularity,
+        string provider,
+        string feed)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(provider);
+        ArgumentException.ThrowIfNullOrWhiteSpace(feed);
+        var document = TryReadCoverageDocument();
+        if (document is null)
+            return null;
+
+        var lane = granularity.ToUiValue();
+        var providerKey = NormalizeCoverageIdentity(provider);
+        var feedKey = NormalizeCoverageIdentity(feed);
+        var result = new Dictionary<string, IReadOnlyList<BackfillCoverageRange>>(StringComparer.OrdinalIgnoreCase);
+        foreach (var entry in document.Entries)
+        {
+            if (string.IsNullOrWhiteSpace(entry.Symbol) ||
+                !string.Equals(entry.Granularity, lane, StringComparison.OrdinalIgnoreCase) ||
+                !string.Equals(entry.Provider, providerKey, StringComparison.Ordinal) ||
+                !string.Equals(entry.Feed, feedKey, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            var ranges = BackfillCoverageMath.Merge(entry.Ranges ?? []);
+            if (ranges.Count > 0)
+                result[entry.Symbol] = ranges;
+        }
+
+        return result.Count == 0 ? null : result;
+    }
+
+    private BackfillCoverageDocument? TryReadCoverageDocument()
+    {
+        try
+        {
+            if (!File.Exists(_symbolCoveragePath))
+                return null;
+
+            var json = File.ReadAllText(_symbolCoveragePath);
+            var document = JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillCoverageDocument);
+            // An unreadable or newer-format sidecar proves nothing; the caller refetches.
+            if (document is null || document.Version != BackfillCoverageDocument.CurrentVersion)
+                return null;
+            document.Entries ??= [];
+            document.Entries.RemoveAll(static entry => entry is null);
+            return document;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException)
+        {
+            return null;
+        }
+    }
+
+    private Task WriteCoverageDocumentAsync(BackfillCoverageDocument document, CancellationToken ct)
+        => AtomicFileWriter.WriteAsync(
+            _symbolCoveragePath,
+            JsonSerializer.Serialize(document, BackfillStatusStoreJsonContext.Default.BackfillCoverageDocument),
+            ct);
+
+    private static string NormalizeCoverageIdentity(string value) => value.Trim().ToLowerInvariant();
 
     private static bool TryGetCheckpointDate(
         IReadOnlyDictionary<string, string> checkpoints,
