@@ -83,6 +83,11 @@ class Audit:
         self.failures, self.warnings, self.cache = [], [], {}
         self.manifest = self.read_json("_ds_manifest.json", required=(self.root / "release.json").exists())
         self.sources = {c["name"]: c.get("sourcePath") for c in self.manifest.get("components", [])}
+        retired = self.read_json("api/retired-exports.json", required=False)
+        self.retired = retired.get("exports", {} if not (self.root / "api/retired-exports.json").exists() else None) if isinstance(retired, dict) else None
+        if not isinstance(self.retired, dict):
+            self.add("manifest", self.root / "api/retired-exports.json", "Retired exports must be an exports object")
+            self.retired = {}
     def add(self, code, path, detail, line=1, warning=False):
         item = Violation(code, Path(path).relative_to(self.root).as_posix(), line, detail)
         (self.warnings if warning else self.failures).append(item)
@@ -118,7 +123,9 @@ class Audit:
                 self.add("aria-refs", jsx, f"Hard-coded {match.group(0)}", code.count("\n", 0, match.start()) + 1)
             for name in re.findall(r"export (?:const|function) ([A-Z]\w+)", code):
                 if self.manifest and name not in self.sources:
-                    self.add("manifest", jsx, f"Export {name} is retained source outside the public manifest", warning=True)
+                    retired = self.retired.get(name)
+                    if not isinstance(retired, dict) or retired.get("source") != jsx.relative_to(self.root).as_posix():
+                        self.add("manifest", jsx, f"Export {name} is in neither the public manifest nor its declared retired source; publish it or declare it in api/retired-exports.json")
     def style_checks(self, path):
         # Cards/docs/tokens are illustrative references. Check executable component/template
         # declarations, not hash-shaped run identifiers or color examples in prose.
@@ -231,6 +238,21 @@ class Audit:
                     target = self.target(owner, route)
                     if target is not None and not target.exists(): self.add("routes", owner, f"Broken route {route}")
     def package_checks(self):
+        retired_path = self.root / "api/retired-exports.json"
+        for name, record in sorted(self.retired.items()):
+            if not isinstance(record, dict):
+                self.add("manifest", retired_path, f"Retired export {name} must have a source and public replacement")
+                continue
+            if name in self.sources:
+                self.add("manifest", retired_path, f"{name} is listed as retired but the public manifest exports it")
+            source = record.get("source")
+            path = (self.root / source).resolve() if isinstance(source, str) and source else None
+            if (path is None or not path.is_relative_to(self.root) or not path.is_file()
+                    or not re.search(rf"export (?:const|function) {re.escape(name)}\b", strip_comments(self.text(path)))):
+                self.add("manifest", retired_path, f"Retired export {name}: {source!r} no longer exports it; remove the stale retirement record")
+            replacement = record.get("replacement")
+            if not isinstance(replacement, str) or replacement not in self.sources:
+                self.add("manifest", retired_path, f"Retired export {name}: replacement {replacement!r} is not in the public manifest")
         for comp in self.manifest.get("components", []):
             path = comp.get("sourcePath")
             if path and not (self.root / path).is_file(): self.add("manifest", self.root / "_ds_manifest.json", f"Missing component source {path}")

@@ -31,6 +31,54 @@ class DesignSystemGovernanceTests(unittest.TestCase):
         violations = governance.run_checks(ROOT)
         self.assertEqual([], violations)
 
+    def retirement_files(self):
+        return {
+            "templates/.keep": "",
+            "api/template-eligibility.json": '{"templates": {}}',
+            "_ds_manifest.json": json.dumps({"components": [{"name": "Current", "sourcePath": "components/core/Current.jsx"}]}),
+            "components/core/Current.jsx": "export function Current() {}",
+            "components/core/Legacy.jsx": "export function Legacy() {}",
+            "api/retired-exports.json": json.dumps({"exports": {"Legacy": {"source": "components/core/Legacy.jsx", "replacement": "Current"}}}),
+        }
+
+    def test_retired_export_with_an_existing_source_and_public_replacement_is_accepted(self):
+        violations = self.run_on_files(self.retirement_files())
+        self.assertFalse(any(v.code == "manifest" for v in violations))
+
+    def test_retained_export_without_a_retirement_declaration_fails(self):
+        files = self.retirement_files()
+        del files["api/retired-exports.json"]
+        violations = self.run_on_files(files)
+        self.assertTrue(any(v.code == "manifest" and "Export Legacy" in v.detail for v in violations))
+
+    def test_retirement_cannot_hide_a_public_export_stale_source_or_missing_replacement(self):
+        for defect in ("public", "commented-source", "missing-replacement", "wrong-source"):
+            with self.subTest(defect=defect):
+                files = self.retirement_files()
+                record = {"source": "components/core/Legacy.jsx", "replacement": "Current"}
+                if defect == "public":
+                    manifest = json.loads(files["_ds_manifest.json"])
+                    manifest["components"].append({"name": "Legacy", "sourcePath": record["source"]})
+                    files["_ds_manifest.json"] = json.dumps(manifest)
+                elif defect == "commented-source":
+                    files[record["source"]] = "// export function Legacy() {}"
+                elif defect == "missing-replacement":
+                    record["replacement"] = "Missing"
+                else:
+                    record["source"] = "components/core/Other.jsx"
+                    files[record["source"]] = "export function Legacy() {}"
+                files["api/retired-exports.json"] = json.dumps({"exports": {"Legacy": record}})
+                violations = self.run_on_files(files)
+                self.assertTrue(any(v.code == "manifest" for v in violations))
+
+    def test_malformed_retirement_records_fail_without_breaking_the_api(self):
+        for declaration in ({"exports": []}, {"exports": {"Legacy": None}}):
+            with self.subTest(declaration=declaration):
+                files = self.retirement_files()
+                files["api/retired-exports.json"] = json.dumps(declaration)
+                violations = self.run_on_files(files)
+                self.assertTrue(any(v.code == "manifest" for v in violations))
+
     def test_missing_local_link_is_reported(self):
         violations = self.run_on_files({"index.html": '<a href="missing.html">Broken</a>'})
         self.assertTrue(any(v.code == "local-link" for v in violations))

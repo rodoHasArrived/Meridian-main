@@ -603,7 +603,7 @@ button type and standalone identity; all 25 governance tests passed. The
 component bundle and public runtime are byte-identical to those exercised by
 the strict 135-card run, so that component proof remains applicable. Source-hash
 and README checks reported zero errors. The initial and intermediate Python
-counts above remain historical; 131 is the final complete-suite result.
+counts above remain historical; 131 is the complete-suite result through that checkpoint.
 
 The documentation generators were attempted and each generation step exited
 successfully, but the aggregate `verify-docs` check did not converge against the
