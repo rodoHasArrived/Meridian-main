@@ -131,7 +131,7 @@ const tradeTimelineColumns: DenseDataTableColumn<CoveredCallTradeTimelineRowView
   },
   {
     id: "pnl",
-    label: "PnL",
+    label: "P&L",
     align: "right",
     render: (row) => <span className={`font-mono ${row.pnlClassName}`}>{row.pnlLabel}</span>
   },
@@ -629,7 +629,7 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
     ["Assignment rate", fmtPct(result.metrics.assignmentRate)],
     ["Total trades", String(result.metrics.totalOptionTrades)],
     ["Total premium", fmtMoney(result.metrics.totalPremiumCollected)],
-    ["Option PnL", fmtMoney(result.metrics.totalOptionPnl)],
+    ["Option P&L", fmtMoney(result.metrics.totalOptionPnl)],
     ["Up capture", fmtPct(result.metrics.upCapture)],
     ["Down capture", fmtPct(result.metrics.downCapture)]
   ];

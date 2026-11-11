@@ -80,6 +80,15 @@ instead of a Providers item, and the provenance banner is a stripe whenever the 
 provenance. Declared demo data on a Paper session is no longer raised as a warning. No shared
 contract changed; the WPF shell keeps its own indicators until it consumes the same rule.
 
+The host-served bundle carries the headline-figure trust rules: every workspace stat strip
+states its source and as-of time (and scope where the page has one); a change is shown only with
+the baseline it is measured against, so the placeholder deltas the workspace read models still
+send (`0%`, `+N`, `+session`) are not rendered; figures fed by stale or unverified data are muted
+and marked; Portfolio explains a header strip and explorer that disagree; and profit and loss
+reads "P&L" in every label. `WorkstationMetricCard` is unchanged: the browser carries the
+baseline, provenance and freshness fields on its own `MetricSnapshot` until a read model supplies
+real comparison data.
+
 It also carries the first Phase 3 increment of the
 [UX review plan](../../docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md): a failed
 request shows a plain sentence with the request path collapsed under "Technical details"; when a

@@ -49,6 +49,7 @@ import { readRecentScopes, rememberRecentScope } from "@/lib/operating-scope/rec
 import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
 import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
 import { ShellStatusSignalsProvider } from "@/lib/shell-status-signals-context";
+import { deriveWorkspaceFigureContext, WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import { buildLayoutRestorePlan, readUserLayouts, type LayoutRestorePlan } from "@/lib/saved-layouts";
 import { WorkspaceNav } from "@/components/meridian/workspace-nav";
 import { Skeleton } from "@/components/data/skeleton";
@@ -449,6 +450,9 @@ function AppShell({
     loading,
     error,
     workspaceErrors,
+    figureSourceLoadedAt,
+    figureSourcesStale,
+    figureSourceScope,
     refreshStatus,
     portfolioRefreshStatus,
     refresh,
@@ -468,6 +472,16 @@ function AppShell({
     demoMode,
     sampleWorkspace: firstRunStatus?.workspace.isSample ?? false
   });
+  const workspaceFigureContext = useMemo(
+    () => deriveWorkspaceFigureContext({
+      status: refreshStatus,
+      provenance: dataProvenance,
+      staleSources: figureSourcesStale,
+      sourceLoadedAt: figureSourceLoadedAt,
+      sourceScope: figureSourceScope
+    }),
+    [refreshStatus, dataProvenance, figureSourcesStale, figureSourceLoadedAt, figureSourceScope]
+  );
   const handleWorkflowPresetUsed = (presetId: string) =>
     markWorkflowPresetUsed(presetId).then((preset) => {
       upsertWorkflowPreset(preset);
@@ -803,6 +817,7 @@ function AppShell({
     <ScopePickerOpenerProvider open={openScopePicker}>
     <CrossScreenCountsProvider counts={crossScreenCounts}>
     <ShellStatusSignalsProvider value={shellStatusSignals}>
+    <WorkspaceFigureContextProvider value={workspaceFigureContext}>
     <PageTrustProvider registry={pageTrustRegistry}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
@@ -1056,6 +1071,7 @@ function AppShell({
       </Sheet>
     </div>
     </PageTrustProvider>
+    </WorkspaceFigureContextProvider>
     </ShellStatusSignalsProvider>
     </CrossScreenCountsProvider>
     </ScopePickerOpenerProvider>
