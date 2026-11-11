@@ -193,6 +193,162 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         }
     }
 
+    [Fact]
+    public async Task Appends_SupersededLinesReachThreshold_CompactsToOneLinePerIdentityAndKeepsDurability()
+    {
+        const int identities = 10;
+        var events = Enumerable.Range(1, identities).Select(i => CreateTradeEvent("AAPL", i)).ToArray();
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: identities);
+        await _firstLedger.InitializeAsync();
+
+        // A legacy line per identity, then a durability-confirmed line for the same identity:
+        // twenty appended lines describing ten identities.
+        foreach (var evt in events)
+            (await _firstLedger.IsDuplicateAsync(evt)).Should().BeFalse();
+        var reservations = new List<DedupReservation>();
+        foreach (var evt in events)
+        {
+            var reserved = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+            reserved.Status.Should().Be(DedupReservationStatus.Reserved);
+            reservations.Add(reserved.Reservation);
+        }
+        await _firstLedger.CommitDurableAsync(reservations);
+
+        _firstLedger.DiskLineCount.Should().Be(identities, "nothing ever called CompactAsync before; the ledger now compacts itself");
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+        (await ReadLedgerLinesAsync()).Should().HaveCount(identities);
+
+        // The compacted file must load to the same state: every identity durability-confirmed.
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _secondLedger.InitializeAsync();
+        foreach (var evt in events)
+        {
+            (await _secondLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
+                .Should().Be(DedupReservationStatus.Duplicate);
+        }
+    }
+
+    [Fact]
+    public async Task Appends_AfterRestartWithMostlyExpiredFile_CompactOnTheFirstWrite()
+    {
+        // A file left behind by earlier runs: every line is past the TTL.
+        var expiredTicks = DateTimeOffset.UtcNow.AddDays(-7).Ticks;
+        await File.WriteAllLinesAsync(
+            LedgerPath,
+            Enumerable.Range(0, 50).Select(i => $"{{\"k\":\"expired-{i}\",\"t\":{expiredTicks.ToString(CultureInfo.InvariantCulture)}}}"));
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 20);
+        await _firstLedger.InitializeAsync();
+        _firstLedger.DiskLineCount.Should().Be(50);
+
+        (await _firstLedger.IsDuplicateAsync(CreateTradeEvent("SPY", 1))).Should().BeFalse();
+
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+        (await ReadLedgerLinesAsync()).Should().ContainSingle("startup no longer re-reads lines that expired long ago");
+    }
+
+    [Fact]
+    public async Task Appends_BelowThreshold_DoNotCompact()
+    {
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 100);
+        await _firstLedger.InitializeAsync();
+        var evt = CreateTradeEvent("SPY", 1);
+
+        (await _firstLedger.IsDuplicateAsync(evt)).Should().BeFalse();
+        var reserved = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+        await _firstLedger.CommitDurableAsync([reserved.Reservation]);
+
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+        (await ReadLedgerLinesAsync()).Should().HaveCount(2, "both lines for the identity stay until the file is worth rewriting");
+    }
+
+    [Fact]
+    public async Task Appends_LedgerNeverLoaded_DoNotCompactAwayLinesItNeverRead()
+    {
+        // Compaction rewrites the file from memory, so an instance that did not load the file
+        // must leave lines it does not know about alone.
+        var freshTicks = DateTimeOffset.UtcNow.Ticks;
+        var existing = Enumerable.Range(0, 5)
+            .Select(i => $"{{\"k\":\"unread-{i}\",\"t\":{freshTicks.ToString(CultureInfo.InvariantCulture)},\"v\":2}}")
+            .ToArray();
+        await File.WriteAllLinesAsync(LedgerPath, existing);
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 5);
+
+        for (var sequence = 1; sequence <= 20; sequence++)
+            (await _firstLedger.IsDuplicateAsync(CreateTradeEvent("SPY", sequence))).Should().BeFalse();
+
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+        var lines = await ReadLedgerLinesAsync();
+        lines.Should().HaveCount(existing.Length + 20);
+        lines.Take(existing.Length).Should().Equal(existing);
+    }
+
+    [Fact]
+    public async Task IsDuplicateAsync_AdmissionCancelled_IsNotWrittenByALaterCompaction()
+    {
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 2);
+        await _firstLedger.InitializeAsync();
+        var kept = CreateTradeEvent("IWM", 1);
+        var cancelled = CreateTradeEvent("IWM", 2);
+        (await _firstLedger.IsDuplicateAsync(kept)).Should().BeFalse();
+
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        var admission = async () => await _firstLedger.IsDuplicateAsync(cancelled, cts.Token);
+        await admission.Should().ThrowAsync<OperationCanceledException>();
+
+        // The failed admission recorded nothing durable, so neither a rewrite nor a restart may
+        // treat its retry as a duplicate.
+        await _firstLedger.CompactAsync();
+        (await ReadLedgerLinesAsync()).Should().ContainSingle();
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _secondLedger.InitializeAsync();
+        (await _secondLedger.IsDuplicateAsync(kept)).Should().BeTrue();
+        (await _secondLedger.IsDuplicateAsync(cancelled)).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task FlushAsync_WhileAppendsCompactTheLedger_DoesNotThrow()
+    {
+        // Compaction closes the writer while it holds the write lock. A flush that saw the writer
+        // open and then waited for that lock must not dereference the closed writer.
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 2);
+        await _firstLedger.InitializeAsync();
+        var ledger = _firstLedger;
+        var appendsDone = 0;
+
+        var flusher = Task.Run(async () =>
+        {
+            while (Volatile.Read(ref appendsDone) == 0)
+                await ledger.FlushAsync();
+        });
+
+        try
+        {
+            // With one line per identity the file doubles between compactions: about eleven here.
+            for (var sequence = 1; sequence <= 2_000; sequence++)
+                (await ledger.IsDuplicateAsync(CreateTradeEvent("QQQ", sequence))).Should().BeFalse();
+        }
+        finally
+        {
+            Volatile.Write(ref appendsDone, 1);
+        }
+
+        // Awaiting the flusher rethrows anything a flush threw.
+        await flusher.WaitAsync(TimeSpan.FromSeconds(30));
+    }
+
+    private string LedgerPath => Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl");
+
+    private async Task<string[]> ReadLedgerLinesAsync()
+        => [.. (await File.ReadAllLinesAsync(LedgerPath)).Where(static line => !string.IsNullOrWhiteSpace(line))];
+
     private static MarketEvent CreateAggregateEvent(
         string symbol,
         DateTimeOffset start,
@@ -217,10 +373,16 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         return MarketEvent.AggregateBar(end, symbol, bar, source: "POLYGON");
     }
 
+    // The ledger identifies a trade by timestamp, price, size, aggressor and venue; the sequence
+    // number is not part of it. Stamping fixtures with the wall clock therefore let two trades
+    // built in the same clock tick collapse into one identity, which failed tests intermittently.
+    // Each sequence gets its own fixed timestamp instead.
+    private static readonly DateTimeOffset TradeFixtureEpoch = new(2026, 1, 5, 14, 30, 0, TimeSpan.Zero);
+
     private static MarketEvent CreateTradeEvent(string symbol, long sequence)
     {
         var trade = new Trade(
-            Timestamp: DateTimeOffset.UtcNow,
+            Timestamp: TradeFixtureEpoch.AddMilliseconds(sequence),
             Symbol: symbol,
             Price: 100.25m,
             Size: 100,

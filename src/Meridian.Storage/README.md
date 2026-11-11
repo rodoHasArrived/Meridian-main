@@ -55,6 +55,11 @@ same commitment advisory-lock identity. Historical capital journals without nati
 opening reconciliation. Funding receipt and bank-line uniqueness span the owning tenant/company,
 and database triggers protect approved authority, retained calls, and posting receipts from rewrite.
 
+`JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
+torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
+for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole
+destination per call and remains for small, low-frequency artifacts.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

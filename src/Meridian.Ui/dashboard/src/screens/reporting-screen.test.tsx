@@ -5147,7 +5147,7 @@ describe("ReportingScreen", () => {
 
     const task = screen.getByRole("region", { name: "Report-pack approval task" });
     expect(task).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Report packs" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Report packs awaiting approval" })).toBeInTheDocument();
     expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     expect(within(task).getByText("Report-pack approval")).toBeInTheDocument();
     expect(within(task).getByRole("list", { name: "Report-pack distribution recipients" })).toBeInTheDocument();

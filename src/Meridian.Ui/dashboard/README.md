@@ -117,7 +117,11 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   holding Copy link and the workspace's About text.
 
 The route body carries the task title as an `h2` (`Orders blotter`); routes do not render their
-own `h1` or repeat the workspace name. `Workflow context` lives in the scope picker, collapsed
+own `h1`, repeat the workspace name, or repeat the breadcrumb's page name (`Accounting > Approvals`
+is headed `Approval queue`, not `Approvals`). Accounting and Reporting task modes keep `label` for
+the page name and carry the body heading in `title`. The browser tab title and the route-change
+announcement name the page first, as the breadcrumb does (`Orders - Trading - Meridian`,
+"Orders, Trading loaded."), without the old `Workstation` suffix. `Workflow context` lives in the scope picker, collapsed
 under the scope controls; following one of its links closes the picker. Live, simulated/seeded,
 unknown-provenance and degraded warnings remain outside disclosures.
 

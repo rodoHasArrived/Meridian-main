@@ -35,6 +35,7 @@ Use this module for ledger calculations and deterministic reconciliation rules t
 ## API contract notes
 
 - `LedgerInterop.ClassifyBreakFacts` trims string fields before mapping DTOs into `RawBreakFacts`, so classification is stable for equivalent break facts that differ only by surrounding whitespace.
+- `LedgerInterop.ValidateJournalEntry` queries the caller's posted-id sets in place; it builds a set only when handed a plain sequence, so posting cost no longer grows with the number of ids already posted.
 - `LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` expose direct-lending accrual
   validation and period summaries to C# services without adding persistence concerns to this
   project.
