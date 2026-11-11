@@ -63,7 +63,7 @@ public static class ReportWriterGridEngine
         renderedRows = ApplyFormatRules(grid, renderedRows, warnings);
         var chart = BuildChart(grid, columnList, renderedRows);
 
-        var lineage = BuildLineage(rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
+        var lineage = BuildLineage(grid.Kind, rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
         var dataDictionary = BuildDataDictionary(columnList, renderedRows, lineage);
         var validationChecks = BuildValidationChecks(columnList, renderedRows, warnings, lineage, dataDictionary);
@@ -401,7 +401,27 @@ public static class ReportWriterGridEngine
     private static string NormalizePivotKeySegment(string pivotKey) =>
         string.IsNullOrWhiteSpace(pivotKey) ? "(blank)" : pivotKey;
 
+    // The one definition of which bare names a formula can reference in a rendered row: metric
+    // output names, configured formula names, dimension fields, and the fields a Contribution grid
+    // generates. Lineage and cycle detection split hyphenated references against this set; the
+    // evaluator uses the row's actual field names plus the configured formula names, which is the
+    // same namespace. Metric source-field names are deliberately not part of it.
+    private static readonly string[] ContributionGeneratedFields = ["contributionPercent", "contributionAbsPercent"];
+
+    private static HashSet<string> BuildFormulaReferenceNames(
+        ReportWriterGridKindDto kind,
+        IEnumerable<ReportWriterMetricDefinitionDto> metrics,
+        IEnumerable<ReportWriterFormulaDefinitionDto> formulas,
+        IEnumerable<string> dimensions) =>
+        metrics.Select(static metric => metric.Name)
+            .Concat(formulas.Select(static formula => formula.Name))
+            .Concat(dimensions)
+            .Concat(kind == ReportWriterGridKindDto.Contribution ? ContributionGeneratedFields : [])
+            .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
     private static ReportWriterGridLineageDto BuildLineage(
+        ReportWriterGridKindDto kind,
         int inputRowCount,
         int filteredInputRowCount,
         int outputRowCount,
@@ -410,14 +430,7 @@ public static class ReportWriterGridEngine
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
         IReadOnlyList<ReportWriterFilterDefinitionDto> filters)
     {
-        // Same namespace the evaluator resolves bare references in: the rendered row's names
-        // (metric output names, formula names, dimensions). Metric source-field names are not
-        // row names, so they must not decide how a hyphenated reference is split.
-        var knownReferences = metrics.Select(static metric => metric.Name)
-            .Concat(formulas.Select(static formula => formula.Name))
-            .Concat(dimensions)
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var knownReferences = BuildFormulaReferenceNames(kind, metrics, formulas, dimensions);
         var formulaLineage = formulas
             .Select(formula => new ReportWriterFormulaLineageDto(
                 formula.Name,
@@ -747,10 +760,7 @@ public static class ReportWriterGridEngine
             .Select(static formula => formula.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var knownReferences = formulaNames
-            .Concat((grid.Metrics ?? []).Select(static metric => metric.Name))
-            .Where(static name => !string.IsNullOrWhiteSpace(name))
-            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var knownReferences = BuildFormulaReferenceNames(grid.Kind, grid.Metrics ?? [], formulas, []);
 
         // Edges point from a formula to the sibling formulas it references (self-references included).
         // Duplicate formula names are tolerated the same way the rest of the engine tolerates them

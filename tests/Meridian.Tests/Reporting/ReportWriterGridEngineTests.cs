@@ -654,6 +654,33 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_ContributionFormulaLineageKnowsGeneratedContributionFields()
+    {
+        var rows = new[]
+        {
+            Row(("strategy", "Core"), ("marketValue", "100")),
+            Row(("strategy", "Hedge"), ("marketValue", "300"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "contribution-grid",
+                "Contribution Grid",
+                ReportWriterGridKindDto.Contribution,
+                RowFields: ["strategy"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Formulas: [new ReportWriterFormulaDefinitionDto("lessOne", "contributionPercent-1")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("'lessOne'"));
+        rendered.Rows.Should().OnlyContain(row => row.Values["lessOne"] != string.Empty);
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "lessOne").SourceFields
+            .Should().Equal("contributionPercent");
+    }
+
+    [Fact]
     public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
     {
         var rows = new[]
