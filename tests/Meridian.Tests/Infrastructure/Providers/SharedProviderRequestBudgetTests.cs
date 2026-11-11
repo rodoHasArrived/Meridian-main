@@ -75,7 +75,7 @@ public sealed class SharedProviderRequestBudgetTests
         var actions = CreateActions(handler, registry, new MutableCredentials("synthetic-key"));
         var work = Task.WhenAll(
             history.GetDailyBarsAsync("AAPL", null, null),
-            search.SearchAsync("AAPL"),
+            search.SearchAsync("AAPL", 10, CancellationToken.None),
             actions.FetchAsync("AAPL", Guid.NewGuid()));
 
         for (var count = 1; count < 4; count++)
@@ -96,7 +96,7 @@ public sealed class SharedProviderRequestBudgetTests
         Assert.Equal(4, registry.GetOrCreate("twelvedata", "synthetic-key", "api-requests", 8, TimeSpan.FromMinutes(1), TimeSpan.FromSeconds(7.5)).GetStatus().RequestsInWindow);
 
         history.Dispose();
-        var afterDisposal = search.SearchAsync("MSFT");
+        var afterDisposal = search.SearchAsync("MSFT", 10, CancellationToken.None);
         clock.Advance(TimeSpan.FromSeconds(7.5));
         await afterDisposal.WaitAsync(TimeSpan.FromSeconds(5));
         Assert.Equal(5, handler.Requests.Count);
@@ -110,7 +110,7 @@ public sealed class SharedProviderRequestBudgetTests
         using var handler = new RecordingHandler(clock) { ThrottleSearch = true };
         using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
         using var history = new TwelveDataHistoricalDataProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-        await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL"));
+        await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
         var pending = history.GetDailyBarsAsync("AAPL", null, null);
         clock.Advance(TimeSpan.FromSeconds(19));
         Assert.Equal(1, handler.Requests.Count);
@@ -146,7 +146,7 @@ public sealed class SharedProviderRequestBudgetTests
         else
         {
             using var search = new TwelveDataSymbolSearchProvider("synthetic-key", handler.CreateClient(), rateLimiterRegistry: registry);
-            var limited = await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL"));
+            var limited = await Assert.ThrowsAsync<RateLimitException>(() => search.SearchAsync("AAPL", 10, CancellationToken.None));
             Assert.Equal(TimeSpan.Zero, limited.RetryAfter);
             pending = history.GetDailyBarsAsync("AAPL", null, null);
         }
