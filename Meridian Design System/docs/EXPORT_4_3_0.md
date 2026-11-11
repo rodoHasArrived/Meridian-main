@@ -97,8 +97,8 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   deliberately. `tokens/parity-manifest.json` records the names and, since the
   4.3.0 migration, the values the package shares with the Meridian browser
   workstation; `scripts/check_token_parity.py` checks both when the package
-  sits in that repository and skips the comparison when it does not. The one
-  recorded divergence is the Review severity hue, an open product decision. The production browser integration in this PR is
+  sits in that repository and skips the comparison when it does not. No
+  divergence is recorded. The production browser integration in this PR is
   delivered through the monorepo's native source and built workstation assets;
   this standalone archive contains the design-system package. Concurrent WPF
   integration uses its platform resources and requires Windows validation
