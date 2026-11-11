@@ -1,11 +1,11 @@
 {
-  "total_files": 959,
+  "total_files": 961,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:0dfdba2ebe23bc7ec679c481ba9c7e44880203af5bded9c6fdd5770213e72dc7",
+  "signal_digest": "sha256:70213fd81dd2f526561ee4d47c62970aca215f55c2c7cd678cf599922be2b8fa",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -6230,6 +6230,13 @@
       "stale": false
     },
     {
+      "path": "Meridian Design System/docs/LOCAL_PATCHES.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "Meridian Design System/docs/METRICS.md",
       "has_heading": true,
       "todo_count": 0,
@@ -7197,6 +7204,13 @@
     },
     {
       "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/recurring-journal/golden/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

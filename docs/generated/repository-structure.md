@@ -6299,6 +6299,7 @@ Meridian-main
 │   │   │   ├── FileRecurringJournalStore.cs
 │   │   │   ├── FundAdministrationControlService.cs
 │   │   │   ├── FundAdministrationModels.cs
+│   │   │   ├── FundAdministrationRegisters.cs
 │   │   │   └── RecurringJournalState.cs
 │   │   ├── Ledger
 │   │   │   ├── TextJournal
@@ -7034,6 +7035,7 @@ Meridian-main
 │   │   ├── PeriodCloseProjector.cs
 │   │   ├── PeriodReopenEvidence.cs
 │   │   ├── PortfolioPricingRule.cs
+│   │   ├── PostingCalculationNotYetConnectedAttribute.cs
 │   │   ├── PreferredReturnCalculator.cs
 │   │   ├── PrivateCapitalAuthorityRules.cs
 │   │   ├── PrivateCapitalCallPlanHash.cs
@@ -9827,6 +9829,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalEvidencePolicy.cs
 │   │   │   ├── AutomatedJournalIntakeRunner.cs
 │   │   │   ├── AutomatedJournalIntakeRunner.PrivateCapital.cs
+│   │   │   ├── AutomatedJournalIntakeRunner.PrivateCapitalEvents.cs
 │   │   │   ├── AutomatedJournalScheduledWorker.cs
 │   │   │   ├── AutomatedJournalScheduleStore.cs
 │   │   │   ├── BackfillCoordinator.cs
@@ -9935,6 +9938,7 @@ Meridian-main
 │   │   │   ├── PostedLedgerAmountProvenanceService.cs
 │   │   │   ├── PostedPeriodComparisonService.cs
 │   │   │   ├── PrivateCapitalBankObservationService.cs
+│   │   │   ├── PrivateCapitalEventIntakes.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
@@ -9953,6 +9957,7 @@ Meridian-main
 │   │   │   ├── ProviderReadinessService.cs
 │   │   │   ├── ReconciliationApiService.cs
 │   │   │   ├── ReconciliationBreakQueueProjection.cs
+│   │   │   ├── RecurringJournalCalculations.cs
 │   │   │   ├── RecurringJournalPeriodAuthority.cs
 │   │   │   ├── RecurringJournalRunner.cs
 │   │   │   ├── RecurringJournalSubjectAuthority.cs
@@ -10985,6 +10990,10 @@ Meridian-main
 │   │   │   │   └── servicer-personal-loans-2026-06-04.csv
 │   │   │   ├── generate_mixed_credit_status_set.py
 │   │   │   └── mixed-credit-status-set.json
+│   │   ├── recurring-journal
+│   │   │   └── golden
+│   │   │       ├── calculated-period-drafts.json
+│   │   │       └── README.md
 │   │   ├── schedules
 │   │   │   ├── golden
 │   │   │   │   ├── asset-obligation-timeline-undeclared.json
@@ -11663,6 +11672,7 @@ Meridian-main
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   ├── LayerBoundaryTests.cs
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── PostingCalculationConnectionTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
 │   │   │   ├── SchedulePeriodRollingRatchetTests.cs
@@ -12006,15 +12016,18 @@ Meridian-main
 │   │   │   │   ├── CapitalCallPlanBuilderTests.cs
 │   │   │   │   ├── CommitmentRollForwardCalculatorTests.cs
 │   │   │   │   ├── DefaultInterestCalculatorTests.cs
+│   │   │   │   ├── DistributionDeclarationProjectionTests.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.AllocationEvidenceScope.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.EvidenceScope.cs
+│   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.RecurringJournals.cs
 │   │   │   │   ├── PrivateCapitalCloseCockpitServiceTests.ReportEvidenceScope.cs
 │   │   │   │   ├── PrivateCapitalFundEventLedgerReadinessBuilderTests.cs
 │   │   │   │   └── PrivateCapitalLifecycleServiceTests.cs
 │   │   │   ├── Reconciliation
 │   │   │   │   └── ReconciliationEngineServiceTests.cs
 │   │   │   ├── FundAdministrationControlServiceTests.cs
+│   │   │   ├── FundAdministrationRegisterTests.cs
 │   │   │   ├── MiddleOfficeOperationsServiceTests.cs
 │   │   │   └── RecurringJournalStoreTests.cs
 │   │   ├── FixedIncome
@@ -12948,6 +12961,7 @@ Meridian-main
 │   │   │   ├── PrivateCapitalAuthorityPostgresTests.cs
 │   │   │   ├── QualityTrendStoreTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
+│   │   │   ├── RecurringJournalCalculationPostgresTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── RetainedDataQueryStoreTests.cs
@@ -13232,6 +13246,7 @@ Meridian-main
 │   │   │   ├── PostedPeriodComparisonTests.cs
 │   │   │   ├── PrivateCapitalBankObservationServiceTests.cs
 │   │   │   ├── PrivateCapitalEndpointsTests.cs
+│   │   │   ├── PrivateCapitalEventIntakeTests.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterServiceTests.cs
 │   │   │   ├── ProductionStartupPolicySmokeTests.cs
 │   │   │   ├── PromotionDecisionChainScenarioTests.cs
@@ -13249,6 +13264,7 @@ Meridian-main
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
+│   │   │   ├── RecurringJournalCalculationTests.cs
 │   │   │   ├── RecurringJournalLifecycleTests.cs
 │   │   │   ├── RecurringJournalRunnerTests.cs
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs

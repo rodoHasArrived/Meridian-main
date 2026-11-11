@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 19.9,
-  "endpoint_coverage_percent": 30.5,
+  "score_percent": 19.7,
+  "endpoint_coverage_percent": 30.3,
   "contract_coverage_percent": 3.9,
   "summary": {
-    "endpoint_count": 744,
+    "endpoint_count": 748,
     "documented_endpoint_count": 227,
-    "undocumented_endpoint_count": 517,
+    "undocumented_endpoint_count": 521,
     "workstation_contract_count": 1009,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 970
@@ -2524,8 +2524,20 @@
     },
     {
       "method": "POST",
-      "path": "/api/ledger/journal-automation/period-close-intake",
+      "path": "/api/ledger/journal-automation/capital-call-default-interest-intake",
       "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:734",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/distribution-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:777",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/journal-automation/period-close-intake",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.JournalAutomation.cs:820",
       "documented": false
     },
     {
@@ -2572,26 +2584,38 @@
     },
     {
       "method": "GET",
+      "path": "/api/ledger/fixed-assets",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:28",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/ledger/fixed-assets",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:51",
+      "documented": false
+    },
+    {
+      "method": "GET",
       "path": "/api/ledger/journal-automation/recurring/occurrences",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:24",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:83",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/initialize",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:49",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:108",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/schedules",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:67",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:126",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/ledger/journal-automation/recurring/restore-definitions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:114",
+      "source": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:179",
       "documented": false
     },
     {

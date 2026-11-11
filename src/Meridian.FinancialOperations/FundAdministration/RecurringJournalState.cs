@@ -58,7 +58,9 @@ public enum RecurringOccurrenceState
     Claimed,
     Drafted,
     Blocked,
-    DefinitionChanged
+    DefinitionChanged,
+    /// <summary>A calculated occurrence that correctly produced nothing to post; it is not retried.</summary>
+    NoDraftRequired
 }
 
 public sealed record RecurringOccurrenceTransition(
@@ -155,6 +157,10 @@ public static class RecurringJournalIdentity
 
     public static string SerializeTemplate(RecurringTemplateDefinition definition)
         => JsonSerializer.Serialize(definition, RecurringJournalJsonContext.Default.RecurringTemplateDefinition);
+
+    public static RecurringTemplateDefinition DeserializeTemplate(string json)
+        => JsonSerializer.Deserialize(json, RecurringJournalJsonContext.Default.RecurringTemplateDefinition)
+            ?? throw new JsonException("The retained recurring template definition is missing.");
 
     public static string OccurrenceKey(string scheduleId, DateOnly date)
     {
