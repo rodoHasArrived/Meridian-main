@@ -306,6 +306,87 @@ not been recorded.
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
+- **Number style.** One style for a financial figure, wherever it appears:
+  - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
+    separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
+    gives the matching green/red tone, so sign and color never disagree.
+  - *Spelling*: profit and loss is "P&L" in every label. `normalizeFinancialLabel` rewrites
+    "PnL", "P/L" and "P & L"; the stat strip, metric card, record explorer and proof drawer
+    apply it to labels that arrive from a read model.
+  - *Currency*: pass the ISO code whenever more than one currency is in scope
+    (`formatMoney(value, { currency })`, or `formatAmountWithCode` for a code suffix).
+  - *Decimals*: currency minor units for money, instrument precision for prices and
+    quantities (`formatMoney`'s `decimals`, `formatQuantity`), whole units for a headline
+    figure. Figures render in tabular numerals.
+  - *Enforcement*: two ratchets hold what is left to migrate. `handRolledNumberFormatting`
+    counts `.toFixed(` in screens, which skips separators and the sign convention;
+    `localMoneyFormatters` counts money and P&L formatters defined in a screen instead of
+    imported from `@/lib/format`.
+- **Headline figures.** `StatStrip` and `MetricCard` apply the rules in `@/lib/metric-trust`
+  to every `MetricSnapshot`, so a screen cannot opt out by accident:
+  - *Source*: a figure states where it comes from. `provenance` carries source, as-of time
+    and scope; the strip prints what its figures share once under the row. When figures in one
+    strip come from different sources it names each source with the figures it supplies
+    ("Active runs, Open positions from System overview; Providers healthy from Cross-screen
+    counts · As of …"). A strip fed by the workstation load passes `source="…"` and
+    `figureSource="…"` (the payload that supplies its figures) and takes that payload's evidence
+    from the shell (`WorkspaceFigureContextProvider`). Evidence is kept per payload
+    (`figureSourceLoadedAt` and `figureSourcesStale` in `useWorkstationData`), never per refresh:
+    the as-of time is when that payload last loaded, not the time of the latest refresh, which
+    may have reloaded another workspace or nothing. A figure another payload supplies carries
+    its own `provenance` and `freshness` (Settings' provider health comes from the cross-screen
+    counts, not the overview), and a strip that names no payload states no as-of time. A screen
+    with its own freshness evidence stamps its metrics with `withMetricContext`, still dated
+    from the payload that supplies the values (`resolveFigureEvidence`): Trading's totals follow
+    the Trading payload, not a newer brokerage observation. Their scope is the fund account that
+    payload was loaded for (`figureSourceScope`, `resolveFigureScope`), not the selected one:
+    after an account switch the previous account's figures stay labelled as that account's, and
+    stale, until the new payload loads.
+  - *Change*: a bare change (`+8%`, `0%`, `+2`) is shown only with the `baseline` it is
+    measured against (`+8% vs prior session`) and is dropped otherwise. A change that names
+    its comparison (`3 new since your last visit`) and descriptive captions pass through.
+  - *Freshness*: `freshness: "stale" | "unverified"` mutes the figure, adds a clock, marks
+    the strip "Stale figures"/"Unverified figures" and explains the age on hover and to
+    assistive technology. Staleness is decided per payload: a payload whose own reload failed
+    marks just the figures it supplies, while the ones that did reload stay fresh, whatever the
+    refresh as a whole reported. It stays stale until that payload reloads; refreshing another
+    workspace clears the shell's error map but not this. An unconfirmed session keeps every
+    figure unverified, and a screen's own evidence (Trading's broker observation) can lower a
+    figure's verdict but never raise it (`combineMetricFreshness`). Portfolio's exposure and
+    unrealized P&L are sums over positions, so they are unverified, with a caption such as
+    "2 of 5 marks need review", while any position's mark is not accepted as current
+    (`withPortfolioMarkEvidence`): a recent load does not make a total better evidenced than
+    its inputs. Portfolio's totals go stale when the payload that
+    supplies them is listed or its load is past the freshness budget. Outside the shell, where no
+    per-payload record exists, the Portfolio poll settling as `partial` is the evidence (its
+    Portfolio request was rejected; a failing side feed such as an unconnected brokerage does
+    not count).
+  - *Disagreement*: when two panels on one page report different values for the same
+    quantity, `buildFigureDifferenceNote` and `FigureDifferenceNote` show "Why these differ"
+    with both values and each panel's source. Portfolio uses it for the header strip and the
+    Portfolio Explorer. Give a figure a `basis` when panels can measure it differently (the
+    header's exposure is gross, the explorer's is net): a gross-against-net gap is not reported
+    by itself, and is labelled with both bases when listed beside a like-for-like difference.
+- **Detail panes.** `DetailPane` (`components/meridian/detail-pane.tsx`) is the pane for a
+  selected table row:
+  - *One heading line*: object type, name and one status badge. There is no separate
+    "Selected from …" pill, "Detail" chip or status eyebrow; the shared stylesheet no longer
+    draws the pill for any panel.
+  - *Field rows*: `DetailFieldItem` puts a label beside a left-aligned value and lets the value
+    wrap under its label once the row is narrower than about 290px, so a value is never squeezed
+    into a column too narrow for a word. `DetailFields` renders a list of them from raw
+    `{ label, value, tone }` rows; `columns="auto"` flows a wide list into columns.
+  - *Typesetting* (`detail-pane.view-model.ts`): figures and identifiers use the data face,
+    phrases and written-out dates the body face; figures and dates stay on one line; prose wraps
+    at word boundaries only.
+  - *Identifiers*: GUID- and digest-shaped values, and rows marked `technical`, move to a
+    "Technical details" disclosure with a copy button.
+  - *No repetition*: pass `shownInRow` with the column labels the selected row always shows;
+    the pane lists what the row does not, plus the next action in `actions`.
+  - *Shared panes*: two tables may control one pane (Trading orders and fills do); the pane
+    shows the table selected last, and Escape returns focus to that table's selected row.
+  `EntitySummary` applies the same heading line and rows, so panels built on it follow the rules
+  without changes at the call site.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
@@ -345,6 +426,27 @@ not been recorded.
   lists the rule with a reason under `allowedContentIssues` in
   `scripts/dev/web-screenshot-routes.json`. Operations Continuity is the one exception today: its
   shared summary identifies a close workflow by fund-account identifier only.
+- **Operator language.** The same harness check fails a route whose main content shows a request
+  path (`/api/...`), the words "lane", "payload", "mutation" or "caller-visible", or a slug-shaped
+  record identifier (`run-dev-1`, `default-fund`, `entity-fund-alpha`; `isSlugIdentifier` keeps
+  ordinary compounds such as "as-of" out). Twelve routes whose read models name records only by
+  key, the three Settings diagnostics pages that list backend routes, and Operations Continuity's
+  server-written "lane" copy are excused with reasons in the route catalog.
+- **Failed requests.** `ApiError.message` is operator copy: the reason the service gave, or a plain
+  sentence for the status. It never contains the request path or status code, so the many call
+  sites that render `error.message` cannot leak a route. `presentApiError` (`lib/api-errors.ts`)
+  returns the sentence, whether Retry can help (408, 429, 5xx and non-HTTP failures), and the
+  status, request path and correlation identifier as technical details; `ErrorNotice`
+  (`components/ui/error-notice.tsx`) renders them with the technical details collapsed. New error
+  states use `ErrorNotice`; the Recurring journals queue is the first.
+- **Disabled buttons.** Every `Button` variant shares one disabled look from `styles/index.css`:
+  neutral fill, dashed edge and muted label at full opacity (`--ws-disabled-*` tokens; label
+  4.8:1, edge at least 3:1 on every surface, asserted in `components/ui/button.test.tsx`). A busy
+  button keeps its own colours. Pass `disabledReason` whenever a button can be disabled; the
+  harness fails a route that renders a disabled primary button without one.
+- **Destructive bulk actions.** `OverflowMenu` (`components/ui/overflow-menu.tsx`) holds actions
+  that should not sit beside a primary action. Trading's "Cancel all open orders…" lives there,
+  shows why it is unavailable when there are no open orders, and still opens the confirmation step.
 - **Status agreement.** One rule (`src/lib/status-signals.ts`) classifies, ranks and summarizes
   every status fact, and one shell attention state (`src/app-shell.attention.ts`) feeds the
   masthead attention pill, every page status row, Today's status row and the status bar. The
@@ -354,6 +456,14 @@ not been recorded.
   a green Sync is never its whole answer under a masthead warning. The Daily Control Tower's
   Evidence line names only the event correlated with the leading decision's queue row; with none
   it says so and cites the latest event as workstation context.
+- **Page freshness in the status bar.** The shell attention state covers shell-wide sources; the
+  freshness of the data on a page belongs to that page's status row. `OperationalTrustSummary`
+  reports the freshness fact it renders to the shell (`lib/page-trust-context.tsx`), and when
+  that fact needs review or is blocked the bar says "Sync connected" plus a Freshness item in the
+  row's own words instead of "up to date". Trading and Portfolio label a brokerage account
+  "Account", so the row does not state a second "scope" beside the header's fund picker. The
+  capture harness's `status-contradiction` rule checks every route, reading the `data-trust-fact`
+  and `data-trust-tone` attributes `StatusRow` puts on each named issue.
 - **Operating scope.** Copy link appends every scope dimension the current route did not write
   into its URL (`buildShareableLink`), so a link from any screen restores the sender's scope in a
   fresh browser. The scope picker offers the last five applied scopes (per browser) and the

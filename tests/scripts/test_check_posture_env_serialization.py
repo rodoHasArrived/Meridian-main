@@ -31,7 +31,7 @@ public sealed class SequentialCollection { }
 
 def scan(files: dict[str, str]) -> dict[str, list[str]]:
     """Run the guard over a throwaway tests/ tree holding exactly these files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir) / "tests"
         for rel, content in files.items():
             path = root / rel

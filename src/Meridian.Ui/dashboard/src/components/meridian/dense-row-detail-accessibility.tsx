@@ -39,7 +39,10 @@ export interface DenseRowDetailPanelProps {
   className?: string;
   role?: "region" | "complementary" | "status";
   ariaLive?: "polite" | "assertive" | "off";
+  /** Where the selection came from, kept as `data-selected-source` metadata; it is not drawn. */
   selectedSourceLabel?: string;
+  /** Set by `DetailPane` so the panel is marked as the shared pane primitive. */
+  pane?: boolean;
 }
 
 export function DenseRowDetailPanel({
@@ -49,7 +52,8 @@ export function DenseRowDetailPanel({
   className,
   role = "region",
   ariaLive = "polite",
-  selectedSourceLabel = "Selected detail"
+  selectedSourceLabel = "Selected detail",
+  pane = false
 }: DenseRowDetailPanelProps) {
   return (
     <aside
@@ -59,7 +63,8 @@ export function DenseRowDetailPanel({
       aria-live={ariaLive === "off" ? undefined : ariaLive}
       tabIndex={-1}
       data-dense-row-detail-panel="true"
-      data-selected-source={selectedSourceLabel}
+      data-detail-pane={pane ? "true" : undefined}
+      data-selected-source={pane ? undefined : selectedSourceLabel}
       className={className}
       onKeyDown={handleDenseRowDetailPanelKeyDown}
     >
@@ -109,10 +114,12 @@ function handleDenseRowDetailPanelKeyDown(event: KeyboardEvent<HTMLElement>) {
   const panelId = event.currentTarget.id;
   if (!panelId) return;
 
-  // The selected controlling row, if it is currently mounted.
-  const selectedController = document.querySelector<HTMLElement>(
-    `[aria-controls="${escapeAttributeSelectorValue(panelId)}"][aria-selected="true"]`
-  );
+  // The selected controlling row, if it is currently mounted. When two tables share the panel
+  // (each with its own selected row), the row the panel is showing is the expanded one.
+  const controls = `[aria-controls="${escapeAttributeSelectorValue(panelId)}"][aria-selected="true"]`;
+  const selectedController =
+    document.querySelector<HTMLElement>(`${controls}[aria-expanded="true"]`)
+    ?? document.querySelector<HTMLElement>(controls);
   if (selectedController) {
     event.preventDefault();
     selectedController.focus();

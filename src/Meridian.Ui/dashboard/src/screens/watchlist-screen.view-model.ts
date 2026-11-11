@@ -705,7 +705,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     selectedDetail: buildWatchlistSelectedDetail(selectedRow),
     detailPanelId: "watchlist-selected-symbol-detail",
     detailPanelTitle: "Selected symbol inspector",
-    detailPanelDescription: "Inspect the active watchlist row without leaving the Data lane.",
+    detailPanelDescription: "Inspect the active watchlist row without leaving Data.",
     detailPanelEmptyText: "No symbol is selected. Add a symbol or wait for the watchlist to load.",
     detailPanelAriaLabel: "Selected watchlist symbol detail",
     selectSymbol,

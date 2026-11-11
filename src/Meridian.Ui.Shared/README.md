@@ -6,12 +6,12 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Ui.Shared
 
-Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and the certification POST require tenant and company scope and show only retained snapshots whose import was recorded against an active fund account owned by the caller's tenant and company, and whose external account id is one of that same fund account's identifiers. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence; evidence retained before the importing fund account was recorded is not shown (fail closed). Both routes answer 403 when the tenant context, the account query service or the fund-profile tenancy registry is unavailable, and a fund whose ownership cannot be resolved contributes no visible accounts.
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
 
@@ -261,6 +261,10 @@ and a retained preview identity; it cannot submit approved evidence or a prepare
 
 Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
 holdings, cash, buying power, currency and completeness to the existing exposure provider.
+A linked identifier is accepted when the gateway recognizes it as a name of the connected account
+(Alpaca's account number or its internal UUID), and two names for one broker account cannot bind it
+to two local accounts. Authorized account discovery also matches a retained link against a catalog
+entry's declared aliases, without widening the authorization filter.
 Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
 The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
 An order/fill change, reconnect or restart requires synchronization again. The shared readiness
@@ -895,6 +899,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+Portfolio explorer column headers and record fields spell profit and loss "P&L" ("Realized P&L",
+"Unrealized P&L"), the spelling the workspace metric cards already use.
 The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses
 `SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
 from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,

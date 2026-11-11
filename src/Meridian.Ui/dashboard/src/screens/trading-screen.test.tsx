@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
 const paperPromotionEvidenceReferences = [
@@ -456,26 +457,47 @@ describe("TradingScreen", () => {
       ]
     }, "/trading/orders");
 
+    // Orders and fills control one shared pane; it opens on the first open order.
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
-    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getAllByRole("region", { name: /detail for/i })).toHaveLength(1);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveAttribute("id", "trading-execution-detail");
 
     await user.click(queuedOrder);
 
     await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
     expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+    const orderPane = screen.getByRole("region", { name: /order detail for po-2/i });
+    expect(orderPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(orderPane).getByRole("heading", { name: "Order PO-2" })).toBeInTheDocument();
+    // The pane offers the next action and does not repeat the row's always-visible columns.
+    expect(within(orderPane).getByRole("button", { name: "Cancel order PO-2" })).toBeInTheDocument();
+    expect(within(orderPane).getByLabelText("Order details")).toHaveTextContent("Quantity10");
+    expect(within(orderPane).getByLabelText("Order details")).not.toHaveTextContent("Submitted");
 
     const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
-    expect(secondFill).toHaveAttribute("aria-controls", "trading-fill-detail");
+    expect(secondFill).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(secondFill).toHaveAttribute("aria-expanded", "false");
 
     secondFill.focus();
     await user.keyboard(" ");
 
+    // Selecting a fill switches the same pane to the fill; the order row is no longer expanded.
     await waitFor(() => expect(secondFill).toHaveAttribute("aria-selected", "true"));
     expect(secondFill).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-fill-detail");
+    expect(queuedOrder).toHaveAttribute("aria-selected", "true");
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    const fillPane = screen.getByRole("region", { name: /fill detail for fl-2/i });
+    expect(fillPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(fillPane).getByRole("heading", { name: "Fill FL-2" })).toBeInTheDocument();
+    expect(within(fillPane).queryByRole("button", { name: /cancel order/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /order detail for/i })).not.toBeInTheDocument();
+
+    // Escape from the shared pane returns to the row it is showing, not the other table's.
+    fillPane.focus();
+    await user.keyboard("{Escape}");
+    expect(secondFill).toHaveFocus();
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {
@@ -669,6 +691,91 @@ describe("TradingScreen", () => {
     expect(within(confidence).getAllByText("Broker unavailable")[0]).toBeInTheDocument();
   });
 
+  it("dates the headline figures from the Trading payload's load, not a newer brokerage observation", async () => {
+    // The readiness projection observed the broker at 15:30; the Trading payload that supplies
+    // the headline values was last loaded at 15:00 and has not been reloaded since.
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      asOf: "2026-10-05T15:30:00Z",
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{ freshness: "fresh", dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+      >
+        <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent("Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC");
+    expect(provenance).not.toHaveTextContent("15:30 UTC");
+  });
+
+  it("keeps the headline figures unverified when the session's data source is unconfirmed, whatever the broker reports", async () => {
+    const accountId = "11111111-1111-1111-1111-111111111111";
+    const readiness: TradingOperatorReadiness = {
+      ...serverReadinessData.readiness!,
+      brokerageRecovery: {
+        fundAccountId: accountId, providerId: "alpaca", externalAccountId: "PA-404", status: "Ready", detail: "Synchronized", blockingReasons: [], affectedRuns: [],
+        portfolio: { cash: 100, buyingPower: 200, portfolioValue: 300, currency: "USD", positionCount: 1, observedAt: "2026-10-05T15:30:00Z", expiresAt: "2026-10-05T15:30:30Z", lastAttemptedAt: null, lastSuccessfulAt: null, isComplete: true, isFresh: true, isConsistent: true, warnings: [] }
+      }
+    };
+    const renderWithSession = (freshness: "fresh" | "unverified") => {
+      const result = renderWithRouter(
+        <WorkspaceFigureContextProvider
+          value={{ freshness, dataLabel: null, staleSources: [], sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" } }}
+        >
+          <TradingScreen data={{ ...data, readiness }} fundAccountId={accountId} />
+        </WorkspaceFigureContextProvider>,
+        { initialEntries: ["/trading"] }
+      );
+      return result;
+    };
+
+    const unverified = renderWithSession("unverified");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).toHaveTextContent("Unverified figures");
+    unverified.unmount();
+
+    // The same broker evidence with a confirmed session is fresh.
+    renderWithSession("fresh");
+    await waitForAsyncEffects();
+    expect(screen.getByLabelText("Trading headline metrics").parentElement).not.toHaveTextContent(/Unverified figures|Stale figures/);
+  });
+
+  it("keeps naming the account the retained figures belong to after another account is selected", async () => {
+    // The payload on screen was loaded for account A; the operator has selected account B and
+    // its payload has not loaded.
+    const accountA = "11111111-1111-1111-1111-111111111111";
+    const accountB = "22222222-2222-2222-2222-222222222222";
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: [],
+          sourceLoadedAt: { trading: "2026-10-05T15:00:00Z" },
+          sourceScope: { trading: accountA }
+        }}
+      >
+        <TradingScreen data={data} fundAccountId={accountB} />
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/trading"] }
+    );
+    await waitForAsyncEffects();
+
+    const provenance = screen.getByLabelText("Trading headline metrics").parentElement!;
+    expect(provenance).toHaveTextContent(`Stale figures · Source: Trading workspace · As of Oct 5, 2026, 15:00 UTC · Scope: ${accountA}`);
+    expect(provenance).not.toHaveTextContent(accountB);
+  });
+
   it("refreshes shared readiness and surfaces account brokerage posture", async () => {
     const user = userEvent.setup();
     vi.mocked(api.getTradingReadiness).mockResolvedValueOnce({
@@ -820,9 +927,12 @@ describe("TradingScreen", () => {
   it("renders VM-owned disabled reasons for blocked trading commands", async () => {
     await renderTradingScreen({ ...data, openOrders: [] }, "/trading/orders");
 
-    const cancelAll = screen.getByRole("button", { name: "No open orders to cancel" });
+    // Cancel all lives behind "More order actions"; its disabled reason is shown in the menu itself.
+    expect(screen.queryByRole("button", { name: /cancel all/i })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
     expect(cancelAll).toBeDisabled();
-    expect(cancelAll).toHaveAttribute("title", "No open orders require cancellation.");
+    expect(cancelAll).toHaveTextContent("No open orders require cancellation.");
   });
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
@@ -1058,8 +1168,19 @@ describe("TradingScreen", () => {
   it("marks financially destructive blotter actions before confirmation", async () => {
     await renderTradingScreen(data, "/trading/orders");
 
-    expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
-    expect(screen.getByRole("button", { name: /cancel all .* open orders/i })).toHaveClass("text-danger");
+    // The row and the detail pane both offer the cancel; each is marked destructive.
+    const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
+    expect(cancelButtons).toHaveLength(2);
+    for (const button of cancelButtons) {
+      expect(button).toHaveClass("text-danger");
+    }
+    await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
+    const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
+    expect(cancelAll).toHaveClass("text-danger");
+    await userEvent.setup().click(cancelAll);
+    // Choosing it opens the same confirmation step; nothing is cancelled yet.
+    expect(api.cancelAllOrders).not.toHaveBeenCalled();
+    expect(await screen.findByRole("button", { name: /confirm cancel all open orders/i })).toBeDisabled();
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent(/\d+ positions?/);
     expect(screen.getByLabelText("Trading data confidence")).toHaveTextContent("Latest brokerage heartbeat");
   });

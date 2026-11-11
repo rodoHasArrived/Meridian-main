@@ -1,10 +1,4 @@
-import {
-  reportingScheduleDeleteEndpoint,
-  reportingScheduleDisableEndpoint,
-  reportingSchedulePauseEndpoint,
-  reportingScheduleResumeEndpoint,
-  reportingScheduleRunNowEndpoint,
-} from "@/lib/reporting-schedule-endpoints";
+import { reportingSchedulePauseEndpoint, reportingScheduleResumeEndpoint, reportingScheduleRunNowEndpoint } from "@/lib/reporting-schedule-endpoints";
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
   mapQuantRunResponseToCellResult,
@@ -549,7 +543,7 @@ import {
   type ReferenceDataEndpointDefinition,
   type ReferenceDataWorkbenchEndpointSeed
 } from "@/lib/workstation-endpoints";
-import { createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
+import { ApiResponseFormatError, createApiErrorFromResponseBody, isApiError } from "@/lib/api-errors";
 import { deriveStorageHealth, deriveSystemStatus, fallbackSystemOverview, readDegradedMode } from "@/lib/system-status";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
@@ -876,7 +870,7 @@ async function patchJson<T>(path: string, body?: unknown, options: ApiRequestOpt
   return readJsonResponse<T>(path, response);
 }
 
-async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body?: unknown): Promise<T> {
+export async function deleteJson<T>(path: string, options: ApiRequestOptions = {}, body?: unknown): Promise<T> {
   const response = await fetch(path, {
     method: "DELETE",
     signal: options.signal,
@@ -956,8 +950,7 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
     } catch {
       // Deliberately reports the enclosing catch's `error` (the response.json() failure),
       // not the fallback JSON.parse failure — the original error is the actionable one.
-      const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-      throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
+      throw new ApiResponseFormatError(path, error);
     }
   }
 
@@ -969,8 +962,7 @@ async function readJsonResponse<T>(path: string, response: Response): Promise<T>
   try {
     return JSON.parse(text) as T;
   } catch (error) {
-    const detail = error instanceof Error && error.message ? ` ${error.message}` : "";
-    throw new Error(`Response from ${path} was not valid JSON.${detail}`, { cause: error });
+    throw new ApiResponseFormatError(path, error);
   }
 }
 
@@ -987,7 +979,22 @@ async function readResponseSuccessBody(response: Response): Promise<string> {
 }
 
 async function buildApiError(path: string, response: Response) {
-  return createApiErrorFromResponseBody(path, response.status, await readResponseErrorBody(response));
+  return createApiErrorFromResponseBody(
+    path,
+    response.status,
+    await readResponseErrorBody(response),
+    readCorrelationId(response)
+  );
+}
+
+/** The correlation identifier a response carries for support, when the host or a proxy set one. */
+function readCorrelationId(response: Response): string | null {
+  // Test doubles and some polyfills hand back a response without a Headers object.
+  if (typeof response.headers?.get !== "function") {
+    return null;
+  }
+
+  return response.headers.get("x-correlation-id") ?? response.headers.get("x-request-id");
 }
 
 async function readResponseErrorBody(response: Response): Promise<string> {
@@ -2700,14 +2707,6 @@ export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOp
 
 export function resumeReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(reportingScheduleResumeEndpoint(scheduleId), undefined, options);
-}
-
-export function disableReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
-  return postJson<ReportingScheduleRecord>(reportingScheduleDisableEndpoint(scheduleId), undefined, options);
-}
-
-export function deleteReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
-  return deleteJson<ReportingScheduleRecord>(reportingScheduleDeleteEndpoint(scheduleId), options);
 }
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {

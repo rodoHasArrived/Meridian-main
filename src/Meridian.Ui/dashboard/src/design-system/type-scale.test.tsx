@@ -52,9 +52,12 @@ describe("prose in the body face", () => {
         ]}
       />
     );
-    expect(screen.getByText("$1,250.00")).toHaveClass("entity-summary-value--data");
-    expect(screen.getByText("brk-2026-0042")).toHaveClass("entity-summary-value--data");
-    expect(screen.getByText("Awaiting reviewer assignment")).not.toHaveClass("entity-summary-value--data");
+    expect(screen.getByText("$1,250.00")).toHaveClass("font-mono");
+    expect(screen.getByText("brk-2026-0042")).toHaveClass("font-mono");
+    expect(screen.getByText("Awaiting reviewer assignment")).not.toHaveClass("font-mono");
+    // The kind of thing and its name share one heading line; values are never right-aligned.
+    expect(screen.getByRole("heading", { level: 3, name: "Cash sweep mismatch" }).previousElementSibling).toHaveTextContent("Break");
+    expect(screen.getByText("Awaiting reviewer assignment")).toHaveClass("text-left", "break-words");
   });
 
   it("recognizes figures and identifiers but not phrases or dates written out", () => {
