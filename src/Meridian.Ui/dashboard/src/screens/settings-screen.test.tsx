@@ -4,6 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
@@ -619,6 +621,34 @@ describe("SettingsScreen", () => {
 
     expect(screen.getByText("Focused provider: Polygon.io")).toBeInTheDocument();
     expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
+  });
+
+  it("states the cross-screen counts as the source of provider health, with their own evidence", () => {
+    // The overview reloaded at 18:10. The cross-screen counts reload failed, so provider health
+    // is still the 17:40 figure: it must not borrow the overview's source, time or freshness.
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: ["crossScreenCounts"],
+          sourceLoadedAt: { overview: "2026-06-30T18:10:00Z", crossScreenCounts: "2026-06-30T17:40:00Z" }
+        }}
+      >
+        <CrossScreenCountsProvider
+          counts={{ asOf: "2026-06-30T17:40:00Z", openOrders: null, providers: { healthy: 3, total: 4, definition: "Healthy providers." }, openBreaks: null }}
+        >
+          <SettingsScreen session={session} overview={overview} />
+        </CrossScreenCountsProvider>
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/settings"] }
+    );
+
+    const strip = screen.getByLabelText("Operator control posture metrics");
+    expect(within(strip).getByText("3 / 4")).toHaveClass("text-muted-foreground");
+    expect(strip.parentElement).toHaveTextContent(
+      "Stale figures · Active runs, Open positions, Storage health from System overview · As of Jun 30, 2026, 18:10 UTC; Providers healthy from Cross-screen counts · As of Jun 30, 2026, 17:40 UTC"
+    );
   });
 
   it("renders recent events as accessible status evidence rows", () => {

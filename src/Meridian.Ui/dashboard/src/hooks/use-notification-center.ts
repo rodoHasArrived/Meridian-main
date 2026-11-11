@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { usePriceAlerts } from "@/lib/price-alerts/service";
 import { getOperatorInbox } from "@/lib/api";
 import {
@@ -8,6 +9,7 @@ import {
 import {
   dismissNotification,
   loadNotificationReadState,
+  setNotificationStatus,
   markNotificationRead,
   markNotificationsRead,
   saveNotificationReadState,
@@ -31,6 +33,8 @@ export interface NotificationCenterApi extends NotificationCenterModel {
   markRead: (id: string) => void;
   markAllRead: () => void;
   dismiss: (id: string) => void;
+  /** Reverts one inbox/system item to a prior read state and clears its dismissal. */
+  restoreStatus: (id: string, status: { read: boolean }) => void;
 }
 
 /**
@@ -59,27 +63,30 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
   fetchInboxRef.current = fetchInbox;
 
   const normalizedFundAccountId = fundAccountId ?? undefined;
-  useEffect(() => {
-    let cancelled = false;
+  const fundAccountRef = useRef(normalizedFundAccountId);
+  fundAccountRef.current = normalizedFundAccountId;
 
-    const load = async () => {
-      try {
-        const next = await fetchInboxRef.current(normalizedFundAccountId);
-        if (!cancelled && mountedRef.current) {
-          setInbox(next);
-        }
-      } catch {
-        // Inbox is one of three feeds — a failed fetch must not blank the center.
+  // Only the newest request may commit, so a slow response for a previous fund
+  // cannot overwrite the inbox for the current one.
+  const requestSeqRef = useRef(0);
+  const loadInbox = useCallback(async () => {
+    const seq = ++requestSeqRef.current;
+    try {
+      const next = await fetchInboxRef.current(fundAccountRef.current);
+      if (mountedRef.current && seq === requestSeqRef.current) {
+        setInbox(next);
       }
-    };
+    } catch {
+      // Inbox is one of three feeds — a failed fetch must not blank the center.
+    }
+  }, []);
 
-    void load();
-    const interval = window.setInterval(() => void load(), pollIntervalMs);
-    return () => {
-      cancelled = true;
-      window.clearInterval(interval);
-    };
-  }, [normalizedFundAccountId, pollIntervalMs]);
+  useEffect(() => {
+    void loadInbox();
+  }, [loadInbox, normalizedFundAccountId]);
+
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(loadInbox, pollIntervalMs);
 
   const model = useMemo(
     () =>
@@ -146,5 +153,21 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
     [commitReadState, findEnvelope, readState]
   );
 
-  return { ...model, markRead, markAllRead, dismiss };
+  // Undo for a single read or dismiss. Uses a functional update so a restore that
+  // fires after other changes cannot roll back unrelated read state.
+  const restoreStatus = useCallback(
+    (id: string, status: { read: boolean }) => {
+      setReadState((current) => {
+        const next = setNotificationStatus(current, id, { read: status.read, dismissed: false });
+        if (next === current) {
+          return current;
+        }
+        saveNotificationReadState(next, storage);
+        return next;
+      });
+    },
+    [storage]
+  );
+
+  return { ...model, markRead, markAllRead, dismiss, restoreStatus };
 }
