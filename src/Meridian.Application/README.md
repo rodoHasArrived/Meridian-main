@@ -6,10 +6,14 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Application
+
+Provider routing excludes disabled connections and applies the same policy/health eligibility checks to direct, fallback and scored selection. A rejected candidate cannot leave a stale gate on a later eligible selection. Market-data families' explicit unsupported capabilities are authoritative; legacy brokerage, bank and custodian relationship capabilities retain their bounded compatibility inference. Concrete sync/async capability factories replace catalog-only null placeholders without replacing an earlier concrete registration.
+
+Corporate-action ingestion consumes `FetchWithOutcomeAsync` and exposes per-provider coverage through `CorporateActionIngestResult.FetchOutcomes` and the inbox. Complete empty coverage, partial fetches, failures and legacy unknown coverage stay distinct. Usable partial observations retain the existing identity, release, evidence and approval gates; a complete fetch does not certify a provider release.
 
 Historical backfill enforces its adaptive concurrency: after a provider rate limit, workers beyond the reduced limit wait for a slot instead of continuing at the original parallelism.
 

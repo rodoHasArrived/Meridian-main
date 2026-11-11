@@ -6,10 +6,16 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Infrastructure
+
+Historical HTTP retries spend rate-limit quota for every physical attempt. Cancellable admission waits are outside the 30-second send timeout and inside the five-minute operation bound; retried responses are disposed. The public comprehensive pipeline honors configured request timeouts and `Retry-After` on 429 retries. Historical adapter composition returns 429 immediately for existing rate-limit diagnostics and failover. Alpaca, Finnhub, Tiingo and FRED historical sends use the shared helper.
+
+Twelve Data daily history uses overlapping windows of at most 5,000 calendar days, inclusive end-of-day bounds and chronological session deduplication. Results are returned only after all requested windows succeed. HTTP-200 authentication, quota and malformed-envelope errors remain typed failures; documented unknown symbols and genuinely empty windows remain empty. A later unknown-symbol/HTTP-404 failure cannot certify a previously collected partial history.
+
+`ICorporateActionProvider.FetchWithOutcomeAsync` reports `Complete`, `Partial`, `Failed` or `Unknown` coverage with sanitized failure metadata. Alpaca, Alpha Vantage, Finnhub, Nasdaq Data Link, Tiingo and Twelve Data distinguish successful empty data from unavailable credentials, transport/schema failures and incomplete fetching. The collection-only `FetchAsync` remains compatible and cannot certify coverage; legacy implementations default to unknown coverage. Release-status and retained-evidence acceptance gates remain independent. Provider verification is synthetic; live compatibility remains unverified without separate evidence.
 
 The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
 

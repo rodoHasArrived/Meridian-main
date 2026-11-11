@@ -6,10 +6,12 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.DataIntegration
+
+QuickBooks imports and verification share one local refresh gate, including connection-bound verifier instances. After a successful remote token exchange, complete generation-checked rotation persists independently of caller cancellation. Import success and failure records must match the resulting credential generation, so an older import cannot overwrite or verify replacement credentials. Ordinary network reads remain cancellable. These controls have synthetic regression coverage; they do not establish live Intuit compatibility.
 
 `IProviderCredentialOwnershipMigration` moves a reviewed retained provider-wide record into an empty
 owned scope within the encrypted vault publication boundary. Non-secret receipts support restart
@@ -380,7 +382,7 @@ dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.cspr
 
 ### API and contract notes
 
-The QuickBooks adapter implements `IAccountingSystemProvider`, `IAccountingSystemConnectionMetadataProvider`, and `IAccountingSystemConnectionVerifier` from `Meridian.ProviderSdk.AccountingSystem`. Accounting-system DTOs remain in `Meridian.Contracts.AccountingSystem`.
+The QuickBooks adapter implements `IAccountingSystemProvider`, `IAccountingSystemConnectionMetadataProvider`, and `IAccountingSystemConnectionVerifier` from `Meridian.ProviderSdk.AccountingSystem`. Accounting-system DTOs remain in `Meridian.Contracts.AccountingSystem`. Custom `IQuickBooksOnlineConnectionStore` implementations must support the generation-checked rotation and verification overloads used by imports; unsupported conditional writes fail closed rather than falling back to an unconditional save.
 
 ### Migration and archive notes
 
