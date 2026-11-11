@@ -244,6 +244,8 @@ public sealed class AutomatedJournalDraftIntakeService
                 if ((existing.PrivateCapitalAuthorityJson is not null || incomingCapitalAuthority is not null)
                     && existing.PrivateCapitalAuthorityJson != incomingCapitalAuthority)
                     throw new InvalidOperationException("This capital-call posting identity already retains different approved inputs or funding evidence.");
+                if (existing.DistributionDeclarationJson != draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag))
+                    throw new InvalidOperationException("This distribution identity already retains different declaration terms or waterfall tiers.");
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
@@ -498,7 +500,8 @@ public sealed class AutomatedJournalDraftIntakeService
             RecurringJournalEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag),
             RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey))
         {
-            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority")
+            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority"),
+            DistributionDeclarationJson = draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag)
         };
     }
 

@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.FinancialOperations.PrivateCapital;
 using Meridian.Ledger;
+using Meridian.Ui.Shared.Services;
 using Xunit;
 
 namespace Meridian.Tests.FinancialOperations.PrivateCapital;
@@ -59,14 +61,16 @@ public sealed class CapitalCallDraftFactoryTests
     }
 
     [Fact]
-    public void LateFunding_KeepsItsOwnDateInTheProjectedLedgerImpact()
+    public void LateFunding_AccruesDefaultInterestThroughThePostedReceiptDate()
     {
         var commitment = Commitment();
+        const string callId = "call-1";
+        var installmentId = $"{callId}:{commitment.CommitmentId}";
         var ledger = new Meridian.Ledger.Ledger();
         var call = CapitalCallDraftFactory.BuildCapitalCallDraft(
-            commitment, "inst-1", 2_500_000m, new DateOnly(2026, 3, 31), OccurredAt, [Evidence()]);
+            commitment, installmentId, 2_500_000m, new DateOnly(2026, 3, 31), OccurredAt, [Evidence()]);
         var funding = CapitalCallDraftFactory.BuildCapitalCallFundingDraft(
-            commitment, "inst-1", 2_500_000m, new DateOnly(2026, 5, 15), OccurredAt.AddDays(45), evidenceReferences: [Evidence()]);
+            commitment, installmentId, 2_500_000m, new DateOnly(2026, 5, 15), OccurredAt.AddDays(45), evidenceReferences: [Evidence()]);
         foreach (var draft in new[] { call, funding })
         {
             AutomatedJournalApproval.Submit(draft, "ops-controller", draft.Event.Timestamp, "submit", ["evidence-1"])
@@ -74,12 +78,32 @@ public sealed class CapitalCallDraftFactoryTests
                 .PostTo(ledger, "cfo", draft.Event.Timestamp, "post", ["evidence-1"]);
         }
 
-        var fundEvent = PrivateCapitalFundEventLedgerProjector.Project(ledger).Events.Should().ContainSingle().Subject;
+        var ledgerProjection = PrivateCapitalFundEventLedgerProjector.Project(ledger);
+        var fundEvent = ledgerProjection.Events.Should().ContainSingle().Subject;
 
         // Both journals share the call's fund event; default interest needs the receipt's own date.
         fundEvent.EffectiveDate.Should().Be(new DateOnly(2026, 3, 31));
         fundEvent.LedgerImpacts.Select(static impact => impact.EffectiveDate).Should()
             .BeEquivalentTo(new DateOnly?[] { new DateOnly(2026, 3, 31), new DateOnly(2026, 5, 15) });
+
+        var activity = PrivateCapitalActivityProjectionBuilder.Build(new PrivateCapitalActivityProjectionInput(
+            commitment.FundProfileId, commitment.LedgerBookId, [], [], [],
+            new PostedPrivateCapitalActivityProjection(ledgerProjection, new Dictionary<Guid, string>())));
+        activity.LedgerImpacts.Select(static impact => impact.EffectiveDate).Should()
+            .BeEquivalentTo(new[] { new DateOnly(2026, 3, 31), new DateOnly(2026, 5, 15) });
+
+        var request = new RunCapitalCallDefaultInterestDraftIntakeRequest(
+            commitment.FundProfileId, commitment.Currency, "ops-controller", callId, new DateOnly(2026, 5, 20),
+            [new CapitalCallDefaultTermsInput(
+                commitment.CommitmentId, commitment.CapitalAccountId, commitment.InvestorId, new DateOnly(2026, 4, 10),
+                0.12m, DefaultInterestConvention.Actual360, 5, [Evidence().Uri])]);
+        var result = CapitalCallDefaultInterestDraftProducer.Produce(
+            request, activity.FundEvents, activity.LedgerImpacts, [], OccurredAt.AddDays(50));
+
+        result.Blockers.Should().BeEmpty();
+        var accrual = result.Drafts.Should().ContainSingle().Subject;
+        accrual.Metadata.EffectiveDate.Should().Be(new DateOnly(2026, 5, 15));
+        accrual.TotalDebits.Should().Be(25_000m);
     }
 
     [Fact]

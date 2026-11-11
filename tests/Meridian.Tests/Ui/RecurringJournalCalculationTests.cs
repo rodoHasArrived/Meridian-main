@@ -277,9 +277,16 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         });
 
         // Once January's revaluation is posted the account carries 110,000. February at 1.09
-        // must draft a 1,000 loss, not a second gain against the original 108,000.
-        Post(JanuaryEnd, (EuroCash, 2_000m, 0m), (LedgerAccounts.UnrealizedFxGain, 0m, 2_000m));
+        // must draft a 1,000 loss. Workbench posts retain calculation provenance in their tags.
+        _ledger.PostLines(At(JanuaryEnd), "January FX revaluation",
+            [(EuroCash, 2_000m, 0m), (LedgerAccounts.UnrealizedFxGain, 0m, 2_000m)],
+            new JournalEntryMetadata(ActivityType: "ManualJournalEntry", Tags: new Dictionary<string, string>
+            {
+                [RecurringJournalEvidenceGuard.EvidenceTag] = january.RecurringJournalEvidenceJson!,
+                [RecurringJournalEvidenceGuard.DigestTag] = january.RecurringJournalEvidenceDigest!
+            }));
         await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = Registered, PostedBy = "controller" });
+        Post(new(2026, 2, 5), (EuroCash, 50m, 0m), (LedgerAccounts.Cash, 0m, 50m));
         var stale = await (await CreateFixtureAsync(Rates(quotes))).Runner.RunDueAsync(Due(FebruaryEnd).AddMinutes(30));
         stale.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
             .Blockers.Should().ContainSingle().Which.Should().Contain("dated 2026-01-31, 28 day(s)");
@@ -292,6 +299,24 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             ("Expenses:Unrealized FX Loss", AccountingTemplateLineSideDto.Debit, 1_000m),
             ("Assets:Cash EUR", AccountingTemplateLineSideDto.Credit, 1_000m)
         });
+    }
+
+    [Fact]
+    public async Task FxRevaluation_FunctionalCashInSameAccount_DoesNotDraftAtAnUnchangedRate()
+    {
+        _ledger.PostLines(At(new(2026, 1, 10)), "Mixed-currency contribution",
+        [
+            (EuroCash, 110m, 0m, null, new LedgerEntryCurrency("EUR", "USD", 100m, 0m, 1.10m)),
+            (EuroCash, 50m, 0m, null, new LedgerEntryCurrency("USD", "USD", 50m, 0m, 1m)),
+            (LedgerAccounts.InvestorCapitalFor("lp-1"), 0m, 160m, null, null)
+        ]);
+        await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 0m }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(Rates([new("EUR", "USD", 1.10m, JanuaryEnd)]));
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
     }
 
     [Fact]
@@ -313,6 +338,23 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("quote date and source");
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FixedIncome_YesterdayWithoutBookPosition_RefusesToUseTodaysOpenLots()
+    {
+        var today = JanuaryEnd.AddDays(1);
+        var account = LedgerAccounts.Securities(Ticker);
+        var store = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        store.Setup(value => value.ListOpenTaxLotsAsync(Book, account, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<LedgerTaxLotRecord>());
+        var inputs = new LedgerRecurringJournalCalculationInputs(store.Object, new FixedClock(At(today)));
+
+        var backdatedRead = () => inputs.ListOpenLotsAsync(Scope, account, SecurityId, null, JanuaryEnd, default);
+
+        await backdatedRead.Should().ThrowAsync<InvalidOperationException>().WithMessage("*bookPositionId*");
+        store.Verify(value => value.ListOpenTaxLotsAsync(Book, account, It.IsAny<CancellationToken>()), Times.Never);
+        (await inputs.ListOpenLotsAsync(Scope, account, SecurityId, null, today, default)).Should().BeEmpty();
     }
 
     [Fact]
@@ -674,6 +716,11 @@ public sealed class RecurringJournalCalculationTests : IDisposable
 
     private static TableReconciliationFxRateProvider Rates(IEnumerable<ReconciliationFxQuote> quotes)
         => new(quotes.ToArray(), source: "test-rates rev-1");
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     /// <summary>A rate source that can quote a number but not when or where it came from.</summary>
     private sealed class UndatedRates : IReconciliationFxRateProvider

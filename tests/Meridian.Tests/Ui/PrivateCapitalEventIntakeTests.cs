@@ -257,16 +257,18 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     public async Task Distribution_TwoDeclarationsAtOnce_OnlyOneIsAdmitted()
     {
         var fixture = await CreateFixtureAsync([], []);
+        var otherInstance = await CreateFixtureAsync([], []);
 
         var results = await Task.WhenAll(
             Task.Run(() => fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))),
-            Task.Run(() => fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)))));
+            Task.Run(() => otherInstance.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)))));
 
         // Whichever runs second sees the first one's unposted draft and is refused.
         results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Ready)
             .Which.Intake.Created.Should().ContainSingle();
         results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Blocked);
         (await fixture.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+        (await otherInstance.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle();
     }
 
     [Fact]
@@ -274,7 +276,16 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     {
         var first = await CreateFixtureAsync([], []);
         var declared = await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
-        await first.Drafts.SaveAsync(declared.Intake.Created.Single() with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var originalDraft = declared.Intake.Created.Single();
+        originalDraft.DistributionDeclarationJson.Should().NotBeNullOrEmpty();
+        var edited = originalDraft with
+        {
+            Lines = originalDraft.Lines.Select(line => line with { Amount = line.Amount + 100m }).ToArray(),
+            DistributionDeclarationJson = null
+        };
+        var edit = () => first.Workbench.SaveDraftAsync(new(edited, "ops-user", LedgerBookId: BookId, TenantId: Tenant, CompanyId: Company));
+        await edit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*posting terms*fixed*");
+        await first.Drafts.SaveAsync(originalDraft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
         // Simulate the interruption: the draft exists and is posted, its register record does not.
         File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
 
@@ -285,13 +296,56 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         next.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no retained waterfall record");
         next.Intake.Created.Should().BeEmpty();
 
-        // Repeating the first declaration restores its record against the same draft.
-        var restored = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+        var changed = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30), amount: 700_000m));
+        changed.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        changed.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+        (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().BeEmpty();
+
+        // The original terms, tiers and attribution survive a retry by a different operator.
+        var restored = await fixture.Runner.RunDistributionDeclarationIntakeAsync(
+            DistributionRequest("dist-1", new(2026, 4, 30)) with { Actor = "another-operator", AsOf = AsOf.AddDays(1) });
+        restored.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
         restored.Intake.Created.Should().BeEmpty();
-        (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle()
-            .Which.JournalEntryId.Should().Be(declared.Intake.Created.Single().JournalEntryId);
+        var retained = (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle().Subject;
+        retained.JournalEntryId.Should().Be(originalDraft.JournalEntryId);
+        retained.AmountToDistribute.Should().Be(600_000m);
+        retained.ReturnOfCapital.Should().Be(600_000m);
+        retained.DeclaredBy.Should().Be("ops-user");
+        retained.DeclaredAtUtc.Should().Be(AsOf);
         var second = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
         second.Intake.Created.Should().ContainSingle().Which.Lines.Should().Contain(line => line.AccountPath == "Equity:Carried Interest Allocation");
+    }
+
+    [Fact]
+    public async Task Distribution_LegacyDraftCanReplayOnlyWithItsOriginalRegisterRecord()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+        var request = DistributionRequest("legacy-dist", new(2026, 4, 30));
+        var admitted = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        var legacyDraft = admitted.Intake.Created.Single() with { DistributionDeclarationJson = null };
+        await fixture.Drafts.SaveAsync(legacyDraft);
+        await fixture.Drafts.SaveAsync(legacyDraft with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            ReversalOfJournalEntryId = legacyDraft.JournalEntryId,
+            UpdatedAtUtc = legacyDraft.UpdatedAtUtc.AddDays(1)
+        });
+
+        var replay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        replay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        replay.Intake.Skipped.Should().ContainSingle().Which.JournalEntryId.Should().Be(legacyDraft.JournalEntryId);
+
+        foreach (var changed in new[] { request with { EntityId = "different-entity" }, request with { PeriodId = "different-period" } })
+        {
+            var changedReplay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(changed);
+            changedReplay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+            changedReplay.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+        }
+
+        File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
+        var blocked = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
+        blocked.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        blocked.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("Restore its original register record");
     }
 
     private static IEnumerable<(string, AccountingTemplateLineSideDto, decimal)> Lines(ManualJournalEntryDraftDto draft)
@@ -344,13 +398,14 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
             new FeeScheduleAccrualEventProducer(),
             manualJournalWorkbench: new PostedActivityManualJournalWorkbench(workbench, postedFundEvents, postedLedgerImpacts),
             distributionRegister: register);
-        return new(runner, drafts, register);
+        return new(runner, drafts, register, workbench);
     }
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)
         => new(NodeId: path, Path: path, AccountName: name, AccountType: type);
 
-    private sealed record Fixture(AutomatedJournalIntakeRunner Runner, FileManualJournalEntryDraftStore Drafts, FileDistributionRegister Register);
+    private sealed record Fixture(AutomatedJournalIntakeRunner Runner, FileManualJournalEntryDraftStore Drafts,
+        FileDistributionRegister Register, ManualJournalEntryWorkbenchService Workbench);
 
     public void Dispose()
     {

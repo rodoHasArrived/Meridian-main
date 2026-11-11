@@ -158,6 +158,10 @@ public static class RecurringJournalIdentity
     public static string SerializeTemplate(RecurringTemplateDefinition definition)
         => JsonSerializer.Serialize(definition, RecurringJournalJsonContext.Default.RecurringTemplateDefinition);
 
+    public static RecurringTemplateDefinition DeserializeTemplate(string json)
+        => JsonSerializer.Deserialize(json, RecurringJournalJsonContext.Default.RecurringTemplateDefinition)
+            ?? throw new JsonException("The retained recurring template definition is missing.");
+
     public static string OccurrenceKey(string scheduleId, DateOnly date)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(scheduleId);

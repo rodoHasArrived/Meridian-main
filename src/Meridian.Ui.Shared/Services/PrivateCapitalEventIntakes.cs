@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.FinancialOperations.PrivateCapital;
@@ -277,6 +278,15 @@ internal static class CapitalCallDefaultInterestDraftProducer
 internal static class DistributionDeclarationDraftProducer
 {
     internal const string AssessmentCode = "distribution-waterfall-terms";
+    internal const string DeclarationTag = "distribution.declaration";
+
+    private sealed record DraftDeclaration(
+        DistributionDeclarationRecord Record, string CapitalAccountId, string Currency, string PeriodId, string? EntityId);
+
+    internal static bool IsDeclarationDraft(ManualJournalEntryDraftDto draft)
+        => draft.EntryType == ManualJournalEntryTypeDto.Distribution &&
+           draft.ReversalOfJournalEntryId is null && draft.RebookedFromJournalEntryId is null &&
+           draft.TreasuryContext?.IdempotencyKey?.StartsWith("distribution:", StringComparison.OrdinalIgnoreCase) == true;
 
     public static string BuildRunAssessmentKey(string fundProfileId, string distributionId)
         => FormattableString.Invariant(
@@ -314,24 +324,72 @@ internal static class DistributionDeclarationDraftProducer
             }
 
             var registered = registeredByInvestor.GetValueOrDefault(investorId) ?? [];
+            var key = DraftKey(fund, investorId, distributionId);
+            var same = registered.FirstOrDefault(record => string.Equals(record.DistributionId, distributionId, StringComparison.OrdinalIgnoreCase));
+            var retainedDraft = queueDrafts.FirstOrDefault(draft => IsDeclarationDraft(draft) &&
+                (same is null || draft.JournalEntryId == same.JournalEntryId) &&
+                string.Equals(draft.TreasuryContext?.IdempotencyKey, key, StringComparison.OrdinalIgnoreCase));
+            if (same is not null && same.JournalEntryId != retainedDraft?.JournalEntryId)
+            {
+                blockers.Add($"Distribution '{distributionId}' has a register record but its draft for investor '{investorId}' is missing.");
+                continue;
+            }
+
+            var retainedJson = retainedDraft?.DistributionDeclarationJson;
+            DraftDeclaration? declaration = null;
+            try
+            {
+                if (retainedJson is not null)
+                    declaration = JsonSerializer.Deserialize<DraftDeclaration>(retainedJson);
+            }
+            catch (JsonException)
+            {
+                blockers.Add($"Distribution '{distributionId}' has unreadable retained declaration terms for investor '{investorId}'.");
+                continue;
+            }
+
+            if (retainedDraft is not null && declaration?.Record is null && (retainedJson is not null || same is null))
+            {
+                blockers.Add($"Distribution '{distributionId}' has no verified retained declaration terms for investor '{investorId}'. Restore its original register record before continuing.");
+                continue;
+            }
+
+            var original = declaration?.Record ?? same;
+            var capitalAccountId = input.CapitalAccountId.Trim();
+            if (original is not null &&
+                (!MatchesTerms(original, request, input) ||
+                 !SameId(capitalAccountId, declaration?.CapitalAccountId ?? retainedDraft?.TreasuryContext?.CapitalAccountId) ||
+                 !SameId(currency, declaration?.Currency ?? retainedDraft?.Currency) ||
+                 !SameId(periodId, declaration?.PeriodId ?? retainedDraft?.PeriodId ?? request.EffectiveDate.ToString("yyyy-MM")) ||
+                 !SameId(request.EntityId, declaration is not null ? declaration.EntityId : retainedDraft?.EntityId)))
+            {
+                blockers.Add($"Distribution '{distributionId}' is already declared for investor '{investorId}' with different terms. Use a new distribution id.");
+                continue;
+            }
+
+            if (same is not null && declaration is not null && same != (declaration.Record with { JournalEntryId = same.JournalEntryId }))
+            {
+                blockers.Add($"Distribution '{distributionId}' has conflicting retained waterfall tiers for investor '{investorId}'.");
+                continue;
+            }
+
             // A draft admitted without its register record (an interrupted earlier request) holds
             // tiers this split cannot see. Retrying that declaration restores the record.
             var investorKeyPrefix = DraftKey(fund, investorId, string.Empty);
-            var unregistered = queueDrafts.FirstOrDefault(draft =>
+            var unregistered = original is null ? queueDrafts.FirstOrDefault(draft =>
                 draft.Status != ManualJournalEntryStatusDto.Rejected &&
                 draft.TreasuryContext?.IdempotencyKey is { } draftKey &&
                 draftKey.StartsWith(investorKeyPrefix, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(draftKey, DraftKey(fund, investorId, distributionId), StringComparison.OrdinalIgnoreCase) &&
-                !registered.Any(record => string.Equals(DraftKey(fund, investorId, record.DistributionId), draftKey, StringComparison.OrdinalIgnoreCase)));
+                !registered.Any(record => string.Equals(DraftKey(fund, investorId, record.DistributionId), draftKey, StringComparison.OrdinalIgnoreCase)))
+                : null;
             if (unregistered is not null)
             {
                 blockers.Add($"Distribution draft '{unregistered.TreasuryContext!.IdempotencyKey}' for investor '{investorId}' has no retained waterfall record; repeat that declaration to restore it before declaring another.");
                 continue;
             }
-            var same = registered.FirstOrDefault(record => string.Equals(record.DistributionId, distributionId, StringComparison.OrdinalIgnoreCase));
             var priors = new List<DistributionDeclarationRecord>();
             var blocked = false;
-            foreach (var prior in registered.Where(record => !ReferenceEquals(record, same)))
+            foreach (var prior in original is null ? registered : [])
             {
                 var (consumed, problem) = ResolvePrior(prior, draftById.GetValueOrDefault(prior.JournalEntryId), queueDrafts, investorId);
                 if (problem is not null)
@@ -347,37 +405,37 @@ internal static class DistributionDeclarationDraftProducer
             if (blocked)
                 continue;
 
-            var result = EuropeanDistributionWaterfall.Distribute(new EuropeanWaterfallInput(
+            var result = original is null
+                ? EuropeanDistributionWaterfall.Distribute(new EuropeanWaterfallInput(
+                    input.ContributedCapital, input.PreferredReturnAccrued, input.AmountToDistribute, request.CarryRate, request.CatchUpRate,
+                    priorReturnOfCapital: priors.Sum(static prior => prior.ReturnOfCapital),
+                    priorPreferredPaid: priors.Sum(static prior => prior.PreferredReturn),
+                    priorGpCatchUp: priors.Sum(static prior => prior.GpCatchUp),
+                    priorCatchUpPool: priors.Sum(static prior => prior.GpCatchUp + prior.LpCatchUp)))
+                : new EuropeanWaterfallResult(original.ReturnOfCapital, original.PreferredReturn, original.GpCatchUp,
+                    original.LpCatchUp, original.LpCarry, original.GpCarry, []);
+            var record = original ?? new DistributionDeclarationRecord(request.TenantId!.Trim(), request.CompanyId!.Trim(), fund,
+                request.LedgerBookId!.Value, investorId, distributionId, request.EffectiveDate, Guid.Empty,
                 input.ContributedCapital, input.PreferredReturnAccrued, input.AmountToDistribute, request.CarryRate, request.CatchUpRate,
-                priorReturnOfCapital: priors.Sum(static prior => prior.ReturnOfCapital),
-                priorPreferredPaid: priors.Sum(static prior => prior.PreferredReturn),
-                priorGpCatchUp: priors.Sum(static prior => prior.GpCatchUp),
-                priorCatchUpPool: priors.Sum(static prior => prior.GpCatchUp + prior.LpCatchUp)));
+                result.ReturnOfCapital, result.PreferredReturn, result.GpCatchUp, result.LpCatchUp, result.LpCarry, result.GpCarry,
+                request.Actor.Trim(), evaluatedAtUtc);
             var evidence = evidenceLinks.Select((link, index) => new JournalEvidenceReference(
                 $"distribution:{distributionId}:{investorId}:{index + 1}", link, "distribution-notice",
                 "distribution-declaration-intake", evaluatedAtUtc, request.Actor.Trim(), SubjectId: investorId)).ToArray();
             var built = FundEconomicsJournalFactory.BuildDistributionWaterfallDraft(fund, investorId, result, request.EffectiveDate,
                 evaluatedAtUtc, periodId, distributionId, evidence);
             // The approval flow requires a capital account on every private-capital fund event.
-            var draft = built with { Metadata = built.Metadata with { CapitalAccountId = input.CapitalAccountId.Trim() } };
-            var key = draft.Metadata.IdempotencyKey!;
-            var record = new DistributionDeclarationRecord(request.TenantId?.Trim() ?? "", request.CompanyId?.Trim() ?? "", fund,
-                request.LedgerBookId!.Value, investorId, distributionId, request.EffectiveDate, same?.JournalEntryId ?? Guid.Empty,
-                input.ContributedCapital, input.PreferredReturnAccrued, input.AmountToDistribute, request.CarryRate, request.CatchUpRate,
-                result.ReturnOfCapital, result.PreferredReturn, result.GpCatchUp, result.LpCatchUp, result.LpCarry, result.GpCarry,
-                request.Actor.Trim(), evaluatedAtUtc);
-            if (same is not null && same with { DeclaredBy = record.DeclaredBy, DeclaredAtUtc = record.DeclaredAtUtc } != record)
-            {
-                blockers.Add($"Distribution '{distributionId}' is already declared for investor '{investorId}' with different terms or tiers; use a new distribution id.");
-                continue;
-            }
-
-            drafts.Add(draft);
+            var tags = new Dictionary<string, string>(built.Metadata.Tags!, StringComparer.OrdinalIgnoreCase);
+            if (retainedJson is not null)
+                tags[DeclarationTag] = retainedJson;
+            else if (retainedDraft is null)
+                tags[DeclarationTag] = JsonSerializer.Serialize(new DraftDeclaration(record, capitalAccountId, currency, periodId, request.EntityId?.Trim()));
+            drafts.Add(built with { Metadata = built.Metadata with { CapitalAccountId = capitalAccountId, Tags = tags } });
             records.Add(record);
             assessments[key] = new AutomatedJournalEvidenceAssessmentDto(AssessmentCode,
                 ConfidenceScore: 0.85m, Quality: AutomatedJournalEvidenceQualityDto.High, RequiresInvestigation: false,
                 Summary: FormattableString.Invariant(
-                    $"Distribution '{distributionId}' to '{investorId}': {result.Distributed:0.00} {currency} split as return of capital {result.ReturnOfCapital:0.00}, preferred {result.PreferredReturn:0.00}, GP catch-up {result.GpCatchUp:0.00}, LP catch-up {result.LpCatchUp:0.00}, LP carry {result.LpCarry:0.00}, GP carry {result.GpCarry:0.00}, after {priors.Count} earlier posted distribution(s)."),
+                    $"Distribution '{distributionId}' to '{investorId}': {result.Distributed:0.00} {currency} split as return of capital {result.ReturnOfCapital:0.00}, preferred {result.PreferredReturn:0.00}, GP catch-up {result.GpCatchUp:0.00}, LP catch-up {result.LpCatchUp:0.00}, LP carry {result.LpCarry:0.00}, GP carry {result.GpCarry:0.00}."),
                 Reasons: ["Earlier tiers come from the distribution register for posted distributions. Contributed capital, preferred return accrued and the amount are operator-attested and backed by the retained evidence."],
                 EvidenceLinks: evidenceLinks);
         }
@@ -437,6 +495,18 @@ internal static class DistributionDeclarationDraftProducer
         var separator = path.LastIndexOf(':');
         return string.Equals(separator >= 0 ? path[(separator + 1)..].Trim() : path, "Carried Interest Allocation", StringComparison.OrdinalIgnoreCase);
     }
+
+    private static bool MatchesTerms(DistributionDeclarationRecord record, RunDistributionDeclarationDraftIntakeRequest request,
+        DistributionInvestorInput input)
+        => SameId(record.TenantId, request.TenantId) && SameId(record.CompanyId, request.CompanyId) &&
+           SameId(record.FundProfileId, request.FundProfileId) && record.LedgerBookId == request.LedgerBookId &&
+           SameId(record.InvestorId, input.InvestorId) && SameId(record.DistributionId, request.DistributionId) &&
+           record.EffectiveDate == request.EffectiveDate && record.ContributedCapital == input.ContributedCapital &&
+           record.PreferredReturnAccrued == input.PreferredReturnAccrued && record.AmountToDistribute == input.AmountToDistribute &&
+           record.CarryRate == request.CarryRate && record.CatchUpRate == request.CatchUpRate;
+
+    private static bool SameId(string? left, string? right)
+        => string.Equals(left?.Trim() ?? "", right?.Trim() ?? "", StringComparison.OrdinalIgnoreCase);
 
     private static void Validate(RunDistributionDeclarationDraftIntakeRequest request)
     {

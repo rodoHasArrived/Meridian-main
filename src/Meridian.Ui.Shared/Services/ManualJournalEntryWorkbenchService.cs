@@ -323,8 +323,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             PrivateCapitalAuthorityJson = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.PrivateCapitalAuthorityJson : null)
                 : existing.PrivateCapitalAuthorityJson,
+            DistributionDeclarationJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.DistributionDeclarationJson : null)
+                : existing.DistributionDeclarationJson,
             TreasuryContext = existing is not null &&
                 (existing.PrivateCapitalAuthorityJson is not null ||
+                 DistributionDeclarationDraftProducer.IsDeclarationDraft(existing) ||
                  existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
@@ -386,6 +390,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         {
             throw new InvalidOperationException(
                 $"Manual journal entry '{existing.JournalEntryId:D}' is {existing.Status} and cannot be edited through draft save; use the governed lifecycle or correction workflow.");
+        }
+
+        if (existing is not null && DistributionDeclarationDraftProducer.IsDeclarationDraft(existing) &&
+            (existing.EntryType != normalizedDraft.EntryType || existing.AccountingDate != normalizedDraft.AccountingDate ||
+             existing.AccountingBasis != normalizedDraft.AccountingBasis || existing.PeriodId != normalizedDraft.PeriodId ||
+             existing.EntityId != normalizedDraft.EntityId || existing.FundNodeId != normalizedDraft.FundNodeId ||
+             existing.Currency != normalizedDraft.Currency || existing.TreasuryContext != normalizedDraft.TreasuryContext ||
+             existing.Dimensions != normalizedDraft.Dimensions || !existing.Lines.SequenceEqual(normalizedDraft.Lines)))
+        {
+            throw new InvalidOperationException("The posting terms of a retained distribution draft are fixed. Reject the draft and use a new declaration to change them.");
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -457,6 +471,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
             PrivateCapitalAuthorityJson = existing?.PrivateCapitalAuthorityJson,
+            DistributionDeclarationJson = existing?.DistributionDeclarationJson,
             RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
             RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||

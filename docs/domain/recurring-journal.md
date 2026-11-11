@@ -64,8 +64,8 @@ flow. Its memo states the inputs the amount came from.
 | `performance-fee-accrual` | Ledger net assets and the performance fee already payable at the effective date | `performanceFeeRate`, `highWaterMark`, `hurdleAmount`, `crystallize` (0 or 1) |
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
 | `fixed-asset-depreciation` | The fixed-asset register for the fund book | none |
-| `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId`, optional `bookPositionId` |
-| `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the dated FX rate for the effective date | `maxRateAgeDays` |
+| `fixed-income-accrual` | Security Master cash-flow projection and the position's face-value lots at the effective date | inputs `securityId`, `ticker`, `bookPositionId`, optional `financialAccountId` |
+| `fx-revaluation` | Foreign-currency journal legs, prior posted revaluations and the dated FX rate for the effective date | `maxRateAgeDays` |
 
 Rules that keep an amount from being drafted twice:
 
@@ -75,9 +75,10 @@ Rules that keep an amount from being drafted twice:
   together therefore cannot both be measured against a ledger that holds neither. The previous
   occurrence's retained draft decides, so one that was posted and whose period has since closed
   still counts as settled.
-- **Closing balances wait for the day to end.** Fees, FX revaluation and bond accruals are
-  measured at the close of the effective date, so they are calculated only once that day (UTC)
-  has ended; until then the occurrence is blocked and retried. The accounting date is unchanged.
+- **Closing balances wait for the day to end.** The runner waits until the effective day ends
+  (UTC) before drafting management fees, performance fees, FX revaluations and bond accruals.
+  Calculations that read that day's closing balances then include later postings from the same
+  day. The accounting date is unchanged.
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
@@ -85,10 +86,11 @@ Rules that keep an amount from being drafted twice:
 - **Performance fee is cumulative.** The fee above the high-water mark and hurdle is compared with
   the performance fee already payable, and only the difference is drafted (a reversal when it has
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
-- **FX revaluation covers monetary accounts.** Accounts with a security symbol are left out:
-  they also carry fair-value marks in book currency, which are price moves, not FX variance.
-  For the accounts it covers it is incremental: an account's carrying value is its book-currency balance,
-  which includes earlier posted revaluations, so each occurrence drafts only the change.
+- **FX revaluation covers monetary accounts.** Accounts with a security symbol are excluded
+  because they can include book-currency fair-value marks. Carrying value combines the
+  book-currency amounts of foreign legs with prior posted revaluations for the same account.
+  Functional-currency activity on that account is excluded. An account with legs in multiple
+  foreign currencies is blocked.
 - **A depreciation period belongs to one window.** Each registered asset's scheduled monthly
   charge is drafted by the occurrence whose window contains its period end, and stops at
   retirement. Assets are registered through `/api/ledger/fixed-assets`. A registered asset's cost,
@@ -102,9 +104,9 @@ Rules that keep an amount from being drafted twice:
   date, and a bond whose Security Master currency is not the book currency is blocked, because
   its amounts would be drafted unconverted. Coupon accrues only on the lots the book holds: each
   lot earns its face share of the projection's interest from the day it was acquired, and a book
-  with no open lot drafts nothing. Lot quantities for a past date are reconstructed when the
-  template names a `bookPositionId`; without one a backdated occurrence is blocked, because only
-  today's lot state is known.
+  with no open lot drafts nothing. The runner uses the template's `bookPositionId` to reconstruct
+  the lots held at the effective date. Scheduled bond accruals run the following day or later,
+  so a template without a book position is blocked.
 
 Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
 non-postable cash-flow projection, or an FX rate that is missing, has no quote date and source, or
@@ -117,7 +119,8 @@ digest. A triangulated rate is dated by its older leg.
 **Period close.** Close readiness has a "Recurring and calculated journals" lane whenever the
 period has recurring occurrences. It is ready only when each one is posted or recorded as
 needing no draft; an unreadable queue is not ready. An occurrence the scheduled worker has not
-yet claimed is not visible to the lane, so run the worker for the period end before closing.
+yet claimed is not visible to the lane. Run the worker after the effective day ends and before
+closing the period.
 
 Current limits. Projected principal paydowns are not drafted. The FX rate table
 (`reconciliation/fx-rates.json`) is read once at startup and is operator-maintained; it is not a
@@ -150,13 +153,15 @@ intakes that admit approval drafts the same way:
 - **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
   investor's distribution is split by the European waterfall. The tiers already paid come from
   the distribution register for posted distributions, so return of capital, preferred return and
-  GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
-  a rejected one is ignored, and so is one that was reversed once its reversal is posted. A
-  posted distribution (or its posted rebook) whose amounts were edited away from its retained
-  waterfall blocks the next until it is reversed and redeclared under a new id. A distribution draft found without its register record (an
-  interrupted request) also blocks further declarations until that declaration is repeated,
-  which restores the record against the same draft. Declarations are handled one at a time on a
-  host, so two overlapping requests cannot both read the same earlier tiers.
+  GP catch-up are each paid once. An earlier pending distribution blocks the next. Rejected
+  distributions and distributions with a posted reversal consume no tiers. A posted distribution
+  or rebook with amounts that differ from its retained waterfall blocks the next declaration
+  until it is reversed and redeclared under a new id. The draft retains the declaration terms
+  and tiers. After an interruption, repeating the original terms restores the register from that
+  draft. A legacy draft missing both its retained terms and its register record requires recovery
+  of the original register record. Hosts using the same register serialize declarations through
+  its file lease. Private-capital activity tracks each investor's draft and posting separately
+  under the shared declaration.
 
 ## Definition correction and recovery
 

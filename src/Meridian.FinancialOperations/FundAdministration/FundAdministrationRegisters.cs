@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Core.IO;
 using Meridian.Ledger;
 using Meridian.Storage.Store;
 
@@ -62,6 +63,9 @@ public sealed record DistributionDeclarationRecord(
 /// <summary>Durable register of declared distributions and their waterfall tiers.</summary>
 public interface IDistributionRegister
 {
+    /// <summary>Serializes the queue read, waterfall calculation, draft admission and register writes.</summary>
+    Task<IAsyncDisposable> AcquireDeclarationLeaseAsync(CancellationToken ct = default);
+
     Task<IReadOnlyList<DistributionDeclarationRecord>> ListAsync(string tenantId, string companyId, string fundProfileId,
         Guid ledgerBookId, string investorId, CancellationToken ct = default);
 
@@ -150,6 +154,10 @@ public sealed class FileDistributionRegister(string directory)
     : JsonFileSnapshotStore<FileDistributionRegister.Snapshot>(Path.Combine(directory, "distribution-register.json"), FundAdministrationRegisterJson.Options),
       IDistributionRegister
 {
+    public async Task<IAsyncDisposable> AcquireDeclarationLeaseAsync(CancellationToken ct = default)
+        => await ExclusiveFileLock.AcquireAsync(SnapshotPath + ".declaration.lock", TimeSpan.FromSeconds(30), ct)
+            .ConfigureAwait(false);
+
     public Task<IReadOnlyList<DistributionDeclarationRecord>> ListAsync(string tenantId, string companyId, string fundProfileId,
         Guid ledgerBookId, string investorId, CancellationToken ct = default)
         => ReadSnapshotAsync<IReadOnlyList<DistributionDeclarationRecord>>(snapshot => snapshot.Distributions

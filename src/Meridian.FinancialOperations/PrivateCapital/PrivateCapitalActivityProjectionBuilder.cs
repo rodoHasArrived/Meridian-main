@@ -113,10 +113,12 @@ public static class PrivateCapitalActivityProjectionBuilder
                 draft.EvidenceLinks,
                 draft.EvidenceAttachments?.Select(attachment => attachment.Uri).ToArray());
 
-            ledgerImpacts.Add(BuildPrivateCapitalLedgerImpact(draft, context, evidenceLinks));
+            var projectedFundEventId = PrivateCapitalFundEventLedgerProjector.ProjectFundEventId(
+                context.FundEventId, context.FundEventType, context.InvestorId, context.IdempotencyKey) ?? context.FundEventId;
+            ledgerImpacts.Add(BuildPrivateCapitalLedgerImpact(draft, context with { FundEventId = projectedFundEventId }, evidenceLinks));
 
             fundEvents.Add(new PrivateCapitalFundEventDto(
-                context.FundEventId,
+                projectedFundEventId,
                 context.FundEventType,
                 draft.EntryType,
                 draft.Status,
@@ -1674,8 +1676,13 @@ public static class PrivateCapitalActivityProjectionBuilder
             return true;
         }
 
-        return EnumerateReportPackEvidencePointers(record)
-            .Any(pointer => MatchesPostedFundEventPointer(pointer, fundEvent));
+        var evidencePointers = EnumerateReportPackEvidencePointers(record);
+        var declarationId = fundEvent.DeclarationFundEventId;
+        var canUseDeclarationEvidence = declarationId is not null &&
+            (string.IsNullOrWhiteSpace(record.FundAccountId) ||
+             string.Equals(record.FundAccountId.Trim(), fundEvent.CapitalAccountId, StringComparison.OrdinalIgnoreCase));
+        return evidencePointers.Any(pointer => MatchesPostedFundEventPointer(pointer, fundEvent) ||
+            (canUseDeclarationEvidence && MatchesFundEventIdPointer(pointer, declarationId!)));
     }
 
     private static bool MatchesPostedFundEventLine(
@@ -1774,8 +1781,7 @@ public static class PrivateCapitalActivityProjectionBuilder
         }
 
         var pointer = value.Trim();
-        if (pointer.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
-            pointer.Contains(Uri.EscapeDataString(fundEvent.FundEventId), StringComparison.OrdinalIgnoreCase) ||
+        if (MatchesFundEventIdPointer(pointer, fundEvent.FundEventId) ||
             MatchesAnyGuid(pointer, fundEvent.LedgerEntryIds) ||
             MatchesAnyGuid(pointer, fundEvent.JournalEntryIds))
         {
@@ -1786,7 +1792,7 @@ public static class PrivateCapitalActivityProjectionBuilder
         {
             var unescaped = Uri.UnescapeDataString(pointer);
             return !string.Equals(unescaped, pointer, StringComparison.Ordinal) &&
-                (unescaped.Contains(fundEvent.FundEventId, StringComparison.OrdinalIgnoreCase) ||
+                (MatchesFundEventIdPointer(unescaped, fundEvent.FundEventId) ||
                  MatchesAnyGuid(unescaped, fundEvent.LedgerEntryIds) ||
                  MatchesAnyGuid(unescaped, fundEvent.JournalEntryIds));
         }
@@ -1795,6 +1801,10 @@ public static class PrivateCapitalActivityProjectionBuilder
             return false;
         }
     }
+
+    private static bool MatchesFundEventIdPointer(string pointer, string fundEventId) =>
+        pointer.Contains(fundEventId, StringComparison.OrdinalIgnoreCase) ||
+        pointer.Contains(Uri.EscapeDataString(fundEventId), StringComparison.OrdinalIgnoreCase);
 
     private static bool MatchesAnyGuid(string value, IReadOnlyList<Guid> ids)
     {

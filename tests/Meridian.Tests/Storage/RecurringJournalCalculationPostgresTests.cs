@@ -107,7 +107,7 @@ public sealed class RecurringJournalCalculationPostgresTests
     }
 
     [LedgerDatabaseFact]
-    public async Task FixedIncomeAccrual_ReadsOpenFaceValueLotsFromPostgres_AndDraftsTheMonthsCouponAndAmortization()
+    public async Task FixedIncomeAccrual_ReadsHistoricalFaceValueLotsFromPostgres_AndDraftsTheMonthsCouponAndAmortization()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
         var ct = timeout.Token;
@@ -117,6 +117,7 @@ public sealed class RecurringJournalCalculationPostgresTests
         {
             var store = database.JournalStore;
             var securityId = Guid.NewGuid();
+            var bookPositionId = Guid.NewGuid();
             var book = new LedgerBookRecord(Guid.NewGuid(), Fund, Guid.NewGuid(), FundStructureNodeKindDto.Fund,
                 "Golden bond book", "USD", Registered, Registered);
             var scope = new RecurringJournalScope(Fund, book.LedgerBookId, Entity, "USD", Tenant, Company);
@@ -128,7 +129,7 @@ public sealed class RecurringJournalCalculationPostgresTests
                 // 1,000,000 face at 101.20, maturing 2026-12-31: 12,000 of premium over 365 days.
                 await store.SaveTaxLotAsync(new LedgerTaxLotRecord(Guid.NewGuid(), book.LedgerBookId, carrying, "lot-1",
                     new DateOnly(2025, 12, 31), 10_000m, 10_000m, 101.20m, "USD", Registered, Registered,
-                    SecurityId: securityId, BookPositionId: Guid.NewGuid(), OriginalFace: 1_000_000m, BookedFactor: 1m, ParBasis: 100m), ct);
+                    SecurityId: securityId, BookPositionId: bookPositionId, OriginalFace: 1_000_000m, BookedFactor: 1m, ParBasis: 100m), ct);
             }
 
             var recurring = new FileRecurringJournalStore(Path.Combine(root, "recurring"));
@@ -137,7 +138,12 @@ public sealed class RecurringJournalCalculationPostgresTests
             {
                 await session.RegisterTemplateAsync(new JournalTemplate("bond-template", "Bond accrual", "Calculated each period", [],
                     calculation: new JournalTemplateCalculation(FixedIncomeAccrualCalculation.CalculationKind,
-                        new Dictionary<string, string> { ["securityId"] = securityId.ToString("D"), ["ticker"] = "UST30" })),
+                        new Dictionary<string, string>
+                        {
+                            ["securityId"] = securityId.ToString("D"),
+                            ["bookPositionId"] = bookPositionId.ToString("D"),
+                            ["ticker"] = "UST30"
+                        })),
                     "controller", 0, Registered, ct);
                 await session.RegisterScheduleAsync(new RecurringJournalSchedule("bond-accrual", "bond-template",
                     new LedgerBookKey(Fund, "Fund"), RecurringJournalCadence.Monthly, JanuaryEnd, "controller", Registered,
@@ -256,8 +262,8 @@ public sealed class RecurringJournalCalculationPostgresTests
         var tenancy = new Mock<IFundProfileTenancyRegistry>(MockBehavior.Strict);
         tenancy.Setup(registry => registry.ResolveAsync(Fund, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FundProfileOwnership(Fund, Tenant, Company));
-        // The lot read runs "on" the accrual date; a later run without a book position is refused.
-        var inputs = new LedgerRecurringJournalCalculationInputs(journalStore, new FixedClock(At(JanuaryEnd)));
+        // Match the runner's first post-close invocation so the bond test must use historical lots.
+        var inputs = new LedgerRecurringJournalCalculationInputs(journalStore, new FixedClock(Due(JanuaryEnd)));
         var runner = new RecurringJournalRunner(recurring, intake, drafts,
             new RecurringJournalPeriodAuthority(journalStore, tenancy.Object, new VerifiedSubject()),
         [
