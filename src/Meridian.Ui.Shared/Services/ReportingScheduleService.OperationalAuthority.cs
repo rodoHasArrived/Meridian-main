@@ -517,6 +517,10 @@ public sealed partial class ReportingScheduleService
             var current = _schedules[identity];
 
             EnsureScheduleInScope(current, accessContext);
+            // Tenant and company scope is not enough: a private or restricted schedule may only
+            // be removed by a caller its access policy admits, the same rule listing and
+            // run-now apply. Checked before anything is claimed, changed or returned.
+            EnsureScheduleAccess(current, accessContext);
             if (_store is not null
                 && (identity.TenantId.Length == 0 || identity.CompanyId.Length == 0))
             {

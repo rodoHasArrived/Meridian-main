@@ -804,6 +804,34 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public void Scenario_ScheduleDeleteAndStateChange_AreRefusedForACallerTheAccessPolicyExcludes()
+    {
+        // Same tenant and company, and allowed to manage reporting, but not a principal of the
+        // schedule's restricted access policy (which admits only operator-a).
+        var store = new SharedAtomicScheduleStore([BuildCurrentSchedule("restricted-schedule")]);
+        var service = CreateScheduleService(store);
+        var outsider = new ReportAccessQueryContext(
+            ActorPrincipalId: "operator-b",
+            CompanyId: "company-a",
+            TenantId: "tenant-a",
+            RequireBoundScope: true);
+        var owner = outsider with { ActorPrincipalId = "operator-a" };
+        service.ListSchedules(outsider).Should().BeEmpty("the schedule is not visible to this caller");
+
+        var delete = () => service.Delete("restricted-schedule", outsider);
+        var disable = () => service.SetState("restricted-schedule", ReportingScheduleStateDto.Disabled, outsider);
+
+        delete.Should().Throw<UnauthorizedAccessException>();
+        disable.Should().Throw<UnauthorizedAccessException>();
+        store.Load().Should().ContainSingle(schedule =>
+            schedule.ScheduleId == "restricted-schedule"
+            && schedule.State != ReportingScheduleStateDto.Disabled);
+
+        service.Delete("restricted-schedule", owner);
+        store.Load().Should().BeEmpty();
+    }
+
+    [Fact]
     public void Scenario_ScheduleDelete_LegacyUnscopedScheduleIsRefusedAndRetained()
     {
         var store = new SharedAtomicScheduleStore([BuildSchedule("legacy-unscoped", "operator-a")]);

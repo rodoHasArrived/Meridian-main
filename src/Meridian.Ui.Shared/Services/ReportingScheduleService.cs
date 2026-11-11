@@ -1469,6 +1469,7 @@ public sealed partial class ReportingScheduleService
             var current = _schedules[identity];
 
             EnsureScheduleInScope(current, accessContext);
+            EnsureScheduleAccess(current, accessContext);
             if (accessContext?.RequireBoundScope == true
                 && state == ReportingScheduleStateDto.Active
                 && current.RunParameters is null)
