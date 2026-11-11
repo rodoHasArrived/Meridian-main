@@ -240,6 +240,10 @@ public sealed class AutomatedJournalDraftIntakeService
                      existing.RecurringJournalEvidenceJson != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag) ||
                      existing.RecurringJournalEvidenceDigest != draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag)))
                     throw new InvalidOperationException("The retained recurring draft does not match this exact occurrence provenance.");
+                var incomingCapitalAuthority = draft.Metadata.Tags?.GetValueOrDefault(PrivateCapitalPostingAuthority.MetadataTag);
+                if ((existing.PrivateCapitalAuthorityJson is not null || incomingCapitalAuthority is not null)
+                    && existing.PrivateCapitalAuthorityJson != incomingCapitalAuthority)
+                    throw new InvalidOperationException("This capital-call posting identity already retains different approved inputs or funding evidence.");
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
@@ -492,7 +496,10 @@ public sealed class AutomatedJournalDraftIntakeService
             RequiresValuationMarkEvidence: ValuationMarkEvidenceGuard.IsValuation(draft.Metadata.IdempotencyKey),
             RecurringJournalEvidenceJson: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.EvidenceTag),
             RecurringJournalEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag),
-            RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey));
+            RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey))
+        {
+            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority")
+        };
     }
 
     private static ManualJournalEntryTypeDto MapEntryType(AutomatedJournalEventKind kind)

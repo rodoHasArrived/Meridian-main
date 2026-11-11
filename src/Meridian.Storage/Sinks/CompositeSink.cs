@@ -42,7 +42,7 @@ public enum FailurePolicy : byte
     /// <summary>Continue writing to remaining healthy sinks when one fails (default).</summary>
     ContinueOnPartialFailure,
 
-    /// <summary>Throw immediately if any sink fails.</summary>
+    /// <summary>Throw if any sink fails an append or cannot be written because its circuit is open.</summary>
     FailOnAnyFailure
 }
 
@@ -148,8 +148,16 @@ public sealed class CompositeSink : IStorageSink
     /// <c>EventPipeline</c> never treat an unpersisted event as durable and commit or truncate
     /// the write-ahead log that is still holding it.
     /// </para>
+    /// <para>
+    /// Under <see cref="FailurePolicy.FailOnAnyFailure"/> a sink whose circuit is open is not
+    /// skipped: the append throws for as long as the circuit stays open, exactly as it does when
+    /// that sink's write fails.
+    /// </para>
     /// </summary>
-    /// <exception cref="InvalidOperationException">No child sink accepted the event.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// No child sink accepted the event, or the policy is
+    /// <see cref="FailurePolicy.FailOnAnyFailure"/> and a sink failed or has an open circuit.
+    /// </exception>
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
         if (_sinks.Count == 1)
@@ -213,6 +221,15 @@ public sealed class CompositeSink : IStorageSink
             _logger.LogDebug(
                 "Skipping sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open until {CircuitResetTime}",
                 i + 1, _sinks.Count, _sinkTypeNames[i], breaker.OpenUntil);
+
+            // A sink that cannot be written is a failed sink for this event. Skipping it would
+            // quietly degrade FailOnAnyFailure to "write to the healthy sinks only".
+            if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+            {
+                throw new InvalidOperationException(
+                    $"Sink {_sinkTypeNames[i]} has an open circuit breaker and FailurePolicy is FailOnAnyFailure.");
+            }
+
             return SinkWriteOutcome.Skipped;
         }
 

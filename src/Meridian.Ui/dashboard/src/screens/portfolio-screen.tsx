@@ -328,11 +328,11 @@ const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; desc
     description: "Open holdings, cash posture, and the record explorer stay aligned with the active paper workflow."
   },
   attribution: {
-    title: "Attribution",
+    title: "Run attribution evidence",
     description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
   },
   "brokerage-sync": {
-    title: "Brokerage sync",
+    title: "Brokerage connection and coverage",
     description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
   }
 };

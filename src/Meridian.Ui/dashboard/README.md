@@ -11,6 +11,9 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui/dashboard
 
+Native capital-call previews accept the server's canonical case-normalized call identity while
+retaining the reviewed plan hash; a preview for another call is rejected before retention.
+
 Security Master's Schedules tab renders the shared declared call/put outcome, including stable
 blocker codes and reasons, evaluation date, retained security version, resolved window count and
 notice diagnostics. An absent outcome keeps the undeclared distinction. The same panel shows the
@@ -114,7 +117,11 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   holding Copy link and the workspace's About text.
 
 The route body carries the task title as an `h2` (`Orders blotter`); routes do not render their
-own `h1` or repeat the workspace name. `Workflow context` lives in the scope picker, collapsed
+own `h1`, repeat the workspace name, or repeat the breadcrumb's page name (`Accounting > Approvals`
+is headed `Approval queue`, not `Approvals`). Accounting and Reporting task modes keep `label` for
+the page name and carry the body heading in `title`. The browser tab title and the route-change
+announcement name the page first, as the breadcrumb does (`Orders - Trading - Meridian`,
+"Orders, Trading loaded."), without the old `Workstation` suffix. `Workflow context` lives in the scope picker, collapsed
 under the scope controls; following one of its links closes the picker. Live, simulated/seeded,
 unknown-provenance and degraded warnings remain outside disclosures.
 
@@ -2266,3 +2273,56 @@ those retained for other workflows. The seven root workspaces and WPF remain unc
 Focused regression coverage includes `reconciliation-view-state.test.tsx`,
 `accounting-screen.reconciliation-continuity.test.ts`, `accounting-screen.reconciliation-workbench.test.tsx`,
 `app-shell.route-focus.test.ts`, and the existing Accounting, shell and accessibility suites.
+
+## Native commitments and capital calls
+
+Accounting → Capital accounts links to the native commitment-to-cash workbench at
+`/accounting/capital-calls`. Select a retained ledger book; the server resolves entity, fund,
+currency, tenant and company authority. Reads disable development fallback and explicitly
+report unavailable persistence or unsupported book scope.
+
+Commitment revisions retain source terms and evidence before explicit review and approval.
+Call previews retain the reviewed server plan hash. The notice date selects one effective
+approved revision per commitment; inactive successors are excluded without reviving older terms.
+Changing that date clears selection and prior previews.
+Issuance and funding only queue governed journal drafts. Posted balances and receipt identities
+come from the shared authority. Decimal text is preserved without browser allocation or rounding.
+Retained calls and their detail show an overdue receivable only when a posted outstanding balance
+remains after the due date, evaluated at the server view's UTC date rather than the local clock.
+Funding requires a distinct receipt identity, bank-line identity and retained bank evidence.
+The cash-receipt panel imports a reviewed BankEvidence/BankStatement JSON observation through
+the native book-scoped authority. It submits only the accepted Evidence Vault reference and
+document ID. The returned source fills bank-line identity, exact amount, effective date and
+evidence; a fresh match confirmation is required before the separate funding-draft action.
+Import conflicts preserve existing cash fields and never create local balances or journals.
+The bounded funding workflow uses the call's accounting period; closed-period or different-period
+receipts require a separately supported correction or receipt workflow and remain blocked here.
+Notice generation creates a Reporting draft; governance and delivery states remain separate.
+Each installment has its own notice action and retained status, including when one investor has
+multiple commitments in the call. New requests explicitly select that line's commitment.
+Each deliberate Generate/Regenerate notice action creates one operation UUID. An unconfirmed
+request retains that exact body for retry, recovering the original Reporting run; a deliberate
+regeneration creates a new operation and run. The shared mutation lock rejects duplicate clicks.
+Before sending, the original operation and exact tenant/company/entity/fund/book/currency/call/
+investor/commitment target are retained in this tab's session storage; no amounts or authority are stored.
+Reloading the original tab offers Recover original notice without sending automatically. The
+record clears only after the response identifies that operation's exact retained run. Missing
+storage blocks sending, and malformed records are removed with an explicit review notice.
+An earlier investor-level pending intent migrates only when that investor has one call line,
+preserving its UUID and original omitted-selector request body. Multiple lines leave that legacy
+intent untouched and explain that automatic recovery cannot select an installment.
+Browser reload recovery lasts while the original tab session retains its intent; server restart
+recovery requires that known operation ID and the authenticated scope to remain available.
+Only an authorized terminal-failure response matching the original operation's exact run enables
+Generate new notice after confirmed failure. The original intent stays retained until that
+explicit action safely retains a new UUID; generic conflicts, denied access, in-flight and unknown
+outcomes keep the original. Failure confirmation is not persisted: after reload, Recover original
+notice must obtain a fresh server confirmation before a new operation is offered. Failed run
+audit history remains on the server.
+
+Changing book selection disables the previous scope until Apply. Scope/session changes discard
+old results, input changes cancel pending previews, and unconfirmed writes retain the same request
+for retry. Journal and report links open the existing review workflows. The seven root workspaces
+remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
+`private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
+capital-call presentation tests.

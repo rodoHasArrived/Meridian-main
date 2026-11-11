@@ -1064,7 +1064,7 @@ describe("OperationsContinuityScreen", () => {
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
 
-    expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Period close workflows" })).toBeInTheDocument();
     const workflows = await screen.findByRole("treegrid", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
     expect(workflows).not.toHaveTextContent(fundAccountId);

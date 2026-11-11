@@ -2,9 +2,9 @@
 
 # `ledger` schema
 
-- Relations: 34
-- Functions/procedures: 17
-- Triggers: 23
+- Relations: 37
+- Functions/procedures: 18
+- Triggers: 26
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -384,6 +384,42 @@ erDiagram
         timestamp_with_time_zone recorded_at
         bigint period_version
     }
+    ledger_private_capital_calls {
+        text tenant_id PK
+        text company_id PK
+        text fund_profile_id PK
+        uuid ledger_book_id PK,FK
+        text call_id PK
+        jsonb document
+    }
+    ledger_private_capital_commitments {
+        text tenant_id PK
+        text company_id PK
+        text fund_profile_id PK
+        uuid ledger_book_id PK,FK
+        text commitment_id PK
+        integer revision PK
+        jsonb document
+    }
+    ledger_private_capital_postings {
+        text tenant_id PK,FK
+        text company_id PK,FK
+        text entity_id
+        text fund_profile_id PK,FK
+        uuid ledger_book_id PK,FK
+        text currency
+        text posting_id PK
+        text commitment_id FK
+        integer commitment_revision FK
+        text call_id FK
+        text installment_id
+        text kind
+        numeric amount
+        text funding_receipt_id
+        text bank_line_id
+        uuid journal_entry_id FK
+        date effective_date
+    }
     ledger_tax_lot_mutations {
         uuid mutation_record_id PK
         uuid mutation_batch_id FK
@@ -494,6 +530,7 @@ erDiagram
     ledger_journal_entries ||--o{ ledger_journal_entry_integrity_seals : "journal_entry_integrity_seals_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_entry_open_postings : "journal_entry_open_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_journal_legs : "fk_journal_legs_journal_entry"
+    ledger_journal_entries ||--o{ ledger_private_capital_postings : "private_capital_postings_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lot_mutations : "tax_lot_mutations_journal_entry_id_fkey"
     ledger_journal_entries ||--o{ ledger_tax_lots : "tax_lots_source_journal_entry_id_fkey"
     ledger_ledger_books ||--o{ ledger_accounting_periods : "accounting_periods_ledger_book_id_fkey"
@@ -502,6 +539,9 @@ erDiagram
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_private_capital_calls : "private_capital_calls_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_private_capital_commitments : "private_capital_commitments_ledger_book_id_fkey"
+    ledger_ledger_books ||--o{ ledger_private_capital_postings : "private_capital_postings_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lot_policies : "tax_lot_policies_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_tax_lots : "tax_lots_ledger_book_id_fkey"
     ledger_ledger_books ||--o{ ledger_wash_sale_deferrals : "wash_sale_deferrals_ledger_book_id_fkey"
@@ -509,6 +549,8 @@ erDiagram
     ledger_open_lot_backfill_receipts ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_resolution_receipt_id_fkey"
     ledger_open_lot_backfill_reviews ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_evidence_record_id_fkey"
     ledger_operations_continuity_workflows ||--o{ ledger_operations_continuity_audit : "operations_continuity_audit_workflow_id_fkey"
+    ledger_private_capital_calls ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profile_fkey"
+    ledger_private_capital_commitments ||--o{ ledger_private_capital_postings : "private_capital_postings_tenant_id_company_id_fund_profil_fkey1"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_evidence : "open_lot_backfill_evidence_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_exceptions : "open_lot_backfill_exceptions_tax_lot_record_id_fkey"
     ledger_tax_lots ||--o{ ledger_open_lot_backfill_receipts : "open_lot_backfill_receipts_tax_lot_record_id_fkey"
@@ -548,6 +590,9 @@ erDiagram
 | `operations_continuity_audit` | table | 19 | `audit_id` | 1 | 5 | - |
 | `operations_continuity_workflows` | table | 13 | `workflow_id` | 0 | 6 | - |
 | `period_close_events` | table | 8 | `event_id` | 1 | 2 | - |
+| `private_capital_calls` | table | 6 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `call_id` | 1 | 2 | Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope. |
+| `private_capital_commitments` | table | 7 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `commitment_id`, `revision` | 1 | 2 | Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata. |
+| `private_capital_postings` | table | 17 | `tenant_id`, `company_id`, `fund_profile_id`, `ledger_book_id`, `posting_id` | 4 | 8 | Immutable issuance and funding receipts committed atomically with their ledger journals and source identities. |
 | `tax_lot_mutations` | table | 25 | `mutation_record_id` | 4 | 5 | - |
 | `tax_lot_policies` | table | 16 | `policy_record_id` | 1 | 3 | - |
 | `tax_lots` | table | 27 | `tax_lot_record_id` | 4 | 8 | - |
