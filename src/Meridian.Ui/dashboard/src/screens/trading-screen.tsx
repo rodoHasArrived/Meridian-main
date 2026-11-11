@@ -79,10 +79,12 @@ import {
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
-import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
+import type { ExecutionAuditEntry, ExecutionControlSnapshot, MetricFreshness, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { pluralizeCount } from "@/lib/format";
+import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
+import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 
 interface TradingScreenProps {
@@ -442,6 +444,7 @@ function TradingLoadingPanel({ state }: { state: TradingLoadingState }) {
 export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
   const { pathname, search } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
+  const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
@@ -568,6 +571,23 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
+  // Headline figures are marked when the broker evidence behind them is stale or cannot be
+  // confirmed. A readiness refresh in flight does not mute them: the last observation is still
+  // the evidence on screen. Scope, as-of and the combined verdict: `withTradingHeadlineEvidence`.
+  const brokerFreshness: MetricFreshness = hasRecoveryProjection
+    ? recoveryPortfolio?.isFresh === false
+      ? "stale"
+      : recoveryPortfolio?.isFresh && !tradingReadiness.errorText ? "fresh" : "unverified"
+    : sourceTone === "ready" ? "fresh" : "unverified";
+  const trustedHeadlineMetrics = withTradingHeadlineEvidence(headlineMetrics, {
+    figureContext,
+    operatingFundAccountId,
+    fundAccountId,
+    brokerageAccount: data.brokerage.account,
+    lastHeartbeat: data.brokerage.lastHeartbeat,
+    brokerFreshness
+  });
+
   return (
     <div className="space-y-5">
       {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
@@ -586,7 +606,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </p>
       </section>
 
-      <StatStrip metrics={headlineMetrics} label="Trading headline metrics" />
+      <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />
 
       <OperationalTrustSummary
         label="Trading data confidence"
