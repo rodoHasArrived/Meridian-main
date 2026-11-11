@@ -195,7 +195,7 @@ public sealed class SecurityMasterGovernedWriteAuthorityTests
     [Fact]
     public async Task Publication_WithNoRevisionStore_FailsClosedWhileGovernanceIsOn()
     {
-        var canonical = new CanonicalAmendHarness(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(_options));
+        var canonical = new CanonicalAmendHarness(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(_options)));
 
         await canonical.Service.Invoking(s => s.AmendApprovedRevisionAsync(
                 AmendPar(1000m, SecurityMasterWriteAuthority.WorkbenchSourceSystem, Guid.NewGuid())))
@@ -206,7 +206,7 @@ public sealed class SecurityMasterGovernedWriteAuthorityTests
     public async Task Publication_WithNoRevisionStore_KeepsTodaysBehaviorWhileGovernanceIsOff()
     {
         _options.Set(new SecurityMasterWorkbenchOptions { RequireGovernedTermAmendments = false });
-        var canonical = new CanonicalAmendHarness(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(_options));
+        var canonical = new CanonicalAmendHarness(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(_options)));
 
         await canonical.Service.AmendApprovedRevisionAsync(
             AmendPar(1000m, SecurityMasterWriteAuthority.WorkbenchSourceSystem, Guid.NewGuid()));
@@ -257,8 +257,119 @@ public sealed class SecurityMasterGovernedWriteAuthorityTests
             .Should().ThrowAsync<GovernedTermAmendmentRequiredException>();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_RefusesDirectAmendments_WithTheSettingItselfUnset(bool byProductionComposition)
+    {
+        var canonical = InstitutionalHarness(byProductionComposition);
+        var service = canonical.Service;
+
+        await service.Invoking(s => s.AmendTermsAsync(AmendPar(1000m, "desk-tool")))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>();
+        await service.Invoking(s => s.AmendPreferredEquityTermsAsync(SecurityId, null!))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>();
+        await service.Invoking(s => s.AmendConvertibleEquityTermsAsync(SecurityId, null!))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>();
+        await service.Invoking(s => s.AmendTermBlockAsync(SecurityId, "callSchedule", null!))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>();
+        canonical.Appended.Should().BeEmpty();
+        canonical.Upserted.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_LeavesSystemIngestAndGovernedPublicationWriting(bool byProductionComposition)
+    {
+        var canonical = InstitutionalHarness(byProductionComposition);
+        ISecurityMasterAmender systemPath = canonical.Service;
+        var revisionId = await SeedRevisionAsync(SecurityMasterRevisionStateDto.Approved);
+
+        await systemPath.AmendTermsAsync(AmendPar(1000m, "edgar"));
+        await canonical.Service.AmendApprovedRevisionAsync(
+            AmendPar(1000m, SecurityMasterWriteAuthority.WorkbenchSourceSystem, revisionId));
+
+        canonical.Upserted.Should().HaveCount(2, "provider ingest and approved publication are not operator-direct edits");
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_PublicationWithNoRevisionStore_FailsClosed(bool byProductionComposition)
+    {
+        var canonical = new CanonicalAmendHarness(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.Institutional(byProductionComposition)));
+
+        await canonical.Service.Invoking(s => s.AmendApprovedRevisionAsync(
+                AmendPar(1000m, SecurityMasterWriteAuthority.WorkbenchSourceSystem, Guid.NewGuid())))
+            .Should().ThrowAsync<SecurityMasterWriteRefusedException>();
+        canonical.Appended.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task InstitutionalProfile_AReloadTurningTheSettingOff_DoesNotReopenTheDirectPath(bool byProductionComposition)
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var requirements = byProductionComposition
+            ? GovernanceRequirementsFor.Production(options)
+            : GovernanceRequirementsFor.NonProduction(options);
+        var canonical = new CanonicalAmendHarness(
+            _projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(requirements), revisionStore: _revisions);
+
+        options.Set(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional,
+            RequireGovernedTermAmendments = false
+        });
+
+        await canonical.Service.Invoking(s => s.AmendTermsAsync(AmendPar(1000m, "desk-tool")))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>("a contradictory reload never relaxes the requirement");
+        canonical.Appended.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task InstitutionalProfile_AReloadBackToStandard_DoesNotReopenTheDirectPath_UntilARestart()
+    {
+        var options = new MutableWorkbenchOptionsMonitor(new SecurityMasterWorkbenchOptions
+        {
+            GovernanceProfile = SecurityMasterGovernanceProfile.Institutional
+        });
+        var running = new CanonicalAmendHarness(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(options)),
+            revisionStore: _revisions);
+
+        // The reload removes the profile and leaves every setting at its default.
+        options.Set(new SecurityMasterWorkbenchOptions());
+
+        await running.Service.Invoking(s => s.AmendTermsAsync(AmendPar(1000m, "desk-tool")))
+            .Should().ThrowAsync<GovernedTermAmendmentRequiredException>("the Institutional profile latches until restart");
+        running.Appended.Should().BeEmpty();
+
+        // A restart composes a new seam over the same, now Standard, configuration.
+        var restarted = new CanonicalAmendHarness(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(options)),
+            revisionStore: _revisions);
+        await restarted.Service.AmendTermsAsync(AmendPar(1000m, "desk-tool"));
+        restarted.Upserted.Should().ContainSingle();
+    }
+
     private CanonicalAmendHarness Harness()
-        => new(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(_options), revisionStore: _revisions);
+        => new(_projectionStore, governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.NonProduction(_options)), revisionStore: _revisions);
+
+    private CanonicalAmendHarness InstitutionalHarness(bool byProductionComposition)
+        => new(
+            _projectionStore,
+            governedTermAmendmentPolicy: new GovernedTermAmendmentPolicy(GovernanceRequirementsFor.Institutional(byProductionComposition)),
+            revisionStore: _revisions);
 
     private async Task<Guid> SeedRevisionAsync(SecurityMasterRevisionStateDto state)
     {

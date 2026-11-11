@@ -619,11 +619,10 @@ public static class WorkstationServiceCollectionExtensions
         services
             .AddOptions<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>()
             .BindConfiguration(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName);
-        // SecurityMasterService enforces this policy on its operator-direct amendment path; the routes
-        // also consult the same options so they can refuse before reading the request's security.
-        services.TryAddSingleton<
-            Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy,
-            Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy>();
+        // The governance requirements seam: SecurityMasterService enforces the governed-amendment
+        // policy over it on its operator-direct path, the command service reads independent review
+        // from it, and the routes consult it so they can refuse before reading the request's security.
+        services.AddSecurityMasterGovernanceRequirements();
         // Phase 3 period-aware propagation: the ledger accounting-period status is the lock
         // authority (default-deny → HardClosed when indeterminate). The restatement resolver routes a
         // closed-period edit into a governed restatement proposal rather than a silent mutation; the

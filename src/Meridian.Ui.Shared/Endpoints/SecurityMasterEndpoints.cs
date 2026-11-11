@@ -406,14 +406,14 @@ public static partial class SecurityMasterEndpoints
             AmendSecurityTermsRequest request,
             HttpContext context,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var detail = await service
@@ -445,14 +445,14 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             var authorizationResult = RequireSecurityMasterMutationPermission(context);
             if (authorizationResult is not null)
                 return authorizationResult;
 
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var current = await queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
@@ -624,10 +624,10 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var currentTerms = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -693,10 +693,10 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var currentTerms = await queryService.GetConvertibleEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -1373,13 +1373,13 @@ public static partial class SecurityMasterEndpoints
             HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             [FromServices] ISecurityMasterService service,
-            [FromServices] Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions,
+            [FromServices] AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements,
             CancellationToken ct) =>
         {
             // Legacy alias for the canonical preferred-equity-terms PATCH route: it reaches the same
             // AmendPreferredEquityTermsAsync amendment, so it carries the same maker-checker gate.
             // Refuse before the existence probe, matching the canonical route.
-            if (RequireGovernedTermAmendmentRoute(workbenchOptions) is { } governedRefusal)
+            if (RequireGovernedTermAmendmentRoute(governanceRequirements) is { } governedRefusal)
                 return governedRefusal;
 
             var existing = await queryService.GetPreferredEquityTermsAsync(securityId, ct).ConfigureAwait(false);
@@ -1562,10 +1562,11 @@ public static partial class SecurityMasterEndpoints
     }
 
     /// <summary>
-    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when
-    /// <see cref="AppSecurityMaster.SecurityMasterWorkbenchOptions.RequireGovernedTermAmendments"/>
-    /// is enabled, the generic amend route, the bespoke preferred/convertible equity PATCH routes,
-    /// and the legacy <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
+    /// ADR-guarded maker-checker enforcement for DIRECT term amendments: when the effective
+    /// <see cref="AppSecurityMaster.SecurityMasterGovernanceSnapshot.RequireGovernedTermAmendments"/>
+    /// is in force (its setting on, or the Institutional profile), the generic amend route, the
+    /// term-block route, the bespoke preferred/convertible equity PATCH routes, and the legacy
+    /// <c>/equities/{securityId}/preferred-terms</c> alias are refused with guidance
     /// to stage the correction through the governed workbench (Draft → Submitted → Approved →
     /// Published), whose canonical-merge publish handler applies the approved value to the golden
     /// record. Null when direct amendments remain permitted.
@@ -1576,8 +1577,8 @@ public static partial class SecurityMasterEndpoints
     /// specifically to force maker-checker still had a direct write surface.
     /// </remarks>
     private static IResult? RequireGovernedTermAmendmentRoute(
-        Microsoft.Extensions.Options.IOptionsMonitor<AppSecurityMaster.SecurityMasterWorkbenchOptions> workbenchOptions)
-        => workbenchOptions.CurrentValue.RequireGovernedTermAmendments
+        AppSecurityMaster.ISecurityMasterGovernanceRequirements governanceRequirements)
+        => governanceRequirements.Current.RequireGovernedTermAmendments
             ? Results.Problem(
                 statusCode: StatusCodes.Status403Forbidden,
                 title: AppSecurityMaster.GovernedTermAmendmentPolicy.RefusalTitle,

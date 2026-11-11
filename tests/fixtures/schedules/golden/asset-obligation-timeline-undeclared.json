@@ -4866,7 +4866,7 @@
       "TermsObligationsTimeline": {
         "SecurityId": "8a0b1c2d-0000-4000-8000-000000000009",
         "ProjectionAsOf": "2026-06-01",
-        "EngineVersion": "asset-obligation-projection-v1\u002Basset-terms-obligations-timeline-v1",
+        "EngineVersion": "asset-obligation-projection-v1\u002Basset-terms-obligations-timeline-declared-v1",
         "Status": "ReviewRequired",
         "Events": [
           {
@@ -4930,6 +4930,43 @@
             "RetainedEvidence": []
           },
           {
+            "TimelineEventId": "e8a8f792-4d92-84e8-a867-6c837b9a066e",
+            "SecurityId": "8a0b1c2d-0000-4000-8000-000000000009",
+            "EventKind": "IssuerCallNoticeDeadline",
+            "EventLane": "Obligations",
+            "EffectiveDate": "2026-12-16",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "Currency": "USD",
+            "Status": "Projected",
+            "SourceDomain": "SecurityMaster",
+            "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000009",
+            "EvidenceLink": null,
+            "LedgerReferenceId": null,
+            "Summary": "Last day to give notice for the 2027-01-15 declared call date. The notice window opens on 2026-11-16.",
+            "ExtensionPayload": {
+              "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+              "termsVersionId": "adbf6079-9c56-6f56-96f9-96e8e8a7866e",
+              "VersionNumber": 2,
+              "obligationKind": "IssuerCallNoticeDeadline",
+              "exerciseKind": "Call",
+              "exerciseDate": "2027-01-15",
+              "redemptionPrice": 101,
+              "earliestNoticeDate": "2026-11-16",
+              "latestNoticeDate": "2026-12-16",
+              "noticeStatus": "Upcoming",
+              "daysToDeadline": 198
+            },
+            "FormulaTrace": "Notice bounds counted back from the exercise date in the declared notice day type.",
+            "LedgerReference": null,
+            "NextAction": "Retain notice evidence for the declared exercise; it decides the actual exercise status.",
+            "RetainedEvidence": []
+          },
+          {
             "TimelineEventId": "dcd87f1f-331a-af07-023d-dfb669494c0d",
             "SecurityId": "8a0b1c2d-0000-4000-8000-000000000009",
             "EventKind": "Coupon",
@@ -4961,6 +4998,43 @@
             "FormulaTrace": "fixed-coupon",
             "LedgerReference": null,
             "NextAction": "Review ledger classification before posting support.",
+            "RetainedEvidence": []
+          },
+          {
+            "TimelineEventId": "09854d2a-b320-388d-3641-35fb3d99053c",
+            "SecurityId": "8a0b1c2d-0000-4000-8000-000000000009",
+            "EventKind": "IssuerCallExercise",
+            "EventLane": "Obligations",
+            "EffectiveDate": "2027-01-15",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "Currency": "USD",
+            "Status": "Projected",
+            "SourceDomain": "SecurityMaster",
+            "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000009",
+            "EvidenceLink": null,
+            "LedgerReferenceId": null,
+            "Summary": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "ExtensionPayload": {
+              "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+              "termsVersionId": "adbf6079-9c56-6f56-96f9-96e8e8a7866e",
+              "VersionNumber": 2,
+              "obligationKind": "IssuerCallExercise",
+              "exerciseKind": "Call",
+              "exerciseDate": "2027-01-15",
+              "redemptionPrice": 101,
+              "earliestNoticeDate": "2026-11-16",
+              "latestNoticeDate": "2026-12-16",
+              "noticeStatus": "Upcoming",
+              "daysToDeadline": 198
+            },
+            "FormulaTrace": "Contractual exercise date resolved from the declared schedule by the bond exercise notice watch; not an exercise forecast.",
+            "LedgerReference": null,
+            "NextAction": "Review the declared exercise and downstream ledger treatment; this event grants no exercise, notice, payment or posting authority.",
             "RetainedEvidence": []
           },
           {
@@ -5038,7 +5112,19 @@
         "GeneratedAt": "2026-06-01T00:00:00\u002B00:00",
         "SourceDomain": "SecurityMaster",
         "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000009",
-        "ExtensionPayload": null,
+        "ExtensionPayload": {
+          "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+          "declaredExercise": {
+            "status": "Resolved",
+            "securityVersion": 2,
+            "asOf": "2026-06-01",
+            "windowCount": 1,
+            "blockers": [],
+            "diagnostics": [
+              "Notice windows grant no exercise, notice, payment or posting authority."
+            ]
+          }
+        },
         "AssetClass": "CertificateOfDeposit",
         "Variances": [],
         "RetainedEvidence": []
@@ -5272,7 +5358,7 @@
       "TermsObligationsTimeline": {
         "SecurityId": "8a0b1c2d-0000-4000-8000-000000000010",
         "ProjectionAsOf": "2026-06-01",
-        "EngineVersion": "asset-obligation-projection-v1\u002Basset-terms-obligations-timeline-v1",
+        "EngineVersion": "asset-obligation-projection-v1\u002Basset-terms-obligations-timeline-declared-v1",
         "Status": "ReviewRequired",
         "Events": [
           {
@@ -5486,6 +5572,80 @@
             "RetainedEvidence": []
           },
           {
+            "TimelineEventId": "9be0b3ad-3d53-38bb-9a7f-13be27f88452",
+            "SecurityId": "8a0b1c2d-0000-4000-8000-000000000010",
+            "EventKind": "IssuerCallNoticeDeadline",
+            "EventLane": "Obligations",
+            "EffectiveDate": "2026-12-16",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "Currency": "USD",
+            "Status": "Projected",
+            "SourceDomain": "SecurityMaster",
+            "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000010",
+            "EvidenceLink": null,
+            "LedgerReferenceId": "security-master:8a0b1c2d-0000-4000-8000-000000000010",
+            "Summary": "Last day to give notice for the 2027-01-15 declared call date. The notice window opens on 2026-11-16.",
+            "ExtensionPayload": {
+              "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+              "termsVersionId": "742f7121-75a3-9b6b-2455-d47e68343268",
+              "VersionNumber": 2,
+              "obligationKind": "IssuerCallNoticeDeadline",
+              "exerciseKind": "Call",
+              "exerciseDate": "2027-01-15",
+              "redemptionPrice": 101,
+              "earliestNoticeDate": "2026-11-16",
+              "latestNoticeDate": "2026-12-16",
+              "noticeStatus": "Upcoming",
+              "daysToDeadline": 198
+            },
+            "FormulaTrace": "Notice bounds counted back from the exercise date in the declared notice day type.",
+            "LedgerReference": "security-master:8a0b1c2d-0000-4000-8000-000000000010",
+            "NextAction": "Retain notice evidence for the declared exercise; it decides the actual exercise status.",
+            "RetainedEvidence": []
+          },
+          {
+            "TimelineEventId": "2ceb8060-0c7b-0689-b100-28bac116fece",
+            "SecurityId": "8a0b1c2d-0000-4000-8000-000000000010",
+            "EventKind": "IssuerCallExercise",
+            "EventLane": "Obligations",
+            "EffectiveDate": "2027-01-15",
+            "PayDate": null,
+            "AccrualStartDate": null,
+            "AccrualEndDate": null,
+            "ExpectedAmount": null,
+            "ActualAmount": null,
+            "VarianceAmount": null,
+            "Currency": "USD",
+            "Status": "Projected",
+            "SourceDomain": "SecurityMaster",
+            "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000010",
+            "EvidenceLink": null,
+            "LedgerReferenceId": "security-master:8a0b1c2d-0000-4000-8000-000000000010",
+            "Summary": "Issuer may redeem at 101 percent of par on this declared call date.",
+            "ExtensionPayload": {
+              "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+              "termsVersionId": "742f7121-75a3-9b6b-2455-d47e68343268",
+              "VersionNumber": 2,
+              "obligationKind": "IssuerCallExercise",
+              "exerciseKind": "Call",
+              "exerciseDate": "2027-01-15",
+              "redemptionPrice": 101,
+              "earliestNoticeDate": "2026-11-16",
+              "latestNoticeDate": "2026-12-16",
+              "noticeStatus": "Upcoming",
+              "daysToDeadline": 198
+            },
+            "FormulaTrace": "Contractual exercise date resolved from the declared schedule by the bond exercise notice watch; not an exercise forecast.",
+            "LedgerReference": "security-master:8a0b1c2d-0000-4000-8000-000000000010",
+            "NextAction": "Review the declared exercise and downstream ledger treatment; this event grants no exercise, notice, payment or posting authority.",
+            "RetainedEvidence": []
+          },
+          {
             "TimelineEventId": "ea997c57-88e9-1e79-641b-9844694c80b0",
             "SecurityId": "8a0b1c2d-0000-4000-8000-000000000010",
             "EventKind": "PrincipalMaturity",
@@ -5526,7 +5686,19 @@
         "GeneratedAt": "2026-06-01T00:00:00\u002B00:00",
         "SourceDomain": "SecurityMaster",
         "SourceEntityId": "8a0b1c2d-0000-4000-8000-000000000010",
-        "ExtensionPayload": null,
+        "ExtensionPayload": {
+          "engineVersion": "asset-terms-obligations-timeline-declared-v1",
+          "declaredExercise": {
+            "status": "Resolved",
+            "securityVersion": 2,
+            "asOf": "2026-06-01",
+            "windowCount": 1,
+            "blockers": [],
+            "diagnostics": [
+              "Notice windows grant no exercise, notice, payment or posting authority."
+            ]
+          }
+        },
         "AssetClass": "StructuredCredit",
         "Variances": [],
         "RetainedEvidence": []

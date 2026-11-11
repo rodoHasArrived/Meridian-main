@@ -39,6 +39,42 @@ public sealed class SecurityMasterDataQualityServiceTests
     }
 
     [Fact]
+    public async Task RunQualityChecksAsync_ReportsListingIdentityInconsistencies_AndNothingForAConsistentRecord()
+    {
+        var (sut, store) = BuildSut();
+        var consistent = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD") with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { currency = "USD", primaryListingMic = "XNAS", exchange = "NASDAQ" }),
+            Identifiers =
+            [
+                new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "TEST:XNAS", true, DateTimeOffset.UtcNow.AddDays(-30)),
+                new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "TEST:XLON", false, DateTimeOffset.UtcNow.AddDays(-30))
+            ]
+        };
+        var inconsistent = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD") with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { currency = "USD", primaryListingMic = "XNAS", exchange = "NYSE" }),
+            Identifiers = [new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "TEST:XNYS", true, DateTimeOffset.UtcNow.AddDays(-30))]
+        };
+        var malformed = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD") with
+        {
+            CommonTerms = JsonSerializer.SerializeToElement(new { currency = "USD", primaryListingMic = "NASDAQ" })
+        };
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { consistent, inconsistent, malformed });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Where(v => v.RuleId.StartsWith("LI", StringComparison.Ordinal))
+            .Select(v => (v.SecurityId, v.RuleId, v.Category, v.Severity))
+            .Should().BeEquivalentTo(new[]
+            {
+                (inconsistent.SecurityId, "LI002", DataQualityRuleCategory.ValueConsistency, DataQualityRuleSeverity.Warning),
+                (inconsistent.SecurityId, "LI003", DataQualityRuleCategory.ValueConsistency, DataQualityRuleSeverity.Error),
+                (malformed.SecurityId, "LI001", DataQualityRuleCategory.ValueConsistency, DataQualityRuleSeverity.Error)
+            });
+    }
+
+    [Fact]
     public async Task RunQualityChecksAsync_FlagsBondMissingMaturity()
     {
         var (sut, store) = BuildSut();
