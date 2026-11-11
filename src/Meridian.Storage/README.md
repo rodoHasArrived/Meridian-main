@@ -6,10 +6,12 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Storage
+
+`BackfillStatusStore` keeps a verified coverage sidecar (`_status/backfill-symbol-coverage.json`, atomic write): per symbol, granularity, provider and feed, the session ranges whose bars were written. Backfill resume reads only this sidecar; the date-only checkpoint and bar-count sidecars remain for status surfaces and are not evidence for skipping. An unreadable or newer-format coverage file is treated as no coverage. `BackfillCoverageMath` owns the range merge and missing-range arithmetic.
 
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
