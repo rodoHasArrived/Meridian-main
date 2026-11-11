@@ -141,7 +141,9 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Bond.stampOneStrayBlock"] = [],
             ["Bond.stampTwoBlockAsNumber"] = [],
             ["Swap.stampOneStrayLegBlocks"] = [SwapTermsLegPaths],
-            ["Bond.zeroRateBullet"] = [ScheduleRowPaths],
+            // Owner decision 2026-11-11: the calculated bullet/sinker rows also state the interval
+            // their interest was measured over, so recurring accruals can day-weight a coupon.
+            ["Bond.zeroRateBullet"] = [ScheduleRowPaths, ["schedule[].accrualStart", "schedule[].accrualEnd"]],
             ["Bond.zeroRateContractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
             ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
         };

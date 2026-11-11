@@ -76,7 +76,7 @@ public sealed record PrivateCapitalFundEventLedgerEvent(
         IsApprovalComplete &&
         LedgerImpacts.Count > 0 &&
         LedgerImpacts.All(static item => item.IsBalanced) &&
-        CapitalAccountImpacts.Count > 0;
+        (CapitalAccountImpacts.Count > 0 || PrivateCapitalFundEventLedgerProjector.IsIncomeOnlyEvent(FundEventType));
 
     public bool IsReportReady => IsPostingReady && ReportOutputs.Any(static item => item.IsPublished && item.EvidenceLinks.Count > 0);
 }
@@ -350,6 +350,10 @@ public static class PrivateCapitalFundEventLedgerProjector
             .ToArray();
     }
 
+    /// <summary>Fund events that are income to the fund and move no investor capital account.</summary>
+    internal static bool IsIncomeOnlyEvent(string? fundEventType)
+        => string.Equals(fundEventType?.Trim(), "DefaultInterest", StringComparison.OrdinalIgnoreCase);
+
     private static IReadOnlyList<PrivateCapitalFundEventIssue> BuildIssues(
         IReadOnlyList<JournalEntry> entries,
         string? fundEventId,
@@ -442,7 +446,9 @@ public static class PrivateCapitalFundEventLedgerProjector
             AddIssue(issues, "private-capital.ledger-impact-unbalanced", PrivateCapitalFundEventIssueSeverity.Critical, "At least one private-capital ledger impact is unbalanced.");
         }
 
-        if (capitalAccountImpacts.Count == 0)
+        // Default interest is income to the fund: a receivable and a revenue leg, with no
+        // movement on the investor's capital account to require.
+        if (capitalAccountImpacts.Count == 0 && !IsIncomeOnlyEvent(fundEventType))
         {
             AddIssue(issues, "private-capital.capital-account-impact-missing", PrivateCapitalFundEventIssueSeverity.Critical, "Posted private-capital event has no capital-account subledger impact.");
         }

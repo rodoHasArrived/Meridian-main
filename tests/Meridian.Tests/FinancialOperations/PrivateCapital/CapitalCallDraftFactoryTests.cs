@@ -126,6 +126,15 @@ public sealed class CapitalCallDraftFactoryTests
         draft.Lines.Should().Contain(line =>
             line.account.AccountType == LedgerAccountType.Revenue && line.credit == 5_753.42m);
         draft.Lines.Should().NotContain(line => line.account.AccountType == LedgerAccountType.Equity);
+
+        // Posted, it has no capital-account leg by design and must not read as a broken event.
+        var ledger = new Meridian.Ledger.Ledger();
+        AutomatedJournalApproval.Submit(draft, "ops-controller", OccurredAt, "submit", ["evidence-1"])
+            .Approve("cfo", OccurredAt, "approve", ["evidence-1"])
+            .PostTo(ledger, "cfo", OccurredAt, "post", ["evidence-1"]);
+        var fundEvent = PrivateCapitalFundEventLedgerProjector.Project(ledger).Events.Should().ContainSingle().Subject;
+        fundEvent.Issues.Should().NotContain(issue => issue.Code == "private-capital.capital-account-impact-missing");
+        fundEvent.IsPostingReady.Should().BeTrue();
     }
 
     [Fact]

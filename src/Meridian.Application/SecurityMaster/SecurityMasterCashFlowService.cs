@@ -517,7 +517,12 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 ToUtcDateTimeOffset(date),
                 RoundCash(principal),
                 interest,
-                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis)));
+                principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
+            {
+                // The interval the interest was measured over, so it can be accrued by day.
+                AccrualStart = accrualStart,
+                AccrualEnd = date
+            });
         }
 
         return new StructuredCashFlowProjectionDto(

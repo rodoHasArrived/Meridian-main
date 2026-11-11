@@ -103,7 +103,8 @@ Rules that keep an amount from being drafted twice:
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
-  coupon period sum to the coupon exactly. A projection that states no accrual interval for a
+  coupon period sum to the coupon exactly. The calculated bullet and sinker projection states the
+  interval each coupon was measured over. A projection that states no accrual interval for a
   coupon period blocks the occurrence instead of recognizing the coupon whole on its payment
   date, and a bond whose Security Master currency is not the book currency is blocked, because
   its amounts would be drafted unconverted. Coupon accrues only on the lots the book holds: each
