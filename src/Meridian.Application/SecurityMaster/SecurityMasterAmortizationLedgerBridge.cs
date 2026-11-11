@@ -44,11 +44,23 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// <param name="FinancialAccountId">Optional account scope for the ledger accounts.</param>
 /// <param name="Scenario">Rate scenario used to request the projection.</param>
 /// <param name="MaxPeriods">Optional cap on how many schedule periods to post (null = all).</param>
+/// <param name="ProjectionAsOf">
+/// Instant the projection is requested for. The projection only contains flows on or after its
+/// as-of date, so a caller posting one accounting period asks for the projection as of that
+/// period's start. Null requests the projection as of now.
+/// </param>
+/// <param name="AmortizedThrough">
+/// Date through which premium/discount amortization has already been recognized. Amortization up
+/// to and including this date is excluded from the first posted period, so a caller posting
+/// period by period never books the same amortization twice. Null amortizes from acquisition.
+/// </param>
 public sealed record AmortizationLedgerPostingContext(
     IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
     StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base,
-    int? MaxPeriods = null);
+    int? MaxPeriods = null,
+    DateTimeOffset? ProjectionAsOf = null,
+    DateOnly? AmortizedThrough = null);
 
 /// <inheritdoc />
 public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
@@ -78,7 +90,9 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
 
         var postingContext = context ?? new AmortizationLedgerPostingContext();
-        var projection = await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false);
+        var projection = postingContext.ProjectionAsOf is { } projectionAsOf
+            ? await _cashFlowService.GetProjectionAsOfAsync(securityId, postingContext.Scenario, projectionAsOf, ct).ConfigureAwait(false)
+            : await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false);
         if (projection is null || projection.Schedule.Count == 0)
         {
             _logger.LogDebug(
@@ -118,7 +132,9 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             ?? DateOnly.FromDateTime(schedule[^1].PeriodDate.UtcDateTime.Date);
         var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity);
 
-        var allocatedPremiumDiscount = 0m;
+        var allocatedPremiumDiscount = postingContext.AmortizedThrough is { } amortizedThrough
+            ? RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, amortizedThrough)))
+            : 0m;
         var posted = 0;
 
         for (var i = 0; i < schedule.Count; i++)

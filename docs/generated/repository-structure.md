@@ -6299,6 +6299,7 @@ Meridian-main
 │   │   ├── PeriodCloseProjector.cs
 │   │   ├── PeriodReopenEvidence.cs
 │   │   ├── PortfolioPricingRule.cs
+│   │   ├── PostingCalculationNotYetConnectedAttribute.cs
 │   │   ├── PreferredReturnCalculator.cs
 │   │   ├── PrivateCapitalCommitments.cs
 │   │   ├── PrivateCapitalFundEventLedgerProjector.cs
@@ -9006,6 +9007,7 @@ Meridian-main
 │   │   │   ├── ProviderReadinessService.cs
 │   │   │   ├── ReconciliationApiService.cs
 │   │   │   ├── ReconciliationBreakQueueProjection.cs
+│   │   │   ├── RecurringJournalCalculations.cs
 │   │   │   ├── RecurringJournalPeriodAuthority.cs
 │   │   │   ├── RecurringJournalRunner.cs
 │   │   │   ├── RecurringJournalSubjectAuthority.cs
@@ -10019,6 +10021,10 @@ Meridian-main
 │   │   │   │   └── servicer-personal-loans-2026-06-04.csv
 │   │   │   ├── generate_mixed_credit_status_set.py
 │   │   │   └── mixed-credit-status-set.json
+│   │   ├── recurring-journal
+│   │   │   └── golden
+│   │   │       ├── calculated-period-drafts.json
+│   │   │       └── README.md
 │   │   ├── schedules
 │   │   │   ├── golden
 │   │   │   │   ├── asset-obligation-timeline-undeclared.json
@@ -10690,6 +10696,7 @@ Meridian-main
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
 │   │   │   ├── LayerBoundaryTests.cs
 │   │   │   ├── LedgerNetBalanceCentralizationTests.cs
+│   │   │   ├── PostingCalculationConnectionTests.cs
 │   │   │   ├── ProjectReferenceGraph.cs
 │   │   │   ├── ProjectReferenceGraphTests.cs
 │   │   │   ├── SchedulePeriodRollingRatchetTests.cs
@@ -11942,6 +11949,7 @@ Meridian-main
 │   │   │   ├── PostgresReportingDeploymentProbeTests.cs
 │   │   │   ├── QualityTrendStoreTests.cs
 │   │   │   ├── QuotaEnforcementServiceTests.cs
+│   │   │   ├── RecurringJournalCalculationPostgresTests.cs
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
@@ -12226,6 +12234,7 @@ Meridian-main
 │   │   │   ├── ReconciliationApiServiceTests.cs
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
+│   │   │   ├── RecurringJournalCalculationTests.cs
 │   │   │   ├── RecurringJournalLifecycleTests.cs
 │   │   │   ├── RecurringJournalRunnerTests.cs
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs

@@ -356,7 +356,10 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
                 throw new InvalidOperationException("The recurring schedule references a different template.");
             if (template.Scope is not null && template.Scope != scope)
                 throw new InvalidOperationException("The recurring template belongs to a different accounting scope.");
-            _ = RecurringJournalPlanner.Plan(schedule, template.Template, 1);
+            // A fixed-line template must resolve to a balanced journal from the schedule's terms.
+            // A calculated template has no lines to resolve; its terms are checked when it runs.
+            if (template.Template.Calculation is null)
+                _ = RecurringJournalPlanner.Plan(schedule, template.Template, 1);
             var version = _document.Schedules.Where(item => Same(item.ScheduleId, schedule.ScheduleId))
                 .Select(item => item.Version).DefaultIfEmpty().Max();
             var original = _document.Schedules.FirstOrDefault(item => Same(item.ScheduleId, schedule.ScheduleId));
@@ -425,8 +428,8 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
             string? reason, string? periodId, string? lockOwner, string? reopenPath, DateTimeOffset now, CancellationToken ct = default)
         {
             RequireUsable();
-            if (state is not (RecurringOccurrenceState.Drafted or RecurringOccurrenceState.Blocked))
-                throw new InvalidOperationException("Only a drafted or blocked result can complete recurring intake.");
+            if (state is not (RecurringOccurrenceState.Drafted or RecurringOccurrenceState.Blocked or RecurringOccurrenceState.NoDraftRequired))
+                throw new InvalidOperationException("Only a drafted, blocked or no-draft-required result can complete recurring intake.");
             var existing = _document.Occurrences.SingleOrDefault(item => item.OccurrenceKey == key)
                 ?? throw new InvalidOperationException("The recurring occurrence has not been claimed.");
             if (existing.State == RecurringOccurrenceState.DefinitionChanged)

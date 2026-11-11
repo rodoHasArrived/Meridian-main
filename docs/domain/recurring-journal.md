@@ -2,7 +2,7 @@
 
 **Status:** active guidance
 **Owner:** Accounting and Ledger
-**Reviewed:** 2026-10-01
+**Reviewed:** 2026-11-11
 
 A recurring journal schedules a versioned, balanced journal template for a cadence and an exact
 tenant, company, fund profile, ledger book, entity and currency. Each effective date identifies one
@@ -49,6 +49,50 @@ existing Accounting Close reopen workflow. Reopening a period requires that work
 and authorization; retrying an occurrence cannot reopen it. A later period version never rewrites
 the period evidence retained when the draft was created.
 
+## Calculated journals
+
+A template either defines fixed lines or names a posting calculation (`calculation.kind`, with
+optional string `inputs`). A calculated template has no lines; the runner asks the registered
+calculation for them when the occurrence first becomes a draft. Numeric terms stay in the
+schedule's parameters, so a rate or high-water-mark change is a new schedule version. The draft is
+an ordinary recurring draft: same occurrence identity, source evidence, approval and posting
+flow. Its memo states the inputs the amount came from.
+
+| Kind | Reads | Schedule terms and template inputs |
+| --- | --- | --- |
+| `management-fee-accrual` | Ledger net assets at the close of the day before the accrual window | `annualRate`, `yearBasisDays` |
+| `performance-fee-accrual` | Ledger net assets and the performance fee already payable at the effective date | `performanceFeeRate`, `highWaterMark`, `hurdleAmount`, `crystallize` (0 or 1) |
+| `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
+| `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId` |
+| `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the FX rate for the effective date | none |
+
+Rules that keep an amount from being drafted twice:
+
+- **One accrual window per occurrence.** The window ends on the effective date and starts the day
+  after the previous occurrence; the first window starts at the covering period's start date.
+- **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
+  nothing to post is recorded as `NoDraftRequired` with its reason and is not retried.
+- **Performance fee is cumulative.** The fee above the high-water mark and hurdle is compared with
+  the performance fee already payable, and only the difference is drafted (a reversal when it has
+  fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
+- **FX revaluation is incremental.** An account's carrying value is its book-currency balance,
+  which includes earlier posted revaluations, so each occurrence drafts only the change.
+- **A coupon period belongs to one window.** The bond calculation drafts the coupon periods whose
+  period date falls in the window and amortizes premium or discount for those periods only.
+
+Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
+non-postable cash-flow projection, or a missing FX rate blocks the occurrence with its reason.
+
+Current limits. Coupon income is recognized on the projection's coupon period date, not accrued
+daily between coupon dates, and projected principal paydowns are not drafted. The FX rate comes
+from the reconciliation rate table (`reconciliation/fx-rates.json`); the rate evidence
+`W12-BOOK-001` requires (source revision, direction, staleness) is not yet retained. Revaluation
+needs journal legs that record a transaction currency. The high-water mark and hurdle are schedule
+terms an operator maintains; there is no fee-terms store.
+
+`PostingCalculationConnectionTests` fails when a method that builds journal drafts or lines has
+no production caller and is not marked `[PostingCalculationNotYetConnected("reason")]`.
+
 ## Definition correction and recovery
 
 Updating a schedule or template appends a new definition. If an existing occurrence names different
@@ -72,6 +116,10 @@ distributed scheduling deployment.
 
 - [Durable definitions and occurrence store](../../src/Meridian.FinancialOperations/FundAdministration/FileRecurringJournalStore.cs)
 - [Runner and shared queue projection](../../src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs)
+- [Posting calculations](../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs)
+- [Calculated draft scenarios](../../tests/Meridian.Tests/Ui/RecurringJournalCalculationTests.cs)
+- [PostgreSQL golden-file run](../../tests/Meridian.Tests/Storage/RecurringJournalCalculationPostgresTests.cs)
+- [Posting-calculation connection guard](../../tests/Meridian.Tests/Architecture/PostingCalculationConnectionTests.cs)
 - [Authoritative period resolution](../../src/Meridian.Ui.Shared/Services/RecurringJournalPeriodAuthority.cs)
 - [Authoritative subject membership](../../src/Meridian.Ui.Shared/Services/RecurringJournalSubjectAuthority.cs)
 - [Recurring evidence guard](../../src/Meridian.Ledger/RecurringJournalEvidence.cs)

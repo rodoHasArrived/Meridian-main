@@ -92,6 +92,9 @@ public static partial class LedgerEndpoints
                     return EndpointHelpers.Forbidden();
                 if (!string.Equals(request.Template.TemplateId, request.Schedule.TemplateId, StringComparison.OrdinalIgnoreCase))
                     return Results.BadRequest(new { error = "Schedule and template identity must match." });
+                if (request.Template.Calculation is { } calculation &&
+                    context.RequestServices.GetService<RecurringJournalRunner>()?.SupportsCalculation(calculation.Kind) != true)
+                    return Results.BadRequest(new { error = $"Posting calculation '{calculation.Kind}' is not available on this host." });
                 var now = (context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
                 var schedule = request.Schedule with
                 {

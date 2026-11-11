@@ -172,6 +172,11 @@ uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` 
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
+`JournalTemplate.Calculation` marks a template whose lines come from a registered posting
+calculation each period; the recurring-journal runner uses it to draft management fees,
+performance fees, expense accruals, bond coupon and amortization, and FX revaluation for approval
+(see `docs/domain/recurring-journal.md`). `PostingCalculationNotYetConnectedAttribute` records a
+finished draft or line builder that deliberately has no production caller yet.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
 base-currency ledger posting lines while preserving local amount, currency, and FX-rate evidence.
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily

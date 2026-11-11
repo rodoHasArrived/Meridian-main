@@ -353,4 +353,41 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         posted.Should().Be(0);
         ledger.Journal.Should().BeEmpty();
     }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_AmortizedThrough_ExcludesAmortizationAlreadyRecognized()
+    {
+        // 365-day life from 2026-01-01; 20 of premium. Posting only the second half must not
+        // repeat the amortization already recognized through 2026-07-02 (182 of 365 days).
+        var projection = Projection(TermsWith(maturity: new DateOnly(2027, 1, 1)), Period(2027, 1, 1, interest: 20m));
+        var bridge = BuildBridge(CashFlowServiceWith(projection));
+        var whole = new DomainLedger();
+        var remainder = new DomainLedger();
+
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, whole,
+            new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)]));
+        await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, remainder,
+            new AmortizationLedgerPostingContext(OpenLots: [Lot(quantity: 10m, unitCost: 102m)],
+                AmortizedThrough: new DateOnly(2026, 7, 2)));
+
+        whole.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-20m);
+        remainder.GetBalance(LedgerAccounts.Securities(Ticker)).Should().Be(-10.03m);
+        remainder.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+    }
+
+    [Fact]
+    public async Task PostProjectedCashFlowsAsync_ProjectionAsOf_RequestsTheProjectionForThatInstant()
+    {
+        var asOf = new DateTimeOffset(2026, 3, 1, 0, 0, 0, TimeSpan.Zero);
+        var service = Substitute.For<ISecurityMasterCashFlowService>();
+        service.GetProjectionAsOfAsync(SecurityId, StructuredCashFlowScenario.Base, asOf, Arg.Any<CancellationToken>())
+            .Returns(Projection(Period(2026, 3, 31, interest: 30m)));
+        var ledger = new DomainLedger();
+
+        var posted = await BuildBridge(service).PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,
+            new AmortizationLedgerPostingContext(ProjectionAsOf: asOf));
+
+        posted.Should().Be(1);
+        await service.DidNotReceive().GetProjectionAsync(SecurityId, StructuredCashFlowScenario.Base, Arg.Any<CancellationToken>());
+    }
 }

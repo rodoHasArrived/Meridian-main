@@ -58,7 +58,9 @@ public enum RecurringOccurrenceState
     Claimed,
     Drafted,
     Blocked,
-    DefinitionChanged
+    DefinitionChanged,
+    /// <summary>A calculated occurrence that correctly produced nothing to post; it is not retried.</summary>
+    NoDraftRequired
 }
 
 public sealed record RecurringOccurrenceTransition(

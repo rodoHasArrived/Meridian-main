@@ -323,4 +323,22 @@ public sealed class RecurringJournalStoreTests : IDisposable
         if (Directory.Exists(_directory))
             Directory.Delete(_directory, recursive: true);
     }
+
+    [Fact]
+    public void FixedLineTemplateDefinition_SerializesWithoutACalculationMember()
+    {
+        // Retained definitions are fingerprinted from this JSON; adding calculated templates must
+        // not change the bytes of any fixed-line definition registered before them.
+        var definition = new RecurringTemplateDefinition("fixed", 1, "", new JournalTemplate("fixed", "Fixed", "",
+            [new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 1m),
+             new JournalTemplateLine(LedgerAccounts.RealizedGain, JournalTemplateSide.Credit, FixedAmount: 1m)]),
+            "controller", DateTimeOffset.UnixEpoch);
+        var calculated = definition with
+        {
+            Template = new JournalTemplate("fixed", "Fixed", "", [], calculation: new JournalTemplateCalculation("fx-revaluation"))
+        };
+
+        RecurringJournalIdentity.SerializeTemplate(definition).Should().NotContain("alculation");
+        RecurringJournalIdentity.SerializeTemplate(calculated).Should().Contain("\"calculation\":{\"kind\":\"fx-revaluation\"");
+    }
 }

@@ -1127,6 +1127,22 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Meridian.FinancialOperations.FundAdministration.FileRecurringJournalStore>());
         services.TryAddSingleton<IRecurringJournalSubjectAuthority, RecurringJournalSubjectAuthority>();
         services.TryAddSingleton<IRecurringJournalPeriodAuthority, RecurringJournalPeriodAuthority>();
+        // Posting calculations a calculated recurring template can name. Each reads authoritative
+        // inputs and yields one approval draft per occurrence; none submits, approves or posts.
+        services.TryAddSingleton<IRecurringJournalCalculationInputs>(sp =>
+            new LedgerRecurringJournalCalculationInputs(sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>()));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, ManagementFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, PerformanceFeeAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FundExpenseAccrualCalculation>());
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedIncomeAccrualCalculation>(sp =>
+            new FixedIncomeAccrualCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>())));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
+            new FxRevaluationCalculation(
+                sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
+                sp.GetService<Meridian.FinancialOperations.Reconciliation.IReconciliationFxRateProvider>())));
         services.TryAddSingleton<RecurringJournalRunner>();
         services.TryAddSingleton<IRecurringJournalQueueSource>(sp => sp.GetRequiredService<RecurringJournalRunner>());
         services.TryAddSingleton<AutomatedJournalScheduledWorker>();

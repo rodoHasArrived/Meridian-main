@@ -13,7 +13,8 @@ public sealed record PerformanceFeeAccrualDraftResult(
     decimal FeeBase,
     decimal PerformanceFee,
     decimal CrystallizedFee,
-    decimal NewHighWaterMark)
+    decimal NewHighWaterMark,
+    decimal PeriodAccrual = 0m)
 {
     /// <summary>True when a fee accrued and a posting draft was produced.</summary>
     public bool HasFee => Draft is not null && PerformanceFee > 0m;
@@ -80,6 +81,12 @@ public static class FundEconomicsJournalFactory
     /// performance fee expense, credit performance fee payable. Returns the crystallization outputs
     /// (including the advanced high-water mark) even when no fee is due, so the caller can persist
     /// the mark. The draft is null when the fee is zero.
+    /// <para>
+    /// <paramref name="alreadyAccrued"/> is the performance fee already accrued and still payable
+    /// against the same high-water mark. The draft then books only the change needed to reach the
+    /// cumulative fee, so accruing every period never books the same gain twice; when the
+    /// cumulative fee has fallen below what was accrued, the draft reverses the excess.
+    /// </para>
     /// </summary>
     public static PerformanceFeeAccrualDraftResult BuildPerformanceFeeAccrualDraft(
         string fundId,
@@ -91,15 +98,45 @@ public static class FundEconomicsJournalFactory
         DateOnly effectiveDate,
         DateTimeOffset occurredAtUtc,
         string periodId,
-        IReadOnlyList<JournalEvidenceReference>? evidenceReferences = null)
+        IReadOnlyList<JournalEvidenceReference>? evidenceReferences = null,
+        decimal alreadyAccrued = 0m)
     {
         var normalizedFundId = RequireId(fundId, nameof(fundId));
         var normalizedPeriodId = RequireId(periodId, nameof(periodId));
+        if (alreadyAccrued < 0m)
+            throw new ArgumentOutOfRangeException(nameof(alreadyAccrued), alreadyAccrued, "Already-accrued performance fee cannot be negative.");
         var accrual = FSharpLedger.LedgerInterop.PerformanceFeeAccrual(
             endingNavBeforeFee, priorHighWaterMark, hurdleAmount, performanceFeeRate, crystallize);
+        var periodAccrual = accrual.PerformanceFee - alreadyAccrued;
 
         AutomatedJournalDraft? draft = null;
-        if (accrual.PerformanceFee > 0m)
+        if (alreadyAccrued > 0m && periodAccrual != 0m)
+        {
+            var amount = decimal.Round(Math.Abs(periodAccrual), 2, MidpointRounding.AwayFromZero);
+            var idempotencyKey = FormattableString.Invariant(
+                $"performance-fee:{normalizedFundId}:{normalizedPeriodId}:{effectiveDate:yyyyMMdd}");
+            var description = FormattableString.Invariant(
+                $"Performance fee accrual {(periodAccrual > 0m ? "increase" : "reversal")} for {normalizedFundId} period {normalizedPeriodId} ({FormatAmount(amount)}: cumulative {FormatAmount(accrual.PerformanceFee)} less {FormatAmount(alreadyAccrued)} already accrued)");
+            var expense = LedgerAccounts.PerformanceFeeExpenseFor(normalizedFundId);
+            var payable = LedgerAccounts.PerformanceFeePayableFor(normalizedFundId);
+
+            draft = Build(
+                normalizedFundId,
+                AutomatedJournalEventKind.PerformanceFeeAccrued,
+                "PerformanceFee",
+                FormattableString.Invariant($"fund-event:{normalizedFundId}:performance-fee:{normalizedPeriodId}"),
+                normalizedPeriodId,
+                amount,
+                effectiveDate,
+                occurredAtUtc,
+                idempotencyKey,
+                description,
+                lines: periodAccrual > 0m
+                    ? [(expense, amount, 0m), (payable, 0m, amount)]
+                    : [(payable, amount, 0m), (expense, 0m, amount)],
+                evidenceReferences);
+        }
+        else if (alreadyAccrued == 0m && accrual.PerformanceFee > 0m)
         {
             var idempotencyKey = FormattableString.Invariant(
                 $"performance-fee:{normalizedFundId}:{normalizedPeriodId}:{effectiveDate:yyyyMMdd}");
@@ -131,7 +168,8 @@ public static class FundEconomicsJournalFactory
             accrual.FeeBase,
             accrual.PerformanceFee,
             accrual.CrystallizedFee,
-            accrual.NewHighWaterMark);
+            accrual.NewHighWaterMark,
+            periodAccrual);
     }
 
     /// <summary>
@@ -187,6 +225,7 @@ public static class FundEconomicsJournalFactory
     /// interest allocation, credit the fund distribution payable. Balances by construction because
     /// the payable equals the waterfall's total distributed amount.
     /// </summary>
+    [PostingCalculationNotYetConnected("A distribution is a declared event, not a recurring accrual; it waits for a distribution workflow that supplies the investor and waterfall result.")]
     public static AutomatedJournalDraft BuildDistributionWaterfallDraft(
         string fundId,
         string investorId,

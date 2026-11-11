@@ -57,6 +57,7 @@ public static class DailyPortfolioPricingDraftBuilder
     /// Compatibility helper for a single-security projection. Multi-security projections fail
     /// closed so a caller cannot silently discard drafts; use <see cref="BuildDrafts"/> instead.
     /// </summary>
+    [PostingCalculationNotYetConnected("Single-security compatibility helper; the daily mark-to-market path calls BuildDrafts.")]
     public static AutomatedJournalDraft? BuildDraft(DailyPortfolioPricingProjection projection)
     {
         var drafts = BuildDrafts(projection);

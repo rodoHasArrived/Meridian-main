@@ -106,6 +106,7 @@ public static class CapitalCallDraftFactory
     /// interest receivable, credit fund interest income. The credit leg is income, not equity,
     /// so it never distorts the capital-account equity roll-forward.
     /// </summary>
+    [PostingCalculationNotYetConnected("Had no production caller when the connection guard was introduced (2026-11); connecting or retiring it is an open decision.")]
     public static AutomatedJournalDraft BuildDefaultInterestDraft(
         CapitalCallDefault capitalCallDefault,
         DefaultInterestAccrual accrual,

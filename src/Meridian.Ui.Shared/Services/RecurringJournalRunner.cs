@@ -14,8 +14,15 @@ public sealed class RecurringJournalRunner(
     IRecurringJournalStore store,
     AutomatedJournalDraftIntakeService intake,
     IManualJournalEntryDraftStore drafts,
-    IRecurringJournalPeriodAuthority periods) : IRecurringJournalQueueSource
+    IRecurringJournalPeriodAuthority periods,
+    IEnumerable<IRecurringJournalCalculation>? calculations = null) : IRecurringJournalQueueSource
 {
+    private readonly IReadOnlyDictionary<string, IRecurringJournalCalculation> _calculations =
+        (calculations ?? []).ToDictionary(item => item.Kind, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Whether a calculated template of this kind can be run by this host.</summary>
+    public bool SupportsCalculation(string kind) => _calculations.ContainsKey(kind);
+
     public async Task<IReadOnlyList<AutomatedJournalScheduledRunResult>> RunDueAsync(
         DateTimeOffset now, string? tenant = null, string? company = null,
         bool scopeSpecified = false, CancellationToken ct = default)
@@ -49,6 +56,13 @@ public sealed class RecurringJournalRunner(
                     results.Add(Result(stale, instant, ex.Message));
                     continue;
                 }
+                // A calculated occurrence that had nothing to post is complete; recomputing it
+                // later could draft an amount for a window that was already settled as empty.
+                if (claim.State == RecurringOccurrenceState.NoDraftRequired)
+                {
+                    results.Add(Result(claim, instant, null));
+                    continue;
+                }
                 using var authority = FundScopeTenantAuthority.Enter(definition.Scope.TenantId,
                     $"recurring-journal:{schedule.ScheduleId}");
                 try
@@ -68,7 +82,23 @@ public sealed class RecurringJournalRunner(
                         definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
                     if (existing is null && claim.History.Any(h => h.State == RecurringOccurrenceState.Drafted))
                         throw new InvalidOperationException("The retained occurrence draft is missing. Restore durable draft state; automatic recreation is refused.");
-                    var prepared = BuildIntake(claim, period);
+                    // Amounts are calculated once, when the occurrence first becomes a draft. A
+                    // retained draft is authoritative and is never recalculated on retry.
+                    AutomatedJournalDraft? calculated = null;
+                    if (claim.TemplateDefinition.Template.Calculation is { } calculation && existing is null)
+                    {
+                        var outcome = await CalculateAsync(calculation, claim, period,
+                            index == 0 ? period.StartDate : schedule.EffectiveDateFor(index - 1).AddDays(1), ct).ConfigureAwait(false);
+                        if (outcome.Draft is null)
+                        {
+                            claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.NoDraftRequired,
+                                outcome.Summary, period.PeriodId, null, null, now, ct).ConfigureAwait(false);
+                            results.Add(Result(claim, instant, null));
+                            continue;
+                        }
+                        calculated = outcome.Draft;
+                    }
+                    var prepared = BuildIntake(claim, period, calculated, existing);
                     // On recovery the original period version remains in the retained draft;
                     // period reopen/version increments never rewrite that source provenance.
                     if (existing is not null)
@@ -116,8 +146,35 @@ public sealed class RecurringJournalRunner(
         return results;
     }
 
+    private async Task<RecurringJournalCalculationResult> CalculateAsync(JournalTemplateCalculation calculation,
+        RecurringOccurrenceRecord claim, RecurringJournalPeriodState period, DateOnly? windowStart, CancellationToken ct)
+    {
+        if (!_calculations.TryGetValue(calculation.Kind, out var implementation))
+            throw new InvalidOperationException($"No posting calculation '{calculation.Kind}' is registered on this host.");
+        var definition = claim.ScheduleDefinition;
+        var schedule = definition.Schedule.ToSchedule();
+        var context = new RecurringJournalCalculationContext(definition.Scope, definition.ScheduleId, claim.EffectiveDate,
+            windowStart, new DateTimeOffset(claim.EffectiveDate.ToDateTime(schedule.PostingTime), TimeSpan.Zero),
+            period.PeriodId, schedule.Parameters, calculation.Inputs, definition.Evidence);
+        RecurringJournalCalculationResult outcome;
+        try
+        {
+            outcome = await implementation.CalculateAsync(context, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is LedgerValidationException or NotSupportedException or FormatException or OverflowException)
+        {
+            // Input and domain failures block this occurrence with their reason; they never stop
+            // the remaining schedules from running.
+            throw new InvalidOperationException($"Posting calculation '{calculation.Kind}' could not complete: {ex.Message}", ex);
+        }
+        if (outcome.Draft is { } draft && (draft.Lines.Count == 0 || !draft.IsBalanced || draft.TotalDebits <= 0m))
+            throw new InvalidOperationException($"Posting calculation '{calculation.Kind}' produced an empty or unbalanced journal.");
+        return outcome;
+    }
+
     private static AutomatedJournalPreparedDraftIntakeRequest BuildIntake(
-        RecurringOccurrenceRecord claim, RecurringJournalPeriodState period)
+        RecurringOccurrenceRecord claim, RecurringJournalPeriodState period,
+        AutomatedJournalDraft? calculated, ManualJournalEntryDraftDto? existing)
     {
         var definition = claim.ScheduleDefinition;
         var scope = definition.Scope;
@@ -130,13 +187,48 @@ public sealed class RecurringJournalRunner(
             scope.Currency, claim.EffectiveDate, period.PeriodId, period.Version, definition.Evidence);
         var json = RecurringJournalEvidenceGuard.Serialize(evidence);
         var key = $"recurring|{claim.OccurrenceKey}";
+        var recurringTags = new Dictionary<string, string>
+        {
+            [RecurringJournalEvidenceGuard.EvidenceTag] = json,
+            [RecurringJournalEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(json)
+        };
         var metadata = new JournalEntryMetadata(ActivityType: "RecurringJournal", LedgerBook: schedule.LedgerKey.LedgerBook,
             EffectiveDate: claim.EffectiveDate, IdempotencyKey: key, EvidenceReferences: definition.Evidence,
-            Tags: new Dictionary<string, string>
+            Tags: recurringTags);
+        if (claim.TemplateDefinition.Template.Calculation is { } calculation)
+        {
+            // A calculated draft keeps its own accounts, activity and fund-event identity, but its
+            // occurrence identity, dates and source evidence are always the retained claim's.
+            var description = calculated?.Description ?? existing?.Memo ?? schedule.Description ?? claim.TemplateDefinition.Template.Name;
+            var tags = new Dictionary<string, string>(calculated?.Metadata.Tags ?? new Dictionary<string, string>())
             {
-                [RecurringJournalEvidenceGuard.EvidenceTag] = json,
-                [RecurringJournalEvidenceGuard.DigestTag] = Sha256Digest.ComputeUtf8(json)
-            });
+                ["recurring.calculation"] = calculation.Kind
+            };
+            foreach (var (tag, value) in recurringTags)
+                tags[tag] = value;
+            var calculatedMetadata = (calculated?.Metadata ?? metadata) with
+            {
+                LedgerBook = schedule.LedgerKey.LedgerBook,
+                EffectiveDate = claim.EffectiveDate,
+                IdempotencyKey = key,
+                EvidenceReferences = definition.Evidence,
+                Tags = tags
+            };
+            var calculatedEvent = (calculated?.Event ?? new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate,
+                "RECURRING", existing?.TotalDebits ?? 0m, instant)) with
+            {
+                Timestamp = instant,
+                Description = description,
+                SourceEventId = claim.OccurrenceKey,
+                EffectiveDate = claim.EffectiveDate,
+                IdempotencyKey = key,
+                EvidenceReferences = definition.Evidence
+            };
+            return new(scope.FundProfileId, scope.Currency,
+                [new AutomatedJournalDraft(calculatedEvent, description, calculated?.Lines ?? [], calculatedMetadata.Normalize())],
+                definition.RegisteredBy, scope.LedgerBookId, period.PeriodId, scope.EntityId, scope.TenantId,
+                scope.CompanyId, RecurringJournalEntryId: claim.DraftId);
+        }
         var instance = claim.TemplateDefinition.Template.Instantiate(new JournalTemplateInstantiation(instant,
             schedule.Parameters, schedule.Dimensions, metadata, schedule.Description));
         var journalEvent = new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate, "RECURRING",
@@ -177,9 +269,12 @@ public sealed class RecurringJournalRunner(
     }
 
     private static AutomatedJournalScheduledRunResult Result(RecurringOccurrenceRecord claim, DateTimeOffset instant, string? reason)
-        => new(claim.ScheduleDefinition.ScheduleId, claim.OccurrenceKey, instant,
-            claim.State == RecurringOccurrenceState.Drafted ? AutomatedJournalScheduleStateDto.DraftReady : AutomatedJournalScheduleStateDto.Blocked,
-            reason ?? "Recurring occurrence retained in the journal queue for human approval.",
-            claim.State == RecurringOccurrenceState.Drafted ? [claim.DraftId] : [], reason is null ? [] : [reason]);
+        => claim.State == RecurringOccurrenceState.NoDraftRequired
+            ? new(claim.ScheduleDefinition.ScheduleId, claim.OccurrenceKey, instant, AutomatedJournalScheduleStateDto.NoDraftRequired,
+                claim.Reason ?? "The calculation produced nothing to post for this occurrence.", [], [])
+            : new(claim.ScheduleDefinition.ScheduleId, claim.OccurrenceKey, instant,
+                claim.State == RecurringOccurrenceState.Drafted ? AutomatedJournalScheduleStateDto.DraftReady : AutomatedJournalScheduleStateDto.Blocked,
+                reason ?? "Recurring occurrence retained in the journal queue for human approval.",
+                claim.State == RecurringOccurrenceState.Drafted ? [claim.DraftId] : [], reason is null ? [] : [reason]);
     private static bool Same(string? a, string? b) => string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
 }
