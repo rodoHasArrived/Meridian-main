@@ -40,6 +40,11 @@ public interface ILedgerReportsApiClient
     Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<List<LedgerJournalEntryDto>>.Fail("Posted journal detail is unavailable in this session."));
 
+    /// <summary>Posting history and running balance for one account of a ledger period.</summary>
+    Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<LedgerAccountRunningBalanceDto>.Fail("Account postings are unavailable in this session."));
+
     Task<ApiResponse<EvidencePacketDto>> GetAmountProofAsync(
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<EvidencePacketDto>.Fail("Amount evidence is unavailable in this session."));
@@ -94,6 +99,28 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<EvidencePacketDto>(
             BuildAmountProofRoute(subjectId, ledgerBookId, periodId, fundProfileId), ct);
+
+    public Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<LedgerAccountRunningBalanceDto>(
+            BuildAccountRunningBalanceRoute(periodId, accountName, symbol, financialAccountId), ct);
+
+    internal static string BuildAccountRunningBalanceRoute(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId)
+    {
+        var route = $"{BuildPeriodRoute(UiApiRoutes.LedgerPeriodAccountRunningBalance, periodId)}?account={Uri.EscapeDataString(accountName)}";
+        if (!string.IsNullOrWhiteSpace(symbol))
+        {
+            route += $"&symbol={Uri.EscapeDataString(symbol)}";
+        }
+
+        if (!string.IsNullOrWhiteSpace(financialAccountId))
+        {
+            route += $"&financialAccountId={Uri.EscapeDataString(financialAccountId)}";
+        }
+
+        return route;
+    }
 
     internal static string BuildAmountProofRoute(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId)
         => $"/api/workstation/evidence/subjects/ledger-amount/{Uri.EscapeDataString(subjectId)}/packet"

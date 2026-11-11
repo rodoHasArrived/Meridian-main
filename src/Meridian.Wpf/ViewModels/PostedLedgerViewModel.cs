@@ -53,11 +53,22 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     private LedgerPeriodPnlSummaryDto? _postedPnl;
     private AccountingBasisKindDto _selectedBasis = AccountingBasisKindDto.Primary;
     private PostedLedgerBasisRow? _selectedBasisRow;
+    private const string AccountPostingsPrompt = "Select a trial-balance account to see its postings.";
+    private PostedLedgerTrialBalanceRow? _selectedTrialBalanceRow;
+    private string _accountPostingsStatusText = AccountPostingsPrompt;
 
     public PostedLedgerViewModel(ILedgerReportsApiClient? client = null)
     {
         _client = client;
         ProofDrawer = new LedgerAmountProofDrawerViewModel(client);
+        // A reloaded trial balance replaces its rows, so a selection into the old rows is gone.
+        TrialBalance.CollectionChanged += (_, args) =>
+        {
+            if (args.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+            {
+                SelectedTrialBalanceRow = null;
+            }
+        };
         OpenAmountProofCommand = new AsyncRelayCommand<PostedLedgerAmountSelection>(
             OpenAmountProofAsync, AsyncRelayCommandOptions.AllowConcurrentExecutions);
         RefreshCommand = new AsyncRelayCommand(
@@ -89,6 +100,91 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
     public ObservableCollection<PostedLedgerTrialBalanceRow> TrialBalance { get; } = [];
 
     public ObservableCollection<PostedLedgerMetricRow> PnlMetrics { get; } = [];
+
+    /// <summary>Postings to <see cref="SelectedTrialBalanceRow"/> with the balance after each.</summary>
+    public ObservableCollection<PostedLedgerAccountPostingRow> AccountPostings { get; } = [];
+
+    /// <summary>
+    /// The trial-balance account whose postings are shown. Selecting a row loads its posting
+    /// history from the governed book; clearing the selection clears the history.
+    /// </summary>
+    public PostedLedgerTrialBalanceRow? SelectedTrialBalanceRow
+    {
+        get => _selectedTrialBalanceRow;
+        set
+        {
+            if (!SetProperty(ref _selectedTrialBalanceRow, value))
+            {
+                return;
+            }
+
+            _ = LoadAccountPostingsAsync(value, _isDisposed ? CancellationToken.None : _cts.Token);
+        }
+    }
+
+    public string AccountPostingsStatusText
+    {
+        get => _accountPostingsStatusText;
+        private set => SetProperty(ref _accountPostingsStatusText, value);
+    }
+
+    /// <summary>Loads the posting history for <paramref name="row"/>; public for deterministic tests.</summary>
+    public async Task LoadAccountPostingsAsync(PostedLedgerTrialBalanceRow? row, CancellationToken ct = default)
+    {
+        AccountPostings.Clear();
+        if (row is null || _isDisposed)
+        {
+            AccountPostingsStatusText = AccountPostingsPrompt;
+            return;
+        }
+
+        if (_client is null || SelectedPeriodId is not { } periodId)
+        {
+            AccountPostingsStatusText = "Account postings are unavailable in this session.";
+            return;
+        }
+
+        AccountPostingsStatusText = $"Loading postings to {row.AccountName}…";
+        ApiResponse<LedgerAccountRunningBalanceDto> response;
+        try
+        {
+            response = await _client
+                .GetAccountRunningBalanceAsync(periodId, row.AccountName, row.Symbol, row.FinancialAccountId, ct)
+                .ConfigureAwait(true);
+        }
+        catch (OperationCanceledException)
+        {
+            return;
+        }
+
+        // A slower response for an earlier selection or period must not overwrite the current one.
+        if (!ReferenceEquals(row, _selectedTrialBalanceRow) || SelectedPeriodId != periodId)
+        {
+            return;
+        }
+
+        if (!response.Success || response.Data is null)
+        {
+            AccountPostingsStatusText = string.IsNullOrWhiteSpace(response.ErrorMessage)
+                ? $"Postings to {row.AccountName} could not be loaded."
+                : response.ErrorMessage;
+            return;
+        }
+
+        foreach (var point in response.Data.Points)
+        {
+            AccountPostings.Add(new PostedLedgerAccountPostingRow(
+                point.Timestamp.UtcDateTime.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                point.Description,
+                point.Debit == 0m ? string.Empty : PostedLedgerProjection.FormatAmount(point.Debit, BaseCurrency),
+                point.Credit == 0m ? string.Empty : PostedLedgerProjection.FormatAmount(point.Credit, BaseCurrency),
+                PostedLedgerProjection.FormatAmount(point.Balance, BaseCurrency)));
+        }
+
+        AccountPostingsStatusText = AccountPostings.Count == 0
+            ? $"No postings to {row.AccountName} in the selected period."
+            : $"{row.AccountName} · {AccountPostings.Count} postings · ending balance {PostedLedgerProjection.FormatAmount(response.Data.EndingBalance, BaseCurrency)}";
+    }
 
     public bool IsRefreshing
     {
@@ -979,3 +1075,11 @@ public sealed record PostedLedgerTrialBalanceRow(
 }
 
 public sealed record PostedLedgerMetricRow(string Label, string Value);
+
+/// <summary>One posting to the selected trial-balance account with the balance after it.</summary>
+public sealed record PostedLedgerAccountPostingRow(
+    string PostedLabel,
+    string Description,
+    string DebitLabel,
+    string CreditLabel,
+    string BalanceLabel);
