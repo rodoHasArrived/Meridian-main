@@ -379,11 +379,34 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
             }
             catch
             {
-                _unpersistedLegacyKeys.TryRemove(key, out _);
-                if (hadPrevious)
-                    _cache[key] = previous;
-                else
-                    _cache.TryRemove(key, out _);
+                // Roll back under the write lock. Compaction rewrites the file from the cache
+                // while it holds that lock and skips entries that still carry the marker, so it
+                // must never observe this entry with its marker already gone.
+                var lockTaken = false;
+                try
+                {
+                    await _writeLock.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+                    lockTaken = true;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // The ledger was disposed; nothing can compact any more.
+                }
+
+                try
+                {
+                    if (hadPrevious)
+                        _cache[key] = previous;
+                    else
+                        _cache.TryRemove(key, out _);
+                    _unpersistedLegacyKeys.TryRemove(key, out _);
+                }
+                finally
+                {
+                    if (lockTaken)
+                        _writeLock.Release();
+                }
+
                 throw;
             }
 

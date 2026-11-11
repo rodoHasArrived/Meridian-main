@@ -287,6 +287,33 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task IsDuplicateAsync_AdmissionCancelled_IsNotWrittenByALaterCompaction()
+    {
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 2);
+        await _firstLedger.InitializeAsync();
+        var kept = CreateTradeEvent("IWM", 1);
+        var cancelled = CreateTradeEvent("IWM", 2);
+        (await _firstLedger.IsDuplicateAsync(kept)).Should().BeFalse();
+
+        using var cts = new CancellationTokenSource();
+        await cts.CancelAsync();
+        var admission = async () => await _firstLedger.IsDuplicateAsync(cancelled, cts.Token);
+        await admission.Should().ThrowAsync<OperationCanceledException>();
+
+        // The failed admission recorded nothing durable, so neither a rewrite nor a restart may
+        // treat its retry as a duplicate.
+        await _firstLedger.CompactAsync();
+        (await ReadLedgerLinesAsync()).Should().ContainSingle();
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        _secondLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _secondLedger.InitializeAsync();
+        (await _secondLedger.IsDuplicateAsync(kept)).Should().BeTrue();
+        (await _secondLedger.IsDuplicateAsync(cancelled)).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task FlushAsync_WhileAppendsCompactTheLedger_DoesNotThrow()
     {
         // Compaction closes the writer while it holds the write lock. A flush that saw the writer
