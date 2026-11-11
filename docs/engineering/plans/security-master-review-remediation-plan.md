@@ -2,7 +2,7 @@
 
 **Status:** draft
 **Owner:** core-team
-**Reviewed:** 2026-11-09
+**Reviewed:** 2026-11-11
 **Scope:** Engineering
 **Source evidence:** `6bcc7a0262ab0870cee32cb2cb344851e9da7e89` (slices 1–6);
 `fc848789e637f3e241698c84b5415a1a9e0ed32d` (slices 7–9 and the consolidation decision, 2026-11-09)
@@ -497,6 +497,8 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     review record (structural decodes — bond coupon structures and principal schedules, swap
     legs, covenant entries — plus the scalar remainder: CDS reference terms, structured-note
     payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.
+    *2026-11-11:* the owner sequenced both as follow-up pull requests; see the close-out pass
+    below.
   *2026-11-10 (close-out pass):* the contraction has not started. Two limits apply when it does.
   ADR-027 keeps `SecurityMasterLegacyUpgrade` as the permanent read-only upcaster for legacy
   `SecurityProjection` events, so the bridge is confined, not deleted. And the residual complement
@@ -512,3 +514,18 @@ routing onto class-owned keys (D9), and acts on an agent-run review of migration
 after it: S3-E above; the owner's authorization of the migration 062 waiver; and the D10 choices
 that remain the domain owner's (a repair path for undeclared legacy rates, a signed-interest
 model, StructuredNote's accounting treatment).
+
+*2026-11-11 (owner decisions):* the owner authorized the migration 062 waiver, accepted the three
+D10 recommendations as the decisions, and sequenced the remaining code as follow-up pull requests
+after the close-out pull request merges. Recorded in the review's
+[owner decisions](../../architecture/security-master-extensibility-review.md#owner-decisions--2026-11-11).
+Remaining work, none of it started:
+
+- **S3-E record contraction**, one field group at a time, each with its own replay-compatibility
+  proof, including module homes for the residual complement listed above.
+- **D10, undeclared legacy rates:** a governed per-record rate-unit field for the classes that
+  cannot carry a `scheduleConventions` block, with no field default.
+- **D10, negative rates:** readers that do not model signed interest block with a typed reason
+  where the field permits negatives, and never floor.
+- **D10, StructuredNote:** fair value through profit or loss from valuation marks, with no accrual
+  posting, when its accounting template is added.

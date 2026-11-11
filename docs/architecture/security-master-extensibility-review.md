@@ -2,8 +2,8 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-10
-**Review history:** close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Reviewed:** 2026-11-11
+**Review history:** owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -325,6 +325,8 @@ row-classification audit is not.
   repository's independent schema/storage review; this disposition grants no waiver.
   *(2026-11-10: an agent-run review found and fixed one defect and recorded apply conditions; the
   owner's authorization is still not recorded. See the [close-out pass](#close-out-pass--2026-11-10).)*
+  *(2026-11-11: the repository owner authorized the waiver. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
 
 ### D8 — Identifier normalization and listing identity: still open, scoped carefully
 
@@ -9424,11 +9426,17 @@ read past.
   read-only upcaster for legacy `SecurityProjection` events, so the bridge can be confined but
   not deleted; and #3446 leaves bond coupon structures, principal schedules, swap legs, covenant
   entries and a scalar remainder without module homes, so those record fields cannot go yet.
+  *(2026-11-11: the owner sequenced it as follow-up pull requests after this one merges. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
 - **Migration 062's waiver is not authorized.** The waiver calls for an independent human
   schema/storage review and the owner's authorization. An agent cannot give either. What was done
   is an agent-run technical review, recorded below as evidence for that review.
+  *(2026-11-11: the owner authorized the waiver. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
 - **Three D10 choices are still the domain owner's.** They are listed under D10 below with a
   recommendation each. None was decided here, because each sets how stored money values are read.
+  *(2026-11-11: the owner accepted all three recommendations. See
+  [owner decisions](#owner-decisions--2026-11-11).)*
 
 ### What landed
 
@@ -9525,6 +9533,9 @@ changes. The reviewed approximations (Warrant `OptionContract`, FX spot `BankPro
 
 ### D10 — rate units and accounting: two closed, three for the owner
 
+*2026-11-11: the owner accepted the three recommendations below; see
+[owner decisions](#owner-decisions--2026-11-11). The text that follows is the pass as written.*
+
 Closed as decided, with no code change:
 
 - **Canonical unit.** The computational unit is the fraction `RateUnitNormalizer` returns. The
@@ -9550,6 +9561,9 @@ Still the domain owner's, each with a recommendation:
   valuation marks, with no accrual posting, when a template is added.
 
 ### D7 — migration 062: reviewed by an agent, not authorized
+
+*2026-11-11: the owner authorized the waiver; see
+[owner decisions](#owner-decisions--2026-11-11). The text that follows is the pass as written.*
 
 A separate fresh-context reviewer, which did not write the migration, reviewed it statically and
 against PostgreSQL 16.15, applying migrations 001 to 060 and then 062 to populated scratch
@@ -9593,3 +9607,33 @@ and role privileges, logical replication, and whether 062 is already applied any
   previous writer; the other new tests were not.
 - WPF sources changed (the governance registration and two log messages). WPF tests cannot run on
   Linux; the hosted Windows lane is their gate.
+
+### Owner decisions — 2026-11-11
+
+The repository owner answered the three items this pass left open. The answers were given in the
+working session for this pass on 2026-11-11. No code changed with them; the waiver text and this
+record did.
+
+- **Migration 062 waiver: authorized.** The owner stated they had reviewed migration 062 and the
+  agent review's findings, and authorized the waiver. `database/policies/migration-waivers.json`
+  now records the authorization and its date. The three apply conditions stand unchanged: stop
+  every Security Master writer while the migration runs; let no pre-062 binary write after it
+  commits; and above about one million identifier rows raise the command timeout for that start.
+  The items listed as not verified under D7 are still not verified.
+- **D10: all three recommendations accepted as the decisions.**
+  - *Undeclared legacy rates.* Classes that cannot carry a `scheduleConventions` block get a
+    governed per-record rate-unit field, written through the governed edit lifecycle. No field
+    gains a default.
+  - *Negative rates.* Where a field permits negatives, a reader that does not model signed
+    interest blocks with a typed reason and never floors.
+  - *StructuredNote.* Fair value through profit or loss from valuation marks, with no accrual
+    posting, when its template is added. Until then it stays outside the accounting slice.
+
+  None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
+  with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
+  projection still floors a negative rate at zero.
+- **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
+  the two D10 decisions that need code, are done in pull requests that follow this one, not
+  stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
+  proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
+  work.
