@@ -1106,6 +1106,10 @@ public sealed class ReportingOperationalConcurrencyTests
         result.Result.Runs.Should().ContainSingle(
             "the corrected close (28 March, due 2 April) is already due");
         resolver.Dates.Should().Contain(march.EndDate, "the run closed 28 March");
+        store.AtomicUpsertCalls.Should().Be(
+            2,
+            "the correction is stored under the lease before the run starts, then the advance; a "
+            + "store that renews leases by retained payload would otherwise drop the lease mid-run");
         var advanced = store.Load().Should().ContainSingle().Subject;
         advanced.NextAsOfDate.Should().Be(april.EndDate);
         advanced.RunParameters!.PeriodId.Should().Be(april.Selector);

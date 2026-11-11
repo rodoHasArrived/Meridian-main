@@ -1996,7 +1996,8 @@ period for monthly, the fiscal quarter-end or year-end period by ledger period n
 quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
 When that lookup fails at advance time the schedule moves on by calendar and records
 `UnresolvedPeriodCloseAfter`; `RealignPeriodCloseToLedgerAsync` repeats the lookup before the next
-run and corrects the date, deferring a due run that is not yet due on the corrected date.
+run, corrects the date and persists it under the execution lease before the run starts (lease
+renewal matches the stored payload), deferring a due run that is not yet due on the corrected date.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

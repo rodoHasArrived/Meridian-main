@@ -135,14 +135,17 @@ public sealed partial class ReportingScheduleService
     /// Before a period-close schedule runs: if its current date came from calendar arithmetic
     /// (<see cref="ReportingScheduleRecordDto.UnresolvedPeriodCloseAfter"/>), asks the ledger
     /// again for the period that follows the last closed date and moves the report date, due
-    /// time and period selector to it. The corrected record replaces the in-memory one without
-    /// a new revision, so it is persisted with the run's own advance, with a recorded failure,
-    /// or by <see cref="DeferRealignedSchedule"/>. Returns the schedule unchanged when there is
-    /// nothing to correct or the ledger still cannot name the period.
+    /// time and period selector to it. The corrected record is persisted under the claimed
+    /// execution lease before it is returned: the store renews a lease only for the payload it
+    /// holds, so the run must start from the persisted record. A caller running due schedules
+    /// skips the result when its corrected due time is still in the future. Returns the
+    /// schedule unchanged when there is nothing to correct or the ledger still cannot name the
+    /// period.
     /// </summary>
     private async Task<ReportingScheduleRecordDto> RealignPeriodCloseToLedgerAsync(
         ReportingScheduleIdentity identity,
         ReportingScheduleRecordDto schedule,
+        ReportingScheduleExecutionLease lease,
         CancellationToken ct)
     {
         if (schedule.UnresolvedPeriodCloseAfter is not { } closedThrough
@@ -179,7 +182,8 @@ public sealed partial class ReportingScheduleService
             DueAtUtc = ReportingSchedulePeriodPlanner.DueAtUtc(
                 period.EndDate, cadence.DueDaysAfterPeriodEnd, timeZone, localTime),
             RunParameters = parameters with { PeriodId = period.Selector, AsOfDate = period.EndDate },
-            UnresolvedPeriodCloseAfter = null
+            UnresolvedPeriodCloseAfter = null,
+            UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, DateTimeOffset.UtcNow)
         };
         lock (_gate)
         {
@@ -189,38 +193,18 @@ public sealed partial class ReportingScheduleService
             }
 
             _schedules[identity] = realigned;
-        }
-
-        return realigned;
-    }
-
-    /// <summary>
-    /// Persists a realigned schedule whose corrected due time is still in the future, so the
-    /// worker runs it when it is really due instead of now.
-    /// </summary>
-    private void DeferRealignedSchedule(
-        ReportingScheduleIdentity identity,
-        ReportingScheduleRecordDto realigned,
-        DateTimeOffset evaluatedAtUtc,
-        ReportingScheduleExecutionLease lease)
-    {
-        lock (_gate)
-        {
-            var updated = realigned with
-            {
-                UpdatedAtUtc = NextRevisionTimestamp(realigned.UpdatedAtUtc, evaluatedAtUtc)
-            };
-            _schedules[identity] = updated;
             try
             {
-                PersistSchedule(updated, realigned.UpdatedAtUtc, lease);
+                PersistSchedule(realigned, schedule.UpdatedAtUtc, lease);
             }
             catch (Exception ex)
             {
-                RestoreScheduleAfterPersistenceFailure(identity, realigned, ex);
+                RestoreScheduleAfterPersistenceFailure(identity, schedule, ex);
                 throw;
             }
         }
+
+        return realigned;
     }
 
     private static TimeOnly? ResolveConfiguredLocalTime(string cronExpression) =>

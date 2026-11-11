@@ -1563,7 +1563,7 @@ public sealed partial class ReportingScheduleService
 
         try
         {
-            schedule = await RealignPeriodCloseToLedgerAsync(identity, schedule, ct).ConfigureAwait(false);
+            schedule = await RealignPeriodCloseToLedgerAsync(identity, schedule, lease, ct).ConfigureAwait(false);
             return await RunScheduleWithLeaseAsync(
                     schedule,
                     requestedBy,
@@ -1652,10 +1652,9 @@ public sealed partial class ReportingScheduleService
 
             try
             {
-                var due = await RealignPeriodCloseToLedgerAsync(pair.Key, pair.Value, ct).ConfigureAwait(false);
+                var due = await RealignPeriodCloseToLedgerAsync(pair.Key, pair.Value, lease, ct).ConfigureAwait(false);
                 if (due.DueAtUtc > nowUtc)
                 {
-                    DeferRealignedSchedule(pair.Key, due, nowUtc, lease);
                     continue;
                 }
 
