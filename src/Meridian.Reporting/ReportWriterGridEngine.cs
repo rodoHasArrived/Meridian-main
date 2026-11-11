@@ -818,7 +818,8 @@ public static class ReportWriterGridEngine
                     var evaluator = new FormulaEvaluator(
                         formula.Expression,
                         field => ResolveRowNumber(row, field),
-                        field => totals.TryGetValue(field, out var value) ? value : null);
+                        field => totals.TryGetValue(field, out var value) ? value : null,
+                        field => row.NumericValues.ContainsKey(field) || row.Values.ContainsKey(field));
                     var value = evaluator.Evaluate();
                     row.NumericValues[formula.Name] = value;
                     row.Values[formula.Name] = FormatDecimal(value);
@@ -1260,13 +1261,16 @@ public static class ReportWriterGridEngine
         private readonly string _expression;
         private readonly Func<string, decimal?> _valueResolver;
         private readonly Func<string, decimal?> _totalResolver;
+        private readonly Func<string, bool> _isKnownReference;
         private int _position;
 
         public FormulaEvaluator(
             string expression,
             Func<string, decimal?> valueResolver,
-            Func<string, decimal?> totalResolver)
+            Func<string, decimal?> totalResolver,
+            Func<string, bool> isKnownReference)
         {
+            _isKnownReference = isKnownReference;
             _expression = expression;
             _valueResolver = valueResolver;
             _totalResolver = totalResolver;
@@ -1373,10 +1377,12 @@ public static class ReportWriterGridEngine
             }
 
             // 'pnl-fees' is one field when such a field exists; otherwise the known prefix is the
-            // field and the rest is read as a subtraction by the caller.
+            // field and the rest is read as a subtraction by the caller. Existence is decided by
+            // the row's field names, never by whether the cell is numeric: a real 'pnl-fees' field
+            // with a blank value must stay unavailable rather than silently become pnl minus fees.
             var referenceLength = ReportWriterFormulaReferences.ResolveReferenceLength(
                 identifier,
-                name => _valueResolver(name) is not null);
+                _isKnownReference);
             if (referenceLength < identifier.Length)
             {
                 _position = identifierStart + referenceLength;

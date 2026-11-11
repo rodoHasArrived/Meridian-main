@@ -272,7 +272,15 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const [newCustomWriterGrids, setNewCustomWriterGrids] = useState<ReportingWriterGridRow[]>([]);
   const newCustomReportOrdinal = useRef(0);
   function addNewCustomWriterGrid() {
-    newCustomReportOrdinal.current += 1;
+    // A saved draft with the same name would be versioned onto that template, so skip any
+    // ordinal whose name a retained template or another unsaved grid already uses.
+    const usedNames = new Set([
+      ...vm.templateRows.map((template) => template.templateName.toLowerCase()),
+      ...newCustomWriterGrids.map((grid) => grid.templateId.toLowerCase())
+    ]);
+    do {
+      newCustomReportOrdinal.current += 1;
+    } while (usedNames.has(`custom-report-${newCustomReportOrdinal.current}`));
     // Preview renders against an approved, accessible template; built-ins always qualify.
     const host = vm.templateRows.find((template) => template.sourceLabel === "Built-in" && template.isAccessible)
       ?? vm.templateRows.find((template) => template.canRunOnDemand)

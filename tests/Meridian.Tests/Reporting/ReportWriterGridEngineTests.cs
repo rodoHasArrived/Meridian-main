@@ -585,6 +585,39 @@ public sealed class ReportWriterGridEngineTests
             .Should().Equal("fees", "net-pnl");
     }
 
+    [Fact]
+    public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
+    {
+        var rows = new[]
+        {
+            Row(("security", "AAPL"), ("pnl", "15"), ("fees", "4"), ("pnl-fees", ""))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "detail-grid",
+                "Detail Grid",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["security"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    new ReportWriterMetricDefinitionDto("pnl-fees", "pnl-fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("usesHyphenField", "pnl-fees + 0")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["usesHyphenField"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w =>
+            w.Contains("'usesHyphenField'") && w.Contains("field 'pnl-fees' was not found or was not numeric"));
+    }
+
     private static IReadOnlyDictionary<string, string> Row(params (string Key, string Value)[] values) =>
         values.ToDictionary(static value => value.Key, static value => value.Value, StringComparer.OrdinalIgnoreCase);
 }

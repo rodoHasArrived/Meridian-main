@@ -2586,6 +2586,32 @@ describe("ReportingScreen", () => {
     expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
   });
 
+  it("names a new custom report so it cannot collide with a retained template", async () => {
+    const user = userEvent.setup();
+    const retained = accounting.reporting.templates![0];
+    renderWithRouter(
+      <ReportingScreen
+        data={withReportTemplate({
+          ...retained,
+          templateId: "custom-report-1",
+          name: "Custom report 1",
+          family: "CustomReport",
+          isBuiltIn: false,
+          reportWriterGrids: []
+        })}
+      />,
+      { initialEntries: ["/reporting/report-builder"] }
+    );
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
+    const second = screen.getByRole("group", { name: "Custom report 2 new report-writer grid" });
+    expect(within(second).getByLabelText("Custom report 2 draft name")).toHaveValue("custom-report-2");
+    expect(screen.getByRole("group", { name: "Custom report 3 new report-writer grid" })).toBeInTheDocument();
+  });
+
   it("locks private no-code report-writer drafts to a user owner", async () => {
     const user = userEvent.setup();
     fetchMock.mockResolvedValueOnce({
