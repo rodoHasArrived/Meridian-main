@@ -1381,7 +1381,9 @@ public sealed partial class ReportingScheduleService
                 AccessPolicySnapshotHash: ComputeAccessPolicySnapshotHash(accessPolicySnapshot),
                 DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash,
                 TimeZoneId: timeZoneId,
-                PeriodCadence: request.PeriodCadence);
+                PeriodCadence: request.PeriodCadence,
+                UnresolvedPeriodCloseAfter: request.PeriodCadence is not null && existing?.NextAsOfDate == request.NextAsOfDate
+                    ? existing.UnresolvedPeriodCloseAfter : null);
             return new PreparedScheduleUpsert(identity, existing, record);
         }
     }
@@ -1561,6 +1563,7 @@ public sealed partial class ReportingScheduleService
 
         try
         {
+            schedule = await RealignPeriodCloseToLedgerAsync(identity, schedule, ct).ConfigureAwait(false);
             return await RunScheduleWithLeaseAsync(
                     schedule,
                     requestedBy,
@@ -1649,8 +1652,15 @@ public sealed partial class ReportingScheduleService
 
             try
             {
+                var due = await RealignPeriodCloseToLedgerAsync(pair.Key, pair.Value, ct).ConfigureAwait(false);
+                if (due.DueAtUtc > nowUtc)
+                {
+                    DeferRealignedSchedule(pair.Key, due, nowUtc, lease);
+                    continue;
+                }
+
                 results.Add(await RunScheduleWithLeaseAsync(
-                        pair.Value,
+                        due,
                         requestedBy: null,
                         isDueRun: true,
                         processAllTenants ? null : accessContext,

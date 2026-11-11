@@ -1199,7 +1199,12 @@ public sealed record ReportingScheduleRecordDto(
     // When set, the schedule advances by accounting period instead of by cron: the next
     // as-of date is the next period end and the due date is that many days after it.
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    ReportingSchedulePeriodCadenceDto? PeriodCadence = null);
+    ReportingSchedulePeriodCadenceDto? PeriodCadence = null,
+    // Set when a period-close schedule advanced on calendar arithmetic because the ledger could
+    // not name the next period: the as-of date that had just closed. The next run re-resolves
+    // the period after this date before it executes, then clears the field.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    DateOnly? UnresolvedPeriodCloseAfter = null);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ReportingSchedulePeriodFrequencyDto>))]
 public enum ReportingSchedulePeriodFrequencyDto

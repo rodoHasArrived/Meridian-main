@@ -62,7 +62,10 @@ public sealed partial class ReportingScheduleService
     }
 
     /// <summary>Where a period-close schedule goes next: the report date and when it is due.</summary>
-    private readonly record struct PeriodCloseAdvance(DateOnly AsOfDate, DateTimeOffset DueAtUtc);
+    private readonly record struct PeriodCloseAdvance(
+        DateOnly AsOfDate,
+        DateTimeOffset DueAtUtc,
+        DateOnly? UnresolvedAfter = null);
 
     /// <summary>
     /// Works out a period-close schedule's next report date, due instant and period selector.
@@ -116,8 +119,108 @@ public sealed partial class ReportingScheduleService
                     period.EndDate, cadence.DueDaysAfterPeriodEnd, timeZone, localTime));
             parameters = parameters with { PeriodId = period.Selector };
         }
+        else if (PeriodResolver is not null)
+        {
+            // The ledger could not name the next period (lookup failed, or it is not opened
+            // yet). Advance on the calendar so the schedule keeps moving, but remember the date
+            // just closed: the next run re-resolves from it before executing
+            // (RealignPeriodCloseToLedgerAsync), so it cannot close on a partial period.
+            advance = advance with { UnresolvedAfter = schedule.NextAsOfDate };
+        }
 
         return (parameters, advance);
+    }
+
+    /// <summary>
+    /// Before a period-close schedule runs: if its current date came from calendar arithmetic
+    /// (<see cref="ReportingScheduleRecordDto.UnresolvedPeriodCloseAfter"/>), asks the ledger
+    /// again for the period that follows the last closed date and moves the report date, due
+    /// time and period selector to it. The corrected record replaces the in-memory one without
+    /// a new revision, so it is persisted with the run's own advance, with a recorded failure,
+    /// or by <see cref="DeferRealignedSchedule"/>. Returns the schedule unchanged when there is
+    /// nothing to correct or the ledger still cannot name the period.
+    /// </summary>
+    private async Task<ReportingScheduleRecordDto> RealignPeriodCloseToLedgerAsync(
+        ReportingScheduleIdentity identity,
+        ReportingScheduleRecordDto schedule,
+        CancellationToken ct)
+    {
+        if (schedule.UnresolvedPeriodCloseAfter is not { } closedThrough
+            || schedule.PeriodCadence is not { } cadence
+            || schedule.RunParameters is not { } parameters
+            || PeriodResolver is null
+            || !ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
+        {
+            return schedule;
+        }
+
+        ReportingSchedulePeriodMatch? period;
+        try
+        {
+            period = await PeriodResolver
+                .ResolveNextClosePeriodAsync(parameters, closedThrough, cadence.Frequency, ct)
+                .ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is not OperationCanceledException)
+        {
+            return schedule;
+        }
+
+        if (period is null || period.EndDate <= closedThrough)
+        {
+            return schedule;
+        }
+
+        var localTime = ResolveConfiguredLocalTime(schedule.CronExpression)
+            ?? TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(schedule.DueAtUtc, timeZone).DateTime);
+        var realigned = schedule with
+        {
+            NextAsOfDate = period.EndDate,
+            DueAtUtc = ReportingSchedulePeriodPlanner.DueAtUtc(
+                period.EndDate, cadence.DueDaysAfterPeriodEnd, timeZone, localTime),
+            RunParameters = parameters with { PeriodId = period.Selector, AsOfDate = period.EndDate },
+            UnresolvedPeriodCloseAfter = null
+        };
+        lock (_gate)
+        {
+            if (!_schedules.TryGetValue(identity, out var current) || !ReferenceEquals(current, schedule))
+            {
+                return schedule;
+            }
+
+            _schedules[identity] = realigned;
+        }
+
+        return realigned;
+    }
+
+    /// <summary>
+    /// Persists a realigned schedule whose corrected due time is still in the future, so the
+    /// worker runs it when it is really due instead of now.
+    /// </summary>
+    private void DeferRealignedSchedule(
+        ReportingScheduleIdentity identity,
+        ReportingScheduleRecordDto realigned,
+        DateTimeOffset evaluatedAtUtc,
+        ReportingScheduleExecutionLease lease)
+    {
+        lock (_gate)
+        {
+            var updated = realigned with
+            {
+                UpdatedAtUtc = NextRevisionTimestamp(realigned.UpdatedAtUtc, evaluatedAtUtc)
+            };
+            _schedules[identity] = updated;
+            try
+            {
+                PersistSchedule(updated, realigned.UpdatedAtUtc, lease);
+            }
+            catch (Exception ex)
+            {
+                RestoreScheduleAfterPersistenceFailure(identity, realigned, ex);
+                throw;
+            }
+        }
     }
 
     private static TimeOnly? ResolveConfiguredLocalTime(string cronExpression) =>
@@ -479,6 +582,7 @@ public sealed partial class ReportingScheduleService
             // The caller has already pointed a period-close schedule's parameters at the ledger
             // period for the next as-of date; only the date moves here.
             RunParameters = resolvedParameters with { AsOfDate = nextAsOfDate },
+            UnresolvedPeriodCloseAfter = periodClose?.UnresolvedAfter,
             UpdatedAtUtc = NextRevisionTimestamp(schedule.UpdatedAtUtc, runAtUtc),
             LastRunAtUtc = runAtUtc,
             LastRunId = manifest.RunId,

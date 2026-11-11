@@ -1424,6 +1424,8 @@ export interface ReportingScheduleRecord {
   timeZoneId?: string | null;
   /** When set, the schedule advances by accounting period instead of by cron. */
   periodCadence?: ReportingSchedulePeriodCadence | null;
+  /** Set while a calendar-fallback close awaits re-resolution from the ledger at its next run. */
+  unresolvedPeriodCloseAfter?: string | null;
 }
 
 export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually";

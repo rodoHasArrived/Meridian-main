@@ -313,6 +313,12 @@ cron. The durable ledger store is the authority for the next period:
   resolved), the schedule falls back to calendar month, quarter, or year ends from
   `LedgerReportSchedulePlanner` and leaves the retained `periodId` unchanged; the run's own period
   validation then fails closed rather than a selector being derived from the date.
+- A schedule that fell back this way records the date it had just closed
+  (`unresolvedPeriodCloseAfter`). Before its next run, due or manual, it asks the ledger again for
+  the period after that date. If the ledger can now name it, the as-of date, due date, and
+  `periodId` move to that period and the field is cleared; a due run whose corrected due date is
+  still in the future waits for it. If the ledger still cannot, the run goes ahead on the
+  calendar date. An upsert that changes the as-of date clears the field.
 
 The due time of day comes from the cron expression's hour and minute, in the schedule's time zone.
 A due time that falls in a daylight-saving gap moves to the first valid time for that run only.

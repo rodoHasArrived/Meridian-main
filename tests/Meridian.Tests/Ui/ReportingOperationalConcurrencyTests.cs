@@ -1026,6 +1026,110 @@ public sealed class ReportingOperationalConcurrencyTests
             "a selector is never invented from the date when the ledger has no unique period");
     }
 
+    private static ReportingScheduleRecordDto BuildCalendarFallbackCloseSchedule(string scheduleId) =>
+        // Closed 28 February; the ledger could not name the next period, so the schedule moved
+        // on to the calendar month end and remembered where it was.
+        BuildSchedule(scheduleId, "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 3, 31),
+            DueAtUtc = new DateTimeOffset(2026, 4, 5, 8, 0, 0, TimeSpan.Zero),
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5),
+            UnresolvedPeriodCloseAfter = new DateOnly(2026, 2, 28)
+        };
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_ThatFellBackToTheCalendarIsCorrectedAndWaitsForItsRealDueDate()
+    {
+        // The ledger lookup fails while the 28 February close advances, then recovers. The real
+        // next period is 1 March to 4 April, so the 31 March calendar date must not be run.
+        ReportingSchedulePeriodMatch? nextPeriod = null;
+        var resolver = new RecordingPeriodResolver(
+            _ => null,
+            (currentEnd, _) => currentEnd == new DateOnly(2026, 2, 28) ? nextPeriod : null);
+        var firstDue = new DateTimeOffset(2026, 3, 5, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildCalendarFallbackCloseSchedule("ledger-outage-close") with
+        {
+            NextAsOfDate = new DateOnly(2026, 2, 28),
+            DueAtUtc = firstDue,
+            UnresolvedPeriodCloseAfter = null
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var fallback = store.Load().Should().ContainSingle().Subject;
+        fallback.NextAsOfDate.Should().Be(new DateOnly(2026, 3, 31));
+        fallback.UnresolvedPeriodCloseAfter.Should().Be(new DateOnly(2026, 2, 28));
+        fallback.RunCount.Should().Be(1);
+
+        nextPeriod = new ReportingSchedulePeriodMatch(
+            "55555555-5555-5555-5555-555555555555", new DateOnly(2026, 3, 1), new DateOnly(2026, 4, 4));
+        var early = await service.RunDueForWorkerAsync(fallback.DueAtUtc, CancellationToken.None);
+
+        early.Result.Runs.Should().BeEmpty("the period ends 4 April, so the close is not due on 5 April");
+        var corrected = store.Load().Should().ContainSingle().Subject;
+        corrected.NextAsOfDate.Should().Be(new DateOnly(2026, 4, 4));
+        corrected.DueAtUtc.Should().Be(new DateTimeOffset(2026, 4, 9, 8, 0, 0, TimeSpan.Zero));
+        corrected.RunParameters!.PeriodId.Should().Be(nextPeriod.Selector);
+        corrected.UnresolvedPeriodCloseAfter.Should().BeNull();
+        corrected.RunCount.Should().Be(1);
+
+        var onTime = await service.RunDueForWorkerAsync(corrected.DueAtUtc, CancellationToken.None);
+
+        onTime.Result.Runs.Should().ContainSingle();
+        store.Load().Should().ContainSingle().Which.RunCount.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_CorrectionDoesNotSkipAPeriodThatEndsBeforeTheCalendarDate()
+    {
+        // The real next period is 1 to 28 March. The calendar date 31 March sits in the period
+        // after it, so the correction must come from the last closed date, not from 31 March.
+        var march = new ReportingSchedulePeriodMatch(
+            "66666666-6666-6666-6666-666666666666", new DateOnly(2026, 3, 1), new DateOnly(2026, 3, 28));
+        var april = new ReportingSchedulePeriodMatch(
+            "77777777-7777-7777-7777-777777777777", new DateOnly(2026, 3, 29), new DateOnly(2026, 4, 25));
+        var resolver = new RecordingPeriodResolver(
+            date => date <= march.EndDate ? march : april,
+            (currentEnd, _) => currentEnd == new DateOnly(2026, 2, 28) ? march
+                : currentEnd == march.EndDate ? april
+                : null);
+        var due = BuildCalendarFallbackCloseSchedule("short-period-close");
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        var result = await service.RunDueForWorkerAsync(due.DueAtUtc, CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle(
+            "the corrected close (28 March, due 2 April) is already due");
+        resolver.Dates.Should().Contain(march.EndDate, "the run closed 28 March");
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(april.EndDate);
+        advanced.RunParameters!.PeriodId.Should().Be(april.Selector);
+        advanced.UnresolvedPeriodCloseAfter.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task Scenario_PeriodCloseSchedule_RunsOnTheCalendarDateWhileTheLedgerStillCannotNameThePeriod()
+    {
+        var due = BuildCalendarFallbackCloseSchedule("still-unresolved-close");
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(
+            store,
+            new CountingRenderer(),
+            new RecordingPeriodResolver(_ => null));
+
+        var result = await service.RunDueForWorkerAsync(due.DueAtUtc, CancellationToken.None);
+
+        result.Result.Runs.Should().ContainSingle();
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 4, 30));
+        advanced.UnresolvedPeriodCloseAfter.Should().Be(new DateOnly(2026, 3, 31));
+    }
+
     [Fact]
     public async Task Scenario_PeriodCloseSchedule_ReturnsToItsConfiguredTimeAfterADaylightSavingGap()
     {
@@ -1077,6 +1181,34 @@ public sealed class ReportingOperationalConcurrencyTests
         var monthly = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5);
         service.Upsert(Request(monthly)).PeriodCadence.Should().Be(monthly);
         service.Upsert(Request(null)).PeriodCadence.Should().BeNull();
+    }
+
+    [Fact]
+    public void Scenario_ScheduleUpsert_KeepsThePendingLedgerCorrectionUnlessTheReportDateChanges()
+    {
+        var cadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Monthly, 5);
+        var asOf = new DateOnly(2026, 8, 31);
+        var store = new SharedAtomicScheduleStore([]);
+        var service = CreateScheduleService(store);
+        ReportingScheduleUpsertRequestDto Request(DateOnly nextAsOf) => new(
+            "pending-correction",
+            "investor-monthly-statement",
+            "0 8 1 * *",
+            nextAsOf,
+            FixedNow.AddDays(1),
+            2,
+            "operator-a",
+            State: ReportingScheduleStateDto.Draft,
+            PeriodCadence: cadence);
+        var created = service.Upsert(Request(asOf));
+        store.Save([created with { UnresolvedPeriodCloseAfter = new DateOnly(2026, 7, 31) }]);
+        var reloaded = CreateScheduleService(store);
+
+        reloaded.Upsert(Request(asOf)).UnresolvedPeriodCloseAfter.Should().Be(
+            new DateOnly(2026, 7, 31),
+            "an edit that leaves the report date alone must not lose the pending correction");
+        reloaded.Upsert(Request(asOf.AddDays(-3))).UnresolvedPeriodCloseAfter.Should().BeNull(
+            "an operator who sets the report date has decided it");
     }
 
     [Fact]
