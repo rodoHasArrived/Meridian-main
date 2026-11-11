@@ -142,3 +142,139 @@ let ``positive CFD leverage passes both surfaces`` () =
     let kind = cfd (Some 5m)
     Assert.Empty(SecurityMaster.validateKindInvariants kind)
     Assert.Empty(SecurityMaster.validateDefinitionInvariants "Cfd" (SecurityMasterLegacyUpgrade.modulesFromKind kind))
+
+// ── The rules that were codec-only until the stage-3 contraction ─────────────────────────────
+// Every per-class field now sits on a shared module, so these rules are expressed on the
+// definition surface. Six of them cannot be reached through the flat codec — it refuses the shape
+// first, or reads a blank as absent — so they are pinned here on directly built records.
+
+let private bothSurfaces (typeName: string) (kind: SecurityKind) =
+    let kindCodes = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    let definitionCodes =
+        SecurityMaster.validateDefinitionInvariants typeName (SecurityMasterLegacyUpgrade.modulesFromKind kind)
+        |> List.map (fun e -> e.Code)
+    kindCodes, definitionCodes
+
+let private bondWith coupon principal : SecurityKind =
+    let bond = BondTerms.fixedRate (DateOnly(2035, 6, 15)) 4.5m None (Some "Meridian Capital Corp")
+    SecurityKind.Bond {
+        bond with
+            CouponStructure = { bond.CouponStructure with Structure = coupon }
+            RedemptionFacts = { bond.RedemptionFacts with Par = Some 1000m }
+            Principal = { Payments = principal }
+    }
+
+let private fixedCoupon = BondCouponStructure.Fixed(4.5m, None)
+
+[<Fact>]
+let ``a bond with clean principal and step schedules passes both surfaces`` () =
+    let amortizing = bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 400m } ]
+    let stepped =
+        bondWith
+            (BondCouponStructure.Step(
+                [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                  { EffectiveDate = DateOnly(2029, 6, 15); Rate = 5m } ],
+                None))
+            []
+
+    for kind in [ amortizing; stepped ] do
+        let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+        Assert.Empty kindCodes
+        Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("bond_principal_schedule_invalid")>]
+[<InlineData("bond_step_rate_invalid")>]
+[<InlineData("bond_step_dates_duplicate")>]
+let ``a bond schedule shape the flat codec refuses is refused on both surfaces`` (code: string) =
+    let kind =
+        match code with
+        | "bond_principal_schedule_invalid" ->
+            bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 0m } ]
+        | "bond_step_rate_invalid" ->
+            bondWith (BondCouponStructure.Step([ { EffectiveDate = DateOnly(2027, 6, 15); Rate = -1m } ], None)) []
+        | _ ->
+            bondWith
+                (BondCouponStructure.Step(
+                    [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                      { EffectiveDate = DateOnly(2027, 6, 15); Rate = 5m } ],
+                    None))
+                []
+
+    let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+let private swapLeg : SwapLeg =
+    { LegId = Some "fixed"
+      LegType = "Fixed"
+      Currency = "USD"
+      Direction = Some "Pay"
+      Index = None
+      FixedRate = Some 3.75m
+      SpreadBps = None
+      CurrentIndexRate = None
+      Notional = Some 10000000m
+      PaymentFrequency = Some "SemiAnnual"
+      DayCount = None
+      ExchangesPrincipal = false
+      NotionalSchedule = []
+      ResetSchedule = []
+      ScheduleConventions = ScheduleConventions.empty }
+
+let private swapWith legs : SecurityKind =
+    SecurityKind.Swap {
+        Dates =
+            { EffectiveDate = Some (DateOnly(2026, 1, 15))
+              IssueDate = Some (DateOnly(2026, 1, 15))
+              MaturityDate = Some (DateOnly(2031, 1, 15)) }
+        SwapLegs = { Legs = legs }
+        RateConvention = None
+    }
+
+[<Fact>]
+let ``a swap with a clean leg passes both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ swapLeg ])
+    Assert.Empty kindCodes
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``a swap with no legs is refused on both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [])
+    Assert.Contains("swap_legs_required", kindCodes)
+    Assert.Contains("swap_legs_required", definitionCodes)
+
+[<Theory>]
+[<InlineData("swap_leg_type_required")>]
+[<InlineData("swap_leg_currency_required")>]
+[<InlineData("swap_leg_payment_frequency_invalid")>]
+let ``a swap leg shape the flat codec never yields is refused on both surfaces`` (code: string) =
+    let leg =
+        match code with
+        | "swap_leg_type_required" -> { swapLeg with LegType = " " }
+        | "swap_leg_currency_required" -> { swapLeg with Currency = " " }
+        | _ -> { swapLeg with PaymentFrequency = Some " " }
+
+    let kindCodes, definitionCodes = bothSurfaces "Swap" (swapWith [ leg ])
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)
+
+[<Fact>]
+let ``a definition that lacks a module fails its required rules and passes its optional ones`` () =
+    // On the definition surface a module can be absent altogether. A rule over a value the class
+    // requires then fails; a rule over an optional value has nothing to check.
+    let codes typeName =
+        SecurityMaster.validateDefinitionInvariants typeName SecurityTermModules.empty |> List.map (fun e -> e.Code)
+    Assert.Contains("swap_legs_required", codes "Swap")
+    Assert.Contains("other_security_category_required", codes "OtherSecurity")
+    Assert.Contains("commodity_type_required", codes "Commodity")
+    Assert.Contains("cds_reference_entity_required", codes "CreditDefaultSwap")
+    Assert.Contains("cds_protection_side_invalid", codes "CreditDefaultSwap")
+    Assert.Contains("real_estate_market_required", codes "RealEstateHolding")
+    Assert.DoesNotContain("bond_principal_schedule_invalid", codes "Bond")
+    Assert.DoesNotContain("structured_credit_attachment_point_invalid", codes "StructuredCredit")
+    Assert.DoesNotContain("covenant_type_required", codes "DirectLoan")

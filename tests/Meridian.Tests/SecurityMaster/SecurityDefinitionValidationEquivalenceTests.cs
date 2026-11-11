@@ -170,6 +170,61 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         ("PrivateCompanyEquity", "private_company_share_class_required", "shareClass", "\" \""),
         ("PrivateCompanyEquity", "private_company_round_required", "round", "\" \""),
         ("RealEstateHolding", "real_estate_property_type_required", "propertyType", "\" \""),
+        // The rules that were codec-only until the stage-3 contraction put every per-class field on
+        // a shared module: each is now expressed on the definition surface and proven here.
+        ("Future", "future_root_symbol_required", "rootSymbol", "\" \""),
+        ("Future", "future_contract_month_required", "contractMonth", "\" \""),
+        ("Commodity", "commodity_type_required", "commodityType", "\" \""),
+        ("Cfd", "cfd_underlying_asset_class_required", "underlyingAssetClass", "\" \""),
+        ("StructuredNote", "structured_note_underlying_required", "underlyingDescription", "\" \""),
+        ("StructuredNote", "structured_note_protection_invalid", "principalProtectionPct", "2"),
+        ("StructuredNote", "structured_note_participation_invalid", "participationRate", "-1"),
+        ("StructuredNote", "structured_note_return_cap_invalid", "returnCap", "-1"),
+        ("StructuredNote", "structured_note_barrier_invalid", "barrierLevel", "0"),
+        ("Swaption", "swaption_expiry_invalid", "underlyingMaturityDate", "\"2000-01-01\""),
+        ("Swaption", "swaption_underlying_dates_invalid", "underlyingEffectiveDate", "\"2000-01-01\""),
+        ("CreditDefaultSwap", "cds_reference_entity_required", "referenceEntity", "\" \""),
+        ("CreditDefaultSwap", "cds_protection_side_invalid", "protectionSide", "\"Both\""),
+        ("CreditDefaultSwap", "cds_recovery_rate_invalid", "recoveryRateAssumption", "2"),
+        ("CommitmentGuarantee", "commitment_guarantee_fee_invalid", "feeRate", "-1"),
+        ("StructuredCredit", "structured_credit_attachment_point_invalid", "attachmentPoint", "2"),
+        ("StructuredCredit", "structured_credit_detachment_point_invalid", "detachmentPoint", "2"),
+        ("StructuredCredit", "structured_credit_attachment_above_detachment", "*", """{"attachmentPoint":0.9,"detachmentPoint":0.1}"""),
+        ("StructuredCredit", "structured_credit_period_after_maturity", "reinvestmentPeriodEnd", "\"2999-01-01\""),
+        ("PrivateFundInterest", "private_fund_vintage_invalid", "vintage", "0"),
+        ("PrivateCompanyEquity", "private_company_ownership_invalid", "ownershipPercent", "-1"),
+        ("PrivateCompanyEquity", "private_company_cost_basis_invalid", "costBasis", "0"),
+        ("PrivateCompanyEquity", "private_company_valuation_invalid", "latestValuation", "-1"),
+        ("RealEstateHolding", "real_estate_market_required", "addressOrMarket", "\" \""),
+        ("RealEstateHolding", "real_estate_ownership_invalid", "ownershipPercent", "0"),
+        ("RealEstateHolding", "real_estate_appraisal_invalid", "appraisalValue", "0"),
+        ("Bond", "bond_securitized_subclass_noncanonical", "subclass", "\"MBS\""),
+        ("Bond", "bond_bank_loan_subclass_noncanonical", "subclass", "\"BankLoan\""),
+        ("Bond", "bond_principal_schedule_date_invalid", "*", """{"par":1000,"principalSchedule":[{"paymentDate":"2999-01-01","amount":100}]}"""),
+        ("Bond", "bond_principal_schedule_exceeds_par", "*", """{"par":100,"principalSchedule":[{"paymentDate":"2030-06-15","amount":500}]}"""),
+        ("Bond", "bond_principal_schedule_requires_par", "*", """{"par":null,"principalSchedule":[{"paymentDate":"2030-06-15","amount":100}]}"""),
+        ("Bond", "bond_step_schedule_required", "*", """{"couponType":"Step","stepSchedule":[]}"""),
+        ("Bond", "bond_step_date_after_maturity", "*", """{"couponType":"Step","stepSchedule":[{"effectiveDate":"2999-01-01","rate":4}]}"""),
+        ("Bond", "bond_inflation_real_rate_invalid", "*", """{"couponType":"InflationLinked","couponRate":-1,"inflationIndex":"CPI-U"}"""),
+        ("Bond", "bond_inflation_index_required", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":" "}"""),
+        ("Bond", "bond_inflation_index_values_invalid", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":"CPI-U","inflationBaseIndexValue":0}"""),
+        ("OtherSecurity", "other_security_category_required", "category", "\" \""),
+        ("OtherSecurity", "other_security_securitized_noncanonical", "category", "\"MBS\""),
+        ("DirectLoan", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("DirectLoan", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
+        ("CommitmentGuarantee", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("CommitmentGuarantee", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
+        ("Swap", "swap_legs_required", "legs", "[]"),
+        ("Swap", "swap_leg_notional_invalid", "legs", """[{"legType":"Fixed","currency":"USD","notional":0}]"""),
+        ("Swap", "swap_leg_direction_invalid", "legs", """[{"legType":"Fixed","currency":"USD","direction":"Sideways"}]"""),
+        ("Swap", "swap_leg_notional_schedule_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2027-01-15","notional":0}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_order_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2028-01-15","notional":900},{"effectiveDate":"2027-01-15","notional":800}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_range_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2999-01-01","notional":900}]}]"""),
+        ("Swap", "swap_leg_reset_schedule_order_invalid", "legs",
+            """[{"legType":"Floating","currency":"USD","index":"SOFR","resetSchedule":[{"resetDate":"2027-01-15","fixingRate":4.1},{"resetDate":"2026-07-15","fixingRate":4.0}]}]"""),
     ];
 
     [Theory]
@@ -214,6 +269,23 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_invalid",
                 "structured_credit_factor_schedule_duplicate_date",
                 "structured_credit_factor_schedule_not_monotonic"
+            ],
+            // The flat codec's schedule validation refuses a non-positive instalment, a negative
+            // step rate and a repeated step date before a kind exists, so only a directly built
+            // record can carry one.
+            ["Bond"] =
+            [
+                "bond_principal_schedule_invalid",
+                "bond_step_rate_invalid",
+                "bond_step_dates_duplicate"
+            ],
+            // The flat codec refuses a leg whose type or currency is blank and reads a blank
+            // payment frequency as absent, so only a directly built record can carry one.
+            ["Swap"] =
+            [
+                "swap_leg_type_required",
+                "swap_leg_currency_required",
+                "swap_leg_payment_frequency_invalid"
             ],
             // A blank profile id reads as the OtherSecurity salvage, and a non-object or
             // unparseable document never reaches a CustomAsset kind through the codec.
