@@ -45,6 +45,10 @@ public static class LedgerReportPackBuilder
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
 
+        var generalLedgerLines = SelectGeneralLedgerLines(ledger, request, financialAccountId);
+        artifacts.Add(CreateGeneralLedgerDetailArtifact(generalLedgerLines));
+        artifacts.Add(CreateProfitAndLossAttributionArtifact(generalLedgerLines));
+
         var canonicalEvidence = (taxLotReliefProjections ?? [])
             .Where(static projection => projection.CanonicalOpenLots.Count > 0)
             .OrderBy(static projection => projection.Input.SaleDate)
@@ -73,7 +77,7 @@ public static class LedgerReportPackBuilder
                 content, Sha256Digest.ComputeUtf8(content)));
         }
 
-        artifacts.Add(CreateManifestArtifact(request, statements, artifacts));
+        artifacts.Add(CreateManifestArtifact(request, statements, artifacts, generalLedgerLines));
 
         var payload = string.Join(
             "\n",
@@ -381,7 +385,8 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreateManifestArtifact(
         LedgerReportPackRequest request,
         LedgerFinancialStatements statements,
-        IReadOnlyList<LedgerReportPackArtifact> artifacts)
+        IReadOnlyList<LedgerReportPackArtifact> artifacts,
+        IReadOnlyList<GeneralLedgerLine> generalLedgerLines)
     {
         var builder = new StringBuilder();
         builder.AppendLine("ledger-report-pack-manifest-v1");
@@ -415,6 +420,15 @@ public static class LedgerReportPackBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"total-expenses,{FormatDecimal(statements.TotalExpenses)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"net-income,{FormatDecimal(statements.NetIncome)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-equation-variance,{FormatDecimal(statements.AccountingEquationVariance)}");
+        // Control totals over gl-detail.csv: a reader can tie the detail back to the source journal
+        // (entry and line counts) and confirm the period's activity is in balance.
+        var controlDebits = generalLedgerLines.Sum(static line => line.Line.Debit);
+        var controlCredits = generalLedgerLines.Sum(static line => line.Line.Credit);
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-journal-entry-count,{generalLedgerLines.Select(static line => line.Entry.JournalEntryId).Distinct().Count()}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-line-count,{generalLedgerLines.Count}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-total-debits,{FormatDecimal(controlDebits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-total-credits,{FormatDecimal(controlCredits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-debit-credit-variance,{FormatDecimal(controlDebits - controlCredits)}");
         builder.AppendLine("artifact,content-type,sha256");
 
         foreach (var artifact in artifacts.OrderBy(static artifact => artifact.Name, StringComparer.Ordinal))
@@ -424,6 +438,92 @@ public static class LedgerReportPackBuilder
 
         var content = builder.ToString();
         return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
+    }
+
+    private readonly record struct GeneralLedgerLine(JournalEntry Entry, LedgerEntry Line);
+
+    /// <summary>
+    /// The journal lines of the report period (period start through as-of) inside the pack's
+    /// financial-account and dimension scope, in a deterministic order.
+    /// </summary>
+    private static IReadOnlyList<GeneralLedgerLine> SelectGeneralLedgerLines(
+        IReadOnlyLedger ledger,
+        LedgerReportPackRequest request,
+        string? financialAccountId)
+        => ledger.GetJournalEntries(request.PeriodStart, request.AsOf)
+            .SelectMany(static entry => entry.Lines.Select(line => new GeneralLedgerLine(entry, line)))
+            .Where(item => string.IsNullOrWhiteSpace(financialAccountId)
+                || string.Equals(item.Line.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+            .Where(item => MatchesLineDimensions(item.Line.Dimensions, request.LineDimensions))
+            .OrderBy(static item => item.Entry.Timestamp)
+            .ThenBy(static item => item.Entry.JournalEntryId)
+            .ThenBy(static item => item.Line.EntryId)
+            .ToArray();
+
+    private static LedgerReportPackArtifact CreateGeneralLedgerDetailArtifact(IReadOnlyList<GeneralLedgerLine> lines)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine(
+            "Timestamp,JournalEntryId,LedgerEntryId,Description,ActivityType,StrategyId," +
+            "AccountName,AccountType,Symbol,FinancialAccountId,Debit,Credit");
+        foreach (var (entry, line) in lines)
+        {
+            builder.Append(entry.Timestamp.ToString("O", CultureInfo.InvariantCulture)).Append(',');
+            builder.Append(entry.JournalEntryId.ToString("D")).Append(',');
+            builder.Append(line.EntryId.ToString("D")).Append(',');
+            builder.Append(EscapeCsv(entry.Description)).Append(',');
+            builder.Append(EscapeCsv(entry.Metadata?.ActivityType ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(entry.Metadata?.StrategyId ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(line.Account.Name)).Append(',');
+            builder.Append(line.Account.AccountType).Append(',');
+            builder.Append(EscapeCsv(line.Account.Symbol ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(line.Account.FinancialAccountId ?? string.Empty)).Append(',');
+            builder.Append(FormatDecimal(line.Debit)).Append(',');
+            builder.AppendLine(FormatDecimal(line.Credit));
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("gl-detail.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
+    }
+
+    /// <summary>
+    /// Period revenue and expense attributed to the posting strategy and symbol. Lines posted
+    /// without a strategy or symbol are reported under an empty key rather than dropped, so the
+    /// rows always sum to the period's net income for the pack scope.
+    /// </summary>
+    private static LedgerReportPackArtifact CreateProfitAndLossAttributionArtifact(IReadOnlyList<GeneralLedgerLine> lines)
+    {
+        var rows = lines
+            .Where(static item => item.Line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+            .GroupBy(static item => (
+                StrategyId: item.Entry.Metadata?.StrategyId ?? string.Empty,
+                Symbol: item.Line.Account.Symbol ?? item.Entry.Metadata?.Symbol ?? string.Empty))
+            .Select(static group =>
+            {
+                var revenue = group
+                    .Where(static item => item.Line.Account.AccountType == LedgerAccountType.Revenue)
+                    .Sum(static item => item.Line.Credit - item.Line.Debit);
+                var expenses = group
+                    .Where(static item => item.Line.Account.AccountType == LedgerAccountType.Expense)
+                    .Sum(static item => item.Line.Debit - item.Line.Credit);
+                return (group.Key.StrategyId, group.Key.Symbol, Revenue: revenue, Expenses: expenses);
+            })
+            .OrderBy(static row => row.StrategyId, StringComparer.Ordinal)
+            .ThenBy(static row => row.Symbol, StringComparer.Ordinal);
+
+        var builder = new StringBuilder();
+        builder.AppendLine("StrategyId,Symbol,Revenue,Expenses,NetIncome");
+        foreach (var row in rows)
+        {
+            builder.Append(EscapeCsv(row.StrategyId)).Append(',');
+            builder.Append(EscapeCsv(row.Symbol)).Append(',');
+            builder.Append(FormatDecimal(row.Revenue)).Append(',');
+            builder.Append(FormatDecimal(row.Expenses)).Append(',');
+            builder.AppendLine(FormatDecimal(row.Revenue - row.Expenses));
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("pnl-by-strategy-symbol.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
     private static IReadOnlyList<LedgerReportLineProvenance> BuildLineProvenance(
