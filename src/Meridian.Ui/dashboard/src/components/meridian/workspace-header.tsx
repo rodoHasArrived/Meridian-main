@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { AlertTriangle, Info, RefreshCcw } from "lucide-react";
+import { AlertTriangle, ChevronRight, Info, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
+import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { Button } from "@/components/ui/button";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
@@ -40,6 +41,7 @@ interface WorkspaceHeaderProps {
   actions?: ReactNode;
   /** Persistent scope and optional workflow disclosure in the compact header. */
   context?: ReactNode;
+  dataProvenance?: DataProvenanceKind;
 }
 
 export function WorkspaceHeader({
@@ -49,14 +51,18 @@ export function WorkspaceHeader({
   onRefresh,
   refreshing = false,
   actions,
-  context
+  context,
+  dataProvenance
 }: WorkspaceHeaderProps) {
   const viewModel = buildWorkspaceHeaderViewModel({
     workspace,
     session,
     canRefresh: Boolean(onRefresh),
-    refreshing
+    refreshing,
+    dataProvenance
   });
+  const routeItems = breadcrumbItems.filter((item) => item.label !== "Workstation");
+  const titleItems = routeItems.length ? routeItems : [{ label: viewModel.title, current: true }];
 
   return (
     <header className="border-b border-border bg-card" aria-busy={viewModel.ariaBusy}>
@@ -81,14 +87,22 @@ export function WorkspaceHeader({
       ) : null}
       <div className="workspace-header-shell workstation-header-compact">
         <div className="workstation-header-location">
-          {breadcrumbItems.length > 0 ? <Breadcrumb items={breadcrumbItems} /> : null}
           <div className="workstation-header-title-row">
-            <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
-            {viewModel.badges.map((badge) => (
-              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                {badge.label}
-              </Badge>
-            ))}
+            <nav aria-label="Breadcrumb">
+              <h1 className="workstation-route-title font-display font-semibold text-foreground"
+                aria-label={titleItems.every((item) => typeof item.label === "string") ? titleItems.map((item) => item.label).join(" › ") : undefined}>
+                {titleItems.map((item, index) => (
+                  <span key={index} className="workstation-route-segment">
+                    {index > 0 ? <ChevronRight className="size-3.5 text-muted-foreground" aria-hidden="true" /> : null}
+                    {item.current || index === titleItems.length - 1
+                      ? <span aria-current="page">{item.label}</span>
+                      : item.href ? <a href={item.href}>{item.label}</a>
+                        : item.onClick ? <button type="button" onClick={item.onClick}>{item.label}</button>
+                          : <span>{item.label}</span>}
+                  </span>
+                ))}
+              </h1>
+            </nav>
             <details className="workstation-header-info" onKeyDown={(event) => {
               if (event.key === "Escape") {
                 event.preventDefault();
@@ -99,11 +113,17 @@ export function WorkspaceHeader({
               <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
                 <Info className="size-4" aria-hidden="true" />
               </summary>
-              <p>{viewModel.description}</p>
+              <div className="workstation-header-about-panel">
+                <p>{viewModel.description}</p>
+                {viewModel.badges.map((badge) => (
+                  <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>{badge.label}</Badge>
+                ))}
+              </div>
             </details>
           </div>
         </div>
         <div className="workstation-header-actions">
+          {context ? <div className="workstation-header-context">{context}</div> : null}
           {actions}
           {viewModel.refreshAction && onRefresh ? (
             <Button
@@ -123,7 +143,6 @@ export function WorkspaceHeader({
             </Button>
           ) : null}
         </div>
-        {context ? <div className="workstation-header-context">{context}</div> : null}
         <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>

@@ -4364,6 +4364,16 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    sourceRows: scopedBreakQueue,
+    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
+      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+        setBreakQueue((current) => {
+          const retained = current.find((item) => item.breakId === updated.breakId);
+          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
+          return replaceBreakQueueItem(current, updated);
+        });
+      }
+    },
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)

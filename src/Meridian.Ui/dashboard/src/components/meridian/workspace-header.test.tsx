@@ -24,11 +24,13 @@ describe("WorkspaceHeader", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: "Trading Workstation" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Breadcrumb")).toHaveTextContent("Workstation");
+    expect(screen.getByRole("heading", { level: 1, name: "Trading" })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(screen.getByLabelText("Breadcrumb")).not.toHaveTextContent("Workstation");
     expect(screen.getByText("Trading")).toHaveAttribute("aria-current", "page");
     expect(screen.queryByLabelText("paper environment")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Trading product maturity Available")).toHaveTextContent("Available");
+    expect(screen.getByLabelText("Trading product maturity Available").closest("details")).not.toHaveAttribute("open");
     expect(screen.getByLabelText("Session Ops Desk, role Operator")).toHaveTextContent("Ops Desk");
     const refreshButton = screen.getByRole("button", { name: "Refreshing Trading workspace data" });
     expect(refreshButton).toBeDisabled();

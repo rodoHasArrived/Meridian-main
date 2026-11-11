@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
 import type { MetricSnapshot } from "@/types";
+import { metricBasisLabel, presentMetricChange } from "@/lib/metric-context";
+import { useId } from "react";
+import { MetricPassport } from "@/components/meridian/metric-passport";
 
 const statToneClass: Record<MetricSnapshot["tone"], string> = {
   default: "text-foreground",
@@ -24,9 +27,12 @@ export function StatStrip({
   className?: string;
   compact?: boolean;
 }) {
+  const basisId = useId();
   if (metrics.length === 0) {
     return null;
   }
+  const firstBasis = metricBasisLabel(metrics[0]!);
+  const sharedBasis = metrics.every(metric => metricBasisLabel(metric) === firstBasis) ? firstBasis : null;
 
   return (
     <dl
@@ -42,16 +48,23 @@ export function StatStrip({
           <dt className="whitespace-nowrap text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
             {metric.label}
           </dt>
-          <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <span className={cn("whitespace-nowrap font-mono text-sm font-semibold", statToneClass[metric.tone])}>
+          <dd className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5" aria-describedby={sharedBasis ? basisId : undefined}>
+            <span className={cn("whitespace-nowrap tabular-nums text-sm font-semibold", statToneClass[metric.tone])}>
               {metric.value}
             </span>
-            {metric.delta ? (
-              <span className="whitespace-nowrap text-xs text-muted-foreground">{metric.delta}</span>
+            <MetricPassport metric={metric} />
+            {presentMetricChange(metric) ? (
+              <span className="whitespace-nowrap text-xs text-muted-foreground">{presentMetricChange(metric)}</span>
             ) : null}
+            {!sharedBasis ? <span className="text-[11px] text-muted-foreground" title={metric.source ? `Source: ${metric.source}` : "Source evidence has not been supplied for this metric."}>
+              {metricBasisLabel(metric)}
+            </span> : null}
           </dd>
         </div>
       ))}
+      {sharedBasis ? <div className="flex min-w-0 items-baseline gap-2 text-[11px] text-muted-foreground">
+        <dt>Basis</dt><dd id={basisId}>{sharedBasis}</dd>
+      </div> : null}
     </dl>
   );
 }

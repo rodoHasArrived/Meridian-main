@@ -36,7 +36,6 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
 }
 
 export function buildWorkstationStatusItems({
-  workspaceLabel,
   refreshing,
   hasError
 }: {
@@ -50,12 +49,6 @@ export function buildWorkstationStatusItems({
       status: hasError ? "err" : refreshing ? "warn" : "ok",
       label: "Sync",
       value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
-    },
-    {
-      key: "workspace",
-      label: "Workspace",
-      value: workspaceLabel,
-      push: true
     }
   ];
 }

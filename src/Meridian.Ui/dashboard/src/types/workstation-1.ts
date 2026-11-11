@@ -275,6 +275,8 @@ export interface FinancialRecordExplorerScopeItemDto {
 }
 
 export interface FinancialRecordExplorerSavedViewDto {
+  isReadOnly?: boolean;
+  origin?: string | null;
   viewId: string;
   label: string;
   description: string;
@@ -750,6 +752,12 @@ export interface MetricSnapshot {
   value: string;
   delta: string;
   tone: "default" | "success" | "warning" | "danger";
+  /** Producer-declared comparison window; never inferred from the magnitude. */
+  comparisonPeriod?: string | null;
+  basis?: string | null;
+  asOf?: string | null;
+  source?: string | null;
+  numberPassport?: import("./number-passport-reference").NumberPassportReference | null;
 }
 
 
@@ -775,6 +783,10 @@ export interface StrategyRunSummaryApiRecord {
   auditReference?: string | null;
 }
 export interface StrategyRunRecord {
+  searchText?: string | null;
+  maxDrawdown?: number | null;
+  trendValues?: number[] | null;
+  trendDates?: string[] | null;
   id: string;
   strategyName: string;
   engine: string;

@@ -34,6 +34,7 @@ describe("OperationalTrustSummary", () => {
   it("renders source, scope, freshness, completeness, blocker, and recovery action with text status", () => {
     render(
       <OperationalTrustSummary
+        disclosure={false}
         source={{ value: "Brokerage sync", detail: "Alpaca paper account", tone: "ready" }}
         scope={{ value: "Growth sleeve", tone: "ready" }}
         freshness={{ value: "2 minutes ago", tone: "review" }}
@@ -58,6 +59,7 @@ describe("OperationalTrustSummary", () => {
   it("uses an explicit unknown status when a fact has no tone", () => {
     render(
       <OperationalTrustSummary
+        disclosure={false}
         source={{ value: "Not loaded" }}
         scope={{ value: "All portfolios" }}
         freshness={{ value: "Not available" }}
@@ -73,6 +75,7 @@ describe("OperationalTrustSummary", () => {
   it("keeps remediation actions inside the fact that owns the warning", () => {
     render(
       <OperationalTrustSummary
+        disclosure={false}
         source={{
           label: "Connectivity",
           value: "Provider degraded",
@@ -109,6 +112,7 @@ describe("OperationalTrustSummary", () => {
     // "unavailable" splits mid-word, which is what the daily control tower rendered.
     render(
       <OperationalTrustSummary
+        disclosure={false}
         source={{ label: "Connectivity", value: "1 warning", tone: "review" }}
         scope={{ value: "No operating scope selected", tone: "review" }}
         freshness={{ value: "Timestamp unavailable", tone: "review" }}
@@ -131,6 +135,7 @@ describe("OperationalTrustSummary", () => {
   it("wraps long trust facts instead of truncating financially material labels", () => {
     render(
       <OperationalTrustSummary
+        disclosure={false}
         source={{ value: "Trial balance", tone: "ready" }}
         scope={{ value: "Paper Index Mean Reversion", tone: "ready" }}
         freshness={{ value: "Current response", tone: "ready" }}
@@ -145,4 +150,19 @@ describe("OperationalTrustSummary", () => {
       expect(element).not.toHaveClass("truncate");
     }
   });
+});
+
+it("the default compact summary reflects its worst child", () => {
+  const { container } = render(<OperationalTrustSummary
+    source={{ value: "Connected", tone: "ready" }}
+    scope={{ value: "No account selected", tone: "review" }}
+    freshness={{ value: "Current", tone: "ready" }}
+    completeness={{ value: "Loaded", tone: "ready" }}
+    blocker={{ value: "Approval required", tone: "blocked" }}
+  />);
+  const summary = container.querySelector("summary")!;
+  expect(summary).toHaveTextContent("Blocked");
+  expect(summary.querySelector("[data-design-system-component='Badge']")).toHaveClass("mds-badge--danger");
+  expect(summary).toHaveTextContent("Approval required");
+  expect(summary).not.toHaveTextContent("Ready");
 });

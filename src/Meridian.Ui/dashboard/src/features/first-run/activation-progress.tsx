@@ -56,16 +56,6 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
 
   return (
     <div className="flex items-center gap-2">
-      {liveStatus.workspace.isSample ? (
-        <span
-          className="inline-flex items-center gap-1.5 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-semibold text-amber-200"
-          title={liveStatus.workspace.safetyMessage}
-        >
-          <FlaskConical size={13} />
-          {liveStatus.workspace.badge}
-        </span>
-      ) : null}
-
       <button
         type="button"
         aria-label={model.triggerAriaLabel}
@@ -102,6 +92,12 @@ export function ActivationHeaderProgress({ status }: { status?: FirstRunStatus |
             </div>
           </SheetHeader>
           <SheetBody>
+            {liveStatus.workspace.isSample ? (
+              <section aria-label="Workspace safety context" className="mb-4 space-y-2 border border-border p-3">
+                <h3 className="flex items-center gap-2 text-sm font-semibold"><FlaskConical size={14} aria-hidden="true" />{liveStatus.workspace.badge}</h3>
+                <p className="text-sm text-muted-foreground">{liveStatus.workspace.safetyMessage}</p>
+              </section>
+            ) : null}
             <ol className="space-y-2">
               {model.steps.map((step) => (
                 <li key={step.key}>

@@ -35,8 +35,11 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { DesignSystemStatus } from "@/design-system/status";
+import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
@@ -100,14 +103,6 @@ const dataToneClass: Record<TradingDataTone, string> = {
   muted: "text-muted-foreground"
 };
 
-const dataTonePanelClass: Record<TradingDataTone, string> = {
-  default: "border-border/70",
-  success: "border-success/35 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10",
-  muted: "border-border/70 bg-secondary/20"
-};
-
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
 
 interface TradingRouteTab {
@@ -166,6 +161,10 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
     description: "Guardrail posture, execution controls, and adapter health."
   }
 };
+
+function tradingExportColumns<T>(columns: DenseDataTableColumn<T>[], values: Record<string, (row: T) => CsvCell>): TableWorkbenchColumn<T>[] {
+  return columns.map((column) => ({ ...column, exportValue: values[column.id] }));
+}
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
@@ -434,8 +433,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const { pathname, search } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
-    ?? normalizeFundAccountGuid(data?.brokerage?.account);
+  const [orderDetailSource, setOrderDetailSource] = React.useState<"orders" | "fills">("orders");
+  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
@@ -462,8 +461,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       ]);
     }
   });
-  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
-  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
+  const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
+    "mark-readiness": (row) => row.markFreshness.label,
+    symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
+    average: (row) => row.averagePrice, mark: (row) => row.markPrice,
+    "day-pnl": (row) => row.dayPnl, unrealized: (row) => row.unrealizedPnl, exposure: (row) => row.exposure
+  }), [confirmVm]);
+  const orderColumns = React.useMemo(() => tradingExportColumns(buildOrderColumns(confirmVm), {
+    order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side, type: (row) => row.type,
+    quantity: (row) => row.quantity, limit: (row) => row.limitPrice, status: (row) => row.status, submitted: (row) => row.submittedAt
+  }), [confirmVm]);
+  const exportedFillColumns = React.useMemo(() => tradingExportColumns(fillColumns, {
+    fill: (row) => row.fillId, order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side,
+    quantity: (row) => row.quantity, price: (row) => row.price, venue: (row) => row.venue, timestamp: (row) => row.timestamp
+  }), []);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -561,9 +572,41 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         ? "review"
         : "unknown";
 
+  const tradingConfidence = (<OperationalTrustSummary
+        label="Trading data confidence"
+        disclosure
+        source={{
+          value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
+          detail: hasRecoveryProjection
+            ? reconciliation && !reconciliation.brokerConnected ? "Disconnected" : recoveryUnavailable ? "Current account evidence unverified" : !reconciliation ? "Connection unknown" : reconciliation.brokerHealthy ? "Connected · healthy" : "Connected · degraded"
+            : data.brokerage.connection,
+          tone: sourceTone
+        }}
+        scope={{
+          value: fundAccountId ?? (data.brokerage.account ? `Account default: ${data.brokerage.account} (not selected)` : "No operating account selected"),
+          detail: fundAccountId ? "Operating fund account" : "The backend account default is not an operating-scope selection.",
+          tone: fundAccountId ? "ready" : "review"
+        }}
+        freshness={{
+          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
+          detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
+          tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
+        }}
+        completeness={{
+          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
+          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
+          tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
+        }}
+        blocker={readinessStatus ? {
+          value: formatReadinessStatusValue(readinessStatus),
+          detail: "Operator readiness posture",
+          tone: readinessTone
+        } : undefined}
+      />);
+
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+      {showOverview ? <StatStrip metrics={data.metrics} label="Trading headline metrics" /> : null}
 
       <section
         id="trading-overview"
@@ -571,7 +614,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         aria-label="Execution cockpit context"
         className="flex flex-wrap items-end justify-between gap-3"
       >
-        <div className="min-w-0">
+        <div className={showOverview ? "min-w-0" : "sr-only"}>
           <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
             {routeCopy.title}
           </h2>
@@ -593,39 +636,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         />
       </section>
 
-      <OperationalTrustSummary
-        label="Trading data confidence"
-        disclosure
-        source={{
-          value: hasRecoveryProjection ? reconciliation?.brokerDisplayName ?? scopedRecovery?.providerId ?? "Broker unavailable" : `${data.brokerage.provider} · ${data.brokerage.environment}`,
-          detail: hasRecoveryProjection
-            ? reconciliation && !reconciliation.brokerConnected ? "Disconnected" : recoveryUnavailable ? "Current account evidence unverified" : !reconciliation ? "Connection unknown" : reconciliation.brokerHealthy ? "Connected · healthy" : "Connected · degraded"
-            : data.brokerage.connection,
-          tone: sourceTone
-        }}
-        scope={{
-          value: fundAccountId ?? data.brokerage.account ?? "All loaded accounts",
-          detail: fundAccountId ? "Operating fund account" : "Brokerage account scope",
-          tone: fundAccountId || data.brokerage.account ? "ready" : "unknown"
-        }}
-        freshness={{
-          value: hasRecoveryProjection ? recoveryPortfolio?.observedAt ?? "Unavailable" : data.brokerage.lastHeartbeat || "Unavailable",
-          detail: hasRecoveryProjection ? "Latest broker portfolio observation" : "Latest brokerage heartbeat",
-          tone: hasRecoveryProjection ? recoveryPortfolio?.isFresh === false ? "blocked" : recoveryUnavailable ? "unknown" : recoveryPortfolio?.isFresh ? "ready" : "blocked" : sourceTone
-        }}
-        completeness={{
-          value: hasRecoveryProjection ? recoveryPortfolio ? `${recoveryPortfolio.positionCount} positions · ${reconciliation?.matchedOpenOrderCount ?? "Unknown"} matched open orders` : "Unavailable" : `${data.positions.length} positions · ${data.openOrders.length} orders · ${data.fills.length} fills`,
-          detail: hasRecoveryProjection ? recoveryUnavailable ? "Current account evidence unverified" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "Complete and consistent broker evidence" : "Incomplete or inconsistent broker evidence" : `${completenessCount} execution records loaded`,
-          tone: hasRecoveryProjection ? recoveryUnavailable ? "unknown" : recoveryPortfolio?.isComplete && recoveryPortfolio.isConsistent ? "ready" : "blocked" : completenessCount > 0 ? "ready" : "review"
-        }}
-        blocker={readinessStatus ? {
-          value: formatReadinessStatusValue(readinessStatus),
-          detail: "Operator readiness posture",
-          tone: readinessTone
-        } : undefined}
-      />
+      {showOverview ? tradingConfidence : null}
 
       <BrokerageRecoveryPanel
+        compact={!showOverview}
         readiness={tradingReadiness.readiness}
         fundAccountId={fundAccountId}
         busy={tradingReadiness.refreshing}
@@ -789,7 +803,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
+            <TableWorkbench
+              workbenchId="trading-positions" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All positions in the current authorized workspace snapshot; source decimal text and recorded money strings retained without recalculation."
+              completePopulation getSearchText={(row) => `${row.symbol} ${row.side} ${row.quantity} ${row.exposure}`}
               ariaLabel={blotterVm.positionsTableLabel}
               caption="Select a position to update the position detail status window."
               columns={positionColumns}
@@ -814,8 +831,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0 space-y-4">
-          <TradingBlotterDetailPanel id={blotterVm.orderDetailId} detail={blotterVm.selectedOrder} emptyText={blotterVm.orderEmptyText} selectedSourceLabel="Selected from open orders" />
-          <TradingBlotterDetailPanel id={blotterVm.fillDetailId} detail={blotterVm.selectedFill} emptyText={blotterVm.fillEmptyText} selectedSourceLabel="Selected from recent fills" />
+          <TradingBlotterDetailPanel id="trading-order-fill-detail" detail={orderDetailSource === "orders" ? blotterVm.selectedOrder : blotterVm.selectedFill} emptyText={orderDetailSource === "orders" ? blotterVm.orderEmptyText : blotterVm.fillEmptyText} selectedSourceLabel={orderDetailSource === "orders" ? "Selected from open orders" : "Selected from recent fills"} />
         </div>
       )}>
 
@@ -1020,7 +1036,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             />
           )}
           <CardContent className="space-y-3">
-            <DenseDataTable
+            <TableWorkbench
+              workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
+              completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
               columns={orderColumns}
@@ -1028,10 +1047,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowId={(order) => order.id}
               getRowAriaLabel={(order) => order.ariaLabel}
               getRowSelectAriaLabel={(order) => order.selectAriaLabel}
-              getRowAriaControls={(order) => order.detailPanelId}
-              getRowAriaExpanded={(order) => order.ariaExpanded}
-              selectedRowId={blotterVm.selectedOrderRowId}
-              onRowSelect={(order) => blotterVm.selectOrder(order.id)}
+              getRowAriaControls={() => "trading-order-fill-detail"}
+              getRowAriaExpanded={(order) => orderDetailSource === "orders" && order.ariaExpanded}
+              selectedRowId={orderDetailSource === "orders" ? blotterVm.selectedOrderRowId : null}
+              onRowSelect={(order) => { blotterVm.selectOrder(order.id); setOrderDetailSource("orders"); }}
               emptyText={blotterVm.orderEmptyText}
             />
           </CardContent>
@@ -1053,18 +1072,21 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
+            <TableWorkbench
+              workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
+              completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
-              columns={fillColumns}
+              columns={exportedFillColumns}
               rows={blotterVm.fillRows}
               getRowId={(fill) => fill.id}
               getRowAriaLabel={(fill) => fill.ariaLabel}
               getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
-              getRowAriaControls={(fill) => fill.detailPanelId}
-              getRowAriaExpanded={(fill) => fill.ariaExpanded}
-              selectedRowId={blotterVm.selectedFillRowId}
-              onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
+              getRowAriaControls={() => "trading-order-fill-detail"}
+              getRowAriaExpanded={(fill) => orderDetailSource === "fills" && fill.ariaExpanded}
+              selectedRowId={orderDetailSource === "fills" ? blotterVm.selectedFillRowId : null}
+              onRowSelect={(fill) => { blotterVm.selectFill(fill.id); setOrderDetailSource("fills"); }}
               emptyText={blotterVm.fillEmptyText}
             />
           </CardContent>
@@ -1798,6 +1820,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
+      {!showOverview ? <TechnicalDetails label="Trading metrics and data confidence"><StatStrip metrics={data.metrics} label="Trading headline metrics" />{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}
@@ -2090,7 +2113,7 @@ function DataRow({ label, value }: { label: string; value: string | null }) {
   return (
     <div className="data-grid-surface px-3 py-2">
       <div className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</div>
-      <div className="mt-1 font-mono text-sm text-foreground">{value ?? "Unavailable"}</div>
+      <div className={cn("mt-1 text-sm text-foreground tabular-nums", /\b(id|key|code|hash)\b/i.test(label) ? "font-mono" : "font-sans")}>{value ?? "Unavailable"}</div>
     </div>
   );
 }
@@ -2110,6 +2133,15 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
           <DialogDescription id={vm.dialogDescriptionId}>{vm.description}</DialogDescription>
         </DialogHeader>
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
+
+        {vm.state.action?.kind === "cancel-all" && vm.state.cancelAllPreview ? (
+          <details className="border-y border-border py-2 text-sm">
+            <summary className="cursor-pointer">Review {vm.state.cancelAllPreview.orderIds.length} open order identities</summary>
+            <ul className="mt-2 max-h-48 overflow-auto" aria-label="OMS open orders at review">
+              {vm.state.cancelAllPreview.orderIds.map((orderId) => <li key={orderId} className="font-mono text-xs">{orderId}</li>)}
+            </ul>
+          </details>
+        ) : null}
 
         {vm.errorPanel && (
           <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
@@ -2138,6 +2170,12 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
               <span className="font-semibold">{vm.resultPanel.status}</span>
             </div>
             <p>{vm.resultPanel.message}</p>
+            {vm.state.result?.brokerViewUnavailable ? <p>The broker open book could not be verified. Review broker state before relying on the cancellation outcome.</p> : null}
+            {vm.state.result?.stillWorking?.length ? (
+              <ul aria-label="Orders still working after cancellation" className="max-h-48 overflow-auto text-xs">
+                {vm.state.result.stillWorking.map((order) => <li key={order.orderId} className="font-mono">{order.orderId}: {order.reason}</li>)}
+              </ul>
+            ) : null}
             <p className="mt-1 font-mono text-xs opacity-70">Action ID: {vm.resultPanel.actionId}</p>
           </div>
         )}
@@ -2283,41 +2321,27 @@ function TradingBlotterDetailPanel({
   selectedSourceLabel: string;
 }) {
   return (
-    <DenseRowDetailPanel
+    <DetailRail
       id={id}
       ariaLabel={detail?.ariaLabel ?? "Trading blotter detail"}
-      selectedSourceLabel={selectedSourceLabel}
-      className={cn(
-        "rounded-md border bg-background/70 p-3",
-        detail ? dataTonePanelClass[detail.statusTone] : "border-border/70"
-      )}
+      title={detail?.title ?? "No record selected"}
+      status={detail ? <DesignSystemStatus status={detail.statusTone === "success" ? "ready" : detail.statusTone === "danger" ? "blocked" : detail.statusTone === "warning" ? "action" : "info"}>{detail.statusLabel}</DesignSystemStatus> : undefined}
+      fields={detail?.fields.filter((field) => field.label !== "Status").map((field) => ({
+        label: field.label,
+        numeric: /quantity|price|p&l|exposure|limit|age/i.test(field.label),
+        value: <span className={cn("break-normal tabular-nums", dataToneClass[field.tone], /\bid\b|reference|key/i.test(field.label) ? "font-mono" : "font-sans")}>{field.value}</span>
+      })) ?? []}
     >
+      <span className="sr-only">{selectedSourceLabel}</span>
       {detail ? (
         <>
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div className="min-w-0">
-              <div className="eyebrow-label">{detail.statusLabel}</div>
-              <h3 className="mt-1 break-words text-sm font-semibold text-foreground">{detail.title}</h3>
-              <p className="mt-1 font-mono text-xs text-muted-foreground">{detail.subtitle}</p>
-            </div>
-            <span className={cn("rounded-sm border px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.14em]", dataTonePanelClass[detail.statusTone], dataToneClass[detail.statusTone])}>
-              Detail
-            </span>
-          </div>
+          <p className="mt-2 text-xs text-muted-foreground">{detail.subtitle}</p>
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
-          <dl className="mt-3 grid gap-2 sm:grid-cols-2">
-            {detail.fields.map((field) => (
-              <div key={field.label} className="grid grid-cols-[minmax(0,0.8fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/20 px-3 py-2">
-                <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                <dd className={cn("break-words text-right font-mono text-xs", dataToneClass[field.tone])}>{field.value}</dd>
-              </div>
-            ))}
-          </dl>
         </>
       ) : (
         <div role="status" className="text-sm text-muted-foreground">{emptyText}</div>
       )}
-    </DenseRowDetailPanel>
+    </DetailRail>
   );
 }
 

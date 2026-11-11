@@ -1,6 +1,8 @@
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
-import type { AppShellTrustStripState } from "@/app-shell.view-model";
+import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import { buildDataProvenanceBadgeViewModel, type DataProvenanceKind } from "@/app-shell.data-provenance-badge";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { cn } from "@/lib/utils";
 
 const trustToneRank = {
@@ -15,18 +17,37 @@ const trustToneRank = {
  * The masthead keeps one compact summary visible; supporting facts and route
  * actions remain available in a native disclosure.
  */
-export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
+export function DesignSystemTrustStrip({
+  viewModel,
+  provenance = "unknown",
+  onRetryLiveData,
+  retryBusy = false,
+  decisionBrief
+}: {
+  viewModel: AppShellTrustStripState;
+  provenance?: DataProvenanceKind;
+  onRetryLiveData?: () => void;
+  retryBusy?: boolean;
+  decisionBrief?: AppShellWorkflowContinuityViewModel["decisionBrief"];
+}) {
   const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
   const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
   const provider = viewModel.items.find((item) => item.id === "providers");
-  const summaryTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
+  const childTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
     (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
     "ready"
   );
-  const summaryValue = provider && provider.tone !== "ready"
+  const briefTone = decisionBrief?.statusTone ?? "ready";
+  const provenanceTone = provenance === "real" ? "ready" : "review";
+  const summaryTone = [childTone, briefTone, provenanceTone].reduce((current, tone) =>
+    trustToneRank[tone] > trustToneRank[current] ? tone : current, "ready" as typeof childTone);
+  const badge = buildDataProvenanceBadgeViewModel({ provenance });
+  const summaryValue = provenance !== "real"
+    ? provider && provider.tone !== "ready" ? provider.value : badge.headline
+    : provider && provider.tone !== "ready"
     ? `${mode} · ${source} · ${provider.value}`
     : `${mode} · ${source}`;
-  const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const summaryAriaLabel = `Environment, provenance, and provider posture. ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section
@@ -36,7 +57,12 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
       aria-atomic="true"
       data-design-system-component="Status"
     >
-      <details className="workstation-trust-details">
+      <details className="workstation-trust-details" onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.currentTarget.open = false;
+          event.currentTarget.querySelector("summary")?.focus();
+        }
+      }}>
         <summary
           className={cn(
             "workstation-trust-summary",
@@ -46,7 +72,11 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           aria-label={summaryAriaLabel}
         >
           <span className="workstation-trust-label">Trust</span>
-          <span className="workstation-trust-value">{summaryValue}</span>
+          <DataProvenanceBanner provenance={provenance} compact />
+          {decisionBrief ? <span className="workstation-trust-blocker">{decisionBrief.statusLabel}</span> : null}
+          <span className="workstation-trust-value" title={decisionBrief?.title ?? summaryValue}>
+            {decisionBrief && decisionBrief.statusTone !== "ready" ? decisionBrief.title : summaryValue}
+          </span>
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>
         <div
@@ -54,6 +84,21 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           role="group"
           aria-label="Environment, provenance, and provider details"
         >
+          {badge.visible ? <p className="workstation-trust-detail">{badge.headline}. {badge.detail}</p> : null}
+          {provenance === "unknown" && onRetryLiveData ? (
+            <button type="button" className="workstation-trust-retry" disabled={retryBusy} onClick={onRetryLiveData}
+              aria-label={retryBusy ? "Retrying live Meridian workspace data" : "Retry live Meridian workspace data"}>
+              {retryBusy ? "Retrying live data" : "Retry live data"}
+            </button>
+          ) : null}
+          {decisionBrief ? (
+            <Link to={decisionBrief.actionHref} className="workstation-trust-item" aria-label={decisionBrief.actionAriaLabel}>
+              <span className="workstation-trust-label">{decisionBrief.statusLabel}</span>
+              <span className="workstation-trust-value">{decisionBrief.title}</span>
+              <span className="workstation-trust-detail">{decisionBrief.summary}</span>
+              <span className="workstation-trust-detail">{decisionBrief.actionLabel}</span>
+            </Link>
+          ) : null}
           {viewModel.items.map((item) => {
             const content = (
               <>

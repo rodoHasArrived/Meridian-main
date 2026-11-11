@@ -82,7 +82,8 @@ describe("ActivationHeaderProgress", () => {
     await waitFor(() => expect(screen.queryByText("Next step")).not.toBeInTheDocument());
   });
 
-  it("keeps showing the sample-workspace badge alongside the checklist", () => {
+  it("keeps sample-workspace safety context in the checklist while shell provenance owns the masthead", async () => {
+    const user = userEvent.setup();
     renderWithRouter(<ActivationHeaderProgress status={status({
       workspace: {
         id: "sample",
@@ -94,6 +95,9 @@ describe("ActivationHeaderProgress", () => {
       }
     })} />);
 
-    expect(screen.getByText("SAMPLE · PAPER")).toBeInTheDocument();
+    expect(screen.queryByText("SAMPLE · PAPER")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Getting started/ }));
+    expect(screen.getByRole("region", { name: "Workspace safety context" })).toHaveTextContent("SAMPLE · PAPER");
+    expect(screen.getByRole("region", { name: "Workspace safety context" })).toHaveTextContent("Sample data only. No live trading or production accounting.");
   });
 });

@@ -1,5 +1,3 @@
-@import "tailwindcss";
-@config "../../tailwind.config.ts";
 
 /* Monospace resolves through the local Cascadia Mono @font-face below and the
    system `ui-monospace` stack — no external font fetch. A render-blocking
@@ -218,7 +216,8 @@
     --ws-rail-bg: #EDEAE4;
     --ws-rail-active: #F2E3DB;
     --ws-row-hover: #F0EEE9;
-    --ws-row-selected: #F2E3DB;
+    --ws-row-selected: #E4EBF2;
+    --ws-selection-edge: #526C84;
     --ws-row-border: #E4E3DE;
     --ws-inspector-bg: #FBFAF8;
     --ws-canvas-bg: #FBFAF8;
@@ -475,7 +474,8 @@
       --ws-rail-bg: #292520;
       --ws-rail-active: #3A2E26;
       --ws-row-hover: #2E2A24;
-      --ws-row-selected: #3A2E26;
+      --ws-row-selected: #283847;
+      --ws-selection-edge: #9BB3CA;
       --ws-row-border: #4A443C;
       --ws-inspector-bg: #201D19;
       --ws-canvas-bg: #201D19;
@@ -606,7 +606,8 @@
     --ws-rail-bg: #292520;
     --ws-rail-active: #3A2E26;
     --ws-row-hover: #2E2A24;
-    --ws-row-selected: #3A2E26;
+    --ws-row-selected: #283847;
+    --ws-selection-edge: #9BB3CA;
     --ws-row-border: #4A443C;
     --ws-inspector-bg: #201D19;
     --ws-canvas-bg: #201D19;
@@ -739,7 +740,8 @@
     --ws-rail-bg: #EDEAE4;
     --ws-rail-active: #F2E3DB;
     --ws-row-hover: #F0EEE9;
-    --ws-row-selected: #F2E3DB;
+    --ws-row-selected: #E4EBF2;
+    --ws-selection-edge: #526C84;
     --ws-row-border: #E4E3DE;
     --ws-inspector-bg: #FBFAF8;
     --ws-canvas-bg: #FBFAF8;

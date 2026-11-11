@@ -32,9 +32,10 @@ import {
   writeStoredOperatingScope
 } from "@/lib/operating-scope/persistence";
 import { WorkflowContinuityDock } from "@/components/meridian/workflow-continuity-dock";
-import { DecisionBriefPill } from "@/components/meridian/decision-brief-pill";
 import { WorkspaceViewsMenu } from "@/components/meridian/workspace-views-menu";
 import { WorkspaceStatus } from "@/components/meridian/workspace-status";
+import { EntityInspectorProvider } from "@/components/meridian/entity-inspector";
+import { MetricPassportSessionProvider } from "@/components/meridian/metric-passport";
 import { WorkspaceHeader } from "@/components/meridian/workspace-header";
 import { CompanionPaneWindow } from "@/components/meridian/companion-pane-window";
 import { LayoutSwitcher } from "@/components/meridian/layout-switcher";
@@ -69,7 +70,6 @@ import { CopyLinkButton } from "@/components/meridian/copy-link-button";
 import { SaveViewButton } from "@/components/meridian/save-view-dialog";
 import { NotificationCenter } from "@/components/meridian/notification-center";
 import { ActivityCenter } from "@/components/meridian/activity-center";
-import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { DegradedModeBanner } from "@/components/meridian/degraded-mode-banner";
 import { resolveWorkstationDataProvenance } from "@/app-shell.data-provenance-badge";
 import { DesignSystemMasthead } from "@/design-system/primitives";
@@ -129,6 +129,8 @@ const AccountDetailScreen = lazy(() => import("@/screens/finance-standard-pages-
 const ApprovalInboxScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ApprovalInboxScreen })));
 const CloseCalendarScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.CloseCalendarScreen })));
 const LedgerExplorerScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.LedgerExplorerScreen })));
+const FactorPaydownScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.FactorPaydownScreen })));
+const ConsolidationWorkflowScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ConsolidationWorkflowScreen })));
 const ReconciliationMatchWorkbenchScreen = lazy(() => import("@/screens/finance-standard-pages-screen").then((module) => ({ default: module.ReconciliationMatchWorkbenchScreen })));
 const StatementImportScreen = lazy(() => import("@/screens/statement-import-screen").then((module) => ({ default: module.StatementImportScreen })));
 const CapitalCallIssuanceScreen = lazy(() => import("@/screens/capital-call-issuance-screen").then((module) => ({ default: module.CapitalCallIssuanceScreen })));
@@ -696,6 +698,8 @@ function AppShell({
   ]);
 
   return (
+    <MetricPassportSessionProvider scopeKey={JSON.stringify([operatingScopeInput, refreshStatus.inFlight])} sessionIdentity={session}>
+    <EntityInspectorProvider scopeKey={JSON.stringify(operatingScopeInput)} sessionIdentity={session} refreshSequence={refreshStatus.inFlight ? 1 : 0}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -709,10 +713,13 @@ function AppShell({
         commandTrigger={shell.commandPaletteTrigger}
         onOpenCommandPalette={() => setCommandOpen(true)}
         trustStrip={shell.trustStrip}
+        provenance={dataProvenance}
+        onRetryLiveData={onRetryDemoModeProbe}
+        retryBusy={demoModeProbeBusy}
+        decisionBrief={shell.workflowContinuity.decisionBrief}
         session={session}
         actions={(
           <>
-            <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
             <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
             <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
@@ -720,15 +727,6 @@ function AppShell({
         )}
       />
 
-      {/* Persistent, non-dismissable simulation label (W9-TRUTH-001): whenever the
-          workstation is showing simulated, seeded, or sample data the operator keeps
-          seeing it. Renders nothing for real data. Unresolved provenance renders the
-          `unknown` badge with a retry control instead of a false SIMULATED claim. */}
-      <DataProvenanceBanner
-        provenance={dataProvenance}
-        onRetryLiveData={onRetryDemoModeProbe}
-        retryBusy={demoModeProbeBusy}
-      />
       <DegradedModeBanner degradedMode={overview?.degradedMode} />
 
       <div className="workstation-shell">
@@ -736,6 +734,7 @@ function AppShell({
           className="workstation-rail-desktop"
           density="compact"
           operatingContextScope={operatingScopeInput}
+          attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
         />
 
         <main
@@ -776,6 +775,7 @@ function AppShell({
             breadcrumbItems={breadcrumbItems}
             workspace={headerWorkspace}
             session={session}
+            dataProvenance={dataProvenance}
             onRefresh={refresh}
             refreshing={loading || refreshStatus.inFlight}
           />
@@ -827,6 +827,8 @@ function AppShell({
                   <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
+                  <Route path="/accounting/factor-paydown" element={<FactorPaydownScreen />} />
+                  <Route path="/accounting/consolidation" element={<ConsolidationWorkflowScreen />} />
                   <Route path="/accounting/trial-balance" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/accounting/accounts/detail" element={<AccountDetailScreen data={accounting} />} />
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
@@ -928,12 +930,15 @@ function AppShell({
             <WorkspaceNav
               className="workstation-nav-sheet"
               operatingContextScope={operatingScopeInput}
+              attentionItems={shell.workflowContinuity.operatorFocusCommandItems}
               onNavigate={() => setNavOpen(false)}
             />
           </SheetBody>
         </SheetContent>
       </Sheet>
     </div>
+    </EntityInspectorProvider>
+    </MetricPassportSessionProvider>
   );
 }
 

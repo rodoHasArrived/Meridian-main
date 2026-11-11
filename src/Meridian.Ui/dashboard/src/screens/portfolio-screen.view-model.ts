@@ -64,6 +64,10 @@ type PortfolioSourceRun = {
 };
 
 export interface PortfolioPositionRow {
+  marketValue: string;
+  currency: string | null;
+  weight: string;
+  weightBasis: string | null;
   markFreshness: MarkFreshnessPresentation;
   id: string;
   symbol: string;
@@ -669,6 +673,10 @@ export function buildPortfolioScreenViewModel({
       side: p.side,
       quantity: p.quantity,
       avgPrice: p.averagePrice,
+      marketValue: p.marketValue && p.currency ? `${p.marketValue} ${p.currency}` : "Unavailable · currency or value not supplied",
+      currency: p.currency ?? null,
+      weight: p.weight && p.weightBasis ? p.weight : "Unavailable",
+      weightBasis: p.weightBasis ?? null,
       markFreshness: presentMarkFreshness(p.markFreshness),
       markPrice: p.markPrice,
       dayPnl: p.dayPnl,

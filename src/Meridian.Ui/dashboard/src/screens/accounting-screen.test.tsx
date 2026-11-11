@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { ApiError } from "@/lib/api-errors";
 import * as api from "@/lib/api";
+import * as approvalCollaboration from "@/lib/approval-collaboration";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
@@ -4453,6 +4454,48 @@ describe("AccountingScreen", () => {
       reportPackId: "report-pack-2026-05",
       rationale: "Approved from Accounting approvals workstream."
     }));
+  });
+
+  it("moves through approval rows and opens review or assignment without making a decision", async () => {
+    const other = { ...approvalWorkflowSummary, workflowId: "workflow-approval-2", periodId: "2026-04", updatedAtUtc: "2026-05-01T12:00:00Z" };
+    const discussion = vi.spyOn(approvalCollaboration, "getApprovalCollaboration").mockImplementation(async (workflowId) => ({
+      workflowId, version: 7, approvalState: "Submitted", currentApprovalId: "approval-close-1", submitter: "operator-a", reviewer: null,
+      comments: [], approvalHistory: [], canComment: true, canReassign: true, disabledReason: null
+    }));
+    const write = vi.spyOn(approvalCollaboration, "applyApprovalCollaboration");
+    vi.mocked(api.getOperationsContinuityWorkflows).mockResolvedValue([approvalWorkflowSummary, other]);
+    vi.mocked(api.getOperationsContinuityWorkflow).mockImplementation(async (id) => id === other.workflowId ? { ...approvalWorkflowDetail, ...other } : approvalWorkflowDetail);
+    vi.mocked(api.approveOperationsContinuityWorkflow).mockClear();
+    vi.mocked(api.rejectOperationsContinuityWorkflow).mockClear();
+    try {
+      await renderAccountingScreen(data, "/accounting/approvals");
+      const first = await screen.findByRole("row", { name: "2026-05, Pending" });
+      first.focus();
+      fireEvent.keyDown(first, { key: "j" });
+      const second = screen.getByRole("row", { name: "2026-04, Pending" });
+      await waitFor(() => expect(second).toHaveFocus());
+      expect(second).toHaveAttribute("aria-selected", "true");
+      fireEvent.keyDown(second, { key: "r" });
+      const detail = screen.getByRole("region", { name: "Selected approval detail" });
+      await waitFor(() => expect(detail).toHaveFocus());
+      fireEvent.keyDown(detail, { key: "Escape" });
+      await waitFor(() => expect(second).toHaveFocus());
+      await waitFor(() => expect(within(detail).getByLabelText("Independent reviewer operator ID")).toBeEnabled());
+      fireEvent.keyDown(second, { key: "a" });
+      const reviewer = within(detail).getByLabelText("Independent reviewer operator ID");
+      expect(reviewer.closest("details")).toHaveAttribute("open");
+      expect(reviewer).toHaveFocus();
+      fireEvent.keyDown(reviewer, { key: "j" });
+      expect(second).toHaveAttribute("aria-selected", "true");
+      fireEvent.keyDown(reviewer, { key: "r" });
+      fireEvent.keyDown(reviewer, { key: "d" });
+      expect(api.approveOperationsContinuityWorkflow).not.toHaveBeenCalled();
+      expect(api.rejectOperationsContinuityWorkflow).not.toHaveBeenCalled();
+      expect(write).not.toHaveBeenCalled();
+    } finally {
+      discussion.mockRestore();
+      write.mockRestore();
+    }
   });
 
   it("uses workflow status when an approval record has not been created yet", async () => {

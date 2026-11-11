@@ -1,3 +1,5 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { formatNumber } from "@/lib/format";
 import { RefreshCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MetricSnapshotCard } from "@/components/meridian/metric-card";
@@ -100,40 +102,26 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-fund-event-command-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-fund-event-command-heading" className="text-sm font-semibold text-foreground">Fund-event command centers</h4>
-              <Badge variant="outline">{view.fundEventCommandRows.length.toLocaleString()} events</Badge>
+              <Badge variant="outline">{formatNumber(view.fundEventCommandRows.length)} events</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Fund event</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Routes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.fundEventCommandRows.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60 align-top">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
+              <TableWorkbench<(typeof view.fundEventCommandRows)[number]> workbenchId="accounting-capital-command-centers" sourceKey={view.workbenchRouteLabel}
+ rows={view.fundEventCommandRows} columns={[{ id: "field-0", label: "Fund event", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.memoLabel} | ${row.netActivityLabel}`, render: row => <>
+<div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
                         <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
+</> },{ id: "field-1", label: "Readiness", exportValue: row => `${row.readinessLabel} | ${row.readinessReasonLabel} | ${row.nextActionLabel}`, render: row => <>
+<Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{row.evidenceLabel}</div>
+</> },{ id: "field-2", label: "Evidence", exportValue: row => `${row.evidenceLabel} | ${row.subledgerLabel} | ${row.ledgerImpactLabel} | ${row.reportOutputLabel}`, render: row => <>
+<div>{row.evidenceLabel}</div>
                         <div className="mt-1">{row.subledgerLabel}</div>
                         <div className="mt-1">{row.ledgerImpactLabel}</div>
                         <div className="mt-1">{row.reportOutputLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a
+</> },{ id: "field-3", label: "Routes", exportValue: row => `${row.commandCenterRouteLabel} | ${row.activityRouteLabel} | ${row.evidenceRouteLabel}`, render: row => <>
+<a
                           className="block break-all font-mono text-[11px] text-primary hover:underline"
                           href={row.commandCenterRouteLabel}
                           target="_blank"
@@ -160,11 +148,11 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         >
                           {row.evidenceRouteLabel}
                         </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+</> }]}
+ getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
+ emptyText="No records match these controls." ariaLabel="Capital-account fund-event command centers" />
             </div>
           </section>
         ) : null}
@@ -173,58 +161,42 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-investor-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-investor-heading" className="text-sm font-semibold text-foreground">Investor capital accounts</h4>
-              <Badge variant="outline">{view.investorAccounts.length.toLocaleString()} rows</Badge>
+              <Badge variant="outline">{formatNumber(view.investorAccounts.length)} rows</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[880px] text-sm">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Account</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-right">Net</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Cash support</th>
-                    <th className="px-3 py-2 text-left">Route</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.investorAccounts.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60">
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{row.title}</div>
+              <TableWorkbench<(typeof view.investorAccounts)[number]> workbenchId="accounting-capital-investor-accounts" sourceKey={view.workbenchRouteLabel}
+ rows={view.investorAccounts} columns={[{ id: "field-0", label: "Account", rowHeader: true, exportValue: row => `${row.title} | ${row.subtitle} | ${row.eventLabel}`, render: row => <>
+<div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.eventLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono tabular-nums">
-                        <div className="text-foreground">{row.netActivityLabel}</div>
+</> },{ id: "field-1", label: "Readiness", exportValue: row => row.statusLabel, render: row => <>
+<Badge variant={accountingToolingBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+</> },{ id: "field-2", label: "Net", exportValue: row => `${row.netActivityLabel} | ${row.rollForwardLabel} | ${row.activityMixLabel}`, render: row => <>
+<div className="text-foreground">{row.netActivityLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.rollForwardLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.activityMixLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{row.evidenceLabel}</td>
-                      <td className="px-3 py-2 text-xs">
-                        <Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
+</> },{ id: "field-3", label: "Evidence", exportValue: row => row.evidenceLabel, render: row => <>
+{row.evidenceLabel}
+</> },{ id: "field-4", label: "Cash support", exportValue: row => `${row.paymentEvidenceLabel} | ${row.paymentEvidenceSummaryLabel} | ${row.paymentEvidenceRequiredLabel}`, render: row => <>
+<Badge variant={row.paymentEvidenceTone}>{row.paymentEvidenceLabel}</Badge>
                         <div className="mt-1 text-muted-foreground">{row.paymentEvidenceSummaryLabel}</div>
                         <div className="mt-1 text-muted-foreground">{row.paymentEvidenceRequiredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <a href={row.routeLabel} className="inline-flex whitespace-nowrap text-xs font-medium text-primary hover:underline">
+</> },{ id: "field-5", label: "Route", exportValue: row => row.routeLabel, render: row => <>
+<a href={row.routeLabel} className="inline-flex whitespace-nowrap text-xs font-medium text-primary hover:underline">
                           Open capital activity
                         </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+</> }]}
+ getRowId={row => row.id} getSearchText={row => `${row.title} ${row.subtitle}`}
+ completePopulation={!view.loading && !view.errorText} sourceDescription="Complete authorized capital-account workbench projection. Monetary cells retain producer display units."
+ exportContext={{ "Projected at": view.projectedAtLabel, "Workbench": view.workbenchRouteLabel }}
+ emptyText="No records match these controls." ariaLabel="Investor capital accounts" />
             </div>
           </section>
 
           <section className="min-w-0 space-y-2" aria-labelledby="capital-account-allocation-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-allocation-heading" className="text-sm font-semibold text-foreground">Allocation rules</h4>
-              <Badge variant="outline">{view.allocationRules.length.toLocaleString()} checks</Badge>
+              <Badge variant="outline">{formatNumber(view.allocationRules.length)} checks</Badge>
             </div>
             <div className="grid gap-2">
               {view.allocationRules.map((row) => (
@@ -264,7 +236,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-statement-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-statement-heading" className="text-sm font-semibold text-foreground">Statement lineage</h4>
-              <Badge variant="outline">{view.statementLineage.length.toLocaleString()} statements</Badge>
+              <Badge variant="outline">{formatNumber(view.statementLineage.length)} statements</Badge>
             </div>
             <div className="grid gap-2">
               {view.statementLineage.map((row) => (
@@ -304,7 +276,7 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
           <section className="space-y-2" aria-labelledby="capital-account-audit-heading">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h4 id="capital-account-audit-heading" className="text-sm font-semibold text-foreground">Audit drill-through</h4>
-              <Badge variant="outline">{view.auditDrillThroughs.length.toLocaleString()} targets</Badge>
+              <Badge variant="outline">{formatNumber(view.auditDrillThroughs.length)} targets</Badge>
             </div>
             <div className="grid gap-2">
               {view.auditDrillThroughs.map((row) => (

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { ChevronDown, SlidersHorizontal } from "lucide-react";
 import { Link } from "react-router-dom";
 import "@/styles/workflow-continuity-dock.css";
@@ -15,6 +15,7 @@ export function WorkflowContinuityDock({
   onEditOperatingContext?: () => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
 }) {
+  const summaryId = useId();
   const decision = viewModel.decisionBrief;
   const routePathLabel = viewModel.routeLabel.split(/[?#]/, 1)[0] || "/";
   const isDimensionInEffect = (id: string) =>
@@ -31,11 +32,52 @@ export function WorkflowContinuityDock({
     <section
       className="workflow-continuity-dock"
       aria-label={viewModel.ariaLabel}
-      aria-describedby="workflow-continuity-screenreader-summary"
+      aria-describedby={summaryId}
     >
-      <p id="workflow-continuity-screenreader-summary" className="sr-only">
+      <p id={summaryId} className="sr-only">
         {viewModel.title}. {viewModel.summary} Current route {routePathLabel}. Next action: {viewModel.nextActionLabel}.
       </p>
+      <details
+        className="workflow-continuity-operator-flow"
+        aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
+        open={operatorFlowOpen}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") {
+            event.preventDefault();
+            setOperatorFlowOpen(false);
+            event.currentTarget.querySelector("summary")?.focus();
+          }
+        }}
+      >
+        <summary
+          tabIndex={0}
+          onClick={(event) => {
+            event.preventDefault();
+            toggleOperatorFlow();
+          }}
+          onKeyDown={(event) => {
+            if (event.key !== "Enter" && event.key !== " ") {
+              return;
+            }
+            event.preventDefault();
+            toggleOperatorFlow();
+          }}
+        >
+          <span className="workflow-continuity-flow-summary">
+            <span className="workflow-continuity-flow-label">Context</span>
+            <span className="workflow-continuity-scope-preview">
+              {viewModel.operatingScope.hasScope
+                ? appliedScope.length > 0 ? describeScope(appliedScope) : "Scope retained; not applied here"
+                : "No scope selected"}
+            </span>
+            <span className="sr-only">
+              {viewModel.primaryOperatorFlowLabel}: {viewModel.primaryOperatorFlowSummary}
+            </span>
+          </span>
+          <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
+        </summary>
+        {operatorFlowOpen ? (
+          <div className="workflow-continuity-panel">
       <div className="workflow-continuity-context">
         <div className="workflow-continuity-scope-heading">
           <span className="text-xs font-semibold">Operating scope</span>
@@ -78,39 +120,6 @@ export function WorkflowContinuityDock({
           </dl>
         ) : null}
       </div>
-
-      {/* The cross-workspace decision brief renders as the masthead status pill
-          (DecisionBriefPill); the dock keeps only operating context and the
-          on-demand flow details so a blocked item never repaints every route. */}
-      <details
-        className="workflow-continuity-operator-flow"
-        aria-label={`${viewModel.primaryOperatorFlowLabel}: ${viewModel.primaryOperatorFlowSummary}`}
-        open={operatorFlowOpen}
-      >
-        <summary
-          tabIndex={0}
-          onClick={(event) => {
-            event.preventDefault();
-            toggleOperatorFlow();
-          }}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter" && event.key !== " ") {
-              return;
-            }
-            event.preventDefault();
-            toggleOperatorFlow();
-          }}
-        >
-          <span className="workflow-continuity-flow-summary">
-            <span className="workflow-continuity-flow-label">Workflow context</span>
-            <span className="sr-only">
-              {viewModel.primaryOperatorFlowLabel}: {viewModel.primaryOperatorFlowSummary}
-            </span>
-          </span>
-          <ChevronDown className="workflow-continuity-disclosure-icon h-4 w-4" aria-hidden="true" />
-        </summary>
-        {operatorFlowOpen ? (
-          <>
             <p className="workflow-continuity-expanded-flow">
               <span>{viewModel.primaryOperatorFlowLabel}</span>
               <span>{viewModel.primaryOperatorFlowSummary}</span>
@@ -167,7 +176,7 @@ export function WorkflowContinuityDock({
                 </Link>
               ))}
             </nav>
-          </>
+          </div>
         ) : null}
       </details>
     </section>

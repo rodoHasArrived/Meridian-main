@@ -146,14 +146,15 @@ describe("WorkflowContinuityDock", () => {
     );
 
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
+    expect(screen.getByText("Subject MSFT")).toBeVisible();
+    expect(screen.queryByLabelText("Operating scope")).not.toBeInTheDocument();
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     // The decision brief renders as the masthead status pill, not a dock banner.
     expect(screen.queryByRole("link", { name: "Open provider posture" })).not.toBeInTheDocument();
 
     await user.tab();
-    expect(screen.getByText("Workflow context").closest("summary")).toHaveFocus();
+    expect(screen.getByText("Context").closest("summary")).toHaveFocus();
 
     await user.keyboard("{Enter}");
     expect(screen.getByText("Primary operator workflow")).toBeInTheDocument();
@@ -167,7 +168,7 @@ describe("WorkflowContinuityDock", () => {
   });
 });
 
-it("distinguishes applied scope from retained scope in its accessible summary", () => {
+it("distinguishes applied scope from retained scope in its accessible summary", async () => {
   render(
     <MemoryRouter>
       <WorkflowContinuityDock
@@ -185,6 +186,7 @@ it("distinguishes applied scope from retained scope in its accessible summary", 
       />
     </MemoryRouter>
   );
+  await userEvent.click(screen.getByText("Context"));
   expect(screen.getByText(/Applied on this screen: Account Desk A/)).toHaveTextContent("Retained for other screens: Provider Source B.");
   expect(screen.getByLabelText("Account Desk A")).toHaveTextContent("Applied here");
   expect(screen.getByLabelText("Provider Source B. Retained for other screens.")).toHaveTextContent("Retained");

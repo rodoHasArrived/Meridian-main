@@ -360,7 +360,7 @@ describe("StrategyScreen", () => {
     expect(disabledDiff).toHaveAttribute("title", "Select exactly two runs before using this command. 0 selected.");
     expect(screen.getByText("No runs selected")).toBeInTheDocument();
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
 
@@ -411,7 +411,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -443,7 +443,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -486,7 +486,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -521,7 +521,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -537,7 +537,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /compare 2 runs/i }));
@@ -607,7 +607,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));
@@ -678,7 +678,7 @@ describe("StrategyScreen", () => {
     const user = userEvent.setup();
     renderWithRouter(<StrategyScreen data={twoRuns} />);
 
-    const checkboxes = screen.getAllByRole("checkbox");
+    const checkboxes = screen.getAllByRole("checkbox", { name: /^(Select|Remove) .+ for compare and diff$/ });
     await user.click(checkboxes[0]);
     await user.click(checkboxes[1]);
     await user.click(screen.getByRole("button", { name: /diff 2 runs/i }));

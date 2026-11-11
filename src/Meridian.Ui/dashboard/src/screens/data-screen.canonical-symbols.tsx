@@ -1,3 +1,5 @@
+import { formatNumber } from "@/lib/format";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { RefreshCcw, Search } from "lucide-react";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +28,7 @@ const bannerToneByModeTone: Record<CanonicalSymbolModeTone, StatusBannerTone> = 
 };
 
 function formatTimestamp(value: string | null): string {
-  return value ? new Date(value).toLocaleString() : "No mismatch observed";
+  return value ? formatDateTimeLabel(value) : "No mismatch observed";
 }
 
 function symbolSubtitle(symbol: CanonicalSymbolRegistryRow): string {
@@ -146,15 +148,15 @@ export function CanonicalSymbolRegistryRegion({
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Canonical securities</div>
-                  <div className="mt-1 font-mono font-semibold">{model.symbols.length.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatNumber(model.symbols.length, { maximumFractionDigits: 0 })}</div>
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Provider aliases</div>
-                  <div className="mt-1 font-mono font-semibold">{model.providerAliasCount.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatNumber(model.providerAliasCount, { maximumFractionDigits: 0 })}</div>
                 </div>
                 <div className="rounded-md border p-3 text-sm" role="listitem">
                   <div className="text-xs uppercase tracking-wide text-muted-foreground">Compare mismatches</div>
-                  <div className="mt-1 font-mono font-semibold">{model.totalMismatchCount.toLocaleString()}</div>
+                  <div className="mt-1 font-mono font-semibold">{formatNumber(model.totalMismatchCount, { maximumFractionDigits: 0 })}</div>
                   <div className="mt-1 text-xs text-muted-foreground">{formatTimestamp(model.lastMismatchAt)}</div>
                 </div>
               </div>

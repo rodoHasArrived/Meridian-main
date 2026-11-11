@@ -110,5 +110,7 @@ export function usePortfolioPositionsTable() {
   const resetControls = useCallback(() => update({ ...DEFAULT_PORTFOLIO_POSITIONS_TABLE_STATE }), [update]);
   const clearFilters = useCallback(() => update({ ...stateRef.current, search: "", side: null, readiness: "all" }), [update]);
 
-  return { state, setSearch, setSide, setReadiness, toggleSort, resetControls, clearFilters, flushSearch, shareError };
+  const restoreControls = useCallback((input: unknown) => update(normalizePortfolioPositionsTableState(input)), [update]);
+
+  return { state, setSearch, setSide, setReadiness, toggleSort, resetControls, clearFilters, flushSearch, shareError, restoreControls };
 }

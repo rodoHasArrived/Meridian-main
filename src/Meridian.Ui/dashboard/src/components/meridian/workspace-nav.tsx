@@ -9,6 +9,8 @@ import { DesignSystemNavRail, designSystemNavRailClasses } from "@/design-system
 import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
+import { DesignSystemStatus } from "@/design-system/status";
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -28,16 +30,18 @@ interface WorkspaceNavProps {
   density?: "compact" | "detailed";
   onNavigate?: () => void;
   operatingContextScope?: AppShellOperatingScopeInput | null;
+  attentionItems?: readonly AppShellOperatorFocusItem[];
 }
 
 export function WorkspaceNav({
   className,
   density = "detailed",
   onNavigate,
-  operatingContextScope = null
+  operatingContextScope = null,
+  attentionItems = []
 }: WorkspaceNavProps) {
   const location = useLocation();
-  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope);
+  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope, attentionItems);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey, location.pathname);
@@ -84,7 +88,7 @@ export function WorkspaceNav({
                 <Link
                   to={item.route}
                   aria-current={item.ariaCurrent}
-                  aria-label={item.ariaLabel}
+                  aria-label={`${item.ariaLabel}${item.attentionCount ? `. ${item.attentionCount} items need attention; worst severity ${item.attentionSeverity}.` : ""}`}
                   title={item.label}
                   className={cn(
                     designSystemNavRailClasses.item,
@@ -95,12 +99,18 @@ export function WorkspaceNav({
                 >
                   <img className={designSystemNavRailClasses.itemIcon} src={iconSrc} width="16" height="16" alt="" aria-hidden="true" />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
+                  <span className="inline-flex items-center gap-1.5">
+                  {item.attentionCount && item.attentionSeverity ? <DesignSystemStatus status={item.attentionSeverity} dot={false}
+                    aria-label={`${item.attentionCount} items need attention; worst severity ${item.attentionSeverity}`}>
+                    {item.attentionCount}
+                  </DesignSystemStatus> : null}
                   {!compact ? (
                     <span className={cn(designSystemNavRailClasses.status, designSystemNavRailClasses.statusTone(item.maturityTone))}>
                       <span className={designSystemNavRailClasses.statusDot} aria-hidden="true" />
                       {item.maturityLabel}
                     </span>
                   ) : null}
+                  </span>
                 </Link>
                 {item.subItems.length > 0 ? (
                   <button

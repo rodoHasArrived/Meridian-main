@@ -1,3 +1,5 @@
+import { formatNumber } from "@/lib/format";
+import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -257,7 +259,7 @@ export function DataQualityRegion({
                                       <span className="text-muted-foreground">({component.availability})</span>
                                       <span className="block text-xs text-muted-foreground">{component.detail}</span>
                                     </span>
-                                    <span className="font-mono">{component.score === null ? "—" : component.score.toFixed(1)}</span>
+                                    <span className="font-mono">{component.score === null ? "—" : formatNumber(component.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
                                   </li>
                                 ))}
                               </ul>
@@ -272,7 +274,7 @@ export function DataQualityRegion({
                                     <li key={provider.provider} className="flex justify-between gap-3">
                                       <span className="font-mono">{provider.provider}</span>
                                       <span className="text-muted-foreground">
-                                        {provider.status} · {provider.lastEventAt ? new Date(provider.lastEventAt).toLocaleString() : "unmeasured"}
+                                        {provider.status} · {provider.lastEventAt ? formatDateTimeLabel(provider.lastEventAt) : "unmeasured"}
                                       </span>
                                     </li>
                                   ))}
@@ -316,8 +318,8 @@ export function DataQualityRegion({
                                           {" · "}{gap.provider ?? "Default provider"}
                                         </span>
                                         <span className="min-w-0 flex-1 text-muted-foreground">
-                                          {new Date(gap.from).toLocaleString()} – {new Date(gap.to).toLocaleString()} ·{" "}
-                                          {gap.estimatedMissingEvents.toLocaleString()} estimated missing
+                                          {formatDateTimeLabel(gap.from)} – {formatDateTimeLabel(gap.to)} ·{" "}
+                                          {formatNumber(gap.estimatedMissingEvents, { maximumFractionDigits: 0 })} estimated missing
                                         </span>
                                         <Button
                                           type="button"

@@ -441,8 +441,8 @@ describe("app shell view model", () => {
         {
           id: "mode",
           label: "Environment",
-          value: "Paper",
-          tone: "ready"
+          value: "Demo",
+          tone: "review"
         },
         {
           id: "source",
@@ -466,7 +466,7 @@ describe("app shell view model", () => {
     });
   });
 
-  it("keeps environment, provenance, and provider operator state independent", () => {
+  it("keeps non-real provenance fail-closed while preserving provider operator state", () => {
     const liveSimulatedState = buildAppShellViewState({
       pathname: "/data/providers",
       operatingContextSymbol: "MSFT",
@@ -498,9 +498,9 @@ describe("app shell view model", () => {
     });
 
     expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "mode")).toMatchObject({
-      value: "Live",
+      value: "Demo",
       tone: "review",
-      href: "/trading/readiness"
+      href: null
     });
     expect(liveSimulatedState.trustStrip.items.find((item) => item.id === "source")).toMatchObject({
       value: "SIMULATED",

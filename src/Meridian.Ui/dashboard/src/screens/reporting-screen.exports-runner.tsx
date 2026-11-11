@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -294,7 +295,7 @@ export function ExportsReportRunner({
                       <Badge variant={selectedTemplate.accessGovernance.postureVariant}>{selectedTemplate.accessGovernance.postureLabel}</Badge>
                       <Badge variant="outline">{presentReportingIdentifier(selectedTemplate.family, "Report")}</Badge>
                     </>
-                  ) : <Badge variant="outline">Unavailable</Badge>}
+                  ) : <DesignSystemStatus status="unavailable">Unavailable</DesignSystemStatus>}
                 </span>
               </div>
               <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2" aria-label={`${contextLabel} request summary`}>

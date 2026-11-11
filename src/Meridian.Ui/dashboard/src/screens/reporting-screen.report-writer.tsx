@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/format";
 import { type DragEvent, type ReactNode, useState } from "react";
 import { BarChart2, ChevronLeft, ChevronRight, Eye, Filter, GripVertical, Palette, PencilLine, Plus, RotateCcw, Trash2, XCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -105,7 +106,7 @@ function buildReportWriterPreviewDatasetProfiles(
   return [
     ...datasetSources.map((source) => ({
       id: buildReportWriterDatasetSourceProfile(source.sourceId),
-      label: `${source.label} (${source.rowCount.toLocaleString()})`
+      label: `${source.label} (${formatNumber(source.rowCount, { maximumFractionDigits: 0 })})`
     })),
     ...reportWriterPreviewDatasetProfiles
   ];
@@ -1080,7 +1081,7 @@ export function ReportWriterDesignerGrid({
           aria-label={`${grid.title} retained dataset source`}
         >
           <span className="font-medium text-foreground">{selectedDatasetSource.label}</span>
-          <span className="ml-2 font-mono">{selectedDatasetSource.rowCount.toLocaleString()} rows</span>
+          <span className="ml-2 font-mono">{formatNumber(selectedDatasetSource.rowCount, { maximumFractionDigits: 0 })} rows</span>
           <p className="mt-1">{selectedDatasetSource.description}</p>
           <div className="mt-2 grid gap-1.5 sm:grid-cols-2" role="list" aria-label={`${grid.title} retained dataset field catalog`}>
             {buildReportWriterDatasetFieldCatalog(selectedDatasetSource).map((field) => (

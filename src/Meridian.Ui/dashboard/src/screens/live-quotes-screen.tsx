@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -196,7 +197,7 @@ export function LiveQuotesScreen() {
             ))}
             <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
-            {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            {marketVm.stale ? <DesignSystemStatus status="stale">Stale</DesignSystemStatus> : null}
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
             />

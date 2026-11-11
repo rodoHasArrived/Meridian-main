@@ -233,9 +233,11 @@ export function buildAccountingSectionVisibility(
   }
 
   return {
-    ...visibility,
+    // A legacy anchor owns only the section it names. Merging with the current
+    // route used to expose two workflows and re-enable the entire shared tail.
+    ...Object.fromEntries(Object.keys(visibility).map((key) => [key, false])) as unknown as AccountingSectionVisibilityViewModel,
     showCloseCockpitLanding: false,
-    showWorkflowDetails: true,
+    showWorkflowDetails: false,
     ...forcedVisibility
   };
 }

@@ -31,7 +31,7 @@ function renderWorkbench(runSelector?: WorkbenchProps["runSelector"]) {
 }
 
 function breakTable() { return screen.getByRole("treegrid", { name: "Reconciliation break queue" }); }
-function inspector() { return screen.getByRole("region", { name: "Selected reconciliation break" }); }
+function inspector() { return screen.getByRole("region", { name: /^Reconciliation break detail for / }); }
 
 describe("Reconciliation workbench", () => {
   it("keeps selected evidence visible when filtering the selected break out of the queue", async () => {
@@ -78,6 +78,20 @@ describe("Reconciliation workbench", () => {
     await waitFor(() => expect(inspector()).toHaveFocus());
     await user.keyboard("{Escape}");
     await waitFor(() => expect(row).toHaveFocus());
+  });
+
+  it("supports j/k row navigation and opens governed dismissal review without executing it", async () => {
+    const user = userEvent.setup();
+    const { resolveBreak } = renderWorkbench();
+    const rows = within(breakTable()).getAllByRole("row");
+    rows[1].focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(rows[2]).toHaveFocus());
+    await user.keyboard("k");
+    await waitFor(() => expect(rows[1]).toHaveFocus());
+    await user.keyboard("d");
+    await screen.findByRole("textbox", { name: "Dismiss rationale" });
+    expect(resolveBreak).not.toHaveBeenCalled();
   });
 
   it("keeps the break queue visible when activating a statement-run selector row", async () => {

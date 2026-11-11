@@ -434,17 +434,17 @@ describe("TradingScreen", () => {
     }, "/trading/orders");
 
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
-    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-fill-detail");
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
 
     await user.click(queuedOrder);
 
     await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
     expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-fill-detail");
 
     const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
-    expect(secondFill).toHaveAttribute("aria-controls", "trading-fill-detail");
+    expect(secondFill).toHaveAttribute("aria-controls", "trading-order-fill-detail");
     expect(secondFill).toHaveAttribute("aria-expanded", "false");
 
     secondFill.focus();
@@ -452,7 +452,9 @@ describe("TradingScreen", () => {
 
     await waitFor(() => expect(secondFill).toHaveAttribute("aria-selected", "true"));
     expect(secondFill).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-fill-detail");
+    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-order-fill-detail");
+    expect(screen.queryByRole("region", { name: /order detail for po-2/i })).not.toBeInTheDocument();
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {

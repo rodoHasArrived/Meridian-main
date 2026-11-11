@@ -1,4 +1,5 @@
 import type { MetricSnapshot } from "@/types";
+import { presentMetricChange } from "@/lib/metric-context";
 
 export interface MetricCardViewModel {
   id: string;
@@ -31,7 +32,7 @@ export function buildMetricCardViewModel(metric: MetricSnapshot): MetricCardView
   const id = normalizeMetricId(metric.id || metric.label);
   const label = metric.label.trim();
   const value = metric.value.trim();
-  const delta = metric.delta.trim() || null;
+  const delta = presentMetricChange(metric);
   const deltaAriaLabel = delta ? `Change ${normalizeDeltaForSpeech(delta)}` : null;
   const ariaLabel = [
     `${label} metric`,

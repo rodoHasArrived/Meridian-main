@@ -57,6 +57,8 @@ export function buildTrustStripState({
 
   const environmentValue = loading
     ? "Loading"
+    : resolvedProvenance !== "real"
+      ? resolvedProvenance === "unknown" ? "Unverified" : "Demo"
     : session?.environment === "live"
       ? "Live"
       : session?.environment === "paper"
@@ -71,6 +73,10 @@ export function buildTrustStripState({
         : "review";
   const environmentDetail = loading
     ? "Session environment is loading."
+    : resolvedProvenance !== "real"
+      ? resolvedProvenance === "unknown"
+        ? "Session data is unverified; a session environment does not establish real-data provenance."
+        : "Non-real data is loaded; the session environment does not change its provenance."
     : session?.environment === "research"
       ? `Session ${session.displayName} is operating in research mode, shown as Demo.`
       : session
@@ -194,12 +200,15 @@ function buildProviderTrustStripItem({
   const degraded = providers.filter((provider) => provider.status === "Degraded").length;
   const warning = providers.filter((provider) => provider.status === "Warning").length;
   const healthy = providers.filter((provider) => provider.status === "Healthy").length;
+  const unverified = providers.length - blocked - degraded - warning - healthy;
   const value = blocked > 0
     ? `${blocked} blocked`
     : degraded > 0
       ? `${degraded} degraded`
       : warning > 0
         ? `${warning} warning`
+        : unverified > 0
+          ? `${unverified} unverified`
         : `${healthy}/${providers.length} healthy`;
   const detail = blocked > 0
     ? `${formatCount(blocked, "provider")} blocked; restore provider connectivity before relying on workstation data.`
@@ -207,11 +216,13 @@ function buildProviderTrustStripItem({
       ? `${formatCount(degraded, "provider")} degraded; open Data provider posture before trading decisions.`
       : warning > 0
         ? `${formatCount(warning, "provider")} warning; review provider trust before relying on fresh data.`
+        : unverified > 0
+          ? `${formatCount(unverified, "provider")} has unverified health; inspect provider evidence before relying on fresh data.`
         : `${formatCount(healthy, "provider")} healthy in the loaded data posture.`;
-  const needsAction = blocked > 0 || degraded > 0 || warning > 0;
+  const needsAction = blocked > 0 || degraded > 0 || warning > 0 || unverified > 0;
   const tone: AppShellTrustStripTone = blocked > 0 || degraded > 0
     ? "blocked"
-    : warning > 0
+    : warning > 0 || unverified > 0
       ? "review"
       : "ready";
 

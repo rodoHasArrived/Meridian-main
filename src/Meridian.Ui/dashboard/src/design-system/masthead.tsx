@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
-import { DesignSystemBadge } from "@/design-system/badge";
 import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
-import type { AppShellTrustStripState } from "@/app-shell.view-model";
+import type { AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import type { SessionInfo } from "@/types";
 
 export interface DesignSystemMastheadCommandTrigger {
@@ -24,6 +24,10 @@ export interface DesignSystemMastheadProps {
   trustStrip: AppShellTrustStripState;
   session: SessionInfo | null;
   actions?: ReactNode;
+  provenance?: DataProvenanceKind;
+  onRetryLiveData?: () => void;
+  retryBusy?: boolean;
+  decisionBrief?: AppShellWorkflowContinuityViewModel["decisionBrief"];
 }
 
 /**
@@ -34,19 +38,23 @@ export interface DesignSystemMastheadProps {
  */
 export function DesignSystemMasthead({
   brandMarkSrc,
-  workspaceLabel,
   navOpen,
   onOpenNavigation,
   commandTrigger,
   onOpenCommandPalette,
   trustStrip,
   session,
-  actions
+  actions,
+  provenance = "unknown",
+  onRetryLiveData,
+  retryBusy,
+  decisionBrief
 }: DesignSystemMastheadProps) {
   return (
     <header
       className="workstation-masthead mds-masthead ws-masthead"
       data-design-system-component="Masthead"
+      data-provenance={provenance}
     >
       <div className="workstation-brand-group mds-masthead__brand-group ws-brand">
         <button
@@ -63,11 +71,6 @@ export function DesignSystemMasthead({
           <img src={brandMarkSrc} alt="" aria-hidden="true" />
           <div className="workstation-brand-copy min-w-0">
             <div className="name ws-brand__name">Meridian</div>
-            <div className="sub ws-brand__mod" aria-hidden="true">
-              <span className="workstation-brand-sep ws-brand__sep">/</span>
-              {workspaceLabel}
-            </div>
-            <span className="sr-only">Current workspace: {workspaceLabel}</span>
           </div>
         </div>
       </div>
@@ -86,7 +89,13 @@ export function DesignSystemMasthead({
         <span className="workstation-search-kbd ws-kbd" aria-hidden="true">{commandTrigger.shortcutLabel}</span>
       </button>
 
-      <DesignSystemTrustStrip viewModel={trustStrip} />
+      <DesignSystemTrustStrip
+        viewModel={trustStrip}
+        provenance={provenance}
+        onRetryLiveData={onRetryLiveData}
+        retryBusy={retryBusy}
+        decisionBrief={decisionBrief}
+      />
 
       <div className="workstation-actions mds-masthead__actions">
         {actions}
@@ -94,9 +103,8 @@ export function DesignSystemMasthead({
           <div
             className="workstation-session-card mds-session-card"
             role="group"
-            aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
+            aria-label={`Current session: ${session.displayName}, ${session.role}`}
           >
-            <DesignSystemBadge variant={session.environment} dot>{session.environment}</DesignSystemBadge>
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

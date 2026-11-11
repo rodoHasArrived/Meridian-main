@@ -2415,7 +2415,7 @@ export function SettingsScreen({
         </div>
       </section>
 
-      {showChooserSection ? <SettingsTaskChooser /> : null}
+      {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">

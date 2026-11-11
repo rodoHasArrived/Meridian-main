@@ -260,6 +260,11 @@ function mockDailyControlTowerData() {
   });
 }
 
+async function openShellContext(user: ReturnType<typeof userEvent.setup>) {
+  const summary = screen.getByText("Context", { exact: true }).closest("summary")!;
+  if (!summary.closest("details")?.open) await user.click(summary);
+}
+
 describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
@@ -402,18 +407,18 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
-    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
-    expect(within(provenanceBanner).getByTestId("data-provenance-unknown")).toBeInTheDocument();
-    expect(within(provenanceBanner).queryByTestId("data-provenance-simulated")).toBeNull();
-
-    const retry = await within(provenanceBanner).findByRole("button", {
+    expect(await screen.findByTestId("data-provenance-unknown")).toBeVisible();
+    expect(screen.queryByTestId("data-provenance-simulated")).toBeNull();
+    const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
+    await userEvent.click(within(trust).getByText("Trust"));
+    const retry = await within(trust).findByRole("button", {
       name: "Retry live Meridian workspace data"
     });
     allowDemoMode = true;
     await userEvent.click(retry);
 
     await waitFor(() => {
-      expect(screen.queryByRole("region", { name: "Data provenance" })).not.toBeInTheDocument();
+      expect(screen.queryByTestId("data-provenance-unknown")).not.toBeInTheDocument();
     });
     expect(demoModeRequests).toBeGreaterThanOrEqual(2);
   });
@@ -444,10 +449,9 @@ describe("App", () => {
     });
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
-    // W9-TRUTH-001: seeded data keeps the persistent, non-dismissable provenance banner
-    // on screen above every workspace, alongside the trust-strip cell.
-    const provenanceBanner = await screen.findByRole("region", { name: "Data provenance" });
-    expect(within(provenanceBanner).getByTestId("data-provenance-seeded")).toBeInTheDocument();
+    // W9-TRUTH-001: the non-dismissable provenance chip stays visible in the single status control.
+    expect(within(strip).getByTestId("data-provenance-seeded")).toBeVisible();
+    expect(within(strip).queryByRole("button", { name: /dismiss/i })).not.toBeInTheDocument();
   });
 
   it("opens and closes the command palette with Control+K", async () => {
@@ -503,17 +507,18 @@ describe("App", () => {
       { name: "What needs an operator decision now" },
       { timeout: 10_000 }
     )).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Daily Control Tower Workstation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Daily Control Tower", level: 1 })).toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(screen.getByRole("region", { name: "Daily Control Tower continuity" })).toBeInTheDocument();
     const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    ["Connectivity", "Scope", "Freshness", "Completeness", "Blocker"].forEach((label) => {
+    ["Connectivity", "Scope", "Evidence"].forEach((label) => {
       expect(within(confidence).getByText(label)).toBeInTheDocument();
     });
-    expect(confidence).toHaveTextContent("4 ranked items");
+    expect(confidence).toHaveTextContent("4 loaded workspace items");
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
-    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
+    expect(confidence).toHaveTextContent("All authorized scopes");
+    expect(await screen.findByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
@@ -609,7 +614,8 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/providers"] });
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
-    expect(screen.getByText("Data", { selector: ".sub" })).toBeInTheDocument();
+    expect(screen.queryByText("Data", { selector: ".sub" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Data");
     const strip = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await userEvent.click(within(strip).getByText("Trust"));
     const trustDetails = within(strip).getByRole("group", {
@@ -617,7 +623,7 @@ describe("App", () => {
     });
     expect(within(trustDetails).getByLabelText("Build 0.1.0. Current Meridian web release."))
       .toHaveTextContent("Buildv0.1.0");
-    expect(within(trustDetails).getByLabelText(/^Environment Paper\./)).toHaveTextContent("EnvironmentPaper");
+    expect(within(trustDetails).getByLabelText(/^Environment Demo\./)).toHaveTextContent("EnvironmentDemo");
     expect(within(trustDetails).getByRole("link", { name: /Data provenance SEEDED/ }))
       .toHaveTextContent("ProvenanceSEEDED");
     expect(within(trustDetails).getByRole("link", {
@@ -629,9 +635,9 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
 
     const sessionContext = screen.getByRole("group", {
-      name: "Current session: paper, Ops Desk, Operator"
+      name: "Current session: Ops Desk, Operator"
     });
-    expect(within(sessionContext).getByText("paper")).toBeInTheDocument();
+    expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
     expect(within(sessionContext).getByText("Ops Desk")).toBeInTheDocument();
     expect(within(sessionContext).getByText("Operator")).toBeInTheDocument();
   });
@@ -691,13 +697,12 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
+    expect(screen.getByText("Context").closest("summary")).toHaveTextContent("Subject MSFT");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Market Data To Paper workflow steps" })).not.toBeInTheDocument();
 
-    await user.click(screen.getByText("Workflow context"));
+    await openShellContext(user);
 
     expect(screen.getByText("Current workflow")).toBeInTheDocument();
     expect(screen.getByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).toBeInTheDocument();
@@ -760,6 +765,7 @@ describe("App", () => {
       initialEntries: ["/portfolio?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"]
     });
 
+    await openShellContext(user);
     const operatingScope = screen.getByLabelText("Operating scope");
     expect(within(operatingScope).getByText("Subject")).toBeInTheDocument();
     expect(within(operatingScope).getByText("MSFT")).toBeInTheDocument();
@@ -782,6 +788,7 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
+    await openShellContext(user);
     await user.click(screen.getByRole("button", { name: "Change operating scope" }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("fund-1");
@@ -817,6 +824,7 @@ describe("App", () => {
     expect(JSON.parse(window.localStorage.getItem(storageKey) ?? "{}")).toMatchObject({
       symbol: "MSFT", fundAccountId: "fund-1", provider: "Alpaca"
     });
+    await openShellContext(user);
     await user.click(screen.getByRole("button", { name: "Change operating scope" }));
     await user.clear(screen.getByLabelText("Fund account"));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
@@ -831,6 +839,7 @@ describe("App", () => {
       expect(stored).toMatchObject({ symbol: "MSFT", provider: "Alpaca" });
       expect(stored).not.toHaveProperty("fundAccountId");
     });
+    await openShellContext(user);
     expect(screen.getByLabelText("Operating scope")).not.toHaveTextContent("fund-1");
   });
 
@@ -981,6 +990,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/portfolio"] });
 
+    await openShellContext(user);
     expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
     await user.keyboard("{Control>}k{/Control}");
 
@@ -995,11 +1005,12 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
+    await openShellContext(user);
     await user.click(screen.getByRole("button", { name: "Change operating scope" }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
-    expect(screen.getByText("No scope selected")).toBeInTheDocument();
+    expect(screen.getByText("Context", { exact: true }).closest("summary")).toHaveTextContent("No scope selected");
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toBeNull();
   });
 
@@ -1138,7 +1149,7 @@ describe("App", () => {
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
-    await user.click(screen.getByText("Workflow context"));
+    await openShellContext(user);
     expect(screen.getByRole("link", { name: /Provider setup, current workflow step/ })).toHaveAttribute(
       "aria-current",
       "step"

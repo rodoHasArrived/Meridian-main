@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import "@/styles/dense-row-detail-accessibility.css";
 
 export const DENSE_ROW_DETAIL_KEYBOARD_INSTRUCTIONS =
-  "Use Up Arrow and Down Arrow to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row and move focus to its detail panel. Use Escape from the detail panel to return focus to the selected row.";
+  "Use Up Arrow and Down Arrow, or k and j, to move between rows. Use Home and End to jump to the first or last row. Use Enter or Space to select the focused row and move focus to its detail panel. Use Escape from the detail panel to return focus to the selected row.";
 
 export const DENSE_ROW_DETAIL_ACCESSIBILITY_SPEC = {
   keyboardNavigation: [

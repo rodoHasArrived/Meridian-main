@@ -69,6 +69,16 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
         ]
       },
       {
+        id: "factor-paydown",
+        label: "Factor paydown",
+        route: WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown
+      },
+      {
+        id: "consolidation",
+        label: "Consolidation",
+        route: WORKSTATION_ROUTE_CATALOG.accountingConsolidation
+      },
+      {
         id: "adjustments",
         label: "Adjustments",
         route: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries

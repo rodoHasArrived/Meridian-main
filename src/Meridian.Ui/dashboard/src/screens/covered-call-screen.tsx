@@ -639,16 +639,11 @@ function MetricsTable({ result }: { result: NonNullable<CoveredCallScreenViewMod
         <CardDescription>{result.underlyingSymbol} · {result.from} → {result.to}</CardDescription>
       </CardHeader>
       <CardContent>
-        <table className="w-full text-sm">
-          <tbody>
-            {rows.map(([label, value]) => (
-              <tr key={label} className="border-b border-border/30">
-                <td className="py-1 pr-2 font-mono text-muted-foreground">{label}</td>
-                <td className="py-1 text-right font-mono">{value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <dl className="divide-y divide-border/30 text-sm" aria-label="Covered call run metrics">
+          {rows.map(([label, value]) => <div key={label} className="grid grid-cols-2 gap-2 py-1">
+            <dt className="text-muted-foreground">{label}</dt><dd className="text-right tabular-nums">{value}</dd>
+          </div>)}
+        </dl>
       </CardContent>
     </Card>
   );

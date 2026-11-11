@@ -19,6 +19,7 @@ import {
 } from "@/lib/accounting-navigation";
 import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
 export interface WorkspaceNavSubItemViewModel {
   label: string;
@@ -46,6 +47,8 @@ export interface WorkspaceNavItemViewModel {
   ariaLabel: string;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
+  attentionCount: number;
+  attentionSeverity: "blocked" | "review" | "info" | null;
 }
 
 export interface WorkspaceNavCurrentWorkspaceViewModel {
@@ -88,7 +91,8 @@ export function buildWorkspaceNavViewModel(
   pathname: string,
   workspaces: WorkspaceSummary[] = WORKSPACES,
   search = "",
-  operatingContextScope: AppShellOperatingScopeInput | null = null
+  operatingContextScope: AppShellOperatingScopeInput | null = null,
+  attentionItems: readonly AppShellOperatorFocusItem[] = []
 ): WorkspaceNavViewModel {
   const isHome = pathname === "/";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
@@ -108,6 +112,12 @@ export function buildWorkspaceNavViewModel(
       search
     );
     const workspaceScopeSummary = summarizeOperatingScopeForRoute(workspaceCanonicalRoute, operatingScope);
+    const workspaceAttention = [...new Map(attentionItems.filter((item) => item.tone !== "ready"
+      && ((visibleWorkspaces.find((candidate) => isWorkspacePathActive(item.route.split(/[?#]/)[0], candidate.key))?.key
+        ?? item.workspaceLabel.toLowerCase()) === workspace.key)).map((item) => [item.id, item])).values()];
+    const attentionSeverity = workspaceAttention.some((item) => item.tone === "blocked") ? "blocked" as const
+      : workspaceAttention.some((item) => item.tone === "review") ? "review" as const
+      : workspaceAttention.length ? "info" as const : null;
     const buildSubItem = (
       sub: WorkspaceSubrouteDefinition | AccountingNavigationItemDefinition
     ): WorkspaceNavSubItemViewModel => {
@@ -151,7 +161,9 @@ export function buildWorkspaceNavViewModel(
           : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`
         : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       subItems,
-      subItemGroups
+      subItemGroups,
+      attentionCount: workspaceAttention.length,
+      attentionSeverity
     };
   });
   const currentRoute = items.find((item) => item.key === currentWorkspace.key)?.route

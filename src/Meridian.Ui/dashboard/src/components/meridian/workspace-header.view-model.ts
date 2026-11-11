@@ -1,4 +1,5 @@
 import type { ProductMaturity, SessionInfo, WorkspaceSummary } from "@/types";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 
 export type WorkspaceHeaderBadgeVariant =
   | "default"
@@ -62,15 +63,17 @@ interface BuildWorkspaceHeaderViewModelOptions {
   session: SessionInfo | null;
   canRefresh: boolean;
   refreshing?: boolean;
+  dataProvenance?: DataProvenanceKind;
 }
 
 export function buildWorkspaceHeaderViewModel({
   workspace,
   session,
   canRefresh,
-  refreshing = false
+  refreshing = false,
+  dataProvenance = "unknown"
 }: BuildWorkspaceHeaderViewModelOptions): WorkspaceHeaderViewModel {
-  const isLiveEnvironment = session?.environment === "live";
+  const isLiveEnvironment = session?.environment === "live" && dataProvenance === "real";
   const refreshLabel = refreshing ? "Refreshing" : "Refresh";
   const refreshDisabledReason = refreshing
     ? `${workspace.label} workspace data is refreshing.`
@@ -78,7 +81,7 @@ export function buildWorkspaceHeaderViewModel({
 
   return {
     eyebrow: "Workspace",
-    title: `${workspace.label} Workstation`,
+    title: workspace.label,
     description: workspace.description,
     badges: [
       {

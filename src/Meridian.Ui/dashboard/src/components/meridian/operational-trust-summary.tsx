@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DesignSystemStatus } from "@/design-system/status";
 
 export type OperationalTrustTone = "ready" | "review" | "blocked" | "unknown";
 
@@ -24,19 +25,25 @@ export interface OperationalTrustSummaryProps {
   disclosure?: boolean;
 }
 
-const toneClasses: Record<OperationalTrustTone, string> = {
-  ready: "border-[var(--severity-ready-bd)] bg-[var(--severity-ready-bg)] text-[var(--severity-ready-fg)]",
-  review: "border-[var(--severity-action-bd)] bg-[var(--severity-action-bg)] text-[var(--severity-action-fg)]",
-  blocked: "border-[var(--severity-blocked-bd)] bg-[var(--severity-blocked-bg)] text-[var(--severity-blocked-fg)]",
-  unknown: "border-[var(--severity-info-bd)] bg-[var(--severity-info-bg)] text-[var(--severity-info-fg)]"
-};
-
 const toneLabels: Record<OperationalTrustTone, string> = {
   ready: "Ready",
   review: "Needs review",
   blocked: "Blocked",
   unknown: "Unknown"
 };
+
+const trustToneRank: Record<OperationalTrustTone, number> = { ready: 0, unknown: 1, review: 2, blocked: 3 };
+
+export function rollupOperationalTrustTone(facts: OperationalTrustFact[]): OperationalTrustTone {
+  return facts.reduce<OperationalTrustTone>((overall, fact) => {
+    const tone = fact.tone ?? "unknown";
+    return trustToneRank[tone] > trustToneRank[overall] ? tone : overall;
+  }, "ready");
+}
+
+function TrustStatus({ tone }: { tone: OperationalTrustTone }) {
+  return <DesignSystemStatus status={tone === "unknown" ? "info" : tone} dot={false} className="shrink-0">{toneLabels[tone]}</DesignSystemStatus>;
+}
 
 /**
  * Compact, reusable source-of-truth summary for financially material screens.
@@ -55,7 +62,7 @@ export function OperationalTrustSummary({
   action,
   label = "Data confidence",
   className,
-  disclosure = false
+  disclosure = true
 }: OperationalTrustSummaryProps) {
   const facts: Array<{ id: string; label: string; fact: OperationalTrustFact }> = [
     { id: "source", label: source.label ?? "Source", fact: source },
@@ -67,6 +74,7 @@ export function OperationalTrustSummary({
   if (blocker) {
     facts.push({ id: "blocker", label: blocker.label ?? "Blocker", fact: blocker });
   }
+  const overallTone = rollupOperationalTrustTone(facts.map(({ fact }) => fact));
 
   const detail = (
     <div className="flex flex-wrap items-start justify-between gap-3">
@@ -91,11 +99,7 @@ export function OperationalTrustSummary({
                   `break-words` stays as the last resort for a genuinely unbreakable token.
                 */}
                 <div className="flex min-w-0 flex-wrap items-start gap-x-2 gap-y-1">
-                  <span
-                    className={cn("inline-flex shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium", toneClasses[tone])}
-                  >
-                    {toneLabels[tone]}
-                  </span>
+                  <TrustStatus tone={tone} />
                   <span className="min-w-0 grow basis-28 break-words text-sm font-semibold leading-5 text-foreground">{fact.value}</span>
                 </div>
                 {fact.detail ? (
@@ -120,18 +124,17 @@ export function OperationalTrustSummary({
     >
       {disclosure ? (
         <details className="group">
-          <summary className="flex cursor-pointer list-none items-start gap-3 px-3 py-2 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+          <summary className="operational-trust-summary flex cursor-pointer list-none items-center gap-3 px-3 py-1.5 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
             <span className="sr-only">{label}. </span>
-            <span className="grid min-w-0 flex-1 grid-cols-[repeat(auto-fit,minmax(min(100%,10rem),1fr))] gap-x-3 gap-y-2">
+            <TrustStatus tone={overallTone} />
+            <span className="operational-trust-facts flex min-w-0 flex-1 flex-wrap items-center gap-x-4 gap-y-1">
               {facts.map(({ id, label: factLabel, fact }) => (
                 <span key={id} className="min-w-0 text-xs leading-5">
-                  <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                  <span className="inline-flex flex-wrap items-baseline gap-x-1.5">
                     <span className="text-muted-foreground">{factLabel}</span>
-                    <span className={cn("inline-flex rounded-full border px-1.5 text-[11px]", toneClasses[fact.tone ?? "unknown"])}>
-                      {toneLabels[fact.tone ?? "unknown"]}
-                    </span>
+                    <span className="font-medium text-foreground">{fact.value}</span>
+                    {fact.tone && fact.tone !== "ready" ? <span className="text-muted-foreground">({toneLabels[fact.tone]})</span> : null}
                   </span>
-                  <span className="block break-words font-medium text-foreground">{fact.value}</span>
                 </span>
               ))}
             </span>

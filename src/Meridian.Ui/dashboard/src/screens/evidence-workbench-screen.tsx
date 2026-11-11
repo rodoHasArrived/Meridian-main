@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { useState, type FormEvent } from "react";
 import { AlertTriangle, Download, ExternalLink, FileText, ListChecks, Network, RefreshCcw, ShieldCheck, Upload } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -697,8 +698,8 @@ function EvidenceNodeGroupPanel({ group }: { group: EvidenceNodeGroupViewModel }
             <CardDescription>{group.summaryLabel}</CardDescription>
           </div>
           <div className="flex flex-wrap justify-end gap-2">
-            <Badge variant="success">{group.readyCount} ready</Badge>
-            <Badge variant={group.reviewCount ? "warning" : "outline"}>{group.reviewCount} review</Badge>
+            <DesignSystemStatus status="ready">{group.readyCount} ready</DesignSystemStatus>
+            <DesignSystemStatus status={group.reviewCount ? "review" : "info"}>{group.reviewCount} review</DesignSystemStatus>
           </div>
         </div>
       </CardHeader>

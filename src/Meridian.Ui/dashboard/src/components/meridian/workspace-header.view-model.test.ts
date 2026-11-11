@@ -20,7 +20,7 @@ describe("workspace header view model", () => {
       refreshing: true
     });
 
-    expect(model.title).toBe("Trading Workstation");
+    expect(model.title).toBe("Trading");
     expect(model.eyebrow).toBe("Workspace");
     expect(model.badges.map((badge) => badge.id)).toEqual(["workspace-maturity"]);
     expect(model.badges).toContainEqual({
@@ -108,4 +108,26 @@ describe("workspace header view model", () => {
     });
     expect(model.ariaBusy).toBe(false);
   });
+});
+
+it.each(["seeded", "simulated", "sample", "unknown"] as const)("does not announce a live environment for %s provenance", (dataProvenance) => {
+  const model = buildWorkspaceHeaderViewModel({
+    workspace: workspaceForKey("trading"),
+    session: { ...session, environment: "live" },
+    dataProvenance,
+    canRefresh: true
+  });
+  expect(model.isLiveEnvironment).toBe(false);
+  expect(model.liveBanner).toBeNull();
+});
+
+it("retains the real-money alarm when real provenance and the live session agree", () => {
+  const model = buildWorkspaceHeaderViewModel({
+    workspace: workspaceForKey("trading"),
+    session: { ...session, environment: "live" },
+    dataProvenance: "real",
+    canRefresh: true
+  });
+  expect(model.isLiveEnvironment).toBe(true);
+  expect(model.liveBanner).toMatchObject({ role: "alert", ariaLive: "assertive", label: "LIVE ENVIRONMENT" });
 });

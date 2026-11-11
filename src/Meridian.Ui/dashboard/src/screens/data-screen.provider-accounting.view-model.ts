@@ -25,6 +25,7 @@ export interface ProviderRegistrationFailureRow {
 }
 
 export interface ProviderRateLimitRow {
+  source: ProviderRateLimitSnapshot;
   id: string;
   provider: string;
   surface: string;
@@ -184,6 +185,7 @@ function buildRateLimitRow(
   const reason = normalizeReason(provider.reason);
 
   return {
+    source: provider,
     id: `${provider.provider}-${provider.surface}`,
     provider: provider.displayName || provider.name || provider.provider,
     surface: formatToken(provider.surface),

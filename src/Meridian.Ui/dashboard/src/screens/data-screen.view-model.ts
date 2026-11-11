@@ -1908,6 +1908,7 @@ export function useDataViewModel(
     runResultCard,
     liveProgressState,
     remediationQueueState,
+    retainedBackfillHistory: remediationHistory,
     remediationHistoryLoading,
     remediationHistoryError,
     remediationQueueSort,

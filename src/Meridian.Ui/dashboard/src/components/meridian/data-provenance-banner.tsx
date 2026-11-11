@@ -10,6 +10,8 @@ export interface DataProvenanceBannerProps {
   /** Re-runs the demo-mode probe. Rendered as a retry control only for `unknown` provenance. */
   onRetryLiveData?: () => void;
   retryBusy?: boolean;
+  /** Persistent masthead chip. Its enclosing status disclosure owns recovery controls. */
+  compact?: boolean;
 }
 
 /**
@@ -24,11 +26,27 @@ export function DataProvenanceBanner({
   provenance,
   detail,
   onRetryLiveData,
-  retryBusy
+  retryBusy,
+  compact = false
 }: DataProvenanceBannerProps) {
   const badge = buildDataProvenanceBadgeViewModel({ provenance, detail });
   if (!badge.visible) {
     return null;
+  }
+
+  if (compact) {
+    return (
+      <span
+        className="workstation-provenance-chip"
+        role={badge.role}
+        aria-live={badge.ariaLive}
+        aria-label={badge.ariaLabel}
+        title={badge.ariaLabel}
+        data-testid={`data-provenance-${badge.provenance}`}
+      >
+        {badge.label}<span className="sr-only"> — {badge.headline}. {badge.detail}</span>
+      </span>
+    );
   }
 
   const showRetry = badge.provenance === "unknown" && typeof onRetryLiveData === "function";

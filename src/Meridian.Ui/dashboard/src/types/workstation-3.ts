@@ -1058,6 +1058,7 @@ export interface StrategyPlotToolTabPayload {
 }
 
 export interface StrategyPlotToolPayload {
+  analyticsEvidenceStatus?: "Retained" | "Illustrative" | "Unavailable" | "Unverified";
   workspace: unknown;
   statistics: unknown;
   studies: unknown[];
@@ -1224,6 +1225,10 @@ export interface DataQueryResult {
   rowCount: number;
   truncated: boolean;
   elapsedMs: number;
+  /** Opaque owner-bound receipt for this exact, completely retained execution. */
+  executionId?: string | null;
+  retainedRowCount?: number | null;
+  executionExpiresAt?: string | null;
 }
 
 export interface DataWorkspaceResponse {
@@ -1242,6 +1247,11 @@ export type DataOperationsExportRecord = DataExportRecord;
 export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
+  /** Authoritative source values only; exposure is not a substitute for signed market value. */
+  marketValue?: string | null;
+  currency?: string | null;
+  weight?: string | null;
+  weightBasis?: string | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;

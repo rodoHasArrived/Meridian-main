@@ -1,3 +1,4 @@
+import { formatNumber } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -121,7 +122,7 @@ function StatementColumnMappingTable({ preview }: { preview: StatementImportPrev
               <td className="px-2 py-1.5">
                 <Badge
                   variant={statementColumnConfidenceBadgeVariant(mapping.confidence)}
-                  title={`${mapping.rationale} (score ${mapping.score.toFixed(2)})`}
+                  title={`${mapping.rationale} (score ${formatNumber(mapping.score, { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`}
                 >
                   {mapping.confidence}
                 </Badge>

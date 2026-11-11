@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Broker-side execution blotter for Trading → Risk.
  *
@@ -142,41 +143,23 @@ export function ExecutionBlotterPanel() {
           ))}
         </div>
 
-        <table className="w-full text-sm" aria-label="Execution blotter positions">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Symbol</th>
-              <th>Side</th>
-              <th>Quantity</th>
-              <th>Avg cost</th>
-              <th>Mark</th>
-              <th>Market value</th>
-              <th>Unrealised</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={8} className="py-4 text-center text-muted-foreground">
-                  {executionBlotterEmptyMessage(readState)}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.positionKey} className="border-t border-border/60" aria-label={row.ariaLabel}>
-                <td className="py-2">
+        <TableWorkbench<(typeof rows)[number]> workbenchId="trading-execution-blotter" sourceKey={`${blotter?.source ?? "unavailable"}:${blotter?.asOf ?? ""}`} sourceDescription="Authoritative execution position snapshot. Source numbers are exported without display formatting; provenance remains explicit."
+ completePopulation={readState === "ready" && !error} rows={rows} getRowId={(row)=>row.positionKey} getRowAriaLabel={(row)=>row.ariaLabel}
+ ariaLabel="Execution blotter positions" emptyText={executionBlotterEmptyMessage(readState)}
+ getSearchText={(row)=>`${row.symbol} ${row.side} ${row.product}`}
+ columns={[{id:"column-1",label:"Symbol",render:(row)=>(<>
                   <div className="font-mono text-xs">{row.symbol}</div>
                   <div className="text-xs text-muted-foreground">
                     {row.assetClass}{row.contractDetail ? ` · ${row.contractDetail}` : ""}
                   </div>
-                </td>
-                <td>{row.side}</td>
-                <td className="font-mono text-xs">{row.quantity}</td>
-                <td className="font-mono text-xs">{row.averageCostBasis}</td>
-                <td className="font-mono text-xs">{row.marketPrice}</td>
-                <td className="font-mono text-xs">{row.marketValue}</td>
-                <td className={`font-mono text-xs ${toneInlineClassName(row.unrealisedTone)}`}>{row.unrealisedPnl}</td>
-                <td className="text-right">
+                </>),exportValue:(row)=>row.symbol},
+{id:"column-2",label:"Side",render:(row)=>(<>{row.side}</>),exportValue:(row)=>row.side},
+{id:"column-3",label:"Quantity",align:"right",className:"tabular-nums",render:(row)=>(<>{row.quantity}</>),exportValue:(row)=>blotter?.positions.find((position) => position.positionKey === row.positionKey)?.quantity ?? null},
+{id:"column-4",label:"Avg cost",align:"right",className:"tabular-nums",render:(row)=>(<>{row.averageCostBasis}</>),exportValue:(row)=>blotter?.positions.find((position) => position.positionKey === row.positionKey)?.averageCostBasis ?? null},
+{id:"column-5",label:"Mark",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketPrice}</>),exportValue:(row)=>blotter?.positions.find((position) => position.positionKey === row.positionKey)?.marketPrice ?? null},
+{id:"column-6",label:"Market value",align:"right",className:"tabular-nums",render:(row)=>(<>{row.marketValue}</>),exportValue:(row)=>blotter?.positions.find((position) => position.positionKey === row.positionKey)?.marketValue ?? null},
+{id:"column-7",label:"Unrealised",align:"right",className:"tabular-nums",render:(row)=>(<span className={toneInlineClassName(row.unrealisedTone)}>{row.unrealisedPnl}</span>),exportValue:(row)=>blotter?.positions.find((position) => position.positionKey === row.positionKey)?.unrealisedPnl ?? null},
+{id:"column-8",label:"Actions",render:(row)=>(<>
                   {row.canUpsize ? (
                     upsizeKey === row.positionKey ? (
                       <span className="flex items-center justify-end gap-2">
@@ -196,11 +179,7 @@ export function ExecutionBlotterPanel() {
                       </Button>
                     )
                   ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </>)}]} />
       </CardContent>
     </Card>
   );

@@ -27,10 +27,10 @@ describe("WorkflowContinuityDock route modes", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings task choice" })).toBeTruthy();
-    expect(screen.getByText("Operating scope")).toBeInTheDocument();
+    expect(screen.getByText("No scope selected")).toBeVisible();
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
 
-    await user.click(screen.getByText("Workflow context"));
+    await user.click(screen.getByText("Context"));
 
     expect(screen.queryByRole("navigation", { name: "Settings task workflow steps" })).toBeNull();
     expect(screen.getByText("Choose a task", { selector: "span" })).toBeInTheDocument();

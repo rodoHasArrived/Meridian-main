@@ -1,0 +1,1 @@
+import{n as e}from"./rolldown-runtime-WkwZ5CU-.js";import{Ds as t,d as n,u as r}from"./button-DpScClEl.js";var i=e(t(),1),a=r(),o=(0,i.forwardRef)(({className:e,...t},r)=>(0,a.jsx)(`label`,{ref:r,className:n(`text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground`,e),...t}));o.displayName=`Label`;export{o as t};

@@ -33,19 +33,17 @@ describe("WorkstationStatusBar", () => {
     });
 
     expect(items).toEqual([
-      { key: "sync", status: "err", label: "Sync", value: "attention required" },
-      { key: "workspace", label: "Workspace", value: "Reporting", push: true }
+      { key: "sync", status: "err", label: "Sync", value: "attention required" }
     ]);
   });
 
-  it("keeps the footer focused on current sync and workspace context", () => {
+  it("keeps the footer focused on sync without repeating the route or provider posture", () => {
     expect(buildWorkstationStatusItems({
       workspaceLabel: "Portfolio",
       refreshing: false,
       hasError: false
     })).toEqual([
-      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
-      { key: "workspace", label: "Workspace", value: "Portfolio", push: true }
+      { key: "sync", status: "ok", label: "Sync", value: "up to date" }
     ]);
   });
 });
