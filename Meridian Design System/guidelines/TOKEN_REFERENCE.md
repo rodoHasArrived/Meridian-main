@@ -203,8 +203,9 @@ To re-skin Meridian for a consumer, you touch **only Tier 1**:
    re-verify white-on-accent and accent-on-panel clear AA (the script in `ACCESSIBILITY.md` §1).
 
 Because Tier 2 aliases Tier 1 and Tier 3 derives from Tier 2, a single `data-brand` attribute
-recolors accents, chart primaries, focus rings, active nav indicators, selected-row washes, and
-every severity/state chip — automatically, in both light and dark. **Never** fork a component to
+recolors the signal family (accent fills, ghost washes, active identity markers, scenario series
+and the review chip) — automatically, in light, auto dark, manual dark and forced light. Focus
+rings and selection stay interaction blue for every brand. **Never** fork a component to
 change its color; if you can't re-skin it from Tier 1, that's a token bug to fix at the source.
 
 ---

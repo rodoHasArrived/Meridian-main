@@ -224,18 +224,27 @@ BRAND_BLOCK = re.compile(r'html\[data-brand="(\w+)"\]\s*\{(.*?)\n\}', re.S)
 BRAND_PAIRS = [("base", "accent"), ("hover", "accent-hover"), ("pressed", "accent-dim")]
 
 # Surfaces a brand's accent also drives. Checking only the button states let six brands ship
-# with the default copper focus ring and the default warm-brown ghost fill, because those two
-# tokens were never restated per brand and nothing here looked at them.
-# (name, foreground suffix, background suffix, minimum) — 3.0 is the non-text threshold.
-BRAND_SURFACES = [
-    ("focus ring on card", "border-focus", "bg-light", 3.0),
-    ("body text on ghost", "primary-text", "accent-ghost", 4.5),
-]
+# with the default warm-brown ghost fill, because that token was never restated per brand and
+# nothing here looked at it.
+# mode -> (name, foreground token, background token, minimum). The ink is the mode's component
+# token: a brand does not restate ink, and the dark ghost is mixed over the dark canvas.
+BRAND_SURFACES = {
+    "light": [("body text on ghost", "--theme-primary-text", "--theme-accent-ghost", 4.5)],
+    "dark": [("body text on ghost", "--text-primary", "--theme-dark-accent-ghost", 4.5)],
+}
 
 # A brand may restate its light identity, its dark identity, or both, in separate blocks.
 # Merge a brand's blocks before checking so each variant is reported once per mode, and so
 # a brand that states only a dark identity is not silently measured against the defaults.
 BRAND_MODES = [("light", "--theme-"), ("dark", "--theme-dark-")]
+
+# The focus law. Until 4.3.0 the focus ring followed the accent, and this check REQUIRED every
+# brand to restate --theme-border-focus so a branded build did not keep a copper ring. 4.3.0
+# made focus the interaction blue for every identity: the signal is never a focus colour. The
+# requirement is therefore inverted rather than dropped. A brand that leaves the token alone
+# inherits the blue, which is correct; a brand that states one must state the default's value,
+# or it has re-pointed focus at its own identity.
+BRAND_FOCUS = ("--theme-border-focus", "--theme-dark-border-focus")
 
 
 def check_brands(root: Path) -> list[str]:
@@ -248,6 +257,17 @@ def check_brands(root: Path) -> list[str]:
     merged: dict[str, dict[str, str]] = {}
     for brand, body in BRAND_BLOCK.findall(text):
         merged.setdefault(brand, {}).update(parse_tokens(body))
+    # Component tokens per mode, under the theme tokens: a brand's ghost is mixed over a
+    # surface it does not own (var(--bg) in dark), and the focus law compares against the
+    # dark blocks' own --border-focus.
+    light_base = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
+    dark_base = {**light_base,
+                 **parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))}
+    base = {"light": light_base, "dark": dark_base}
+    focus_default = {
+        "--theme-border-focus": resolve("var(--theme-border-focus)", {**light_base, **defaults}),
+        "--theme-dark-border-focus": resolve("var(--border-focus)", dark_base),
+    }
 
     failures: list[str] = []
     for brand, declared in merged.items():
@@ -261,31 +281,61 @@ def check_brands(root: Path) -> list[str]:
         # shipped that way. Skipping the unstated mode would also hide it from every check
         # below, so name it here rather than measure the defaults twice.
         # A brand exists to replace the accent, so it owes every accent-family token the
-        # default declares — not just the trio. Round six added the focus ring and ghost after
-        # six brands shipped without them; --theme-accent-figure went the same way and was
-        # caught the same way, one round later. Deriving the list from the default means the
-        # next token added there is covered without anyone remembering to add it here.
+        # default declares — not just the trio. Round six added the ghost after six brands
+        # shipped without it; --theme-accent-figure went the same way and was caught the same
+        # way, one round later. Deriving the list from the default means the next token added
+        # there is covered without anyone remembering to add it here. Focus is deliberately
+        # not in the family any more: see BRAND_FOCUS.
         if stated["light"]:
-            family = {name for name in defaults
-                      if name.startswith("--theme-accent") or name == "--theme-border-focus"}
+            family = {name for name in defaults if name.startswith("--theme-accent")}
             missing = sorted(family - set(declared))
             for name in missing:
                 print(f"[light · brand {brand}] no {name}: inherits the default FAIL")
                 failures.append(
                     f"[light · brand {brand}] declares an accent but no {name}; it would render "
                     "the default's value while the rest of the identity changes")
+            # Forced light reads the brand's base through --theme-brand-color (theme.css says
+            # why), so a brand whose brand colour is missing or differs from its accent shows
+            # one signal in OS-light and another once the user forces light.
+            accent = resolve("var(--theme-accent)", {**defaults, **declared})
+            brand_color = (resolve("var(--theme-brand-color)", declared)
+                           if "--theme-brand-color" in declared else None)
+            if accent is not None and brand_color != accent:
+                print(f"[light · brand {brand}] --theme-brand-color is not its --theme-accent FAIL")
+                failures.append(
+                    f"[light · brand {brand}] --theme-brand-color must be declared and equal "
+                    "--theme-accent; forced light reads the brand's signal through it")
         if stated["light"] and not stated["dark"]:
             print(f"[dark · brand {brand}] no dark identity: inherits the default accent FAIL")
             failures.append(
                 f"[dark · brand {brand}] declares a light accent but no --theme-dark-accent*; "
                 "it would render the default accent in dark mode"
             )
+        elif stated["dark"]:
+            # Same rule as light, for a brand that states only part of its dark identity.
+            family = {name for name in defaults if name.startswith("--theme-dark-accent")}
+            for name in sorted(family - set(declared)):
+                print(f"[dark · brand {brand}] no {name}: inherits the default FAIL")
+                failures.append(
+                    f"[dark · brand {brand}] declares a dark accent but no {name}; it would "
+                    "render the default's value while the rest of the identity changes")
+        for (mode, _), name in zip(BRAND_MODES, BRAND_FOCUS):
+            if name not in declared:
+                print(f"[{mode} · brand {brand}] focus ring: inherits the interaction blue ok")
+                continue
+            got = resolve(declared[name], {**base[mode], **defaults, **declared})
+            status = "ok" if got is not None and got == focus_default[name] else "FAIL"
+            print(f"[{mode} · brand {brand}] focus ring: restates {name} {status}")
+            if status == "FAIL":
+                failures.append(
+                    f"[{mode} · brand {brand}] {name} is not the default interaction blue; "
+                    "focus is never a brand colour (the focus law)")
         for mode, prefix in BRAND_MODES:
             # Only report a mode the brand actually restates; otherwise it inherits the
             # default palette, which the light/dark passes above already cover.
             if not stated[mode]:
                 continue
-            tokens = {**defaults, **declared}
+            tokens = {**base[mode], **defaults, **declared}
             label = tokens.get(f"{prefix}text-on-accent", "#FFFFFF")
             for state, name in BRAND_PAIRS:
                 token = f"{prefix}{name}"
@@ -299,10 +349,14 @@ def check_brands(root: Path) -> list[str]:
                 print(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 (min 4.5) {status}")
                 if status == "FAIL":
                     failures.append(f"[{mode} · brand {brand}] {state} button label: {value:.2f}:1 < 4.5")
-            for name, fg_name, bg_name, minimum in BRAND_SURFACES:
-                fg = resolve(f"var({prefix}{fg_name})", tokens)
-                bg = resolve(f"var({prefix}{bg_name})", tokens)
+            for name, fg_name, bg_name, minimum in BRAND_SURFACES[mode]:
+                fg = resolve(f"var({fg_name})", tokens)
+                bg = resolve(f"var({bg_name})", tokens)
                 if fg is None or bg is None:
+                    # A brand owes the ghost (the family rule above), so one that cannot be
+                    # measured is a finding, not a row to skip.
+                    print(f"[{mode} · brand {brand}] {name}: cannot resolve FAIL")
+                    failures.append(f"[{mode} · brand {brand}] {name}: cannot resolve {fg_name} on {bg_name}")
                     continue
                 value = ratio(fg, bg)
                 status = "ok" if value >= minimum else "FAIL"
