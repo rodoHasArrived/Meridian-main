@@ -35,13 +35,14 @@ export function WorkstationStatusBar({ items }: WorkstationStatusBarProps) {
   );
 }
 
-/** The masthead's provider-trust posture, as the trust strip reports it. */
-export interface WorkstationStatusProviderTrust {
-  value: string;
+/** The slice of the shell attention state the footer repeats. */
+export interface WorkstationStatusAttention {
   tone: "ready" | "review" | "blocked" | "pending";
+  title: string;
+  moreCount: number;
 }
 
-/** The current page's freshness fact, as its posture strip reports it. */
+/** The current page's freshness fact, as its status row reports it. */
 export interface WorkstationStatusPageFreshness {
   tone: "ready" | "review" | "blocked" | "unknown";
   value: string | null;
@@ -53,32 +54,35 @@ export function buildWorkstationStatusItems({
   workspaceLabel,
   refreshing,
   hasError,
-  providerTrust = null,
+  attention = null,
   pageFreshness = null
 }: {
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
-  providerTrust?: WorkstationStatusProviderTrust | null;
+  attention?: WorkstationStatusAttention | null;
   pageFreshness?: WorkstationStatusPageFreshness | null;
 }): WorkstationStatusBarItem[] {
-  // "Sync" only says the workstation's own read of the API is current. When provider trust needs
-  // review or is blocked, the footer repeats that posture beside it so a green sync dot is never
-  // the footer's whole answer while the masthead is warning. A ready or still-loading posture adds
-  // nothing, which keeps the footer to sync and workspace in the normal case.
-  const providerItems: WorkstationStatusBarItem[] =
-    providerTrust && (providerTrust.tone === "review" || providerTrust.tone === "blocked")
+  // "Sync" only says the workstation's own read of the API is current. When the shell attention
+  // state needs review or is blocked, the footer repeats the masthead pill's worst issue beside
+  // it, so a green sync dot is never the footer's whole answer while the masthead is warning.
+  // It reads the same attention state as the pill, so the two cannot disagree. A clear or
+  // still-loading state adds nothing, which keeps the footer to sync and workspace normally.
+  const attentionItems: WorkstationStatusBarItem[] =
+    attention && (attention.tone === "review" || attention.tone === "blocked")
       ? [{
-        key: "providers",
-        status: providerTrust.tone === "blocked" ? "err" : "warn",
-        label: "Providers",
-        value: providerTrust.value
+        key: "attention",
+        status: attention.tone === "blocked" ? "err" : "warn",
+        label: "Attention",
+        value: attention.moreCount > 0 ? `${attention.title} +${attention.moreCount} more` : attention.title
       }]
       : [];
 
-  // The page's posture strip owns the freshness answer. When it says the data on screen needs
-  // review or is blocked, "Sync" drops to the narrower claim it can still make (the workstation
-  // reached the service) and the footer repeats the strip's own words beside it.
+  // The shell attention state covers shell-wide sources; the freshness of the data on the page
+  // belongs to the page's status row. When that row says its freshness needs review or is
+  // blocked, "Sync" drops to the narrower claim it can still make (the workstation reached the
+  // service) and the footer repeats the row's own words, so it never says "up to date" over a
+  // page that says "stale".
   const pageDataNeedsReview = pageFreshness?.tone === "review" || pageFreshness?.tone === "blocked";
   const freshnessItems: WorkstationStatusBarItem[] = pageDataNeedsReview
     ? [{
@@ -103,7 +107,7 @@ export function buildWorkstationStatusItems({
             : "up to date"
     },
     ...freshnessItems,
-    ...providerItems,
+    ...attentionItems,
     {
       key: "workspace",
       label: "Workspace",

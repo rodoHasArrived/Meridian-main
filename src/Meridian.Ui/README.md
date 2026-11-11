@@ -68,16 +68,28 @@ fails a route whose rendered content shows a raw identifier or a "1 rows" style 
 contract changed; Operations Continuity still shows fund-account identifiers because its shared
 summary carries no account name.
 
+The host-served bundle carries the status-signal consolidation: one rule
+(`dashboard/src/lib/status-signals.ts`) and one shell attention state
+(`dashboard/src/app-shell.attention.ts`) now feed every status indicator. The masthead keeps an
+environment badge (`PAPER · SEEDED`, replacing the trust pill's provider text and the separate
+sample-data chip) and one attention pill that names the worst open issue and opens Today. Page
+status rows read `All sources current` or name only the facts that are not ready, with the
+per-fact breakdown behind Details, and fold in shell source issues so they cannot contradict the
+pill. Today leads with the same worst decision on every route, the status bar repeats the pill
+instead of a Providers item, and the provenance banner is a stripe whenever the badge names the
+provenance. Declared demo data on a Paper session is no longer raised as a warning. No shared
+contract changed; the WPF shell keeps its own indicators until it consumes the same rule.
+
 It also carries the first Phase 3 increment of the
 [UX review plan](../../docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md): a failed
-request shows a plain sentence with the request path collapsed under "Technical details"; the
-status bar repeats the page's own freshness instead of "up to date" when the posture strip needs
-review; the strip names a scope without a "Ready" verdict; disabled buttons share one readable
-style and carry their reason; and "Cancel all" sits in an overflow menu. The screenshot harness
-additionally fails a route that renders a request path, "lane", "payload", "mutation",
-"caller-visible", a slug-shaped identifier, an unexplained disabled primary button, or a status
-bar that contradicts the page. No shared contract changed; routes whose read models name records
-only by key are listed with reasons in `scripts/dev/web-screenshot-routes.json`.
+request shows a plain sentence with the request path collapsed under "Technical details"; when a
+page's status row says its freshness needs review, the status bar says "Sync connected" and
+repeats the row's words instead of "up to date"; disabled buttons share one readable style and
+carry their reason; and "Cancel all" sits in an overflow menu. The screenshot harness additionally
+fails a route that renders a request path, "lane", "payload", "mutation", "caller-visible", a
+slug-shaped identifier, an unexplained disabled primary button, or a status bar that contradicts
+the page. No shared contract changed; routes whose read models name records only by key are listed
+with reasons in `scripts/dev/web-screenshot-routes.json`.
 
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency

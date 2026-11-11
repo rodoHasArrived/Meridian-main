@@ -526,12 +526,18 @@ Done:
   "payload", "mutation", "caller-visible") and `slug-identifier`. Copy was rewritten on the 20
   routes that showed the terms ("Data Lane", "Strategy Lane · PlotTool", "Caller-visible Reporting
   records", "Legacy pack mutations are retired", the PlotTool "payload" messages and others).
-- **C1 freshness.** The posture strip reports the freshness fact it renders to the shell; when it
-  needs review or is blocked the status bar says "Sync connected" and repeats the strip's words as
-  a Freshness item. Portfolio now reads "Freshness Stale · 187d ago" in both places. The harness's
+- **C1 status layers.** The status-signal consolidation that merged alongside this increment
+  supplies most of C1: one rule (`lib/status-signals.ts`) and one shell attention state feed the
+  masthead pill, every page status row, Today and the status bar; a page row reads "All sources
+  current" or names only the facts that are not ready. This increment sits on top of it.
+- **C1 freshness.** The shell attention state covers shell-wide sources, not the freshness of the
+  data on a page. The page status row reports the freshness fact it renders to the shell; when it
+  needs review or is blocked the status bar says "Sync connected" and repeats the row's words as
+  a Freshness item. Portfolio now reads "Stale · 187d ago" in both places. The harness's
   `status-contradiction` rule checks every route.
-- **C1 scope.** The strip names its scope with no "Ready" verdict; a scope that needs attention
-  still says so. Trading and Portfolio label a brokerage account "Account".
+- **C1 scope.** Trading and Portfolio label a brokerage account "Account", so the row does not
+  state a second "scope" beside the header's fund picker. The earlier change that dropped the
+  "Ready" verdict from the scope fact is superseded: the new status row does not list ready facts.
 - **V5.** One disabled style for every button variant (neutral fill, dashed edge, muted label at
   full opacity; label 4.8:1, edge at least 3:1 on every surface, asserted in a unit test). The
   harness fails a route with a disabled primary button that carries no reason; the six it found
@@ -545,11 +551,13 @@ Open in Phase 3:
   "+2.1%" still render without a stated baseline, and "Runs 24" still disagrees with "2 of 2
   loaded".
 - **Content start height.** The first Trading card started at about 435px when this increment was
-  written. The page-header simplification that merged alongside it (one header row, no
-  "<Workspace> Workstation" title, a fund picker in place of "No scope selected") brings it to
-  about 400px; reaching 300px still needs the single blocker slot and a shorter seeded banner.
-- **One strip format and one blocker slot.** Run Status still uses four large cards, and blocker
-  banners are not yet limited to one slot with "+N more".
+  written. Two changes that merged alongside it bring it to about 350px: the page-header
+  simplification (one header row, no "<Workspace> Workstation" title, a fund picker in place of
+  "No scope selected") and the status-signal consolidation (the seeded banner becomes a stripe).
+  Portfolio's first card now starts at about 290px. Reaching 300px on Trading still needs the
+  single blocker slot.
+- **One blocker slot.** Page status rows now share one format; blocker banners are not yet limited
+  to one slot with "+N more".
 - **Scope in one place.** Screens other than Trading and Portfolio still label a strip fact
   "Scope"; the cross-route check covers freshness, not scope.
 - **Excused routes.** Fifteen routes hold `allowedContentIssues` entries for the new rules. Twelve

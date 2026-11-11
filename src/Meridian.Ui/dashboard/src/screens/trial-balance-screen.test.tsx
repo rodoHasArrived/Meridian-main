@@ -201,10 +201,12 @@ describe("TrialBalanceScreen", () => {
 
     expect(ledgerReportsApi.getLedgerPeriodTrialBalance).toHaveBeenCalledWith(PERIOD_ID);
     expect(ledgerReportsApi.getLedgerPeriodJournalEntries).toHaveBeenCalledWith(PERIOD_ID);
-    // The confidence card is collapsed above the trial balance: its one-line summary names the
-    // posted journal as the source (the expanded detail repeats it).
+    // The status row is collapsed above the trial balance. Its one line names only what is not
+    // ready, so a ready source is not in it; the breakdown behind Details names the posted
+    // journal as the source.
     const confidence = screen.getByRole("region", { name: "Data confidence" });
-    expect(within(confidence.querySelector("summary") as HTMLElement).getByText("Posted journal")).toBeInTheDocument();
+    expect(within(confidence.querySelector("summary") as HTMLElement).queryByText("Posted journal")).toBeNull();
+    expect(within(confidence.querySelector("dl") as HTMLElement).getByText("Posted journal")).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Trial balance scope" })).toBeInTheDocument();
     // The structure node the book is scoped to. This asserted the hard-coded "All entities" — an
     // affirmative claim about a book scoped to exactly one node — and then, briefly, the book's
