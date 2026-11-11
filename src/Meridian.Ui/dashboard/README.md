@@ -367,6 +367,26 @@ not been recorded.
     Portfolio Explorer. Give a figure a `basis` when panels can measure it differently (the
     header's exposure is gross, the explorer's is net): a gross-against-net gap is not reported
     by itself, and is labelled with both bases when listed beside a like-for-like difference.
+- **Detail panes.** `DetailPane` (`components/meridian/detail-pane.tsx`) is the pane for a
+  selected table row:
+  - *One heading line*: object type, name and one status badge. There is no separate
+    "Selected from …" pill, "Detail" chip or status eyebrow; the shared stylesheet no longer
+    draws the pill for any panel.
+  - *Field rows*: `DetailFieldItem` puts a label beside a left-aligned value and lets the value
+    wrap under its label once the row is narrower than about 290px, so a value is never squeezed
+    into a column too narrow for a word. `DetailFields` renders a list of them from raw
+    `{ label, value, tone }` rows; `columns="auto"` flows a wide list into columns.
+  - *Typesetting* (`detail-pane.view-model.ts`): figures and identifiers use the data face,
+    phrases and written-out dates the body face; figures and dates stay on one line; prose wraps
+    at word boundaries only.
+  - *Identifiers*: GUID- and digest-shaped values, and rows marked `technical`, move to a
+    "Technical details" disclosure with a copy button.
+  - *No repetition*: pass `shownInRow` with the column labels the selected row always shows;
+    the pane lists what the row does not, plus the next action in `actions`.
+  - *Shared panes*: two tables may control one pane (Trading orders and fills do); the pane
+    shows the table selected last, and Escape returns focus to that table's selected row.
+  `EntitySummary` applies the same heading line and rows, so panels built on it follow the rules
+  without changes at the call site.
 - **Tables.** `DenseDataTable` (`components/meridian/ui-kit-primitives.tsx`) provides:
   - a sticky header inside a bounded scroll area;
   - `aria-sort` sorting, either built in from a column's `sortValue` (numbers start
