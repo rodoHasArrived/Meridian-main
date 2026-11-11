@@ -539,6 +539,15 @@ public sealed partial class ReportingScheduleService
                     "A legacy reporting schedule without tenant and company scope cannot be deleted; disable it instead.");
             }
 
+            // A report awaiting release is delivered from the handoffs kept on this record;
+            // deleting it would silently drop those deliveries.
+            if ((current.ReleaseDeliveryHandoffs ?? [])
+                .Any(handoff => IsPendingReleaseHandoffBoundToCurrentTargets(current, handoff)))
+            {
+                throw new InvalidOperationException(
+                    $"Reporting schedule '{current.ScheduleId}' has reports awaiting release whose deliveries would be lost. Disable it instead, and delete it once they are released and queued.");
+            }
+
             // Deleting takes the same durable execution lease a run takes. The store grants it
             // only when no other host holds an unexpired lease on this revision, so a schedule
             // that is executing anywhere (not just on this host) cannot be deleted mid-run.

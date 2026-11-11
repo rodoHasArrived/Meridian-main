@@ -104,6 +104,13 @@ public static partial class FundStructureEndpoints
                 exception.Message,
                 statusCode: StatusCodes.Status404NotFound);
         }
+        catch (InvalidOperationException exception)
+        {
+            // Deliveries for reports awaiting release are still pending on the schedule.
+            return Results.Problem(
+                exception.Message,
+                statusCode: StatusCodes.Status409Conflict);
+        }
         catch (Exception exception) when (exception is ArgumentException
                                           or InvalidDataException)
         {

@@ -325,7 +325,9 @@ through `resume`; `Disabled` marks a schedule an operator has deliberately switc
 than temporarily held. `DELETE` permanently removes the recurring definition (runs it already
 produced stay in the run store). Delete uses the retained revision, so a host holding a stale
 revision gets a version conflict, and a schedule that is executing is refused with `409`. Legacy
-schedules without tenant and company scope cannot be deleted; disable them instead.
+schedules without tenant and company scope cannot be deleted; disable them instead. A schedule
+whose reports are still awaiting release, with deliveries not yet queued, is refused with `409`,
+because those deliveries are held on the schedule record; disable it until they are queued.
 
 ## Canonical routes
 
