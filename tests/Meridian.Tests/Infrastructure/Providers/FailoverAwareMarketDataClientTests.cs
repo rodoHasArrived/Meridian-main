@@ -490,6 +490,202 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Scenario_QuietButConnectedFeed_StaysHealthyAndDoesNotFailOver()
+    {
+        var clock = new ManualClock(new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var harness = new TransportHealthHarness(clock);
+        await using var sut = harness.CreateClient();
+        await sut.ConnectAsync();
+
+        // No market data arrives, but the transport stays connected. Each scan runs well past
+        // the 60-second inactivity timeout; enough scans to exhaust the missed-heartbeat budget.
+        for (var scan = 0; scan < 6; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        sut.ActiveProviderId.Should().Be("primary");
+        harness.Service.GetActiveProviderId(TransportHealthHarness.RuleId).Should().Be("primary");
+        harness.Backup.ConnectCallCount.Should().Be(0, "a quiet but connected feed must not fail over");
+        harness.Service.GetRuleSnapshots().Single().FailoverCount.Should().Be(0);
+        var health = harness.Service.GetProviderHealthSnapshots();
+        health.Single(snapshot => snapshot.ProviderId == "primary").ConsecutiveFailures
+            .Should().Be(0, "a connected transport is the heartbeat for a quiet feed");
+        health.Single(snapshot => snapshot.ProviderId == "backup").ConsecutiveFailures
+            .Should().Be(0, "a standby provider has no transport whose silence could be a failure");
+        sut.GetConnectionDiagnosticsSnapshot().IsConnected.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Scenario_QuietFeedWithDegradedTransport_StillFailsOverThroughMonitor()
+    {
+        var clock = new ManualClock(new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var harness = new TransportHealthHarness(clock);
+        await using var sut = harness.CreateClient();
+        await sut.ConnectAsync();
+
+        // Degraded is a state the transport may still recover from, so it is not a terminal
+        // interruption; but it is no longer liveness, so prolonged silence counts again.
+        harness.Primary.RaiseTransportState(ProviderConnectionLifecycleState.Degraded);
+        sut.ActiveProviderId.Should().Be("primary", "a recoverable transport state is not terminal");
+
+        for (var scan = 0; scan < 2; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        await WaitUntilAsync(
+            () => sut.ActiveProviderId == "backup" &&
+                  harness.Service.GetActiveProviderId(TransportHealthHarness.RuleId) == "backup" &&
+                  sut.GetConnectionDiagnosticsSnapshot().IsConnected);
+        harness.Backup.ConnectCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Scenario_StandbyThatBecomesActive_IsMonitoredAgain()
+    {
+        var clock = new ManualClock(new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var harness = new TransportHealthHarness(clock);
+        await using var sut = harness.CreateClient();
+        await sut.ConnectAsync();
+        harness.Primary.RaiseTransportState(ProviderConnectionLifecycleState.Connected);
+
+        // The idle standby ages out of the monitor while the primary stays live.
+        for (var scan = 0; scan < 4; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        harness.HealthMonitor.GetConnectionStatus("backup")!.Value.IsConnected.Should().BeFalse();
+        sut.ActiveProviderId.Should().Be("primary");
+
+        harness.Primary.RaiseTransportState(ProviderConnectionLifecycleState.Failed);
+        await WaitUntilAsync(() => sut.ActiveProviderId == "backup");
+        harness.Backup.RaiseTransportState(ProviderConnectionLifecycleState.Connected);
+
+        harness.HealthMonitor.GetConnectionStatus("backup")!.Value.IsConnected.Should().BeTrue(
+            "a standby that became the current connection must be monitored for silence again");
+
+        // A recoverable transport state followed by silence is counted against the new active provider.
+        harness.Backup.RaiseTransportState(ProviderConnectionLifecycleState.Degraded);
+        for (var scan = 0; scan < 2; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        harness.Service.GetProviderHealthSnapshots()
+            .Single(snapshot => snapshot.ProviderId == "backup")
+            .ConsecutiveFailures.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
+    public async Task Scenario_TransportInterruptionOnActiveProvider_FailsOverToFirstViableBackup()
+    {
+        await _sut.DisposeAsync();
+
+        var primary = new FakeMarketDataClient("primary");
+        var rejectedBackup = new FakeMarketDataClient("backup1") { ShouldFailConnect = true };
+        var viableBackup = new FakeMarketDataClient("backup2");
+        _failoverService.RegisterProvider("backup1");
+        _failoverService.RegisterProvider("backup2");
+        var rule = new FailoverRuleConfig(
+            Id: "transport-rule",
+            PrimaryProviderId: "primary",
+            BackupProviderIds: ["backup1", "backup2"],
+            FailoverThreshold: 3,
+            RecoveryThreshold: 2);
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [rule]));
+        _sut = new FailoverAwareMarketDataClient(
+            new Dictionary<string, IMarketDataClient>
+            {
+                ["primary"] = primary,
+                ["backup1"] = rejectedBackup,
+                ["backup2"] = viableBackup
+            },
+            _failoverService,
+            rule.Id,
+            "primary");
+        await _sut.ConnectAsync();
+
+        // The only stimulus is the active provider's own transport diagnostics callback.
+        primary.RaiseTransportState(ProviderConnectionLifecycleState.Failed);
+
+        await WaitUntilAsync(
+            () => _sut.ActiveProviderId == "backup2" &&
+                  _failoverService.GetActiveProviderId(rule.Id) == "backup2" &&
+                  _sut.GetConnectionDiagnosticsSnapshot().IsConnected);
+
+        rejectedBackup.ConnectCallCount.Should().Be(1);
+        viableBackup.ConnectCallCount.Should().Be(1);
+        _failoverService.GetRuleSnapshots().Single().IsInFailoverState.Should().BeTrue();
+        _failoverService.GetProviderHealthSnapshots()
+            .Single(snapshot => snapshot.ProviderId == "primary")
+            .ConsecutiveFailures.Should().BeGreaterThan(0, "the interruption is recorded against the lost provider");
+        var diagnostics = _sut.GetConnectionDiagnosticsSnapshot();
+        diagnostics.ProviderName.Should().Be("Failover (backup2)");
+        diagnostics.IsConnected.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Scenario_StaleDisconnectFromSupersededProvider_DoesNotAffectActiveProvider()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+        (await _failoverService.ForceFailoverAsync("test-rule", "backup").WaitAsync(SyncTimeout))
+            .Should().BeTrue();
+        _sut.ActiveProviderId.Should().Be("backup");
+        // Let the committed hand-off finish disconnecting the superseded provider first.
+        await WaitUntilAsync(
+            () => _primaryClient.DisconnectCallCount == 1 &&
+                  _sut.GetConnectionDiagnosticsSnapshot().IsConnected);
+
+        // A late terminal callback from the provider that is no longer the current connection.
+        _primaryClient.RaiseTransportState(ProviderConnectionLifecycleState.Failed);
+        await Task.Delay(100);
+
+        _sut.ActiveProviderId.Should().Be("backup");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("backup");
+        _failoverService.GetRuleSnapshots().Single().FailoverCount.Should().Be(1);
+        _failoverService.GetProviderHealthSnapshots()
+            .Single(snapshot => snapshot.ProviderId == "backup")
+            .ConsecutiveFailures.Should().Be(0);
+        var diagnostics = _sut.GetConnectionDiagnosticsSnapshot();
+        diagnostics.LifecycleState.Should().Be(ProviderConnectionLifecycleState.Connected);
+        diagnostics.IsConnected.Should().BeTrue();
+        _backupClient.ConnectCallCount.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task Scenario_RequestedDisconnect_IsNotTreatedAsTransportInterruption()
+    {
+        _failoverService.Start(new DataSourcesConfig(
+            EnableFailover: true,
+            HealthCheckIntervalSeconds: 3600,
+            FailoverRules: [_rule]));
+        await _sut.ConnectAsync();
+
+        await _sut.DisconnectAsync();
+        await Task.Delay(100);
+
+        _sut.ActiveProviderId.Should().Be("primary");
+        _failoverService.GetActiveProviderId("test-rule").Should().Be("primary");
+        _backupClient.ConnectCallCount.Should().Be(0);
+        _failoverService.GetProviderHealthSnapshots()
+            .Single(snapshot => snapshot.ProviderId == "primary")
+            .ConsecutiveFailures.Should().Be(0);
+    }
+
+    [Fact]
     public async Task Scenario_Failover_RequiredResubscribeFails_DoesNotClaimConnectedSwitch()
     {
         _failoverService.Start(new DataSourcesConfig(
@@ -808,6 +1004,83 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     /// <summary>
+    /// A failover runtime wired to a real <see cref="ConnectionHealthMonitor"/> on a manual
+    /// clock, so inactivity scans are driven deterministically instead of by wall-clock timers.
+    /// A threshold of one makes any single recorded failure visible as a failover.
+    /// </summary>
+    private sealed class TransportHealthHarness : IDisposable
+    {
+        public const string RuleId = "quiet-rule";
+
+        public TransportHealthHarness(TimeProvider clock)
+        {
+            HealthMonitor = new ConnectionHealthMonitor(
+                new ConnectionHealthConfig
+                {
+                    HeartbeatIntervalSeconds = 30,
+                    HeartbeatTimeoutSeconds = 60,
+                    MaxMissedHeartbeats = 3,
+                },
+                clock);
+            Service = new StreamingFailoverService(HealthMonitor);
+            Service.RegisterProvider("primary");
+            Service.RegisterProvider("backup");
+            Service.Start(new DataSourcesConfig(
+                EnableFailover: true,
+                HealthCheckIntervalSeconds: 3600,
+                FailoverRules:
+                [
+                    new FailoverRuleConfig(
+                        Id: RuleId,
+                        PrimaryProviderId: "primary",
+                        BackupProviderIds: ["backup"],
+                        FailoverThreshold: 1,
+                        RecoveryThreshold: 2)
+                ]));
+        }
+
+        public ConnectionHealthMonitor HealthMonitor { get; }
+        public StreamingFailoverService Service { get; }
+        public FakeMarketDataClient Primary { get; } = new("primary");
+        public FakeMarketDataClient Backup { get; } = new("backup");
+
+        public FailoverAwareMarketDataClient CreateClient()
+            => new(
+                new Dictionary<string, IMarketDataClient>
+                {
+                    ["primary"] = Primary,
+                    ["backup"] = Backup
+                },
+                Service,
+                RuleId,
+                "primary");
+
+        public void Dispose()
+        {
+            Service.Dispose();
+            HealthMonitor.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Manually advanced clock. Timers stay on the system clock (and therefore never fire within
+    /// a test), so heartbeat scans only run when a test requests one.
+    /// </summary>
+    private sealed class ManualClock(DateTimeOffset start) : TimeProvider
+    {
+        private long _utcTicks = start.UtcTicks;
+
+        public override long TimestampFrequency => TimeSpan.TicksPerSecond;
+
+        public override DateTimeOffset GetUtcNow()
+            => new(Interlocked.Read(ref _utcTicks), TimeSpan.Zero);
+
+        public override long GetTimestamp() => Interlocked.Read(ref _utcTicks);
+
+        public void Advance(TimeSpan amount) => Interlocked.Add(ref _utcTicks, amount.Ticks);
+    }
+
+    /// <summary>
     /// Fake IMarketDataClient for testing failover behavior without real connections.
     /// </summary>
     private sealed class FakeMarketDataClient : IMarketDataClient
@@ -910,6 +1183,18 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
             _lastDisconnectedAt = DateTimeOffset.UtcNow;
             ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Publishes a transport-originated lifecycle change, as a supervised connection does
+        /// when the remote side drops or the transport gives up reconnecting.
+        /// </summary>
+        public void RaiseTransportState(ProviderConnectionLifecycleState lifecycleState)
+        {
+            _lifecycleState = lifecycleState;
+            if (lifecycleState != ProviderConnectionLifecycleState.Connected)
+                _lastDisconnectedAt = DateTimeOffset.UtcNow;
+            ConnectionDiagnosticsChanged?.Invoke(GetConnectionDiagnosticsSnapshot());
         }
 
         public int SubscribeMarketDepth(SymbolConfig cfg)

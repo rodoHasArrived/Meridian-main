@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1773 / 10141** items documented (**17.5%**) &mdash; Grade: **F**
+**1773 / 10147** items documented (**17.5%**) &mdash; Grade: **F**
 
 ```text
 [===-----------------] 17.5%
@@ -15,7 +15,7 @@
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 1664 | 9635 | 17.3% | F |
+| Public Classes / Interfaces | 1664 | 9641 | 17.3% | F |
 | API Endpoints | 108 | 353 | 30.6% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
@@ -23,7 +23,7 @@
 
 ## Undocumented Items
 
-### Public Classes / Interfaces (7971 undocumented)
+### Public Classes / Interfaces (7977 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -67,7 +67,7 @@
 | `BackfillPreviewResult` | `src/Meridian.Application/Backfill/BackfillPreview.cs:9` |
 | `SymbolPreview` | `src/Meridian.Application/Backfill/BackfillPreview.cs:24` |
 | `ExistingDataInfo` | `src/Meridian.Application/Backfill/BackfillPreview.cs:35` |
-| `BackfillRequest` | `src/Meridian.Application/Backfill/BackfillRequest.cs:31` |
+| `BackfillRequest` | `src/Meridian.Application/Backfill/BackfillRequest.cs:32` |
 | `CrossSourceBackfillReconciliationService` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:10` |
 | `CrossSourceBackfillReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:473` |
 | `CrossSourceBackfillBatchReconciliationRequest` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:482` |
@@ -77,7 +77,7 @@
 | `CrossSourceBackfillClosureDecision` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:533` |
 | `CrossSourceBackfillDiscrepancy` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:605` |
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
-| ... and 7921 more | |
+| ... and 7927 more | |
 
 ### API Endpoints (245 undocumented)
 
@@ -87,9 +87,9 @@
 | `/api/brokerage-connections/robinhood/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:37` |
 | `/api/brokerage-connections/robinhood/callback` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:53` |
 | `/api/brokerage-connections/robinhood` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:69` |
-| `/api/brokerage-connections/alpaca/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:85` |
-| `/api/brokerage-connections/alpaca/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:101` |
-| `/api/brokerage-connections/alpaca` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:117` |
+| `/api/brokerage-connections/alpaca/status` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:88` |
+| `/api/brokerage-connections/alpaca/connect` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:102` |
+| `/api/brokerage-connections/alpaca` | `src/Meridian.Ui.Shared/Endpoints/BrokerageConnectionEndpoints.cs:116` |
 | `/api/compliance/approval-requests` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:18` |
 | `/api/compliance/approval-requests/{approvalRequestId}/decisions` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:29` |
 | `/api/compliance/actions/evaluate` | `src/Meridian.Ui.Shared/Endpoints/Compliance/ComplianceEndpoints.cs:51` |
@@ -209,7 +209,7 @@
 
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 7971 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
+1. **Public Classes / Interfaces**: 7977 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
 2. **API Endpoints**: 245 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
