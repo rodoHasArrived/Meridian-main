@@ -82,7 +82,20 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         Guid securityId,
         CancellationToken ct = default)
     {
+        var result = await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false);
+        // Retain the collection-only contract: partial history is available only with its
+        // explicit coverage outcome, never through the compatibility collection.
+        return result.Status == CorporateActionFetchStatus.Complete ? result.Actions : [];
+    }
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
+    {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
+        ct.ThrowIfCancellationRequested();
 
         var keyId = _credentials is not null ? _credentials.Get("ALPACA_KEY_ID") : _configuration["ALPACA_KEY_ID"]
                     ?? _configuration["APCA_API_KEY_ID"]
@@ -98,7 +111,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         {
             _logger.LogDebug(
                 "Alpaca API credentials not configured; corporate action fetch for {Ticker} skipped.", ticker);
-            return [];
+            return CorporateActionFetchResult.Failed("credentials-missing");
         }
 
         using var client = _httpClientFactory.CreateClient("alpaca-corp-actions");
@@ -110,12 +123,12 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
 
         _logger.LogDebug(
             "Fetched {Count} corporate action(s) for {Ticker} from Alpaca.",
-            results.Count, ticker);
+            results.Actions.Count, ticker);
 
         return results;
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchActionsAsync(
+    private async Task<CorporateActionFetchResult> FetchActionsAsync(
         HttpClient client,
         string ticker,
         Guid securityId,
@@ -128,6 +141,21 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
             static group => group.Group, static _ => new List<CorporateActionCommand>(), StringComparer.Ordinal);
         var seenPageTokens = new HashSet<string>(StringComparer.Ordinal);
         string? pageToken = null;
+        var completedPages = 0;
+        var failures = new List<CorporateActionFetchFailure>();
+
+        CorporateActionFetchResult Finish(CorporateActionFetchResult? failure = null)
+        {
+            var actions = ActionGroups.SelectMany(group => byGroup[group.Group]).ToArray();
+            if (failure is not null)
+                failures.AddRange(failure.Failures);
+            var status = failures.Count == 0
+                ? CorporateActionFetchStatus.Complete
+                : completedPages > 0 || actions.Length > 0
+                    ? CorporateActionFetchStatus.Partial
+                    : CorporateActionFetchStatus.Failed;
+            return new(actions, status, failures.ToArray());
+        }
 
         try
         {
@@ -138,12 +166,10 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    // A refused request is not an empty history. It is logged where an operator
-                    // will see it, and no partial result is returned as if it were complete.
                     _logger.LogWarning(
-                        "Alpaca corporate actions returned {StatusCode} for {Ticker}; no actions were taken from this fetch.",
+                        "Alpaca corporate actions returned {StatusCode} for {Ticker}; coverage is incomplete.",
                         (int)response.StatusCode, ticker);
-                    return [];
+                    return Finish(CorporateActionFetchResult.FromHttpFailure(response, "history"));
                 }
 
                 await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -152,40 +178,49 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 if (document.RootElement.ValueKind != JsonValueKind.Object)
                     throw new JsonException("Alpaca corporate-actions response is not an object.");
 
-                if (document.RootElement.TryGetProperty("corporate_actions", out var groups)
-                    && groups.ValueKind == JsonValueKind.Object)
-                {
-                    foreach (var (group, isSplit, description) in ActionGroups)
-                    {
-                        if (!groups.TryGetProperty(group, out var actions) || actions.ValueKind != JsonValueKind.Array)
-                            continue;
+                if (!document.RootElement.TryGetProperty("corporate_actions", out var groups)
+                    || groups.ValueKind != JsonValueKind.Object)
+                    throw new JsonException("Alpaca corporate-actions groups are missing or invalid.");
 
-                        foreach (var payload in actions.EnumerateArray())
-                        {
-                            var action = payload.Deserialize(AlpacaCorporateActionJsonContext.Default.AlpacaAction);
-                            if (action is not null && MapToCommand(action, payload, securityId, ticker, isSplit, description) is { } command)
-                                byGroup[group].Add(command);
-                        }
+                foreach (var (group, isSplit, description) in ActionGroups)
+                {
+                    if (!groups.TryGetProperty(group, out var actions))
+                        continue;
+                    if (actions.ValueKind != JsonValueKind.Array)
+                        throw new JsonException("Alpaca corporate-actions group is not an array.");
+
+                    foreach (var payload in actions.EnumerateArray())
+                    {
+                        var action = payload.Deserialize(AlpacaCorporateActionJsonContext.Default.AlpacaAction);
+                        if (action is not null && MapToCommand(action, payload, securityId, ticker, isSplit, description) is { } command)
+                            byGroup[group].Add(command);
+                        else if (!failures.Any(failure => failure.Scope == group))
+                            failures.Add(new("invalid-record", Scope: group));
                     }
                 }
 
+                completedPages++;
                 pageToken = document.RootElement.TryGetProperty("next_page_token", out var next)
-                    && next.ValueKind == JsonValueKind.String
-                        ? next.GetString()
-                        : null;
+                    ? next.ValueKind switch
+                    {
+                        JsonValueKind.String => next.GetString(),
+                        JsonValueKind.Null => null,
+                        _ => throw new JsonException("Alpaca corporate-actions page token is invalid."),
+                    }
+                    : null;
                 if (string.IsNullOrEmpty(pageToken))
                     break;
                 if (page + 1 >= MaxPages || !seenPageTokens.Add(pageToken))
-                    throw new JsonException("Alpaca corporate-actions pagination did not terminate.");
+                    return Finish(CorporateActionFetchResult.Failed("pagination-incomplete", scope: "history"));
             }
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
-            return [];
+            _logger.LogWarning("Failed to fetch Alpaca corporate actions for {Ticker}; coverage is incomplete.", ticker);
+            return Finish(CorporateActionFetchResult.FromException(ex, "history"));
         }
 
-        return ActionGroups.SelectMany(group => byGroup[group.Group]).ToArray();
+        return Finish();
     }
 
     private CorporateActionCommand? MapToCommand(

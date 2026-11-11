@@ -63,6 +63,13 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
         string ticker,
         Guid securityId,
         CancellationToken ct = default)
+        => (await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false)).Actions;
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
         ct.ThrowIfCancellationRequested();
@@ -73,7 +80,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
             _logger.LogDebug(
                 "Finnhub API key not configured; corporate action fetch for {Ticker} skipped.",
                 ticker);
-            return [];
+            return CorporateActionFetchResult.Failed("credentials-missing");
         }
 
         var normalizedSymbol = SymbolNormalization.Normalize(ticker);
@@ -93,8 +100,8 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
         var splits = await FetchSplitsAsync(client, normalizedSymbol, securityId, apiKey, ct)
             .ConfigureAwait(false);
 
-        var commands = dividends
-            .Concat(splits)
+        var result = CorporateActionFetchResult.Combine(dividends, splits);
+        var commands = result.Actions
             .OrderBy(command => command.ExDate)
             .ThenBy(command => command.ActionType, StringComparer.Ordinal)
             .ToArray();
@@ -104,10 +111,10 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
             commands.Length,
             ticker);
 
-        return commands;
+        return result with { Actions = commands };
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchDividendsAsync(
+    private async Task<CorporateActionFetchResult> FetchDividendsAsync(
         HttpClient client,
         string symbol,
         Guid securityId,
@@ -127,7 +134,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
                     "Finnhub dividends returned {StatusCode} for {Symbol}; skipping dividend actions.",
                     (int)response.StatusCode,
                     symbol);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response, "dividends");
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -135,23 +142,24 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
                     jsonStream,
                     FinnhubCorporateActionJsonContext.Default.FinnhubDividendArray,
                     ct)
-                .ConfigureAwait(false)
-                ?? [];
+                .ConfigureAwait(false);
+            if (payload is null)
+                return CorporateActionFetchResult.Failed("invalid-payload", scope: "dividends");
 
-            return payload
-                .Select(dividend => MapDividend(dividend, securityId))
-                .Where(static command => command is not null)
-                .Cast<CorporateActionCommand>()
-                .ToArray();
+            var mapped = payload.Select(dividend => dividend is null ? null : MapDividend(dividend, securityId)).ToArray();
+            var commands = mapped.Where(static command => command is not null).Cast<CorporateActionCommand>().ToArray();
+            return mapped.Any(static command => command is null)
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record", Scope: "dividends")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Finnhub dividends for {Symbol}.", symbol);
-            return [];
+            _logger.LogWarning("Failed to fetch Finnhub dividends for {Symbol}.", symbol);
+            return CorporateActionFetchResult.FromException(ex, "dividends");
         }
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchSplitsAsync(
+    private async Task<CorporateActionFetchResult> FetchSplitsAsync(
         HttpClient client,
         string symbol,
         Guid securityId,
@@ -171,7 +179,7 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
                     "Finnhub splits returned {StatusCode} for {Symbol}; skipping split actions.",
                     (int)response.StatusCode,
                     symbol);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response, "splits");
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -179,19 +187,20 @@ public sealed partial class FinnhubCorporateActionProvider : ICorporateActionPro
                     jsonStream,
                     FinnhubCorporateActionJsonContext.Default.FinnhubSplitArray,
                     ct)
-                .ConfigureAwait(false)
-                ?? [];
+                .ConfigureAwait(false);
+            if (payload is null)
+                return CorporateActionFetchResult.Failed("invalid-payload", scope: "splits");
 
-            return payload
-                .Select(split => MapSplit(split, securityId))
-                .Where(static command => command is not null)
-                .Cast<CorporateActionCommand>()
-                .ToArray();
+            var mapped = payload.Select(split => split is null ? null : MapSplit(split, securityId)).ToArray();
+            var commands = mapped.Where(static command => command is not null).Cast<CorporateActionCommand>().ToArray();
+            return mapped.Any(static command => command is null)
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record", Scope: "splits")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Finnhub splits for {Symbol}.", symbol);
-            return [];
+            _logger.LogWarning("Failed to fetch Finnhub splits for {Symbol}.", symbol);
+            return CorporateActionFetchResult.FromException(ex, "splits");
         }
     }
 

@@ -60,6 +60,13 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
         string ticker,
         Guid securityId,
         CancellationToken ct = default)
+        => (await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false)).Actions;
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
         ct.ThrowIfCancellationRequested();
@@ -85,7 +92,7 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
                     "Nasdaq Data Link corporate actions returned {StatusCode} for {Ticker}; skipping.",
                     (int)response.StatusCode,
                     ticker);
-                return [];
+                return CorporateActionFetchResult.FromHttpFailure(response);
             }
 
             await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -96,13 +103,14 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
                 .ConfigureAwait(false))
                 ?.Dataset;
 
-            if (dataset?.ColumnNames is null || dataset.Data is null || dataset.Data.Length == 0)
-            {
-                return [];
-            }
+            if (dataset?.ColumnNames is null || dataset.Data is null)
+                return CorporateActionFetchResult.Failed("invalid-payload");
 
             var columnIndex = BuildColumnIndex(dataset.ColumnNames);
+            if (!columnIndex.ContainsKey("Date") || !columnIndex.ContainsKey("Ex-Dividend") || !columnIndex.ContainsKey("Split Ratio"))
+                return CorporateActionFetchResult.Failed("unsupported-dataset");
             var commands = dataset.Data
+                .Where(row => row is not null)
                 .SelectMany(row => MapToCommands(row, columnIndex, securityId))
                 .OrderBy(command => command.ExDate)
                 .ThenBy(command => command.ActionType, StringComparer.Ordinal)
@@ -113,12 +121,18 @@ public sealed partial class NasdaqDataLinkCorporateActionProvider : ICorporateAc
                 commands.Length,
                 ticker);
 
-            return commands;
+            return dataset.Data.Any(row => row is null || !TryGetString(row, columnIndex, "Date", out var date)
+                || !ProviderDateParsing.TryParseProviderDate(date, out _)
+                || !TryGetString(row, columnIndex, "Ex-Dividend", out var dividendText)
+                || !decimal.TryParse(dividendText, NumberStyles.Number, CultureInfo.InvariantCulture, out var dividend)
+                || dividend < 0m || !TryGetPositiveDecimal(row, columnIndex, "Split Ratio", out _))
+                ? new CorporateActionFetchResult(commands, CorporateActionFetchStatus.Partial, [new("invalid-record")])
+                : CorporateActionFetchResult.Complete(commands);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
-            _logger.LogWarning(ex, "Failed to fetch Nasdaq Data Link corporate actions for {Ticker}.", ticker);
-            return [];
+            _logger.LogWarning("Failed to fetch Nasdaq Data Link corporate actions for {Ticker}.", ticker);
+            return CorporateActionFetchResult.FromException(ex);
         }
     }
 

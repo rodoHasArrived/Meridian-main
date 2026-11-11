@@ -3,6 +3,7 @@ using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -165,7 +166,106 @@ public sealed class AlpacaCorporateActionProviderTests
         var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
 
         results.Should().BeEmpty();
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        outcome.Failures.Should().ContainSingle().Which.Code.Should().Be("credentials-missing");
         factory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_SuccessfulEmptyResponse_ReportsCompleteSupportedScope()
+    {
+        var provider = CreateSut(new RecordingHandler(_ => Json(
+            """{"corporate_actions":{},"next_page_token":null}""")));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Complete);
+        outcome.Actions.Should().BeEmpty();
+        outcome.Failures.Should().BeEmpty();
+        provider.ReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    }
+
+    [Theory]
+    [InlineData(HttpStatusCode.Unauthorized, "unauthorized")]
+    [InlineData(HttpStatusCode.Forbidden, "unauthorized")]
+    [InlineData(HttpStatusCode.TooManyRequests, "rate-limited")]
+    [InlineData(HttpStatusCode.InternalServerError, "http-error")]
+    public async Task FetchWithOutcomeAsync_HttpFailure_RetainsSafeStatusAndRetryMetadata(HttpStatusCode status, string code)
+    {
+        var provider = CreateSut(new RecordingHandler(_ =>
+        {
+            var response = new HttpResponseMessage(status);
+            response.Headers.RetryAfter = new System.Net.Http.Headers.RetryConditionHeaderValue(TimeSpan.FromSeconds(17));
+            return response;
+        }));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        outcome.Actions.Should().BeEmpty();
+        outcome.Failures.Should().ContainSingle().Which.Should().Be(
+            new CorporateActionFetchFailure(code, (int)status, TimeSpan.FromSeconds(17), "history"));
+    }
+
+    [Theory]
+    [InlineData("not-json")]
+    [InlineData("{}")]
+    [InlineData("{\"corporate_actions\":{\"cash_dividends\":{}}}")]
+    public async Task FetchWithOutcomeAsync_InvalidResponse_DoesNotCertifyEmptyCoverage(string json)
+    {
+        var provider = CreateSut(new RecordingHandler(_ => Json(json)));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        outcome.Failures.Should().ContainSingle().Which.Code.Should().Be("invalid-response");
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_RefusedSecondPage_ReportsPartialObservations()
+    {
+        var provider = CreateSut(new RecordingHandler(request =>
+            request.RequestUri!.Query.Contains("page_token=", StringComparison.Ordinal)
+                ? new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+                : Json("""{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""")));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Partial);
+        outcome.Actions.Should().ContainSingle().Which.SourceEventId.Should().Be("first");
+        outcome.Failures.Should().ContainSingle().Which.Code.Should().Be("rate-limited");
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_RepeatedCursor_ReportsIncompletePagination()
+    {
+        var handler = new RecordingHandler(_ => Json(
+            """{"corporate_actions":{},"next_page_token":"same"}"""));
+        var provider = CreateSut(handler);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Partial);
+        outcome.Failures.Should().ContainSingle().Which.Code.Should().Be("pagination-incomplete");
+        handler.Requests.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_TimeoutAndCallerCancellation_AreDistinct()
+    {
+        var handler = new RecordingHandler(_ => throw new TaskCanceledException("secret upstream URI"));
+        var provider = CreateSut(handler);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid());
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        outcome.Failures.Should().ContainSingle().Which.Code.Should().Be("timeout");
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync();
+        var cancelled = () => provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), cancellation.Token);
+        await cancelled.Should().ThrowAsync<OperationCanceledException>();
+        handler.Requests.Should().ContainSingle();
     }
 
     private static HttpResponseMessage Json(string body) =>
