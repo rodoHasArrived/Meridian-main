@@ -332,16 +332,37 @@
   gap: 1rem;
 }
 
+/* One heading line: the kind of thing ("Break detail") beside its name. */
+.entity-summary-heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 0.5rem;
+  row-gap: 0.125rem;
+}
+
+.entity-summary-kind {
+  color: var(--fg-muted);
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
 .entity-summary-title {
-  margin-top: 0.625rem;
+  min-width: 0;
   color: #FDFAF5;
-  font-size: 1.125rem;
+  font-size: 1rem;
   font-weight: 600;
-  line-height: 1.2;
+  line-height: 1.4;
+  overflow-wrap: break-word;
+}
+
+.entity-summary-fields {
+  margin-top: 0.875rem;
 }
 
 /* Prose (subtitles, descriptions, phrase values) reads in the body face; mono is kept for
-   figures and identifiers (`.entity-summary-value--data`). */
+   figures and identifiers (see `usesDataFace` in detail-pane.view-model.ts). */
 .entity-summary-subtitle {
   margin-top: 0.375rem;
   color: var(--fg-muted);
@@ -362,48 +383,6 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
-}
-
-.entity-summary-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.entity-summary-field {
-  min-width: 0;
-  padding: 0.75rem 0.875rem;
-  border: 1px solid rgba(74, 68, 60, 0.9);
-  border-radius: var(--radius-lg);
-  background: rgba(20, 18, 15, 0.62);
-  transition: border-color 120ms ease, background 120ms ease, box-shadow 120ms ease;
-}
-
-.entity-summary-field:hover {
-  border-color: var(--border-hi);
-  background: var(--surface-raise-bg);
-  box-shadow: var(--shadow-panel);
-}
-
-.entity-summary-field dt {
-  color: var(--fg-muted);
-  font-size: 0.6875rem;
-  line-height: 1.4;
-}
-
-.entity-summary-field dd {
-  margin-top: 0.5rem;
-  word-break: break-word;
-  color: #FDFAF5;
-  font-family: var(--font-body);
-  font-size: 0.75rem;
-  line-height: 1.5;
-}
-
-.entity-summary-field dd.entity-summary-value--data {
-  font-family: var(--font-data);
-  font-variant-numeric: tabular-nums;
 }
 
 .meridian-toolbar-strip,
@@ -438,26 +417,6 @@
 .entity-summary-subtitle,
 .entity-summary-description {
   color: var(--ws-text-muted);
-}
-
-.entity-summary-field {
-  border-color: var(--ws-border);
-  background: var(--ws-surface-subtle);
-  color: var(--ws-text);
-}
-
-.entity-summary-field:hover {
-  border-color: var(--ws-border-strong);
-  background: var(--ws-surface-raised);
-  box-shadow: var(--ws-shadow);
-}
-
-.entity-summary-field dt {
-  color: var(--ws-text-muted);
-}
-
-.entity-summary-field dd {
-  color: var(--ws-text);
 }
 
 .dense-data-table-wrap {
@@ -568,8 +527,7 @@
    regardless of the base --radius-* token resolution.
 ──────────────────────────────────────────────────────────────────────────*/
 .meridian-toolbar-strip,
-.entity-summary,
-.entity-summary-field {
+.entity-summary {
   border-radius: 2px;
 }
 

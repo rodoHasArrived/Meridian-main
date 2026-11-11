@@ -9,6 +9,18 @@ public interface IBrokerageConnectionState
 }
 
 /// <summary>
+/// Implemented by a gateway whose broker gives one account more than one identifier (for example
+/// an operator-visible account number and an internal id). The gateway reports one of them as the
+/// account's identity and recognizes the others, so a link retained under an older identifier is
+/// neither refused nor mistaken for a second account.
+/// </summary>
+public interface IBrokerageAccountIdentity
+{
+    /// <summary>True when <paramref name="externalAccountId"/> names the account this gateway is connected to.</summary>
+    bool IdentifiesConnectedAccount(string externalAccountId);
+}
+
+/// <summary>
 /// Enumerates brokerage or custodian accounts that can be imported into Meridian's
 /// read-side Portfolio, ledger, and Accounting workflows.
 /// </summary>
@@ -63,6 +75,16 @@ public interface IBrokerageActivitySync
 
         return GetActivitySnapshotAsync(externalAccountId, since, ct);
     }
+}
+
+/// <summary>Well-known keys of <see cref="BrokerageExternalAccountDto.Metadata"/>.</summary>
+public static class BrokerageExternalAccountMetadata
+{
+    /// <summary>
+    /// Comma-separated identifiers the provider also uses for the same account. A link retained
+    /// under one of them still refers to this catalog entry.
+    /// </summary>
+    public const string AccountIdAliases = "accountIdAliases";
 }
 
 public sealed record BrokerageExternalAccountDto(
