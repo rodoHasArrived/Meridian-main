@@ -44,6 +44,9 @@ internal sealed record OperationsWorkflowAuditOutcomeHashInput(
     VerifiedOperationOutcome Outcome,
     string? PreviousHash);
 
+internal sealed record OperationsWorkflowAuditChecklistHashInput(
+    int SchemaVersion, string AuditContentHash, OperationsCloseChecklistSnapshotDto ChecklistSnapshot);
+
 /// <summary>
 /// ADR-014 source-generated metadata for the canonical Operations Continuity audit hash payloads.
 /// Web defaults intentionally preserve the historical camel-cased canonical JSON byte sequence.
@@ -55,4 +58,5 @@ internal sealed record OperationsWorkflowAuditOutcomeHashInput(
 [JsonSerializable(
     typeof(OperationsWorkflowAuditOutcomeHashInput),
     TypeInfoPropertyName = "OutcomeAuditHashInput")]
+[JsonSerializable(typeof(OperationsWorkflowAuditChecklistHashInput), TypeInfoPropertyName = "ChecklistAuditHashInput")]
 internal sealed partial class OperationsWorkflowAuditHashJsonContext : JsonSerializerContext;

@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Numerics;
 using System.Text.RegularExpressions;
 using DuckDB.NET.Data;
+using DuckDB.NET.Native;
 using Meridian.Storage.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -23,6 +25,7 @@ public sealed partial class DuckDbQueryService(
     StorageOptions storageOptions,
     ILogger<DuckDbQueryService>? logger = null)
 {
+    public string QueryableRoot => storageOptions.RootPath;
     /// <summary>
     /// Executes <paramref name="sql"/> and returns a bounded, string-projected result set.
     /// Guard violations and execution errors are returned as a failed result, not thrown,
@@ -32,6 +35,15 @@ public sealed partial class DuckDbQueryService(
         string? sql,
         DataQueryOptions options,
         CancellationToken ct = default)
+        => await ExecuteCoreAsync(sql, options, null, ct).ConfigureAwait(false);
+
+    /// <summary>Executes once, retaining every result row while MaxRows remains the browser preview limit.</summary>
+    public async Task<DataQueryResult> ExecuteRetainedAsync(string? sql, DataQueryOptions options,
+        IDataQueryResultSink sink, CancellationToken ct = default)
+        => await ExecuteCoreAsync(sql, options, sink, ct).ConfigureAwait(false);
+
+    private async Task<DataQueryResult> ExecuteCoreAsync(string? sql, DataQueryOptions options,
+        IDataQueryResultSink? sink, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(options);
 
@@ -70,12 +82,17 @@ public sealed partial class DuckDbQueryService(
                 columns[i] = reader.GetName(i);
                 columnTypes[i] = reader.GetDataTypeName(i);
             }
+            var unsupported = columnTypes.FirstOrDefault(type => type.ToUpperInvariant() is "LIST" or "ARRAY" or "STRUCT" or "MAP" or "UNION" or "INTERVAL" or "TIMESTAMPNS" or "TIMENS" or "TIMETZ");
+            if (unsupported is not null)
+                return DataQueryResult.Failed($"Result type {unsupported} cannot be retained without changing its meaning. Cast that expression explicitly to VARCHAR or JSON in the SQL query.");
 
             var rows = new List<string?[]>();
             var truncated = false;
+            long totalRows = 0;
+            if (sink is not null) await sink.BeginAsync(sql!, columns, columnTypes, timeoutSource.Token).ConfigureAwait(false);
             while (await reader.ReadAsync(timeoutSource.Token).ConfigureAwait(false))
             {
-                if (rows.Count >= options.MaxRows)
+                if (sink is null && rows.Count >= options.MaxRows)
                 {
                     truncated = true;
                     break;
@@ -86,11 +103,17 @@ public sealed partial class DuckDbQueryService(
                 {
                     row[i] = reader.IsDBNull(i)
                         ? null
-                        : Convert.ToString(reader.GetValue(i), CultureInfo.InvariantCulture);
+                        : columnTypes[i].StartsWith("Decimal", StringComparison.OrdinalIgnoreCase)
+                            ? ExactDecimalText(reader.GetFieldValue<DuckDBDecimal>(i))
+                            : ExactScalarText(reader.GetValue(i));
                 }
-                rows.Add(row);
+                if (sink is not null) await sink.WriteRowAsync(row, timeoutSource.Token).ConfigureAwait(false);
+                totalRows++;
+                if (rows.Count < options.MaxRows) rows.Add(row);
+                else truncated = true;
             }
 
+            var receipt = sink is null ? null : await sink.CompleteAsync(totalRows, timeoutSource.Token).ConfigureAwait(false);
             stopwatch.Stop();
             return new DataQueryResult(
                 Success: true,
@@ -100,19 +123,50 @@ public sealed partial class DuckDbQueryService(
                 Rows: rows,
                 RowCount: rows.Count,
                 Truncated: truncated,
-                ElapsedMs: stopwatch.ElapsedMilliseconds);
+                ElapsedMs: stopwatch.ElapsedMilliseconds)
+            { ExecutionId = receipt?.ExecutionId, RetainedRowCount = receipt?.RowCount, ExecutionExpiresAt = receipt?.ExpiresAt };
         }
         catch (OperationCanceledException) when (!ct.IsCancellationRequested)
         {
             return DataQueryResult.Failed(
                 $"Query exceeded the {options.TimeoutSeconds}s time limit and was cancelled.");
         }
-        catch (Exception ex) when (ex is DuckDBException or InvalidOperationException or FormatException)
+        catch (Exception ex) when (ex is DuckDBException or InvalidOperationException or FormatException or IOException)
         {
             logger?.LogDebug(ex, "Data query failed");
-            return DataQueryResult.Failed(ex.Message);
+            return DataQueryResult.Failed(ex is IOException
+                ? "The complete query execution could not be retained. No complete result was published."
+                : ex.Message);
         }
     }
+
+    // System.Decimal cannot represent every DuckDB DECIMAL(38,s). Read the unscaled source
+    // integer directly so both retained exports and their preview preserve every source digit.
+    private static string ExactDecimalText(DuckDBDecimal value)
+    {
+        var unscaled = (new BigInteger(value.Value.Upper) << 64) + value.Value.Lower;
+        var digits = BigInteger.Abs(unscaled).ToString(CultureInfo.InvariantCulture);
+        if (value.Scale > 0)
+        {
+            digits = digits.PadLeft(value.Scale + 1, '0');
+            digits = digits.Insert(digits.Length - value.Scale, ".");
+        }
+        return unscaled.Sign < 0 ? "-" + digits : digits;
+    }
+
+    private static string? ExactScalarText(object value) => value switch
+    {
+        string text => text,
+        DateTime timestamp => timestamp.ToString("O", CultureInfo.InvariantCulture),
+        DateTimeOffset timestamp => timestamp.ToString("O", CultureInfo.InvariantCulture),
+        DateOnly date => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+        TimeOnly time => time.ToString("O", CultureInfo.InvariantCulture),
+        TimeSpan time => time.ToString("c", CultureInfo.InvariantCulture),
+        byte[] bytes => "0x" + Convert.ToHexString(bytes),
+        bool or byte or sbyte or short or ushort or int or uint or long or ulong or Int128 or UInt128 or BigInteger or decimal or double or float or Guid
+            => Convert.ToString(value, CultureInfo.InvariantCulture),
+        _ => throw new InvalidOperationException("This result type cannot be retained faithfully. Cast the expression explicitly to VARCHAR or JSON in the SQL query.")
+    };
 
     private async Task ApplySessionLimitsAsync(
         DuckDBConnection connection,
@@ -260,6 +314,13 @@ public sealed class DataQueryOptions
     public int MaxThreads { get; set; } = 2;
 
     public int MaxSqlLength { get; set; } = 20_000;
+
+    /// <summary>Private retention must remain outside RootPath, which SQL readers may access.</summary>
+    public string? RetainedResultsRoot { get; set; }
+    public long MaxRetainedResultBytes { get; set; } = 32L * 1024 * 1024;
+    public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;
+    public int MaxRetainedRows { get; set; } = 250_000;
+    public int RetainedResultMinutes { get; set; } = 30;
 }
 
 /// <summary>Request body for the data query endpoint.</summary>
@@ -276,6 +337,9 @@ public sealed record DataQueryResult(
     bool Truncated,
     long ElapsedMs)
 {
+    public string? ExecutionId { get; init; }
+    public long? RetainedRowCount { get; init; }
+    public DateTimeOffset? ExecutionExpiresAt { get; init; }
     public static DataQueryResult Failed(string error) => new(
         false, error, Array.Empty<string>(), Array.Empty<string>(), Array.Empty<string?[]>(), 0, false, 0);
 }

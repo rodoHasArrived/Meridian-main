@@ -84,11 +84,11 @@ describe("WorkstationTopbar", () => {
     expect(onOpenCommandPalette).toHaveBeenCalledTimes(1);
 
     expect(screen.getByRole("region", { name: "Trust status" })).toHaveAttribute("aria-live", "polite");
-    await userEvent.click(screen.getByText("PAPER"));
+    await userEvent.click(screen.getByLabelText(/^Environment, provenance, and provider posture\./));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "Current session: paper, Avery Stone, Portfolio operator" }))
+    expect(screen.getByRole("group", { name: "Current session: Avery Stone, Portfolio operator" }))
       .toBeInTheDocument();
   });
 
@@ -118,4 +118,43 @@ describe("WorkstationTopbar", () => {
     expect(screen.getByText("Loading session...")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Open workspace navigation" })).toHaveAttribute("aria-expanded", "true");
   });
+});
+
+it("keeps provenance and a governing blocker visible in one closed status control", async () => {
+  const { container } = render(<MemoryRouter><WorkstationTopbar
+    brandMarkSrc="/brand.svg" workspaceLabel="Trading" navOpen={false} onOpenNavigation={vi.fn()}
+    commandTrigger={{ label: "Commands", placeholder: "Search", shortcutLabel: "Ctrl K", controlsId: "commands", expanded: false, hasPopup: "dialog" }}
+    onOpenCommandPalette={vi.fn()} trustStrip={trustStrip} session={session} provenance="seeded"
+    decisionBrief={{
+      label: "Decision", title: "Resolve cash variance", summary: "Cash differs from retained evidence", reasonLabel: "Why", reason: "Review evidence",
+      statusLabel: "Blocked", statusTone: "blocked", evidenceLabel: "Evidence", actionLabel: "Open case",
+      actionHref: "/accounting/reconciliation", actionAriaLabel: "Open cash case"
+    }}
+  /></MemoryRouter>);
+  const summary = container.querySelector(".workstation-trust-summary")!;
+  expect(summary).toHaveTextContent("SEEDED");
+  expect(summary).toHaveTextContent("Blocked");
+  expect(summary).toHaveTextContent("Resolve cash variance");
+  expect(summary).toHaveClass("workstation-trust-item-blocked");
+  expect(container.querySelectorAll(".workstation-trust-summary")).toHaveLength(1);
+  expect(container.querySelector("header")).toHaveAttribute("data-provenance", "seeded");
+  expect(screen.queryByRole("button", { name: /dismiss/i })).not.toBeInTheDocument();
+  await userEvent.click(summary);
+  expect(screen.getByRole("link", { name: "Open cash case" })).toHaveAttribute("href", "/accounting/reconciliation");
+  await userEvent.keyboard("{Escape}");
+  expect(summary.closest("details")).not.toHaveAttribute("open");
+  expect(summary).toHaveFocus();
+});
+
+it("offers unknown-provenance retry through the same status disclosure", async () => {
+  const retry = vi.fn();
+  const { container } = render(<MemoryRouter><WorkstationTopbar
+    brandMarkSrc="/brand.svg" workspaceLabel="Trading" navOpen={false} onOpenNavigation={vi.fn()}
+    commandTrigger={{ label: "Commands", placeholder: "Search", shortcutLabel: "Ctrl K", controlsId: "commands", expanded: false, hasPopup: "dialog" }}
+    onOpenCommandPalette={vi.fn()} trustStrip={trustStrip} session={session} provenance="unknown" onRetryLiveData={retry}
+  /></MemoryRouter>);
+  expect(screen.getByTestId("data-provenance-unknown")).toBeVisible();
+  await userEvent.click(container.querySelector(".workstation-trust-summary")!);
+  await userEvent.click(screen.getByRole("button", { name: "Retry live Meridian workspace data" }));
+  expect(retry).toHaveBeenCalledOnce();
 });

@@ -171,20 +171,15 @@
   white-space: nowrap;
 }
 
-/* Keep a readable search field and every operator control on small laptop displays.
-   From 1200px the masthead is one 48px row: the environment lives in its own badge,
-   desktop launch is an icon, and the actions cluster is narrow enough to leave the
-   search track usable. Below that, actions get a second row rather than consuming
-   the search track down to an icon-sized sliver. */
-@media (min-width: 981px) and (max-width: 1199px) {
+/* Keep normal desktop chrome on one row; each bounded track can shrink. */
+@media (min-width: 981px) and (max-width: 1599px) {
   .workstation-masthead {
-    grid-template-columns: max-content minmax(0, 1fr) minmax(0, auto);
+    grid-template-columns: max-content minmax(9rem, 1fr) minmax(0, auto) minmax(0, auto);
     gap: 0.375rem 0.75rem;
     padding-block: 0.375rem;
   }
 
   .workstation-masthead > .workstation-actions {
-    grid-column: 1 / -1;
     justify-content: flex-end;
   }
 }
@@ -731,13 +726,18 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--primary); o
 .workstation-header-about:first-child { margin-top: 0; border-top: 0; padding-top: 0; }
 .workstation-header-about p + p { margin-top: 0.375rem; }
 .workstation-views-menu { position: relative; }
-.workstation-views-menu > summary {
+.workstation-header-location { min-width: 0; }
+.workstation-header-title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.workstation-header-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: end; gap: 0.25rem; }
+.workstation-header-context { min-width: 0; }
+.workstation-header-info, .workstation-views-menu { position: relative; }
+.workstation-header-info summary, .workstation-views-menu > summary {
   display: flex; align-items: center; gap: 0.375rem; cursor: pointer; list-style: none;
   padding: 0.375rem; border-radius: var(--radius-sm); font-size: 0.75rem; font-weight: 600;
 }
 .workstation-views-menu > summary::-webkit-details-marker { display: none; }
 .workstation-views-menu > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.workstation-views-panel {
+.workstation-header-about-panel, .workstation-views-panel {
   position: absolute; z-index: 30; top: 100%; margin: 0.25rem 0 0;
   width: min(20rem, 70vw); padding: 0.75rem; border: 1px solid var(--ws-border);
   background: var(--ws-surface); color: var(--ws-text); border-radius: var(--radius-sm);
@@ -761,4 +761,51 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--primary); o
   .workstation-shell { min-height: 24rem; }
   .workbench { overflow: visible; }
   .workbench-scroll { height: auto; min-height: 16rem; overflow: visible; }
+}
+
+/* Non-real provenance remains visible even with every disclosure closed. */
+.workstation-masthead[data-provenance]:not([data-provenance="real"]) {
+  position: relative;
+  border-top: 3px solid transparent;
+}
+.workstation-masthead[data-provenance]:not([data-provenance="real"])::before {
+  content: "";
+  position: absolute;
+  inset: -3px 0 auto;
+  height: 3px;
+  pointer-events: none;
+  background: repeating-linear-gradient(135deg, var(--chrome-warn) 0 5px, transparent 5px 10px);
+}
+.workstation-provenance-chip {
+  display: inline-flex;
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-chip);
+  padding: 0.125rem 0.3125rem;
+  color: var(--chrome-warn);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+.workstation-trust-blocker { flex-shrink: 0; font-size: 0.75rem; font-weight: 700; }
+.workstation-trust-retry {
+  padding: 0.375rem 0.5rem;
+  border: 1px solid var(--ws-border);
+  border-radius: var(--radius-sm);
+  color: var(--ws-text);
+  font-size: 0.75rem;
+  text-align: start;
+}
+.workstation-trust-retry:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workstation-trust-retry:disabled { opacity: 0.6; }
+.workstation-route-title { display: flex; flex-wrap: wrap; align-items: center; gap: 0.375rem; font-size: 1rem; line-height: 1.5; }
+.workstation-route-segment { display: inline-flex; align-items: center; gap: 0.375rem; }
+.workstation-route-segment a, .workstation-route-segment button { color: var(--ws-text-muted); }
+.workstation-route-segment a:focus-visible, .workstation-route-segment button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workstation-header-about-panel p { margin-bottom: 0.5rem; }
+@media (min-width: 981px) {
+  .workstation-session-card { max-width: 14rem; }
+  .workstation-session-card > :first-child { flex: 1 1 auto; }
+  .workstation-session-role { max-width: 6rem; }
+  .workstation-trust-summary { max-width: min(27rem, 32vw); }
 }

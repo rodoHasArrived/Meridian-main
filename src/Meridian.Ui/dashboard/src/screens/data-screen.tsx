@@ -16,9 +16,10 @@ import type { LucideIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
-import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { WorkspaceInspectorHost } from "@/components/meridian/workspace-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import {
+  WorkspaceInspectorHost
+} from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +44,8 @@ import {
 import {
   CAPABILITY_LEGEND,
   useCapabilityMatrixPanel,
-  type CapabilityMatrixViewModel
+  type CapabilityMatrixViewModel,
+  type CapabilityMatrixRowModel
 } from "@/screens/data-screen.capability-matrix.view-model";
 import {
   useCorporateActionInboxPanel
@@ -105,9 +107,10 @@ interface DataScreenProps {
   onProviderRoutingRefresh?: () => Promise<void> | void;
 }
 
-const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] = [
+const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] = [
   {
     id: "provider",
+    exportValue: (provider) => provider.provider,
     label: "Provider",
     render: (provider) => (
       <span className="block min-w-0">
@@ -118,6 +121,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "status",
+    exportValue: (provider) => provider.status,
     label: "Status",
     render: (provider) => (
       <Badge
@@ -130,6 +134,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "credential-posture",
+    exportValue: (provider) => `${provider.credentialText}; ${provider.verificationText}`,
     label: "Credential posture",
     render: (provider) => (
       <span className="block min-w-0">
@@ -140,6 +145,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "trust-latency",
+    exportValue: (provider) => `${provider.trustScoreText}; ${provider.latencyText}; ${provider.signalSourceText}`,
     label: "Trust / last good",
     render: (provider) => (
       <span className="block min-w-[8rem]">
@@ -151,6 +157,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "gate",
+    exportValue: (provider) => provider.affectedWorkflowsText,
     label: "Workflows",
     render: (provider) => <span className="text-xs leading-5 text-muted-foreground">{provider.affectedWorkflowsText}</span>
   },
@@ -280,7 +287,7 @@ export function DataScreen({
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
-          <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} />
+          <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} providerEvidence={providerConnections ?? data.providers.flatMap((provider) => provider.connectionSummary ? [provider.connectionSummary] : [])} connections={providerRoutingConnections ?? []} />
           <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
             <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Review data diagnostics
@@ -413,7 +420,10 @@ export function DataScreen({
                       ))}
                     </select>
                   </label>
-                <DenseDataTable
+                <TableWorkbench
+                  workbenchId="data-provider-health" sourceKey={vm.providerSection.rows.map((row) => row.providerId).join("|")}
+                  sourceDescription="Complete loaded provider health projection; readiness and verification remain separate."
+                  completePopulation getSearchText={(row) => `${row.provider} ${row.status} ${row.affectedWorkflowsText}`}
                   columns={providerHealthColumns}
                   rows={vm.providerSection.rows}
                   getRowId={(provider) => provider.rowId}
@@ -493,11 +503,15 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
         ? "border-danger/35 bg-danger/10"
         : "border-border/70 bg-secondary/25";
 
+  // Tinted state backgrounds need the primary text token: the muted token falls below
+  // 4.5:1 on the 4.3 danger/warning surfaces in the light theme.
+  const supportingTextClass = card.tone === "default" ? "text-muted-foreground" : "text-foreground";
+
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
-      <div className={cn("text-[10px] text-muted-foreground", usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
+      <div className={cn("text-[10px]", supportingTextClass, usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
       <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
-      <p className="mt-0.5 break-words text-xs leading-5 text-muted-foreground">{card.detail}</p>
+      <p className={cn("mt-0.5 break-words text-xs leading-5", supportingTextClass)}>{card.detail}</p>
     </div>
   );
 }
@@ -737,24 +751,12 @@ function DataUploadIntakePanel({
 
           {state.previewRows.length > 0 ? (
             <div className="mt-3 overflow-x-auto rounded-md border border-border/70" aria-label="Upload preview rows">
-              <table className="dense-data-table min-w-full">
-                <thead>
-                  <tr>
-                    {state.previewHeaders.map((header) => (
-                      <th key={header} scope="col">{header}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {state.previewRows.map((row) => (
-                    <tr key={row.id}>
-                      {row.values.map((value) => (
-                        <td key={value.id}>{value.value || "-"}</td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <TableWorkbench<{ id: string; values: { value: string }[] }> workbenchId="data-upload-preview" exportLabel="Export preview CSV" completePopulation sourceKey={`${state.selectedTemplateId}:${state.retainedPath ?? "preview"}`}
+                sourceDescription="All filtered preview records in this response only; this is not the full uploaded file."
+                columns={state.previewHeaders.map((header, index) => ({ id: `${index}:${header}`, label: header,
+                  render: (row) => row.values[index]?.value || "—", exportValue: (row) => row.values[index]?.value ?? "" }))}
+                rows={state.previewRows} getRowId={(row) => row.id} getSearchText={(row) => row.values.map((cell) => cell.value).join(" ")}
+                ariaLabel="Upload preview rows" emptyText="No preview rows." />
             </div>
           ) : null}
         </div>
@@ -856,24 +858,12 @@ function DataUploadIntakePanel({
                         className="overflow-x-auto rounded-md border border-border/70"
                         aria-label={`${sheet.sheetName} preview rows`}
                       >
-                        <table className="dense-data-table min-w-full">
-                          <thead>
-                            <tr>
-                              {sheet.previewHeaders.map((header) => (
-                                <th key={header} scope="col">{header}</th>
-                              ))}
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {sheet.previewRows.map((row) => (
-                              <tr key={row.id}>
-                                {row.values.map((value) => (
-                                  <td key={value.id}>{value.value || "-"}</td>
-                                ))}
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                        <TableWorkbench<{ id: string; values: { value: string }[] }> workbenchId="data-workbook-preview" exportLabel="Export preview CSV" completePopulation sourceKey={sheet.id}
+                          sourceDescription="All filtered records in this sheet preview response only; this is not the full uploaded workbook."
+                          columns={sheet.previewHeaders.map((header, index) => ({ id: `${index}:${header}`, label: header,
+                            render: (row) => row.values[index]?.value || "—", exportValue: (row) => row.values[index]?.value ?? "" }))}
+                          rows={sheet.previewRows} getRowId={(row) => row.id} getSearchText={(row) => row.values.map((cell) => cell.value).join(" ")}
+                          ariaLabel={`${sheet.sheetName} preview rows`} emptyText="No sheet preview rows." />
                       </div>
                     ) : null}
                   </div>
@@ -2030,39 +2020,15 @@ function CapabilityMatrixRegion({ panel }: { panel: CapabilityMatrixViewModel })
           ) : (
             <div className="grid gap-4">
               <div className="overflow-x-auto">
-                <table className="w-full border-collapse text-sm" aria-label="Provider capability by instrument type">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="border-b p-2 text-left font-semibold">Provider</th>
-                      {panel.model.columns.map((column) => (
-                        <th key={column} scope="col" className="border-b p-2 text-left font-semibold">
-                          {column}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {panel.model.rows.map((row) => (
-                      <tr key={row.providerId}>
-                        <th scope="row" className="border-b p-2 text-left font-mono font-semibold">
-                          {row.providerId}
-                        </th>
-                        {row.cells.map((cell) => (
-                          <td
-                            key={cell.instrumentType}
-                            title={cell.description}
-                            className={cn(
-                              "border-b p-2 font-mono",
-                              cell.supported ? "text-foreground" : "text-muted-foreground/50"
-                            )}
-                          >
-                            <span aria-label={cell.description}>{cell.marks}</span>
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                <TableWorkbench workbenchId="data-provider-capabilities" sourceKey={panel.model.rows.map((row) => row.providerId).join("|")}
+                  sourceDescription="Loaded declared provider capability matrix; discovery failures are listed below."
+                  completePopulation={panel.model.failures.length === 0}
+                  rows={panel.model.rows} getRowId={(row) => row.providerId} getSearchText={(row) => `${row.providerId} ${row.cells.map((cell) => cell.description).join(" ")}`}
+                  columns={[{ id: "provider", label: "Provider", render: (row) => row.providerId, exportValue: (row) => row.providerId },
+                    ...panel.model.columns.map((column) => ({ id: column, label: column,
+                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
+                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" }))]}
+                  ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." />
               </div>
               <p className="text-xs text-muted-foreground">
                 {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}

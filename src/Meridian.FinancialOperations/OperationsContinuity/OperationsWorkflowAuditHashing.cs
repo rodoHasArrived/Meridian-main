@@ -46,7 +46,8 @@ public static class OperationsWorkflowAuditHashing
             draft.CorrelationKeys,
             draft.References,
             draft.Outcome,
-            previousHash);
+            previousHash,
+            draft.CloseChecklistSnapshot);
 
         return new OperationsWorkflowAuditDto(
             auditId,
@@ -67,7 +68,7 @@ public static class OperationsWorkflowAuditHashing
             draft.References,
             previousHash,
             currentHash,
-            draft.Outcome);
+            draft.Outcome) { CloseChecklistSnapshot = draft.CloseChecklistSnapshot };
     }
 
     public static bool TryValidateTimeline(
@@ -93,7 +94,7 @@ public static class OperationsWorkflowAuditHashing
             entry.References,
             entry.PreviousHash,
             entry.CurrentHash,
-            entry.Outcome)).ToArray(), out blockerCode, out message);
+            entry.Outcome) { CloseChecklistSnapshot = entry.CloseChecklistSnapshot }).ToArray(), out blockerCode, out message);
 
     public static bool TryValidateChain(
         IReadOnlyList<OperationsWorkflowAuditDto> timeline,
@@ -136,6 +137,16 @@ public static class OperationsWorkflowAuditHashing
                 return false;
             }
 
+            if (entry.CloseChecklistSnapshot is { } snapshot)
+            {
+                try { OperationsWorkflowChecklistSnapshots.Validate(snapshot); }
+                catch (InvalidDataException)
+                {
+                    blockerCode = "AUDIT_CHAIN_INVALID";
+                    message = $"Audit event {entry.AuditId} contains an invalid checklist snapshot.";
+                    return false;
+                }
+            }
             var expectedHash = ComputeCurrentHash(
                 entry.AuditId,
                 entry.OccurredAtUtc,
@@ -154,7 +165,8 @@ public static class OperationsWorkflowAuditHashing
                 entry.CorrelationKeys,
                 entry.References,
                 entry.Outcome,
-                entry.PreviousHash);
+                entry.PreviousHash,
+                entry.CloseChecklistSnapshot);
 
             if (!string.Equals(entry.CurrentHash, expectedHash, StringComparison.Ordinal))
             {
@@ -173,6 +185,25 @@ public static class OperationsWorkflowAuditHashing
     }
 
     private static string ComputeCurrentHash(
+        Guid auditId, DateTimeOffset occurredAtUtc, Guid workflowId, Guid fundAccountId, string periodId,
+        string eventType, OperationsWorkflowStatusDto fromState, OperationsWorkflowStatusDto toState,
+        OperationsGateKeyDto? gate, OperationsGateStatusDto? fromGateStatus, OperationsGateStatusDto? toGateStatus,
+        string actor, string? rationale, string? correlationId, OperationsContinuityCorrelationKeysDto? correlationKeys,
+        IReadOnlyList<OperationsEvidenceLinkDto> references, VerifiedOperationOutcome? outcome, string? previousHash,
+        OperationsCloseChecklistSnapshotDto? checklistSnapshot)
+    {
+        // Null snapshots keep the original canonical bytes and hashes, including historic chains.
+        var contentHash = ComputeBaseHash(auditId, occurredAtUtc, workflowId, fundAccountId, periodId, eventType,
+            fromState, toState, gate, fromGateStatus, toGateStatus, actor, rationale, correlationId,
+            correlationKeys, references, outcome, previousHash);
+        if (checklistSnapshot is null) return contentHash;
+        OperationsWorkflowChecklistSnapshots.Validate(checklistSnapshot);
+        return Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(
+            new OperationsWorkflowAuditChecklistHashInput(1, contentHash, checklistSnapshot),
+            OperationsWorkflowAuditHashJsonContext.Default.ChecklistAuditHashInput));
+    }
+
+    private static string ComputeBaseHash(
         Guid auditId,
         DateTimeOffset occurredAtUtc,
         Guid workflowId,

@@ -38,7 +38,9 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { DetailPane } from "@/components/meridian/detail-pane";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import type { CsvCell } from "@/lib/csv";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
@@ -107,15 +109,8 @@ const dataToneClass: Record<TradingDataTone, string> = {
   muted: "text-muted-foreground"
 };
 
-const dataTonePanelClass: Record<TradingDataTone, string> = {
-  default: "border-border/70",
-  success: "border-success/35 bg-success/10",
-  warning: "border-warning/35 bg-warning/10",
-  danger: "border-danger/35 bg-danger/10",
-  muted: "border-border/70 bg-secondary/20"
-};
-
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
+const TRADING_QUOTE_PRICE_BASIS = "Prices in source quote units · currency not supplied.";
 
 
 /**
@@ -157,6 +152,10 @@ const tradingRouteViewCopy: Record<TradingRouteViewId, { title: string; descript
     description: "Guardrail posture, execution controls, and adapter health."
   }
 };
+
+function tradingExportColumns<T>(columns: DenseDataTableColumn<T>[], values: Record<string, (row: T) => CsvCell>): TableWorkbenchColumn<T>[] {
+  return columns.map((column) => ({ ...column, exportValue: values[column.id] }));
+}
 
 function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTableColumn<TradingPositionRow>[] {
   return [
@@ -451,8 +450,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
-  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
-    ?? normalizeFundAccountGuid(data?.brokerage?.account);
+  const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
@@ -481,8 +479,20 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   });
   const selectedPositionRow = blotterVm.positionRows.find((row) => row.id === blotterVm.selectedPositionRowId) ?? null;
   const selectedOrderRow = blotterVm.orderRows.find((row) => row.id === blotterVm.selectedOrderRowId) ?? null;
-  const positionColumns = React.useMemo(() => buildPositionColumns(confirmVm), [confirmVm]);
-  const orderColumns = React.useMemo(() => buildOrderColumns(confirmVm), [confirmVm]);
+  const positionColumns = React.useMemo(() => tradingExportColumns(buildPositionColumns(confirmVm), {
+    "mark-readiness": (row) => row.markFreshness.label,
+    symbol: (row) => row.symbol, side: (row) => row.side, quantity: (row) => row.quantity,
+    average: (row) => row.averagePrice, mark: (row) => row.markPrice,
+    "day-pnl": (row) => row.dayPnl, unrealized: (row) => row.unrealizedPnl, exposure: (row) => row.exposure
+  }), [confirmVm]);
+  const orderColumns = React.useMemo(() => tradingExportColumns(buildOrderColumns(confirmVm), {
+    order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side, type: (row) => row.type,
+    quantity: (row) => row.quantity, limit: (row) => row.limitPrice, status: (row) => row.status, submitted: (row) => row.submittedAt
+  }), [confirmVm]);
+  const exportedFillColumns = React.useMemo(() => tradingExportColumns(fillColumns, {
+    fill: (row) => row.fillId, order: (row) => row.orderId, symbol: (row) => row.symbol, side: (row) => row.side,
+    quantity: (row) => row.quantity, price: (row) => row.price, venue: (row) => row.venue, timestamp: (row) => row.timestamp
+  }), []);
 
   const paperSessions = usePaperSessionsViewModel({
     onSessionEvidenceChanged: refreshSessionEvidence
@@ -591,26 +601,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
     brokerFreshness
   });
 
-  return (
-    <div className="space-y-5">
-      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
-          navigation is the sidebar's job alone (no in-page tab strip). */}
-      <section
-        id="trading-overview"
-        role="region"
-        aria-label="Execution cockpit context"
-        className="min-w-0"
-      >
-        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
-          {routeCopy.title}
-        </h2>
-        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
-          {routeCopy.description}
-        </p>
-      </section>
-
-      <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />
-
+  const tradingConfidence = (
       <OperationalTrustSummary
         label="Trading data confidence"
         source={{
@@ -644,6 +635,29 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
           tone: readinessTone
         } : undefined}
       />
+  );
+
+  return (
+    <div className={showOverview ? "space-y-5" : "space-y-2"}>
+      {/* The route answers "where am I?" first; workspace-wide metrics follow. Sub-route
+          navigation is the sidebar's job alone (no in-page tab strip). */}
+      <section
+        id="trading-overview"
+        role="region"
+        aria-label="Execution cockpit context"
+        className="min-w-0"
+      >
+        <h2 className="font-display text-lg font-semibold leading-tight text-foreground">
+          {routeCopy.title}
+        </h2>
+        <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
+          {routeCopy.description}
+        </p>
+      </section>
+
+      {showOverview ? <StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" /> : null}
+
+      {showOverview ? tradingConfidence : null}
 
       {/* The full recovery workspace belongs to the overview; every other route keeps one
           blocked-state row so its own object (blotter, book, guardrails) stays above the fold. */}
@@ -828,8 +842,10 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
-              tableId="trading-positions"
+            <TableWorkbench
+              workbenchId="trading-positions" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All positions in the current authorized workspace snapshot; source decimal text and recorded money strings retained without recalculation."
+              completePopulation getSearchText={(row) => `${row.symbol} ${row.side} ${row.quantity} ${row.exposure}`}
               ariaLabel={blotterVm.positionsTableLabel}
               caption="Select a position to update the position detail status window."
               columns={positionColumns}
@@ -859,6 +875,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             id={blotterVm.executionDetailId}
             objectType={blotterVm.selectedExecutionKind === "fill" ? "Fill" : "Order"}
             detail={blotterVm.selectedExecution}
+            priceBasis={TRADING_QUOTE_PRICE_BASIS}
             emptyText={blotterVm.executionEmptyText}
             action={blotterVm.selectedExecutionKind === "order" && selectedOrderRow ? (
               <Button
@@ -1077,8 +1094,11 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             />
           )}
           <CardContent className="space-y-3">
-            <DenseDataTable
-              tableId="trading-orders"
+            <TableWorkbench
+              workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
               columns={orderColumns}
@@ -1086,12 +1106,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowId={(order) => order.id}
               getRowAriaLabel={(order) => order.ariaLabel}
               getRowSelectAriaLabel={(order) => order.selectAriaLabel}
-              getRowAriaControls={(order) => order.detailPanelId}
+              getRowAriaControls={() => blotterVm.executionDetailId}
               getRowAriaExpanded={(order) => order.ariaExpanded}
               selectedRowId={blotterVm.selectedOrderRowId}
               onRowSelect={(order) => blotterVm.selectOrder(order.id)}
               emptyText={blotterVm.orderEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
 
@@ -1111,20 +1132,25 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <DenseDataTable
+            <TableWorkbench
+              workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
+              sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
+              completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
-              columns={fillColumns}
+              columns={exportedFillColumns}
               rows={blotterVm.fillRows}
               getRowId={(fill) => fill.id}
               getRowAriaLabel={(fill) => fill.ariaLabel}
               getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
-              getRowAriaControls={(fill) => fill.detailPanelId}
+              getRowAriaControls={() => blotterVm.executionDetailId}
               getRowAriaExpanded={(fill) => fill.ariaExpanded}
               selectedRowId={blotterVm.selectedFillRowId}
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
               emptyText={blotterVm.fillEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
         </div>
@@ -1856,6 +1882,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         </SheetContent>
       </Sheet>
 
+      {!showOverview ? <TechnicalDetails label="Trading metrics and data confidence"><StatStrip metrics={trustedHeadlineMetrics} label="Trading headline metrics" />{tradingConfidence}</TechnicalDetails> : null}
       <ConfirmActionDialog vm={confirmVm} />
       <SessionCloseConfirmationDialog
         sessionId={sessionCloseTarget}
@@ -2167,6 +2194,15 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
         </DialogHeader>
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
 
+        {vm.state.action?.kind === "cancel-all" && vm.state.cancelAllPreview ? (
+          <details className="border-y border-border py-2 text-sm">
+            <summary className="cursor-pointer">Review {vm.state.cancelAllPreview.orderIds.length} open order identities</summary>
+            <ul className="mt-2 max-h-48 overflow-auto" aria-label="OMS open orders at review">
+              {vm.state.cancelAllPreview.orderIds.map((orderId) => <li key={orderId} className="font-mono text-xs">{orderId}</li>)}
+            </ul>
+          </details>
+        ) : null}
+
         {vm.errorPanel && (
           <div role="alert" aria-label={vm.errorPanel.ariaLabel} className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
             <XCircle className="h-4 w-4 shrink-0" />
@@ -2194,6 +2230,12 @@ function ConfirmActionDialog({ vm }: { vm: TradingConfirmViewModel }) {
               <span className="font-semibold">{vm.resultPanel.status}</span>
             </div>
             <p>{vm.resultPanel.message}</p>
+            {vm.state.result?.brokerViewUnavailable ? <p>The broker open book could not be verified. Review broker state before relying on the cancellation outcome.</p> : null}
+            {vm.state.result?.stillWorking?.length ? (
+              <ul aria-label="Orders still working after cancellation" className="max-h-48 overflow-auto text-xs">
+                {vm.state.result.stillWorking.map((order) => <li key={order.orderId} className="font-mono">{order.orderId}: {order.reason}</li>)}
+              </ul>
+            ) : null}
             <p className="mt-1 font-mono text-xs opacity-70">Action ID: {vm.resultPanel.actionId}</p>
           </div>
         )}
@@ -2332,7 +2374,8 @@ function TradingBlotterDetailPanel({
   objectType,
   detail,
   emptyText,
-  action
+  action,
+  priceBasis
 }: {
   id: string;
   objectType: string;
@@ -2340,6 +2383,7 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
+  priceBasis?: string;
 }) {
   return (
     <DetailPane
@@ -2350,11 +2394,11 @@ function TradingBlotterDetailPanel({
       status={detail ? { label: detail.statusLabel, tone: detail.statusTone } : null}
       subtitle={detail?.subtitle}
       summary={detail?.detail}
+      notice={detail && priceBasis ? <p className="text-xs text-muted-foreground">{priceBasis}</p> : null}
       actions={detail ? action : null}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}
       empty={{ text: emptyText }}
-      className={detail ? dataTonePanelClass[detail.statusTone] : undefined}
     />
   );
 }

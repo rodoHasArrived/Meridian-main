@@ -21,6 +21,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 | [Bond Capability Expansion](bond-capability-expansion.md) | Shared bond economics, analytics, retained input replay, browser integration and reviewed full cutover |
 | [Web-UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) | Phased plan for the nine browser-workstation brainstorm ideas |
 | [Browser Workstation UX Review and Improvement Plan (2026-11)](web-workstation-ux-review-plan-2026-11.md) | UX review findings (P1–P10), the 2026-11-10 extended review (C1–C6, V1–V7, F1–F8) and the Phase 3–7 roadmap building on UI Phase 0–2; Phase 3 in progress |
+| [Browser Workstation UX Program](browser-workstation-ux-program.md) | Delivery contract for the shared browser shell, authorized triage, browsing, investigation and source-backed charts; integrated with Design System 4.3 |
 
 When a plan is finished or superseded, move it to
 [`archive/docs/plans/`](../../../archive/docs/plans/README.md) and update the register.

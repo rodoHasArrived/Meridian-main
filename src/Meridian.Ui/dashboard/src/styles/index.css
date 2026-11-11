@@ -246,6 +246,7 @@
     --ws-accent: #C56343;
     --ws-accent-hover: #D2795A;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #CB6E4E;
+    --ws-selection-edge: #526C84;
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
@@ -551,6 +552,7 @@
       --ws-accent: #D88466;
       --ws-accent-hover: #E5A088;
       --ws-accent-pressed: #E19479;
+      --ws-selection-edge: #9BB3CA;
 
       --accent-ghost: #35251F;
       --green: #65A983;
@@ -699,6 +701,7 @@
     --ws-accent: #D88466;
     --ws-accent-hover: #E5A088;
     --ws-accent-pressed: #E19479;
+    --ws-selection-edge: #9BB3CA;
 
     --accent-ghost: #35251F;
     --green: #65A983;
@@ -849,6 +852,7 @@
     --ws-accent: #C56343;
     --ws-accent-hover: #D2795A;  /* 4.55:1 under the white label */
     --ws-accent-pressed: #CB6E4E;
+    --ws-selection-edge: #526C84;
 
     --accent-ghost: #F6E6DF;
     --green: #2E7655;

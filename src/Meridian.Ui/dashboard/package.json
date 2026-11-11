@@ -6,17 +6,19 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "preview": "vite preview --host 127.0.0.1 --outDir ../wwwroot/workstation",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/workstation-governance.mjs && tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
     "lint": "eslint src && node scripts/check-typography-floor.mjs",
     "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
-    "test:vitest": "vitest run",
+    "test:vitest": "vitest run src",
     "test:watch": "vitest",
     "test:w4": "vitest run src/screens/w4-acceptance-parity.test.ts src/screens/operations-continuity-screen.view-model.test.ts src/screens/reporting-screen.view-model.test.ts",
     "ratchets": "node scripts/design-system-ratchets.mjs",
-    "ratchets:update": "node scripts/design-system-ratchets.mjs --write"
+    "ratchets:update": "node scripts/design-system-ratchets.mjs --write",
+    "check:workstation": "node scripts/workstation-governance.mjs && node --test scripts/workstation-governance.test.mjs",
+    "test:tooling": "node --test scripts/*.test.mjs"
   },
   "dependencies": {
     "lucide-react": "1.65.0",

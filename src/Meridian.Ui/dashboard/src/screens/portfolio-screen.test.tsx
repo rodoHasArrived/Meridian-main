@@ -953,9 +953,9 @@ describe("PortfolioScreen", () => {
     expect(screen.getAllByText(/alpaca roth ira/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText("AAPL").length).toBeGreaterThan(0);
 
+    await user.click(screen.getByRole("row", { name: /inspect aapl roth ira live position/i }));
     const defaultDetail = screen.getByRole("region", { name: /aapl brokerage position detail/i });
-    // One heading line names the kind of thing and the selection.
-    expect(within(defaultDetail).getByRole("heading", { name: "Brokerage position AAPL" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /all brokerage accounts detail/i })).not.toBeInTheDocument();
     expect(within(defaultDetail).getAllByText(/security master missing/i).length).toBeGreaterThan(0);
     const positionIdentity = within(defaultDetail).getByText("Technical details").closest("details");
     expect(positionIdentity).not.toBeNull();
@@ -967,7 +967,7 @@ describe("PortfolioScreen", () => {
     expect(positionId).toBeVisible();
 
     const msftRow = screen.getByRole("row", { name: /inspect msft brokerage live position/i });
-    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-position-detail");
+    expect(msftRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(msftRow).toHaveAttribute("aria-expanded", "false");
     expect(msftRow).toHaveClass("bg-warning/5");
     await user.click(msftRow);
@@ -1149,7 +1149,7 @@ describe("PortfolioScreen", () => {
     await user.keyboard(" ");
 
     expect(taxableRow).toHaveAttribute("aria-selected", "true");
-    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-account-detail");
+    expect(taxableRow).toHaveAttribute("aria-controls", "portfolio-brokerage-active-detail");
     expect(taxableRow).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("button", { name: /show alpaca paper brokerage account/i })).toHaveAttribute("aria-pressed", "true");
     const accountDetail = screen.getByRole("region", { name: /brokerage brokerage account detail/i });

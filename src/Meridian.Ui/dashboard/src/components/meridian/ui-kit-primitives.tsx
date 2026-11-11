@@ -96,6 +96,8 @@ export interface DenseDataTableColumn<T> {
   hideable?: boolean;
   /** Starts hidden until an operator shows it (implies `hideable`). */
   defaultHidden?: boolean;
+  /** Preserve the identity-cell header relationship for evidence matrices and record lists. */
+  rowHeader?: boolean;
   render: (row: T) => ReactNode;
 }
 
@@ -350,7 +352,10 @@ function DenseDataTableComponent<T>({
       return;
     }
 
-    const targetIndex = resolveKeyboardTargetRowIndex(event.key, currentIndex, navRows.length);
+    const navigationKey = !event.ctrlKey && !event.metaKey && !event.altKey
+      ? event.key === "j" ? "ArrowDown" : event.key === "k" ? "ArrowUp" : event.key
+      : event.key;
+    const targetIndex = resolveKeyboardTargetRowIndex(navigationKey, currentIndex, navRows.length);
     if (targetIndex !== null) {
       event.preventDefault();
       moveToRow(targetIndex);
@@ -504,14 +509,16 @@ function DenseDataTableComponent<T>({
                   onContextMenu={onRowContextMenu ? (event) => onRowContextMenu(row, event) : undefined}
                   onKeyDown={selectable ? (event) => handleRowKeyDown(event, absoluteIndex) : undefined}
                 >
-                  {columns.map((column) => (
-                    <td
+                  {columns.map((column) => {
+                    const Cell = column.rowHeader ? "th" : "td";
+                    return <Cell
                       key={column.id}
+                      scope={column.rowHeader ? "row" : undefined}
                       className={cn(columnCellClassName(column), column.className)}
                     >
                       {column.render(row)}
-                    </td>
-                  ))}
+                    </Cell>;
+                  })}
                 </tr>
               );
             })}

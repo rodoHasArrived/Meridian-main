@@ -10,6 +10,7 @@ import { FOCUS_VISIBLE_RING_CLASS } from "@/lib/focus-classes";
 import { cn } from "@/lib/utils";
 import type { AppShellOperatingScopeInput } from "@/app-shell.operating-scope";
 import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
 /**
  * Left-rail operator navigation sidebar. Renders as a fixed-width `<aside>` inside the
@@ -32,6 +33,7 @@ interface WorkspaceNavProps {
   onNavigate?: () => void;
   operatingContextScope?: AppShellOperatingScopeInput | null;
   attention?: WorkspaceAttentionCounts | null;
+  attentionItems?: readonly AppShellOperatorFocusItem[];
 }
 
 export function WorkspaceNav({
@@ -39,10 +41,11 @@ export function WorkspaceNav({
   density = "detailed",
   onNavigate,
   operatingContextScope = null,
-  attention = null
+  attention = null,
+  attentionItems = []
 }: WorkspaceNavProps) {
   const location = useLocation();
-  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope, attention);
+  const viewModel = buildWorkspaceNavViewModel(location.pathname, undefined, location.search, operatingContextScope, attention, attentionItems);
   const compact = density === "compact";
   const activeWorkspaceKey = viewModel.activeWorkspaceKey ?? undefined;
   const { expandedWorkspaces, toggleWorkspace } = useWorkspaceExpansion(activeWorkspaceKey, location.pathname);
