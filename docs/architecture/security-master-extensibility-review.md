@@ -935,12 +935,6 @@ persists, and a rule that refuses the rest. On the superseded design that was tw
 and three modules; here it is every class and most of 52 modules, which is a design decision
 for this stage's owner rather than a port, so it is recorded and left.
 
-**Two ratchets restored.** `VersionedContainerKeyLiteralRatchetTests` and
-`SecurityAssetClassLiteralRatchetTests` failed on main after #3496 (main's own CI run had not
-completed since that merge). Four files spelled the versioned container keys as literals and
-now read the `SecurityVersionedTerms` constants; the new decode partial
-`SecurityMasterMapping.RequiredReadOrder.cs` joins the known dispatch sites.
-
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 6,916 passed, 1 skipped; `Meridian.FSharp.Tests` — 637 passed. No golden or corpus
 byte changed. The full local `bash scripts/ci.sh` was not run; GitHub
