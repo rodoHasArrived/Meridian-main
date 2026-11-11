@@ -153,3 +153,22 @@ preview and transport outcomes must remain labeled as demonstrations.
 
 Build/export commands, archive contents, dependency scope, and integrity checks
 are documented in [Export handoff](EXPORT_4_3_0.md).
+
+## PR review repairs
+
+The follow-up on `0cc7555bd5` preserves the concurrent workstation foundation
+integration. Interaction Depth now keeps its grid component identity across
+query, selection and model updates, and row context actions use the actual
+right-clicked row key. Header context menus cannot reuse an earlier selection.
+`tests/interaction-depth-regression.mjs` exercises typing/focus, keyboard
+selection, virtualized scroll continuity and the resulting row mutation receipt
+in Chromium. Rebuild the package before exporting these repairs.
+
+The eight earlier action-bridge, action-envelope, settings-key, continuity,
+formatting and date findings were verified against their existing fixes;
+their source behavior was preserved. The CI secret finding was an independently
+verified SHA-256 of `components/data/KeyValueGrid.jsx` in the two build-provenance
+files. Its scanner exception matches only that complete digest in those exact
+paths. Negative controls confirm that other content in those files and the same
+digest elsewhere remain detectable. Remaining release/governance limitations
+above still apply.

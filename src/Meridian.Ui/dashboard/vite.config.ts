@@ -16,23 +16,6 @@ export const meridianScreenshotCaptureEnv = "MERIDIAN_SCREENSHOT_CAPTURE";
 export const meridianDevSessionHeader = "x-meridian-dev-session";
 export type MeridianDevMode = "fixture-only" | "backend-connected";
 
-/** Font redistributions must retain the OFL notices alongside the emitted faces. */
-export function createMeridianFontLicensePlugin(): Plugin {
-  return {
-    name: "meridian-font-licenses",
-    apply: "build",
-    generateBundle() {
-      for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
-        this.emitFile({
-          type: "asset",
-          fileName: `assets/fonts/${filename}`,
-          source: readFileSync(path.resolve(__dirname, "src/assets/fonts", filename))
-        });
-      }
-    }
-  };
-}
-
 /** The page URL selects a scenario per request; parallel previews never share mutable state. */
 export function createMeridianScenarioPlugin(): Plugin {
   const middleware = async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
@@ -296,7 +279,7 @@ const { version: appVersion } = JSON.parse(
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
-  plugins: [react(), createMeridianFontLicensePlugin(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
+  plugins: [react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
     "import.meta.env.VITE_MERIDIAN_DEV_MODE": JSON.stringify(devMode ?? "")
