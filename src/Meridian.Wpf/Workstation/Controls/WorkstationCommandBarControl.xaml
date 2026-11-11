@@ -61,18 +61,49 @@
                                                FontSize="12"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center" />
+                                    <!-- Secondary lines switch to light tokens on the graphite primary fill. -->
                                     <TextBlock Text="{Binding EvidenceSourceText}"
                                                FontSize="10"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               TextWrapping="Wrap" />
+                                               TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Tone}" Value="Primary">
+                                                        <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryMutedTextBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <TextBlock Text="{Binding TargetText}"
                                                FontSize="10"
-                                               Foreground="{StaticResource ConsoleTextMutedBrush}"
-                                               TextWrapping="Wrap" />
+                                               TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource ConsoleTextMutedBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Tone}" Value="Primary">
+                                                        <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryMutedTextBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                     <TextBlock Text="{Binding DisabledReason}"
                                                FontSize="10"
-                                               Foreground="{StaticResource WarningColorBrush}"
-                                               TextWrapping="Wrap" />
+                                               TextWrapping="Wrap">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource WarningColorBrush}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Tone}" Value="Primary">
+                                                        <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryWarningTextBrush}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                             </Grid>
                         </Button>

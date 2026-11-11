@@ -85,6 +85,10 @@
     <Color x:Key="ConsoleActionPrimaryHover">#424A50</Color>
     <Color x:Key="ConsoleActionPrimaryPressed">#575D63</Color>
     <Color x:Key="ConsoleActionPrimaryText">#F5F3EE</Color>
+    <!-- Secondary lines inside a primary action: 4.5:1 or better on rest, hover and press fills. -->
+    <Color x:Key="ConsoleActionPrimaryMutedText">#D5D9DD</Color>
+    <!-- Warning text inside a (disabled) primary action: 7.3:1 on the rest fill. -->
+    <Color x:Key="ConsoleActionPrimaryWarningText">#E0BE7A</Color>
 
     <!-- Top bar colors: graphite chrome bar -->
     <Color x:Key="TopBarBackground">#29323A</Color>
@@ -97,6 +101,8 @@
     <SolidColorBrush x:Key="ConsoleActionPrimaryHoverBrush"   Color="{StaticResource ConsoleActionPrimaryHover}" />
     <SolidColorBrush x:Key="ConsoleActionPrimaryPressedBrush" Color="{StaticResource ConsoleActionPrimaryPressed}" />
     <SolidColorBrush x:Key="ConsoleActionPrimaryTextBrush"    Color="{StaticResource ConsoleActionPrimaryText}" />
+    <SolidColorBrush x:Key="ConsoleActionPrimaryMutedTextBrush"   Color="{StaticResource ConsoleActionPrimaryMutedText}" />
+    <SolidColorBrush x:Key="ConsoleActionPrimaryWarningTextBrush" Color="{StaticResource ConsoleActionPrimaryWarningText}" />
     <SolidColorBrush x:Key="ConsoleBackgroundDarkBrush"    Color="{StaticResource ConsoleBackgroundDark}" />
     <SolidColorBrush x:Key="ConsoleBackgroundMediumBrush"  Color="{StaticResource ConsoleBackgroundMedium}" />
     <SolidColorBrush x:Key="ConsoleBackgroundLightBrush"   Color="{StaticResource ConsoleBackgroundLight}" />
