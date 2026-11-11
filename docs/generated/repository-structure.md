@@ -8244,6 +8244,7 @@ Meridian-main
 │   │   │   │   │   ├── price-alerts-screen.tsx
 │   │   │   │   │   ├── price-alerts-screen.view-model.test.ts
 │   │   │   │   │   ├── price-alerts-screen.view-model.ts
+│   │   │   │   │   ├── private-capital-installment-notices.test.tsx
 │   │   │   │   │   ├── private-capital-presenters.test.ts
 │   │   │   │   │   ├── private-capital-presenters.tsx
 │   │   │   │   │   ├── private-capital.test-fixtures.ts

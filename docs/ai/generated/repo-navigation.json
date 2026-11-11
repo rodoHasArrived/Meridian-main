@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T09:37:24Z",
+  "generatedAt": "2026-11-11T11:02:41Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2438,324 +2438,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 57
-    },
-    {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 53
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
+      "touches": 60
     },
     {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 28
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 21
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Reporting/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs",
+      "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
+      "touches": 55
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Reporting/ReportingContracts.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Reporting/ReportingOrchestrationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs",
+      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PrivateCapital.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types/private-capital.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Reporting/ReportingOperationIdentity.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T10:00:22Z",
+      "lastCommit": "b80fa4ee03",
+      "lastSummary": "Keep capability reads passive and version complete economic events",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs",
+      "path": "src/Meridian.Ui/dashboard/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/private-capital-notice-intent.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/private-capital-notice-intent.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-notice-action.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:36:09Z",
-      "lastCommit": "4153fa54c2",
-      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ledger/PrivateCapitalPostingAuthority.cs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-bank-observation-import.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.forms.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/private-capital-presenters.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-11-10T23:51:41Z",
-      "lastCommit": "f11a27bc6f",
-      "lastSummary": "docs(source): review SRC-EXECUTION and SRC-UI-SHARED for the lot-selection refusal",
-      "touches": 32
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 59
     },
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-10T23:18:49Z",
-      "lastCommit": "8296d73edd",
-      "lastSummary": "docs(security-master): record the 2026-11-10 close-out; refresh generated outputs",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
       "touches": 50
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 27
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 25
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 15
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 13
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Instruments/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 12
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Instruments/FixedIncome/BondAnalyticsService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.FSharp/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 10
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 9
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.FSharp/Domain/SecurityTermModules.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 8
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 6
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.DeclaredBonds.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:39:07Z",
+      "lastCommit": "d9f2c6983b",
+      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "touches": 4
     }
   ],
   "recentChangesWindowDays": 14,

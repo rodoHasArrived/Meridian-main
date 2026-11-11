@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T09:37:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-11T11:02:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 57 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 53 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 28 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 21 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `4153fa54c2` (2026-11-11T09:36:09Z) | 11 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 4 |
-| `src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Reporting/README.md` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 60 |
+| `src/Meridian.Application/README.md` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 55 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 7 |
+| `src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 1 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 59 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 50 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `d9f2c6983b` (2026-11-11T09:39:07Z) | 27 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 25 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 12 |
 
