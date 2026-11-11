@@ -123,7 +123,7 @@ internal static class SecurityEconomicDefinitionAdapter
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
         // still lossy for what the economic document never held — a swap's legs, a bond's
-        // subclass and coupon structure, covenant entries (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // floating-rate terms (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
@@ -162,8 +162,8 @@ internal static class SecurityEconomicDefinitionAdapter
     /// serializer pass; historical shapes (the pre-increment-5 module set, different member
     /// forms) and hand-shaped documents fail and keep the carry with its fold-on-read, and any
     /// exception on the trial rebuild fails closed to keeping it. The single tolerated
-    /// difference is a module key added after this gate shipped that the image predates and the
-    /// rebuild emits null (<see cref="EqualsBeforeLaterModuleKeys"/>), so serializer growth does
+    /// difference is a module key added after this gate shipped that the image predates
+    /// (<see cref="EqualsBeforeLaterModuleKeys"/>), so serializer growth does
     /// not undo the retirement for images already stored. No stored payload is rewritten — this
     /// changes only what a freshly rebuilt projection carries.
     /// </summary>
@@ -193,9 +193,12 @@ internal static class SecurityEconomicDefinitionAdapter
     /// <summary>
     /// The one difference the gate tolerates: a module key the serializer gained after the gate
     /// shipped (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate"/>)
-    /// that the source image predates and the rebuild emits null. Such a rebuild carries nothing
-    /// the source does not, so the carry is still redundant. A later-module key the rebuild
-    /// populates, or one the source itself carries, is compared as written.
+    /// that the source image predates. The rebuild is made from the flat row alone, and the flat
+    /// row was flattened from the source alone, so whatever the rebuild puts under such a key —
+    /// null, or since S3-E7 a restatement such as a bond's default subclass — is derived from the
+    /// source, never missing from it: the rebuild still holds everything the source holds and the
+    /// carry is still redundant. A later-module key the source itself carries is compared as
+    /// written.
     /// </summary>
     private static bool EqualsBeforeLaterModuleKeys(JsonElement rebuilt, JsonElement source)
     {
@@ -208,11 +211,8 @@ internal static class SecurityEconomicDefinitionAdapter
         var removed = false;
         foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate)
         {
-            if (!source.TryGetProperty(module, out _)
-                && node.TryGetPropertyValue(module, out var value)
-                && value is null)
+            if (!source.TryGetProperty(module, out _) && node.Remove(module))
             {
-                node.Remove(module);
                 removed = true;
             }
         }
@@ -470,11 +470,9 @@ internal static class SecurityEconomicDefinitionAdapter
                 covenants = definition.Terms.Covenants.Value.Covenants
                     .Select(covenant => new
                     {
-                        kind = CovenantKindModule.Label(covenant.Kind),
-                        description = covenant.Description,
-                        threshold = covenant.Threshold,
-                        metric = covenant.Metric is null ? null : covenant.Metric.Value,
-                        testFrequency = covenant.TestFrequency is null ? null : covenant.TestFrequency.Value
+                        covenantType = covenant.CovenantType,
+                        notes = covenant.Notes is null ? null : covenant.Notes.Value,
+                        threshold = covenant.Threshold
                     })
                     .ToArray()
             },
@@ -609,6 +607,19 @@ internal static class SecurityEconomicDefinitionAdapter
                 appraisalValue = definition.Terms.PrivateHolding.Value.AppraisalValue,
                 valuationDate = definition.Terms.PrivateHolding.Value.ValuationDate,
                 marketOrAddress = definition.Terms.PrivateHolding.Value.MarketOrAddress is null ? null : definition.Terms.PrivateHolding.Value.MarketOrAddress.Value
+            },
+            // ADR-027 stage 3 (S3-E7): homes for the structural complement.
+            taxonomy = definition.Terms.Taxonomy is null ? null : new
+            {
+                category = definition.Terms.Taxonomy.Value.Category is null ? null : definition.Terms.Taxonomy.Value.Category.Value,
+                subType = definition.Terms.Taxonomy.Value.SubType is null ? null : definition.Terms.Taxonomy.Value.SubType.Value,
+                subclass = definition.Terms.Taxonomy.Value.Subclass is null ? null : definition.Terms.Taxonomy.Value.Subclass.Value
+            },
+            couponSchedule = definition.Terms.CouponSchedule is null ? null : new
+            {
+                steps = definition.Terms.CouponSchedule.Value.Steps
+                    .Select(step => new { effectiveDate = step.EffectiveDate, rate = step.Rate })
+                    .ToArray()
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

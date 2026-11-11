@@ -74,7 +74,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
         ["exercise", "currencyPair", "notional", ProfileEnvelopeModule,
-         "listing", "underlying", "creditProtection", "structuredPayoff", "creditTranche", "privateHolding"];
+         "listing", "underlying", "creditProtection", "structuredPayoff", "creditTranche", "privateHolding",
+         "taxonomy", "couponSchedule"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -245,9 +246,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// written (<c>SecurityEconomicTermsV2BridgeCoverageTests</c> asserts it), so the result reads like
     /// an original v1 write for that class.
     /// <para>
-    /// What remains lost is what the economic-terms document never carried: a swap's legs, a
-    /// bond's subclass and coupon structure, covenant entries (the S3-E module homes carry the
-    /// scalar complement and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
+    /// What remains lost is what the economic-terms document never carried: a swap's legs and a
+    /// bond's floating-rate terms (the S3-E module homes carry the scalar complement, the
+    /// custom-asset profile document and, since S3-E7, a bond's subclass, par, principal, step and
+    /// inflation structure and the covenant entries). Since ADR-027 stage 1 increments 1 and 2,
     /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
     /// and the Accrual module's business-day convention and joint payment calendar land in the
     /// scheduleConventions block, for a class that declares those homes — stamped at the held
@@ -422,6 +424,10 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
                     {
                         writer.WriteNumberValue(value.GetDecimal() * scale);
                     }
+                    else if (mapping.ElementMembers is { } members && value.ValueKind == JsonValueKind.Array)
+                    {
+                        WriteArrayWithMappedMembers(writer, value, members);
+                    }
                     else
                     {
                         value.WriteTo(writer);
@@ -446,6 +452,40 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    /// <summary>
+    /// Copies an array of objects as the flat family writes its entries: exactly the listed
+    /// members, in the listed order, under the flat name. A module names an entry's members for
+    /// what they are on that module (a sinking-fund entry's <c>sinkDate</c>); the flat array names
+    /// the same value for its class (a bond instalment's <c>paymentDate</c>) and writes it in the
+    /// flat writer's member order, so a recovered array is the array the flat writer produced.
+    /// </summary>
+    private static void WriteArrayWithMappedMembers(Utf8JsonWriter writer, JsonElement array, (string From, string To)[] members)
+    {
+        writer.WriteStartArray();
+        foreach (var element in array.EnumerateArray())
+        {
+            if (element.ValueKind != JsonValueKind.Object)
+            {
+                element.WriteTo(writer);
+                continue;
+            }
+
+            writer.WriteStartObject();
+            foreach (var (from, to) in members)
+            {
+                if (element.TryGetProperty(from, out var member))
+                {
+                    writer.WritePropertyName(to);
+                    member.WriteTo(writer);
+                }
+            }
+
+            writer.WriteEndObject();
+        }
+
+        writer.WriteEndArray();
     }
 
     private static bool TryWriteFirstSource(Utf8JsonWriter writer, JsonElement economicTerms, FlatTermMapping mapping)
@@ -1078,7 +1118,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         (string Module, string Field)[] Sources,
         string? EqualsLabel = null,
         (string Module, string Field, string Label)[]? LabelFromFlags = null,
-        decimal? Scale = null);
+        decimal? Scale = null,
+        (string From, string To)[]? ElementMembers = null);
 
     private static FlatTermMapping Map(string flatKey, params (string Module, string Field)[] sources) => new(flatKey, sources);
 
@@ -1139,7 +1180,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("paymentFrequency", ("coupon", "paymentFrequency"), ("payment", "paymentFrequency")),
             Map("isCallable", ("call", "isCallable")),
             Map("callDate", ("call", "firstCallDate")),
-            Map("issuerName", ("issuer", "issuerName"))
+            Map("issuerName", ("issuer", "issuerName")),
+            // ADR-027 stage 3 (S3-E7): the structural complement.
+            Map("subclass", ("taxonomy", "subclass")),
+            Map("par", ("notional", "denomination")),
+            Map("stepSchedule", ("couponSchedule", "steps")),
+            Map("inflationIndex", ("inflationLinked", "inflationIndex")),
+            Map("inflationBaseIndexValue", ("inflationLinked", "baseIndexValue")),
+            Map("inflationIndexRatio", ("inflationLinked", "currentFactor")),
+            new FlatTermMapping("principalSchedule", [("sinkingFund", "schedule")], ElementMembers: [("amount", "amount"), ("sinkDate", "paymentDate")])
         ]),
         ("Deposit",
         [
@@ -1201,10 +1250,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
         [
             Map("maturity", MaturityDate),
             Map("issuerName", ("issuer", "issuerName")),
-            Map("settlementType", ("issuer", "issuerProgram"))
+            Map("settlementType", ("issuer", "issuerProgram")),
+            Map("category", ("taxonomy", "category")),
+            Map("subType", ("taxonomy", "subType"))
         ]),
         ("Swap", [Map("effectiveDate", ("maturity", "effectiveDate")), Map("maturityDate", MaturityDate)]),
-        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate)]),
+        ("DirectLoan", [Map("borrower", ("issuer", "issuerName")), Map("maturity", MaturityDate), Map("covenants", ("covenants", "covenants"))]),
         ("StructuredCredit",
         [
             Map("tranche", ("structuredProduct", "trancheClass")),
@@ -1273,7 +1324,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("committedAmount", ("notional", "committedAmount")),
             Map("unfundedAmount", ("notional", "unfundedAmount")),
             Map("feeRate", ("creditProtection", "feeRate")),
-            Map("collateral", ("creditProtection", "collateral"))
+            Map("collateral", ("creditProtection", "collateral")),
+            Map("covenants", ("covenants", "covenants"))
         ]),
         ("Warrant",
         [

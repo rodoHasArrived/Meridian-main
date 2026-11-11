@@ -839,6 +839,75 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E7 — the structural complement gains module homes — 2026-11-11
+
+S3-E6 left four groups of rules codec-only because their values are structures rather than
+scalars: a bond's subclass, principal schedule and step and inflation coupon structure, an
+other-security's category, and the covenant entries of the two loan classes. Each now has a
+home, so its rules move to the definition surface:
+
+| Home | Members | Fed by |
+| --- | --- | --- |
+| `taxonomy` (new) | category, sub-type, subclass | Bond (subclass), OtherSecurity (category, sub-type) |
+| `couponSchedule` (new) | dated steps: effective date, rate | Bond with a step coupon |
+| `notional.denomination` | par | Bond |
+| `sinkingFund.schedule` | principal instalments: date, amount | Bond |
+| `inflationLinked` | index name, base index value, current factor (the index ratio) | Bond with an inflation-linked coupon |
+| `covenants` | entries: covenant type, notes, threshold | DirectLoan, CommitmentGuarantee |
+
+Nineteen ledger entries moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms`:
+thirteen Bond (two subclass-canonicality, four principal-schedule, four step-schedule, three
+inflation), two OtherSecurity, and the two covenant codes on each of DirectLoan and
+CommitmentGuarantee. Sixteen are proven on both surfaces by a mutation-table row. The other
+three — a non-positive instalment, a negative step rate and a repeated step date — are refused
+by the flat codec's schedule validation before a kind exists, so their definition-surface
+copies are pinned on directly built records in `SecurityDefinitionValidationTests.fs` and
+listed in `CodesCoveredByFSharpTests`. Bond, OtherSecurity, DirectLoan and CommitmentGuarantee
+now keep no codec-only rule.
+
+Four choices worth recording:
+
+- **The `covenants` entry is reshaped, not widened.** The module existed at acceptance with a
+  five-member entry (kind, description, threshold, metric, test frequency) that no class ever
+  fed, so no stored document carries one. The entry is now the three members the flat family
+  holds (covenant type, notes, threshold), written in the flat writer's member order, and the
+  `CovenantKind` union is removed. Reshaping an unfed module changes no stored bytes; keeping
+  the old shape would have meant inventing a mapping for members nothing supplies.
+- **Existing modules gain feeders, not members.** Par, the principal schedule and the
+  inflation index terms land on `notional`, `sinkingFund` and `inflationLinked` as those
+  modules already serialize, so the identity gate sees a document whose module was null
+  become one whose module is populated only when the flat row itself carries the value.
+- **Recovered arrays are the flat writer's arrays.** `ClassFlattenings` gains an element
+  mapping, so a `sinkingFund` entry's `sinkDate` reads back as the bond instalment's
+  `paymentDate`, in the flat member order; the step schedule and covenant entries copy
+  verbatim. `RecoverableKeys("Bond")` now includes `subclass`, `par`, `principalSchedule`,
+  `stepSchedule` and the three inflation keys.
+- **The identity gate tolerates a later module the image predates, populated or not.** Its
+  tolerance was "a later module key the image predates and the rebuild emits null". A bond
+  always has a subclass, so the rebuild of a pre-`taxonomy` bond image restates the decode
+  default there rather than null, and under the old wording every stored fixed-coupon bond
+  image would have started carrying its retained document again. The rebuild is made from
+  the flat row alone, and the flat row is flattened from the source alone, so whatever the
+  rebuild places under a key the source lacks is derived from the source and nothing the
+  source holds is lost by shedding the carry. A later module the source itself carries is
+  still compared as written. `IdentityGate_KeepsSheddingWhenTheRebuildPopulatesALaterModuleTheImagePredates`
+  pins the fixed-coupon bond case. Floating bonds and other-securities are unaffected: a
+  floating bond's index is not carried by the document and an other-security's category is not
+  carried by a pre-`taxonomy` image, so those trial decodes fail closed and keep the carry, as before.
+
+What stays codec-only after this: Swap (the legs). What the economic document still does not
+carry for a bond is its floating-rate terms (index, spread, cap and floor), its seniority and
+its alternative maturity dates; no validation rule depends on a home for them.
+
+The replay corpus changed only in `nextEconomic` documents: the two appended null keys, and
+the restated `taxonomy` on the three bond cases and the pre-envelope custom-asset salvage. The
+write golden changed only in economic documents: those keys plus the module content of the
+five bond variants, DirectLoan, CommitmentGuarantee and OtherSecurity. No flat payload changed.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,402 passed, 1 skipped; `Meridian.FSharp.Tests` — 631 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E6 — the residual scalar complement gains module homes — 2026-11-11
 
 Six term modules home the scalar remainder that S3-E1 to E4 left codec-only, so the rules over

@@ -270,6 +270,66 @@ public sealed class SecurityMasterReplayCorpusTests
     }
 
     [Fact]
+    public void IdentityGate_KeepsSheddingWhenTheRebuildPopulatesALaterModuleTheImagePredates()
+    {
+        // S3-E7: a bond always has a subclass, so the rebuild of a bond image that predates the
+        // taxonomy module populates it from the decode default rather than emitting null. The
+        // rebuild is made from the flat row, which was flattened from the source alone, so the
+        // source still loses nothing by shedding its carry. (A fixed-coupon bond is the case that
+        // sheds at all: a floating bond's index and an other-security's category have no home in
+        // an image that predates their modules, so those decodes fail closed and keep the carry,
+        // as they did before.)
+        const string assetClass = "Bond";
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(
+                assetClass,
+                SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+                    assetClass,
+                    new
+                    {
+                        maturity = "2030-01-01",
+                        issueDate = "2024-01-01",
+                        couponType = "Fixed",
+                        couponRate = 4.25m,
+                        dayCount = "30/360",
+                        isCallable = false,
+                        issuerName = "ACME Corp",
+                        seniority = "Senior",
+                        subclass = "Corporate",
+                        par = 1000m,
+                        paymentFrequency = "SemiAnnual"
+                    })));
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(
+                SecurityEconomicDefinitionAdapter.ToProjection(economic with { LegacyAssetSpecificTerms = null }).AssetSpecificTerms,
+                out _)
+            .Should().BeFalse("precondition: the current fixed-coupon bond image sheds its carry");
+
+        var laterKeys = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate;
+        var predating = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        predating["taxonomy"].Should().NotBeNull("precondition: the bond twin feeds the taxonomy module");
+        foreach (var key in laterKeys)
+        {
+            predating.Remove(key).Should().BeTrue();
+        }
+
+        var predatingImage = JsonSerializer.SerializeToElement(predating);
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = predatingImage, LegacyAssetSpecificTerms = null });
+
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _)
+            .Should().BeFalse("the rebuild holds everything the predating image holds");
+        var next = JsonNode.Parse(SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText())!.AsObject();
+        next["taxonomy"].Should().NotBeNull("the next event restates the classification the flat row decodes to");
+        foreach (var key in laterKeys)
+        {
+            next.Remove(key).Should().BeTrue();
+        }
+
+        next.ToJsonString().Should().Be(predating.ToJsonString(),
+            "apart from the later module keys, the next event is the predating image unchanged");
+    }
+
+    [Fact]
     public void IdentityGate_StillKeepsTheCarryForEveryOtherShapeDifference()
     {
         const string assetClass = "Deposit";

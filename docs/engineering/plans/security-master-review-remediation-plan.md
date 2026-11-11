@@ -503,3 +503,15 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     detachment, CLO period ends) and `privateHolding` (vintage, ownership, cost basis,
     valuations, market). Twenty-six rules moved to the definition surface; eleven more classes
     keep no codec-only rule. A new module none of whose members is set is carried as absent.
+  - **S3-E7 — structural homes (implemented 2026-11-11).** The bond's structural complement
+    and the covenant entries gain homes: two new modules, `taxonomy` (a bond's subclass, an
+    other-security's category and sub-type) and `couponSchedule` (dated step-coupon rates),
+    plus four homes on modules that already existed and that these classes had never fed —
+    a bond's par on `notional.denomination`, its principal instalments on `sinkingFund`, its
+    inflation index terms on `inflationLinked`, and the DirectLoan and CommitmentGuarantee
+    covenant entries on `covenants`, whose entry is reshaped to the three members the flat
+    family holds. Nineteen ledger entries moved to the definition surface (thirteen Bond, two
+    OtherSecurity, two covenant codes on each loan class). The identity gate's tolerance widens
+    from "a later module key the rebuild emits null" to "a later module key the image
+    predates", because a bond always restates its subclass. Swap legs are the only codec-only
+    rules left.

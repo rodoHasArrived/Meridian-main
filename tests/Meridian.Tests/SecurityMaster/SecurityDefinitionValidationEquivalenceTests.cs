@@ -178,6 +178,25 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
         ("RealEstateHolding", "real_estate_market_required", "addressOrMarket", "\" \""),
         ("RealEstateHolding", "real_estate_ownership_invalid", "ownershipPercent", "0"),
         ("RealEstateHolding", "real_estate_appraisal_invalid", "appraisalValue", "0"),
+        // S3-E7: the structural complement — bond subclass and principal schedule (taxonomy,
+        // notional, sinkingFund), step and inflation coupon structure (couponSchedule,
+        // inflationLinked), other-security category (taxonomy) and covenant entries (covenants).
+        ("Bond", "bond_securitized_subclass_noncanonical", "subclass", "\"MBS\""),
+        ("Bond", "bond_bank_loan_subclass_noncanonical", "subclass", "\"BankLoan\""),
+        ("Bond", "bond_principal_schedule_date_invalid", "*", """{"par":1000,"principalSchedule":[{"paymentDate":"2999-01-01","amount":100}]}"""),
+        ("Bond", "bond_principal_schedule_exceeds_par", "*", """{"par":100,"principalSchedule":[{"paymentDate":"2030-06-15","amount":500}]}"""),
+        ("Bond", "bond_principal_schedule_requires_par", "*", """{"par":null,"principalSchedule":[{"paymentDate":"2030-06-15","amount":100}]}"""),
+        ("Bond", "bond_step_schedule_required", "*", """{"couponType":"Step","stepSchedule":[]}"""),
+        ("Bond", "bond_step_date_after_maturity", "*", """{"couponType":"Step","stepSchedule":[{"effectiveDate":"2999-01-01","rate":4}]}"""),
+        ("Bond", "bond_inflation_real_rate_invalid", "*", """{"couponType":"InflationLinked","couponRate":-1,"inflationIndex":"CPI-U"}"""),
+        ("Bond", "bond_inflation_index_required", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":" "}"""),
+        ("Bond", "bond_inflation_index_values_invalid", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":"CPI-U","inflationBaseIndexValue":0}"""),
+        ("OtherSecurity", "other_security_category_required", "category", "\" \""),
+        ("OtherSecurity", "other_security_securitized_noncanonical", "category", "\"MBS\""),
+        ("DirectLoan", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("DirectLoan", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
+        ("CommitmentGuarantee", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("CommitmentGuarantee", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
         ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
         ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
         ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
@@ -242,6 +261,15 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
                 "structured_credit_factor_schedule_invalid",
                 "structured_credit_factor_schedule_duplicate_date",
                 "structured_credit_factor_schedule_not_monotonic"
+            ],
+            // The flat codec's schedule validation refuses a non-positive instalment, a negative
+            // step rate and a repeated step date before a kind exists, so only a directly built
+            // record can carry one.
+            ["Bond"] =
+            [
+                "bond_principal_schedule_invalid",
+                "bond_step_rate_invalid",
+                "bond_step_dates_duplicate"
             ],
             // S3-E contraction: the records no longer hold these values as non-optional fields.
             // The flat codec refuses a payload that omits them, so only a directly built record

@@ -352,7 +352,11 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Option")
             .Should().Contain(["strike", "putCall", "underlyingId", "multiplier", "exerciseStyle", "optChainId", "lastTradingDt"]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
-        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().Contain("subclass");
+        // S3-E7 homed the bond's structural complement: its subclass, par, principal schedule, step
+        // schedule and inflation index terms all read back from a module.
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Bond")
+            .Should().Contain(["subclass", "par", "principalSchedule", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio"]);
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().NotContain("subclass");
     }
 
     // ── Schedule conventions read ahead of write (ADR-024; Accrual rules frozen by ADR-025) ─────
@@ -360,7 +364,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     // The economic terms each fully-populated payload bridges to without a block, as pinned at base
     // by SecurityTermsWriteGoldenTests. The block may change only the accrual module.
     private const string BondEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null""" + S3EBondModules + "}";
 
     private const string CertificateOfDepositEconomicTerms =
         """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
@@ -376,11 +380,19 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     private const string S3ENullModulesBeforeTranche = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null,\"profileEnvelope\":null"
         + ",\"listing\":null,\"underlying\":null,\"creditProtection\":null,\"structuredPayoff\":null";
 
-    private const string S3ENullModules = S3ENullModulesBeforeTranche + ",\"creditTranche\":null,\"privateHolding\":null";
+    private const string S3ENullModules = S3ENullModulesBeforeTranche + ",\"creditTranche\":null,\"privateHolding\":null" + S3ETrailingNullModules;
+
+    // The bond twin's structural complement (S3-E7): its principal schedule lands in sinkingFund,
+    // its par in notional.denomination and its subclass in taxonomy.
+    private const string S3EBondModules =
+        ""","sinkingFund":{"schedule":[{"sinkDate":"2030-06-15","amount":400},{"sinkDate":"2031-06-15","amount":400}],"sinkFrequency":null,"isProRata":false},"exercise":null,"currencyPair":null,"notional":{"notional":null,"denomination":1000,"committedAmount":null,"fundedAmount":null,"unfundedAmount":null},"profileEnvelope":null,"listing":null,"underlying":null,"creditProtection":null,"structuredPayoff":null,"creditTranche":null,"privateHolding":null,"taxonomy":{"category":null,"subType":null,"subclass":"Corporate"},"couponSchedule":null""";
+
+    // The S3-E7 keys that follow privateHolding; null unless a fixture's class feeds them.
+    private const string S3ETrailingNullModules = ",\"taxonomy\":null,\"couponSchedule\":null";
 
     // The structured-credit twin declares its tranche terms, which the creditTranche module carries.
     private const string S3EStructuredCreditModules = S3ENullModulesBeforeTranche
-        + ""","creditTranche":{"kind":"Clo","seniority":"Mezzanine","attachmentPoint":0.12,"detachmentPoint":0.20,"reinvestmentPeriodEnd":"2028-06-15","nonCallPeriodEnd":"2027-06-15"},"privateHolding":null""";
+        + ""","creditTranche":{"kind":"Clo","seniority":"Mezzanine","attachmentPoint":0.12,"detachmentPoint":0.20,"reinvestmentPeriodEnd":"2028-06-15","nonCallPeriodEnd":"2027-06-15"},"privateHolding":null""" + S3ETrailingNullModules;
 
     private const string NullAccrual = "\"accrual\":null";
 
@@ -560,7 +572,7 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
             SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", twin));
 
         economic.EconomicTerms.GetRawText().Should().Be(
-            """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null},"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-06-15","callPx":101.5,"isParCall":false,"callType":"Bermudan"},{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"},{"callDt":"2032-06-15","callPx":null,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":25,"isPuttable":true,"putSchedule":[{"putDt":"2029-12-15","putPx":99.5},{"putDt":"2031-06-15","putPx":100},{"putDt":"2033-06-15","putPx":null}]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}");
+            """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":"2025-06-15","maturityDate":"2035-06-15"},"coupon":{"couponType":"Floating","couponRate":null,"paymentFrequency":"Quarterly","dayCount":"ACT/360"},"discount":null,"accrual":{"accrualMethod":null,"accrualStartDate":null,"exDividendDays":null,"businessDayConvention":"ModifiedFollowing","holidayCalendar":"GBLO\u002BUSNY","dayCount":null},"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2030-06-15","callPrice":null,"callSchedule":[{"callDt":"2027-06-15","callPx":null,"isParCall":false,"callType":"MakeWhole"},{"callDt":"2028-06-15","callPx":101.5,"isParCall":false,"callType":"Bermudan"},{"callDt":"2030-06-15","callPx":100,"isParCall":true,"callType":"American"},{"callDt":"2032-06-15","callPx":null,"isParCall":false,"callType":"European"}],"makeWholeSpreadBps":25,"isPuttable":true,"putSchedule":[{"putDt":"2029-12-15","putPx":99.5},{"putDt":"2031-06-15","putPx":100},{"putDt":"2033-06-15","putPx":null}]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"Meridian Capital Corp","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null""" + S3EBondModules + "}");
     }
 
     [Theory]

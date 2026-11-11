@@ -269,25 +269,19 @@ type DividendScheduleTerms = {
     IsQualifiedDividend: bool
 }
 
-/// Covenant kind for bond and loan covenants.
-[<RequireQualifiedAccess>]
-type CovenantKind =
-    | FinancialMaintenance  // must maintain a ratio (e.g. leverage ≤ 4x)
-    | Incurrence            // triggered on a specific action (e.g. taking on new debt)
-    | Negative              // prohibits certain actions
-    | Affirmative           // requires certain actions
-
-/// A single covenant on a bond or loan.
+/// A single covenant as the governing documents state it. The members are what loan and
+/// commitment records hold: free text, because a covenant's type and its threshold are written
+/// in the deal's own words ("Maximum leverage", "< 4.0x"). Reshaped from a never-populated typed
+/// sketch when the module gained its first producer (ADR-027 stage 3, S3-E7).
 type CovenantEntry = {
-    Kind: CovenantKind
-    Description: string
-    Threshold: decimal option
-    /// Metric name, e.g. "Net Debt / EBITDA".
-    Metric: string option
-    TestFrequency: string option
+    /// What the covenant restricts or requires, as the documents name it.
+    CovenantType: string
+    /// The level that must be kept or not exceeded, as the documents state it.
+    Threshold: string
+    Notes: string option
 }
 
-/// Covenant module — applicable to bonds, loans, and direct credit instruments.
+/// Covenant module — applicable to loans, commitments and other direct credit instruments.
 type CovenantTerms = {
     Covenants: CovenantEntry list
 }
@@ -608,6 +602,35 @@ type PrivateHoldingTerms = {
     MarketOrAddress: string option
 }
 
+// ---------------------------------------------------------------------------
+// ADR-027 stage 3 (S3-E7): homes for the structural complement
+// ---------------------------------------------------------------------------
+
+/// Labels a record carries beyond its classification: an other-security's category and
+/// sub-type, and a bond's economic subclass. They decide whether the record sits in its
+/// canonical asset class, so the definition validator needs them where it can read them.
+type TaxonomyTerms = {
+    /// Free-text category of an other-security.
+    Category: string option
+    /// Free-text sub-type of an other-security.
+    SubType: string option
+    /// A bond's economic subclass label (e.g. "Corporate", "Municipal", or a vendor label).
+    Subclass: string option
+}
+
+/// One dated step of a step-rate coupon: the annual rate payable from EffectiveDate until the
+/// next step (or maturity).
+type CouponStep = {
+    EffectiveDate: DateOnly
+    Rate: decimal
+}
+
+/// The dated rate schedule of a step-rate coupon. Present only when the coupon is a step
+/// structure that declares steps; CouponTerms.CouponType names the structure.
+type CouponScheduleTerms = {
+    Steps: CouponStep list
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -656,6 +679,9 @@ type SecurityTermModules = {
     StructuredPayoff: StructuredPayoffTerms option
     CreditTranche: CreditTrancheTerms option
     PrivateHolding: PrivateHoldingTerms option
+    // --- ADR-027 stage 3 (S3-E7) homes for the structural complement ---
+    Taxonomy: TaxonomyTerms option
+    CouponSchedule: CouponScheduleTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -748,16 +774,6 @@ module DividendFrequency =
         | DividendFrequency.NoDividend -> "NoDividend"
 
 [<RequireQualifiedAccess>]
-module CovenantKind =
-
-    [<CompiledName("Label")>]
-    let label = function
-        | CovenantKind.FinancialMaintenance -> "FinancialMaintenance"
-        | CovenantKind.Incurrence -> "Incurrence"
-        | CovenantKind.Negative -> "Negative"
-        | CovenantKind.Affirmative -> "Affirmative"
-
-[<RequireQualifiedAccess>]
 module SecurityTermModules =
     let empty = {
         Maturity = None
@@ -795,4 +811,6 @@ module SecurityTermModules =
         StructuredPayoff = None
         CreditTranche = None
         PrivateHolding = None
+        Taxonomy = None
+        CouponSchedule = None
     }

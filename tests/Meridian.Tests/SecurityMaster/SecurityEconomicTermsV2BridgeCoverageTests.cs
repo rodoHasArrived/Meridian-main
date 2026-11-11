@@ -85,7 +85,7 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
             "lastDividendPerShare": 0.62, "dividendCurrency": "USD", "isQualifiedDividend": true
         },
         "covenants": {
-            "covenants": [ { "kind": "FinancialMaintenance", "description": "Leverage covenant", "threshold": 4.0, "metric": "Net Debt / EBITDA", "testFrequency": "Quarterly" } ]
+            "covenants": [ { "covenantType": "Maximum leverage", "notes": "Tested quarterly", "threshold": "< 4.0x" } ]
         },
         "esg": {
             "esgScore": 72.5, "esgProvider": "MSCI", "esgRating": "AA", "esgAsOf": "2025-11-30",
@@ -129,7 +129,9 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         "privateHolding": {
             "vintage": 2021, "ownershipPercent": 12.5, "costBasis": 2500000, "latestValuation": 3100000,
             "appraisalValue": 8400000, "valuationDate": "2026-06-30", "marketOrAddress": "Austin, TX"
-        }
+        },
+        "taxonomy": { "category": "Note", "subType": "PromissoryNote", "subclass": "Corporate" },
+        "couponSchedule": { "steps": [ { "effectiveDate": "2027-01-15", "rate": 4.5 }, { "effectiveDate": "2029-01-15", "rate": 5.25 } ] }
     }
     """);
 
@@ -288,6 +290,8 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("structuredPayoff")]
     [InlineData("creditTranche")]
     [InlineData("privateHolding")]
+    [InlineData("taxonomy")]
+    [InlineData("couponSchedule")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -341,6 +345,8 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("structuredPayoff")]
     [InlineData("creditTranche")]
     [InlineData("privateHolding")]
+    [InlineData("taxonomy")]
+    [InlineData("couponSchedule")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated

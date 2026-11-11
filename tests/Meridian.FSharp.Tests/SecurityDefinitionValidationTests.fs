@@ -246,3 +246,57 @@ let ``positive CFD leverage passes both surfaces`` () =
     let kind = cfd (Some 5m)
     Assert.Empty(SecurityMaster.validateKindInvariants kind)
     Assert.Empty(SecurityMaster.validateDefinitionInvariants "Cfd" (SecurityMasterLegacyUpgrade.modulesFromKind kind))
+
+// ADR-027 stage 3 (S3-E7): the bond's principal and step schedules now have module homes
+// (sinkingFund, couponSchedule). The flat codec's schedule validation refuses these three shapes
+// before a kind exists, so the definition-surface copies are pinned on directly built records.
+let private bondWith coupon principalSchedule : SecurityKind =
+    SecurityKind.Bond {
+        BondTerms.fixedRate (DateOnly(2035, 6, 15)) 4.5m None (Some "Meridian Capital Corp") with
+            Coupon = coupon
+            Par = Some 1000m
+            PrincipalSchedule = principalSchedule
+    }
+
+let private fixedCoupon = BondCouponStructure.Fixed(4.5m, None)
+
+[<Fact>]
+let ``a bond with clean principal and step schedules passes both surfaces`` () =
+    let amortizing = bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 400m } ]
+    let stepped =
+        bondWith
+            (BondCouponStructure.Step(
+                [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                  { EffectiveDate = DateOnly(2029, 6, 15); Rate = 5m } ],
+                None))
+            []
+
+    for kind in [ amortizing; stepped ] do
+        let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+        Assert.Empty kindCodes
+        Assert.Empty definitionCodes
+
+[<Theory>]
+[<InlineData("bond_principal_schedule_invalid")>]
+[<InlineData("bond_step_rate_invalid")>]
+[<InlineData("bond_step_dates_duplicate")>]
+let ``a bond schedule shape the flat codec refuses is refused on both surfaces`` (code: string) =
+    let kind =
+        match code with
+        | "bond_principal_schedule_invalid" ->
+            bondWith fixedCoupon [ { PaymentDate = DateOnly(2030, 6, 15); Amount = 0m } ]
+        | "bond_step_rate_invalid" ->
+            bondWith (BondCouponStructure.Step([ { EffectiveDate = DateOnly(2027, 6, 15); Rate = -1m } ], None)) []
+        | _ ->
+            bondWith
+                (BondCouponStructure.Step(
+                    [ { EffectiveDate = DateOnly(2027, 6, 15); Rate = 4m }
+                      { EffectiveDate = DateOnly(2027, 6, 15); Rate = 5m } ],
+                    None))
+                []
+
+    let kindCodes, definitionCodes = bothSurfaces "Bond" kind
+    Assert.Contains(code, kindCodes)
+    Assert.Contains(code, definitionCodes)
+    for definitionCode in definitionCodes do
+        Assert.Contains(definitionCode, kindCodes)

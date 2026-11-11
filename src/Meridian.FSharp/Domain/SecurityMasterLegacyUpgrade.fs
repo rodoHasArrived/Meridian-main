@@ -234,6 +234,22 @@ module SecurityMasterLegacyUpgrade =
     let private unlessUnset (unset: 'T) (value: 'T) : 'T option when 'T : equality =
         if value = unset then None else Some value
 
+    let private noAmounts : NotionalTerms =
+        { Notional = None; Denomination = None; CommittedAmount = None; FundedAmount = None; UnfundedAmount = None }
+
+    let private covenantModule (covenants: Covenant list) : CovenantTerms option =
+        if covenants.IsEmpty then
+            None
+        else
+            Some {
+                Covenants =
+                    covenants
+                    |> List.map (fun covenant ->
+                        { CovenantEntry.CovenantType = covenant.CovenantType
+                          Threshold = covenant.Threshold
+                          Notes = covenant.Notes })
+            }
+
     let private noPrivateHolding : PrivateHoldingTerms =
         {
             Vintage = None
@@ -381,6 +397,40 @@ module SecurityMasterLegacyUpgrade =
                                 IssuerCountry = None
                             })
                     StructuredProduct = structuredTerms
+                    // S3-E7: the structural complement. Par is the face of one bond; the
+                    // principal instalments are the sinking-fund schedule; a step coupon's dated
+                    // rates and a linker's indexation ride on their own modules; and the subclass
+                    // label is what decides whether the record sits in its canonical class.
+                    Notional = terms.Par |> Option.map (fun par -> { noAmounts with Denomination = Some par })
+                    SinkingFund =
+                        if terms.PrincipalSchedule.IsEmpty then
+                            None
+                        else
+                            Some {
+                                Schedule =
+                                    terms.PrincipalSchedule
+                                    |> List.map (fun entry -> { SinkDate = entry.PaymentDate; Amount = entry.Amount })
+                                SinkFrequency = None
+                                IsProRata = false
+                            }
+                    CouponSchedule =
+                        match terms.Coupon with
+                        | BondCouponStructure.Step(schedule, _) when not schedule.IsEmpty ->
+                            Some { Steps = schedule |> List.map (fun step -> { CouponStep.EffectiveDate = step.EffectiveDate; Rate = step.Rate }) }
+                        | _ -> None
+                    InflationLinked =
+                        match terms.Coupon with
+                        | BondCouponStructure.InflationLinked(_, indexName, baseIndexValue, indexRatio, _) ->
+                            Some {
+                                InflationIndex = Some indexName
+                                BaseIndexValue = baseIndexValue
+                                BaseDate = None
+                                CurrentFactor = indexRatio
+                                FactorDate = None
+                                IndexFloor = None
+                            }
+                        | _ -> None
+                    Taxonomy = Some { Category = None; SubType = None; Subclass = Some (BondSubclass.label terms.Subclass) }
             }
         | SecurityKind.FxSpot terms ->
             {
@@ -590,6 +640,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Taxonomy = Some { Category = Some terms.Category; SubType = terms.SubType; Subclass = None }
             }
         | SecurityKind.Swap terms ->
             {
@@ -620,6 +671,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    Covenants = covenantModule terms.Covenants
             }
         | SecurityKind.StructuredCredit terms ->
             {
@@ -803,6 +855,7 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Notional = Some terms.Notional
                     CreditProtection = unlessUnset noCreditProtection { noCreditProtection with FeeRate = terms.FeeRate; Collateral = terms.Collateral }
+                    Covenants = covenantModule terms.Covenants
             }
         | SecurityKind.Commodity terms ->
             {

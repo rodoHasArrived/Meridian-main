@@ -71,80 +71,8 @@ module SecurityMaster =
             []
         | SecurityKind.Future _ ->
             []
-        | SecurityKind.Bond terms ->
+        | SecurityKind.Bond _ ->
             []
-            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel(BondSubclass.label terms.Subclass)))
-                (error "bond_securitized_subclass_noncanonical" "Securitized products must be modeled as StructuredCredit, not Bond.")
-            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsBankLoanLabel(BondSubclass.label terms.Subclass)))
-                (error "bond_bank_loan_subclass_noncanonical" "Bank loans must be modeled as DirectLoan, not Bond.")
-            @ require (terms.PrincipalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
-                (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
-            @ require
-                (terms.PrincipalSchedule
-                 |> List.forall (fun entry ->
-                     entry.PaymentDate <= terms.Maturity
-                     && (terms.IssueDate |> Option.forall (fun issueDate -> entry.PaymentDate >= issueDate))))
-                (error
-                    "bond_principal_schedule_date_invalid"
-                    "Bond principal schedule dates must fall on or after IssueDate (when present) and on or before Maturity — out-of-term instalments are silently dropped by cash-flow projections instead of paying down principal.")
-            @ require
-                (match terms.Par with
-                 | Some par -> (terms.PrincipalSchedule |> List.sumBy (fun entry -> entry.Amount)) <= par
-                 | None -> true)
-                (error
-                    "bond_principal_schedule_exceeds_par"
-                    "Bond principal schedule amounts must not sum to more than Par — projections cap instalments at the outstanding balance, so an over-committed schedule silently pays less than its persisted amounts.")
-            @ require (terms.PrincipalSchedule.IsEmpty || terms.Par.IsSome)
-                (error
-                    "bond_principal_schedule_requires_par"
-                    "Bond principal schedules require Par — without a face value, projections substitute a 100-unit basis and cap instalments against it, silently contradicting the persisted contractual amounts.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.Step(schedule, _) -> not schedule.IsEmpty
-                 | _ -> true)
-                (error
-                    "bond_step_schedule_required"
-                    "Step-coupon bonds must carry at least one dated step entry — an empty schedule leaves every accrual period without a payable rate.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.Step(schedule, _) -> schedule |> List.forall (fun entry -> entry.Rate >= 0m)
-                 | _ -> true)
-                (error "bond_step_rate_invalid" "Step-coupon rates must be zero or greater.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.Step(schedule, _) ->
-                     (schedule |> List.map (fun entry -> entry.EffectiveDate) |> List.distinct |> List.length) = schedule.Length
-                 | _ -> true)
-                (error
-                    "bond_step_dates_duplicate"
-                    "Step-coupon effective dates must be unique — two rates on one date make the payable coupon depend on input ordering.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.Step(schedule, _) ->
-                     schedule |> List.forall (fun entry -> entry.EffectiveDate <= terms.Maturity)
-                 | _ -> true)
-                (error
-                    "bond_step_date_after_maturity"
-                    "Step-coupon effective dates must fall on or before Maturity — a step past maturity can never take effect.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.InflationLinked(realRate, _, _, _, _) -> realRate >= 0m
-                 | _ -> true)
-                (error "bond_inflation_real_rate_invalid" "Inflation-linked real coupon rate must be zero or greater.")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.InflationLinked(_, indexName, _, _, _) -> not (String.IsNullOrWhiteSpace indexName)
-                 | _ -> true)
-                (error "bond_inflation_index_required" "Inflation-linked bonds must name their reference index (e.g. CPI-U).")
-            @ require
-                (match terms.Coupon with
-                 | BondCouponStructure.InflationLinked(_, _, baseIndexValue, indexRatio, _) ->
-                     (baseIndexValue |> Option.forall (fun value -> value > 0m))
-                     && (indexRatio |> Option.forall (fun ratio -> ratio > 0m))
-                 | _ -> true)
-                (error
-                    "bond_inflation_index_values_invalid"
-                    "Inflation-linked base index value and index ratio must be greater than zero when present — a non-positive ratio zeroes or inverts index-adjusted principal.")
         | SecurityKind.FxSpot _ ->
             []
         | SecurityKind.Deposit terms ->
@@ -161,11 +89,8 @@ module SecurityMaster =
             []
         | SecurityKind.CashSweep terms ->
             []
-        | SecurityKind.OtherSecurity terms ->
+        | SecurityKind.OtherSecurity _ ->
             []
-            @ requireNotBlank "other_security_category_required" "Category" terms.Category
-            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel terms.Category))
-                (error "other_security_securitized_noncanonical" "Securitized products must be modeled as StructuredCredit, not OtherSecurity.")
         | SecurityKind.Swap terms ->
             []
             @ require (not terms.Legs.IsEmpty) (error "swap_legs_required" "Swap definitions must include at least one leg.")
@@ -200,13 +125,8 @@ module SecurityMaster =
                         |> List.pairwise
                         |> List.forall (fun (earlier, later) -> earlier.ResetDate < later.ResetDate))
                        (error "swap_leg_reset_schedule_order_invalid" "SwapLeg ResetSchedule dates must be strictly ascending.")))
-        | SecurityKind.DirectLoan terms ->
+        | SecurityKind.DirectLoan _ ->
             []
-            @ (terms.Covenants
-               |> List.collect (fun covenant ->
-                   []
-                   @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
-                   @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
         | SecurityKind.StructuredCredit _ ->
             []
         | SecurityKind.PrivateFundInterest _ ->
@@ -215,13 +135,8 @@ module SecurityMaster =
             []
         | SecurityKind.RealEstateHolding _ ->
             []
-        | SecurityKind.CommitmentGuarantee terms ->
+        | SecurityKind.CommitmentGuarantee _ ->
             []
-            @ (terms.Covenants
-               |> List.collect (fun covenant ->
-                   []
-                   @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
-                   @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold))
         | SecurityKind.Commodity _ ->
             []
         | SecurityKind.CryptoCurrency _ ->
@@ -352,6 +267,14 @@ module SecurityMaster =
         let payoff = modules.StructuredPayoff
         let tranche = modules.CreditTranche
         let holding = modules.PrivateHolding
+        let covenantErrors =
+            modules.Covenants
+            |> Option.map (fun c -> c.Covenants)
+            |> Option.defaultValue []
+            |> List.collect (fun covenant ->
+                []
+                @ requireNotBlank "covenant_type_required" "CovenantType" covenant.CovenantType
+                @ requireNotBlank "covenant_threshold_required" "Threshold" covenant.Threshold)
         let baseCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.BaseCurrency))
         let quoteCurrency = moduleString (modules.CurrencyPair |> Option.bind (fun p -> p.QuoteCurrency))
         let pairDiffers = not (String.Equals(baseCurrency, quoteCurrency, StringComparison.OrdinalIgnoreCase))
@@ -415,9 +338,74 @@ module SecurityMaster =
                         | _ -> false)
                    (error "swaption_underlying_dates_invalid" "Swaption UnderlyingEffectiveDate must fall on or after Expiry and before UnderlyingMaturityDate when present."))
         | "Bond" ->
+            let subclass = moduleString (modules.Taxonomy |> Option.bind (fun t -> t.Subclass))
+            let principalSchedule = modules.SinkingFund |> Option.map (fun s -> s.Schedule) |> Option.defaultValue []
+            let par = modules.Notional |> Option.bind (fun n -> n.Denomination)
+            let couponType = modules.Coupon |> Option.bind (fun c -> c.CouponType)
+            let isStep = (couponType = Some CouponKind.Step)
+            let isInflationLinked = (couponType = Some (CouponKind.OtherCoupon "InflationLinked"))
+            let steps = modules.CouponSchedule |> Option.map (fun c -> c.Steps) |> Option.defaultValue []
+            let inflation = modules.InflationLinked
             []
             @ require (couponRate |> Option.forall (fun rate -> rate >= 0m))
                 (error "bond_coupon_invalid" "Bond coupon rate must be zero or greater when present.")
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel subclass))
+                (error "bond_securitized_subclass_noncanonical" "Securitized products must be modeled as StructuredCredit, not Bond.")
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsBankLoanLabel subclass))
+                (error "bond_bank_loan_subclass_noncanonical" "Bank loans must be modeled as DirectLoan, not Bond.")
+            @ require (principalSchedule |> List.forall (fun entry -> entry.Amount > 0m))
+                (error "bond_principal_schedule_invalid" "Bond principal schedule amounts must be greater than zero.")
+            @ require
+                (principalSchedule
+                 |> List.forall (fun entry ->
+                     (maturityDate |> Option.forall (fun maturity -> entry.SinkDate <= maturity))
+                     && (issueDate |> Option.forall (fun issued -> entry.SinkDate >= issued))))
+                (error
+                    "bond_principal_schedule_date_invalid"
+                    "Bond principal schedule dates must fall on or after IssueDate (when present) and on or before Maturity — out-of-term instalments are silently dropped by cash-flow projections instead of paying down principal.")
+            @ require
+                (match par with
+                 | Some par -> (principalSchedule |> List.sumBy (fun entry -> entry.Amount)) <= par
+                 | None -> true)
+                (error
+                    "bond_principal_schedule_exceeds_par"
+                    "Bond principal schedule amounts must not sum to more than Par — projections cap instalments at the outstanding balance, so an over-committed schedule silently pays less than its persisted amounts.")
+            @ require (principalSchedule.IsEmpty || par.IsSome)
+                (error
+                    "bond_principal_schedule_requires_par"
+                    "Bond principal schedules require Par — without a face value, projections substitute a 100-unit basis and cap instalments against it, silently contradicting the persisted contractual amounts.")
+            @ require (not isStep || not steps.IsEmpty)
+                (error
+                    "bond_step_schedule_required"
+                    "Step-coupon bonds must carry at least one dated step entry — an empty schedule leaves every accrual period without a payable rate.")
+            @ require (steps |> List.forall (fun step -> step.Rate >= 0m))
+                (error "bond_step_rate_invalid" "Step-coupon rates must be zero or greater.")
+            @ require ((steps |> List.map (fun step -> step.EffectiveDate) |> List.distinct |> List.length) = steps.Length)
+                (error
+                    "bond_step_dates_duplicate"
+                    "Step-coupon effective dates must be unique — two rates on one date make the payable coupon depend on input ordering.")
+            @ require (steps |> List.forall (fun step -> maturityDate |> Option.forall (fun maturity -> step.EffectiveDate <= maturity)))
+                (error
+                    "bond_step_date_after_maturity"
+                    "Step-coupon effective dates must fall on or before Maturity — a step past maturity can never take effect.")
+            @ require (not isInflationLinked || (couponRate |> Option.forall (fun realRate -> realRate >= 0m)))
+                (error "bond_inflation_real_rate_invalid" "Inflation-linked real coupon rate must be zero or greater.")
+            @ require
+                (not isInflationLinked
+                 || not (String.IsNullOrWhiteSpace (moduleString (inflation |> Option.bind (fun i -> i.InflationIndex)))))
+                (error "bond_inflation_index_required" "Inflation-linked bonds must name their reference index (e.g. CPI-U).")
+            @ require
+                ((inflation |> Option.bind (fun i -> i.BaseIndexValue) |> Option.forall (fun value -> value > 0m))
+                 && (inflation |> Option.bind (fun i -> i.CurrentFactor) |> Option.forall (fun ratio -> ratio > 0m)))
+                (error
+                    "bond_inflation_index_values_invalid"
+                    "Inflation-linked base index value and index ratio must be greater than zero when present — a non-positive ratio zeroes or inverts index-adjusted principal.")
+        | "OtherSecurity" ->
+            let category = moduleString (modules.Taxonomy |> Option.bind (fun t -> t.Category))
+            []
+            @ requireNotBlank "other_security_category_required" "Category" category
+            @ require (not (Meridian.Contracts.SecurityMaster.SecurityCanonicalAssetHomes.IsSecuritizedLabel category))
+                (error "other_security_securitized_noncanonical" "Securitized products must be modeled as StructuredCredit, not OtherSecurity.")
         | "CertificateOfDeposit" ->
             []
             @ requireNotBlank "cd_issuer_required" "IssuerName" (moduleString issuerName)
@@ -633,9 +621,11 @@ module SecurityMaster =
                 (error "commitment_guarantee_exposure_invalid" "CommitmentGuarantee UnfundedAmount must be zero or greater when present.")
             @ require (protection |> Option.bind (fun p -> p.FeeRate) |> Option.forall (fun rate -> rate >= 0m))
                 (error "commitment_guarantee_fee_invalid" "CommitmentGuarantee FeeRate must be zero or greater when present.")
+            @ covenantErrors
         | "DirectLoan" ->
             []
             @ requireNotBlank "direct_loan_borrower_required" "Borrower" (moduleString issuerName)
+            @ covenantErrors
         | "PrivateFundInterest" ->
             []
             @ requireNotBlank "private_fund_gp_required" "GpSponsor" (moduleString issuerName)
@@ -838,7 +828,14 @@ module SecurityMaster =
             [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_underlying_required"
               "option_multiplier_invalid" ]
             "Future", [ "future_root_symbol_required"; "future_contract_month_required"; "future_multiplier_invalid" ]
-            "Bond", [ "bond_coupon_invalid" ]
+            "Bond",
+            [ "bond_coupon_invalid"; "bond_securitized_subclass_noncanonical"; "bond_bank_loan_subclass_noncanonical"
+              "bond_principal_schedule_invalid"; "bond_principal_schedule_date_invalid"
+              "bond_principal_schedule_exceeds_par"; "bond_principal_schedule_requires_par"
+              "bond_step_schedule_required"; "bond_step_rate_invalid"; "bond_step_dates_duplicate"
+              "bond_step_date_after_maturity"; "bond_inflation_real_rate_invalid"; "bond_inflation_index_required"
+              "bond_inflation_index_values_invalid" ]
+            "OtherSecurity", [ "other_security_category_required"; "other_security_securitized_noncanonical" ]
             "CertificateOfDeposit", [ "cd_issuer_required"; "cd_coupon_invalid"; "cd_callable_date_invalid" ]
             "Deposit", [ "deposit_type_required"; "deposit_institution_required"; "deposit_interest_rate_invalid" ]
             "MoneyMarketFund", [ "mmf_wam_invalid" ]
@@ -887,8 +884,8 @@ module SecurityMaster =
             "CommitmentGuarantee",
             [ "commitment_guarantee_counterparty_required"; "commitment_guarantee_date_range_invalid"
               "commitment_guarantee_amount_invalid"; "commitment_guarantee_exposure_invalid"
-              "commitment_guarantee_fee_invalid" ]
-            "DirectLoan", [ "direct_loan_borrower_required" ]
+              "commitment_guarantee_fee_invalid"; "covenant_type_required"; "covenant_threshold_required" ]
+            "DirectLoan", [ "direct_loan_borrower_required"; "covenant_type_required"; "covenant_threshold_required" ]
             "PrivateFundInterest",
             [ "private_fund_gp_required"; "private_fund_strategy_required"; "private_fund_commitment_invalid"
               "private_fund_funded_invalid"; "private_fund_unfunded_invalid"; "private_fund_vintage_invalid" ]
