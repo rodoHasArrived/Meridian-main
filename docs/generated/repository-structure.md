@@ -11131,6 +11131,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaMessageParsingTests.cs
 │   │   │   │   ├── AlpacaMultiLegParentOrderTests.cs
 │   │   │   │   ├── AlpacaOptionsChainProviderTests.cs
+│   │   │   │   ├── AlpacaProviderModuleTradingEnvironmentTests.cs
 │   │   │   │   ├── AlpacaQuotePipelineGoldenTests.cs
 │   │   │   │   ├── AlpacaQuoteRoutingTests.cs
 │   │   │   │   ├── AlpacaStreamDiagnosticsTests.cs

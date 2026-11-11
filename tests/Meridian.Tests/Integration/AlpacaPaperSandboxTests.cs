@@ -170,7 +170,9 @@ public sealed class AlpacaPaperSandboxTests(ITestOutputHelper output)
                 AlpacaActivityStatementConnector.ConnectorId, externalAccountId, since,
                 Datasets: StatementFetchDatasets.Activity, UntilExclusive: until), timeout.Token), timeout.Token);
             bounded.Issues.Should().BeEmpty();
-            bounded.Records.Should().OnlyContain(record => record.Kind == StatementRecordKind.Transaction
+            // Activity is more than fills: a sale posts its regulatory fee as a record of its own.
+            bounded.Records.Should().OnlyContain(record =>
+                record.Kind != StatementRecordKind.Position && record.Kind != StatementRecordKind.CashBalance
                 && record.TradeDate >= DateOnly.FromDateTime(since.UtcDateTime) && record.TradeDate <= DateOnly.FromDateTime(until.UtcDateTime));
             var historicalPositions = await Record.ExceptionAsync(() => connector.FetchAsync(new StatementFetchRequest(
                 AlpacaActivityStatementConnector.ConnectorId, externalAccountId, since, UntilExclusive: until), timeout.Token));
