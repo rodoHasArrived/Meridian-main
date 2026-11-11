@@ -65,12 +65,15 @@ public sealed class RecurringJournalRunner(
                 }
                 using var authority = FundScopeTenantAuthority.Enter(definition.Scope.TenantId,
                     $"recurring-journal:{schedule.ScheduleId}");
+                // Kept once resolved so a blocked occurrence still names its period for close readiness.
+                string? resolvedPeriodId = null;
                 try
                 {
                     var sourceIssue = RecurringJournalEvidenceGuard.ValidateSources(claim.ScheduleDefinition.Evidence);
                     if (sourceIssue is not null)
                         throw new InvalidOperationException(sourceIssue);
                     var period = await periods.ResolveAsync(definition.Scope, date, ct).ConfigureAwait(false);
+                    resolvedPeriodId = period.PeriodId;
                     if (!period.IsOpen)
                     {
                         claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Blocked,
@@ -146,7 +149,7 @@ public sealed class RecurringJournalRunner(
                 catch (Exception ex) when (ex is InvalidOperationException or IOException or ArgumentException or DbException)
                 {
                     claim = await session.SetOutcomeAsync(key, RecurringOccurrenceState.Blocked,
-                        ex.Message, claim.PeriodId, claim.LockOwner, claim.ReopenPath, now, ct).ConfigureAwait(false);
+                        ex.Message, claim.PeriodId ?? resolvedPeriodId, claim.LockOwner, claim.ReopenPath, now, ct).ConfigureAwait(false);
                     results.Add(Result(claim, instant, ex.Message));
                 }
             }

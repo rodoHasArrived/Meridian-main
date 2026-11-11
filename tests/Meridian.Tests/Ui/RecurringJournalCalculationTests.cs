@@ -433,6 +433,9 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
         result.Blockers.Should().ContainSingle().Which.Should().Contain("quote date and source");
         (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+        // The blocked occurrence still names its period, so close readiness for that period sees it.
+        (await fixture.Runner.GetQueueAsync(Fund, Book, Entity, tenantId: Tenant, companyId: Company)).Occurrences
+            .Should().ContainSingle().Which.PeriodId.Should().Be(January.ToString("D"));
     }
 
     [Fact]
