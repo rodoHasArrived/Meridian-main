@@ -6,7 +6,6 @@ using Meridian.Core.Serialization;
 using Meridian.Contracts.Domain;
 using Meridian.Domain.Events;
 using Meridian.Infrastructure.Contracts;
-using Meridian.Storage.Archival;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,16 +18,25 @@ namespace Meridian.Application.Pipeline;
 /// </summary>
 /// <remarks>
 /// The dead-letter directory is created lazily on the first rejected event to avoid
-/// unnecessary file-system operations when all events pass validation. A
-/// <see cref="SemaphoreSlim"/> serialises writes so the file remains well-formed even
-/// when multiple callers record rejections concurrently.
+/// unnecessary file-system operations when all events pass validation. Records are appended
+/// in place and flushed to disk before <see cref="RecordAsync"/> returns; concurrent callers
+/// share one append so the file stays well-formed and no call rewrites existing records.
+/// <para>
+/// A dead-letter record can be the last copy of an event, so a failed write does not discard
+/// it: the record is held in memory (up to <see cref="MaxRetainedRecords"/>) and retried on
+/// a later record (after a short back-off), on <see cref="FlushAsync"/>, and on disposal. Records that still cannot be
+/// written are counted in <see cref="TotalLost"/> and logged as errors.
+/// </para>
 /// </remarks>
 [ImplementsAdr("ADR-007", "Dead-letter persistence for events rejected by the validation gate")]
 public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
 {
+    /// <summary>Most records held in memory while the dead-letter file cannot be written.</summary>
+    internal const int MaxRetainedRecords = 10_000;
+
     private readonly string _deadLetterDirectory;
     private readonly ILogger<DeadLetterSink> _logger;
-    private readonly SemaphoreSlim _writeLock = new(1, 1);
+    private readonly GroupCommitJsonlLog _log;
     private readonly ConcurrentDictionary<SymbolId, long> _rejectedCountsBySymbol = new();
     private long _totalRejected;
     private bool _disposed;
@@ -43,14 +51,43 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
     public DeadLetterSink(
         string dataRoot,
         ILogger<DeadLetterSink>? logger = null)
+        : this(dataRoot, logger, appendLinesAsync: null)
+    {
+    }
+
+    /// <summary>Test seam: substitutes the durable append so write failures can be injected.</summary>
+    internal DeadLetterSink(
+        string dataRoot,
+        ILogger<DeadLetterSink>? logger,
+        Func<string, IReadOnlyList<string>, CancellationToken, Task>? appendLinesAsync,
+        TimeSpan? retryBackoff = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         _deadLetterDirectory = Path.Combine(dataRoot, "_dead_letter");
         _logger = logger ?? NullLogger<DeadLetterSink>.Instance;
+        _log = new GroupCommitJsonlLog(
+            GetDeadLetterFilePath(),
+            MaxRetainedRecords,
+            retainFailedWrites: true,
+            onWriteFailed: (ex, recordCount, _) => _logger.LogError(
+                ex,
+                "Failed to write {RecordCount} dead-letter record(s) to {Path}; they are retained in memory and will be retried",
+                recordCount, GetDeadLetterFilePath()),
+            appendLinesAsync,
+            retryBackoff);
     }
 
     /// <summary>Gets the total number of rejected events recorded so far.</summary>
     public long TotalRejected => Interlocked.Read(ref _totalRejected);
+
+    /// <summary>Gets the number of rejected events durably written to the dead-letter file.</summary>
+    public long TotalPersisted => _log.WrittenCount;
+
+    /// <summary>Gets the number of rejected events held in memory awaiting a successful write.</summary>
+    public long PendingRetryCount => _log.PendingCount;
+
+    /// <summary>Gets the number of rejected events that could not be written and were discarded.</summary>
+    public long TotalLost => _log.LostCount;
 
     /// <summary>Gets rejection counts keyed by effective symbol.</summary>
     public IReadOnlyDictionary<string, long> RejectedCountsBySymbol =>
@@ -73,50 +110,60 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
         Interlocked.Increment(ref _totalRejected);
         _rejectedCountsBySymbol.AddOrUpdate(new SymbolId(evt.EffectiveSymbol), 1, (_, count) => count + 1);
 
-        var record = new DeadLetterRecord(
-            RejectedAtUtc: DateTimeOffset.UtcNow,
-            EventTimestamp: evt.Timestamp,
-            EventType: evt.Type.ToString(),
-            Symbol: evt.EffectiveSymbol,
-            Sequence: evt.Sequence,
-            Source: evt.Source,
-            SchemaVersion: evt.SchemaVersion,
-            ValidationErrors: errors.ToArray(),
-            Event: evt);
-
+        string json;
         try
         {
-            await _writeLock.WaitAsync(ct).ConfigureAwait(false);
-            try
-            {
-                var json = JsonSerializer.Serialize(record, JsonOptions);
-                await AppendJsonLineAsync(GetDeadLetterFilePath(), json, ct).ConfigureAwait(false);
-            }
-            finally
-            {
-                _writeLock.Release();
-            }
+            var record = new DeadLetterRecord(
+                RejectedAtUtc: DateTimeOffset.UtcNow,
+                EventTimestamp: evt.Timestamp,
+                EventType: evt.Type.ToString(),
+                Symbol: evt.EffectiveSymbol,
+                Sequence: evt.Sequence,
+                Source: evt.Source,
+                SchemaVersion: evt.SchemaVersion,
+                ValidationErrors: errors.ToArray(),
+                Event: evt);
+            json = JsonSerializer.Serialize(record, JsonOptions);
+        }
+        catch (Exception ex)
+        {
+            _log.RecordLost();
+            _logger.LogError(
+                ex,
+                "Dead-letter record lost for {Symbol} sequence {Sequence}: it could not be serialized",
+                evt.EffectiveSymbol, evt.Sequence);
+            return;
+        }
 
+        if (!_log.TryReserve())
+        {
+            // The file has been unwritable long enough to fill the retry buffer.
+            _logger.LogError(
+                "Dead-letter record lost for {Symbol} sequence {Sequence}: {RetainedCount} records are already awaiting a successful write",
+                evt.EffectiveSymbol, evt.Sequence, MaxRetainedRecords);
+            return;
+        }
+
+        // Cancellation propagates without logging; this is expected during shutdown. The record
+        // stays queued and is written by the next record, flush, or disposal.
+        var outcome = await _log.AppendReservedAsync(json, ct).ConfigureAwait(false);
+
+        if (outcome == JsonlLogAppendOutcome.Written)
+        {
             _logger.LogWarning(
                 "Event rejected and sent to dead letter: Symbol={Symbol}, Type={EventType}, Sequence={Sequence}, Errors={ErrorCount}",
                 evt.EffectiveSymbol, evt.Type, evt.Sequence, errors.Count);
         }
-        catch (OperationCanceledException)
-        {
-            // Propagate cancellation without logging; this is expected during shutdown.
-            throw;
-        }
-        catch (Exception ex)
+        else
         {
             _logger.LogError(
-                ex,
-                "Failed to write dead-letter record for {Symbol} sequence {Sequence}",
+                "Dead-letter record for {Symbol} sequence {Sequence} is not yet on disk; it is held in memory for retry",
                 evt.EffectiveSymbol, evt.Sequence);
         }
     }
 
     /// <summary>
-    /// Flushes any buffered dead-letter records to disk.
+    /// Writes any dead-letter records still held in memory after an earlier failed write.
     /// </summary>
     /// <param name="ct">Cancellation token.</param>
     public async Task FlushAsync(CancellationToken ct = default)
@@ -124,16 +171,7 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
         if (_disposed)
             return;
 
-        await _writeLock.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            // Writes are completed during each append, so flush only needs to
-            // wait for any in-flight record append to complete.
-        }
-        finally
-        {
-            _writeLock.Release();
-        }
+        await _log.FlushAsync(ct).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -145,18 +183,17 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
             TotalRejected: TotalRejected,
             RejectedBySymbol: RejectedCountsBySymbol,
             DeadLetterFilePath: GetDeadLetterFilePath(),
-            Timestamp: DateTimeOffset.UtcNow);
+            Timestamp: DateTimeOffset.UtcNow)
+        {
+            TotalPersisted = TotalPersisted,
+            PendingRetry = PendingRetryCount,
+            TotalLost = TotalLost
+        };
     }
 
     private string GetDeadLetterFilePath()
     {
         return Path.Combine(_deadLetterDirectory, "rejected_events.jsonl");
-    }
-
-
-    private static Task AppendJsonLineAsync(string path, string json, CancellationToken ct)
-    {
-        return AtomicFileWriter.AppendLinesAsync(path, new[] { json }, ct);
     }
 
     private static JsonSerializerOptions CreateJsonOptions()
@@ -176,15 +213,14 @@ public sealed class DeadLetterSink : IEventQuarantineSink, IAsyncDisposable
             return;
         _disposed = true;
 
-        await _writeLock.WaitAsync().ConfigureAwait(false);
-        try
+        // Final attempt to write anything still held after an earlier failed write.
+        await _log.DisposeAsync().ConfigureAwait(false);
+
+        if (TotalLost > 0)
         {
-            // No buffered writer state remains once append returns.
-        }
-        finally
-        {
-            _writeLock.Release();
-            _writeLock.Dispose();
+            _logger.LogError(
+                "Dead-letter sink disposed with {LostCount} rejected event(s) that could not be written to {Path}",
+                TotalLost, GetDeadLetterFilePath());
         }
 
         if (TotalRejected > 0)
@@ -226,4 +262,14 @@ public sealed record DeadLetterStatistics(
     long TotalRejected,
     IReadOnlyDictionary<string, long> RejectedBySymbol,
     string DeadLetterFilePath,
-    DateTimeOffset Timestamp);
+    DateTimeOffset Timestamp)
+{
+    /// <summary>Rejected events durably written to the dead-letter file.</summary>
+    public long TotalPersisted { get; init; }
+
+    /// <summary>Rejected events held in memory awaiting a successful write.</summary>
+    public long PendingRetry { get; init; }
+
+    /// <summary>Rejected events that could not be written and were discarded.</summary>
+    public long TotalLost { get; init; }
+}

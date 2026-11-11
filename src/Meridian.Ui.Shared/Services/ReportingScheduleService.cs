@@ -700,11 +700,12 @@ public sealed partial class FileReportingScheduleStore : IReportingScheduleStore
             throw new InvalidDataException("Reporting schedule is structurally invalid.");
         }
 
-        if (!CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
-            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, TimeZoneInfo.Utc) is null)
+        if (!ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone)
+            || !CronExpressionParser.TryParse(schedule.CronExpression, out var cronSchedule)
+            || cronSchedule.GetNextOccurrenceOrNull(schedule.DueAtUtc, timeZone) is null)
         {
             throw new InvalidDataException(
-                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or no future UTC occurrence.");
+                $"Reporting schedule '{schedule.ScheduleId}' has an invalid cron expression or time zone, or no future occurrence.");
         }
     }
 
@@ -1262,7 +1263,9 @@ public sealed partial class ReportingScheduleService
             throw new ArgumentOutOfRangeException(nameof(request), "maxRetries must be zero or greater.");
         }
 
-        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc);
+        // A null request zone keeps the retained zone; the effective zone is resolved again
+        // under the lock once the existing record is known.
+        ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc, request.TimeZoneId);
 
         EnsureTemplateAccess(request.TemplateId, accessContext);
         EnsureBoundContext(accessContext);
@@ -1306,6 +1309,20 @@ public sealed partial class ReportingScheduleService
                 request.TemplateId,
                 request.Template ?? existing?.Template,
                 accessContext);
+            var timeZoneId = request.TimeZoneId is null
+                ? existing?.TimeZoneId
+                : ReportingScheduleTimeZones.Normalize(request.TimeZoneId);
+            if (request.TimeZoneId is null && timeZoneId is not null)
+            {
+                ValidateCronExpressionForUpsert(request.CronExpression, request.DueAtUtc, timeZoneId);
+            }
+            if (request.PeriodCadence is { } requestedCadence
+                && !ReportingSchedulePeriodPlanner.IsValid(requestedCadence))
+            {
+                throw new ArgumentException(
+                    $"The reporting schedule period cadence must be Monthly, Quarterly, or Annually with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysAfterPeriodEnd} due days after period end.",
+                    nameof(request));
+            }
             var runParameters = request.RunParameters ?? existing?.RunParameters;
             if (accessContext?.RequireBoundScope == true
                 && request.State == ReportingScheduleStateDto.Active
@@ -1362,7 +1379,9 @@ public sealed partial class ReportingScheduleService
                 LastReadiness: existing?.LastReadiness,
                 ReleaseDeliveryHandoffs: retainedReleaseDeliveryHandoffs,
                 AccessPolicySnapshotHash: ComputeAccessPolicySnapshotHash(accessPolicySnapshot),
-                DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash);
+                DeliveryTargetsSnapshotHash: deliveryTargetsSnapshotHash,
+                TimeZoneId: timeZoneId,
+                PeriodCadence: request.PeriodCadence);
             return new PreparedScheduleUpsert(identity, existing, record);
         }
     }
@@ -1450,6 +1469,7 @@ public sealed partial class ReportingScheduleService
             var current = _schedules[identity];
 
             EnsureScheduleInScope(current, accessContext);
+            EnsureScheduleAccess(current, accessContext);
             if (accessContext?.RequireBoundScope == true
                 && state == ReportingScheduleStateDto.Active
                 && current.RunParameters is null)
@@ -1908,9 +1928,11 @@ public sealed partial class ReportingScheduleService
                 "A governed reporting schedule has no immutable run-parameter snapshot and cannot execute.");
         }
 
-        var scheduledParameters = schedule.RunParameters is null
-            ? null
-            : schedule.RunParameters with { AsOfDate = schedule.NextAsOfDate };
+        var scheduledParameters = await WithLedgerPeriodAsync(
+            schedule,
+            schedule.RunParameters is null ? null : schedule.RunParameters with { AsOfDate = schedule.NextAsOfDate },
+            schedule.NextAsOfDate,
+            ct).ConfigureAwait(false);
         var runRequest = new ReportingRunRequestDto(
             schedule.TemplateId,
             schedule.NextAsOfDate,
@@ -2027,7 +2049,9 @@ public sealed partial class ReportingScheduleService
                 ? _orchestrationService.GetAudit(scope.TenantId, manifest.RunId)
                 : _orchestrationService.GetAudit(manifest.RunId));
         var handoffs = BuildReleaseDeliveryHandoffs(schedule, manifest);
-        var advanced = AdvanceSchedule(schedule, manifest, effectiveReadiness.ResolvedParameters) with
+        var (nextParameters, periodClose) = await ResolvePeriodCloseAdvanceAsync(
+            schedule, effectiveReadiness.ResolvedParameters, ct).ConfigureAwait(false);
+        var advanced = AdvanceSchedule(schedule, manifest, nextParameters, periodClose) with
         {
             LastReadiness = effectiveReadiness,
             ReleaseDeliveryHandoffs = handoffs

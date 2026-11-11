@@ -288,6 +288,43 @@ Retries and restarts recover the same run and handoff without creating duplicate
 delivery jobs. A failing schedule remains truthful and retryable without preventing other tenants'
 due work from continuing. Public `POST /schedules/run-due` is retired; due execution is internal.
 
+Timing is a five-field cron expression. Two Meridian extensions are accepted: `d#n` in the
+day-of-week field (nth weekday of the month) and a lone `L` in the day-of-month field (last
+calendar day of the month, e.g. `0 8 L * *`). The expression is evaluated in the schedule's
+optional `timeZoneId` (an IANA zone such as `America/New_York`); when it is absent the schedule
+runs in UTC. Daylight-saving changes are followed, so `0 8 * * *` stays at 08:00 local time.
+`dueAtUtc` is always retained as a UTC instant. On upsert a null `timeZoneId` keeps the retained
+zone and `"UTC"` resets it; an unknown zone is rejected with `400`.
+
+A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, or `Annually`, plus
+`dueDaysAfterPeriodEnd` from 0 to 366). It then runs once per accounting period instead of by
+cron. The durable ledger store is the authority for the next period:
+
+- A monthly close moves to the accounting period of the schedule's ledger book that starts the day
+  after the current as-of date. Quarterly and annual closes move to the period that contains the
+  calendar quarter or year end.
+- The next as-of date is that period's own end date, the due date is `dueDaysAfterPeriodEnd` days
+  after it, and `periodId` becomes that period's id. Books whose periods are not calendar months
+  (for example 4-4-5 calendars or non-calendar fiscal years) therefore close on their real period
+  end. The period id is re-resolved when the run starts as well.
+- If the ledger has no unique period (not opened yet, overlapping, or the book cannot be
+  resolved), the schedule falls back to calendar month, quarter, or year ends from
+  `LedgerReportSchedulePlanner` and leaves the retained `periodId` unchanged; the run's own period
+  validation then fails closed rather than a selector being derived from the date.
+
+The due time of day comes from the cron expression's hour and minute, in the schedule's time zone.
+A due time that falls in a daylight-saving gap moves to the first valid time for that run only.
+The cron expression is still required but does not drive advancement while a period cadence is
+set. `periodCadence` is replaced on every upsert; sending null returns the schedule to cron
+advancement.
+
+`Paused` and `Disabled` schedules are both skipped by the worker and both return to `Active`
+through `resume`; `Disabled` marks a schedule an operator has deliberately switched off rather
+than temporarily held. `DELETE` permanently removes the recurring definition (runs it already
+produced stay in the run store). Delete uses the retained revision, so a host holding a stale
+revision gets a version conflict, and a schedule that is executing is refused with `409`. Legacy
+schedules without tenant and company scope cannot be deleted; disable them instead.
+
 ## Canonical routes
 
 ### Workspace capability
@@ -337,7 +374,9 @@ due work from continuing. Public `POST /schedules/run-due` is retired; due execu
 | --- | --- | --- |
 | `GET/POST` | `/api/fund-structure/reporting/schedules` | List or upsert tenant-bound schedules. |
 | `POST` | `/api/fund-structure/reporting/schedules/{scheduleId}/pause` | Pause execution. |
-| `POST` | `/api/fund-structure/reporting/schedules/{scheduleId}/resume` | Resume only when canonical parameters are complete. |
+| `POST` | `/api/fund-structure/reporting/schedules/{scheduleId}/resume` | Resume a paused or disabled schedule, only when canonical parameters are complete. |
+| `POST` | `/api/fund-structure/reporting/schedules/{scheduleId}/disable` | Switch the schedule off until it is resumed. |
+| `DELETE` | `/api/fund-structure/reporting/schedules/{scheduleId}` | Permanently remove the schedule definition. |
 | `POST` | `/api/fund-structure/reporting/schedules/{scheduleId}/run` | Create an immediate governed Draft handoff. |
 
 ## Persistence and configuration

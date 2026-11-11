@@ -64,6 +64,105 @@ public sealed class DeadLetterSinkTests : IAsyncLifetime
         _sink.RejectedCountsBySymbol.Should().ContainKey("MSFT").WhoseValue.Should().Be(1);
     }
 
+    [Fact]
+    public async Task RecordAsync_AppendsOnlyTheNewRecord_NotTheWholeFile()
+    {
+        var batches = new List<int>();
+        await using var sink = new DeadLetterSink(_testDir, logger: null, (_, lines, _) =>
+        {
+            batches.Add(lines.Count);
+            return Task.CompletedTask;
+        });
+
+        for (var index = 0; index < 5; index++)
+            await sink.RecordAsync(CreateTestEvent("AAPL"), ["invalid_sequence"]);
+
+        // The previous implementation re-wrote every earlier record on each call.
+        batches.Should().Equal(1, 1, 1, 1, 1);
+    }
+
+    [Fact]
+    public async Task RecordAsync_WriteFails_RetainsTheRecordAndWritesItOnFlush()
+    {
+        var failWrites = true;
+        var written = new List<string>();
+        await using var sink = new DeadLetterSink(_testDir, logger: null, (_, lines, _) =>
+        {
+            if (failWrites)
+                throw new IOException("disk unavailable");
+            written.AddRange(lines);
+            return Task.CompletedTask;
+        });
+
+        await sink.RecordAsync(CreateTestEvent("TSLA"), ["pipeline-persist-failure"]);
+
+        sink.TotalRejected.Should().Be(1);
+        sink.TotalPersisted.Should().Be(0, "a failed write must not be counted as recorded");
+        sink.PendingRetryCount.Should().Be(1, "the dead letter can be the last copy of the event");
+        sink.TotalLost.Should().Be(0);
+
+        failWrites = false;
+        await sink.FlushAsync();
+
+        written.Should().ContainSingle().Which.Should().Contain("TSLA");
+        var statistics = sink.GetStatistics();
+        statistics.TotalPersisted.Should().Be(1);
+        statistics.PendingRetry.Should().Be(0);
+        statistics.TotalLost.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RecordAsync_WriteFails_NextRecordRetriesEarlierOnesInOrder()
+    {
+        var failWrites = true;
+        var written = new List<string>();
+        await using var sink = new DeadLetterSink(
+            _testDir,
+            logger: null,
+            (_, lines, _) =>
+            {
+                if (failWrites)
+                    throw new IOException("disk unavailable");
+                written.AddRange(lines);
+                return Task.CompletedTask;
+            },
+            retryBackoff: TimeSpan.Zero);
+
+        await sink.RecordAsync(CreateTestEvent("AAPL"), ["first"]);
+        failWrites = false;
+        await sink.RecordAsync(CreateTestEvent("MSFT"), ["second"]);
+
+        written.Should().HaveCount(2);
+        written[0].Should().Contain("AAPL");
+        written[1].Should().Contain("MSFT");
+        sink.TotalPersisted.Should().Be(2);
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WriteStillFailing_ReportsTheRecordAsLost()
+    {
+        var sink = new DeadLetterSink(_testDir, logger: null, (_, _, _) => throw new IOException("disk unavailable"));
+        await sink.RecordAsync(CreateTestEvent("TSLA"), ["pipeline-persist-failure"]);
+
+        await sink.DisposeAsync();
+
+        sink.TotalLost.Should().Be(1);
+        sink.PendingRetryCount.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task RecordAsync_RetryBufferFull_CountsFurtherRecordsAsLost()
+    {
+        await using var sink = new DeadLetterSink(_testDir, logger: null, (_, _, _) => throw new IOException("disk unavailable"));
+
+        for (var index = 0; index < DeadLetterSink.MaxRetainedRecords + 3; index++)
+            await sink.RecordAsync(CreateTestEvent("AAPL"), ["invalid_sequence"]);
+
+        sink.TotalRejected.Should().Be(DeadLetterSink.MaxRetainedRecords + 3);
+        sink.PendingRetryCount.Should().Be(DeadLetterSink.MaxRetainedRecords);
+        sink.TotalLost.Should().Be(3);
+    }
+
     private static MarketEvent CreateTestEvent(string symbol)
     {
         return new MarketEvent(

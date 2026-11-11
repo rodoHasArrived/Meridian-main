@@ -24,6 +24,11 @@ one sink accepts the write. When no sink accepts an append, or no sink can be fl
 circuit is open, it throws, so the pipeline never treats an unpersisted event as durable or truncates
 the WAL holding it.
 
+`JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
+torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it
+for logs that grow with every event. `AtomicFileWriter.AppendLinesAsync` still copies the whole
+destination per call and remains for small, low-frequency artifacts.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

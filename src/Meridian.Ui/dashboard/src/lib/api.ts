@@ -1,3 +1,10 @@
+import {
+  reportingScheduleDeleteEndpoint,
+  reportingScheduleDisableEndpoint,
+  reportingSchedulePauseEndpoint,
+  reportingScheduleResumeEndpoint,
+  reportingScheduleRunNowEndpoint,
+} from "@/lib/reporting-schedule-endpoints";
 import { providerConnectionScopeEndpoint, type ProviderCredentialRequestOptions } from "@/lib/provider-credential-scope";
 import {
   mapQuantRunResponseToCellResult,
@@ -446,9 +453,6 @@ import {
   reportingTemplateApproveEndpoint,
   reportingTemplateRejectEndpoint,
   reportingTemplateSubmitEndpoint,
-  reportingSchedulePauseEndpoint,
-  reportingScheduleResumeEndpoint,
-  reportingScheduleRunNowEndpoint,
   reportingStarterKitProvisionEndpoint,
   securityMasterAssetProfileApproveEndpoint,
   securityMasterAssetProfileDraftsEndpoint,
@@ -2709,6 +2713,14 @@ export function pauseReportingSchedule(scheduleId: string, options: ApiRequestOp
 
 export function resumeReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
   return postJson<ReportingScheduleRecord>(reportingScheduleResumeEndpoint(scheduleId), undefined, options);
+}
+
+export function disableReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return postJson<ReportingScheduleRecord>(reportingScheduleDisableEndpoint(scheduleId), undefined, options);
+}
+
+export function deleteReportingSchedule(scheduleId: string, options: ApiRequestOptions = {}) {
+  return deleteJson<ReportingScheduleRecord>(reportingScheduleDeleteEndpoint(scheduleId), options);
 }
 
 export function runReportingScheduleNow(scheduleId: string, options: ApiRequestOptions = {}) {
