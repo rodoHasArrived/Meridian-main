@@ -301,8 +301,10 @@ A schedule may instead carry a `periodCadence` (`Monthly`, `Quarterly`, or `Annu
 cron. The durable ledger store is the authority for the next period:
 
 - A monthly close moves to the accounting period of the schedule's ledger book that starts the day
-  after the current as-of date. Quarterly and annual closes move to the period that contains the
-  calendar quarter or year end.
+  after the current as-of date. A quarterly close moves to the quarter-end period (period number
+  3, 6, 9, or 12) of the fiscal quarter that day falls in, and an annual close to period 12 of
+  that fiscal year. Quarter and year ends come from the ledger's own period numbers, so they
+  require a fiscal year of exactly twelve periods numbered 1 to 12.
 - The next as-of date is that period's own end date, the due date is `dueDaysAfterPeriodEnd` days
   after it, and `periodId` becomes that period's id. Books whose periods are not calendar months
   (for example 4-4-5 calendars or non-calendar fiscal years) therefore close on their real period

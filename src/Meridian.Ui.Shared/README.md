@@ -1971,7 +1971,9 @@ approval, while recognizing supported helpers such as `safeDivide(...)`, `percen
 `IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
 `ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
 period-close schedule's as-of date; the schedule service never derives a period selector from a
-calendar date.
+calendar date. Its `ResolveNextClosePeriodAsync` names the next period to close (the following
+period for monthly, the fiscal quarter-end or year-end period by ledger period number for
+quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

@@ -90,13 +90,24 @@ public sealed partial class ReportingScheduleService
             cadence, schedule.NextAsOfDate, schedule.DueAtUtc, timeZone, localTime);
         var advance = new PeriodCloseAdvance(calendar.PeriodEnd, calendar.DueAtUtc);
 
-        // A monthly close moves to the durable period that starts the day after the current one
-        // ends. Quarterly and annual closes land on the durable period that holds the calendar
-        // quarter or year end. Either way the report date becomes that period's own end date.
-        var probe = cadence.Frequency == ReportingSchedulePeriodFrequencyDto.Monthly
-            ? schedule.NextAsOfDate.AddDays(1)
-            : calendar.PeriodEnd;
-        var period = await TryResolveLedgerPeriodAsync(parameters, probe, ct).ConfigureAwait(false);
+        // The ledger names the next period to close: the following period for a monthly close,
+        // the fiscal quarter-end or year-end period (by the ledger's own period numbers) for
+        // quarterly and annual closes. The report date becomes that period's own end date.
+        ReportingSchedulePeriodMatch? period = null;
+        if (PeriodResolver is not null)
+        {
+            try
+            {
+                period = await PeriodResolver
+                    .ResolveNextClosePeriodAsync(parameters, schedule.NextAsOfDate, cadence.Frequency, ct)
+                    .ConfigureAwait(false);
+            }
+            catch (Exception exception) when (exception is not OperationCanceledException)
+            {
+                // Advisory lookup; fall back to calendar arithmetic and keep the selector.
+            }
+        }
+
         if (period is not null && period.EndDate > schedule.NextAsOfDate)
         {
             advance = new PeriodCloseAdvance(

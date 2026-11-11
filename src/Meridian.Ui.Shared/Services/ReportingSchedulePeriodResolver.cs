@@ -22,6 +22,26 @@ public interface IReportingSchedulePeriodResolver
         ReportingRunParametersDto parameters,
         DateOnly date,
         CancellationToken ct = default);
+
+    /// <summary>
+    /// Returns the accounting period a period-close schedule should close next, after the
+    /// period ending on <paramref name="currentPeriodEnd"/>:
+    /// <list type="bullet">
+    /// <item>Monthly: the period that starts the following day.</item>
+    /// <item>Quarterly: the quarter-end period (period number 3, 6, 9 or 12) of the fiscal
+    /// quarter that the following day falls in.</item>
+    /// <item>Annually: the last period (number 12) of the fiscal year that the following day
+    /// falls in.</item>
+    /// </list>
+    /// Quarter and year ends are defined by the ledger's own period numbers, so only fiscal
+    /// years with exactly twelve periods numbered 1 to 12 are supported for those cadences.
+    /// Returns <see langword="null"/> whenever the ledger cannot name one period.
+    /// </summary>
+    Task<ReportingSchedulePeriodMatch?> ResolveNextClosePeriodAsync(
+        ReportingRunParametersDto parameters,
+        DateOnly currentPeriodEnd,
+        ReportingSchedulePeriodFrequencyDto frequency,
+        CancellationToken ct = default);
 }
 
 /// <summary>Ledger-store-backed <see cref="IReportingSchedulePeriodResolver"/>.</summary>
@@ -78,6 +98,60 @@ public sealed class LedgerReportingSchedulePeriodResolver : IReportingSchedulePe
                 containing[0].EndDate)
             : null;
     }
+
+    public async Task<ReportingSchedulePeriodMatch?> ResolveNextClosePeriodAsync(
+        ReportingRunParametersDto parameters,
+        DateOnly currentPeriodEnd,
+        ReportingSchedulePeriodFrequencyDto frequency,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        var book = await ResolveBookAsync(parameters, ct).ConfigureAwait(false);
+        if (book is null)
+        {
+            return null;
+        }
+
+        var periods = (await _listBookPeriods(book.LedgerBookId, ct).ConfigureAwait(false))
+            .Where(period => period.LedgerBookId == book.LedgerBookId)
+            .ToArray();
+        var nextDay = currentPeriodEnd.AddDays(1);
+        var following = periods
+            .Where(period => period.StartDate <= nextDay && nextDay <= period.EndDate)
+            .ToArray();
+        if (following.Length != 1)
+        {
+            return null;
+        }
+
+        var target = following[0];
+        if (frequency != ReportingSchedulePeriodFrequencyDto.Monthly)
+        {
+            // A fiscal quarter is three consecutive period numbers and a fiscal year is twelve.
+            // Any other shape (a 13-period year, gaps, duplicates, a year not fully opened) is
+            // not guessed at.
+            var fiscalYear = periods
+                .Where(period => period.FiscalYear == target.FiscalYear)
+                .OrderBy(static period => period.PeriodNo)
+                .ToArray();
+            if (fiscalYear.Length != PeriodsPerFiscalYear
+                || !fiscalYear.Select(static period => period.PeriodNo)
+                    .SequenceEqual(Enumerable.Range(1, PeriodsPerFiscalYear)))
+            {
+                return null;
+            }
+
+            var closingPeriodNo = frequency == ReportingSchedulePeriodFrequencyDto.Quarterly
+                ? ((target.PeriodNo + PeriodsPerFiscalQuarter - 1) / PeriodsPerFiscalQuarter) * PeriodsPerFiscalQuarter
+                : PeriodsPerFiscalYear;
+            target = fiscalYear[closingPeriodNo - 1];
+        }
+
+        return new ReportingSchedulePeriodMatch(target.PeriodId.ToString("D"), target.StartDate, target.EndDate);
+    }
+
+    private const int PeriodsPerFiscalYear = 12;
+    private const int PeriodsPerFiscalQuarter = 3;
 
     // Mirrors LedgerReportingAuthoritativeSource.ResolveBookAsync: an explicit book id wins,
     // otherwise the code must match exactly one book of the fund by id or display name.

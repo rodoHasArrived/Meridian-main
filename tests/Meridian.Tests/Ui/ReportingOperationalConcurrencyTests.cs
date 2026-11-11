@@ -966,6 +966,39 @@ public sealed class ReportingOperationalConcurrencyTests
     }
 
     [Fact]
+    public async Task Scenario_QuarterlyPeriodCloseSchedule_ClosesOnTheFiscalQuarterEndTheLedgerNames()
+    {
+        // 4-4-5 calendar: after the quarter ending 2 May 2026 the next fiscal quarter ends
+        // 1 August. Three calendar months on would be 2 August, inside the following period.
+        var quarterEnd = new ReportingSchedulePeriodMatch(
+            "44444444-4444-4444-4444-444444444444", new DateOnly(2026, 6, 28), new DateOnly(2026, 8, 1));
+        var resolver = new RecordingPeriodResolver(
+            _ => null,
+            (currentEnd, frequency) =>
+                currentEnd == new DateOnly(2026, 5, 2) && frequency == ReportingSchedulePeriodFrequencyDto.Quarterly
+                    ? quarterEnd
+                    : null);
+        var firstDue = new DateTimeOffset(2026, 5, 12, 8, 0, 0, TimeSpan.Zero);
+        var due = BuildSchedule("fiscal-quarter-close", "operator-a") with
+        {
+            RunParameters = BuildCurrentSchedule("parameters-only").RunParameters,
+            State = ReportingScheduleStateDto.Active,
+            NextAsOfDate = new DateOnly(2026, 5, 2),
+            DueAtUtc = firstDue,
+            PeriodCadence = new ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto.Quarterly, 10)
+        };
+        var store = new SharedAtomicScheduleStore([due]);
+        var service = CreateRunnableScheduleService(store, new CountingRenderer(), resolver);
+
+        await service.RunDueForWorkerAsync(firstDue, CancellationToken.None);
+
+        var advanced = store.Load().Should().ContainSingle().Subject;
+        advanced.NextAsOfDate.Should().Be(new DateOnly(2026, 8, 1));
+        advanced.RunParameters!.PeriodId.Should().Be(quarterEnd.Selector);
+        advanced.DueAtUtc.Should().Be(new DateTimeOffset(2026, 8, 11, 8, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
     public async Task Scenario_PeriodCloseSchedule_FallsBackToTheCalendarWhenTheLedgerCannotNameAPeriod()
     {
         var firstDue = new DateTimeOffset(2026, 5, 10, 8, 0, 0, TimeSpan.Zero);
@@ -1372,7 +1405,9 @@ public sealed class ReportingOperationalConcurrencyTests
                 () => FixedNow),
             store);
 
-    private sealed class RecordingPeriodResolver(Func<DateOnly, ReportingSchedulePeriodMatch?> resolve)
+    private sealed class RecordingPeriodResolver(
+        Func<DateOnly, ReportingSchedulePeriodMatch?> resolve,
+        Func<DateOnly, ReportingSchedulePeriodFrequencyDto, ReportingSchedulePeriodMatch?>? resolveNextClose = null)
         : IReportingSchedulePeriodResolver
     {
         public List<DateOnly> Dates { get; } = [];
@@ -1385,6 +1420,15 @@ public sealed class ReportingOperationalConcurrencyTests
             Dates.Add(date);
             return Task.FromResult(resolve(date));
         }
+
+        public Task<ReportingSchedulePeriodMatch?> ResolveNextClosePeriodAsync(
+            ReportingRunParametersDto parameters,
+            DateOnly currentPeriodEnd,
+            ReportingSchedulePeriodFrequencyDto frequency,
+            CancellationToken ct = default) =>
+            Task.FromResult(resolveNextClose is null
+                ? resolve(currentPeriodEnd.AddDays(1))
+                : resolveNextClose(currentPeriodEnd, frequency));
     }
 
     private static ReportingScheduleService CreateRunnableScheduleService(
