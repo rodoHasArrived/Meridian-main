@@ -5,7 +5,9 @@ namespace Meridian.Application.SecurityMaster;
 /// <summary>
 /// <see cref="SecurityMasterWorkbenchOptions.RequireIndependentReviewer"/> checks for governed
 /// field-edit revisions. Submission already refuses a reviewer equal to the submitter; with the
-/// setting on, the drafter cannot be named as reviewer, and the submitter cannot approve.
+/// requirement in force (its setting on, or the Institutional governance profile, as
+/// <see cref="ISecurityMasterGovernanceRequirements"/> reports), the drafter cannot be named as
+/// reviewer, and the submitter cannot approve.
 /// </summary>
 public sealed partial class SecurityMasterWorkbenchCommandService
 {

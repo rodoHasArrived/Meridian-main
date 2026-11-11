@@ -1772,6 +1772,26 @@ export interface SecurityIdentityDrillIn {
   aliases: SecurityAliasEntry[];
 }
 
+export type SecurityMasterDeclaredExerciseStatus = "Resolved" | "Blocked";
+
+export interface SecurityMasterScheduleBlocker {
+  code: string;
+  reason: string;
+}
+
+/**
+ * Typed outcome of a record's declared call and put schedule. Absent for a record that declares
+ * no schedule; `blockers` is empty when the schedule resolved.
+ */
+export interface SecurityMasterDeclaredExerciseOutcome {
+  status: SecurityMasterDeclaredExerciseStatus;
+  asOf: string;
+  securityVersion: number | null;
+  windowCount: number;
+  blockers: SecurityMasterScheduleBlocker[];
+  diagnostics: string[];
+}
+
 export interface SecurityMasterScheduleSummary {
   supportsCashflowSchedule: boolean;
   supportsFactorHistory: boolean;
@@ -1781,6 +1801,7 @@ export interface SecurityMasterScheduleSummary {
   nextLifecycleDate: string | null;
   sourceSummary: string;
   summary: string;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
 }
 
 export interface SecurityMasterScheduleEvent {

@@ -318,6 +318,39 @@ public sealed class SecurityMasterInstrumentPassportTests
     }
 
     [Fact]
+    public async Task GetInstrumentPassportAsync_RoutesConflictsByDeclaredFieldNames_NotBySubstrings()
+    {
+        // The three paths are ones conflict detection writes. The word lists this replaces showed
+        // none of the first two in the terms panel (no listed word occurs in them) and put the third
+        // in the provider panel because it contains "provider".
+        var securityId = Guid.Parse("9B4F28C7-489F-4D0F-A0F9-BD3300665688");
+        var service = CreateService(
+            new StubSecurityMasterQueryService(securityId),
+            new StubSecurityMasterConflictService(
+            [
+                Conflict("EconomicTerms.issueDate", "2026-01-15", "2026-02-15"),
+                Conflict("EconomicTerms.dayCountConvention", "30/360", "ACT/360"),
+                Conflict("ProfileFields.providerName", "Fund Admin A", "Fund Admin B")
+            ]));
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+
+        var panels = passport!.OperationsWorkbench!.Panels;
+        var termsLabels = panels.Single(static panel => panel.PanelId == "terms").Items
+            .Where(static item => item.ItemId.StartsWith("terms-conflict-", StringComparison.Ordinal))
+            .Select(static item => item.Label);
+        termsLabels.Should().BeEquivalentTo(
+            "EconomicTerms.issueDate", "EconomicTerms.dayCountConvention", "ProfileFields.providerName");
+        panels.Single(static panel => panel.PanelId == "provider-evidence").Items
+            .Should().NotContain(static item => item.ItemId.StartsWith("provider-conflict-", StringComparison.Ordinal),
+                "a profile field is not provider evidence because its name contains the word");
+
+        SecurityMasterConflict Conflict(string fieldPath, string valueA, string valueB)
+            => new(Guid.NewGuid(), securityId, SecurityMasterConflictKinds.EconomicTermMismatch, fieldPath,
+                "fund-admin", valueA, "custodian", valueB, DateTimeOffset.UtcNow.AddMinutes(-5), "Open");
+    }
+
+    [Fact]
     public async Task GetInstrumentPassportAsync_AttachesReferenceDataControlSectionsWhenServicesAreRegistered()
     {
         var securityId = Guid.Parse("D85825FA-C568-4F9A-A7B8-2D988D975B6D");
