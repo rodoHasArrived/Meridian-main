@@ -4,7 +4,7 @@
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
   SegmentedControl, Combobox, Kbd, Callout, KeyValueGrid
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NAV = [
