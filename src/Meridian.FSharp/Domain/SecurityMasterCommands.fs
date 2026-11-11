@@ -665,6 +665,29 @@ module SecurityMaster =
             (dayCounts |> List.forall (Option.forall (fun value ->
                 Enum.IsDefined value && value <> Meridian.Contracts.SecurityMaster.DayCountConvention.Unknown)))
             (error "day_count_invalid" "Supplied day-count conventions must name a supported convention.")
+        // A record holds whole term modules, so its type no longer limits it to the members its
+        // class's flat row carries. A value anywhere else would be accepted, carried by the
+        // economic definition and dropped by the next write of the row, so it is refused here.
+        // These are rules over the record, not over the definition: an economic document may
+        // hold members no flat row has, and keeps them in its retained document.
+        @ (match SecurityKindPersistence.unpersistedMembers kind with
+           | [] -> []
+           | members ->
+               [ error
+                     "term_member_not_persisted"
+                     (sprintf
+                         "%s does not persist %s; a value there would be dropped by the next write of the record."
+                         (AssetClassRegistry.assetClassName kind)
+                         (String.Join(", ", members))) ])
+        @ (match SecurityKindPersistence.derivedMemberConflicts kind with
+           | [] -> []
+           | members ->
+               [ error
+                     "term_member_value_not_persisted"
+                     (sprintf
+                         "%s derives %s from its other terms; a different value would be replaced by the next read of the record."
+                         (AssetClassRegistry.assetClassName kind)
+                         (String.Join(", ", members))) ])
 
     let private validateIdentifier (identifier: Identifier) =
         []

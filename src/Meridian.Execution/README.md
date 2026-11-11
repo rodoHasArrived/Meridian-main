@@ -432,6 +432,12 @@ the window silently evicts the very entry the claim is about. Entries are insert
 order rather than appended, since `RecordAsync` accepts a caller-built entry with any timestamp and
 concurrent callers can complete out of order.
 
+`TradeExecutedEvent` carries the placing order's optional `StrategyId` and `RunId`, stamped once
+when the event is created. `LedgerPostingConsumer` writes them to the fill journal's
+`JournalEntryMetadata.StrategyId` and a `strategy.runId` tag. A journal retained before this
+lineage existed still matches when the same fill is redelivered: the candidate is compared in the
+retained shape and the retained record is never rewritten.
+
 An absolute ceiling of twenty times the count cap stops a pathological burst from growing memory
 without bound. **When that ceiling bites, the effect is operational, not cosmetic:**
 completeness goes false, and it stays false until the discarded region itself ages out —
