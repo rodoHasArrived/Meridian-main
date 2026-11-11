@@ -31,6 +31,16 @@ The capability-floor foundation described here is reviewable code; it does not e
 node has been deployed or that floor activation is authorized. This procedure follows the writer-inventory and drain precedent of
 the [governed edit rollout](security-master-governed-edit-rollout.md).
 
+### ADR-027 complete module event rollout
+
+The S3-E writer emits `SecurityEconomicDefinition` event payload version **3**, including in its
+metadata. Upgrade every event replay reader to support version 3 before enabling these writers;
+readers capped at version 2 refuse the new events. The current reader still replays historical
+event versions 1 and 2, and a historical event with no declared version still resolves to version
+2. The nested economic terms keep codec `schemaVersion: 2`; no stored events or shipped migrations
+are rewritten. Record the reader inventory and writer activation in the deployment change record.
+This source change does not establish that the fleet rollout has occurred.
+
 ## Prerequisites
 
 - A deployment change record naming the release owner, the accepting operator and, before any real

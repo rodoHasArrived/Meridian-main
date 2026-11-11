@@ -32,6 +32,22 @@ public sealed partial class SecurityMasterCashFlowService
         return ExportProjection(await CaptureResolvedProjectionAsync(security, source, scenario, context, ct).ConfigureAwait(false), _receiptStore is not null);
     }
 
+    public async Task<SecurityCashFlowBlockerDto?> GetProjectionBlockerAsync(
+        SecurityDetailDto security, BondCalculationContext context, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(security);
+        ArgumentNullException.ThrowIfNull(context);
+        ct.ThrowIfCancellationRequested();
+        var source = await _store.GetSourceAsync(security.SecurityId, ct).ConfigureAwait(false);
+        if (source is null)
+            return null;
+        var calculation = await CaptureResolvedProjectionAsync(security, source, StructuredCashFlowScenario.Base,
+            context, ct, retainReceipt: false).ConfigureAwait(false);
+        return calculation.Projection.Blocker ?? (calculation.Projection.BlockedReason is { } reason
+            ? new SecurityCashFlowBlockerDto("CashFlowProjectionBlocked", reason)
+            : null);
+    }
+
     public async Task<SecurityCashFlowCalculationReceipt?> CaptureProjectionAsync(
         Guid securityId, StructuredCashFlowScenario scenario, BondCalculationContext context, CancellationToken ct = default)
     {
@@ -51,7 +67,7 @@ public sealed partial class SecurityMasterCashFlowService
 
     private async Task<SecurityCashFlowCalculationReceipt> CaptureResolvedProjectionAsync(
         SecurityDetailDto security, SecurityCashFlowSourceDto source, StructuredCashFlowScenario scenario,
-        BondCalculationContext context, CancellationToken ct)
+        BondCalculationContext context, CancellationToken ct, bool retainReceipt = true)
     {
         var terms = StructuredCashFlowTermsResolver.Resolve(security);
         var curves = new Dictionary<string, SecurityForwardCurve>(StringComparer.OrdinalIgnoreCase);
@@ -93,7 +109,7 @@ public sealed partial class SecurityMasterCashFlowService
         // Freeze caller-owned lists and JSON documents before exposing a replay receipt.
         receipt = JsonSerializer.Deserialize(JsonSerializer.Serialize(receipt, SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt), SecurityCashFlowReceiptJsonContext.Default.SecurityCashFlowCalculationReceipt)!;
         receipt = receipt with { ContentSha256 = ReceiptHash(receipt) };
-        if (_receiptStore is not null)
+        if (retainReceipt && _receiptStore is not null)
             await _receiptStore.RetainAsync(receipt, ct).ConfigureAwait(false);
         return receipt;
     }

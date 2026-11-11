@@ -20,7 +20,7 @@ public sealed class SecurityMasterWorkbenchGovernanceProjectionTests
         var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(ProjectionOf(security)), cashFlowService: cashFlows)
             .GetTrustSnapshotAsync(security.SecurityId, null);
         snapshot!.CashFlowBlocker.Should().BeNull();
-        await cashFlows.DidNotReceive().GetProjectionAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<StructuredCashFlowScenario>(),
+        await cashFlows.DidNotReceive().GetProjectionBlockerAsync(Arg.Any<SecurityDetailDto>(),
             Arg.Any<BondCalculationContext>(), Arg.Any<CancellationToken>());
     }
 
@@ -32,13 +32,10 @@ public sealed class SecurityMasterWorkbenchGovernanceProjectionTests
         var cashFlows = Substitute.For<ISecurityMasterCashFlowService>();
         cashFlows.GetCashFlowSourceAsync(security.SecurityId, Arg.Any<CancellationToken>())
             .Returns(new SecurityCashFlowSourceDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet, asOf, false, null, null));
-        cashFlows.GetProjectionAsync(Arg.Is<SecurityDetailDto>(selected => selected.SecurityId == security.SecurityId && selected.Version == security.Version),
-            StructuredCashFlowScenario.Base,
+        cashFlows.GetProjectionBlockerAsync(Arg.Is<SecurityDetailDto>(selected => selected.SecurityId == security.SecurityId && selected.Version == security.Version),
             Arg.Is<BondCalculationContext>(context => context.AsOf == asOf && context.SecurityVersion == security.Version && context.KnownAt == null),
             Arg.Any<CancellationToken>())
-            .Returns(new StructuredCashFlowProjectionDto(security.SecurityId, StructuredCashFlowSourceKind.CalculatedBullet,
-                StructuredCashFlowScenario.Base, asOf, [], BlockedReason: SecurityInterestSupport.NegativeInterestReason)
-            { Blocker = SecurityInterestSupport.NegativeInterestBlocker });
+            .Returns(SecurityInterestSupport.NegativeInterestBlocker);
 
         var snapshot = await CreateService(new StoredRowSecurityMasterQueryService(ProjectionOf(security)), now: asOf, cashFlowService: cashFlows)
             .GetTrustSnapshotAsync(security.SecurityId, null);
@@ -51,6 +48,8 @@ public sealed class SecurityMasterWorkbenchGovernanceProjectionTests
             .Single(item => item.ItemId == "payment-schedule").Status.Should().Be("Review");
         passport.OperationsWorkbench.Readiness.Single(row => row.ReadinessId == "close").IsReady.Should().BeFalse();
         passport.OperationsWorkbench.Readiness.Single(row => row.ReadinessId == "ledger").IsReady.Should().BeFalse();
+        await cashFlows.DidNotReceive().GetProjectionAsync(Arg.Any<SecurityDetailDto>(), Arg.Any<StructuredCashFlowScenario>(),
+            Arg.Any<BondCalculationContext>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

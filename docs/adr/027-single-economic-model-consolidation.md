@@ -117,11 +117,18 @@ section for current-output extensions and compatibility boundaries.
   must prove, with a committed replay corpus (extending `SecurityTermsVersioningTests` and the
   schedule-replay refusal suites), that rebuilt state is byte-identical before and after the
   command-path move, retained-terms fixtures included.
-- **Event-versioning ruling.** No new event family. Module additions keep versioning through
-  `EconomicTermsSchema` as today; the legacy `SecurityProjection` converter is declared the
-  permanent read-only replay upcaster. If stage 2 changes the economic payload's serialized
+- **Event-versioning ruling.** No new event family. `EconomicTermsSchema` versions the nested
+  terms codec; `EconomicDefinitionVersion` separately versions the containing event shape. The
+  legacy `SecurityProjection` converter is declared the permanent read-only replay upcaster.
+  If stage 2 changes the economic payload's serialized
   shape in any way, that is a new `EconomicDefinitionVersion` with both versions replayable —
   never an edit of a shipped version (consistent with ADR-024's append-only version rule).
+  The S3-E complete module homes are emitted as economic-definition **event version 3**; the
+  nested economic terms retain codec `schemaVersion: 2`. These are independent version axes:
+  replay accepts event versions 1–3, while an older node capped at event version 2 refuses new
+  events before decoding them. An absent event version keeps its historical inference of 2;
+  current writers declare version 3 in both the envelope and metadata. This advances the event
+  contract without changing the frozen terms-format routing or rewriting historical events.
 
 ## Rationale
 

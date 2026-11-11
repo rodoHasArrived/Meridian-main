@@ -447,7 +447,7 @@ DI-resolved posture permits unattributed process work. Strict hosts log that the
 withheld, including when a host supplies a later instance/factory override. Strict operation still
 requires per-loan tenant authority before those workers can be enabled.
 
-Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
+Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
 
 ## Purpose
 

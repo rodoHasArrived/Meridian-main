@@ -43,14 +43,17 @@ public sealed class SecurityMasterReplayCorpusTests
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
-    [Fact]
-    public void EveryCorpusCase_ReplaysToItsCommittedBytes()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void EveryCorpusCase_ReplaysToItsCommittedBytes(int eventPayloadVersion)
     {
         var corpus = LoadCorpus();
         var received = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (var replayCase in corpus)
         {
-            ComputeCase(replayCase, received);
+            ComputeCase(replayCase, received, eventPayloadVersion);
         }
 
         var goldenPath = LocateFixture(GoldenFileName);
@@ -78,10 +81,15 @@ public sealed class SecurityMasterReplayCorpusTests
             "(ADR-027 stage 2 requires rebuilt state to stay byte-identical across command-path moves).");
     }
 
-    private static void ComputeCase(JsonElement replayCase, SortedDictionary<string, string> received)
+    private static void ComputeCase(JsonElement replayCase, SortedDictionary<string, string> received, int eventPayloadVersion)
     {
         var name = replayCase.GetProperty("name").GetString()!;
-        var record = BuildRecord(replayCase);
+        var envelope = SecurityMasterMapping.ToEventEnvelope(BuildRecord(replayCase), "TermsAmended", "replay-corpus", "replay-corpus", null, 1) with
+        {
+            PayloadVersion = eventPayloadVersion,
+            Metadata = Json($$"""{"payloadType":"SecurityEconomicDefinition","schemaVersion":{{eventPayloadVersion}}}""")
+        };
+        var record = SecurityMasterMapping.FromEventEnvelope(envelope);
         var expectRefusal = replayCase.TryGetProperty("expectRefusal", out var refusal) && refusal.ValueKind == JsonValueKind.True;
 
         SecurityProjectionRecord? rebuilt = null;

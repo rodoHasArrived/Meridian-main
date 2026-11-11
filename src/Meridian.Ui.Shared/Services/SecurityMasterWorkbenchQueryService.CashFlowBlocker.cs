@@ -20,11 +20,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService
             // Reuse the selected terms and evaluation time. Rereading today's row could attach a
             // different version's capability decision to this passport; legacy receipt replay is
             // deliberately not consulted by this current-terms read model.
-            var projection = await _cashFlowService.GetProjectionAsync(detail, StructuredCashFlowScenario.Base,
+            var blocker = await _cashFlowService.GetProjectionBlockerAsync(detail,
                 new BondCalculationContext(asOf, SecurityVersion: detail.Version), ct).ConfigureAwait(false);
-            if (projection?.Blocker is { } blocker)
-                return new(blocker.Code, blocker.Reason);
-            return projection?.BlockedReason is { } reason ? new("CashFlowProjectionBlocked", reason) : null;
+            return blocker is null ? null : new(blocker.Code, blocker.Reason);
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
