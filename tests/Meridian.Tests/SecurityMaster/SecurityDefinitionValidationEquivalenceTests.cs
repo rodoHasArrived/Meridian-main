@@ -296,9 +296,23 @@ public sealed class SecurityDefinitionValidationEquivalenceTests
             // can lack one.
             // The flat codec also reads an exercise style it does not recognise as no style, so an
             // unrecognised one reaches a kind only on a directly built record.
-            ["Option"] = ["option_underlying_required", "option_exercise_style_invalid"],
-            ["Warrant"] = ["warrant_underlying_required"],
-            ["Swaption"] = ["swaption_strike_rate_required"],
+            //
+            // The *_member_unsupported codes guard the other side of the contraction: a record holds
+            // a whole module, and a member its class's flat row does not persist must be absent.
+            // The flat decode sets only the class's own members, so again only a directly built
+            // record can trip one.
+            ["Option"] = ["option_underlying_required", "option_exercise_style_invalid", "exercise_member_unsupported"],
+            ["Warrant"] = ["warrant_underlying_required", "exercise_member_unsupported"],
+            ["Swaption"] = ["swaption_strike_rate_required", "exercise_member_unsupported", "notional_member_unsupported"],
+            ["CapFloor"] = ["exercise_member_unsupported", "notional_member_unsupported"],
+            ["FxSpot"] = ["currency_pair_member_unsupported"],
+            ["CryptoCurrency"] = ["currency_pair_member_unsupported"],
+            ["FxForward"] = ["currency_pair_member_unsupported", "notional_member_unsupported"],
+            ["NonDeliverableForward"] = ["currency_pair_member_unsupported", "notional_member_unsupported"],
+            ["CreditDefaultSwap"] = ["notional_member_unsupported"],
+            ["StructuredNote"] = ["notional_member_unsupported"],
+            ["PrivateFundInterest"] = ["notional_member_unsupported"],
+            ["CommitmentGuarantee"] = ["notional_member_unsupported"],
             // A blank profile id reads as the OtherSecurity salvage, and a non-object or
             // unparseable document never reaches a CustomAsset kind through the codec.
             ["CustomAsset"] =

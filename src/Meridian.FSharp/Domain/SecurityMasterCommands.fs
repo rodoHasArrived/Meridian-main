@@ -134,7 +134,7 @@ module SecurityMaster =
 
     let private moduleString (value: string option) = value |> Option.defaultValue String.Empty
 
-    let private validateDefinitionTerms (typeName: string) (modules: SecurityTermModules) =
+    let private validateDefinitionClassTerms (typeName: string) (modules: SecurityTermModules) =
         let maturityDate = modules.Maturity |> Option.bind (fun m -> m.MaturityDate)
         let effectiveDate = modules.Maturity |> Option.bind (fun m -> m.EffectiveDate)
         let issueDate = modules.Maturity |> Option.bind (fun m -> m.IssueDate)
@@ -605,6 +605,87 @@ module SecurityMaster =
             | None -> validateProfileEnvelope String.Empty 0 String.Empty
         | _ -> []
 
+    /// The members of the contracted term modules that each class's flat row persists
+    /// (exercise, currency pair, notional; None where the class's record does not hold the module).
+    ///
+    /// Since the S3-E contraction a per-class record holds a whole term module where it used to
+    /// declare only its own fields. A warrant's record can therefore carry an exercise style, or
+    /// an FX spot's a forward rate, although that class's flat writer does not write the member
+    /// and its decode reads it back as absent: the value would be accepted, written to the
+    /// economic document, and then lost from the flat row, leaving the two in disagreement. The
+    /// record types used to rule that out; this table restores the guarantee as validation.
+    let private persistedModuleMembers : Map<string, string list option * string list option * string list option> =
+        let exercise members = Some members, None, None
+        let pair members = None, Some members, None
+        let amounts members = None, None, Some members
+        Map.ofList [
+            "Option", exercise [ "OptionRight"; "StrikePrice"; "ExerciseStyle"; "UnderlyingSecurityId" ]
+            "Warrant", exercise [ "OptionRight"; "StrikePrice"; "UnderlyingSecurityId" ]
+            "Swaption", (Some [ "OptionRight"; "ExerciseStyle"; "StrikeRate" ], None, Some [ "Notional" ])
+            "CapFloor", (Some [ "OptionRight"; "PremiumAmount" ], None, Some [ "Notional" ])
+            "FxSpot", pair [ "BaseCurrency"; "QuoteCurrency" ]
+            "CryptoCurrency", pair [ "BaseCurrency"; "QuoteCurrency" ]
+            "FxForward", (None, Some [ "BaseCurrency"; "QuoteCurrency"; "ForwardRate" ], Some [ "Notional" ])
+            "NonDeliverableForward",
+            (None, Some [ "BaseCurrency"; "QuoteCurrency"; "SettlementCurrency"; "ForwardRate" ], Some [ "Notional" ])
+            "CreditDefaultSwap", amounts [ "Notional" ]
+            "StructuredNote", amounts [ "Denomination" ]
+            "PrivateFundInterest", amounts [ "CommittedAmount"; "FundedAmount"; "UnfundedAmount" ]
+            "CommitmentGuarantee", amounts [ "CommittedAmount"; "UnfundedAmount" ]
+        ]
+
+    /// Refuses a contracted module member the class's flat row does not persist
+    /// (persistedModuleMembers).
+    let private validatePersistedMembers (typeName: string) (modules: SecurityTermModules) =
+        let outside (persisted: string list option) (members: (string * bool) list) =
+            match persisted with
+            | None -> []
+            | Some names -> members |> List.filter (fun (name, isSet) -> isSet && not (List.contains name names)) |> List.map fst
+        let refuse code (moduleLabel: string) (members: string list) =
+            require members.IsEmpty
+                (error code
+                    (sprintf "%s %s members that the %s flat terms do not hold must be absent: %s."
+                        typeName moduleLabel typeName (String.concat ", " members)))
+        match Map.tryFind typeName persistedModuleMembers with
+        | None -> []
+        | Some (exercise, currencyPair, notional) ->
+            []
+            @ refuse "exercise_member_unsupported" "exercise"
+                (match modules.Exercise with
+                 | None -> []
+                 | Some terms ->
+                     outside exercise
+                         [ "OptionRight", terms.OptionRight.IsSome
+                           "StrikePrice", terms.StrikePrice.IsSome
+                           "StrikeRate", terms.StrikeRate.IsSome
+                           "ExerciseStyle", terms.ExerciseStyle.IsSome
+                           "UnderlyingSecurityId", terms.UnderlyingSecurityId.IsSome
+                           "PremiumAmount", terms.PremiumAmount.IsSome ])
+            @ refuse "currency_pair_member_unsupported" "currency-pair"
+                (match modules.CurrencyPair with
+                 | None -> []
+                 | Some terms ->
+                     outside currencyPair
+                         [ "BaseCurrency", terms.BaseCurrency.IsSome
+                           "QuoteCurrency", terms.QuoteCurrency.IsSome
+                           "SettlementCurrency", terms.SettlementCurrency.IsSome
+                           "ForwardRate", terms.ForwardRate.IsSome ])
+            @ refuse "notional_member_unsupported" "notional"
+                (match modules.Notional with
+                 | None -> []
+                 | Some terms ->
+                     outside notional
+                         [ "Notional", terms.Notional.IsSome
+                           "Denomination", terms.Denomination.IsSome
+                           "CommittedAmount", terms.CommittedAmount.IsSome
+                           "FundedAmount", terms.FundedAmount.IsSome
+                           "UnfundedAmount", terms.UnfundedAmount.IsSome ])
+
+    /// The definition rule set: the class's own rules, then the persisted-member guard.
+    let private validateDefinitionTerms (typeName: string) (modules: SecurityTermModules) =
+        validateDefinitionClassTerms typeName modules
+        @ validatePersistedMembers typeName modules
+
     /// The kind rule set is the definition rule set over the kind's modules. ADR-027 stage 2
     /// (S2-B2) made it a composition of validateDefinitionTerms with a codec-only remainder — the
     /// rules whose data had no module home; stage 3 gave every one of them a home, the last (a
@@ -757,12 +838,8 @@ module SecurityMaster =
     let validateDefinitionInvariants (typeName: string) (modules: SecurityTermModules) =
         validateDefinitionTerms typeName modules
 
-    /// Per-class ledger of the term-rule error codes, each of which the definition surface
-    /// expresses. Through ADR-027 stage 2 this was a partition: a code absent here was
-    /// codec-only, its subject data lacking a module home. Stage 3 (S3-E) moved every such code
-    /// here, the swap-leg codes last (S3-E8), so the ledger is now the complete list and the
-    /// equivalence suite's mutation table proves each entry on both surfaces.
-    let definitionExpressibleCodes : Map<string, string list> =
+    /// The class rule codes of the ledger below, before the persisted-member guard's are added.
+    let private classRuleCodes : Map<string, string list> =
         Map.ofList [
             "Option",
             [ "option_put_call_required"; "option_put_call_invalid"; "option_strike_invalid"; "option_underlying_required"
@@ -844,6 +921,24 @@ module SecurityMaster =
               "custom_asset_terms_invalid"; "custom_asset_securitized_noncanonical"
               "custom_asset_profile_version_missing"; "custom_asset_profile_fields_missing" ]
         ]
+
+    /// Per-class ledger of the term-rule error codes, each of which the definition surface
+    /// expresses. Through ADR-027 stage 2 this was a partition: a code absent here was
+    /// codec-only, its subject data lacking a module home. Stage 3 (S3-E) moved every such code
+    /// here, the swap-leg codes last (S3-E8), so the ledger is now the complete list and the
+    /// equivalence suite's mutation table proves each entry on both surfaces.
+    /// The class rule codes are joined by the persisted-member guard's codes for each class
+    /// whose record holds a contracted module (persistedModuleMembers).
+    let definitionExpressibleCodes : Map<string, string list> =
+        persistedModuleMembers
+        |> Map.fold
+            (fun codes typeName (exercise, currencyPair, notional) ->
+                let guards =
+                    [ if Option.isSome exercise then "exercise_member_unsupported"
+                      if Option.isSome currencyPair then "currency_pair_member_unsupported"
+                      if Option.isSome notional then "notional_member_unsupported" ]
+                codes |> Map.change typeName (fun existing -> Some ((existing |> Option.defaultValue []) @ guards)))
+            classRuleCodes
 
     let create (command: CreateSecurity) =
         match validateCreate command with

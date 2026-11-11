@@ -382,3 +382,86 @@ let ``an option with an exercise style the flat codec would not read back is ref
     Assert.Contains("option_exercise_style_invalid", definitionCodes)
     for definitionCode in definitionCodes do
         Assert.Contains(definitionCode, kindCodes)
+
+// Codex review on #3475: since the S3-E contraction a per-class record holds a whole term module,
+// so it can carry a member its class's flat row does not persist (a warrant's exercise style, an
+// FX spot's forward rate). The value would be accepted, written to the economic document and lost
+// from the flat row. The definition surface refuses it; this table is an independent statement of
+// which members each class persists.
+let private everyExerciseMember : ExerciseTerms =
+    { OptionRight = Some "Call"
+      StrikePrice = Some 100m
+      StrikeRate = Some 0.0375m
+      ExerciseStyle = Some "European"
+      UnderlyingSecurityId = someUnderlying
+      PremiumAmount = Some 1250m }
+
+let private everyCurrencyPairMember : CurrencyPairTerms =
+    { BaseCurrency = Some "EUR"; QuoteCurrency = Some "USD"; SettlementCurrency = Some "USD"; ForwardRate = Some 1.0875m }
+
+let private everyNotionalMember : NotionalTerms =
+    { Notional = Some 1_000_000m
+      Denomination = Some 1000m
+      CommittedAmount = Some 5_000_000m
+      FundedAmount = Some 2_000_000m
+      UnfundedAmount = Some 3_000_000m }
+
+let private guardMessage (code: string) (typeName: string) (modules: SecurityTermModules) =
+    SecurityMaster.validateDefinitionInvariants typeName modules
+    |> List.tryFind (fun e -> e.Code = code)
+    |> Option.map (fun e -> e.Message)
+
+[<Theory>]
+[<InlineData("Option", "StrikeRate, PremiumAmount")>]
+[<InlineData("Warrant", "StrikeRate, ExerciseStyle, PremiumAmount")>]
+[<InlineData("Swaption", "StrikePrice, UnderlyingSecurityId, PremiumAmount")>]
+[<InlineData("CapFloor", "StrikePrice, StrikeRate, ExerciseStyle, UnderlyingSecurityId")>]
+let ``an exercise member the class does not persist is refused, and only those`` (typeName: string, unpersisted: string) =
+    let modules = { SecurityTermModules.empty with Exercise = Some everyExerciseMember }
+    let message = guardMessage "exercise_member_unsupported" typeName modules
+    Assert.True(message.IsSome, sprintf "%s must refuse the exercise members it does not persist" typeName)
+    Assert.EndsWith(sprintf "must be absent: %s." unpersisted, message.Value)
+
+[<Theory>]
+[<InlineData("FxSpot", "SettlementCurrency, ForwardRate")>]
+[<InlineData("CryptoCurrency", "SettlementCurrency, ForwardRate")>]
+[<InlineData("FxForward", "SettlementCurrency")>]
+let ``a currency-pair member the class does not persist is refused, and only those`` (typeName: string, unpersisted: string) =
+    let modules = { SecurityTermModules.empty with CurrencyPair = Some everyCurrencyPairMember }
+    let message = guardMessage "currency_pair_member_unsupported" typeName modules
+    Assert.True(message.IsSome, sprintf "%s must refuse the currency-pair members it does not persist" typeName)
+    Assert.EndsWith(sprintf "must be absent: %s." unpersisted, message.Value)
+
+[<Theory>]
+[<InlineData("Swaption", "Denomination, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("CapFloor", "Denomination, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("FxForward", "Denomination, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("NonDeliverableForward", "Denomination, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("CreditDefaultSwap", "Denomination, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("StructuredNote", "Notional, CommittedAmount, FundedAmount, UnfundedAmount")>]
+[<InlineData("PrivateFundInterest", "Notional, Denomination")>]
+[<InlineData("CommitmentGuarantee", "Notional, Denomination, FundedAmount")>]
+let ``a notional member the class does not persist is refused, and only those`` (typeName: string, unpersisted: string) =
+    let modules = { SecurityTermModules.empty with Notional = Some everyNotionalMember }
+    let message = guardMessage "notional_member_unsupported" typeName modules
+    Assert.True(message.IsSome, sprintf "%s must refuse the notional members it does not persist" typeName)
+    Assert.EndsWith(sprintf "must be absent: %s." unpersisted, message.Value)
+
+[<Fact>]
+let ``a class that persists every member of a module, or holds none, is not guarded`` () =
+    // A non-deliverable forward persists all four currency-pair members.
+    let ndf = { SecurityTermModules.empty with CurrencyPair = Some everyCurrencyPairMember }
+    Assert.True((guardMessage "currency_pair_member_unsupported" "NonDeliverableForward" ndf).IsNone)
+    // A bond's par is homed on notional.denomination by the legacy bridge, not by a contracted
+    // record, so the guard does not apply to it.
+    let bond = { SecurityTermModules.empty with Notional = Some everyNotionalMember }
+    Assert.True((guardMessage "notional_member_unsupported" "Bond" bond).IsNone)
+
+[<Fact>]
+let ``a directly built warrant carrying an exercise style is refused on both surfaces`` () =
+    let kindCodes, definitionCodes = bothSurfaces "Warrant" (warrantWith { validWarrant with ExerciseStyle = Some "American" })
+    Assert.Contains("exercise_member_unsupported", kindCodes)
+    Assert.Contains("exercise_member_unsupported", definitionCodes)
+    let cleanKindCodes, cleanDefinitionCodes = bothSurfaces "Warrant" (warrantWith validWarrant)
+    Assert.Empty cleanKindCodes
+    Assert.Empty cleanDefinitionCodes

@@ -1122,6 +1122,21 @@ the case (it already reads an unrecognised style as none), so the rule is pinned
 built records and listed in `CodesCoveredByFSharpTests`. Swaption is unaffected: its style was
 already text, with its own rule, and its decode keeps the text verbatim.
 
+**Review follow-up (2026-11-11): members a class does not persist.** The same review then
+raised the general form. A record now holds a whole term module, so a directly built record
+can set a member its class's flat row does not write: a warrant's exercise style, an FX spot's
+forward rate, a credit default swap's committed amount. `termsFromKind` passes the module
+through to the economic definition, the flat writer omits the member and the decode reads it
+back as absent, so an accepted value would sit in the economic document and be missing from
+the flat row. The record types used to rule this out. `persistedModuleMembers` now lists, for
+each of the twelve classes whose record holds an exercise, currency-pair or notional module,
+the members its flat row persists, and the definition surface refuses any other member with
+`exercise_member_unsupported`, `currency_pair_member_unsupported` or
+`notional_member_unsupported`. The ledger entries for these codes are derived from the same
+table. The flat decode sets only a class's own members, so no payload through the codec is
+affected; every class's fully populated twin still validates clean. With this and the
+exercise-style rule, a record accepts exactly what its pre-contraction type could hold.
+
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
 The last of the four themes the census named. A new `profileEnvelope` term module

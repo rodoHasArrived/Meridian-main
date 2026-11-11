@@ -501,7 +501,8 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     new `*_required` codes, five rules tightened from "valid when present" to "present and
     valid"). Review follow-up: the removed `ExerciseStyle` union had also guaranteed an
     option's style spelling, so `option_exercise_style_invalid` now requires one of the three
-    spellings the flat codec reads back. Contract multipliers and the cap/floor strikes stay scalar: their homes are on
+    spellings the flat codec reads back. And because a record now holds a whole module, three
+    `*_member_unsupported` codes refuse a member the class's flat row does not persist. Contract multipliers and the cap/floor strikes stay scalar: their homes are on
     wider modules that predate S3-E, and embedding a six-field module to carry one value would
     widen the record rather than shrink it.
   - **S3-E6 — residual scalar homes (implemented 2026-11-11).** Six term modules home the
