@@ -62,15 +62,20 @@ export function CaseQueue({
   inject();
   const listRef = useRef(null);
 
-  const move = (dir) => {
-    const idx = items.findIndex((it) => it.id === selectedId);
-    const next = Math.min(items.length - 1, Math.max(0, (idx < 0 ? 0 : idx + dir)));
-    const item = items[next];
-    if (item && onSelect) onSelect(item.id, item);
-  };
-  const onKeyDown = (e) => {
-    if (e.key === "ArrowDown") { e.preventDefault(); move(1); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+  const selectedIndex=items.findIndex(item=>item.id===selectedId);
+  const activeIndex=selectedIndex<0?0:selectedIndex;
+  const onKeyDown = event => {
+    let index;
+    const focused=Array.from(listRef.current?.querySelectorAll('[role="option"]')||[]).indexOf(document.activeElement);
+    const current=focused<0?activeIndex:focused;
+    if(event.key==="ArrowDown")index=Math.min(items.length-1,current+1);
+    else if(event.key==="ArrowUp")index=Math.max(0,current-1);
+    else if(event.key==="Home")index=0;
+    else if(event.key==="End")index=items.length-1;
+    else return;
+    event.preventDefault();
+    const item=items[index];
+    if(item){onSelect?.(item.id,item);listRef.current?.querySelectorAll('[role="option"]')[index]?.focus();}
   };
 
   if (!items.length) {
@@ -84,25 +89,26 @@ export function CaseQueue({
   return (
     <div
       className={`mds-caseq${className ? " " + className : ""}`}
-      role="listbox"
+      role={onSelect?"listbox":"list"}
       aria-label="Case queue"
       ref={listRef}
-      onKeyDown={onKeyDown}
+      onKeyDown={onSelect?onKeyDown:undefined}
       {...rest}
     >
-      {items.map((it) => {
+      {items.map((it, index) => {
         const selected = it.id === selectedId;
         const subParts = [it.category, it.reason, it.openedAtUtc && `opened ${it.openedAtUtc}`]
           .filter(Boolean);
+        const Item=onSelect?"button":"div";
         return (
-          <button
+          <Item
             key={it.id}
-            type="button"
-            role="option"
-            aria-selected={selected}
+            type={onSelect?"button":undefined}
+            role={onSelect?"option":"listitem"}
+            aria-selected={onSelect?selected:undefined}
             className="mds-caseq__row"
-            tabIndex={selected || (!selectedId && it === items[0]) ? 0 : -1}
-            onClick={() => onSelect && onSelect(it.id, it)}
+            tabIndex={onSelect?(index===activeIndex?0:-1):undefined}
+            onClick={onSelect?() => onSelect(it.id, it):undefined}
           >
             <span className={`mds-caseq__rail ${railClass(it.priority)}`} aria-hidden="true" />
             <span className="mds-caseq__id">{it.id}</span>
@@ -117,7 +123,7 @@ export function CaseQueue({
                 {it.assignee || "Unassigned"}
               </span>
             </span>
-          </button>
+          </Item>
         );
       })}
     </div>

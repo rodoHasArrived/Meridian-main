@@ -76,7 +76,7 @@ export function ClaimHeader({
                   >
                     <span aria-hidden="true" style={{ fontSize: 9, color: `var(--cond-${m.key}-fg)` }}>{m.glyph}</span>
                     {s.label}
-                    {s.detail ? <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--text-muted)" }}>{s.detail}</span> : null}
+                    {s.detail ? <span style={{ fontFamily: "var(--font-data)", fontSize: 10, color: "var(--text-primary)" }}>{s.detail}</span> : null}
                   </span>
                 );
               })}

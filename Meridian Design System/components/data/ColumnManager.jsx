@@ -63,10 +63,11 @@ export function ColumnManager({ cols, label = "Columns", widthStep = 20 }) {
   inject();
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
+  const buttonRef = React.useRef(null);
   React.useEffect(() => {
     if (!open) return;
     const onDown = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape" && ref.current?.contains(e.target)) { e.stopPropagation(); setOpen(false); buttonRef.current?.focus(); } };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
     return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("keydown", onKey); };
@@ -79,7 +80,7 @@ export function ColumnManager({ cols, label = "Columns", widthStep = 20 }) {
 
   return (
     <div className="mds-colmgr" ref={ref}>
-      <button type="button" aria-haspopup="true" aria-expanded={open}
+      <button ref={buttonRef} type="button" aria-haspopup="dialog" aria-expanded={open}
         className={`mds-colmgr__btn${hiddenCount > 0 ? " mds-colmgr__btn--active" : ""}`}
         onClick={() => setOpen((o) => !o)}>
         {label}{hiddenCount > 0 && ` · ${hiddenCount} hidden`}

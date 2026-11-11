@@ -43,7 +43,7 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function Checkbox({ checked = false, indeterminate = false, onChange, label, hint, disabled = false }) {
+export function Checkbox({ checked = false, indeterminate = false, onChange, label, hint, disabled = false, ...rest }) {
   inject();
   const inputRef = React.useRef(null);
   // Native indeterminate lives on the element, not an attribute — AT then reads "mixed".
@@ -54,7 +54,7 @@ export function Checkbox({ checked = false, indeterminate = false, onChange, lab
   return (
     <label className={`mds-chk-wrap${disabled ? " mds-chk-wrap--disabled" : ""}`}>
       <div className={`mds-chk-box${checked || indeterminate ? " mds-chk-box--on" : ""}`}>
-        <input ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked}
+        <input {...rest} ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked}
           onChange={e => onChange?.(e.target.checked)} disabled={disabled} />
         {mark && <span className="mds-chk-check" aria-hidden="true">{mark}</span>}
       </div>
@@ -68,12 +68,12 @@ export function Checkbox({ checked = false, indeterminate = false, onChange, lab
   );
 }
 
-export function Toggle({ checked = false, onChange, label, disabled = false }) {
+export function Toggle({ checked = false, onChange, label, disabled = false, ...rest }) {
   inject();
   return (
     <label className={`mds-tog-wrap${disabled ? " mds-tog-wrap--disabled" : ""}`}>
       <div className={`mds-tog-track${checked ? " mds-tog-track--on" : ""}`}>
-        <input type="checkbox" role="switch" className="mds-hidden-input" checked={checked}
+        <input {...rest} type="checkbox" role="switch" className="mds-hidden-input" checked={checked}
           aria-checked={checked} onChange={e => onChange?.(e.target.checked)} disabled={disabled} />
         <div className="mds-tog-thumb" aria-hidden="true" />
       </div>

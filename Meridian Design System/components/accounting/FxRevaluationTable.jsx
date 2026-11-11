@@ -3,7 +3,8 @@
 import React from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "../core/format.js";
-import { fxRevalue } from "./money";
+import { fxRevalue } from "./money.js";
+import { sumKnown, displayAmount } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -28,7 +29,7 @@ function inject() {
 .fxr td.fxr--l{text-align:left;}
 .fxr tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .fxr tbody tr.fxr__row--click{cursor:pointer;}
-.fxr tbody tr.fxr__row--on td{background:var(--bg-active,#E7EDF2);}
+.fxr tbody tr.fxr__row--on td{background:var(--selected-surface,#E7EDF2);}
 .fxr tbody tr.fxr__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .fxr tbody tr.fxr__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .fxr__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
@@ -59,9 +60,9 @@ export function FxRevaluationTable({
   const showAcct = rows.some((r) => r.account != null && r.account !== "");
 
   const computed = rows.map((r, i) => ({ ...r, ...fxRevalue(r.local, r.bookedRate, r.currentRate), _i: i }));
-  const totBooked = computed.reduce((a, r) => a + (isFinite(r.booked) ? r.booked : 0), 0);
-  const totCurrent = computed.reduce((a, r) => a + (isFinite(r.current) ? r.current : 0), 0);
-  const totGL = computed.reduce((a, r) => a + (isFinite(r.gainLoss) ? r.gainLoss : 0), 0);
+  const totBooked = sumKnown(computed.map(row=>row.booked));
+  const totCurrent = sumKnown(computed.map(row=>row.current));
+  const totGL = sumKnown(computed.map(row=>row.gainLoss));
 
   const rate = (v) => {
     const n = toNumber(v);
@@ -98,12 +99,12 @@ export function FxRevaluationTable({
                 onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
                 <td className="fxr--l fxr__ccy">{r.currency}</td>
                 {showAcct && <td className="fxr--l fxr__acct">{r.account}</td>}
-                <td><AmountCell value={r.local} currency={r.currency} decimals="auto" /></td>
+                <td><AmountCell value={displayAmount(r.local)} currency={r.currency} decimals="auto" /></td>
                 <td className="fxr__rate">{rate(r.bookedRate)}</td>
                 <td className="fxr__rate">{rate(r.currentRate)}</td>
-                <td><AmountCell value={r.booked} currency={base} /></td>
-                <td><AmountCell value={r.current} currency={base} /></td>
-                <td><AmountCell value={r.gainLoss} currency={base} mode="pnl" signed zeroDash /></td>
+                <td><AmountCell value={displayAmount(r.booked)} currency={base} /></td>
+                <td><AmountCell value={displayAmount(r.current)} currency={base} /></td>
+                <td><AmountCell value={displayAmount(r.gainLoss)} currency={base} mode="pnl" signed zeroDash /></td>
               </tr>
             );
           })}
@@ -111,9 +112,9 @@ export function FxRevaluationTable({
         <tfoot>
           <tr>
             <td className="fxr--l fxr__foot-label" colSpan={showAcct ? 5 : 4}>Net</td>
-            <td><AmountCell value={totBooked} currency={base} strong /></td>
-            <td><AmountCell value={totCurrent} currency={base} strong /></td>
-            <td><AmountCell value={totGL} currency={base} mode="pnl" signed strong /></td>
+            <td><AmountCell value={displayAmount(totBooked)} currency={base} strong /></td>
+            <td><AmountCell value={displayAmount(totCurrent)} currency={base} strong /></td>
+            <td><AmountCell value={displayAmount(totGL)} currency={base} mode="pnl" signed strong /></td>
           </tr>
         </tfoot>
       </table>

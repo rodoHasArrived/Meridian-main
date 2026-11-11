@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Masthead chrome — near-black brand bar capping the light workstation. Brand mark + module
  * breadcrumb · command search · UTC clock · environment mode badge · signed-in operator.
@@ -42,4 +43,4 @@ export interface WorkstationTopbarProps {
   /** Hide the operator chip — for pre-auth surfaces. @default true */
   showOperator?: boolean;
 }
-export declare function WorkstationTopbar(props: WorkstationTopbarProps): JSX.Element;
+export declare function WorkstationTopbar(props: WorkstationTopbarProps): React.JSX.Element;

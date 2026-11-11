@@ -5,6 +5,7 @@
 // (default: assertive for error, polite otherwise). Ready content is returned UNWRAPPED —
 // no live region ever wraps the working surface.
 import React from "react";
+import { Button } from "../core/Button";
 
 let injected = false;
 function inject() {
@@ -95,7 +96,7 @@ export function DataStateSwitch({
             <div className="mds-dss__title">{copy.title}</div>
             <div className="mds-dss__detail">{copy.detail}</div>
             {actionLabel && (
-              <button type="button" className="mds-dss__btn" onClick={onAction}>{actionLabel}</button>
+              <Button type="button" onClick={onAction}>{actionLabel}</Button>
             )}
           </div>
         )}

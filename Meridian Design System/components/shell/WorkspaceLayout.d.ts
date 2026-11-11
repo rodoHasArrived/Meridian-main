@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * WorkspaceLayout — named, persisted arrangement for a workstation screen (4.1, track A of
  * session continuity). `SplitPane` is pane-local and `SavedViews` is table-local; this is the
@@ -63,7 +64,7 @@ export declare function WorkspaceLayoutProvider(props: {
   storage?: Pick<Storage, "getItem" | "setItem">;
   onChange?: (state: { screenId: string; active: string; regions: Record<string, RegionArrangement>; dirty: boolean }) => void;
   children?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;
 export declare function useWorkspaceLayout(): WorkspaceLayoutApi;
 /** Bundle carrier. The compiler exposes only capitalized exports. */
 export declare const LayoutHooks: { useWorkspaceLayout: typeof useWorkspaceLayout };
@@ -74,7 +75,7 @@ export declare function WorkspaceLayoutBar(props: React.HTMLAttributes<HTMLDivEl
   /** Show `Restored · <layout>` when a stored arrangement was applied. @default true */
   showRestored?: boolean;
   saveLabel?: React.ReactNode; resetLabel?: React.ReactNode;
-}): JSX.Element | null;
+}): React.JSX.Element | null;
 
 /** Convenience composite — provider → bar → grid in one tag. Compose the three parts directly when
  *  the layout bar belongs elsewhere in the screen chrome. */
@@ -93,7 +94,7 @@ export declare function WorkspaceLayout(props: Omit<React.HTMLAttributes<HTMLDiv
   bar?: boolean;
   barActions?: React.ReactNode;
   children?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;
 
 /** Positional region declaration for `slots` — matched to children by index. */
 export interface SlotDeclaration {
@@ -117,7 +118,7 @@ export declare function WorkspaceLayoutGrid(props: React.HTMLAttributes<HTMLDivE
    *  (design-component templates, plain children) that cannot pass `LayoutRegion` elements. */
   slots?: SlotDeclaration[];
   children?: React.ReactNode;
-}): JSX.Element;
+}): React.JSX.Element;
 
 /** A region whose size, collapse, and visibility persist. Collapses to a labelled, focusable rail —
  *  never to nothing. `onPopOut` must keep the detached pane inside the same linked selection and
@@ -136,4 +137,4 @@ export declare function LayoutRegion(props: Omit<React.HTMLAttributes<HTMLElemen
   /** Fallback weight when used without a provider. */
   size?: number;
   children?: React.ReactNode;
-}): JSX.Element | null;
+}): React.JSX.Element | null;

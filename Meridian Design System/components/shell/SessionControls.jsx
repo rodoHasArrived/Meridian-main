@@ -38,7 +38,7 @@ function inject() {
   letter-spacing:.04em;background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);}
 .mds-rolebadge--admin{border-color:var(--purple,#2F648A);color:var(--purple-dim,#54448D);
   background:var(--purple-a10,rgba(111,91,167,.10));}
-.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-dim,#A64E33);
+.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--text-secondary,#535C65);
   background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-rolebadge--viewer{border-color:var(--border-strong,#AAA49A);}
 .mds-readonly{display:flex;align-items:center;gap:10px;padding:7px 14px;
@@ -62,26 +62,42 @@ export function UserMenu({ name = "", role = "", detail = "", items = [], onSign
   inject();
   const [open, setOpen] = React.useState(false);
   const rootRef = React.useRef(null);
+  const buttonRef = React.useRef(null);
+  const closeMenu = (refocus = true) => { setOpen(false); if (refocus) buttonRef.current?.focus(); };
+  React.useEffect(() => { if (open) rootRef.current?.querySelector('[role="menuitem"]')?.focus(); }, [open]);
   React.useEffect(() => {
     if (!open) return;
     const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape" && rootRef.current?.contains(e.target)) { e.stopPropagation(); closeMenu(); } };
+    const onFocus = (e) => { if (!rootRef.current?.contains(e.target)) closeMenu(false); };
     document.addEventListener("mousedown", onDown);
     document.addEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocus);
     return () => {
       document.removeEventListener("mousedown", onDown);
       document.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocus);
     };
   }, [open]);
   return (
     <div className="mds-usermenu" ref={rootRef}>
-      <button type="button" aria-haspopup="true" aria-expanded={open} aria-label={`Account: ${name}`}
+      <button ref={buttonRef} type="button" aria-haspopup="menu" aria-expanded={open} aria-label={`${initials(name)} — Account: ${name}`}
         className={`mds-usermenu__chip${onChrome ? "" : " mds-usermenu__chip--light"}`}
+        onKeyDown={(e) => { if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); } }}
         onClick={() => setOpen((o) => !o)}>
         {initials(name)}
       </button>
       {open && (
-        <div className="mds-usermenu__panel" role="menu">
+        <div className="mds-usermenu__panel" role="menu" aria-label="Account actions" onKeyDown={(e) => {
+          const items = Array.from(e.currentTarget.querySelectorAll('[role="menuitem"]')).filter((node) => !node.disabled);
+          const index = items.indexOf(document.activeElement);
+          let next;
+          if (e.key === "ArrowDown") next = items[(index + 1) % items.length];
+          else if (e.key === "ArrowUp") next = items[(index - 1 + items.length) % items.length];
+          else if (e.key === "Home") next = items[0];
+          else if (e.key === "End") next = items[items.length - 1];
+          if (next) { e.preventDefault(); next.focus(); }
+        }}>
           <div className="mds-usermenu__id">
             <span className="mds-usermenu__name">{name}</span>
             {(role || detail) && (
@@ -93,7 +109,7 @@ export function UserMenu({ name = "", role = "", detail = "", items = [], onSign
           {items.map((it, i) => (
             <button key={i} type="button" role="menuitem"
               className={`mds-usermenu__item${it.danger ? " mds-usermenu__item--danger" : ""}`}
-              onClick={() => { setOpen(false); it.onSelect && it.onSelect(); }}>
+              onClick={() => { closeMenu(); it.onSelect && it.onSelect(); }}>
               {it.label}
             </button>
           ))}
@@ -101,7 +117,7 @@ export function UserMenu({ name = "", role = "", detail = "", items = [], onSign
             <React.Fragment>
               {items.length > 0 && <div className="mds-usermenu__sep" />}
               <button type="button" role="menuitem" className="mds-usermenu__item mds-usermenu__item--danger"
-                onClick={() => { setOpen(false); onSignOut(); }}>
+                onClick={() => { closeMenu(); onSignOut(); }}>
                 Sign out
               </button>
             </React.Fragment>

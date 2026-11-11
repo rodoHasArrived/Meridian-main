@@ -39,7 +39,7 @@ function inject() {
 
 // Global event bus
 const listeners = new Set();
-window.MeridianToast = {
+const toastApi = {
   show({ tone = "info", title, detail, duration = 4000, action = null }) {
     const id = Date.now() + Math.random();
     listeners.forEach(fn => fn({ id, tone, title, detail, duration, action }));
@@ -57,28 +57,34 @@ window.MeridianToast = {
   dismiss(id) { dismissers.forEach(fn => fn(id)); },
 };
 const dismissers = new Set();
+if (typeof window !== "undefined") window.MeridianToast = toastApi;
 
 export function ToastProvider() {
   inject();
   const [toasts, setToasts] = React.useState([]);
+  const timers = React.useRef(new Set());
+  const schedule = (callback, duration) => {
+    const timer = setTimeout(() => { timers.current.delete(timer); callback(); }, duration);
+    timers.current.add(timer);
+  };
 
   React.useEffect(() => {
     const handler = (toast) => {
       setToasts(prev => [...prev.slice(-4), { ...toast, exiting: false }]);
-      if (toast.duration > 0) setTimeout(() => {
+      if (toast.duration > 0) schedule(() => {
         setToasts(prev => prev.map(t => t.id === toast.id ? { ...t, exiting: true } : t));
-        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 180);
+        schedule(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), 180);
       }, toast.duration);
     };
     const dismisser = (id) => dismiss(id);
     listeners.add(handler);
     dismissers.add(dismisser);
-    return () => { listeners.delete(handler); dismissers.delete(dismisser); };
+    return () => { listeners.delete(handler); dismissers.delete(dismisser); timers.current.forEach(clearTimeout); timers.current.clear(); };
   }, []);
 
   const dismiss = (id) => {
     setToasts(prev => prev.map(t => t.id === id ? { ...t, exiting: true } : t));
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 180);
+    schedule(() => setToasts(prev => prev.filter(t => t.id !== id)), 180);
   };
 
   if (!toasts.length) return null;
@@ -96,7 +102,7 @@ export function ToastProvider() {
               </button>
             )}
           </div>
-          <button type="button" className="mds-toast__close" onClick={() => dismiss(t.id)}>×</button>
+          <button type="button" className="mds-toast__close" aria-label="Dismiss notification" onClick={() => dismiss(t.id)}>×</button>
         </div>
       ))}
     </div>
@@ -104,7 +110,7 @@ export function ToastProvider() {
 }
 
 export function useToast() {
-  return window.MeridianToast;
+  return toastApi;
 }
 
 // Alias so the bundler finds a named "Toast" export from Toast.jsx

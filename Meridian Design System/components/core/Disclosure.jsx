@@ -98,7 +98,7 @@ export function DisclosureProvider({
   screenId = "global", detail: controlled, defaultDetail = "full", regions: defaultRegions,
   persist = true, urlParam = "detail", storage, onChange, children,
 }) {
-  const [state, setState] = React.useState(() => {
+  const initialState = () => {
     const saved = persist ? readStore(screenId, storage) : null;
     const fromUrl = readUrl(urlParam);
     return {
@@ -106,7 +106,14 @@ export function DisclosureProvider({
       regions: { ...(defaultRegions || null), ...(saved?.regions || null) },
       open: saved?.open || {},
     };
-  });
+  };
+  const [state, setState] = React.useState(initialState);
+  const previousScreen = React.useRef(screenId);
+  React.useLayoutEffect(() => {
+    if (previousScreen.current === screenId) return;
+    previousScreen.current = screenId;
+    setState(initialState());
+  }, [screenId]);
   const detail = controlled || state.detail;
 
   const commit = React.useCallback((updater) => {

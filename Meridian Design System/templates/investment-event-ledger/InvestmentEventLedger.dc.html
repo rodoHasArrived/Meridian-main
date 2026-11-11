@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Investment Event Ledger — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -22,7 +23,7 @@
       <h1 style="margin:0;font:600 11px var(--font-body);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);">Investment event ledger · EVT-2026-0512</h1>
       <x-import component-from-global-scope="MeridianDesignSystem_205d17.ClaimHeader" context="{{ eventContext }}" claim="US Life purchased USD 10,000,000 par of Acme Energy 5.25% 2034 at 98.750 — a 125,000 discount that accretes into book value from settlement." note="Trade May 29, 2026 with Northstar Securities, settling June 2 for 9,951,562.50 including 76,562.50 accrued interest. Illustrative design data; treatment and account mapping come from the configured Meridian rules." states="{{ eventStates }}" hint-size="100%,96px">
         <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ basis }}" options="{{ basisOptions }}" on-change="{{ onBasis }}" hint-size="200px,26px"></x-import>
-        <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onPost }}" hint-size="86px,28px">Post event</x-import>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onPost }}" hint-size="86px,28px" disabled="{{ true }}" title="Posting requires the application ledger transport and permission checks; this event is an unposted example." aria-description="Posting requires the application ledger transport and permission checks; this event is an unposted example.">Post event</x-import>
       </x-import>
       <section style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:14px;">
         <div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin-bottom:12px;">Event lifecycle · EVT-2026-08421</div>
@@ -69,17 +70,17 @@
               <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
                 <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Update the classification</div>
                 <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Corrects the event and the Security Master. Schedules recalculate; downstream positions using the same master record are identified.</p>
-                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px">Choose scope</x-import>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="This example contains one fixed event scope; scope selection requires application records." aria-description="This example contains one fixed event scope; scope selection requires application records.">Choose scope</x-import>
               </div>
               <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
                 <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Override this event only</div>
                 <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Keeps the master classification. Requires reason, basis, effective date, policy reference, preparer, and approver.</p>
-                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px">Record override</x-import>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="Recording an override requires application authorization and an audit instruction." aria-description="Recording an override requires application authorization and an audit instruction.">Record override</x-import>
               </div>
               <div style="border:1px solid var(--border);border-radius:2px;padding:10px;">
                 <div style="font-size:12px;font-weight:600;color:var(--text-primary);margin-bottom:4px;">Post a linked adjustment</div>
                 <p style="font-size:11.5px;line-height:16px;color:var(--text-muted);margin:0 0 8px;">Leaves the original event posted and creates a related adjustment journal with explicit effective dates and an audit trail.</p>
-                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px">Create adjustment</x-import>
+                <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" hint-size="120px,26px" disabled="{{ true }}" title="Creating an adjustment requires an application journal instruction; no journal is posted here." aria-description="Creating an adjustment requires an application journal instruction; no journal is posted here.">Create adjustment</x-import>
               </div>
             </div>
           </section>
@@ -156,7 +157,6 @@ class Component extends DCLogic {
         { value: "tax", label: "Tax" },
       ],
       onBasis: (v) => this.setState({ basis: v }),
-      onPost: () => {},
       stage: this.state.stage,
       onStage: (id) => this.setState({ stage: id }),
       stages: [
@@ -212,7 +212,7 @@ class Component extends DCLogic {
       opening: row.openingBook,
       closing: row.closingBook,
       movements: [
-        { label: "Discount accretion", value: row.accretion, note: "BOND.INCOME.STAT.021", linkLabel: "Journal", onOpen: () => {} },
+        { label: "Discount accretion", value: row.accretion, note: "BOND.INCOME.STAT.021" },
         { label: "Principal movement", value: 0 },
         { label: "Other book-value adjustment", value: 0 },
       ],

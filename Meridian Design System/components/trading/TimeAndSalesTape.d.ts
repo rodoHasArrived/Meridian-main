@@ -40,4 +40,4 @@ export interface TimeAndSalesTapeProps {
   locale?: string;
 }
 
-export declare function TimeAndSalesTape(props: TimeAndSalesTapeProps): JSX.Element;
+export declare function TimeAndSalesTape(props: TimeAndSalesTapeProps): React.JSX.Element;

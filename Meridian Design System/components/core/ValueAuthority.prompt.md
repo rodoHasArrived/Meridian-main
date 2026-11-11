@@ -13,3 +13,7 @@ Name which of several legitimate versions of a value Meridian is using, and why.
 ```
 
 Say "authoritative", never "true" — authority is contextual. Never render a bare stage color; the stage is always named. Do not use this for data condition, freshness or materiality: those are separate channels.
+
+Candidates carrying a restricted condition render “Restricted” in both surfaces
+and never call the value formatter. Missing/not-applicable candidates render “—”.
+Authority and availability are separate: a posted stage may still be withheld.

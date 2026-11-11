@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * FormatProvider — declares the numeric surface for a screen: locale, currency, negative style,
  * digit system, price/quantity precision. `core/format.js` is the numeric authority (the only
@@ -59,7 +60,7 @@ export interface FormatProviderProps extends Partial<NumericSurface> {
   children?: React.ReactNode;
 }
 
-export declare function FormatProvider(props: FormatProviderProps): JSX.Element;
+export declare function FormatProvider(props: FormatProviderProps): React.JSX.Element;
 
 /** The resolved surface with every formatter pre-bound. Falls back to process defaults with no provider. */
 export declare function useFormat(overrides?: Partial<NumericSurface>): BoundFormatters;

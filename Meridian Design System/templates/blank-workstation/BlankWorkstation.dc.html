@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Start · Blank Workstation — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -52,7 +53,7 @@ class Component extends DCLogic {
     this._untick = window.MeridianWorld ? window.MeridianWorld.tick(this) : null;
   }
   componentWillUnmount() { if (this._untick) this._untick(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
   env() { return String(this.props.environment ?? "PAPER").toUpperCase(); }
 
@@ -84,8 +85,8 @@ class Component extends DCLogic {
     const el = React.createElement;
     const layer = this.operatorLayer();
     return {
-      dataState: this.props.dataState ?? "ready",
-      onRetry: () => {},
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
       paletteCommands: layer.commands, paletteGroups: layer.groupOrder, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
       topbar: WorkstationTopbar && el(WorkstationTopbar, {
         moduleLabel: "Untitled Workstation", environment: this.env(),

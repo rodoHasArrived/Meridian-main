@@ -82,11 +82,12 @@ function createLedger(handlers = { current: {} }) {
     latest(rowId, field) { for (let i = entries.length - 1; i >= 0; i--) { const e = entries[i]; if (e.rowId === rowId && e.field === field && e.status !== "dismissed") return e; } return null; },
     forRow(rowId) { return entries.filter((e) => e.rowId === rowId); },
     async commit(edit) {
-      const e = { id: `opt-${++seq}`, status: "pending", at: Date.now(), ...edit };
+      const e = { ...edit, id: `opt-${++seq}`, status: "pending", at: Date.now() };
       entries = [...entries, e]; emit();
       let result;
       try {
-        result = h().commit ? await h().commit(e) : undefined;
+        if (typeof h().commit !== "function") throw new Error("No write handler configured; change was not submitted");
+        result = await h().commit(e);
       } catch (err) {
         const reason = (err && err.message) || String(err || "rejected by the write path");
         patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
@@ -109,7 +110,9 @@ function createLedger(handlers = { current: {} }) {
       if (!targets.length) return;
       targets.forEach((t) => patch(t.id, () => ({ status: "reverting" })));
       try {
-        if (h().revert) await h().revert(targets, reason);
+        if (typeof reason !== "string" || !reason.trim()) throw new Error("A reason is required to revert a confirmed change");
+        if (typeof h().revert !== "function") throw new Error("No revert handler configured; compensation was not submitted");
+        await h().revert(targets, reason);
       } catch (err) {
         targets.forEach((t) => patch(t.id, () => ({ status: "confirmed", revertError: (err && err.message) || String(err) })));
         return;

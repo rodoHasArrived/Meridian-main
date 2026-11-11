@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * SelectionCompare — comparison by selection (4.2, UX-depth track E-2). Two or more committed
  * selections — DataGrid rows, figure series, ledger lines — are promoted into a `PlateGrid` from the
@@ -31,6 +32,7 @@ export interface SelectionCompareApi {
   clear(): void;
   open: boolean;
   setOpen(open: boolean): void;
+  onCompare?: (items: CompareItem[]) => void;
 }
 export declare function useSelectionCompare(): SelectionCompareApi;
 /** Bundle carrier. The compiler exposes only capitalized exports. */
@@ -48,7 +50,7 @@ export interface SelectionCompareProviderProps {
   onCompare?: (items: CompareItem[]) => void;
   children?: React.ReactNode;
 }
-export declare function SelectionCompareProvider(props: SelectionCompareProviderProps): JSX.Element;
+export declare function SelectionCompareProvider(props: SelectionCompareProviderProps): React.JSX.Element;
 
 export interface CompareToggleProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   item: CompareItem;
@@ -59,7 +61,7 @@ export interface CompareToggleProps extends React.ButtonHTMLAttributes<HTMLButto
   /** Glyph only — for a narrow grid column. @default false */
   compact?: boolean;
 }
-export declare function CompareToggle(props: CompareToggleProps): JSX.Element;
+export declare function CompareToggle(props: CompareToggleProps): React.JSX.Element;
 
 export interface CompareTrayProps extends React.HTMLAttributes<HTMLDivElement> {
   /** `"corner"` floats above the plane; `"inline"` sits where placed. @default "inline" */
@@ -69,7 +71,7 @@ export interface CompareTrayProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Render the tray with this text when the set is empty (default: render nothing). */
   emptyLabel?: React.ReactNode;
 }
-export declare function CompareTray(props: CompareTrayProps): JSX.Element | null;
+export declare function CompareTray(props: CompareTrayProps): React.JSX.Element | null;
 
 export interface CompareSheetProps extends React.HTMLAttributes<HTMLElement> {
   /** @default "overlay" */
@@ -84,4 +86,6 @@ export interface CompareSheetProps extends React.HTMLAttributes<HTMLElement> {
   footerValue?: (item: CompareItem) => string;
 }
 /** Renders only while `open` and the set holds two or more. Escape closes the overlay. */
-export declare function CompareSheet(props: CompareSheetProps): JSX.Element | null;
+export declare function CompareSheet(props: CompareSheetProps): React.JSX.Element | null;
+
+export declare const SelectionCompare: { Provider: typeof SelectionCompareProvider; Toggle: typeof CompareToggle; Tray: typeof CompareTray; readonly Sheet: typeof CompareSheet; useSelectionCompare: typeof useSelectionCompare };

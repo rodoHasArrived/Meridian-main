@@ -130,7 +130,7 @@ export function AttestationPanel({
     {!voidFindings.length&&reviewFindings.length?<div className="mds-att__banner">Worth re-reading before signing — {reviewFindings.map(sayFinding).join(" · ")}.</div>:null}
     {gates.length?<><div className="mds-att__sub">Readiness</div><div className="mds-att__gates">{gates.map((g,i)=><div className="mds-att__gate" data-status={g.status} data-blocking={g.blocking||g.status==="blocked"?"true":undefined} key={g.id||g.label||i}><span className="mds-att__mark" aria-hidden="true">{glyph(g.status)}</span><span>{g.label}</span><span className="mds-att__detail">{g.detail||g.status}</span></div>)}</div></>:null}
     <div className="mds-att__evidence" data-complete={evidenceDeclared&&evidenceComplete?"true":"false"}><span>Evidence completeness{evidence&&evidence.label?` · ${evidence.label}`:""}</span><b>{evidenceDeclared?`${evidence.attached} of ${evidence.required} attached`:"Not declared"}</b></div>
-    {signatories.length?<dl className="mds-att__roles">{signatories.map((s,i)=><div className="mds-att__role-row" key={s.role||i}><dt>{s.role}</dt><dd>{s.name||"Unassigned"}</dd><small>{s.at||s.status||"Pending"}</small></div>)}</dl>:null}
+    {signatories.length?<dl className="mds-att__roles">{signatories.map((s,i)=><div className="mds-att__role-row" key={s.role||i}><dt>{s.role}</dt><dd>{s.name||"Unassigned"}</dd><dd><small>{s.at||s.status||"Pending"}</small></dd></div>)}</dl>:null}
     {bind.length?<dl className="mds-att__bind">{bind.map(([k,v])=><div key={k}><dt>{k}</dt><dd>{v}</dd></div>)}</dl>:null}
     {certification||requireComment?<div className="mds-att__cert">
       {certification?<blockquote>{certification}</blockquote>:null}

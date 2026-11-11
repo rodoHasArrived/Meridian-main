@@ -3,7 +3,7 @@
 // toISOString(), shifting every range back a day for users west of UTC.
 // Preset ranges (MTD/QTD/YTD…) sit beside the calendar because that is how a desk actually picks.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate";
+import { toISO, fromISO, addDays, addMonths, sameDay, parseLoose, dowLabels, longDate, monthTitle, weeksFor, rangePresets } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -188,6 +188,9 @@ export function DateRangePicker({
 
   const onGridKey = (e) => {
     const k = e.key;
+    if (k === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+    // Presets and month-navigation buttons keep their native Enter/Space behavior.
+    if (!e.target.classList.contains("mds-dr-day")) return;
     let next = null;
     if (k === "ArrowLeft") next = addDays(focusDay, -1);
     else if (k === "ArrowRight") next = addDays(focusDay, 1);

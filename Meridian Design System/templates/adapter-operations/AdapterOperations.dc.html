@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Monitor · Adapter Operations — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -13,7 +14,7 @@
 <meta name="dc-template" content="adapter-operations">
 <style>html,body{margin:0;padding:0;height:100%}</style>
 </helmet>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Adapter diagnostics" action-label="Retry" on-action="{{ noop }}" hint-size="100%,880px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Adapter diagnostics" action-label="Retry" on-action="{{ onPreviewRetry }}" hint-size="100%,880px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="investigate" labelled-by="screen-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,880px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectTrailProvider" screen-id="adapter-operations" default-entries="{{ trailSeed }}" default-pinned="{{ trailPinned }}" on-navigate="{{ onTrailNavigate }}" hint-size="100%,880px">
 <div style="height:100%;display:flex;flex-direction:column;min-height:0;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)">
@@ -57,6 +58,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1600,&quot;height&quot;:1000},&quot;scope&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE + PAPER&quot;,&quot;options&quot;:[&quot;LIVE + PAPER&quot;,&quot;LIVE&quot;,&quot;PAPER&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapters&quot;},&quot;sortByPosture&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Adapters&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;LIVE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  retryPreview = () => this.setState({ previewReady: true });
   applyChrome() {
     const html = document.documentElement;
     html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
@@ -73,7 +75,7 @@ class Component extends DCLogic {
     }, 60);
   }
   componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
   clockLabel() { return window.MeridianWorld ? window.MeridianWorld.clock() : "14:32:08 UTC"; }
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
 
@@ -175,6 +177,8 @@ class Component extends DCLogic {
   }
 
   renderVals() {
+    // Retry only the declared synthetic preview, never an application transport.
+
     this.applyChrome();
     const { WorkstationTopbar, StatusBar } = this.ds();
     const el = React.createElement;
@@ -187,7 +191,7 @@ class Component extends DCLogic {
     for (const r of visible) if (tally[r.posture] != null) tally[r.posture]++;
 
     return {
-      dataState: this.props.dataState ?? "ready",
+      onPreviewRetry: this.retryPreview, dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
       clockLabel: this.clockLabel(),
       noop: () => {},
       adapters: visible,
@@ -207,7 +211,7 @@ class Component extends DCLogic {
       ],
       slots: [
         { id: "adapters", label: "Adapters · posture, schedule, keys", minSize: 0.34 },
-        { id: "evidence", label: "Evidence · log and interventions", minSize: 0.22, onPopOut: () => {} },
+        { id: "evidence", label: "Evidence · log and interventions", minSize: 0.22 },
       ],
 
       logTitle: selRow ? `${selRow.name.toLowerCase()} · ${(selRow.environment || "live").toLowerCase()}` : "adapter log",

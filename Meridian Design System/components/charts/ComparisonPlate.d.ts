@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Comparison plate — Meridian's standardized unit for comparing repeated
  * entities (peer securities, sovereign curves, funds, provider quality,
@@ -50,7 +51,7 @@ export interface PlateGridProps extends Omit<React.HTMLAttributes<HTMLDivElement
   selectedId?: string;
   onSelect?: (id: string) => void;
 }
-export declare function PlateGrid(props: PlateGridProps): JSX.Element;
+export declare function PlateGrid(props: PlateGridProps): React.JSX.Element;
 
 export interface ComparisonPlateProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect"> {
   title: string;
@@ -70,4 +71,4 @@ export interface ComparisonPlateProps extends Omit<React.HTMLAttributes<HTMLElem
   selected?: boolean;
   onSelect?: () => void;
 }
-export declare function ComparisonPlate(props: ComparisonPlateProps): JSX.Element;
+export declare function ComparisonPlate(props: ComparisonPlateProps): React.JSX.Element;

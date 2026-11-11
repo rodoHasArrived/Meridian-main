@@ -190,14 +190,17 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
   const [open, setOpen] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
   const root = React.useRef(null);
-  const mine = layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref);
+  const validAnchor=anchor&&typeof anchor.ref==="string"&&anchor.ref.trim()!=="";
+  const mine = validAnchor?layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref):[];
+  React.useEffect(()=>{setOpen(false);setAdding(false)},[anchor?.ref,layer.objectId]);
   const stale = mine.some((n) => n.stale);
   React.useEffect(() => {
-    if (!open) return;
+    if (!open || !validAnchor) return;
     const off = (e) => { if (root.current && !root.current.contains(e.target)) { setOpen(false); setAdding(false); } };
     document.addEventListener("pointerdown", off);
     return () => document.removeEventListener("pointerdown", off);
-  }, [open]);
+  }, [open,validAnchor,anchor?.ref]);
+  if(!validAnchor)return <span className={`mds-ann ${block?"mds-ann--block":""} ${className}`} title="Annotations unavailable until an anchor is supplied" {...rest}>{children}</span>;
   const label = mine.length ? `${mine.length} annotation${mine.length === 1 ? "" : "s"}${stale ? ", some stale" : ""} on ${anchor.label || anchor.ref}` : `Annotate ${anchor.label || anchor.ref}`;
   return (
     <span ref={root} className={`mds-ann ${block ? "mds-ann--block" : ""} ${className}`} onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); setAdding(false); } }} {...rest}>

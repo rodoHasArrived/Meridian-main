@@ -55,8 +55,8 @@ function inject() {
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E7EDF2);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(154,113,19,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#A4ABB2);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-disabled,#A4ABB2);}
+.ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#535C65);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-secondary,#535C65);}
 .ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
 .ldg__date{color:var(--text-secondary,#535C65);}

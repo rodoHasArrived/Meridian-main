@@ -37,7 +37,11 @@ export function Tabs({ tabs = [], value, defaultTab = 0, onChange, children }) {
   const uid = React.useId();
   const [internal, setInternal] = React.useState(defaultTab);
   const controlled = value != null;
-  const active = controlled ? value : internal;
+  const requested = controlled ? value : internal;
+  const firstEnabled = tabs.findIndex((tab) => !tab?.disabled);
+  const validRequested = Number.isInteger(requested) && requested >= 0 && requested < tabs.length && !tabs[requested]?.disabled;
+  const active = validRequested ? requested : controlled ? -1 : firstEnabled;
+  const tabStop = active >= 0 ? active : firstEnabled;
   const barRef = React.useRef(null);
 
   const select = (i) => {
@@ -87,7 +91,7 @@ export function Tabs({ tabs = [], value, defaultTab = 0, onChange, children }) {
               data-idx={i}
               aria-selected={active === i}
               aria-controls={panels[i] ? `${uid}-panel-${i}` : undefined}
-              tabIndex={active === i ? 0 : -1}
+              tabIndex={tabStop === i ? 0 : -1}
               className={`mds-tabs__tab${active === i ? " mds-tabs__tab--active" : ""}`}
               onClick={() => select(i)}
               onKeyDown={(e) => handleKey(e, i)}
@@ -101,6 +105,7 @@ export function Tabs({ tabs = [], value, defaultTab = 0, onChange, children }) {
       </div>
       {panels.map((panel, i) => (
         <div key={i} role="tabpanel" id={`${uid}-panel-${i}`} aria-labelledby={`${uid}-tab-${i}`}
+          tabIndex={0} hidden={active !== i}
           className={`mds-tabs__panel${active === i ? " mds-tabs__panel--active" : ""}`}>
           {panel}
         </div>

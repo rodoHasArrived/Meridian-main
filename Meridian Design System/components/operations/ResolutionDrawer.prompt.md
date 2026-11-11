@@ -16,3 +16,5 @@ rationale — in a contextual side region that keeps the originating row or figu
 - Exactly one primary action; everything else is secondary. Resolution rationale can be required.
 - Evidence items mark what is **missing**, not only what is attached.
 - On narrow viewports the drawer becomes a full-width region with an explicit return path.
+
+Resolve receives the rationale string both as a primary and as a secondary action. Classification without its mutation callback is disabled, and controlled text without a change callback is read-only.

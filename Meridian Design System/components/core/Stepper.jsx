@@ -41,7 +41,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-stepper-step--error .mds-stepper-step__label{color:var(--red-dim,#7D322F);}
 .mds-stepper-step__badge{flex:0 0 auto;margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;
   background:var(--bg-medium);color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-chip,2px);}
-.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-ghost,#F7E9E7);color:var(--red-dim,#7D322F);}
+.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-a10,#F7E9E7);color:var(--red-dim,#7D322F);}
 .mds-stepper-step__sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 @media print{.mds-stepper{background:none;}.mds-stepper-step{background:none;}}
 `;

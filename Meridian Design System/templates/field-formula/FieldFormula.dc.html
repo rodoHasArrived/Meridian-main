@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Compose · Field & Formula — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -15,7 +16,7 @@
 <meta name="dc-template" content="field-formula">
 <style>html,body{margin:0;padding:0;height:100%}
 .ff-sug{display:flex;align-items:center;gap:10px;padding:7px 10px;border-left:2px solid transparent;border-bottom:1px solid var(--border);cursor:pointer;background:none;width:100%;text-align:left;font:inherit;color:inherit}
-.ff-sug:hover,.ff-sug[data-on="true"]{border-left-color:var(--brand-signal,#C56343);background:var(--bg-active,#EDEFF0)}
+.ff-sug:hover,.ff-sug[data-on="true"]{border-left-color:var(--text-primary);background:var(--bg-active,#EDEFF0)}
 .ff-sug:last-child{border-bottom:none}
 .ff-ref{display:flex;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border);background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer;font:inherit;color:inherit}
 .ff-ref:hover code{text-decoration:underline;text-underline-offset:2px}
@@ -78,7 +79,7 @@
 <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;align-items:center;gap:8px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Signature</x-import>
-<code style="font:13px var(--font-data);color:var(--brand-signal,#C56343)">{{ selSig }}</code>
+<code style="font:13px var(--font-data);color:var(--text-primary)">{{ selSig }}</code>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ selTone }}" hint-size="44px,18px">{{ selCat }}</x-import>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 1 }}" items="{{ signatureItems }}" hint-size="100%,110px"></x-import>

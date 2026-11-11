@@ -3,6 +3,7 @@
 // screen itself, rather than only declaratively in template source. The tray keeps the candidate
 // set visible and the sheet applies the comparison-plate contract: one shared domain, one tick set.
 import React from "react";
+import { useOverlayFocus } from "../core/useOverlayFocus";
 import { PlateGrid } from "../charts/ComparisonPlate";
 
 let injected = false;
@@ -12,7 +13,7 @@ function inject() {
   const el = document.createElement("style");
   el.setAttribute("data-mds", "selection-compare");
   el.textContent = `
-.mds-cmp__tog{display:inline-flex;align-items:center;gap:4px;min-height:24px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+.mds-cmp__tog{display:inline-flex;align-items:center;gap:4px;min-width:24px;min-height:24px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
   background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);font:600 10px var(--font-data);letter-spacing:.03em;text-transform:uppercase;cursor:pointer;white-space:nowrap;
   transition:border-color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
 .mds-cmp__tog:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border-hover,#BEB8AD);}
@@ -57,7 +58,7 @@ function createSet(handlers) {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
     get items() { return items; },
     has(id) { return items.some((i) => i.id === id); },
-    toggle(item) { items = items.some((i) => i.id === item.id) ? items.filter((i) => i.id !== item.id) : items.length >= (handlers.current.max || 6) ? items : [...items, item]; emit(); },
+    toggle(item) { items = items.some((i) => i.id === item.id) ? items.filter((i) => i.id !== item.id) : items.length >= (handlers.current.max ?? 6) ? items : [...items, item]; emit(); },
     remove(id) { items = items.filter((i) => i.id !== id); emit(); },
     clear() { items = []; emit(); },
   };
@@ -88,7 +89,7 @@ function useCtx() {
 }
 export function useSelectionCompare() {
   const c = useCtx();
-  return { items: c.set.items, max: c.max, has: c.set.has, toggle: c.set.toggle, remove: c.set.remove, clear: c.set.clear, open: c.open, setOpen: c.setOpen };
+  return { items: c.set.items, max: c.max, has: c.set.has, toggle: c.set.toggle, remove: c.set.remove, clear: () => { c.set.clear(); c.setOpen(false); }, open: c.open, setOpen: c.setOpen, onCompare: c.onCompare };
 }
 /** Bundle carrier — the compiler exposes only capitalized exports. */
 export const SelectionCompareHooks = { useSelectionCompare };
@@ -101,7 +102,7 @@ export function CompareToggle({ item, label = "Compare", pressedLabel = "In comp
   const full = !on && c.items.length >= c.max;
   return (
     <button type="button" className={`mds-cmp__tog ${className}`} aria-pressed={on} disabled={full} title={full ? `Compare set is full (${c.max})` : undefined}
-      aria-label={`${on ? "Remove from" : "Add to"} comparison: ${item.title}`} onClick={(e) => { e.stopPropagation(); c.toggle(item); }} {...rest}>
+      aria-label={`${on ? pressedLabel : label}: ${item.title}; ${on ? "remove from" : "add to"} comparison`} onClick={(e) => { e.stopPropagation(); c.toggle(item); }} {...rest}>
       <i aria-hidden="true">{on ? "▣" : "▢"}</i>{!compact && (on ? pressedLabel : label)}
     </button>
   );
@@ -125,7 +126,7 @@ export function CompareTray({ docked = "inline", label = "to compare", emptyLabe
       </div>
       <span className="mds-cmptray__spacer" />
       {n > 0 && <button type="button" className="mds-cmp__btn" onClick={c.clear}>Clear</button>}
-      <button type="button" className="mds-cmp__btn mds-cmp__btn--primary" disabled={n < 2} onClick={() => c.setOpen(true)}>Compare{n >= 2 ? ` ${n}` : ""}</button>
+      <button type="button" className="mds-cmp__btn mds-cmp__btn--primary" disabled={n < 2} onClick={() => { c.onCompare?.(c.items); c.setOpen(true); }}>Compare{n >= 2 ? ` ${n}` : ""}</button>
     </div>
   );
 }
@@ -139,7 +140,10 @@ export function CompareSheet({ mode = "overlay", title = "Comparison by selectio
   const c = useCtx();
   const items = c.set.items;
   const [sel, setSel] = React.useState(null);
+  const sheetRef = React.useRef(null);
+  useOverlayFocus(sheetRef, c.open && items.length >= 2 && mode === "overlay");
   const close = () => c.setOpen(false);
+  React.useEffect(() => { if (c.open && items.length < 2) c.setOpen(false); }, [c.open, items.length]);
   React.useEffect(() => {
     if (!c.open || mode !== "overlay") return;
     const onKey = (e) => { if (e.key === "Escape") close(); };
@@ -150,7 +154,7 @@ export function CompareSheet({ mode = "overlay", title = "Comparison by selectio
   const cats = categories || c.categories || (items[0] && items[0].categories) || items[0].values.map((_, i) => String(i + 1));
   const plates = items.map((i) => ({ ...i, footerLabel: i.footerLabel ?? (footerLabel ? footerLabel : undefined), footerValue: i.footerValue ?? (footerValue ? footerValue(i) : undefined) }));
   return (
-    <section className={`mds-cmpsheet ${mode === "overlay" ? "mds-cmpsheet--overlay" : ""} ${className}`} role={mode === "overlay" ? "dialog" : undefined} aria-label={title} {...rest}>
+    <section ref={sheetRef} className={`mds-cmpsheet ${mode === "overlay" ? "mds-cmpsheet--overlay" : ""} ${className}`} role={mode === "overlay" ? "dialog" : undefined} aria-modal={mode === "overlay" ? true : undefined} aria-label={title} {...rest}>
       <div className="mds-cmpsheet__h">
         <span className="mds-cmpsheet__t">{title}</span>
         <span className="mds-cmpsheet__meta">{items.length} plates · one shared domain · {cats.length} categories</span>

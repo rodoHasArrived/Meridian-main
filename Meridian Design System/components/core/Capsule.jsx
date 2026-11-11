@@ -24,7 +24,7 @@ function inject() {
 .mds-capsule__tool{width:26px;height:26px;border:1px solid transparent;background:transparent;color:var(--text-muted,#606870);font:600 11px var(--font-data,monospace);cursor:pointer;}
 .mds-capsule__tool:hover{background:var(--bg-hover,#EDEFF0);border-color:var(--border,#D2CDC3);color:var(--text-primary,#20252B)}.mds-capsule__tool:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
 .mds-capsule__body{flex:1;min-height:0;overflow:auto;padding:12px;}
-.mds-capsule__footer{min-height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-muted,#606870);}
+.mds-capsule__footer{min-height:28px;display:flex;align-items:center;gap:8px;padding:0 12px;border-top:1px solid var(--border-divider,#E2DED5);font:10px var(--font-data,monospace);color:var(--text-secondary,#535C65);}
 .mds-capsule.mds-capsule--collapsed{height:42px;min-height:42px}.mds-capsule--collapsed .mds-capsule__body,.mds-capsule--collapsed .mds-capsule__footer{display:none}
 .mds-capsule__resize{position:absolute;right:3px;bottom:3px;width:12px;height:12px;color:var(--text-disabled,#A4ABB2);font-size:10px;line-height:12px;cursor:nwse-resize;}
 `;
@@ -53,12 +53,12 @@ export function Capsule({
   const generatedId = React.useId();
   const key = storageKey ? `mds-capsule:${storageKey}` : null;
   const [collapsed, setCollapsed] = React.useState(() => {
-    if (!key || typeof localStorage === "undefined") return defaultCollapsed;
-    try { const saved = localStorage.getItem(key); return saved == null ? defaultCollapsed : saved === "1"; } catch { return defaultCollapsed; }
+    if (!key) return defaultCollapsed;
+    try { if (typeof localStorage === "undefined") return defaultCollapsed; const saved = localStorage.getItem(key); return saved == null ? defaultCollapsed : saved === "1"; } catch { return defaultCollapsed; }
   });
   const toggle = () => setCollapsed((current) => {
     const next = !current;
-    if (key && typeof localStorage !== "undefined") try { localStorage.setItem(key, next ? "1" : "0"); } catch {}
+    if (key) try { if (typeof localStorage !== "undefined") localStorage.setItem(key, next ? "1" : "0"); } catch {}
     return next;
   });
   const inline = height ? { "--capsule-height": typeof height === "number" ? `${height}px` : height, ...style } : style;

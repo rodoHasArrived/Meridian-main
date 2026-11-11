@@ -8,12 +8,13 @@ import { formatNumber } from "../core/format.js";
 import { formatGridSigned as formatSigned } from "./gridFormat";
 import { useThemeRowHeight } from "./useThemeRowHeight";
 
-const num = (v) => (typeof v === "number" && !Number.isNaN(v) ? v : 0);
+const isNumber = (v) => typeof v === "number" && Number.isFinite(v);
+const sumColumn = (rows, key) => rows.every((row) => isNumber(row[key])) ? rows.reduce((total, row) => total + row[key], 0) : null;
 
 export const CELL_FORMATS = {
   text: (v) => (v === null || v === undefined || v === "" ? "\u2014" : String(v)),
   num: (v, c) => (v === null || v === undefined ? "\u2014" : formatNumber(Number(v), { decimals: c.digits ?? 0 })),
-  money: (v, c) => (v === null || v === undefined || v === 0 ? "\u2014" : formatSigned(v, { style: "accounting", digits: c.digits ?? 2 })),
+  money: (v, c) => (v === null || v === undefined ? "\u2014" : formatSigned(v, { style: "accounting", digits: c.digits ?? 2 })),
   signed: (v, c) => formatSigned(v, { digits: c.digits ?? 2 }),
   price: (v, c) => (v === null || v === undefined ? "\u2014" : Number(v).toFixed(c.digits ?? 4)),
   pct: (v, c) => (v === null || v === undefined ? "\u2014" : formatSigned(v, { digits: c.digits ?? 2, suffix: "%" })),
@@ -148,15 +149,16 @@ function fmt(col, row) {
 export function gridProof(proof, rows) {
   if (!proof) return null;
   if (proof.type === "balance") {
-    const d = rows.reduce((a, r) => a + num(r[proof.debit]), 0);
-    const c = rows.reduce((a, r) => a + num(r[proof.credit]), 0);
+    const d = sumColumn(rows, proof.debit), c = sumColumn(rows, proof.credit);
+    if (!rows.length || d === null || c === null) return { ok: false, label: proof.label || "\u03A3 debit = \u03A3 credit", text: "Incomplete evidence" };
     const out = Math.round((d - c) * 100) / 100;
     return { ok: out === 0, label: proof.label || "\u03A3 debit = \u03A3 credit",
       text: out === 0 ? `Balanced \u00B7 ${formatSigned(d, { style: "accounting" })}` : `Out by ${formatSigned(out, { style: "accounting" })}` };
   }
   if (proof.type === "sum") {
-    const s = rows.reduce((a, r) => a + num(r[proof.column]), 0);
+    const s = sumColumn(rows, proof.column);
     const exp = proof.expected;
+    if (!rows.length || s === null || exp !== undefined && !isNumber(exp)) return { ok: false, label: proof.label || `\u03A3 ${proof.column}`, text: "Incomplete evidence" };
     const ok = exp === undefined || Math.round((s - exp) * 100) / 100 === 0;
     return { ok, label: proof.label || `\u03A3 ${proof.column}`,
       text: ok ? formatSigned(s, { style: "accounting" }) : `${formatSigned(s, { style: "accounting" })} \u00B7 out by ${formatSigned(s - exp, { style: "accounting" })}` };
@@ -190,8 +192,11 @@ export function DataGrid({
   const [openRows, setOpenRows] = React.useState({});
   const [collapsed, setCollapsed] = React.useState({});
   const [editing, setEditing] = React.useState(null);
+  const editingRef = React.useRef(null);
+  editingRef.current = editing;
   const [selfSel, setSelfSel] = React.useState([]);
   const sel = selected || selfSel;
+  const selectedLoaded = rows.filter((row, index) => sel.includes(rowKey === "index" ? index : typeof rowKey === "function" ? rowKey(row) : row[rowKey] ?? index)).length;
   const setSel = (next) => { setSelfSel(next); if (onSelectedChange) onSelectedChange(next); };
   // rowKey="index" keys rows by position — for static seed tables migrated from
   // index-based selection. Otherwise a field name or fn, falling back to position.
@@ -268,6 +273,8 @@ export function DataGrid({
     Object.keys(collapsed).some((c) => collapsed[c] && path !== c && path.indexOf(c + " \u203A ") === 0);
 
   const commit = (row, col, value) => {
+    if (!editingRef.current) return;
+    editingRef.current = null;
     setEditing(null);
     if (onEdit) onEdit({ row, column: col.key, value });
   };
@@ -285,9 +292,9 @@ export function DataGrid({
             {select ? (
               <th className="mds-grid__sel">
                 <input type="checkbox" aria-label="Select all rows"
-                  checked={rows.length > 0 && sel.length === rows.length}
-                  ref={(node) => { if (node) node.indeterminate = sel.length > 0 && sel.length < rows.length; }}
-                  onChange={() => setSel(sel.length === rows.length ? [] : rows.map((r, i) => keyOf(r, i)))} />
+                  checked={rows.length > 0 && selectedLoaded === rows.length}
+                  ref={(node) => { if (node) node.indeterminate = selectedLoaded > 0 && selectedLoaded < rows.length; }}
+                  onChange={() => setSel(selectedLoaded === rows.length ? [] : rows.map((r, i) => keyOf(r, i)))} />
               </th>
             ) : null}
             {expand ? <th style={{ width: 22 }} /> : null}
@@ -354,7 +361,7 @@ export function DataGrid({
                           {collapsed[g.path] ? "\u203A" : "\u2304"} {String(g.key)} · {g.rows.length}
                         </span>
                       ) : c.total === "sum"
-                        ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(g.rows.reduce((a, r) => a + num(r[c.key]), 0), c)
+                        ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(sumColumn(g.rows, c.key), c)
                         : ""}
                     </td>
                   ))}
@@ -381,6 +388,8 @@ export function DataGrid({
                       ) : null}
                       {expand ? (
                         <td className="mds-grid__exp" role="button" tabIndex={0} aria-expanded={isOpen}
+                          aria-label={isOpen ? "Collapse row" : "Expand row"}
+                          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); setOpenRows((s) => ({ ...s, [k]: !s[k] })); } }}
                           onClick={(e) => { e.stopPropagation(); setOpenRows((s) => ({ ...s, [k]: !s[k] })); }}>{isOpen ? "−" : "+"}</td>
                       ) : null}
                       {cols.map((c) => {
@@ -388,12 +397,14 @@ export function DataGrid({
                         const isEditing = editing && editing.k === k && editing.col === c.key;
                         return (
                           <td key={c.key} className={`${c.align === "right" ? "r " : ""}${c.pinned ? "mds-grid__pin" : ""}`.trim()}
+                            tabIndex={editable ? 0 : undefined}
+                            onKeyDown={editable ? (e) => { if (e.target === e.currentTarget && ["Enter", "F2"].includes(e.key)) { e.preventDefault(); e.stopPropagation(); setEditing({ k, col: c.key }); } } : undefined}
                             style={c.pinned ? { left: c.pinnedOffset || 0, width: c.width, minWidth: c.width, maxWidth: c.width } : undefined}
                             onDoubleClick={editable ? () => setEditing({ k, col: c.key }) : undefined}>
                             {isEditing ? (
-                              <input className="mds-grid__cellin" autoFocus defaultValue={r[c.key] ?? ""}
+                              <input className="mds-grid__cellin" aria-label={`Edit ${c.label}`} autoFocus defaultValue={r[c.key] ?? ""}
                                 onBlur={(e) => commit(r, c, e.target.value)}
-                                onKeyDown={(e) => { if (e.key === "Enter") commit(r, c, e.target.value); if (e.key === "Escape") setEditing(null); }} />
+                                onKeyDown={(e) => { e.stopPropagation(); if (e.key === "Enter") { e.preventDefault(); commit(r, c, e.target.value); } if (e.key === "Escape") { e.preventDefault(); editingRef.current = null; setEditing(null); } }} />
                             ) : fmt(c, r)}
                           </td>
                         );
@@ -424,7 +435,7 @@ export function DataGrid({
               {cols.map((c, i) => (
                 <td key={c.key} className={c.align === "right" ? "r" : ""}>
                   {c.total === "sum"
-                    ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(rows.reduce((a, r) => a + num(r[c.key]), 0), c)
+                    ? (CELL_FORMATS[c.format] || CELL_FORMATS.text)(sumColumn(rows, c.key), c)
                     : i === 0 ? "Total" : ""}
                 </td>
               ))}

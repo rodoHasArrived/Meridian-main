@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * General-ledger / journal table — double-entry rows with Debit / Credit columns and a running
  * Balance, plus a totals footer proving Σdebit = Σcredit (the footer balance turns red when the
@@ -55,4 +56,4 @@ export interface LedgerTableProps {
   /** Highlight one row (original index) — 3px accent inset, active wash. */
   selectedIndex?: number;
 }
-export declare function LedgerTable(props: LedgerTableProps): JSX.Element;
+export declare function LedgerTable(props: LedgerTableProps): React.JSX.Element;

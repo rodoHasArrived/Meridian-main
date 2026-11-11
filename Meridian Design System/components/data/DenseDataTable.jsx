@@ -49,16 +49,15 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
 .dds tbody tr.dds--spacer:hover{background:transparent;border-left:none;}
 .dds__ckbox{width:18px;height:18px;cursor:pointer;border:1px solid var(--border,#E4E3DE);
   appearance:none;background:var(--bg-light,#FBFAF8);}
-.dds__ckbox:hover{border-color:var(--accent,#A85436);}
-.dds__ckbox:checked{background:var(--accent,#A85436);border-color:var(--accent,#A85436);
+.dds__ckbox:hover{border-color:var(--interaction-link,var(--link,#2A5F96));}
+.dds__ckbox:checked{background:var(--accent,#A85436);border-color:var(--interaction-link,var(--link,#2A5F96));
   background-image:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="white"><path d="M13.3 4.3L6 11.6 2.7 8.3" stroke="white" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>');
   background-size:12px;background-position:center;background-repeat:no-repeat;}
 .dds__sort{margin-left:6px;font-size:9px;opacity:.4;}
 .dds th.dds--sorted{color:var(--text-secondary,#4E5258);}
-.dds th.dds--sorted .dds__sort{opacity:1;color:var(--accent-dim,#8C4429);}
-/* --accent is 4.39:1 on the header band (--bg-medium); --accent-dim is 5.88:1. These two
-   sit on the band, not on a card, so they take the dim variant. */
-.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--accent-dim,#8C4429);vertical-align:super;}
+.dds th.dds--sorted .dds__sort{opacity:1;color:var(--interaction-link,var(--link,#2A5F96));}
+/* Small sort/rank labels use interaction text roles on both header bands and plates. */
+.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--interaction-link,var(--link,#2A5F96));vertical-align:super;}
 /* pinned columns: sticky to the left edge, raised above scrolling cells, right divider */
 .dds th.dds--pin,.dds td.dds--pin{position:sticky;z-index:var(--z-raised,10);
   background:var(--bg-medium,#EDEAE4);}
@@ -71,7 +70,7 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
   user-select:none;touch-action:none;}
 .dds__grip:hover,.dds__grip--active{background:var(--accent,#A85436);opacity:.35;}
 .dds th{position:relative;}
-.dds th[tabindex]:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--accent,#A85436);}
+.dds th[tabindex]:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--interaction-link,var(--link,#2A5F96));}
 .dds th.dds--drag{opacity:.5;}
 .dds th.dds--drop{box-shadow:inset 2px 0 0 var(--accent,#A85436);}
 `;

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Monitor · Dashboard Workstation — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -48,8 +49,8 @@
 <span style="font:600 11px var(--font-data);color:var(--interaction-selected,#496C8F)">{{ selectedSymbol }}</span>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.EntitySummary" columns="{{ 2 }}" items="{{ summaryItems }}" hint-size="100%,120px"></x-import>
 <div style="display:flex;gap:8px;margin-top:auto">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="90px,28px">Open chart</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" hint-size="110px,28px">Close position</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="90px,28px" on-click="{{ onOpenChart }}">Open sample chart</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" hint-size="110px,28px" disabled="{{ true }}" title="Closing a position requires an authorized trading instruction; this portfolio example is read-only." aria-description="Closing a position requires an authorized trading instruction; this portfolio example is read-only.">Close position</x-import>
 </div>
 </div>
 <div data-region="positions">
@@ -89,7 +90,7 @@ class Component extends DCLogic {
     }, 60);
   }
   componentWillUnmount() { if (this._t) clearInterval(this._t); this._untick && this._untick(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   state = { selectedKey: "AAPL", sortKey: "unrealizedPnl", sortDir: "desc", env: null };
 
@@ -185,9 +186,10 @@ class Component extends DCLogic {
     const layer = this.operatorLayer();
     const L = window.MeridianOperatorLayer;
     return {
-      dataState: this.props.dataState ?? "ready",
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
       environment: this.env(),
-      onRetry: () => {},
+      onRetry: () => this.setState({ previewReady: true }),
+      onOpenChart: () => { window.location.href = "../charting-workstation/ChartingWorkstation.dc.html"; },
       // Operator layer — palette, hotkeys, trail. Trail persistence is session-only by decision.
       paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder,
       hotkeyBindings: layer.bindings,
@@ -195,7 +197,7 @@ class Component extends DCLogic {
       trailSeed: [{ type: "position", id: row.symbol, label: row.symbol + " · " + row.qty + " @ " + row.avgPrice.toFixed(2), meta: row.exchange, at: this.asOf }],
       onTrailApi: this._onTrailApi || (this._onTrailApi = (api) => { this._trail = api; }),
       onTrailNavigate: (entry) => { if (entry && entry.type === "position") this.setState({ selectedKey: entry.id }); },
-      onNewOrder: () => this.toast("info", "New order", "Opens the trading desk ticket seeded with " + row.symbol + "."),
+      onNewOrder: () => { window.location.href = "../trading-desk/TradingDesk.dc.html"; },
       // The screen is a declaration: monitor archetype, regions by role. The extra
       // full-width "positions" region reuses the primary role at span 12.
       screen: {

@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Trial balance — one row per account with the net balance on its normal side, grouped into
  * Assets / Liabilities / Equity / Revenue / Expenses sections with per-section subtotals, and
@@ -41,4 +42,4 @@ export interface TrialBalanceProps {
   /** @default "Assurance" */
   trailingLabel?: string;
 }
-export declare function TrialBalance(props: TrialBalanceProps): JSX.Element;
+export declare function TrialBalance(props: TrialBalanceProps): React.JSX.Element;

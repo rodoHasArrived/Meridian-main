@@ -98,7 +98,7 @@ export function TimeContextProvider({ value, defaultValue, onChange, children })
   }, [time, controlled, onChange]);
   const api = React.useMemo(() => ({
     time, update,
-    reset: () => update(defaultValue || {}),
+    reset: () => { const next = { ...(defaultValue || {}) }; if (!controlled) setInternal(next); onChange?.(next); },
     get: (id) => time[id],
     coherence: checkTimeCoherence(time),
   }), [time, update, defaultValue]);
@@ -126,19 +126,19 @@ function inject() {
 .mds-time__kind{font:600 11px var(--font-body);color:var(--text-muted,#606870);margin:0 0 2px}
 .mds-time__row{display:grid;grid-template-columns:minmax(96px,auto) 1fr;gap:4px 14px;align-items:baseline;padding:3px 0;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-time__row:last-child{border-bottom:0}
-.mds-time__row[data-flagged="on"]{background:var(--amber-wash,rgba(152,103,23,.1));box-shadow:inset 2px 0 0 var(--orange,#986717);padding-left:6px}
+.mds-time__row[data-flagged="on"]{background:var(--orange-a10,rgba(152,103,23,.1));box-shadow:inset 2px 0 0 var(--orange,#986717);padding-left:6px}
 .mds-time__label{font:11px var(--font-body);color:var(--text-muted,#606870)}
 .mds-time__value{font:12px var(--font-data,monospace);color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;font-weight:600;justify-self:end;text-align:right;white-space:nowrap}
 .mds-time__value[data-missing="on"]{color:var(--text-disabled,#A4ABB2);font-weight:400}
 .mds-time__meta{grid-column:1/-1;font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-time__co{display:grid;gap:4px;margin:0;padding:0;list-style:none}
 .mds-time__issue{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;padding:6px 8px;border:1px solid var(--border,#D2CDC3);font:12px/17px var(--font-body);text-wrap:pretty}
-.mds-time__issue[data-severity="error"]{border-color:var(--red,#B54B42);background:var(--red-wash,rgba(181,75,66,.1))}
-.mds-time__issue[data-severity="warning"]{border-color:var(--orange,#986717);background:var(--amber-wash,rgba(152,103,23,.1))}
+.mds-time__issue[data-severity="error"]{border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.1))}
+.mds-time__issue[data-severity="warning"]{border-color:var(--orange,#986717);background:var(--orange-a10,rgba(152,103,23,.1))}
 .mds-time__issue[data-severity="info"]{background:var(--card-surface,#F8F7F3)}
 .mds-time__sev{font:600 10px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870)}
 .mds-time__issue[data-severity="error"] .mds-time__sev{color:var(--red-dim,#B54B42)}
-.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange,#986717)}
+.mds-time__issue[data-severity="warning"] .mds-time__sev{color:var(--orange-dim,#725012)}
 .mds-time__ok{font:12px var(--font-body);color:var(--text-muted,#606870);margin:0}
 .mds-timerole{display:inline-grid;gap:1px}
 .mds-timerole__l{font:11px var(--font-body);color:var(--text-muted,#606870)}
@@ -199,7 +199,7 @@ export function TimeContextPanel({
             <span>{issue.message}</span>
           </li>)}
         </ul>
-      : <p className="mds-time__ok">Dates are coherent — no ordering, period, or staleness conflict.</p>) : null}
+      : <p className="mds-time__ok">{Object.values(time).some((value) => value != null && value !== "") ? "Dates are coherent — no ordering, period, or staleness conflict." : "No dates declared — coherence not evaluated."}</p>) : null}
   </div>;
 }
 

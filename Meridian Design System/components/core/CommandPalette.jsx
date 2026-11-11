@@ -280,13 +280,13 @@ export function CommandPalette({
 
   const onKey = (e) => {
     const cur = flat[hl]; const nv = (cur && (cur.verbs || cur.actions) || []).length;
-    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.min(h + 1, flat.length - 1)); }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.max(0, Math.min(h + 1, flat.length - 1))); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHl((h) => Math.max(h - 1, 0)); }
     else if (e.key === "ArrowRight" && nv > 1 && e.target.selectionStart === e.target.value.length) { e.preventDefault(); setVerb((v) => (v + 1) % nv); }
     else if (e.key === "ArrowLeft" && nv > 1 && verb > 0) { e.preventDefault(); setVerb((v) => (v - 1 + nv) % nv); }
     else if (e.key === "Tab" && nv > 1) { e.preventDefault(); setVerb((v) => (v + (e.shiftKey ? nv - 1 : 1)) % nv); }
     else if (e.key === "Enter") { e.preventDefault(); run(cur, verb); }
-    else if (e.key === "Escape") { e.preventDefault(); close(); }
+    else if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); }
     else if (e.key === "Tab") { e.preventDefault(); } // trap: the input is the palette's only tab stop
   };
 
@@ -302,7 +302,8 @@ export function CommandPalette({
             role="combobox"
             aria-expanded="true"
             aria-controls={`${uid}-list`}
-            aria-activedescendant={flat[hl] ? `mds-cmd-opt-${hl}` : undefined}
+            aria-activedescendant={flat[hl] ? `${uid}-opt-${hl}` : undefined}
+            aria-label={placeholder}
             placeholder={placeholder}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -310,7 +311,7 @@ export function CommandPalette({
           />
           <span className="mds-cmd__esc">Esc</span>
         </div>
-        <div className="mds-cmd__list" id={`${uid}-list`} role="listbox" ref={listRef}>
+        <div className="mds-cmd__list" id={`${uid}-list`} role="listbox" aria-label="Commands" ref={listRef}>
           {flat.length === 0 && <div className="mds-cmd__empty">{resolved.pending ? "Resolving…" : emptyText}</div>}
           {groups.map((g) => (
             <div key={g.group} role="group" aria-label={g.group}>
@@ -321,7 +322,7 @@ export function CommandPalette({
                 return (
                   <div
                     key={c.id}
-                    id={`mds-cmd-opt-${idx}`}
+                    id={`${uid}-opt-${idx}`}
                     data-i={idx}
                     role="option"
                     aria-selected={idx === hl}

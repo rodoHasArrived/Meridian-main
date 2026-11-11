@@ -1,3 +1,4 @@
+import type React from "react";
 /** Inline status banner for run results, data health, and session notices. */
 export interface StatusBannerProps {
   /** @default "success" */
@@ -9,4 +10,4 @@ export interface StatusBannerProps {
    *  @default assertive for danger, polite otherwise */
   announce?: "polite" | "assertive" | "off";
 }
-export declare function StatusBanner(props: StatusBannerProps): JSX.Element;
+export declare function StatusBanner(props: StatusBannerProps): React.JSX.Element;

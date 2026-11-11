@@ -123,11 +123,10 @@ export function ConsequenceRail({
             const interactive = !!onInspect;
             const Tag = interactive ? "button" : "div";
             const amount = item.delta != null ? item.delta : item.amount;
-            return <li key={id}>
+            return <li key={id} aria-setsize={g.items.length} aria-posinset={i + 1}>
               <Tag className={`mds-crail__row${interactive ? " mds-crail__row--action" : ""}`}
                 {...(interactive ? { type: "button", onClick: () => onInspect(g.kind.id, item), "aria-pressed": selectedId === id } : {})}
-                data-selected={selectedId === id ? "true" : undefined}
-                aria-setsize={g.items.length} aria-posinset={i + 1}>
+                data-selected={selectedId === id ? "true" : undefined}>
                 <span className="mds-crail__rlabel">
                   {item.label || item.id}
                   {item.effect ? <span className="mds-crail__reffect">{item.effect}</span> : null}

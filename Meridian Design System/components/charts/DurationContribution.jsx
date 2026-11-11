@@ -5,9 +5,11 @@
 // tied back to the stated total, and missing weights or durations are exposed rather than
 // treated as zero. Scenario values are labelled as scenarios, never as forecasts.
 import React from "react";
+import { conditionMeta } from "../operations/conditions";
 
-const COND={confirmed:"●",provisional:"◐",estimated:"○",stale:"◔",overridden:"◆",missing:"■",na:"—",pending:"◇",exception:"▲",reconciled:"✓"};
-const glyph=c=>COND[String(c||"").toLowerCase()]||null;
+const glyph=condition=>condition?conditionMeta(condition).glyph:null;
+const finite=value=>typeof value==="number"&&Number.isFinite(value);
+const unavailable=condition=>condition&&["restricted","missing","na"].includes(conditionMeta(condition).key);
 const RANKS=[{id:"contribution",label:"Contribution"},{id:"difference",label:"Difference"},{id:"weight",label:"Weight"},{id:"label",label:"Name"}];
 
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","duration-contribution");el.textContent=`
@@ -17,7 +19,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__ranks{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-dc__ranks button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-dc__ranks button:first-child{border-left:0}
-.mds-dc__ranks button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-dc__ranks button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-dc__ranks button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-dc__unit{flex-basis:100%;font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-dc__colhead,.mds-dc__row{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:center}
@@ -27,7 +29,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__row{min-height:32px;width:100%;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .mds-dc__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-dc__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-dc__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-dc__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-dc__num{text-align:right;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
@@ -115,6 +117,15 @@ export function DurationContribution({
     e.preventDefault();kids[n]?.focus();
   };
 
+  const hasUnavailableInputs=items.some(item=>unavailable(item.condition)||(["weight","duration","contribution","comparisonContribution"].some(key=>item[key]!=null&&!finite(item[key])))||(!finite(item.contribution)&&!(finite(item.weight)&&finite(item.duration))));
+  if(hasUnavailableInputs) {
+    const withheld=items.some(item=>item.condition&&conditionMeta(item.condition).key==="restricted");
+    return <div className="mds-exposure-unavailable" role="status" aria-label={description} style={{fontFamily:"var(--font-body)",color:"var(--text-primary)",padding:12,border:"1px solid var(--border)",background:"var(--surface-plate,var(--bg-light))"}}>
+      <strong>{description}</strong>
+      <p>{withheld?"Restricted inputs are withheld. Totals and comparisons are unavailable.":"Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."}</p>
+    </div>;
+  }
+
   return <div className={`mds-dc${showTable?"":" mds-dc--sr"}${className?" "+className:""}`} {...rest}>
     <div className="mds-dc__head">
       <span className="mds-dc__def">{durationDefinition}{scenario?` · Scenario: ${scenario}`:""}</span>
@@ -160,7 +171,7 @@ export function DurationContribution({
     <div className="mds-dc__totals">
       <span>Total</span><span>{pct(sumW)}</span><span>—</span><span/>
       <span>{valueFormat(sum)}</span>
-      <span>{showComparison?signed(sum-(has(comparisonTotal)?Number(comparisonTotal):sumCmp),valueFormat):pct(100)}</span>
+      <span>{showComparison?signed(sum-(has(comparisonTotal)?Number(comparisonTotal):sumCmp),valueFormat):(sum?pct(100):"—")}</span>
     </div>
 
     <p className="mds-dc__tie" data-ok={ties?"true":"false"}>
@@ -169,7 +180,7 @@ export function DurationContribution({
         : ties
           ? `Contributions tie to the stated portfolio duration of ${valueFormat(stated)} ${contributionUnit}.`
           : `Contributions sum to ${valueFormat(sum)} against a stated total of ${valueFormat(stated)} — residual ${signed(residual,valueFormat)} ${contributionUnit} is unexplained.`}
-      {incomplete.length?` ${incomplete.length} row${incomplete.length===1?"":"s"} missing weight or duration; contribution shown only where both inputs exist.`:""}
+      {incomplete.length?` ${incomplete.length} row${incomplete.length===1?"":"s"} missing weight or duration; only explicitly supplied contributions remain available for those rows.`:""}
       {source?` Source: ${source}.`:""}
     </p>
 

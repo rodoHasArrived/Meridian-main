@@ -132,6 +132,7 @@ export function MultiSelect({
   }, [norm, query, filter]);
 
   const atLimit = maxSelected != null && value.length >= maxSelected;
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -171,7 +172,7 @@ export function MultiSelect({
     if (!has && atLimit) return;
     onChange?.(has ? value.filter((v) => v !== opt.value) : [...value, opt.value]);
   };
-  const removeAt = (v) => onChange?.(value.filter((x) => x !== v));
+  const removeAt = (v) => { if (!disabled) onChange?.(value.filter((x) => x !== v)); };
 
   // Bulk acts on what is CURRENTLY FILTERED — "select all" after typing "EUR" means those, which
   // is the whole reason the search box and the bulk row sit together.
@@ -250,7 +251,7 @@ export function MultiSelect({
             className="mds-ms-input"
             role="combobox"
             aria-expanded={open}
-            aria-controls={listId}
+            aria-controls={open ? listId : undefined}
             aria-autocomplete="list"
             aria-activedescendant={open && filtered[hl] ? optId(hl) : undefined}
             aria-label={!label ? ariaLabel : undefined}
@@ -273,7 +274,7 @@ export function MultiSelect({
         </div>
         {open && (
           <div ref={menuRef} className={`mds-ms-menu${above ? " mds-ms-menu--above" : ""}`}
-            role="listbox" aria-multiselectable="true" id={listId} aria-label={label || ariaLabel}>
+            >
             {showBulk && (
               <div className="mds-ms-bulk">
                 <button type="button" disabled={allShownSelected || atLimit} onClick={selectAllShown}>
@@ -288,6 +289,7 @@ export function MultiSelect({
               </div>
             )}
             {filtered.length === 0 && <div className="mds-ms-empty">{emptyText}</div>}
+            <div role="listbox" aria-multiselectable="true" id={listId} aria-label={label || ariaLabel || "Options"}>
             {filtered.map((opt, i) => {
               const on = selectedSet.has(opt.value);
               const blocked = opt.disabled || (!on && atLimit);
@@ -306,7 +308,7 @@ export function MultiSelect({
                     onClick={() => toggle(opt)}
                   >
                     <span aria-hidden="true" style={{ display: "flex", pointerEvents: "none" }}>
-                      <Checkbox checked={on} disabled={blocked} onChange={() => {}} />
+                      <span className={`mds-checkbox-box${on ? " mds-checkbox-box--checked" : ""}`}>{on ? "✓" : ""}</span>
                     </span>
                     <span className="mds-ms-opt__t">{opt.label}</span>
                     {opt.meta != null && <span className="mds-ms-opt__m">{opt.meta}</span>}
@@ -314,6 +316,7 @@ export function MultiSelect({
                 </React.Fragment>
               );
             })}
+            </div>
           </div>
         )}
       </div>

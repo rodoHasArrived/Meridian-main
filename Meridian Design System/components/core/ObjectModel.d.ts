@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ObjectModel — the seventeen financial objects Meridian manipulates, and the identity contract each
  * one answers. Instead of every workstation inventing its own identity header, a screen names the
@@ -102,7 +103,7 @@ export interface ObjectHeaderProps extends ObjectDescriptor, Omit<React.HTMLAttr
   dense?: boolean;
 }
 /** The identity contract, rendered. Facets the object does not carry are absent, never blank. */
-export declare function ObjectHeader(props: ObjectHeaderProps): JSX.Element;
+export declare function ObjectHeader(props: ObjectHeaderProps): React.JSX.Element;
 
 /** Bundle carrier — helpers for consumers of `_ds_bundle.js`. */
 export declare const ObjectHooks: {

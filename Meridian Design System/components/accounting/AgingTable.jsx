@@ -3,7 +3,7 @@
 import React from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "../core/format.js";
-import { sumAmounts } from "./money";
+import { knownAmount, sumKnown, displayAmount } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -28,7 +28,7 @@ function inject() {
 .agt td.agt--l{text-align:left;}
 .agt tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .agt tbody tr.agt__row--click{cursor:pointer;}
-.agt tbody tr.agt__row--on td{background:var(--bg-active,#E7EDF2);}
+.agt tbody tr.agt__row--on td{background:var(--selected-surface,#E7EDF2);}
 .agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .agt tbody tr.agt__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .agt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
@@ -63,8 +63,8 @@ export function AgingTable({
   const showRef = rows.some((r) => r.ref != null && r.ref !== "");
   const last = buckets.length - 1;
 
-  const colTotals = buckets.map((_, b) => sumAmounts(rows.map((r) => r.amounts?.[b])));
-  const grand = sumAmounts(colTotals);
+  const colTotals = buckets.map((_, b) => sumKnown(rows.map((r) => r.amounts?.[b])));
+  const grand = sumKnown(colTotals);
 
   const cellCls = (b, v) => {
     const n = toNumber(v);
@@ -102,10 +102,10 @@ export function AgingTable({
                 {showRef && <td className="agt--l agt__ref">{r.ref}</td>}
                 {buckets.map((_, b) => (
                   <td key={b} className={cellCls(b, r.amounts?.[b])}>
-                    <AmountCell value={toNumber(r.amounts?.[b]) || 0} currency={currency} zeroDash />
+                    <AmountCell value={displayAmount(r.amounts?.[b])} currency={currency} zeroDash />
                   </td>
                 ))}
-                <td><AmountCell value={sumAmounts(r.amounts || [])} currency={currency} strong /></td>
+                <td><AmountCell value={displayAmount(sumKnown(buckets.map((_,b)=>r.amounts?.[b])))} currency={currency} strong /></td>
               </tr>
             );
           })}
@@ -115,13 +115,13 @@ export function AgingTable({
             <td className="agt--l agt__foot-label" colSpan={showRef ? 2 : 1}>Totals</td>
             {colTotals.map((t, b) => (
               <td key={b}>
-                <AmountCell value={t} currency={currency} zeroDash strong />
+                <AmountCell value={displayAmount(t)} currency={currency} zeroDash strong />
                 {grand > 0 && (
                   <span className="agt__share">{((t / grand) * 100).toFixed(1)}%</span>
                 )}
               </td>
             ))}
-            <td><AmountCell value={grand} currency={currency} strong /></td>
+            <td><AmountCell value={displayAmount(grand)} currency={currency} strong /></td>
           </tr>
         </tfoot>
       </table>

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Accounting Workstation — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -200,9 +201,10 @@ class Component extends DCLogic {
       if (["gl", "coa", "tb", "recon", "fx", "close", "stmt", "lots", "consol", "account"].includes(v)) this.setState({ view: v });
       const acct = u.searchParams.get("account") ?? this.props.account;
       if (acct && /^\d{4}$/.test(String(acct))) this.setState({ accountCode: String(acct) });
-      const ent = this.props.entity ?? u.searchParams.get("entity");
+      const ent = u.searchParams.get("entity") ?? this.props.entity;
       if (["MER-GRP", "MER-FUND-I", "MER-SPV-ALPHA", "MER-MGMT"].includes(ent)) this.setState({ scope: ent });
-      if (this.props.compose ?? u.searchParams.get("compose")) this._composeOnReady = true;
+      const compose = u.searchParams.get("compose");
+      if (compose === null ? this.props.compose : compose === "1" || compose === "true") this._composeOnReady = true;
       // A break that was resolved by an entry links straight to it (4.4 · E-2): arrive with the
       // entry inspector already open on the right entry rather than on the ledger's first row.
       const entry = u.searchParams.get("entry");

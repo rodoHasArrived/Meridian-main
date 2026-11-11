@@ -3,10 +3,12 @@
 // stay directly comparable on one shared scale. Exact gross, net, and cumulative gap values
 // are always on the face; the summary table is the mobile and nonvisual fallback.
 import React from "react";
+import { conditionMeta } from "../operations/conditions";
 import { formatCompact } from "../core/format.js";
 
-const COND={confirmed:"●",provisional:"◐",estimated:"○",stale:"◔",overridden:"◆",missing:"■",na:"—",pending:"◇",exception:"▲",reconciled:"✓"};
-const glyph=c=>COND[String(c||"").toLowerCase()]||null;
+const glyph=condition=>condition?conditionMeta(condition).glyph:null;
+const finite=value=>typeof value==="number"&&Number.isFinite(value);
+const unavailable=condition=>condition&&["restricted","missing","na"].includes(conditionMeta(condition).key);
 
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","cash-flow-ladder");el.textContent=`
 .mds-cfl{font-family:var(--font-body);color:var(--text-secondary,#535C65)}
@@ -24,7 +26,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cfl__row--action{cursor:pointer}
 .mds-cfl__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-cfl__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-cfl__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-cfl__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-cfl__track{position:relative;height:22px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
@@ -72,6 +74,15 @@ export function CashFlowLadder({
   const tot=rows.reduce((t,r)=>({a:t.a+r.a,l:t.l+r.l,n:t.n+r.n}),{a:0,l:0,n:0});
   const unscheduled=items.filter(x=>x.unscheduled);
   const Tag=onSelect?"button":"div";
+
+  const hasUnavailableInputs=items.some(item=>unavailable(item.condition)||!finite(item.assets)||!finite(item.liabilities)||["net","scenarioAssets","scenarioLiabilities","unscheduled"].some(key=>item[key]!=null&&!finite(item[key])));
+  if(hasUnavailableInputs) {
+    const withheld=items.some(item=>item.condition&&conditionMeta(item.condition).key==="restricted");
+    return <div className="mds-exposure-unavailable" role="status" aria-label={description} style={{fontFamily:"var(--font-body)",color:"var(--text-primary)",padding:12,border:"1px solid var(--border)",background:"var(--surface-plate,var(--bg-light))"}}>
+      <strong>{description}</strong>
+      <p>{withheld?"Restricted inputs are withheld. Totals and comparisons are unavailable.":"Input data is unavailable or invalid. Totals and comparisons cannot be computed; missing values are not zero."}</p>
+    </div>;
+  }
 
   return <div className={`mds-cfl${showTable?"":" mds-cfl--sr"}${className?" "+className:""}`} {...rest}>
     <div className="mds-cfl__head">

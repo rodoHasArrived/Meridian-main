@@ -23,6 +23,7 @@ button.mds-plate:focus-visible{outline:2px solid var(--border-focus);outline-off
 .mds-plate__hd{display:flex;align-items:baseline;gap:8px;margin-bottom:8px;}
 .mds-plate__t{font-size:13px;font-weight:var(--weight-semibold,600);color:var(--text-primary);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-plate--sel .mds-plate__tag,.mds-plate--sel .mds-plate__fl{color:var(--text-secondary);}
 .mds-plate__tag{margin-left:auto;font-family:var(--font-data);font-size:10px;color:var(--text-muted);
   text-transform:uppercase;letter-spacing:.04em;}
 .mds-plate__ft{display:flex;align-items:baseline;gap:8px;margin-top:8px;padding-top:7px;

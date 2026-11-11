@@ -95,11 +95,11 @@ export function ResolutionDrawer({
       </>:null}</Section>
       <Section title="Root cause">{rootCauses?.length?<div className="mds-res__select">
         <label htmlFor={`${uid}-rootcause`}>Classification</label>
-        <select id={`${uid}-rootcause`} value={typeof rootCause==="string"?rootCause:""} onChange={e=>onRootCauseChange?.(e.target.value)}>
+        <select disabled={!onRootCauseChange} id={`${uid}-rootcause`} value={typeof rootCause==="string"?rootCause:""} onChange={e=>onRootCauseChange?.(e.target.value)}>
           <option value="">Not classified</option>
           {rootCauses.map(o=>{const v=typeof o==="string"?o:o.value;const l=typeof o==="string"?o:o.label;return <option value={v} key={v}>{l}</option>})}
         </select>
-        {onRootCauseNoteChange!==undefined||rootCauseNote!==undefined?<><label htmlFor={`${uid}-rootnote`}>{rootCauseNoteLabel}</label><textarea id={`${uid}-rootnote`} value={rootCauseNote||""} onChange={e=>onRootCauseNoteChange?.(e.target.value)} placeholder="Optional detail beyond the classification."/></>:null}
+        {onRootCauseNoteChange!==undefined||rootCauseNote!==undefined?<><label htmlFor={`${uid}-rootnote`}>{rootCauseNoteLabel}</label><textarea readOnly={!onRootCauseNoteChange} id={`${uid}-rootnote`} value={rootCauseNote||""} onChange={e=>onRootCauseNoteChange?.(e.target.value)} placeholder="Optional detail beyond the classification."/></>:null}
       </div>:rootCause?<div className="mds-res__prose">{rootCause}</div>:null}</Section>
       <Section title="Proposed correction">{correction||correctionFacts.length?<>
         {correction?<div className="mds-res__prose">{correction}</div>:null}
@@ -110,7 +110,7 @@ export function ResolutionDrawer({
         {impactItems.map((f,i)=><div className="mds-res__field" data-flag={f.flag?"true":undefined} key={f.label||i}><span>{f.label}</span><span>{f.value}</span></div>)}
       </>:null}</Section>
       <Section title="Ownership and SLA">{ownRows.length?ownRows.map(([k,v])=><div className="mds-res__field" key={k}><span>{k}</span><span>{v}</span></div>):null}</Section>
-      {requireReason?<section className="mds-res__section"><h4>{reasonLabel}</h4><div className="mds-res__select"><textarea aria-label={reasonLabel} value={reasonValue} onChange={e=>setReason(e.target.value)} placeholder="Required before this exception can be resolved."/></div></section>:null}
+      {requireReason?<section className="mds-res__section"><h4>{reasonLabel}</h4><div className="mds-res__select"><textarea readOnly={reason!==undefined&&!onReasonChange} aria-label={reasonLabel} value={reasonValue} onChange={e=>setReason(e.target.value)} placeholder="Required before this exception can be resolved."/></div></section>:null}
       <Section title="Audit details">{audit}</Section>
     </div>
     <footer className="mds-res__foot">
@@ -118,7 +118,7 @@ export function ResolutionDrawer({
       <span className="spacer"/>
       {onRequestEvidence?<Button size="sm" variant="ghost" onClick={onRequestEvidence}>Request evidence</Button>:null}
       {onAssign?<Button size="sm" variant="ghost" onClick={onAssign}>Assign</Button>:null}
-      {secondaries.map(k=><Button size="sm" variant="ghost" key={k} onClick={actions[k].fn} disabled={actions[k].disabled}>{actions[k].label}</Button>)}
+      {secondaries.map(k=><Button size="sm" variant="ghost" key={k} onClick={()=>actions[k].fn(reasonValue)} disabled={actions[k].disabled}>{actions[k].label}</Button>)}
       {primaryKey?<Button size="sm" onClick={()=>actions[primaryKey].fn(reasonValue)} disabled={actions[primaryKey].disabled}>{actions[primaryKey].label}</Button>:null}
     </footer>
   </aside>;

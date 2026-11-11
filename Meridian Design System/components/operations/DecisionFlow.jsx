@@ -44,6 +44,7 @@ function inject() {
 .mds-dfstep[data-state="blocked"] .mds-dfstep__n{color:var(--red-dim,#873832)}
 .mds-dfstep__lbl{font:600 12px/1.4 var(--font-body)}
 .mds-dfstep__meta{display:block;font:10px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870)}
+.mds-dfstep[data-current="true"] .mds-dfstep__meta{color:var(--text-primary,#20252B)}
 .mds-dfstage{display:grid;gap:10px}
 .mds-dfstage__hd{display:flex;align-items:baseline;justify-content:space-between;gap:12px;border-bottom:1px solid var(--border,#D2CDC3);padding-bottom:6px}
 .mds-dfstage__ttl{font:600 14px/1.3 var(--font-body)}

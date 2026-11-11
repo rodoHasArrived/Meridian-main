@@ -4,7 +4,7 @@
 // ReviewRequired because…" panels across Operations, Accounting, and Data.
 import React from "react";
 import { SeverityBadge } from "./SeverityBadge";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {

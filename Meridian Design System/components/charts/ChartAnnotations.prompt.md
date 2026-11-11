@@ -19,6 +19,8 @@ validates finite values; the overlay does not infer dates, evidence, or causalit
 
 Missing geometry renders nothing; empty annotation arrays draw nothing. Without
 a pane, callouts are omitted because no value scale is defined. The overlay has
-no keyboard controls or independent accessible name: give the enclosing chart an
-`ariaLabel`, `ariaDescription`, and accessible data that include consequential
-annotations. Tooltip-only explanations are insufficient.
+no keyboard controls or independent accessible name. Each overlay registers a
+textual summary of its bands, events, and callouts with the owning SVG description,
+preserving the frame description and other overlays across rerenders and cleanup.
+Give the enclosing chart an `ariaLabel`, `ariaDescription`, and accessible data
+that explain the consequential annotations and financial context. Tooltip-only explanations are insufficient.

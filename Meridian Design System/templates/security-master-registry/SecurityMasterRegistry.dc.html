@@ -1,21 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Security Master Registry — Meridian</title>
 </head>
 <body>
 <x-dc>
 <!-- @template name="Investigate · Security Master Registry" description="Dense multi-asset symbol registry — saved views, filter builder, bulk actions, entity inspector whose edits write optimistically (provisional until confirmed, rejected with the reason, revertible with one), annotations versioned with the record, and an audit trail." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
 <script src="./securities-data.js"></script>
 <script src="./record-state.js"></script>
 <meta name="dc-template" content="security-master-registry">
 <style>html,body{margin:0;padding:0;height:100%}[data-smr-show="off"]{display:none!important}</style>
 </helmet>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Securities" action-label="Retry" on-action="{{ noop }}" hint-size="100%,900px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Securities" action-label="Retry example" on-action="{{ onPreviewRetry }}" hint-size="100%,900px">
 <div style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Security Master" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
 <div style="display:flex;flex:1;min-height:0">
@@ -26,9 +28,9 @@
 <h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Security Master</h1>
 <span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">{{ shownCount }} of {{ totalCount }} securities</span>
 <div style="flex:1"></div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="70px,28px">Export all</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="80px,28px">Import data</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="90px,28px">Add security</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="70px,28px" on-click="{{ onExportAll }}">Export all examples</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="80px,28px" disabled="{{ true }}" title="Security import requires the application validation and import service." aria-description="Security import requires the application validation and import service.">Import data</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="90px,28px" disabled="{{ true }}" title="Adding a security requires an application registry instruction and validation service." aria-description="Adding a security requires an application registry instruction and validation service.">Add security</x-import>
 </div>
 <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="40px,14px">Views</x-import>
@@ -324,7 +326,7 @@ class Component extends DCLogic {
   // Persist record state so the standalone detail page and this list stay in sync.
   setRecordState(fn) { this.setState((p) => { const n = fn(p); if (window.SMR_STATE) window.SMR_STATE.write({ ...p, ...n }); return n; }); }
   detailHref(id) { return "./SecurityDetail.dc.html?security=" + encodeURIComponent(id); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   state = {
     detail: null,
@@ -483,12 +485,15 @@ class Component extends DCLogic {
       this.toast("success", "View saved", v.name);
     };
     return {
+      onPreviewRetry: () => this.setState({ previewReady: true }),
       noop: this.noop,
+      onExportAll: () => window.MeridianTemplateActions.downloadJson("security-registry-examples.json", this.data()),
+
       onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
       detail: s.detail ?? this.props.detail ?? "full",
       onDetail: (v) => this.setState({ detail: v }),
       detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
-      dataState: this.props.dataState ?? "ready",
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
       envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
       navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("security-master") : []),
       listShow: s.view === "list" ? "on" : "off",
@@ -534,7 +539,7 @@ class Component extends DCLogic {
       selectionCount: selectedIdList.length,
       onSelectAllFiltered: () => this.setState({ selected: Object.fromEntries(filtered.map((r) => [r.id, true])) }),
       onClearSelection: () => this.setState({ selected: {} }),
-      selPrimaryAction: { label: "Export selected", variant: "primary", onClick: () => this.toast("success", "Export started", selectedIdList.length + " securities → CSV.") },
+      selPrimaryAction: { label: "Export selected examples", variant: "primary", onClick: () => window.MeridianTemplateActions.downloadJson("selected-security-examples.json", this.data().filter((item) => selectedIdList.includes(item.id))) },
       selActions: [
         { label: "Flag restricted", variant: "danger", tooltip: "Add to the restricted list", onClick: () => {
           this.setRecordState((p) => {
@@ -551,7 +556,7 @@ class Component extends DCLogic {
           this.setState({ selected: {} });
           this.toast("success", selectedIdList.length + " flagged restricted", "Audit entries written.");
         } },
-        { label: "Screen sanctions", tooltip: "Queue a sanctions screen", onClick: () => { this.toast("info", "Sanctions screen queued", selectedIdList.length + " securities submitted."); this.setState({ selected: {} }); } },
+        { label: "Screen sanctions", disabled: true, disabledReason: "Sanctions screening requires an authorized application screening instruction; no securities are submitted by this example.", onClick: this.noop },
       ],
       statusItems: [
         { status: "ok", label: "Connected", value: "IBKR · Polygon · Databento" },

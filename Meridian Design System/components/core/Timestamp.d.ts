@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Timestamp — the time twin of `AmountCell`. Enforces the content rules for time: UTC, mono,
  * tabular, explicit. Renders a semantic `<time>`; the full UTC form is always on `title`.
@@ -15,4 +16,4 @@ export interface TimestampProps extends React.TimeHTMLAttributes<HTMLTimeElement
   /** Re-render interval for relative format, ms. @default 1000 */
   tickMs?: number;
 }
-export declare function Timestamp(props: TimestampProps): JSX.Element;
+export declare function Timestamp(props: TimestampProps): React.JSX.Element;

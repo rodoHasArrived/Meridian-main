@@ -4,7 +4,7 @@
 // every user west of UTC — a settlement date entered as the 26th posted as the 25th.)
 // The field is typeable; the calendar is a full ARIA grid with the standard keyboard model.
 import React from "react";
-import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate";
+import { toISO, fromISO, addDays, addMonths, sameDay, clampDate, parseLoose, dowLabels, longDate, monthTitle, weeksFor } from "./localDate.js";
 
 let injected = false;
 function inject() {
@@ -24,7 +24,7 @@ function inject() {
 .mds-date-input{flex:1;min-width:0;height:100%;padding:7px 10px;border:none;background:transparent;
   color:var(--text-primary,#20252B);font-family:var(--font-data);font-size:13px;outline:none;
   font-variant-numeric:tabular-nums;}
-.mds-date-input::placeholder{color:var(--text-disabled,#A4ABB2);}
+.mds-date-input::placeholder{color:var(--text-muted,#606870);opacity:1;}
 .mds-date-input:disabled{cursor:not-allowed;}
 .mds-date-open{flex:0 0 auto;height:100%;padding:0 9px;border:0;background:none;margin:0;
   color:var(--text-muted,#6B737B);font-size:12px;cursor:pointer;display:inline-flex;align-items:center;}
@@ -178,6 +178,8 @@ export function DatePicker({
   };
 
   const onGridKey = (e) => {
+    if (e.key === "Escape") { e.preventDefault(); e.stopPropagation(); close(); return; }
+    if (!e.target.classList.contains("mds-date-day")) return;
     const k = e.key;
     let next = null;
     if (k === "ArrowLeft") next = addDays(cursor, -1);

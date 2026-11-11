@@ -11,6 +11,7 @@ export function VirtualizedList({
   renderRow,
   className = "",
   style = {},
+  "aria-label": ariaLabel = "Virtualized list",
 }) {
   const [scrollTop, setScrollTop] = React.useState(0);
   const total = items.length;
@@ -23,6 +24,7 @@ export function VirtualizedList({
   return (
     <div
       className={className}
+      role="region" aria-label={ariaLabel} tabIndex={0}
       style={{
         height,
         overflowY: "auto",

@@ -1,6 +1,7 @@
 // Meridian bulk action bar — floating toolbar for selected rows.
 // Integrates checkbox select, context menu (right-click), and floating action bar.
 // Actions: copy, delete, export, assign, tag, move, etc.
+import React from "react";
 
 const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
   const css = `
@@ -49,14 +50,14 @@ const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
 };
 
 // BulkSelectCheckbox — checkbox for row selection in tables
-const BulkSelectCheckbox = ({ checked, onChange, indeterminate = false }) => {
+const BulkSelectCheckbox = ({ checked, onChange, indeterminate = false, "aria-label": ariaLabel = "Select rows", ...rest }) => {
   const ref = React.useRef(null);
   React.useEffect(() => {
     if (ref.current) ref.current.indeterminate = indeterminate;
   }, [indeterminate]);
 
   return (
-    <input type="checkbox" ref={ref} checked={checked} onChange={onChange}
+    <input {...rest} type="checkbox" ref={ref} checked={checked} onChange={onChange} aria-label={ariaLabel}
       style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--interaction-selected,#496C8F)" }} />
   );
 };

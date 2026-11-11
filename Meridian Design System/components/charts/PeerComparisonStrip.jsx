@@ -11,6 +11,19 @@ const MONO = { fontFamily: "var(--font-data)", fontVariantNumeric: "slashed-zero
 const SR = { position: "absolute", width: 1, height: 1, padding: 0, margin: -1, overflow: "hidden", clip: "rect(0 0 0 0)", whiteSpace: "nowrap", border: 0 };
 
 const median = (a) => { const s = [...a].sort((x, y) => x - y); const m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const finite = (value) => typeof value === "number" && Number.isFinite(value);
+function comparison(metric) {
+  const value = finite(metric.value) ? metric.value : null;
+  const peers = (metric.peers || []).filter(finite);
+  const pool = value === null ? peers : [...peers, value];
+  const declared = metric.domain;
+  const domain = declared && finite(declared[0]) && finite(declared[1]) && declared[1] >= declared[0]
+    ? declared : pool.length ? [Math.min(...pool), Math.max(...pool)] : [0, 1];
+  const med = finite(metric.median) ? metric.median : peers.length ? median(peers) : null;
+  const rank = value !== null && peers.length
+    ? peers.filter((peer) => metric.higherIsBetter === false ? peer < value : peer > value).length + 1 : null;
+  return { value, peers, domain, med, rank };
+}
 
 export function PeerComparisonStrip({
   metrics = [],                // [{ id?, label, value, peers?: number[], domain?: [lo,hi], median?, fmt?, higherIsBetter?, note? }]
@@ -26,16 +39,12 @@ export function PeerComparisonStrip({
     <div role={ariaLabel ? "group" : undefined} aria-label={ariaLabel} style={{ position: "relative", display: "flex", flexDirection: "column", gap: 2 }}>
       {metrics.map((m, mi) => {
         const f = m.fmt || fmt;
-        const peers = m.peers || [];
-        const pool = [...peers, m.value].filter((v) => v != null && isFinite(v));
-        const [lo, hi] = m.domain || (pool.length ? [Math.min(...pool), Math.max(...pool)] : [0, 1]);
+        const { value, peers, domain: [lo, hi], med, rank } = comparison(m);
         const span = hi - lo || 1;
         const pct = (v) => `${(((v - lo) / span) * 100).toFixed(2)}%`;
-        const med = m.median != null ? m.median : (peers.length ? median(peers) : null);
         const better = m.higherIsBetter;
-        const above = med != null && m.value > med;
-        const tone = better == null ? "var(--series-actual)" : (above === !!better ? "var(--series-positive)" : "var(--series-negative)");
-        const rank = peers.length ? peers.filter((p) => (better === false ? p < m.value : p > m.value)).length + 1 : null;
+        const above = value !== null && med !== null && value > med;
+        const tone = better == null || value === null || med === null || value === med ? "var(--series-actual)" : (above === !!better ? "var(--series-positive)" : "var(--series-negative)");
         return (
           <div key={m.id || m.label || mi} style={{ display: "flex", alignItems: "center", gap: 12, padding: "7px 0", borderBottom: mi < metrics.length - 1 ? "1px solid var(--border-divider,var(--border))" : "none" }}>
             <div style={{ width: labelWidth, flex: "0 0 auto", minWidth: 0 }}>
@@ -50,14 +59,14 @@ export function PeerComparisonStrip({
               {med != null && (
                 <span title={`median ${f(med)}`} style={{ position: "absolute", left: pct(med), top: 1, width: 0, height: 20, marginLeft: -0.5, borderLeft: "1px dashed var(--series-benchmark)", opacity: 0.9 }} />
               )}
-              {m.value != null && (
-                <span title={`${subjectLabel} ${f(m.value)}`} style={{ position: "absolute", left: pct(m.value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" }} />
+              {value !== null && (
+                <span title={`${subjectLabel} ${f(value)}`} style={{ position: "absolute", left: pct(value), top: 4, width: 14, height: 14, marginLeft: -7, borderRadius: "50%", background: tone, border: "2px solid var(--surface-plate,var(--bg-light))", boxSizing: "border-box" }} />
               )}
               <span style={{ ...MONO, position: "absolute", left: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }} aria-hidden="true">{f(lo)}</span>
               <span style={{ ...MONO, position: "absolute", right: 0, top: -2, fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }} aria-hidden="true">{f(hi)}</span>
             </div>
             <div style={{ ...MONO, width: valueWidth, flex: "0 0 auto", textAlign: "right" }}>
-              <div style={{ fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone }}>{m.value == null ? "—" : f(m.value)}</div>
+              <div style={{ fontSize: "var(--viz-type-label,12px)", fontWeight: 600, color: tone }}>{value === null ? "—" : f(value)}</div>
               {showRank && rank != null && <div style={{ fontSize: "var(--viz-type-micro,10px)", color: "var(--text-muted)" }}>{rank} of {peers.length + 1}</div>}
             </div>
           </div>
@@ -66,12 +75,11 @@ export function PeerComparisonStrip({
       {ariaLabel && (
         <table style={SR}>
           <caption>{caption || ariaLabel}</caption>
-          <thead><tr><th scope="col">Metric</th><th scope="col">{subjectLabel}</th><th scope="col">Peer median</th><th scope="col">Rank</th></tr></thead>
+          <thead><tr><th scope="col">Metric</th><th scope="col">{subjectLabel}</th><th scope="col">Peer median</th><th scope="col">Rank</th><th scope="col">Peer values</th></tr></thead>
           <tbody>{metrics.map((m, i) => {
-            const f = m.fmt || fmt, peers = m.peers || [];
-            const med = m.median != null ? m.median : (peers.length ? median(peers) : null);
-            const rank = peers.length ? peers.filter((p) => (m.higherIsBetter === false ? p < m.value : p > m.value)).length + 1 : null;
-            return <tr key={i}><th scope="row">{m.label}</th><td>{m.value == null ? "no data" : f(m.value)}</td><td>{med == null ? "no peers" : f(med)}</td><td>{rank == null ? "—" : `${rank} of ${peers.length + 1}`}</td></tr>;
+            const f = m.fmt || fmt;
+            const { value, peers, med, rank } = comparison(m);
+            return <tr key={i}><th scope="row">{m.label}</th><td>{value === null ? "no data" : f(value)}</td><td>{med === null ? "no peers" : f(med)}</td><td>{!showRank || rank === null ? "—" : `${rank} of ${peers.length + 1}`}</td><td>{peers.length ? peers.map(f).join(", ") : "no peers"}</td></tr>;
           })}</tbody>
         </table>
       )}

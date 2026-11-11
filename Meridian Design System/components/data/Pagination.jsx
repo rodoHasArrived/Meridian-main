@@ -43,6 +43,7 @@ export function Pagination({
 }) {
   inject();
   const [jumpValue, setJumpValue] = React.useState(String(currentPage));
+  React.useEffect(() => { setJumpValue(String(currentPage)); }, [currentPage]);
 
   const handlePrev = () => {
     if (currentPage > 1) onPageChange(currentPage - 1);
@@ -118,6 +119,7 @@ export function Pagination({
             <button type="button"
               key={idx}
               className={`pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`}
+              aria-current={page === currentPage ? "page" : undefined}
               onClick={() => handlePageClick(page)}
             >
               {page}

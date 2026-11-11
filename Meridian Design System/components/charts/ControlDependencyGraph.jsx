@@ -30,7 +30,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cdg__toggle{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-cdg__toggle button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-cdg__toggle button:first-child{border-left:0}
-.mds-cdg__toggle button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-cdg__toggle button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-cdg__toggle button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-cdg svg{width:100%;height:auto;display:block;background:var(--surface-well,var(--card-surface-raised,#FCFBF8));border:1px solid var(--border,#D2CDC3)}
 .mds-cdg__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25}
@@ -154,7 +154,7 @@ export function ControlDependencyGraph({
       </div>
     </div>
 
-    <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.`}>
+    <svg viewBox={`0 0 ${width} ${height}`} role={onSelect ? "group" : "img"} aria-label={`${description}. ${nodes.length} nodes, ${edges.length} relationships. A numbered relationship outline follows.`}>
       {edges.map((e,i)=>{
         const type=String(e.type||"requires").toLowerCase();
         const blocked=e.blocked||BLOCKING.has(st(byId.get(String(e.from))?.status).key);
@@ -173,7 +173,7 @@ export function ControlDependencyGraph({
         const cls=`mds-cdg__node mds-cdg__node--${s.tone}${down?" mds-cdg__node--downstream":""}${critical.has(String(n.id))?" mds-cdg__node--critical":""}`;
         return <g key={n.id} transform={`translate(${p.x} ${p.y})`} className={cls}>
           <g className="mds-cdg__hit" tabIndex={onSelect?0:undefined} role={onSelect?"button":undefined}
-            aria-label={`${n.label}, ${s.label}${n.owner?`, owner ${n.owner}`:""}${down?", impeded by an upstream block":""}`}
+            aria-label={`${s.glyph} ${String(n.label).slice(0,24)} ${TYPES[String(n.type||"").toLowerCase()]||n.type||"Task"} · ${s.label} ${[n.owner,n.due].filter(Boolean).join(" · ")||(down?"Impeded upstream":"—")}. ${n.label}${down?", impeded by an upstream block":""}`}
             onClick={()=>onSelect?.(n)}
             onKeyDown={e=>{if((e.key==="Enter"||e.key===" ")&&onSelect){e.preventDefault();onSelect(n)}}}>
             <rect width={p.w} height={p.h}/>

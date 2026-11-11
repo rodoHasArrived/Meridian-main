@@ -78,7 +78,7 @@ function Card(){
           <div className="panel">
             <h3>CommitmentBar · MaturityLadder</h3>
             <CommitmentBar label="Meridian Credit Opportunities III" vintage="2024" commitment={45000000} called={28350000} distributed={9200000} nav={26800000} currency={currency} />
-            <MaturityLadder mode="amount" buckets={[{id:"0-1",label:"0–1y",amount:12400000},{id:"1-3",label:"1–3y",amount:31200000},{id:"3-5",label:"3–5y",amount:18600000},{id:"5+",label:"5y+",amount:7300000},{id:"unknown",label:"Unknown maturity",amount:900000}]} />
+            <MaturityLadder mode="amount" comparisonLabel="Same-value fixture reference" source="Synthetic formatting fixture" items={[{id:"0-1",label:"0–1y",primary:12400000,comparison:12400000},{id:"1-3",label:"1–3y",primary:31200000,comparison:31200000},{id:"3-5",label:"3–5y",primary:18600000,comparison:18600000},{id:"5+",label:"5y+",primary:7300000,comparison:7300000},{id:"unknown",label:"Unknown maturity",primary:900000,comparison:900000}]} />
             <p className="note">Compact notation follows the locale's digits and keeps prefix-symbol metric notation — house style, stated in N-6.</p>
           </div>
         </div>

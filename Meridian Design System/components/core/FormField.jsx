@@ -7,6 +7,8 @@
  *   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
  * </FormField>
  */
+import React from "react";
+
 export function FormField({
   label,
   hint,
@@ -16,7 +18,10 @@ export function FormField({
   className = '',
   style = {},
 }) {
-  const fieldId = Math.random().toString(36).slice(2);
+  const generatedId = React.useId();
+  const control = React.isValidElement(children) ? children : null;
+  const fieldId = control?.props.id || generatedId;
+  const messageId = `${fieldId}-message`;
 
   return (
     <div
@@ -42,26 +47,23 @@ export function FormField({
         >
           {label}
           {required && (
-            <span style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
+            <span aria-hidden="true" style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
           )}
         </label>
       )}
 
       {/* Input (cloned with id and aria attrs) */}
-      {children && typeof children === 'object' && children.type
-        ? (() => {
-            const cloned = children;
-            return cloned.props ? (
-              children
-            ) : (
-              children
-            );
-          })()
-        : children}
+      {control ? React.cloneElement(control, {
+        id: fieldId,
+        "aria-required": required || control.props["aria-required"],
+        "aria-invalid": error ? true : control.props["aria-invalid"],
+        "aria-describedby": [control.props["aria-describedby"], hint || error ? messageId : null].filter(Boolean).join(" ") || undefined,
+      }) : children}
 
       {/* Hint or error message */}
       {(hint || error) && (
         <div
+          id={messageId}
           style={{
             fontSize: 'var(--type-caption)',
             color: error ? 'var(--red)' : 'var(--text-muted)',

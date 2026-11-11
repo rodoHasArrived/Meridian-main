@@ -76,11 +76,13 @@ export function WorkspaceContextBar({
   ];
 
   const navRef = React.useRef(null);
+  const moreRef = React.useRef(null);
   const ghostRef = React.useRef(null);
   const actionsRef = React.useRef(null);
   const [hidden, setHidden] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const signature = items.map((item) => item.key).join("|");
+  const contextSignature = JSON.stringify(c);
 
   const measure = React.useCallback(() => {
     const nav = navRef.current, ghost = ghostRef.current;
@@ -113,7 +115,7 @@ export function WorkspaceContextBar({
       next = dropped;
     }
     setHidden((current) => (current.length === next.length && current.every((key, i) => key === next[i]) ? current : next));
-  }, [collapse, minVisible, signature]);
+  }, [collapse, minVisible, signature, contextSignature]);
 
   React.useEffect(() => {
     measure();
@@ -125,7 +127,7 @@ export function WorkspaceContextBar({
 
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKey = (event) => { if (event.key === "Escape") setOpen(false); };
+    const onKey = (event) => { if (event.key === "Escape" && navRef.current?.contains(event.target)) { event.stopPropagation(); setOpen(false); moreRef.current?.focus(); } };
     const onDown = (event) => { if (!navRef.current?.contains(event.target)) setOpen(false); };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onDown);
@@ -143,7 +145,7 @@ export function WorkspaceContextBar({
     </div>
     {visible.map((item) => item.node)}
     {overflow.length ? (
-      <button type="button" className="mds-wctx__more" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen((state) => !state)}>
+      <button ref={moreRef} type="button" className="mds-wctx__more" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen((state) => !state)}>
         {overflowLabel} +{overflow.length}
       </button>
     ) : null}

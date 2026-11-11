@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Ownership Graph — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -27,7 +28,7 @@
 <button type="button" style="appearance:none;border:0;background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:6px 12px;cursor:pointer" data-on="{{ econOn }}" style-hover="color:var(--text-primary)" onClick="{{ setEconomic }}">{{ econTab }}</button>
 <button type="button" style="appearance:none;border:0;border-left:1px solid var(--border);background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:6px 12px;cursor:pointer" style-hover="color:var(--text-primary)" onClick="{{ setVoting }}">{{ votingTab }}</button>
 </div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="120px,28px">Registry filings</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="120px,28px" disabled="{{ true }}" title="No original registry filing documents are attached to these synthetic ownership facts." aria-description="No original registry filing documents are attached to these synthetic ownership facts.">Registry filings</x-import>
 </div>
 <p style="margin:0;font:14px/21px var(--font-body);color:var(--text-secondary);max-width:100ch;text-wrap:pretty">Who ultimately owns and controls <b style="color:var(--text-primary);font-weight:600">{{ selLabel }}</b>? Effective ownership is the look-through product along every path, under the <b style="color:var(--text-primary);font-weight:600">{{ lensLabel }}</b> lens — the two lenses disagree wherever a GP interest or dual-class shares separate economics from control. {{ attributionSentence }}</p>
 <div style="display:grid;grid-template-columns:1.3fr 1fr;gap:12px;align-items:start">

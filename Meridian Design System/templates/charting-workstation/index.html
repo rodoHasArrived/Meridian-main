@@ -57,6 +57,7 @@ function App() {
       <WorkstationTopbar moduleLabel="PlotTool" environment="RESEARCH" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <main style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", padding: 16, gap: 12 }}>
+          <h1 style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clipPath: "inset(50%)" }}>Charting workstation</h1>
           <ChartCard
             title="AAPL · 1D" subtitle="Apple Inc." style={{ flex: 1, minHeight: 0 }} height={undefined}
             readout={[

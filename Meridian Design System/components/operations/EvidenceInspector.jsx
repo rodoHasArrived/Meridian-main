@@ -70,11 +70,11 @@ export function EvidenceInspector({
     <aside className={`mds-insp${className ? " " + className : ""}`} aria-label="Evidence inspector" {...rest}>
       <div className="mds-insp__head">
         <div className="mds-insp__eyebrow">{eyebrow}</div>
-        {value ? (
+        {value !== null && value !== undefined && value !== "" || m?.key === "restricted" ? (
           <div className="mds-insp__sel">
-            <div className="mds-insp__val">{value}</div>
-            {caption ? <div className="mds-insp__cap">{caption}</div> : null}
-            {m ? <div className="mds-insp__cap" style={{ color: `var(--cond-${m.key}-fg)` }}>{m.glyph} {m.label}</div> : null}
+            <div className="mds-insp__val">{m?.key === "restricted" ? "Restricted" : m?.key === "missing" ? "Missing" : m?.key === "na" ? "Not applicable" : value}</div>
+            {caption && m?.key !== "restricted" ? <div className="mds-insp__cap">{caption}</div> : null}
+            {m ? <div className="mds-insp__cap" style={{ color: "var(--text-secondary)" }}>{m.glyph} {m.label}</div> : null}
           </div>
         ) : (
           <div className="mds-insp__empty">{emptyMessage}</div>

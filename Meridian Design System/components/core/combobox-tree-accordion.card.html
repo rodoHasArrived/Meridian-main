@@ -66,7 +66,7 @@ const SECURITIES = [
 ];
 
 const BIG = Array.from({ length: 50000 }, function(_, i){
-  return { id:i, sym: SYMBOLS[i % SYMBOLS.length], px: (50 + (i*7 % 9000)/100).toFixed(2) };
+  return { id:i, sym: SYMBOLS[i % SYMBOLS.length].value, px: (50 + (i*7 % 9000)/100).toFixed(2) };
 });
 
 function Demo() {

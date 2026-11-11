@@ -17,12 +17,13 @@ semantics and consider hiding rank. Ranking is one plus the count of strictly
 better peers, so ties share a rank. The subject is added to the displayed
 population count. A provided median overrides the computed peer median.
 
-Validate finite peer inputs and ensure explicit domains contain the values;
-marker positions are not clamped. Missing subject values render a dash, but the
-caller must explain missingness rather than presenting a computed rank as useful.
+Nonfinite peer inputs are excluded from the domain, median, and population count.
+Missing or nonfinite subjects render a dash and no rank. Explicit finite ordered
+domains are retained; ensure they contain the values because marker positions
+are not clamped. Explain the cause of missingness in the surrounding workflow.
 Empty peers yield no median or rank. The strip owns no loading, stale-data,
 filtering, or drilldown workflow.
 
-Supply `ariaLabel` to emit the subject/median/rank table. Peer marks use native
-titles and are not keyboard controls; put consequential individual peer values
-and evidence in an accessible adjacent table or inspector.
+Supply `ariaLabel` to emit the subject/median/rank table, including every finite
+peer value. `showRank={false}` also removes rank from that table. Peer marks are
+not keyboard controls; expose related evidence in an adjacent inspector.

@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Analytical Workbench — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -120,7 +121,7 @@ class Component extends DCLogic {
     if (!L) return { commands: [], bindings: [], groupOrder: null };
     const views = ["all", "prior", "cur"];
     return L.build({
-      screenId: "analytical-workbench", sections: this.navSections(), activeId: "workbench", go: () => {},
+      screenId: "analytical-workbench", sections: this.navSections(), activeId: "workbench", go: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
       actions: [
         { id: "tenor-next", label: "Next tenor", keys: "l", run: () => this.selectTenor(Math.min(this.TENORS.length - 1, this.state.index + 1)) },
         { id: "tenor-prev", label: "Previous tenor", keys: "h", run: () => this.selectTenor(Math.max(0, this.state.index - 1)) },
@@ -143,6 +144,8 @@ class Component extends DCLogic {
 
   renderVals() {
     this.applyChrome();
+    // This curve is a retained synthetic observation, not a fresh market tick.
+    const observedAt = "2026-05-14 14:32:08Z";
     const TENORS = this.TENORS;
     const layer = this.operatorLayer();
     const L = window.MeridianOperatorLayer;
@@ -177,7 +180,7 @@ class Component extends DCLogic {
       },
       claimContext: ["Rates", "United States Treasury", "14 May 2026"],
       claimStates: [
-        { condition: "confirmed", label: "Prices live", detail: "42s" },
+        { condition: "confirmed", label: "Retained prices", detail: observedAt },
         { condition: "stale", label: "Reference", detail: "18m" },
         { condition: "estimated", label: "Scenario" },
       ],
@@ -259,7 +262,7 @@ class Component extends DCLogic {
         { instrument: "Liquidity score", yield: null, delta: null, condition: "missing", source: "\u2014" },
       ],
       tableIndex: 2,
-      onRow: () => {},
+
       nodeId: this.state.nodeId,
       onNode: (id) => this.selectNode(id),
       nodes: [

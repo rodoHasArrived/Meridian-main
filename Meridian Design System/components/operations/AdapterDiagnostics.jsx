@@ -48,7 +48,8 @@ function inject() {
 .mds-adpt__row{width:100%;padding:8px 13px;min-height:var(--row-review,40px);border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:transparent;text-align:left;font-family:inherit;color:inherit;cursor:pointer}
 .mds-adpt__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-adpt__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-adpt__row[aria-expanded="true"]{background:var(--bg-selected,#E4E9EC);border-left-color:var(--accent,#C56343)}
+.mds-adpt__row[aria-expanded="true"]{background:var(--selected-surface,#E4E9EC);border-left-color:var(--interaction-selected,#496C8F)}
+.mds-adpt__row[aria-expanded="true"] em,.mds-adpt__row[aria-expanded="true"] s{color:var(--text-primary,#20252B)}
 .mds-adpt__row--dense{padding:5px 13px;min-height:0}
 .mds-adpt__name{display:grid;gap:1px;min-width:0}
 .mds-adpt__name b{font-size:12.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -86,7 +87,8 @@ function inject() {
 .mds-apc[data-sev="review"] .mds-apc__dot{background:var(--severity-review-fg,#C56343)}
 .mds-apc[data-sev="ready"]{color:var(--severity-ready-fg,#3D6B45);border-color:var(--severity-ready-bd,#A9C3AD);background:var(--severity-ready-bg,#E8F0E9)}
 .mds-apc[data-sev="ready"] .mds-apc__dot{background:var(--severity-ready-fg,#3D6B45)}
-.mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-muted,#606870)}
+.mds-apc.mds-apc{color:var(--text-primary,#20252B)}
+.mds-apc__next{font-weight:400;text-transform:none;letter-spacing:0;color:var(--text-primary,#20252B)}
 @media print{.mds-adpt__acts,.mds-adpt__btn{display:none}.mds-adpt__row{break-inside:avoid}.mds-adpt__detail{break-inside:avoid}}
 `;
   document.head.appendChild(el);
@@ -110,6 +112,7 @@ export function AdapterDiagnostics({
   className = "", ...rest
 }) {
   inject();
+  const uid=React.useId();
   const [internal, setInternal] = React.useState(defaultSelectedId ?? null);
   const active = selectedId !== undefined ? selectedId : internal;
   const select = (id) => {
@@ -150,7 +153,8 @@ export function AdapterDiagnostics({
         const noSchedule = adapterScheduleMissing(row);
         const over = row.latency && row.latency.budget != null && row.latency.p99 != null && row.latency.p99 > row.latency.budget;
         const queued = row.outbound?.queued ?? 0;
-        const detailId = `mds-adpt-detail-${row.id}`;
+        const detailId = `${uid}-detail-${row.id}`;
+        const descriptionId = `${uid}-description-${row.id}`;
         // The column strip is decorative for AT (the rows are not a real table), so every row
         // carries its own composed name: posture, identity, and each number with its meaning.
         const name = [
@@ -164,7 +168,7 @@ export function AdapterDiagnostics({
         ].filter(Boolean).join(" · ");
         return <React.Fragment key={row.id}>
           <button type="button" className={`mds-adpt__row${dense ? " mds-adpt__row--dense" : ""}`}
-            aria-expanded={open} aria-controls={detailId} aria-label={name} onClick={() => select(row.id)}>
+            aria-expanded={open} aria-controls={detailId} aria-describedby={descriptionId} onClick={() => select(row.id)}>
             <SeverityBadge status={p.severity} label={row.postureLabel || p.label} />
             <span className="mds-adpt__name">
               <b>{row.name || row.id}</b>
@@ -185,6 +189,7 @@ export function AdapterDiagnostics({
             </span>
           </button>
 
+          <span id={descriptionId} style={{position:"absolute",width:1,height:1,overflow:"hidden",clip:"rect(0 0 0 0)"}}>{name}</span>
           {open ? <div className="mds-adpt__detail" id={detailId} role="group" aria-label={`${row.name || row.id} — diagnostics`}>
             {noSchedule ? <p className="mds-adpt__flag">Retrying with no next attempt — this adapter is suspended in fact. Resume it or state the schedule.</p> : null}
             {row.versionStale ? <p className="mds-adpt__stale">Row version {row.version} has moved server-side — mutating controls are disabled until it is refetched.</p> : null}

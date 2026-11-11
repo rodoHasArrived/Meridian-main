@@ -32,7 +32,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-scs__row--action{cursor:pointer}
 .mds-scs__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-scs__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-scs__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-scs__name{font-size:11px;color:var(--text-primary,#20252B)}
 .mds-scs__note{display:block;font:9px/13px var(--font-body);color:var(--text-muted,#606870)}
 .mds-scs__glyph{display:inline-block;width:11px;text-align:center;margin-right:5px;color:var(--text-muted,#606870)}

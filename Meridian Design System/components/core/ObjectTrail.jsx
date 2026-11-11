@@ -27,11 +27,18 @@ function writeStore(screenId, value, storage) {
 }
 
 export function ObjectTrailProvider({ screenId = "global", max = 12, persist = true, storage, defaultEntries, defaultPinned, onNavigate, children }) {
-  const [state, setState] = React.useState(() => {
+  const initialState = () => {
     const saved = persist ? readStore(screenId, storage) : null;
     const recents = saved?.recents || defaultEntries || [];
     return { stack: recents.length ? [recents[0]] : [], index: recents.length ? 0 : -1, recents, pinned: saved?.pinned || defaultPinned || [], notice: null };
-  });
+  };
+  const [state, setState] = React.useState(initialState);
+  const previousScreen = React.useRef(screenId);
+  React.useLayoutEffect(() => {
+    if (previousScreen.current === screenId) return;
+    previousScreen.current = screenId;
+    setState(initialState());
+  }, [screenId]);
 
   const persistNow = React.useCallback((next) => {
     if (persist) writeStore(screenId, { recents: next.recents.slice(0, max), pinned: next.pinned }, storage);
@@ -177,9 +184,10 @@ export function ObjectTrail({ label = "Trail", showPinned = true, maxPinned = 4,
   const api = React.useContext(Ctx);
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
+  const recentRef = React.useRef(null);
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKey = (e) => { if (e.key === "Escape") setOpen(false); };
+    const onKey = (e) => { if (e.key === "Escape" && ref.current?.contains(e.target)) { e.stopPropagation(); setOpen(false); recentRef.current?.focus(); } };
     const onDown = (e) => { if (!ref.current?.contains(e.target)) setOpen(false); };
     document.addEventListener("keydown", onKey); document.addEventListener("mousedown", onDown);
     return () => { document.removeEventListener("keydown", onKey); document.removeEventListener("mousedown", onDown); };
@@ -211,8 +219,8 @@ export function ObjectTrail({ label = "Trail", showPinned = true, maxPinned = 4,
           <em>{typeLabel(entry)}</em><span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{entry.label ?? entry.id}</span>
         </button>)}
       </div> : null}
-      <button type="button" className="mds-trail__more" aria-expanded={open} aria-controls={panelId}
-        aria-label={`${recentsLabel} objects${api.recents.length ? `, ${api.recents.length} in this session` : ""}`}
+      <button ref={recentRef} type="button" className="mds-trail__more" aria-expanded={open} aria-controls={open ? panelId : undefined}
+        aria-label={`${recentsLabel} ${api.recents.length || ""} objects${api.recents.length ? `, ${api.recents.length} in this session` : ""}`}
         onClick={() => setOpen((s) => !s)}>
         {recentsLabel} {api.recents.length ? `+${api.recents.length}` : ""}
       </button>

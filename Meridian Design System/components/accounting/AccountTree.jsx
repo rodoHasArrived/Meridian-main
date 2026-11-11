@@ -32,6 +32,7 @@ function inject() {
 .act__tw{width:14px;height:14px;flex:0 0 auto;display:inline-flex;align-items:center;
   justify-content:center;font-size:9px;color:var(--text-muted,#6B737B);
   cursor:pointer;border-radius:var(--radius-chip,2px);user-select:none;}
+.act__row--on .act__code{color:var(--text-primary,#20252B);}
 .act__tw:hover{background:var(--bg-active,#E7EDF2);color:var(--text-secondary,#535C65);}
 .act__tw--leaf{cursor:default;opacity:0;}
 .act__code{font-family:var(--font-data);font-size:11px;color:var(--text-muted,#6B737B);
@@ -46,12 +47,13 @@ function inject() {
 }
 
 function rollup(node) {
-  if (node.children && node.children.length) {
-    const own = node.balance != null && isFinite(toNumber(node.balance));
-    if (own) return toNumber(node.balance);
-    return node.children.reduce((a, c) => a + rollup(c), 0);
+  const present=node.balance!==null&&node.balance!==undefined&&!(typeof node.balance==="string"&&node.balance.trim()==="");
+  if(present) return Number.isFinite(toNumber(node.balance))?toNumber(node.balance):null;
+  if(node.children?.length){
+    const balances=node.children.map(rollup);
+    return balances.every(value=>value!==null)?balances.reduce((sum,value)=>sum+value,0):null;
   }
-  return isFinite(toNumber(node.balance)) ? toNumber(node.balance) : 0;
+  return null;
 }
 
 // Seed the expanded set with every node code down to defaultExpandedDepth (0-based root=0).
@@ -192,7 +194,7 @@ export function AccountTree({
                 <span className="act__label">{node.name}</span>
               </div>
               <AmountCell
-                value={rollup(node)}
+                value={rollup(node)===null?{value:null,condition:"missing"}:rollup(node)}
                 currency={currency}
                 parens
                 strong={isGroup}

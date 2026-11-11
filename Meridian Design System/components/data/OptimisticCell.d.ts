@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * OptimisticCell — the write counterpart to `EditableCell` (4.2, UX-depth track B-2).
  *
@@ -57,7 +58,7 @@ export interface OptimisticProviderProps {
   onChange?: (entries: OptimisticEdit[]) => void;
   children?: React.ReactNode;
 }
-export declare function OptimisticProvider(props: OptimisticProviderProps): JSX.Element;
+export declare function OptimisticProvider(props: OptimisticProviderProps): React.JSX.Element;
 export declare function useOptimistic(): OptimisticLedger;
 /** Bundle carrier. The compiler exposes only capitalized exports. */
 export declare const OptimisticHooks: { useOptimistic: typeof useOptimistic };
@@ -82,7 +83,7 @@ export interface OptimisticCellProps {
   /** Observe the commit before it reaches the ledger. */
   onCommit?: (edit: Pick<OptimisticEdit, "rowId" | "field" | "prior" | "value">) => void;
 }
-export declare function OptimisticCell(props: OptimisticCellProps): JSX.Element;
+export declare function OptimisticCell(props: OptimisticCellProps): React.JSX.Element;
 
 export interface OptimisticRowBarProps extends React.HTMLAttributes<HTMLDivElement> {
   /** One row, the current selection, or omit for the whole ledger. */
@@ -94,4 +95,4 @@ export interface OptimisticRowBarProps extends React.HTMLAttributes<HTMLDivEleme
   children?: React.ReactNode;
 }
 /** Tally of provisional · confirmed · rejected · reverted for the rows, plus one batch `Revert … confirmed…` with a reason. */
-export declare function OptimisticRowBar(props: OptimisticRowBarProps): JSX.Element | null;
+export declare function OptimisticRowBar(props: OptimisticRowBarProps): React.JSX.Element | null;

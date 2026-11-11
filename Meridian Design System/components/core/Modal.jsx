@@ -4,6 +4,8 @@
 import React from "react";
 import { useOverlayFocus } from "./useOverlayFocus";
 
+const ModalTitleContext = React.createContext(null);
+
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
@@ -49,6 +51,7 @@ function inject() {
 export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, children }) {
   inject();
   const ref = React.useRef(null);
+  const titleId = React.useId();
   // Shared overlay focus contract (initial focus, Tab trap, restore) — same hook as Dialog/Drawer.
   useOverlayFocus(ref, open, ".mdl-wrap");
   // Escape-to-close, matching Dialog/Drawer. Bound only while open.
@@ -60,25 +63,29 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
   }, [open, closeOnEsc, onClose]);
   if (!open) return null;
   return (
+    <ModalTitleContext.Provider value={titleId}>
     <div className="mdl-overlay" onClick={onClose} ref={ref}>
       <div
         className="mdl-wrap"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="mdl-title"
+        aria-labelledby={titleId}
       >
         {children}
       </div>
     </div>
+    </ModalTitleContext.Provider>
   );
 }
 
 export function ModalHeader({ title, onClose }) {
+  const contextTitleId = React.useContext(ModalTitleContext);
+  const fallbackTitleId = React.useId();
   return (
     <div className="mdl-hd">
-      <h2 className="mdl-title" id="mdl-title">{title}</h2>
-      <button className="mdl-close" onClick={onClose} aria-label="Close">×</button>
+      <h2 className="mdl-title" id={contextTitleId || fallbackTitleId}>{title}</h2>
+      <button type="button" className="mdl-close" onClick={onClose} aria-label="Close">×</button>
     </div>
   );
 }

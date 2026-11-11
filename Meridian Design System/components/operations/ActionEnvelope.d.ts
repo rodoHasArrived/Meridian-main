@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * ActionEnvelope — the write-side twin of `ValueEnvelope`. `ActionGuard` answers *may I*;
  * this answers *did it*. A mutating control declares its endpoint, idempotency key, permission,
@@ -85,7 +86,7 @@ export interface ActionEnvelopeProps extends ActionDeclaration, React.HTMLAttrib
   /** Hide the declaration block when a compact surface already states it. @default true */
   showDeclaration?: boolean;
 }
-export declare function ActionEnvelope(props: ActionEnvelopeProps): JSX.Element;
+export declare function ActionEnvelope(props: ActionEnvelopeProps): React.JSX.Element;
 
 export interface ActionStateChipProps extends React.HTMLAttributes<HTMLSpanElement> {
   state?: ActionState;
@@ -93,7 +94,7 @@ export interface ActionStateChipProps extends React.HTMLAttributes<HTMLSpanEleme
   idempotencyKey?: string;
 }
 /** The fate as an inline mark — blotter cell, queue row, status bar. */
-export declare function ActionStateChip(props: ActionStateChipProps): JSX.Element;
+export declare function ActionStateChip(props: ActionStateChipProps): React.JSX.Element;
 
 export interface InstructionLedgerProps extends React.HTMLAttributes<HTMLElement> {
   /** Omit inside a provider to render the session's instructions. */
@@ -101,7 +102,7 @@ export interface InstructionLedgerProps extends React.HTMLAttributes<HTMLElement
   label?: string;
   emptyLabel?: string;
 }
-export declare function InstructionLedger(props: InstructionLedgerProps): JSX.Element;
+export declare function InstructionLedger(props: InstructionLedgerProps): React.JSX.Element;
 
 export interface TransportInstruction {
   action: string;
@@ -128,7 +129,7 @@ export interface ActionEnvelopeProviderProps {
   onSettled?: (settled: { action: string; id: string; state: ActionState; reason: string | null; receipt: ActionReceipt }) => void;
   children?: React.ReactNode | ((api: ActionApi) => React.ReactNode);
 }
-export declare function ActionEnvelopeProvider(props: ActionEnvelopeProviderProps): JSX.Element;
+export declare function ActionEnvelopeProvider(props: ActionEnvelopeProviderProps): React.JSX.Element;
 
 export interface ActionApi {
   instructions: Instruction[];

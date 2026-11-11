@@ -8,6 +8,7 @@
 import React from "react";
 
 function indexAt(e, count, padLeft, rail) {
+  if (!Number.isInteger(count) || count <= 0) return null;
   const rect = e.currentTarget.getBoundingClientRect();
   const span = rect.width - padLeft - rail;
   if (span <= 0) return null;
@@ -20,6 +21,9 @@ function indexAt(e, count, padLeft, rail) {
 // element that wraps the chart (it supplies position:relative for tooltip anchoring).
 export function useChartCrosshair(count, { padLeft = 10, rail = 62 } = {}) {
   const [index, setIndex] = React.useState(null);
+  React.useEffect(() => {
+    setIndex(current => !Number.isInteger(count) || count <= 0 || (current !== null && current >= count) ? null : current);
+  }, [count]);
   const onMove = React.useCallback((e) => {
     const i = indexAt(e, count, padLeft, rail);
     if (i != null) setIndex(i);
@@ -55,7 +59,7 @@ export function useSyncedCursor(count, opts) {
     if (i != null) ctx.setIndex(i);
   };
   return {
-    index: ctx.index,
+    index: ctx.index !== null && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
     setIndex: ctx.setIndex,
     clear: () => ctx.setIndex(null),
     bind: { onMouseMove: onMove, onMouseLeave: () => ctx.setIndex(null), style: { position: "relative" } },

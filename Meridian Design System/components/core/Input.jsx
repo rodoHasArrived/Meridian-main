@@ -27,13 +27,17 @@ function inject() {
 
 export function Input({ label, error, className = "", ...rest }) {
   inject();
-  const errorId = rest.id ? `${rest.id}--error` : undefined;
+  const generatedId = React.useId();
+  const inputId = rest.id || generatedId;
+  const errorId = `${inputId}--error`;
+  const describedBy = [rest["aria-describedby"], error ? errorId : null].filter(Boolean).join(" ") || undefined;
   const input = (
     <input
       className={`mds-input${error ? " mds-input--error" : ""}${className ? " " + className : ""}`}
-      aria-invalid={error ? true : undefined}
-      aria-describedby={error && errorId ? errorId : undefined}
       {...rest}
+      id={inputId}
+      aria-invalid={error ? true : rest["aria-invalid"]}
+      aria-describedby={describedBy}
     />
   );
   if (!label && !error) return input;

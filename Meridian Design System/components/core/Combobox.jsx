@@ -125,6 +125,7 @@ export function Combobox({
     const q = query.toLowerCase();
     return norm.filter((o) => o.label.toLowerCase().includes(q));
   }, [norm, query, filter]);
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
 
   const firstEnabled = (list) => list.findIndex((o) => !o.disabled);
   const stepHl = (dir) => {
@@ -169,7 +170,7 @@ export function Combobox({
   }, [hl, open]);
 
   const commit = (opt) => {
-    if (opt.disabled) return;
+    if (opt.disabled || disabled) return;
     onChange?.(opt.value);
     closeMenu();
     inputRef.current?.focus();
@@ -210,7 +211,7 @@ export function Combobox({
             className="mds-cb-input"
             role="combobox"
             aria-expanded={open}
-            aria-controls={listId}
+            aria-controls={open ? listId : undefined}
             aria-autocomplete="list"
             aria-activedescendant={open && filtered[hl] ? optId(hl) : undefined}
             aria-labelledby={label ? labelId : undefined}

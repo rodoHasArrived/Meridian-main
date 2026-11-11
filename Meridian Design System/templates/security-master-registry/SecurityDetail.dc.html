@@ -1,12 +1,14 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>SecurityDetail — Meridian</title>
 </head>
 <body>
 <x-dc>
+<!-- @template name="Companion · SecurityDetail" description="Declared companion view of the security-master-registry template; retains the same shared object and workflow state." -->
 <!-- Companion page of the Security Master Registry template: standalone record view opened via ?security=<id>. Lean header, tabbed record, optimistic edits, versioned annotations, rejected-edit strip and audit trail; state is shared with the registry. -->
 <helmet>
 <script src="./ds-base.js"></script>
@@ -15,16 +17,17 @@
 <meta name="dc-template" content="security-detail">
 <style>html,body{margin:0;padding:0;height:100%}[data-smr-show="off"]{display:none!important}</style>
 </helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ previewDataState }}" label="Record preview" action-label="Retry preview" on-action="{{ onPreviewRetry }}" hint-size="100%,100vh">
 <div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
-<header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:44px;padding:0 16px;background:var(--bg-dark,#1E2A38);border-bottom:1px solid var(--border-strong);flex-shrink:0">
+<header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:44px;padding:0 16px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--border-strong);flex-shrink:0">
 <img src="../../assets/brand/meridian-mark-light.svg" alt="Meridian" style="height:18px;width:auto">
 <span style="width:1px;height:18px;background:rgba(255,255,255,.18)"></span>
-<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:#fff"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
+<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:var(--topbar-text,#F5F3EE)"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
 <span style="color:rgba(255,255,255,.3)">/</span>
-<span style="font:600 13px var(--font-display);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detName }}</span>
+<span style="font:600 13px var(--font-display);color:var(--topbar-text,#F5F3EE);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detName }}</span>
 <div style="flex:1"></div>
 <span style="font-family:var(--font-data);font-size:11px;color:rgba(255,255,255,.55)">{{ detSub }}</span>
-<button onClick="{{ onCopyLink }}" title="Copy a link to this record" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:#fff">{{ copyLinkLabel }}</button>
+<button onClick="{{ onCopyLink }}" title="Copy a link to this record" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:var(--topbar-text,#F5F3EE)">{{ copyLinkLabel }}</button>
 </header>
 <main style="flex:1;min-width:0;padding:20px 24px">
 <div data-screen-label="Security Detail" data-smr-show="{{ detailShow }}" style="display:flex;flex-direction:column;gap:14px">
@@ -50,8 +53,8 @@
 <span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ i.value }}</span>
 </button>
 <span data-smr-show="{{ i.emptyShow }}" title="{{ i.title }}" style="display:inline-flex;align-items:baseline;gap:6px;border:1px dashed var(--border-strong);background:transparent;padding:3px 8px;border-radius:3px">
-<span style="font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-disabled)">{{ i.label }}</span>
-<span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-disabled)">—</span>
+<span style="font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)">{{ i.label }}</span>
+<span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">—</span>
 </span>
 </sc-for>
 </div>
@@ -252,10 +255,11 @@
 </main>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;previewSecurity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ust-4-25-29&quot;,&quot;options&quot;:[&quot;ust-4-25-29&quot;,&quot;aapl-4-5-25&quot;,&quot;bac-frn-sofr-27&quot;,&quot;barc-irs-sofr&quot;,&quot;bx-refviii&quot;,&quot;eurusd-fwd-citi&quot;,&quot;bund-1-7-32&quot;,&quot;fhlmc-sd8123&quot;,&quot;octagon-clo-23-1a&quot;,&quot;ppl-johnson-001&quot;,&quot;sofi-abs-24-1a&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;},&quot;previewSecurity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ust-4-25-29&quot;,&quot;options&quot;:[&quot;ust-4-25-29&quot;,&quot;aapl-4-5-25&quot;,&quot;bac-frn-sofr-27&quot;,&quot;barc-irs-sofr&quot;,&quot;bx-refviii&quot;,&quot;eurusd-fwd-citi&quot;,&quot;bund-1-7-32&quot;,&quot;fhlmc-sd8123&quot;,&quot;octagon-clo-23-1a&quot;,&quot;ppl-johnson-001&quot;,&quot;sofi-abs-24-1a&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;}}">
 class Component extends DCLogic {
-  state = { detail: null, editMode: false, noteDraft: "", shared: null, missing: false, copied: false };
+  state = { detail: null, editMode: false, noteDraft: "", shared: null, missing: false, copied: false, previewReady: false };
   TODAY = new Date("2026-07-04");
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
   data() { return window.SECURITIES || []; }
@@ -263,6 +267,7 @@ class Component extends DCLogic {
   noop = () => {};
   applyChrome() {
     const html = document.documentElement;
+    html.setAttribute("data-environment", window.MeridianPrefs ? window.MeridianPrefs.environment(this.props.environment ?? "FIXTURE") : (this.props.environment ?? "FIXTURE"));
     html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "compact"):(this.props.density ?? "compact")));
   }
@@ -275,7 +280,7 @@ class Component extends DCLogic {
     if (!id || !this.data().some((r) => r.id === id)) { this.setState({ missing: true }); this._t = setTimeout(() => { location.replace(this.backHref()); }, 900); }
   }
   componentWillUnmount() { if (this._unsub) this._unsub(); clearTimeout(this._t); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
   // A real link always carries ?security=. With no param at all (design-system preview) we fall
   // back to previewSecurity; an id that resolves to nothing still redirects to the registry.
   param() { try { return new URL(location.href).searchParams.get("security"); } catch (e) { return null; } }
@@ -342,6 +347,8 @@ class Component extends DCLogic {
     const rejected = row ? (sh.rejected[row.id] || []) : [];
     const stamp = () => new Date().toISOString().slice(0, 16).replace("T", " ") + "Z";
     return {
+      previewDataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onPreviewRetry: () => this.setState({ previewReady: true }),
       noop: this.noop, backHref: this.backHref(), backLabel: this.backLabel(),
       copyLinkLabel: s.copied ? "Link copied" : "Copy link",
       onCopyLink: () => {
@@ -434,7 +441,7 @@ class Component extends DCLogic {
           out.fieldsShow = "on"; out.count = (sec.fields || []).length; out.secondary = fieldsSeen >= 2; fieldsSeen += 1;
           out.items = sec.fields.map((f) => s.editMode && OptimisticCell
             ? { label: f.label, value: el(OptimisticCell, { rowId: row.id, field: f.label, value: f.value, mode: "text", validator: (v) => v.trim().length ? true : "Cannot be empty" }) }
-            : { label: f.label, value: el("span", { style: { color: f.accent ? "var(--brand-signal,#C56343)" : undefined, fontWeight: f.accent ? 600 : undefined } }, f.value) });
+            : { label: f.label, value: el("span", { style: { color: f.accent ? "var(--text-primary)" : undefined, fontWeight: f.accent ? 600 : undefined } }, f.value) });
         } else if (sec.type === "checklist") { out.checklistShow = "on"; out.checks = sec.items; }
         else if (sec.type === "callout") out.calloutShow = "on";
         else if (sec.type === "schedule") {

@@ -59,7 +59,7 @@ export function Treemap({
     ? (items.some((d) => d.delta != null) ? "delta" : items.some((d) => d.group) ? "group" : "none")
     : colorBy;
 
-  const clean = items.filter((d) => d.value > 0).slice().sort((a, b) => b.value - a.value);
+  const clean = items.filter((d) => Number.isFinite(d.value) && d.value > 0).slice().sort((a, b) => b.value - a.value);
   const total = clean.reduce((a, d) => a + d.value, 0);
   const rects = [];
   if (dim.w > 4 && dim.h > 4 && total > 0) {
@@ -79,7 +79,7 @@ export function Treemap({
       const tok = GROUP_WASHES[groups.indexOf(d.group) % GROUP_WASHES.length];
       return `color-mix(in srgb, var(${tok}) 12%, transparent)`;
     }
-    return "var(--bg-raised)";
+    return "var(--card-surface-raised)";
   };
 
   const mono = { fontFamily: "var(--font-data)", fontVariantNumeric: "tabular-nums" };
@@ -92,25 +92,26 @@ export function Treemap({
         const showValue = w >= 72 && h >= 42;
         const showDelta = it.delta != null && w >= 72 && h >= 58;
         const tip = it.label + " \u00b7 " + valueFmt(it.value) + (it.delta != null ? " \u00b7 " + deltaFmt(it.delta) : "");
+        const Tile = onSelect ? "button" : "div";
         return (
-          <div key={i} title={tip}
+          <Tile key={i} title={tip} type={onSelect ? "button" : undefined} aria-label={onSelect ? tip : undefined}
             onClick={onSelect ? () => onSelect(it) : undefined}
             style={{ position: "absolute", left: x, top: y, width: w, height: h, boxSizing: "border-box",
               border: "1px solid var(--border)", background: wash(it), padding: "4px 6px", overflow: "hidden",
-              cursor: onSelect ? "pointer" : "default" }}>
+              cursor: onSelect ? "pointer" : "default", textAlign: "left", font: "inherit" }}>
             {showAny && (
               <div style={{ fontSize: 10.5, fontWeight: 600, fontVariant: "all-small-caps", letterSpacing: ".04em",
                 color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{it.label}</div>
             )}
             {showValue && (
-              <div style={{ ...mono, fontSize: 11, color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{valueFmt(it.value)}</div>
+              <div style={{ ...mono, fontSize: 11, color: "var(--text-primary)", whiteSpace: "nowrap" }}>{valueFmt(it.value)}</div>
             )}
             {showDelta && (
-              <div style={{ ...mono, fontSize: 10.5, color: it.delta < 0 ? "var(--red-dim)" : "var(--green-dim)", whiteSpace: "nowrap" }}>
+              <div style={{ ...mono, fontSize: 10.5, color: "var(--text-primary)", whiteSpace: "nowrap" }}>
                 {deltaFmt(it.delta)}
               </div>
             )}
-          </div>
+          </Tile>
         );
       })}
     </div>

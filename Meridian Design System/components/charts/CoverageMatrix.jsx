@@ -100,18 +100,18 @@ export function CoverageMatrix({
 
   return (
     <div className={`mds-covm${className ? " " + className : ""}`} {...rest}>
-      <div className="mds-covm__scroll">
-        <div className="mds-covm__grid" style={{ gridTemplateColumns: template }} role="grid" aria-label="Coverage matrix" onKeyDown={onKeyDown}>
+      <div className="mds-covm__scroll" role="region" aria-label="Coverage matrix scroll area" tabIndex={interactive ? undefined : 0}>
+        <div className="mds-covm__grid" style={{ gridTemplateColumns: template }} role="grid" aria-label="Coverage matrix" aria-rowcount={R.length + (colLabels ? 1 : 0)} aria-colcount={C.length + 1} onKeyDown={onKeyDown}>
           {colLabels && (
-            <React.Fragment>
-              <span />
+            <div role="row" style={{ display: "contents" }}>
+              <span role="columnheader" aria-label="Instrument" />
               {C.map((c) => (
-                <span key={c.id} className="mds-covm__collab">{c.label}</span>
+                <span role="columnheader" key={c.id} className="mds-covm__collab">{c.label}</span>
               ))}
-            </React.Fragment>
+            </div>
           )}
           {R.map((r, ri) => (
-            <React.Fragment key={r.id}>
+            <div role="row" key={r.id} style={{ display: "contents" }}>
               <span className="mds-covm__rowlab" role="rowheader">{r.label}</span>
               {C.map((c, ci) => {
                 const e = lookup(r, c);
@@ -119,6 +119,7 @@ export function CoverageMatrix({
                 return (
                   <CellTag
                     key={c.id}
+                    role="gridcell"
                     type={interactive ? "button" : undefined}
                     className={`mds-covm__cell mds-covm__cell--${e.status || "none"}`}
                     style={{ width: cellSize, height: cellSize }}
@@ -134,7 +135,7 @@ export function CoverageMatrix({
                   />
                 );
               })}
-            </React.Fragment>
+            </div>
           ))}
         </div>
       </div>

@@ -63,18 +63,26 @@ export function WorkspaceLayoutProvider({ screenId, regions, layouts, persist = 
     return list.filter((l) => (seen.has(l.name) ? false : (seen.add(l.name), true)));
   }, [declared, JSON.stringify(layouts || [])]);
 
-  const [state, setState] = React.useState(() => {
+  const initialState = () => {
     const saved = persist ? readStore(screenId, storage) : null;
     const base = presets.find((p) => p.name === saved?.active) || presets[0];
     return {
-      active: base.name,
+      active: saved?.custom?.[saved?.active] ? saved.active : base.name,
       current: { ...base.regions, ...(saved?.regions || {}) },
       saved: { ...base.regions, ...(saved?.saved || saved?.regions || {}) },
       custom: saved?.custom || {},
       restored: !!saved,
     };
-  });
+  };
+  const [state, setState] = React.useState(initialState);
   const [meta, setMeta] = React.useState({});
+  const previousScreen = React.useRef(screenId);
+  React.useLayoutEffect(() => {
+    if (previousScreen.current === screenId) return;
+    previousScreen.current = screenId;
+    setState(initialState());
+    setMeta({});
+  }, [screenId]);
 
   const dirty = !sameArrangement(state.current, state.saved);
 
@@ -92,7 +100,7 @@ export function WorkspaceLayoutProvider({ screenId, regions, layouts, persist = 
     active: state.active,
     dirty,
     restored: state.restored,
-    names: [...presets.map((p) => p.name), ...Object.keys(state.custom)],
+    names: [...new Set([...presets.map((p) => p.name), ...Object.keys(state.custom)])],
     regions: state.current,
     meta,
     region: (id) => ({ size: 1, collapsed: false, hidden: false, ...(state.current[id] || {}) }),
@@ -101,7 +109,7 @@ export function WorkspaceLayoutProvider({ screenId, regions, layouts, persist = 
     setRegion: (id, patch) => commit((prev) => ({ ...prev, current: { ...prev.current, [id]: { ...prev.current[id], ...arrangementOnly(typeof patch === "function" ? patch(prev.current[id] || {}) : patch) } } })),
     toggleCollapse: (id) => commit((prev) => ({ ...prev, current: { ...prev.current, [id]: { ...prev.current[id], collapsed: !prev.current[id]?.collapsed } } })),
     select: (name) => commit((prev) => {
-      const found = presets.find((p) => p.name === name) || (prev.custom[name] ? { name, regions: prev.custom[name] } : null);
+      const found = prev.custom[name] ? { name, regions: prev.custom[name] } : presets.find((p) => p.name === name);
       if (!found) return prev;
       return { ...prev, active: found.name, current: { ...found.regions }, saved: { ...found.regions } };
     }),

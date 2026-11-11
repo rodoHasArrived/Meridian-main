@@ -31,11 +31,11 @@ function inject() {
 }
 
 const STATUS = {
-  live:       { label: "live",       c: "var(--green,#2E7655)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  fresh:      { label: "fresh",      c: "var(--green,#2E7655)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  stale:      { label: "stale",      c: "var(--orange,#986717)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  delayed:    { label: "delayed",    c: "var(--orange,#986717)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  offline:    { label: "offline",    c: "var(--red,#B54B42)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
+  live:       { label: "live",       c: "var(--green-dim,#245C42)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  fresh:      { label: "fresh",      c: "var(--green-dim,#245C42)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  stale:      { label: "stale",      c: "var(--orange-dim,#725012)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  delayed:    { label: "delayed",    c: "var(--orange-dim,#725012)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  offline:    { label: "offline",    c: "var(--red-dim,#873832)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
   connecting: { label: "connecting", c: "var(--semantic-info,#2F648A)", ring: "var(--blue-a10)",   wash: "var(--blue-a10)" },
   idle:       { label: "idle",       c: "var(--text-disabled,#A4ABB2)", ring: "rgba(136,144,153,.25)", wash: "transparent" },
 };

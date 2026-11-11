@@ -54,8 +54,10 @@ export function ContextMenu({ items = [], x = 0, y = 0, onClose = () => {} }) {
 
   // Focus the first enabled item when the menu opens (ARIA menu pattern).
   useEffect(() => {
+    const previous = document.activeElement;
     const first = itemRefs.current.find((b) => b && !b.disabled);
     first && first.focus();
+    return () => { if (previous?.isConnected) previous.focus(); };
   }, []);
 
   const enabledIndices = () =>
@@ -76,7 +78,7 @@ export function ContextMenu({ items = [], x = 0, y = 0, onClose = () => {} }) {
 
   const onKeyDown = (e) => {
     switch (e.key) {
-      case "Escape": e.preventDefault(); onClose(); break;
+      case "Escape": e.preventDefault(); e.stopPropagation(); onClose(); break;
       case "ArrowDown": e.preventDefault(); moveFocus("down"); break;
       case "ArrowUp": e.preventDefault(); moveFocus("up"); break;
       case "Home": e.preventDefault(); moveFocus("first"); break;

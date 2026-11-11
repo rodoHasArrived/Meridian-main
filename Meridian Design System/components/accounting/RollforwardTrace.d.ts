@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Rollforward trace — opening balance → the movements that explain the change →
  * closing balance, with the arithmetic proved on screen. Use it for book value,
@@ -47,4 +48,4 @@ export interface RollforwardTraceProps extends React.HTMLAttributes<HTMLDivEleme
   /** The tie-out strip. Leave on — the proof is the point. */
   showProof?: boolean;
 }
-export declare function RollforwardTrace(props: RollforwardTraceProps): JSX.Element;
+export declare function RollforwardTrace(props: RollforwardTraceProps): React.JSX.Element;

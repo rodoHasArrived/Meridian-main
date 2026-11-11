@@ -7,8 +7,9 @@
 import React from "react";
 import { formatNumber, formatAccounting } from "../core/format.js";
 
-const COND={confirmed:{label:"Confirmed",glyph:"●"},provisional:{label:"Provisional",glyph:"◐"},estimated:{label:"Estimated",glyph:"○"},stale:{label:"Stale",glyph:"◔"},overridden:{label:"Overridden",glyph:"◆"},missing:{label:"Missing",glyph:"■"},na:{label:"Not applicable",glyph:"—"},pending:{label:"Pending",glyph:"◇"},exception:{label:"Exception",glyph:"▲"},reconciled:{label:"Reconciled",glyph:"✓"}};
-const cond=v=>COND[String(v||"").toLowerCase().replace(/[_\s-]+/g,"")]||null;
+import { conditionMeta } from "../operations/conditions.js";
+const cond=value=>value?conditionMeta(value):null;
+const unusable=cell=>["missing","na","restricted"].includes(cond(cell.condition)?.key);
 const MODES=[
   {id:"none",label:"Values"},
   {id:"absolute",label:"Absolute"},
@@ -24,7 +25,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-bcm__modes{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-bcm__modes button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-bcm__modes button:first-child{border-left:0}
-.mds-bcm__modes button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-bcm__modes button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-bcm__modes button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-bcm__scroll{overflow:auto}
 .mds-bcm table{border-collapse:collapse;width:100%;min-width:560px}
@@ -40,7 +41,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-bcm__cell--action{cursor:pointer}
 .mds-bcm__cell--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-bcm__cell--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-bcm__cell[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
 .mds-bcm__val{display:block;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-bcm__val[data-text="true"]{font-family:var(--font-body);font-size:11px}
 .mds-bcm__val[data-condition="missing"],.mds-bcm__val[data-condition="exception"]{color:var(--red-dim,#873832)}
@@ -60,6 +61,7 @@ const signed=(v,f)=>`${v<0?"\u2212":"+"}${f(Math.abs(v))}`;
 
 function difference(mode,cell,ref,row,basisId){
   if(mode==="none"||!ref)return null;
+  if(unusable(cell)||unusable(ref))return{text:"Not comparable — input unavailable",same:false};
   // Legacy call sites mark differing bases explicitly; honour that as an override.
   const flagged=(row.different||row.changed||[]).includes(basisId);
   const a=num(cell.value),b=num(ref.value);
@@ -94,6 +96,10 @@ export function BasisComparisonMatrix({
   const interactive=Boolean(onSelectCell||onOpenTrace||onOpenEvidence);
 
   const render=(cell,row)=>{
+    const condition=cond(cell.condition)?.key;
+    if(condition==="restricted")return "Restricted";
+    if(condition==="missing")return "—";
+    if(condition==="na")return "n/a";
     if(cell.value===null||cell.value===undefined||cell.value==="")
       return cell.condition==="na"?"n/a":"—";
     const n=num(cell.value);
@@ -115,7 +121,7 @@ export function BasisComparisonMatrix({
       </div>
     </div>
 
-    <div className="mds-bcm__scroll">
+    <div className="mds-bcm__scroll" role="region" aria-label={`${typeof title === "string" ? title : "Basis comparison"} scroll area`} tabIndex={0}>
       <table>
         <caption>{description||`${title} — every basis shown on identical rows and units; differences are stated against ${refBasis?.label||"the reference basis"} in words and numbers.`}</caption>
         <thead><tr>
@@ -147,7 +153,7 @@ export function BasisComparisonMatrix({
                     {c?<span className="mds-bcm__mark" aria-hidden="true">{c.glyph}</span>:null}{render(cell,row)}
                   </span>
                   {cell.method||cell.source||cell.asOf?<span className="mds-bcm__sub">{[cell.method,cell.source,cell.asOf].filter(Boolean).join(" · ")}</span>:null}
-                  {cell.override?<span className="mds-bcm__sub">Override: {cell.override}</span>:null}
+                  {cell.override&&c?.key!=="restricted"?<span className="mds-bcm__sub">Override: {cell.override}</span>:null}
                   {diff?<span className="mds-bcm__diff" data-same={diff.same?"true":undefined}>{diff.text}</span>:null}
                   {isRef&&mode!=="none"?<span className="mds-bcm__diff" data-same="true">Reference</span>:null}
                 </Tag>

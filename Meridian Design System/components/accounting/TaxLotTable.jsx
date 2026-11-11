@@ -4,6 +4,7 @@
 // threshold. Footer rolls up basis, value, and total gain. Light institutional grid.
 import React from "react";
 import { AmountCell } from "./AmountCell";
+import { sumKnown, displayAmount } from "./knownAmounts.js";
 import { toNumber, formatNumber } from "../core/format.js";
 
 let injected = false;
@@ -41,7 +42,7 @@ function inject() {
   padding:2px 7px;font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
 .tlt__hp--short{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--semantic-info,#2F648A);color:var(--text-primary,#20252B);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
@@ -100,9 +101,9 @@ export function TaxLotTable({
     return { ...l, basis, value, gain, pct, held, long };
   });
 
-  const tBasis = computed.reduce((a, r) => a + (isFinite(r.basis) ? r.basis : 0), 0);
-  const tValue = computed.reduce((a, r) => a + (isFinite(r.value) ? r.value : 0), 0);
-  const tGain = tValue - tBasis;
+  const tBasis = sumKnown(computed.map(row=>row.basis));
+  const tValue = sumKnown(computed.map(row=>row.value));
+  const tGain = tValue===null||tBasis===null?null:tValue-tBasis;
   const colCount = 6 + (showSymbol ? 1 : 0);
 
   return (
@@ -144,10 +145,10 @@ export function TaxLotTable({
                 </span>
               </td>
               <td className="tlt--r">{fmtQty(r.quantity)}</td>
-              <td className="tlt--r"><AmountCell value={r.basis} currency={currency} /></td>
-              <td className="tlt--r"><AmountCell value={r.value} currency={currency} /></td>
+              <td className="tlt--r"><AmountCell value={displayAmount(r.basis)} currency={currency} /></td>
+              <td className="tlt--r"><AmountCell value={displayAmount(r.value)} currency={currency} /></td>
               <td className="tlt--r">
-                <AmountCell value={r.gain} currency={currency} mode="pnl" signed zeroDash />
+                <AmountCell value={displayAmount(r.gain)} currency={currency} mode="pnl" signed zeroDash />
                 {isFinite(r.pct) && (
                   <span className="tlt__pct" style={{ color: r.gain < 0 ? "var(--red-dim,#7D322F)" : r.gain > 0 ? "var(--green-dim,#375D46)" : "var(--text-muted,#6B737B)" }}>
                     {r.gain >= 0 ? "+" : "\u2212"}{Math.abs(r.pct).toFixed(2)}%
@@ -162,9 +163,9 @@ export function TaxLotTable({
             <td className="tlt__foot-lbl" colSpan={showSymbol ? 4 : 3}>
               {computed.length} {computed.length === 1 ? "lot" : "lots"}
             </td>
-            <td className="tlt--r"><AmountCell value={tBasis} currency={currency} strong /></td>
-            <td className="tlt--r"><AmountCell value={tValue} currency={currency} strong /></td>
-            <td className="tlt--r"><AmountCell value={tGain} currency={currency} mode="pnl" signed strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tBasis)} currency={currency} strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tValue)} currency={currency} strong /></td>
+            <td className="tlt--r"><AmountCell value={displayAmount(tGain)} currency={currency} mode="pnl" signed strong /></td>
           </tr>
         </tfoot>
       </table>

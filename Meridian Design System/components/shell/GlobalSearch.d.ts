@@ -1,3 +1,4 @@
+import type React from "react";
 /** A searchable row — same shape the CommandPalette's `resolve` returns. */
 export interface GlobalSearchRow {
   /** Stable row id. */
@@ -39,4 +40,4 @@ export interface GlobalSearchProps {
  * Mounted automatically by `templates/_scaffold/ds-base.js`, so screens write nothing — mount it
  * by hand only to put it somewhere other than the masthead.
  */
-export declare function GlobalSearch(props: GlobalSearchProps): JSX.Element | null;
+export declare function GlobalSearch(props: GlobalSearchProps): React.JSX.Element | null;

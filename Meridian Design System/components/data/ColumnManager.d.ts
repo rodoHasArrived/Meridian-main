@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * ColumnManager — keyboard- and screen-reader-accessible column controls: the counterpart to
  * DataGrid's mouse-only header drag/resize/pin. A popover listing every column in order
@@ -29,4 +30,4 @@ export interface ColumnManagerProps {
   /** Px change per width step. @default 20 */
   widthStep?: number;
 }
-export declare function ColumnManager(props: ColumnManagerProps): JSX.Element;
+export declare function ColumnManager(props: ColumnManagerProps): React.JSX.Element;

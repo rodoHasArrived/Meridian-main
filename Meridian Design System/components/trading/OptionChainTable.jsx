@@ -100,20 +100,22 @@ export function OptionChainTable({
 
   const [focusIdx, setFocusIdx] = React.useState(atmIdx);
   const interactive = !!onSelect;
+  const currentFocus=Math.max(0,Math.min(focusIdx,sorted.length-1));
 
   const select = (r) => {
+    if (!r) return;
     if (!isControlled) setInternalSel(r.strike);
     if (onSelect) onSelect(r);
   };
 
   const onKeyDown = (e) => {
     if (!interactive || !sorted.length) return;
-    let i = focusIdx;
+    let i = currentFocus;
     if (e.key === "ArrowDown") i = Math.min(sorted.length - 1, i + 1);
     else if (e.key === "ArrowUp") i = Math.max(0, i - 1);
     else if (e.key === "Home") i = 0;
     else if (e.key === "End") i = sorted.length - 1;
-    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[focusIdx]); return; }
+    else if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(sorted[currentFocus]); return; }
     else return;
     e.preventDefault();
     setFocusIdx(i);
@@ -171,7 +173,7 @@ export function OptionChainTable({
           const callItm = underlyingPrice != null && r.strike < underlyingPrice;
           const putItm = underlyingPrice != null && r.strike > underlyingPrice;
           const isSel = selected != null && r.strike === selected;
-          const isFocus = interactive && i === focusIdx;
+          const isFocus = interactive && i === currentFocus;
           return (
             <React.Fragment key={r.strike}>
               <div

@@ -4,7 +4,7 @@
 // Renders issues as compact rows: a severity dot, mono code, message, optional gate.
 // Validation severities Info / Warning / Critical collapse onto info / action / blocked.
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {

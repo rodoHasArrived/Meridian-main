@@ -44,6 +44,7 @@ export function TagInput({
   const [draft, setDraft] = React.useState("");
   const inputRef = React.useRef(null);
   const commit = () => {
+    if (disabled) return;
     let t = draft.trim().replace(/,+$/, "");
     if (!t) return;
     if (uppercase) t = t.toUpperCase();
@@ -51,7 +52,7 @@ export function TagInput({
     if (!value.includes(t) && onChange) onChange([...value, t]);
     setDraft("");
   };
-  const remove = (i) => onChange && onChange(value.filter((_, j) => j !== i));
+  const remove = (i) => !disabled && onChange && onChange(value.filter((_, j) => j !== i));
   const onKeyDown = (e) => {
     if (e.key === "Enter" || e.key === ",") { e.preventDefault(); commit(); }
     else if (e.key === "Backspace" && !draft && value.length) remove(value.length - 1);

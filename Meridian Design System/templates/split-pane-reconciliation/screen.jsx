@@ -1,12 +1,12 @@
 // Split Pane Reconciliation — template screen. Mounted by the DC via <x-import>.
-// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_4f61be)
+// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_205d17)
 // and the single global React. Functional: two synchronized panes show custodian statement vs.
 // internal ledger; clicking a row cross-highlights its match on the other side; unmatched rows
 // open a break resolution drawer.
 const {
   WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge,
   MetricCard, AmountCell, Select
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo, useCallback, useRef, useEffect } = React;
 
 /* ── screen-level CSS ── */
@@ -22,10 +22,10 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
 .spr-seg{display:inline-flex;border:1px solid var(--border);border-radius:var(--radius-button,6px);overflow:hidden;}
 .spr-seg button{appearance:none;border:none;background:var(--bg-light);cursor:pointer;
   font-family:var(--font-body);font-size:12px;color:var(--text-secondary);
-  padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
+  padding:6px 12px;border-right:1px solid var(--border);transition:background-color .12s,color .12s;}
 .spr-seg button:last-child{border-right:none;}
 .spr-seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--accent-dim);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#F2E3DB);color:var(--text-primary);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .spr-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .spr-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);
   border-radius:var(--radius-card,8px);overflow:hidden;background:var(--bg-light);
@@ -178,8 +178,8 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
           {breakCount > 0 && <span className="spr-chip spr-chip--break">{breakCount} break{breakCount > 1 ? "s" : ""}</span>}
         </span>
       </div>
-      <div className="spr-pane__scroll">
-        <table className="spr-table">
+      <div className="spr-pane__scroll" role="region" aria-label={`${title} items`} tabIndex={items.length ? undefined : 0}>
+        <table className="spr-table" aria-label={`${title} items`}>
           <thead>
             <tr>
               <th>Date</th>
@@ -193,7 +193,7 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
             {items.length === 0 && (
               <tr><td colSpan={5} className="spr-empty">No items to display</td></tr>
             )}
-            {items.map((it) => {
+            {items.map((it, rowIndex) => {
               const isSel = selectedId === it.id;
               const isCross = crossId === it.id;
               const cls = [
@@ -202,7 +202,15 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
                 isCross ? "cross-lit" : "",
               ].filter(Boolean).join(" ");
               return (
-                <tr key={it.id} className={cls} onClick={() => onSelect(it)}>
+                <tr key={it.id} className={cls} tabIndex={selectedId ? isSel ? 0 : -1 : rowIndex === 0 ? 0 : -1}
+                  aria-selected={isSel} aria-label={`${it.ref}, ${it.memo}, ${STATUS_LABEL[it.matchStatus] || it.matchStatus}`}
+                  onClick={() => onSelect(it)} onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") { event.preventDefault(); onSelect(it); return; }
+                    const next = event.key === "ArrowDown" ? Math.min(items.length - 1, rowIndex + 1) : event.key === "ArrowUp" ? Math.max(0, rowIndex - 1) : event.key === "Home" ? 0 : event.key === "End" ? items.length - 1 : null;
+                    if (next == null) return;
+                    event.preventDefault();
+                    const peers = event.currentTarget.parentElement.querySelectorAll("tr[tabindex]"); peers[next]?.focus();
+                  }}>
                   <td className="mono">{it.date}</td>
                   <td className="mono">{it.ref}</td>
                   <td className="memo">{it.memo}</td>
@@ -221,6 +229,24 @@ function Pane({ title, items, matchedCount, breakCount, timingCount, selectedId,
 }
 
 function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
+  const drawerRef = useRef(null);
+  const closeRef = useRef(onClose); closeRef.current = onClose;
+  useEffect(() => {
+    const previous = document.activeElement;
+    const root = drawerRef.current;
+    root?.querySelector("button")?.focus();
+    const keydown = (event) => {
+      if (event.key === "Escape") { event.preventDefault(); closeRef.current(); return; }
+      if (event.key !== "Tab") return;
+      const controls = Array.from(root?.querySelectorAll('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex="0"]') || []);
+      const first = controls[0], last = controls[controls.length - 1];
+      if (!controls.length) { event.preventDefault(); root?.focus(); }
+      else if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
+    root?.addEventListener("keydown", keydown);
+    return () => { root?.removeEventListener("keydown", keydown); if (previous?.isConnected) previous.focus(); };
+  }, []);
   const isTimingBreak = item.matchStatus === "timing";
   const isHardBreak   = item.matchStatus === "break";
   const diffAmt = counterItem ? Math.abs(item.amount - counterItem.amount) : null;
@@ -231,7 +257,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 
   return (
     <div className="spr-break-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="spr-break-drawer" role="dialog" aria-label="Break details">
+      <div ref={drawerRef} className="spr-break-drawer" role="dialog" aria-modal="true" aria-label="Break details" tabIndex={-1}>
         <div className="spr-break-drawer__hd">
           <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
             <Eyebrow>{isTimingBreak ? "Timing Break" : isHardBreak ? "Unmatched Item" : "Reconciliation Break"}</Eyebrow>
@@ -242,7 +268,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
               {side === "stmt" ? "Custodian statement" : "Internal ledger"} · {item.date}
             </span>
           </div>
-          <button className="spr-x-btn" aria-label="Close" onClick={onClose}>×</button>
+          <button type="button" className="spr-x-btn" aria-label="Close" onClick={onClose}>×</button>
         </div>
 
         <div className="spr-break-drawer__body">
@@ -328,7 +354,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
             {isHardBreak && (
               <div style={{ padding:"10px 12px", border:"1px solid var(--border)", borderRadius:6, background:"var(--bg-light)" }}>
                 <strong style={{ color:"var(--text-primary)", display:"block", marginBottom:4 }}>Create adjustment entry</strong>
-                Post a journal entry to record the item in the ledger and clear the break.
+                Demonstrate an adjustment outcome in this synthetic view; no journal is posted.
               </div>
             )}
             <div style={{ padding:"10px 12px", border:"1px solid var(--border)", borderRadius:6, background:"var(--bg-light)" }}>
@@ -346,7 +372,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
           )}
           {isHardBreak && (
             <Button variant="primary" size="sm" onClick={() => onResolve("create-je")}>
-              Create journal entry
+              Simulate adjustment entry
             </Button>
           )}
           <Button variant="ghost" size="sm" onClick={() => onResolve("mark-exception")}>
@@ -360,7 +386,7 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 }
 
 /* ── main screen ── */
-function SplitPaneReconciliationScreen() {
+function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
   const [period,  setPeriod]  = useState(PERIODS[0]);
   const [account, setAccount] = useState(ACCOUNTS[0]);
   const [filter,  setFilter]  = useState("all");
@@ -481,13 +507,12 @@ function SplitPaneReconciliationScreen() {
     <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:"var(--bg)", fontFamily:"var(--font-body)", color:"var(--text-secondary)", fontSize:13 }}>
       <WorkstationTopbar
         moduleLabel="Accounting"
-        environment="PAPER"
-        clock="14:32:08 UTC"
+        environment={environment}
         brandSrc="../../assets/brand/meridian-mark-light.svg"
       />
 
       <div style={{ display:"flex", flex:1, minHeight:0 }}>
-        <NavRail activeId="reconcile" onSelect={() => {}} sections={navSections} />
+        <NavRail activeId="reconcile" onSelect={(id) => { const routes = { ledger: "../accounting-workstation/AccountingWorkstation.dc.html?view=gl", statements: "../accounting-workstation/AccountingWorkstation.dc.html?view=stmt", taxlots: "../accounting-workstation/AccountingWorkstation.dc.html?view=lots", export: "../report-library/ReportLibrary.dc.html", audit: "../investment-event-ledger/InvestmentEventLedger.dc.html" }; if (routes[id]) window.location.href = routes[id]; }} sections={navSections} />
 
         <main style={{ flex:1, minWidth:0, overflowY:"auto", padding:16, display:"flex", flexDirection:"column", gap:12 }}>
 
@@ -496,13 +521,17 @@ function SplitPaneReconciliationScreen() {
             <h1 style={{ font:"600 22px var(--font-display)", margin:0, color:"var(--text-primary)" }}>
               Reconciliation
             </h1>
-            <Badge variant="paper" dot>PAPER</Badge>
+            <Badge variant={environment === "LIVE" ? "live" : environment === "PAPER" ? "paper" : "warning"} dot>{environment}</Badge>
             <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-muted)", marginLeft:2 }}>
               Statement vs. Ledger · {period}
             </span>
             <div style={{ flex:1 }} />
-            <Button variant="ghost" size="sm">Export</Button>
-            <Button variant="ghost" size="sm">Print report</Button>
+            <Button variant="ghost" size="sm" onClick={() => {
+              const content = JSON.stringify({ synthetic: true, period, account, statement: stmtItems, ledger: ldgrItems }, null, 2);
+              const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
+              const anchor = document.createElement("a"); anchor.href = url; anchor.download = "synthetic-reconciliation.json"; anchor.click(); URL.revokeObjectURL(url);
+            }}>Export example</Button>
+            <Button variant="ghost" size="sm" onClick={() => window.print()}>Print report</Button>
             <Button
               variant={totalBreaks > 0 ? "primary" : "ghost"}
               size="sm"
@@ -515,11 +544,13 @@ function SplitPaneReconciliationScreen() {
             </Button>
           </div>
 
+          <p role="note">Synthetic retained example. Matches and resolution actions change only this local demonstration; no journal or reconciliation decision is submitted.</p>
           {/* Controls */}
           <div className="spr-controls">
             <span className="spr-controls__label">Period</span>
             <div className="spr-controls__sel">
               <Select
+                ariaLabel="Reconciliation period"
                 options={PERIODS}
                 value={period}
                 onChange={setPeriod}
@@ -528,6 +559,7 @@ function SplitPaneReconciliationScreen() {
             <span className="spr-controls__label" style={{ marginLeft:4 }}>Account</span>
             <div className="spr-controls__sel">
               <Select
+                ariaLabel="Reconciliation account"
                 options={ACCOUNTS}
                 value={account}
                 onChange={setAccount}
@@ -540,7 +572,7 @@ function SplitPaneReconciliationScreen() {
                 { key:"matched", label:"Matched" },
                 { key:"open",    label:"Open"    },
               ].map(f => (
-                <button key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
+                <button type="button" key={f.key} aria-pressed={filter === f.key} onClick={() => setFilter(f.key)}>
                   {f.label}
                 </button>
               ))}

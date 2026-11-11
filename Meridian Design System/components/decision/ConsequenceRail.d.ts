@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { ObjectRef } from "../core/ObjectModel";
 import type { ActionGuardValue } from "../operations/ActionGuard";
 import type { ReversibilityClass } from "../operations/DecisionFlow";
@@ -67,4 +68,4 @@ export interface ConsequenceRailProps extends Omit<React.HTMLAttributes<HTMLElem
   dense?: boolean;
 }
 /** Renders an honest empty state: an action with no declared consequence is not review-ready. */
-export declare function ConsequenceRail(props: ConsequenceRailProps): JSX.Element;
+export declare function ConsequenceRail(props: ConsequenceRailProps): React.JSX.Element;

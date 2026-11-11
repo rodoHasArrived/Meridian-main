@@ -19,7 +19,7 @@ function inject() {
   background:transparent;border-radius:var(--radius-chip,2px);padding:2px 7px;cursor:pointer;
   font-family:var(--font-data);font-size:10px;font-weight:600;color:var(--text-secondary,#535C65);line-height:1.4;}
 .mds-logtail__chip:hover{border-color:var(--border-hover,#BEB8AD);}
-.mds-logtail__chip--on{background:var(--bg-active,#E7EDF2);border-color:var(--interaction-selected,#496C8F);color:var(--text-primary,#20252B);}
+.mds-logtail__chip--on{background:var(--selected-surface,#E7EDF2);border-color:var(--interaction-selected,#496C8F);color:var(--text-primary,#20252B);}
 .mds-logtail__chip:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-logtail__body{flex:1 1 auto;min-height:0;overflow:auto;padding:6px 0;
   font-family:var(--font-data,'IBM Plex Mono',monospace);font-size:11.5px;line-height:1.55;}
@@ -31,7 +31,7 @@ function inject() {
 .mds-logtail__src{color:var(--text-secondary,#535C65);flex:0 0 auto;}
 .mds-logtail__msg{color:var(--text-primary,#20252B);min-width:0;}
 .mds-logtail__lvl--info{color:var(--text-secondary,#535C65);}
-.mds-logtail__lvl--debug{color:var(--text-disabled,#A4ABB2);}
+.mds-logtail__lvl--debug{color:var(--text-secondary,#535C65);}
 .mds-logtail__lvl--warn{color:var(--orange-dim,#735414);}
 .mds-logtail__lvl--error{color:var(--red-dim,#7D322F);}
 .mds-logtail__line--error{background:var(--red-a10,rgba(166,67,63,.08));}
@@ -72,7 +72,7 @@ export function LogTail({
 
   const counts = React.useMemo(() => {
     const c = { error: 0, warn: 0, info: 0, debug: 0 };
-    for (const e of entries) if (c[e.level] != null) c[e.level] += 1;
+    for (const e of entries) if (c[e.level || "info"] != null) c[e.level || "info"] += 1;
     return c;
   }, [entries]);
 
@@ -124,7 +124,7 @@ export function LogTail({
         </button>
       </div>
       <div className="mds-logtail__wrapref">
-        <div className="mds-logtail__body" ref={bodyRef} onScroll={onScroll} role="log" aria-label={title}>
+        <div className="mds-logtail__body" ref={bodyRef} onScroll={onScroll} role="log" aria-label={title} tabIndex={0}>
           {visible.length === 0 ? (
             <div className="mds-logtail__empty">No log lines{entries.length > 0 ? " at the selected levels" : ""}.</div>
           ) : (

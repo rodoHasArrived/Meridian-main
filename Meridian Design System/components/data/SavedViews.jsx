@@ -62,8 +62,8 @@ export function SavedViews({
 }) {
   inject();
   const [open, setOpen] = React.useState(false);
-  const [views, setViews] = React.useState(() => (storageKey ? readJSON(storageKey + ".views", []) : []));
-  const [active, setActive] = React.useState(() => (storageKey ? localStorage.getItem(storageKey + ".active") : null));
+  const [views, setViews] = React.useState(() => { const stored = storageKey ? readJSON(storageKey + ".views", []) : []; return Array.isArray(stored) ? stored.filter((v) => v && typeof v.name === "string" && v.state && typeof v.state === "object") : []; });
+  const [active, setActive] = React.useState(() => { try { return storageKey ? localStorage.getItem(storageKey + ".active") : null; } catch { return null; } });
   const [draft, setDraft] = React.useState("");
   const rootRef = React.useRef(null);
 
@@ -81,9 +81,11 @@ export function SavedViews({
     setViews(nextViews);
     setActive(nextActive);
     if (!storageKey) return;
-    localStorage.setItem(storageKey + ".views", JSON.stringify(nextViews));
-    if (nextActive) localStorage.setItem(storageKey + ".active", nextActive);
-    else localStorage.removeItem(storageKey + ".active");
+    try {
+      localStorage.setItem(storageKey + ".views", JSON.stringify(nextViews));
+      if (nextActive) localStorage.setItem(storageKey + ".active", nextActive);
+      else localStorage.removeItem(storageKey + ".active");
+    } catch { /* Retain the current session's views when persistence is unavailable. */ }
   };
 
   React.useEffect(() => {
@@ -144,7 +146,7 @@ export function SavedViews({
 
   return (
     <div ref={rootRef} className="mds-savedviews">
-      <button type="button" className="mds-savedviews__trigger" aria-haspopup="menu" aria-expanded={open}
+      <button type="button" className="mds-savedviews__trigger" aria-haspopup="dialog" aria-expanded={open}
         onClick={() => setOpen((o) => !o)}>
         <span className="mds-savedviews__eyebrow">{label}</span>
         <span className="mds-savedviews__name">{active || defaultLabel}</span>
@@ -153,7 +155,7 @@ export function SavedViews({
       </button>
 
       {open && (
-        <div className="mds-savedviews__menu" role="menu">
+        <div className="mds-savedviews__menu" role="dialog" aria-label="Saved views">
           <div className="mds-savedviews__item" data-active={active ? "false" : "true"}>
             <button type="button" className="mds-savedviews__row" onClick={reset}>{defaultLabel}</button>
           </div>
@@ -170,7 +172,7 @@ export function SavedViews({
             </React.Fragment>
           )}
           <div className="mds-savedviews__save">
-            <input className="mds-savedviews__input" placeholder={"Save current as\u2026"} value={draft}
+            <input className="mds-savedviews__input" aria-label="Save current view as" placeholder={"Save current as\u2026"} value={draft}
               onChange={(e) => setDraft(e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") saveDraft(); }} />
             <button type="button" className="mds-savedviews__btn" disabled={!draft.trim()} onClick={saveDraft}>Save</button>

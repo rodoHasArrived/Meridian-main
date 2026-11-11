@@ -72,8 +72,8 @@ function inject() {
   const css = `
 .mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#6B737B);background:var(--bg-light,#F8F7F3);white-space:nowrap}
 .mds-asr::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
-.mds-asr[data-stage="prepared"]{color:var(--pending-dim,#7A6B52);border-color:var(--pending,#B89B62)}
-.mds-asr[data-stage="reviewed"]{color:var(--info-dim,#3D5F8A);border-color:var(--info,#5C82B3)}
+.mds-asr[data-stage="prepared"]{color:var(--text-secondary,#535C65);border-color:var(--pending,#B89B62)}
+.mds-asr[data-stage="reviewed"]{color:var(--text-secondary,#535C65);border-color:var(--info,#5C82B3)}
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#2E6B3A);border-color:var(--green,#4E8F5C);background:var(--green-a10,rgba(78,143,92,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B44D48)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
@@ -88,7 +88,7 @@ function inject() {
 .mds-cert__dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:50%;background:transparent;vertical-align:middle}
 .mds-cert__dot[data-on="true"]{background:var(--green,#4E8F5C);border-color:var(--green,#4E8F5C)}
 .mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B44D48);border-style:dashed}
-.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--pending-dim,#7A6B52);margin-left:6px}
+.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--text-secondary,#535C65);margin-left:6px}
 .mds-cert__foot{display:flex;gap:14px;align-items:center;padding:8px 10px;border-top:1px solid var(--border,#D2CDC3);font-size:11px;color:var(--text-secondary,#535C65)}
 .mds-cert__foot b{color:var(--text-primary,#20252B);font-weight:600}
 `;
@@ -125,7 +125,7 @@ export function CertificationMatrix({ accounts = [], records = {}, balances = {}
             onKeyDown={onOpenAccount ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpenAccount(r.code); } } : undefined}>
             <td>{r.code} · {r.name}{r.material ? <span className="mds-cert__mat" title="Material — required for lock">MATERIAL</span> : null}</td>
             <td className="r">{formatMoney(Math.abs(balances[r.code] ?? 0), { currency })}</td>
-            {stages.map((s) => <td key={s.id} className="c"><span className="mds-cert__dot" data-on={rank >= s.rank ? "true" : undefined} data-void={st.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : undefined} aria-label={`${s.label}: ${rank >= s.rank ? "done" : st.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}`} /></td>)}
+            {stages.map((s) => <td key={s.id} className="c"><span role="img" className="mds-cert__dot" data-on={rank >= s.rank ? "true" : undefined} data-void={st.voided && top && STAGE[top.stage].rank >= s.rank ? "true" : undefined} aria-label={`${s.label}: ${rank >= s.rank ? "done" : st.voided && top && STAGE[top.stage].rank >= s.rank ? "void — balance moved" : "not yet"}`} /></td>)}
             <td style={{ color: "var(--text-secondary)" }}>{top ? `${top.actor} · ${top.at.replace("T", " ").slice(0, 16)}Z${st.voided ? " · void — balance moved" : ""}` : "—"}</td>
           </tr>;
         })}

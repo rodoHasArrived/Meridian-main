@@ -13,7 +13,11 @@ function normalize(value, source = "programmatic") {
 }
 function toList(value, source) {
   if (value == null) return [];
-  return (Array.isArray(value) ? value : [value]).map((entry) => normalize(entry, source)).filter(Boolean);
+  const seen = new Set();
+  return (Array.isArray(value) ? value : [value]).map((entry) => normalize(entry, source)).filter((entry) => {
+    if (!entry || seen.has(entry.id)) return false;
+    seen.add(entry.id); return true;
+  });
 }
 function sameList(a, b) {
   return a.length === b.length && a.every((entry, i) => entry.id === b[i].id);
@@ -26,8 +30,9 @@ function readUrl(param, multiple) {
   return ids.map((id) => ({ id, value: id, source: "url" }));
 }
 function readStorage(key) {
-  if (!key || typeof localStorage === "undefined") return null;
+  if (!key) return null;
   try {
+    if (typeof localStorage === "undefined") return null;
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -49,10 +54,12 @@ export function LinkedSelectionProvider({
   selectionsRef.current = selections;
 
   const persist = React.useCallback((list) => {
-    if (storageKey && typeof localStorage !== "undefined") {
+    if (storageKey) {
       try {
-        if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
-        else localStorage.removeItem(storageKey);
+        if (typeof localStorage !== "undefined") {
+          if (list.length) localStorage.setItem(storageKey, JSON.stringify(multiple ? list : list[0]));
+          else localStorage.removeItem(storageKey);
+        }
       } catch { /* storage unavailable */ }
     }
     if (urlParam && typeof window !== "undefined") {
@@ -176,6 +183,9 @@ export function LinkedSelectionTarget({
 }) {
   const api = useLinkedSelection(scope);
   const selected = api.isSelected(selection);
+  const selectionRole = ["option", "row", "gridcell", "tab", "treeitem"].includes(rest.role) || !rest.role && Tag === "tr";
+  const buttonRole = !selectionRole && !rest.role && Tag !== "button";
+  const pressedRole = buttonRole || rest.role === "button" || !rest.role && Tag === "button";
   const activate = (event, source) => {
     const additive = event && (event.metaKey || event.ctrlKey);
     const extend = event && event.shiftKey;
@@ -190,7 +200,9 @@ export function LinkedSelectionTarget({
   return (
     <Tag
       className={`${className}${selected ? " is-selected" : ""}`}
-      aria-selected={selected}
+      role={buttonRole ? "button" : undefined}
+      aria-selected={selectionRole ? selected : undefined}
+      aria-pressed={pressedRole ? selected : undefined}
       data-selected={selected ? "true" : undefined}
       data-index={index}
       tabIndex={tabIndex ?? 0}

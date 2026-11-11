@@ -56,7 +56,7 @@
       });
       return <WorksheetGrid columns={columns} rows={7} cells={data} defaultActiveCell="D2" editable onCellCommit={onCommit} />;
     }
-    ReactDOM.render(<Demo />, document.getElementById("demo"));
+    ReactDOM.createRoot(document.getElementById("demo")).render(<Demo />);
   </script>
 </body>
 </html>

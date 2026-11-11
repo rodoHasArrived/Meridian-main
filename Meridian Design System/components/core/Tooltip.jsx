@@ -35,15 +35,18 @@ export function Tooltip({ content, children, placement = "above", delay = 300, f
   const hide = () => { clearTimeout(timer.current); setVisible(false); };
   React.useEffect(() => () => clearTimeout(timer.current), []);
   const onKeyDown = (e) => { if (e.key === "Escape" && visible) { e.stopPropagation(); hide(); } };
+  const child = React.isValidElement(children) && !focusable
+    ? React.cloneElement(children, { "aria-describedby": [children.props["aria-describedby"], visible && content ? uid : null].filter(Boolean).join(" ") || undefined })
+    : children;
 
   return (
     <span className="mds-tip-host"
       tabIndex={focusable ? 0 : undefined}
-      aria-describedby={visible ? uid : undefined}
+      aria-describedby={focusable && visible && content ? uid : undefined}
       onMouseEnter={show} onMouseLeave={hide}
       onFocus={show} onBlur={hide} onKeyDown={onKeyDown}
     >
-      {children}
+      {child}
       {visible && content && (
         <span className={`mds-tip-box mds-tip-box--${placement}`} role="tooltip" id={uid}>{content}</span>
       )}

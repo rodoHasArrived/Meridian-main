@@ -4,9 +4,8 @@
 // (source ids, as-of dates, overrides, calculation version, execution detail).
 import React from "react";
 
-const CONDITION={confirmed:{label:"Confirmed",glyph:"●"},provisional:{label:"Provisional",glyph:"◐"},estimated:{label:"Estimated",glyph:"○"},stale:{label:"Stale",glyph:"◔"},overridden:{label:"Overridden",glyph:"◆"},missing:{label:"Missing",glyph:"■"},na:{label:"Not applicable",glyph:"—"},pending:{label:"Pending",glyph:"◇"},exception:{label:"Exception",glyph:"▲"},reconciled:{label:"Reconciled",glyph:"✓"}};
-const ALIAS={complete:"confirmed",verified:"confirmed",ok:"confirmed",matched:"reconciled",certified:"reconciled",preliminary:"provisional",unaudited:"provisional",modeled:"estimated",forecast:"estimated",projected:"estimated",delayed:"stale",aged:"stale",override:"overridden",manual:"overridden",absent:"missing",unavailable:"missing","not applicable":"na","n/a":"na",none:"na",awaiting:"pending",queued:"pending",scheduled:"pending",unmatched:"exception",break:"exception",failed:"exception"};
-function meta(v){if(!v)return null;const k=String(v).trim().toLowerCase().replace(/[_-]+/g," ");const key=CONDITION[k]?k:ALIAS[k]||ALIAS[k.replace(/\s+/g,"")];return key?{key,...CONDITION[key]}:null}
+import { conditionMeta } from "../operations/conditions.js";
+const meta=value=>value?conditionMeta(value):null;
 const LEVELS=[{id:"summary",label:"Summary"},{id:"expanded",label:"Expanded"},{id:"audit",label:"Audit"}];
 
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","calculation-trace");el.textContent=`
@@ -17,7 +16,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-calc__levels{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden;flex:none}
 .mds-calc__levels button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-calc__levels button:first-child{border-left:0}
-.mds-calc__levels button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-calc__levels button[aria-pressed="true"]{background:var(--selected-surface,var(--bg-active,#E7EDF2));color:var(--text-primary,#20252B);font-weight:600}
 .mds-calc__levels button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-calc__group{padding:5px 12px 0;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870)}
 .mds-calc__rows{padding:4px 12px 6px}
@@ -45,7 +44,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 `;document.head.appendChild(el)}
 
 const val=x=>x.value===null||x.value===undefined||x.value===""?"—":x.value;
-function conditioned(text,c){if(!c||text==="—")return text;if(c.key==="estimated")return`${text} Est.`;if(c.key==="overridden")return`${text}\u2009*`;return text}
+function conditioned(text,c){if(c?.key==="restricted")return "Restricted";if(c?.key==="missing"||c?.key==="na")return "—";if(!c||text==="—")return text;if(c.key==="estimated")return`${text} Est.`;if(c.key==="overridden")return`${text}\u2009*`;return text}
 
 function Row({step,level}){
   const c=meta(step.condition);
@@ -103,9 +102,9 @@ export function CalculationTrace({
         {engine?<div><span>Engine</span><b>{engine}</b></div>:null}
         {rounding?<div><span>Rounding policy</span><b>{rounding}</b></div>:null}
         {basis?<div><span>Accounting basis</span><b>{basis}</b></div>:null}
-        {overrideList.map((o,i)=><div key={i}><span>{o.label||"Override"}</span><b>{o.value}{o.by?` · ${o.by}`:""}</b></div>)}
+        {c?.key!=="restricted"&&overrideList.map((o,i)=><div key={i}><span>{o.label||"Override"}</span><b>{o.value}{o.by?` · ${o.by}`:""}</b></div>)}
       </div>
-      {technicalFormula?<div className="mds-calc__tech">{technicalFormula}</div>:null}
+      {technicalFormula&&c?.key!=="restricted"?<div className="mds-calc__tech">{technicalFormula}</div>:null}
       {reproducibility?<p className="mds-calc__repro">{reproducibility}</p>:null}
     </div>:null}
   </section>;

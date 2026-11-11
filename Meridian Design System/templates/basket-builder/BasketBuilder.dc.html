@@ -1,15 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Compose · Basket Builder — Meridian</title>
 </head>
 <body>
 <x-dc>
 <!-- @template name="Compose · Basket Builder" description="Bond basket construction — constituents, analytics, concentration risk. 'Use in strategy' hands the basket to the executor's shared Portfolio rules." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
 <script src="./basket-data.js"></script>
 <script src="../_strategy-executor/executor-store.js"></script>
 <script src="../_strategy-executor/screen-kit.js"></script>
@@ -30,7 +32,7 @@
 <div style="display:flex;align-items:center;gap:8px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Baskets</x-import>
 <div style="flex:1"></div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="48px,20px">+ New</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="48px,20px" disabled="{{ true }}" title="Creating a basket requires an application instruction; this example only edits existing synthetic baskets." aria-description="Creating a basket requires an application instruction; this example only edits existing synthetic baskets.">+ New</x-import>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Search baskets…" value="{{ query }}" on-change="{{ onQuery }}" hint-size="100%,30px"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" full-width="{{ true }}" size="sm" options="{{ filterOptions }}" value="{{ filter }}" on-change="{{ onFilter }}" hint-size="100%,26px"></x-import>
@@ -54,7 +56,7 @@
 <div style="flex:1"></div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ commitDisabled }}" on-click="{{ onCommit }}" hint-size="110px,28px">Commit basket</x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onUseInStrategy }}" hint-size="110px,28px">Use in strategy</x-import>
-<div style="width:100px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ currency }}" on-change="{{ noop }}" options="{{ currencyOptions }}" hint-size="100px,30px"></x-import></div>
+<div style="width:100px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ currency }}" disabled="{{ true }}" aria-label="Basket currency" title="Currency is fixed by the synthetic basket; conversion is not available." options="{{ currencyOptions }}" hint-size="100px,30px"></x-import></div>
 <span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">Pricing date {{ asOf }}</span>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" hint-size="100%,620px">
@@ -63,12 +65,12 @@
 <sc-if value="{{ showConstituents }}" hint-placeholder-val="{{ true }}">
 <div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px 0">
 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px">Upload assets</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="64px,28px">Screen</x-import>
-<div style="width:220px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Add by CUSIP or ticker…" value="{{ addCode }}" on-change="{{ onAddCode }}" hint-size="220px,30px"></x-import></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px" disabled="{{ true }}" title="Asset upload requires an application import service; no file is submitted by this example." aria-description="Asset upload requires an application import service; no file is submitted by this example.">Upload assets</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="64px,28px" disabled="{{ true }}" title="Security screening requires an application dataset and screening service." aria-description="Security screening requires an application dataset and screening service.">Screen</x-import>
+<div style="width:220px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="Add by CUSIP or ticker…" value="{{ addCode }}" disabled="{{ true }}" title="Adding an identifier requires a security lookup service; this example edits existing constituents." hint-size="220px,30px"></x-import></div>
 <div style="flex:1"></div>
 <div style="width:170px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ groupBy }}" on-change="{{ onGroupBy }}" options="{{ groupOptions }}" hint-size="170px,30px"></x-import></div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="60px,28px">Export</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="60px,28px" on-click="{{ onExport }}">Export example</x-import>
 </div>
 <div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" style="margin-bottom:8px" hint-size="70px,14px">Summary</x-import>
@@ -347,6 +349,8 @@ class Component extends DCLogic {
       basketName: basket.name,
       basketStatus: basket.status,
       currency: basket.currency,
+      onExport: () => window.MeridianTemplateActions.downloadJson("basket-example.json", { basketId: basket.id, asOf: basket.asOf, currency: basket.currency, constituents: rows }),
+
       currencyOptions: ["USD", "EUR", "GBP"],
       asOf: basket.asOf,
       tabDefs: [{ label: "Constituents" }, { label: "Analytics" }, { label: "Risk" }],

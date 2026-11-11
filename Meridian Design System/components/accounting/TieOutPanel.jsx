@@ -5,6 +5,7 @@ import React from "react";
 import { VarianceCell } from "./VarianceCell";
 import { Button } from "../core/Button";
 import { useFormat } from "../core/FormatProvider";
+import { conditionMeta } from "../operations/conditions.js";
 
 const TYPES={"one-to-one":"One-to-one","many-to-one":"Many-to-one","one-to-many":"One-to-many",rollforward:"Rollforward","quantity-and-value":"Quantity and value","count-and-amount":"Count and amount","multi-basis":"Multi-basis"};
 const CONDITION_GLYPH={confirmed:"●",provisional:"◐",estimated:"○",stale:"◔",overridden:"◆",missing:"■",na:"—",pending:"◇",exception:"▲",reconciled:"✓"};
@@ -57,19 +58,30 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 const EPS=0.005;
 // Conditions under which a stated value is not a usable input. A tie-out reading one of these as a
 // number is the defect: `missing` coerced to 0 makes the gross difference vanish.
-const UNUSABLE=["missing","pending","stale","na","n/a","exception"];
-const num=v=>{if(v===""||v==null)return null;const n=Number(v);return Number.isFinite(n)?n:null};
+const UNUSABLE=["missing","pending","stale","na","exception","restricted"];
+const condition=s=>s?.condition?conditionMeta(s.condition).key:null;
+const unavailableValue=s=>["missing","na","restricted"].includes(condition(s));
+const num=v=>{if(v==null||(typeof v==="string"&&v.trim()===""))return null;const n=Number(v);return Number.isFinite(n)?n:null};
 /** Every reason this tie-out cannot be computed, in operator words. Empty = computable. */
 function inputGaps(sourceA,sourceB,list){
   const out=[];
   const check=(s,fallback)=>{
     const label=s?.label||fallback;
+    const c=condition(s);
+    if(c==="restricted"){out.push(`${label} is restricted`);return}
     if(!s||num(s.value)===null){out.push(`${label} has no value`);return}
-    const c=String(s.condition||"").toLowerCase();
     if(UNUSABLE.includes(c))out.push(`${label} is ${c==="na"||c==="n/a"?"not applicable":c}`);
   };
   check(sourceA,"Source A");check(sourceB,"Source B");
-  for(const x of (list||[]))if(x&&x.explained!==false&&num(x.value)===null)out.push(`Reconciling item "${x.label||"unnamed"}" has no amount`);
+  for(const x of (list||[])){
+    if(!x)continue;
+    const label=condition(x)==="restricted"?"Restricted reconciling item":`Reconciling item "${x.label||"unnamed"}"`;
+    if(condition(x)==="restricted")out.push(`${label} is restricted`);
+    else if(x.explained!==false){
+      if(num(x.value)===null)out.push(`${label} has no amount`);
+      else if(UNUSABLE.includes(condition(x)))out.push(`${label} is ${condition(x)}`);
+    }
+  }
   return out;
 }
 
@@ -90,10 +102,11 @@ export function TieOutPanel({
   // out" — the single reading a tie-out exists to prevent.
   const gaps=inputGaps(sourceA,sourceB,list);
   const indeterminate=gaps.length>0;
-  const av=num(sourceA?.value),bv=num(sourceB?.value);
+  const av=unavailableValue(sourceA)?null:num(sourceA?.value),bv=unavailableValue(sourceB)?null:num(sourceB?.value);
   const a=av??0,b=bv??0;
   const explainedItems=list.filter(x=>x.explained!==false);
-  const explained=explainedItems.reduce((n,x)=>n+(Number(x.value)||0),0);
+  const explainedUsable=explainedItems.every(x=>num(x.value)!==null&&!UNUSABLE.includes(condition(x)));
+  const explained=explainedItems.reduce((n,x)=>n+(unavailableValue(x)?0:Number(x.value)||0),0);
   const gross=a-b;
   const adjusted=a+explained;
   const unexplained=adjusted-b;
@@ -131,14 +144,14 @@ export function TieOutPanel({
       </div>
     </header>
     <div className="mds-tie__rows">
-      <div className="mds-tie__row"><span className="mds-tie__srclabel">{sourceA?.label||"Source A"}{cond(sourceA?.condition)}{sourceA?.count!=null?<span className="mds-tie__cond">{fx.number(sourceA.count, { decimals: 0 })} records</span>:null}</span><span className="mds-tie__value">{av===null?"—":fmt(a)}</span></div>
-      <div className="mds-tie__row mds-tie__row--rule"><span className="mds-tie__srclabel">{sourceB?.label||"Source B"}{cond(sourceB?.condition)}{sourceB?.count!=null?<span className="mds-tie__cond">{fx.number(sourceB.count, { decimals: 0 })} records</span>:null}</span><span className="mds-tie__value">{bv===null?"—":fmt(b)}</span></div>
+      <div className="mds-tie__row"><span className="mds-tie__srclabel">{sourceA?.label||"Source A"}{cond(sourceA?.condition)}{sourceA?.count!=null&&condition(sourceA)!=="restricted"?<span className="mds-tie__cond">{fx.number(sourceA.count, { decimals: 0 })} records</span>:null}</span><span className="mds-tie__value">{av===null?"—":fmt(a)}</span></div>
+      <div className="mds-tie__row mds-tie__row--rule"><span className="mds-tie__srclabel">{sourceB?.label||"Source B"}{cond(sourceB?.condition)}{sourceB?.count!=null&&condition(sourceB)!=="restricted"?<span className="mds-tie__cond">{fx.number(sourceB.count, { decimals: 0 })} records</span>:null}</span><span className="mds-tie__value">{bv===null?"—":fmt(b)}</span></div>
       <div className="mds-tie__row"><span>Gross difference</span><span className="mds-tie__value">{indeterminate?"—":signed(gross)}</span></div>
-      <div className="mds-tie__row mds-tie__row--rule"><span>{list.length?<button type="button" className="mds-tie__toggle" onClick={toggle} aria-expanded={open}><span aria-hidden="true">{open?"▾":"▸"}</span>Explained · {explainedItems.length} reconciling item{explainedItems.length===1?"":"s"}</button>:"Explained"}</span><span className="mds-tie__value">{signed(explained)}</span></div>
+      <div className="mds-tie__row mds-tie__row--rule"><span>{list.length?<button type="button" className="mds-tie__toggle" onClick={toggle} aria-expanded={open}><span aria-hidden="true">{open?"▾":"▸"}</span>Explained · {explainedItems.length} reconciling item{explainedItems.length===1?"":"s"}</button>:"Explained"}</span><span className="mds-tie__value">{explainedUsable?signed(explained):"—"}</span></div>
     </div>
     {open&&list.length?<div className="mds-tie__items">
       <div className="mds-tie__item mds-tie__item--head"><span>Item</span><span>Amount</span><span>Condition</span><span>Evidence</span></div>
-      {list.map((x,i)=><div className={`mds-tie__item${x.explained===false?" mds-tie__item--unexplained":""}`} key={x.id||x.label||i}><span>{x.label}</span><span className="mds-tie__value">{signed(Number(x.value)||0)}</span><span>{String(x.condition||(x.explained===false?"exception":"confirmed")).replace(/^./,s=>s.toUpperCase())}</span><span>{x.evidence||"No evidence"}</span></div>)}
+      {list.map((x,i)=><div className={`mds-tie__item${x.explained===false?" mds-tie__item--unexplained":""}`} key={x.id||x.label||i}><span>{condition(x)==="restricted"?"Restricted reconciling item":x.label}</span><span className="mds-tie__value">{condition(x)==="restricted"?"Restricted":num(x.value)===null||unavailableValue(x)?"—":signed(Number(x.value))}</span><span>{String(x.condition||(x.explained===false?"exception":"confirmed")).replace(/^./,s=>s.toUpperCase())}</span><span>{condition(x)==="restricted"?"Restricted":x.evidence||"No evidence"}</span></div>)}
     </div>:null}
     <div className="mds-tie__proof">
       <div><strong>Unexplained residual</strong><em>{proofNote}</em></div>

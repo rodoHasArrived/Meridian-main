@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <script src="./support.js"></script>
+<title>Investigate · Charting Workstation — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -35,11 +36,11 @@
 <div style="display:flex;gap:10px;padding:2px 2px 0">
 <div style="flex:1;display:flex;align-items:center;gap:8px">
 <span style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--text-muted);width:14px">X</span>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ xExpr }}" on-change="{{ onXExpr }}" hint-size="100%,30px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" aria-label="Scatter X expression" value="{{ xExpr }}" on-change="{{ onXExpr }}" hint-size="100%,30px"></x-import>
 </div>
 <div style="flex:1;display:flex;align-items:center;gap:8px">
 <span style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--text-muted);width:14px">Y</span>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ yExpr }}" on-change="{{ onYExpr }}" hint-size="100%,30px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" aria-label="Scatter Y expression" value="{{ yExpr }}" on-change="{{ onYExpr }}" hint-size="100%,30px"></x-import>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Kbd" hint-size="48px,20px">↵ plot</x-import>
 </div>
@@ -61,7 +62,7 @@
 <div>
 <div style="display:flex;align-items:center;justify-content:space-between">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="56px,14px">Studies</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="32px,20px">Add</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="link" hint-size="32px,20px" disabled="{{ true }}" title="This example has a fixed study set; adding a study requires an application study editor." aria-description="This example has a fixed study set; adding a study requires an application study editor.">Add</x-import>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px">
 <sc-for list="{{ studies }}" as="s" hint-placeholder-count="5">

@@ -40,6 +40,7 @@ function inject() {
   color:var(--red,#B54B42);}
 .mds-seltb__btn--danger:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);}
 .mds-seltb__btn--danger:active{background:var(--red-a20,color-mix(in srgb,var(--red) 35%,transparent));}
+.mds-seltb__btn:disabled{opacity:.55;cursor:not-allowed;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "seltb");
@@ -83,21 +84,24 @@ export function SelectionToolbar({
       {(primaryAction || actions.length > 0) && (
         <div className="mds-seltb__actions">
           {primaryAction && (
-            <button
+            <button type="button"
               className="mds-seltb__btn mds-seltb__btn--primary"
               onClick={primaryAction.onClick}
-              type="button"
+              disabled={primaryAction.disabled}
+              title={primaryAction.disabledReason || primaryAction.tooltip}
+              aria-description={primaryAction.disabledReason}
             >
               {primaryAction.label}
             </button>
           )}
           {actions.map((action, i) => (
-            <button
+            <button type="button"
               key={i}
               className={`mds-seltb__btn mds-seltb__btn--${action.variant || "ghost"}`}
               onClick={action.onClick}
-              type="button"
-              title={action.tooltip}
+              disabled={action.disabled}
+              aria-description={action.disabledReason}
+              title={action.disabledReason || action.tooltip}
             >
               {action.label}
             </button>

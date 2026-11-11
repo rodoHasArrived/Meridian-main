@@ -3,7 +3,7 @@
 // Mirrors the EvidenceStatus model (Unknown | Ready | ReviewRequired | Blocked |
 // Stale | Missing). Renders as a clickable chip: status dot, label, mono route, arrow.
 import React from "react";
-import { normalizeSeverity } from "./status";
+import { normalizeSeverity } from "./status.js";
 
 let injected = false;
 function inject() {

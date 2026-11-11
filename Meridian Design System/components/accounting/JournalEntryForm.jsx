@@ -93,24 +93,25 @@ export function JournalEntryForm({
   const balanced = Math.abs(diff) <= tolerance && (totalD > 0 || totalC > 0);
   const blocks = (blockers || []).filter(Boolean).map((b) => (typeof b === "string" ? { label: b } : b));
   const postable = balanced && blocks.length === 0;
-  const dlId = accounts && accounts.length ? "jnl-accts" : undefined;
+  const uid = React.useId();
+  const dlId = accounts && accounts.length ? `${uid}-accounts` : undefined;
 
   return (
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl">Date</label>
-          <Input type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={`${uid}-date`}>Date</label>
+          <Input id={`${uid}-date`} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Reference</label>
-          <Input placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={`${uid}-ref`}>Reference</label>
+          <Input id={`${uid}-ref`} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Memo</label>
-          <Input placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={`${uid}-memo`}>Memo</label>
+          <Input id={`${uid}-memo`} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
@@ -134,15 +135,15 @@ export function JournalEntryForm({
           {lines.map((row, i) => (
             <tr key={i}>
               <td>
-                <Input placeholder="Account" value={row.account}
+                <Input aria-label={`Line ${i + 1} account`} placeholder="Account" value={row.account}
                   onChange={(e) => setL(i, "account", e.target.value)} list={dlId} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.debit}
+                <Input aria-label={`Line ${i + 1} debit`} type="number" placeholder="0.00" value={row.debit}
                   onChange={(e) => setL(i, "debit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.credit}
+                <Input aria-label={`Line ${i + 1} credit`} type="number" placeholder="0.00" value={row.credit}
                   onChange={(e) => setL(i, "credit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">

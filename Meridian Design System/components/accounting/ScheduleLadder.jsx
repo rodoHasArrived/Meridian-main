@@ -55,7 +55,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-sl__exp{font:600 12px/16px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-sl__sub{display:block;font:400 10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__wait{display:inline-grid;justify-items:end;font-family:var(--font-data,monospace)}
-.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--pending,#7A6B52)}
+.mds-sl__wait b{font:600 11px/16px var(--font-data,monospace);color:var(--text-primary,#20252B)}
 .mds-sl__wait span{font:10px/14px var(--font-body);color:var(--text-muted,#606870)}
 .mds-sl__mark{display:inline-block;width:8px;margin-right:3px;text-align:center}
 .mds-sl tbody tr[data-projected="true"] .mds-sl__period,.mds-sl tbody tr[data-projected="true"] .mds-sl__exp{font-weight:400}
