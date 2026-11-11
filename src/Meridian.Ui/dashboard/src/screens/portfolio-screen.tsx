@@ -1550,6 +1550,19 @@ function PortfolioDrillInChartInner({
   const labels = points.map((point) => point.date);
   const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
   const sync = useChartCrosshairSync(timestamps);
+  // Stable reference: the chart re-renders on every crosshair move, the table should not.
+  const accessibleData = useMemo(
+    () => ({
+      caption: `Equity and drawdown by date for ${runTitle}`,
+      columns: ["Date", "Equity", "Drawdown"],
+      rows: points.map((point) => [
+        point.date,
+        drillInCurrency(point.totalEquity),
+        `-${Math.abs(point.drawdownFromPeakPercent * 100).toFixed(2)}%`
+      ])
+    }),
+    [points, runTitle]
+  );
 
   return (
     <div className="space-y-3">
@@ -1569,6 +1582,15 @@ function PortfolioDrillInChartInner({
         style={{ flexShrink: 0 }}
       >
         <EquityCurve
+          ariaLabel={`Equity and drawdown curve for ${runTitle}`}
+          ariaDescription={
+            points.length > 0
+              ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${drillInCurrency(
+                  profile.finalEquity
+                )}, maximum drawdown -${(profile.maxDrawdownPercent * 100).toFixed(2)}%.`
+              : undefined
+          }
+          accessibleData={accessibleData}
           series={[{ label: "Equity", color: "var(--chart-equity, #3A7A56)", points: equity }]}
           drawdown={drawdown}
           labels={labels}
@@ -1634,6 +1656,10 @@ function PortfolioDrillInReturnDistribution({
       style={{ flexShrink: 0 }}
     >
       <Histogram
+        ariaLabel={`Daily return distribution for ${runTitle}`}
+        ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
+          best
+        )}, worst ${drillInSignedPercent(worst)}, ${positiveShare.toFixed(0)}% positive days.`}
         values={returns}
         signed
         showMean

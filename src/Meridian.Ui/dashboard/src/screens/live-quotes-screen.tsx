@@ -332,12 +332,10 @@ export function LiveQuotesScreen() {
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
                   {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
-                    <div
-                      className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40"
-                      role="img"
-                      aria-label={`Order-book depth profile for ${activeSymbol}: cumulative bid and ask size around the mid price.`}
-                    >
+                    <div className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40">
                       <DepthChart
+                        ariaLabel={`Order-book depth profile for ${activeSymbol}`}
+                        ariaDescription="Cumulative bid and ask size around the mid price. The depth ladder below lists each price level."
                         bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
                         asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
                         mid={marketVm.orderbook.midPrice ?? null}

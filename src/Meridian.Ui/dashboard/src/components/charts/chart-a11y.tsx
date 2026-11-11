@@ -1,7 +1,7 @@
 // Shared accessibility frame for Meridian's SVG charts: an overridable accessible name, an
 // optional long description, and an optional visually hidden data table that gives
 // assistive technology the plotted values a `role="img"` graphic cannot expose.
-import { useId, type CSSProperties, type ReactNode } from "react";
+import { memo, useId, type CSSProperties, type ReactNode } from "react";
 
 /** Tabular alternative for a chart, rendered as a visually hidden `<table>`. */
 export interface ChartAccessibleData {
@@ -18,7 +18,10 @@ export interface ChartA11yProps {
   ariaLabel?: string;
   /** Longer description (trend, range, takeaway) announced with the chart. */
   ariaDescription?: string;
-  /** Data alternative rendered as a visually hidden table next to the chart. */
+  /**
+   * Data alternative rendered as a visually hidden table next to the chart. Pass a stable
+   * (memoized) reference for large series so the table is not re-rendered on hover.
+   */
   accessibleData?: ChartAccessibleData;
 }
 
@@ -33,6 +36,39 @@ const VISUALLY_HIDDEN: CSSProperties = {
   whiteSpace: "nowrap",
   border: 0
 };
+
+// Memoized so a stable `accessibleData` reference is not re-rendered on every crosshair move.
+const ChartDataTable = memo(function ChartDataTable({ data, label }: { data: ChartAccessibleData; label: string }) {
+  return (
+    <table style={VISUALLY_HIDDEN}>
+      <caption>{data.caption ?? `${label} data`}</caption>
+      <thead>
+        <tr>
+          {data.columns.map((column, c) => (
+            <th key={c} scope="col">
+              {column}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {data.rows.map((row, r) => (
+          <tr key={r}>
+            {row.map((cell, c) =>
+              c === 0 ? (
+                <th key={c} scope="row">
+                  {cell}
+                </th>
+              ) : (
+                <td key={c}>{cell}</td>
+              )
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+});
 
 export interface ChartSvgProps extends ChartA11yProps {
   ariaLabel: string;
@@ -70,35 +106,7 @@ export function ChartSvg({ viewBox, style, ariaLabel, ariaDescription, accessibl
           {ariaDescription}
         </p>
       ) : null}
-      {accessibleData ? (
-        <table style={VISUALLY_HIDDEN}>
-          <caption>{accessibleData.caption ?? `${ariaLabel} data`}</caption>
-          <thead>
-            <tr>
-              {accessibleData.columns.map((column, c) => (
-                <th key={c} scope="col">
-                  {column}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {accessibleData.rows.map((row, r) => (
-              <tr key={r}>
-                {row.map((cell, c) =>
-                  c === 0 ? (
-                    <th key={c} scope="row">
-                      {cell}
-                    </th>
-                  ) : (
-                    <td key={c}>{cell}</td>
-                  )
-                )}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : null}
+      {accessibleData ? <ChartDataTable data={accessibleData} label={ariaLabel} /> : null}
     </>
   );
 }
