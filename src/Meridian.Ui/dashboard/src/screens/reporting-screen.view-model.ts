@@ -395,6 +395,13 @@ export interface ReportingWriterGridRow {
   sortLabel: string;
   filterSummary: string;
   ariaLabel: string;
+  /** True for a blank grid started in the browser that no saved template backs yet. */
+  isNew?: boolean;
+  /**
+   * Approved template a new grid's preview renders against. The render endpoint needs an
+   * approved template for access checks; the grid itself is always sent inline.
+   */
+  previewHost?: { templateId: string; templateVersion: string } | null;
 }
 
 export interface ReportingRunStatusRow {
@@ -1671,7 +1678,7 @@ function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFi
   });
 }
 
-function buildSourceFieldTokens(
+export function buildSourceFieldTokens(
   grid: ReportingTemplateGridMetadata,
   rowFields: ReportingWriterToken[],
   columnFields: ReportingWriterToken[],

@@ -852,6 +852,94 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
+
+The follow-through contraction (pull request #3496) put every per-class field on a shared term
+module but left 55 rules in `validateCodecOnlyKindTerms`, still reading the per-class record.
+Their subject data now has a module home, so each rule is expressed on the definition surface
+over that module, with the same code and message:
+
+| Class | Rules | Module read |
+| --- | --- | --- |
+| Bond | 13: subclass canonicality, principal schedule, step and inflation coupon structure | `debtClassification`, `principalSchedule`, `bondRedemption`, `bondCoupon`, `maturity` |
+| Swap | 10: the legs | `swapLegs`, `maturity` |
+| StructuredNote | 5: payoff | `structuredPayoff` |
+| StructuredCredit | 4: tranche points and period ends | `trancheContract`, `maturity` |
+| CreditDefaultSwap | 3: protection | `creditProtection` |
+| PrivateCompanyEquity, RealEstateHolding | 3 each: valuation | `privateAssetValuation` |
+| CommitmentGuarantee | 3: fee and covenant entries | `contractualRate`, `loanCovenants` |
+| DirectLoan | 2: covenant entries | `loanCovenants` |
+| Future | 2: listing | `listingDetail` |
+| Swaption | 2: expiry against the underlying swap's dates | `maturity`, `underlyingSwap` |
+| OtherSecurity | 2: category | `classificationDetail` |
+| Commodity, Cfd, PrivateFundInterest | 1 each | `commodityContract`, `underlyingExposure`, `privateAssetValuation` |
+
+`validateCodecOnlyKindTerms` has no rule left and is removed. `validateKindTerms` is
+`validateDefinitionTerms` over `modulesFromKind`, and `definitionExpressibleCodes` is the
+complete list of term-rule codes rather than one side of a partition. On the definition
+surface a module can be absent altogether: a rule over a value the class requires then fails,
+and a rule over an optional value has nothing to check.
+
+Forty-nine of the codes are proven on both surfaces by a mutation-table row. Six cannot be
+reached through the flat codec — it refuses a non-positive instalment, a negative step rate, a
+repeated step date and a leg with a blank type or currency, and reads a blank leg payment
+frequency as absent — so they are pinned on directly built records in
+`SecurityDefinitionValidationTests.fs` and listed in `CodesCoveredByFSharpTests`.
+
+**History.** This work was first done on a different design. Pull request #3475 carried its own
+record contraction and module homes; #3496 merged the same contraction with another module
+vocabulary while #3475 was open, the two could not both stand, and the owner kept #3496. #3475
+was then reduced to what main lacked. Five defects had been found in automated review of the
+superseded design. Each was re-tested against this one:
+
+| Finding on the superseded design | Here | Disposition |
+| --- | --- | --- |
+| The retained-document fold refills a value an amendment cleared | Reproduces: cleared covenants, a cleared principal schedule and a cleared tranche kind all came back | Fixed, below |
+| The same, for a mapping with a flag fallback (the tranche kind) | Reproduces | Fixed with the first |
+| A bond sinking fund's pro-rata flag is reset on replay | Does not arise: principal is homed on `principalSchedule`, so `sinkingFund` is untouched by the rebuild | Pinned by a regression test |
+| An option accepts an exercise style the decode does not read back | Reproduces | Fixed, below |
+| A record accepts a module member its class does not persist | Reproduces | Recorded as a limitation, below |
+
+**Retained-document fold.** `FoldRetainedEconomicTerms` fills any module or field the rebuild
+has empty from a row's retained document, on the reasoning that empty means the flat row could
+not carry it. For a value the row now carries, empty can also mean an amendment cleared it. A
+row that kept its retained document (because the document holds a module no flat row
+expresses, say) had its cleared covenants or principal schedule written back into the next
+economic event, and recovered again on the next replay. The fold now takes the class's
+`FlatAuthoritativeFields` and never fills one of those; a retained module left with nothing
+else is not folded. The list is the stage-3 homes the flat row carries exactly: every member of
+a structural module the class recovers, and every field a flattening copies verbatim from a
+module added after the identity gate. Two things are left out on purpose. `declaredSchedule`
+keeps the existing rule that an empty declared call or put list is filled from the retained
+document, so it stays in step with the older `call` summary module. And fields the economic
+document carried before stage 3 keep the old fill, because historical and hand-shaped documents
+hold values there that the flat decode does not reproduce; clearing one of those on a row with
+a retained document is still refilled, as before.
+`EveryFlatAuthoritativeField_IsRebuiltFromTheFlatRow` proves, for every asset class, that each
+listed field is reproduced from the flat row alone.
+
+**Option exercise style.** The exercise module holds the style as text, the flat writer writes
+it verbatim, and the option decode reads any spelling but `American`, `European` or `Bermudan`
+as no style. A directly built option with another spelling passed validation and lost its
+style on the next read. `option_exercise_style_invalid` requires one of the three, matched
+exactly because the reader matches exactly.
+
+**Known limitation: members a class does not persist.** A per-class record holds whole term
+modules, so a directly built record can set a member its class's flat row does not write — a
+warrant's exercise style or premium, for example. Validation accepts it, the economic
+definition carries it, the flat writer omits it and the decode reads it back as absent. Every
+in-tree path builds records through the flat decode, which sets only a class's own members, so
+no payload through the codec is affected; the exposure is to code that constructs a record
+directly. Closing it needs, for all 32 classes, the list of members each embedded module
+persists, and a rule that refuses the rest. On the superseded design that was twelve classes
+and three modules; here it is every class and most of 52 modules, which is a design decision
+for this stage's owner rather than a port, so it is recorded and left.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,916 passed, 1 skipped; `Meridian.FSharp.Tests` — 637 passed. No golden or corpus
+byte changed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
 The last of the four themes the census named. A new `profileEnvelope` term module

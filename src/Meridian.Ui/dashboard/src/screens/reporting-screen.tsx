@@ -1,6 +1,7 @@
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
+import { NewCustomReportBar } from "@/screens/reporting-screen.new-custom-report";
 import { useLocation } from "react-router-dom";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount, pluralizeCount } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
@@ -274,6 +275,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
   const [livePortfolioRefreshStatus, setLivePortfolioRefreshStatus] = useState<ReportingCommandStatus | null>(null);
   const [brandingDraft, setBrandingDraft] = useState<ReportBrandingDraftState>(() => buildDefaultReportBrandingDraft(reportingData));
   const reportWriterDatasetSources = reportingData?.reportWriterDatasetSources ?? [];
+  const [newCustomWriterGrids, setNewCustomWriterGrids] = useState<ReportingWriterGridRow[]>([]);
   const {
     writerDraftStatus,
     writerPreviewStatus,
@@ -362,7 +364,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     : reportBuilderFamilyTemplates.length > 0
       ? reportBuilderFamilyTemplates
       : vm.templateRows;
-  const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
+  const writerGrids = [...newCustomWriterGrids, ...writerTemplateRows.flatMap((template) => template.writerGrids)];
   const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
   const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
   const reportPackWorkflowRecord = [...(reportingData?.workflowRecords ?? [])]
@@ -1495,6 +1497,10 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         draft={brandingDraft}
         onDraftChange={updateBrandingDraft}
       />
+      ) : null}
+
+      {isReportBuilderTaskMode ? (
+        <NewCustomReportBar templates={vm.templateRows} datasetSources={reportWriterDatasetSources} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
       ) : null}
 
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (
@@ -2862,8 +2868,10 @@ function buildReportTemplateDraftRequest(
     sections: [],
     parameters: [],
     family: grid.family || "CustomReport",
-    basedOnVersion: parseReportTemplateVersion(grid.templateVersion),
-    rationale: `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
+    basedOnVersion: grid.isNew ? null : parseReportTemplateVersion(grid.templateVersion),
+    rationale: grid.isNew
+      ? `New no-code custom report ${grid.title}.`
+      : `No-code report-writer draft from ${grid.templateId} ${grid.title}.`,
     grids: [gridDefinition],
     accessPolicy: buildReportAccessPolicy(settings)
   };
@@ -2878,10 +2886,11 @@ function buildRenderReportTemplateRequest(
   formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
   const gridDefinition = buildReportWriterGridDefinition(grid, zones, settings, chartDraft, formatRules);
+  const renderTemplate = grid.previewHost ?? grid;
   return {
     templateId: {
-      name: grid.templateId,
-      version: parseReportTemplateVersion(grid.templateVersion) ?? 1
+      name: renderTemplate.templateId,
+      version: parseReportTemplateVersion(renderTemplate.templateVersion) ?? 1
     },
     parameters: {
       period: "preview-period",

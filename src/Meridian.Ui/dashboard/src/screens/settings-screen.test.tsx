@@ -580,7 +580,7 @@ describe("SettingsScreen", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Settings"
+      "Choose a settings task"
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();

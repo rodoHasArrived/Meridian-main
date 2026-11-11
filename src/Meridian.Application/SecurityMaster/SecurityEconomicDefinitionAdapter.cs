@@ -58,7 +58,13 @@ internal static partial class SecurityEconomicDefinitionAdapter
         var economicTerms = BuildEconomicTermsJson(definition);
         if (SecurityTermsEnvelope.TryGetRetainedEconomicTerms(projection.AssetSpecificTerms, out var retained))
         {
-            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(economicTerms, retained);
+            // A field the class's flat row carries exactly is never filled from the retained
+            // document: empty there means the flat revision cleared it (covenants removed, a
+            // principal schedule dropped), not that the row could not hold it.
+            economicTerms = SecurityTermsEnvelope.FoldRetainedEconomicTerms(
+                economicTerms,
+                retained,
+                SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields(projection.AssetClass));
         }
 
         return new SecurityEconomicDefinitionRecord(

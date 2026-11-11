@@ -415,7 +415,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
             // Structural module fields supersede the scalar compatibility mappings. Only a
             // class-declared flat key may cross this codec boundary.
             var structuralKeys = new HashSet<string>(StringComparer.Ordinal);
-            foreach (var moduleName in new[] { "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "contractualRate", "underlyingSwap", "declaredSchedule" })
+            foreach (var moduleName in StructuralModules)
             {
                 var declarations = economicTerms.EnumerateObject().Where(property => property.NameEquals(moduleName)).ToArray();
                 if (declarations.Length > 1)
@@ -1148,6 +1148,56 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
         => TryGetClassFlattening(assetClass, out var mappings)
             ? mappings.Select(static mapping => mapping.FlatKey).Concat(StructuralKeys(assetClass)).Concat(SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.CallScheduleKey) is null ? [] : new[] { SecurityVersionedTerms.ScheduleConventionsKey, SecurityVersionedTerms.CallScheduleKey, SecurityVersionedTerms.PutScheduleKey }).Distinct(StringComparer.Ordinal).ToArray()
             : [];
+
+    /// <summary>
+    /// The structural modules: each member is a class-declared flat key, copied across the codec
+    /// boundary whole (<see cref="StructuralModuleKeys"/>).
+    /// </summary>
+    private static readonly string[] StructuralModules =
+        ["bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "contractualRate", "underlyingSwap", "declaredSchedule"];
+
+    /// <summary>
+    /// The module fields for which the flat row of <paramref name="assetClass"/> is the authority:
+    /// when a row rebuilt from flat terms has such a field empty, the flat revision cleared it, so
+    /// a retained economic document must not put the old value back
+    /// (<see cref="SecurityTermsEnvelope.FoldRetainedEconomicTerms"/>).
+    /// <para>
+    /// These are the stage-3 module homes the flat row carries exactly: every member of a
+    /// structural module the class recovers (<see cref="StructuralModuleKeys"/>), and every field a
+    /// flattening copies verbatim, one field to one flat key with no label-equality or scale
+    /// transform, from a module added after the identity gate
+    /// (<see cref="ModulesAddedAfterIdentityGate"/>). A flag fallback does not disqualify a
+    /// mapping: it is consulted only for a document that predates the module. A document holds
+    /// one of these fields only because the current serializer wrote it from the same record the
+    /// flat row is written from, so the row and the module always agree.
+    /// </para>
+    /// <para>
+    /// Two things are deliberately left out. The <c>declaredSchedule</c> module keeps the
+    /// existing rule that an empty declared call or put list is filled from the retained
+    /// document, because the older <c>call</c> summary module is filled the same way and the two
+    /// must not disagree. And fields the economic document carried before stage 3 keep the old
+    /// fill: historical and hand-shaped documents hold values there that the flat decode does not
+    /// reproduce.
+    /// </para>
+    /// </summary>
+    public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)
+    {
+        if (!TryGetClassFlattening(assetClass, out var mappings))
+        {
+            return [];
+        }
+
+        var structural = StructuralModules
+            .Where(static module => module != "declaredSchedule")
+            .SelectMany(module => StructuralModuleKeys(assetClass!, module).Select(key => (module, key)));
+        var copied = mappings
+            .Where(static mapping => mapping.Sources.Length == 1
+                                     && mapping.EqualsLabel is null
+                                     && mapping.Scale is null
+                                     && ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal))
+            .Select(static mapping => mapping.Sources[0]);
+        return structural.Concat(copied).Distinct().ToArray();
+    }
 
     private static IReadOnlyList<string> StructuralModuleKeys(string assetClass, string module) => (assetClass, module) switch
     {

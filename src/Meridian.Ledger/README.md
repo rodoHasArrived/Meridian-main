@@ -160,6 +160,9 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+Text cells in both builders' CSV artifacts pass through `LedgerCsvCell`, which prefixes
+formula-looking text (leading `=`, `+`, `@`, tab, or a non-numeric `-`) with an apostrophe so
+spreadsheets open it as text; ordinary values and negative amounts keep their existing bytes.
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.

@@ -117,7 +117,11 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   holding Copy link and the workspace's About text.
 
 The route body carries the task title as an `h2` (`Orders blotter`); routes do not render their
-own `h1` or repeat the workspace name. `Workflow context` lives in the scope picker, collapsed
+own `h1`, repeat the workspace name, or repeat the breadcrumb's page name (`Accounting > Approvals`
+is headed `Approval queue`, not `Approvals`). Accounting and Reporting task modes keep `label` for
+the page name and carry the body heading in `title`. The browser tab title and the route-change
+announcement name the page first, as the breadcrumb does (`Orders - Trading - Meridian`,
+"Orders, Trading loaded."), without the old `Workstation` suffix. `Workflow context` lives in the scope picker, collapsed
 under the scope controls; following one of its links closes the picker. Live, simulated/seeded,
 unknown-provenance and degraded warnings remain outside disclosures.
 
@@ -1636,6 +1640,10 @@ version-approval workflow without adding browser-local lifecycle rules. Custom d
 post submit-for-review decisions to
 `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/submit`, and in-review
 rows post approval or rejection decisions to the matching `/approve` and `/reject` shared
+In Report Builder mode a `New custom report` control adds a blank, unsaved report-writer grid whose
+field palette comes from the first retained dataset source (or the preview fixture fields). Saving it
+posts a new `CustomReport` template draft with no base version; its preview renders the inline grid
+against an approved built-in template because the render endpoint requires an approved template.
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored

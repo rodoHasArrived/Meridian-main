@@ -965,7 +965,7 @@ describe("StrategyScreen route views", () => {
     renderWithRouter(<StrategyScreen data={twoRuns} />, { initialEntries: ["/strategy/promotions"] });
 
     expect(screen.queryByRole("tablist", { name: "Strategy routes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Promotions" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Promotion review" })).toBeInTheDocument();
     expect(screen.getByText("Strategy run library")).toBeInTheDocument();
     const runReferences = screen.getByText("Run references").closest("details");
     expect(runReferences).not.toBeNull();

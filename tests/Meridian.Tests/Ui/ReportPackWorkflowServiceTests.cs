@@ -160,6 +160,44 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_ReportWriterFormulaValidation_ReadsHyphenBetweenKnownMetricsAsSubtraction()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "hyphen-formula-grid",
+                "Hyphen Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Validate hyphen handling in no-code formulas",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "formula-grid",
+                        "Formula Grid",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["sector"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                            new ReportWriterMetricDefinitionDto("fees", "fees"),
+                            new ReportWriterMetricDefinitionDto("net-pnl", "net-pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("afterFees", "pnl-fees"),
+                            new ReportWriterFormulaDefinitionDto("hyphenField", "net-pnl-fees"),
+                            new ReportWriterFormulaDefinitionDto("missing", "pnl-costs")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().Equal(
+            "Report writer grid 'formula-grid' formula 'missing' references unknown metric or formula 'costs'.");
+    }
+
+    [Fact]
     public void TemplateRegistry_ReportWriterFormulaValidation_BlocksUnknownAndCircularReferences()
     {
         var svc = new ReportTemplateRegistryService();
