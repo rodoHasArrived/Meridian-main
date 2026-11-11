@@ -1,6 +1,6 @@
 using Meridian.Contracts.Workstation;
 
-namespace Meridian.Ui.Shared.Contracts.Reconciliation;
+namespace Meridian.Contracts.Reconciliation;
 
 public sealed record ReconciliationFundAccountAuthorization(
     Guid FundAccountId,
