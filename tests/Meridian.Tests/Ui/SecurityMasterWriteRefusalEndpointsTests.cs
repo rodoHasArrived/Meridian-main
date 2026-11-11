@@ -260,23 +260,23 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         // amendment carries over from the stored row. This answered 500 before.
         var securityId = Guid.NewGuid();
         var queryService = Substitute.For<ISecurityMasterQueryService>();
-        var terms = JsonNode.Parse(AheadOfWriteFixtures.SwapAtWriteVersion)!.AsObject();
-        terms[SecurityTermsEnvelope.AssetClassTermsVersionKey] = 2;
-        var swapTerms = JsonSerializer.SerializeToElement(terms);
+        // Bond retains the readable-before-writable envelope tier (v4 companion above v3).
+        // Swap v2 is now an admitted envelope; its leg conventions have their own authoring gate.
+        var terms = AheadOfWriteFixtures.BondTerms(stamp: 4, withBlock: false);
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>())
-            .Returns(Detail(securityId, "Swap", swapTerms, version: 2));
+            .Returns(Detail(securityId, "Bond", terms, version: 2));
         using var harness = new CanonicalServiceHarness();
-        harness.Seed(securityId, "Swap", swapTerms);
+        harness.Seed(securityId, "Bond", terms);
         await using var app = await CreateAppAsync(queryService, harness.Service);
 
         using var response = await app.GetTestClient().PutAsJsonAsync(
-            $"/api/security-master/{securityId}/terms/legs",
-            TermBlockRequest(expectedVersion: 2, swapTerms.GetProperty("legs")),
+            $"/api/security-master/{securityId}/terms/principalSchedule",
+            TermBlockRequest(expectedVersion: 2, JsonSerializer.SerializeToElement(Array.Empty<object>())),
             WebJson);
 
         await AssertRefusedAsync(response,
-            "assetClassTermsVersion '2' for asset class 'Swap' is readable but not writable on this node: it reads " +
-            "versions 1 through 3 and writes version 1. Submit the terms at version 1, or apply the change from a node that writes version 2.");
+            "assetClassTermsVersion '4' for asset class 'Bond' is readable but not writable on this node: it reads " +
+            "versions 1 through 4 and writes version 3. Submit the terms at version 3, or apply the change from a node that writes version 4.");
         await harness.AssertNothingWrittenAsync();
     }
 
@@ -410,6 +410,15 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
         await harness.AssertNothingWrittenAsync();
     }
 
+    // These fault fixtures represent events written before exact equity-capital retention.
+    // A current event with a complete equityCapital module can safely replay without its flat copy.
+    private static SecurityEconomicDefinitionRecord WithoutHistoricalEquityReplayEvidence(SecurityEconomicDefinitionRecord stored)
+    {
+        var economic = JsonNode.Parse(stored.EconomicTerms.GetRawText())!.AsObject();
+        economic.Remove("equityCapital");
+        return stored with { LegacyAssetSpecificTerms = null, EconomicTerms = JsonSerializer.SerializeToElement(economic) };
+    }
+
     [Fact]
     public async Task Amend_OfAStoredEquityEventWithoutItsRetainedTerms_Returns500WithoutTheReason()
     {
@@ -421,7 +430,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             JsonSerializer.SerializeToElement(new { schemaVersion = 1, shareClass = "A", classification = "Common" }),
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();
         await using var app = await CreateAppAsync(Substitute.For<ISecurityMasterQueryService>(), harness.Service, handlerLog);
 
@@ -709,7 +718,7 @@ public sealed class SecurityMasterWriteRefusalEndpointsTests
             securityId,
             "Equity",
             StoredPreferredEquity,
-            stored => stored with { LegacyAssetSpecificTerms = null });
+            WithoutHistoricalEquityReplayEvidence);
         var queryService = Substitute.For<ISecurityMasterQueryService>();
         queryService.GetByIdAsync(securityId, Arg.Any<CancellationToken>()).Returns(PreferredEquityDetail(securityId));
         var handlerLog = new RecordingLogger<MeridianApiExceptionHandler>();

@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-DATA-INTEGRATION
 path: src/Meridian.DataIntegration
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-09-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.DataIntegration
@@ -217,6 +217,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   OHLCV bar aggregation service used by CLI, diagnostics, simulation, and shared-data access
   adapters. File-date filtering and date-range discovery inspect paths relative to the configured
   data root, so dated workspace or backup directories cannot replace the data's own session date.
+  A symbol must be a single path component: path separators, a colon, `.`/`..` and wildcards are
+  refused before any file discovery, and a discovered file that resolves outside the data root or
+  is reached through a symbolic link below it is refused. The configured root itself may be a link.
   File read failures return `Success=false` with relative source paths in `FileFailures`;
   `IsPartial` identifies recovered records/bars that are incomplete. Caller cancellation propagates
   during the only or final source file as well as between files.

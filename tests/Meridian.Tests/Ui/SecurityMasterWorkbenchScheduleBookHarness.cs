@@ -23,7 +23,9 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
         IBusinessDayCalendarSource? calendars = null,
         IBondCalculationPolicy? policy = null,
         DateTimeOffset? now = null,
-        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null) =>
+        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null,
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null,
+        ISecurityMasterCashFlowService? cashFlowService = null) =>
         new(
             queryService,
             new EmptySecurityValidationService(),
@@ -33,10 +35,12 @@ internal static class SecurityMasterWorkbenchScheduleBookHarness
             new PortfolioReadService(),
             new LedgerReadService(),
             new ReportGenerationService(queryService),
+            cashFlowService: cashFlowService,
             calendars: calendars,
             bondCalculationPolicy: policy,
             timeProvider: now is { } instant ? new FixedTimeProvider(instant) : null,
-            logger: logger);
+            logger: logger,
+            governanceRequirements: governanceRequirements);
 
     /// <summary>The stored row a detail is read from, so the economic definition is the adapter's read of the same terms.</summary>
     internal static SecurityProjectionRecord ProjectionOf(SecurityDetailDto detail)

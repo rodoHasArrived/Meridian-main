@@ -1439,6 +1439,7 @@ export interface AssetCashFlowProjectionRun {
   generatedAt: string;
   sourceDomain: string;
   sourceEntityId: string;
+  blocker?: { code: string; reason: string } | null;
 }
 
 export interface AssetProjectedCashFlow {
