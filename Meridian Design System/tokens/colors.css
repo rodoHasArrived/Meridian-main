@@ -315,5 +315,5 @@
   /* Brand washes, aliased for the same reason: a warm wash is identity, and a call site that
      wants a selected-row background must reach for --interaction-selected-surface instead. */
   --brand-signal-ghost:            var(--accent-ghost);
-  --brand-signal-a10:              rgba(197, 99, 67, .10);
+  --brand-signal-a10:              var(--accent-a10);    /* follows brand and dark, like its siblings */
 }

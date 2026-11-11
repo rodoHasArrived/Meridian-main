@@ -41,7 +41,9 @@ Programmed Institutionalism v2.0 — warm paper foundation, copper accent.
 - Status colors: success `#3A7A56`, danger `#A8443C`, warning `#8A5C12`,
   pending `#5D5486`
 
-The previous steel-blue identity remains selectable as `<html data-brand="steel">`.
+The previous steel-blue identity is no longer a selectable brand: 4.3.0 removed the
+`data-brand="steel"` preset. The white-label presets are indigo, emerald, rose, slate, cyan and
+amber (`tokens/theme.css`); an unknown `data-brand` value renders the default signal.
 
 Use `tokens/colors.css`, `tokens/typography.css`, `tokens/elevation.css`, and
 `tokens/theme.css` rather than raw values in new package work.
