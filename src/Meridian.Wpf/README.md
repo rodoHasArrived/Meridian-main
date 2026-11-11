@@ -879,11 +879,21 @@ graphite global app bar, paper page bands, compact filter bars, and dense table 
 `Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
 workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
 `ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
-(`ConsoleAccentCyan`, `ModePaperColor`, chart primary line) is the brand signal only. Brand art in
+(`ConsoleAccentCyan`) is the brand signal only. Paper simulation uses slate (`ModePaperColor`),
+independent of live red and fixture amber; actual chart traces use graphite. Brand art in
 `Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
 window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
-the package reserves the light mark for graphite surfaces and WPF does not load SVG directly. New
-workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
+the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.
+IBM Plex Sans now supplies display and body text; IBM Plex Mono supplies financial values, code,
+identifiers, and keyboard labels. All ten package faces and both OFL licenses are embedded from
+`Assets/Fonts/`, so no installed fonts or network access are required. Window and Page roots set
+an inherited body default; existing mono declarations use `MeridianDataFontFamily`. Symbol glyphs
+retain Segoe MDL2 Assets. `ThemeTypography.xaml` loads before `AppStyles.xaml` so shared families
+resolve before their consumers, with existing font sizes, weights, and density retained.
+`DesignSystemResourceTests` verifies embedded face resolution, canonical binary/license parity,
+body inheritance, preserved symbol fonts, primary control rendering, and selection/environment roles.
+These tests require Windows; Linux builds of the WPF projects are stubs and do not validate fonts
+or XAML. Workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
 inspector host primitives before adding page-local cards or dark terminal styling. The Data shell is

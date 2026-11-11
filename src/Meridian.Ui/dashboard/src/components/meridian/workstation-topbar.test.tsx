@@ -77,7 +77,7 @@ describe("WorkstationTopbar", () => {
     await userEvent.click(navToggle);
     expect(onOpenNavigation).toHaveBeenCalledTimes(1);
 
-    const command = screen.getByRole("button", { name: "Search commands" });
+    const command = screen.getByRole("button", { name: "Search commands Ctrl K" });
     expect(command).toHaveAccessibleDescription("Open command search. Keyboard shortcut: Ctrl K.");
     expect(command).toHaveAttribute("aria-controls", "command-palette");
     expect(command).toHaveAttribute("aria-haspopup", "dialog");

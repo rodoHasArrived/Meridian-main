@@ -11,6 +11,24 @@
   --mds-nav-rail-text: var(--theme-secondary-text, var(--nav-item));
   --mds-nav-rail-text-active: var(--theme-primary-text, var(--nav-item-active));
   --mds-nav-rail-text-muted: var(--theme-muted-text, var(--ws-text-muted));
+  --mds-nav-icon-filter: none;
+}
+
+/* External SVG images cannot inherit the row's currentColor. Preserve their
+   light artwork and render an opaque light silhouette on the dark rail. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --mds-nav-icon-filter: brightness(0) invert(1);
+  }
+}
+
+:root[data-theme="dark"] {
+  --mds-nav-icon-filter: brightness(0) invert(1);
+}
+
+:root[data-theme="light"],
+[data-appearance="light"] {
+  --mds-nav-icon-filter: none;
 }
 
 .operator-rail {
@@ -127,6 +145,10 @@
   height: 16px;
   flex: 0 0 auto;
   opacity: 0.7;
+}
+
+img.operator-nav-item__icon {
+  filter: var(--mds-nav-icon-filter);
 }
 
 .operator-nav-item:hover {

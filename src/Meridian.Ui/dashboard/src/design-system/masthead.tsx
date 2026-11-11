@@ -74,7 +74,7 @@ export function DesignSystemMasthead({
         type="button"
         className="workstation-search mds-masthead__search ws-search focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
         onClick={onOpenCommandPalette}
-        aria-label={commandTrigger.placeholder || commandTrigger.label}
+        aria-label={[commandTrigger.placeholder || commandTrigger.label, commandTrigger.shortcutLabel].filter(Boolean).join(" ")}
         aria-describedby={commandDescriptionId}
         aria-controls={commandTrigger.controlsId}
         aria-expanded={commandTrigger.expanded}

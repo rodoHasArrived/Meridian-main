@@ -1,9 +1,28 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import postcss, { type AnyNode } from "postcss";
 import { describe, expect, it } from "vitest";
 
 function readDashboardStyles() {
   return readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
+}
+
+function scopedDeclarations(css: string, selector: string, automaticDark = false) {
+  const declarations = new Map<string, string>();
+  postcss.parse(css).walkRules((rule) => {
+    if (!rule.selectors.includes(selector)) return;
+    let parent: AnyNode | undefined = rule.parent;
+    let inAutomaticDark = false;
+    while (parent) {
+      if (parent.type === "atrule" && parent.name === "media" && /prefers-color-scheme\s*:\s*dark/.test(parent.params)) {
+        inAutomaticDark = true;
+      }
+      parent = parent.parent;
+    }
+    if (inAutomaticDark !== automaticDark) return;
+    rule.each((node) => { if (node.type === "decl") declarations.set(node.prop, node.value); });
+  });
+  return declarations;
 }
 
 function readDashboardStyleBundle() {
@@ -380,6 +399,42 @@ describe("dashboard design-system contract", () => {
     }
   });
 
+  it("preserves canonical interaction roles and local light aliases across every appearance scope", () => {
+    const styles = readDashboardStyles();
+    const base = readDesignSystemPackageFile("tokens/colors.css");
+    const themes = readDesignSystemPackageFile("tokens/colors-dark.css");
+    const defaults = scopedDeclarations(styles, ":root");
+    const sourceDefaults = scopedDeclarations(base, ":root");
+    const roles = ["focus", "selected", "selected-surface", "interaction-hover", "link", "link-hover",
+      "brand-field", "brand-axis", "ink-inverse", "navy", "pending", "neutral", "missing"];
+    for (const [selector, automaticDark, source, sourceSelector] of [
+      [":root", false, base, ":root"],
+      [":root", true, themes, ":root"],
+      [':root[data-theme="dark"]', false, themes, ':root[data-theme="dark"]'],
+      [':root[data-theme="light"]', false, themes, ':root[data-theme="light"]'],
+      ['[data-appearance="light"]', false, base, ":root"]
+    ] as const) {
+      const actual = scopedDeclarations(styles, selector, automaticDark);
+      const expected = scopedDeclarations(source, sourceSelector, automaticDark);
+      for (const role of roles) {
+        const token = `--${role}`;
+        expect(actual.get(token), `${selector} automaticDark=${automaticDark}: ${token}`)
+          .toBe(expected.get(token) ?? sourceDefaults.get(token));
+      }
+      if (selector === '[data-appearance="light"]') {
+        // Inherited custom properties are already computed in the dark parent.
+        // A local light scope must rebind the aliases as well as the base colors.
+        for (const alias of ["--interaction-focus", "--interaction-selected", "--interaction-selected-surface",
+          "--interaction-hovered", "--interaction-link", "--interaction-link-hover", "--cyan-focus", "--border-color",
+          "--mode-paper", "--semantic-info", "--blue-a10", "--green-dim", "--red-dim", "--orange-dim", "--purple-dim",
+          "--state-paper-fg", "--severity-ready-fg", "--severity-review-fg", "--ws-disabled-bg", "--ws-disabled-fg", "--ws-disabled-border"]) {
+          expect(actual.has(alias), `local light must declare ${alias}`).toBe(true);
+          expect(actual.get(alias), `local light ${alias}`).toBe(defaults.get(alias));
+        }
+      }
+    }
+  });
+
   it("adopts the 4.3 chip, control and surface radii while keeping surfaces flat", () => {
     const styles = readDashboardStyles();
 
@@ -611,6 +666,29 @@ describe("dashboard design-system contract", () => {
     expect(fonts).toContain('font-family: "IBM Plex Sans"');
     expect(fonts).toContain('font-family: "IBM Plex Mono"');
     expect(styles).not.toMatch(/@font-face/);
+
+    const faces: Array<{ family: string; weight: string; style: string; source: string }> = [];
+    postcss.parse(fonts).walkAtRules("font-face", (face) => {
+      const values = new Map<string, string>();
+      face.walkDecls((declaration) => { values.set(declaration.prop, declaration.value); });
+      faces.push({ family: values.get("font-family")!, weight: values.get("font-weight")!,
+        style: values.get("font-style")!, source: values.get("src")! });
+    });
+    expect(faces).toHaveLength(10);
+    for (const family of ["IBM Plex Sans", "IBM Plex Mono"]) {
+      expect(faces.filter((face) => face.family === `"${family}"`).map((face) => `${face.weight}/${face.style}`).sort())
+        .toEqual(["400/italic", "400/normal", "500/normal", "600/normal", "700/normal"]);
+    }
+    for (const face of faces) {
+      const filename = face.source.match(/url\(["']?[^"')]*assets\/fonts\/([^"')]+)/)?.[1];
+      expect(filename, `${face.family} ${face.weight}/${face.style} must include an offline font`).toBeTruthy();
+      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
+        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename!)));
+    }
+    for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
+      expect(readFileSync(resolve(process.cwd(), "public/licenses", filename)))
+        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));
+    }
   });
 
   it("keeps the reference workbench preview aligned with the schedule evidence pattern", () => {

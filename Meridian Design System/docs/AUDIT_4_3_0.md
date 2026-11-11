@@ -14,10 +14,12 @@ stable, while this working tree also carries later additions labeled unreleased
 in `CHANGELOG.md`. The declared release channel, historical QA reports, and
 verification of this expanded export are separate facts.
 
-The follow-up preserves concurrent dashboard (`a81d7afb45`) and WPF
-(`2e78ac6654`) palette migrations already added to this PR. Its own code changes
-are confined to the design-system package; those application migrations were
-not reimplemented or independently certified by this package audit.
+The initial export follow-up preserved the existing dashboard (`a81d7afb45`) and
+WPF (`2e78ac6654`) palette migrations. Production integration then expanded the
+browser changes. Incoming commits `0cc7555bd5` and `e4e935c098`, including broader
+WPF IBM Plex typography and dashboard fundamentals, were merged while retaining
+the expanded browser token bridge, adapters, and validation. Windows/WPF
+rendering was not independently certified by this browser/package audit.
 
 ## Evidence and census
 
@@ -185,8 +187,28 @@ source module README documents integration ownership and synchronization
 commands. No package-level conformance claim substitutes for exercising the
 rendered production workstation.
 
-The production integration baseline is `4782c83013`. Browser IBM Plex typography
-and WPF's native Segoe/Cascadia typography remain distinct platform adaptations;
-WPF is preserved and no identical-typeface claim is made. SVG labels on the
-strategy, live-quotes, and shared historical charts now read the browser's
-semantic `--font-data` stack alongside the auxiliary CSS consumers.
+The production integration baseline is `4782c83013`. The merged WPF source now
+declares IBM Plex Sans for interface text and IBM Plex Mono for data in
+`src/Meridian.Wpf/Styles/ThemeTypography.xaml`. That concurrent work is preserved;
+browser validation does not establish Windows/WPF rendering or identical
+cross-platform metrics. SVG labels on the strategy, live-quotes, and shared
+historical charts read the browser's semantic `--font-data` stack alongside the
+auxiliary CSS consumers.
+
+### Production integration verification
+
+| Check | Observed scope |
+| --- | --- |
+| Full dashboard suite before the incoming merge | 4,843 tests passed, zero failed, across 424 files in 53 batches |
+| Focused regression matrix after the merge | 327 tests passed across 67 files; separate passport checks passed 23 tests and masthead/app checks passed five tests |
+| Production build after the merge | `npm run build` passed TypeScript checking and Vite production output; the existing chunk-size warning remained nonfatal |
+| Strict TypeScript check | Passed |
+| Dashboard lint | Zero errors; 97 warnings retained |
+| Canonical asset verification | 77 synchronized files passed the byte check |
+| Generated routes/catalog and evidence-reader regression | Two focused tests passed |
+
+The full-suite count identifies the pre-merge source checkpoint. Final merged
+build, targeted regression, and rendered-workstation evidence must retain their
+own scope rather than inheriting that count. These application checks do not
+change the package's retained governance and Python-suite failures recorded
+above.

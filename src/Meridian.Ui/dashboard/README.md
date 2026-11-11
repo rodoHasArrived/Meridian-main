@@ -303,9 +303,9 @@ custom-stats parsing advisories reported by the September 6 production-certifica
 Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet imports Tailwind
 once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
 Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
-Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
-resolve `ui-monospace`, so without it a machine lacking the bundled IBM Plex face and system monospace fallbacks renders data
-text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
+Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`),
+providing an appropriate fallback if the bundled IBM Plex face is unavailable.
+`design-system-contract.test.ts` guards these rules. The lockfile retains
 patched `source-map-js` 1.2.2.
 
 Screens share one status component, one formatting module, one table system and one type scale.
@@ -2061,9 +2061,10 @@ Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `W
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
-This integration covers the browser workstation. Its IBM Plex type system is
-distinct from WPF's native Segoe/Cascadia typography; this change does not claim
-identical platform typography or modify the WPF application.
+The merged PR also carries WPF IBM Plex Sans/Mono typography through its native
+font resources. That concurrent platform work is preserved. Browser checks here
+cover the web workstation; Windows/WPF rendering and identical cross-platform
+metrics have not been established by those checks.
 
 ### Workspace-specific styling
 

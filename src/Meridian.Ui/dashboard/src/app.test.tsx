@@ -360,7 +360,7 @@ describe("App", () => {
     expect(screen.getByRole("status", { name: "Activation status check" })).toHaveTextContent(
       "Checking activation status"
     );
-    expect(screen.queryByRole("button", { name: "Go to route, action, evidence..." }))
+    expect(screen.queryByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .not.toBeInTheDocument();
     expect(mockedUseWorkstationData).not.toHaveBeenCalled();
   });
@@ -391,7 +391,7 @@ describe("App", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Retry activation check" }));
 
-    expect(await screen.findByRole("button", { name: "Go to route, action, evidence..." }))
+    expect(await screen.findByRole("button", { name: "Go to route, action, evidence... Ctrl K" }))
       .toBeInTheDocument();
     expect(firstRunRequests).toBe(2);
     expect(mockedUseWorkstationData).toHaveBeenCalled();
@@ -529,7 +529,7 @@ describe("App", () => {
   it("opens and closes the command palette with Control+K", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
-    const trigger = screen.getByRole("button", { name: "Go to route, action, evidence..." });
+    const trigger = screen.getByRole("button", { name: "Go to route, action, evidence... Ctrl K" });
     expect(trigger).toHaveAccessibleDescription("Open workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
@@ -543,7 +543,7 @@ describe("App", () => {
     const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
     expect(dialog).toHaveAttribute("id", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(trigger).toHaveAccessibleName("Go to route, action, evidence...");
+    expect(trigger).toHaveAccessibleName("Go to route, action, evidence... Ctrl K");
     expect(trigger).toHaveAccessibleDescription("Close workstation command palette (Ctrl K). Keyboard shortcut: Ctrl K.");
 
     await user.keyboard("{Control>}k{/Control}");

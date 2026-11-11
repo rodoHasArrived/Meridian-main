@@ -30,9 +30,9 @@ const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>
   outline: "mds-badge--neutral border-border bg-secondary/35 text-muted-foreground",
   // These semantic variants have always been unfilled: /12 was not emitted by
   // Tailwind 3. Retain that contrast instead of adding a new tint under v4.
-  success: "mds-badge--success border-success/35 text-success",
-  warning: "mds-badge--warning border-warning/35 text-warning",
-  danger: "mds-badge--danger border-danger/35 text-danger",
+  success: "mds-badge--success border-success/35 text-[var(--green-dim)]",
+  warning: "mds-badge--warning border-warning/35 text-[var(--orange-dim)]",
+  danger: "mds-badge--danger border-danger/35 text-[var(--red-dim)]",
   paper: "mds-badge--paper border-paper/35 text-paper",
   // "live" variant = LIVE environment (real-money alarm). Uses --live-env (alarm red),
   // not --live (cyan data-posture). Workspace status "live" maps to "success" in view-models.

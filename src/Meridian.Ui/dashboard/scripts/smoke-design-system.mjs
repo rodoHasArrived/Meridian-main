@@ -48,7 +48,7 @@ const knownFixtureGaps = new Set([
   "/api/workstation/operator/scope-preference", "/api/risk/escalations",
   "/api/workstation/operations/financial-operations-command-center",
   "/api/ledger/journal-automation/daily-mark-to-market-schedules",
-  "/api/workstation/operator/visits/reconciliation-breaks", "/api/quality/dashboard",
+  "/api/workstation/operator/visits/reconciliation-breaks", "/api/quality/dashboard", "/api/ledger/books",
   "/api/providers/capability-matrix", "/api/security-master/corporate-actions/inbox",
   "/api/security-master/quality-report/latest"
 ]);
@@ -91,12 +91,20 @@ async function ready(page, workspace) {
   assert.equal(await page.locator("vite-error-overlay").count(), 0, "No Vite overlay");
 }
 async function tokens(page, expectedTheme) {
+  await page.waitForFunction(theme => {
+    const expected = theme === "dark" ? "brightness(0) invert(1)" : "none";
+    return [...document.querySelectorAll("img.operator-nav-item__icon")].every(element => getComputedStyle(element).filter === expected);
+  }, expectedTheme);
   const actual = await page.evaluate(() => {
     const style = getComputedStyle(document.documentElement);
     const read = name => style.getPropertyValue(name).trim().toUpperCase();
     return { canvas: read("--ws-page-bg"), panel: read("--ws-surface"), border: read("--ws-border"), signal: read("--brand-signal"), axis: read("--brand-axis"), focus: read("--interaction-focus") };
   });
   assert.deepEqual(actual, themes[expectedTheme], `${expectedTheme}: computed 4.3 roles`);
+  const icons = await page.locator("img.operator-nav-item__icon").evaluateAll(elements => elements.map(element => ({ filter: getComputedStyle(element).filter, loaded: element.complete && element.naturalWidth > 0 })));
+  assert.equal(icons.length, 7, "Seven workspace icon assets are rendered");
+  assert(icons.every(icon => icon.loaded), "Workspace icon assets load");
+  assert(icons.every(icon => expectedTheme === "dark" ? icon.filter === "brightness(0) invert(1)" : icon.filter === "none"), "Workspace icons remain legible in manual and automatic appearances");
   return actual;
 }
 async function fonts(page) {
@@ -174,9 +182,12 @@ async function nativeAccounting(page) {
     const reactUrl = resources.find(url => /\/react\.js(?:\?|$)/.test(url));
     const clientUrl = resources.find(url => /\/react-dom_client\.js(?:\?|$)/.test(url));
     if (!reactUrl || !clientUrl) throw new Error("Vite React module URLs unavailable; use the fixture-only dev server for native component checks");
-    const [{ default: React }, { createRoot }, { TrialBalanceTable }, { LedgerTable }] = await Promise.all([
+    const [reactModule, clientModule, { TrialBalanceTable }, { LedgerTable }] = await Promise.all([
       import(reactUrl), import(clientUrl), import("/workstation/src/components/accounting/TrialBalanceTable.tsx"), import("/workstation/src/components/accounting/LedgerTable.tsx")
     ]);
+    const React = reactModule.default || reactModule;
+    const createRoot = clientModule.createRoot || clientModule.default?.createRoot;
+    if (typeof createRoot !== "function") throw new Error("React DOM client does not expose createRoot");
     const host = document.createElement("section"); host.id = "design-system-accounting-fixture";
     host.setAttribute("aria-label", "Synthetic native accounting component test");
     Object.assign(host.style, { position: "fixed", inset: "110px 24px 36px 248px", zIndex: "2147483640", padding: "16px", overflow: "auto", background: "var(--bg)", color: "var(--text-primary)" });
@@ -196,11 +207,13 @@ async function nativeAccounting(page) {
   report.nativeAccounting = { scope: "Production source components under actual dashboard CSS; synthetic rows, no backend/posting claim", themes: [] };
   for (const theme of ["light", "dark"]) {
     await page.evaluate(theme => document.documentElement.setAttribute("data-theme", theme), theme);
+    const expected = theme === "light" ? "rgb(210, 205, 195)" : "rgb(44, 54, 64)";
+    await page.waitForFunction(expected => [...document.querySelectorAll("#design-system-accounting-fixture .tbl-wrap, #design-system-accounting-fixture .ldg-wrap")].every(element => getComputedStyle(element).borderTopColor === expected), expected);
     const borders = await page.locator("#design-system-accounting-fixture .tbl-wrap, #design-system-accounting-fixture .ldg-wrap").evaluateAll(elements => elements.map(element => {
       const style = getComputedStyle(element); return { width: style.borderTopWidth, style: style.borderTopStyle, color: style.borderTopColor };
     }));
-    const expected = theme === "light" ? "rgb(210, 205, 195)" : "rgb(44, 54, 64)";
     assert.deepEqual(borders, [{ width: "1px", style: "solid", color: expected }, { width: "1px", style: "solid", color: expected }], `${theme}: native accounting hairlines resolve raw color tokens`);
+    await page.waitForFunction(expected => getComputedStyle(document.querySelector("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true']")).backgroundColor === expected, theme === "light" ? "rgb(231, 237, 242)" : "rgb(44, 64, 84)");
     const selected = await page.locator("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true']").evaluate(element => getComputedStyle(element).backgroundColor);
     assert.equal(selected, theme === "light" ? "rgb(231, 237, 242)" : "rgb(44, 64, 84)", `${theme}: selection uses blue, independently of signal`);
     report.nativeAccounting.themes.push({ theme, borders, selected, screenshot: await screenshot(page, `after-native-accounting-${theme}`) });
@@ -220,6 +233,13 @@ try {
       await ready(page, "Trading");
       const computed = await tokens(page, theme);
       const loadedFonts = await fonts(page);
+      const emptyAction = page.getByRole("button", { name: "Choose account", exact: true });
+      const emptyInk = await emptyAction.evaluate(element => {
+        const probe = document.createElement("span"); probe.style.color = "var(--brand-axis)"; document.body.appendChild(probe);
+        const expected = getComputedStyle(probe).color; probe.remove();
+        return { actual: getComputedStyle(element).backgroundColor, expected };
+      });
+      assert.equal(emptyInk.actual, emptyInk.expected, "Empty-state actions use structural ink rather than brand signal");
       const tradingScreenshot = await screenshot(page, `after-${theme}-${width}`);
       await page.goto(`${base}/accounting`);
       await ready(page, "Accounting");

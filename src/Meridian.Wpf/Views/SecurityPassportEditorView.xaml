@@ -237,8 +237,8 @@
                             </DataGrid.Columns>
                         </DataGrid>
                         <ItemsControl ItemsSource="{Binding ExerciseCalculations}" Margin="0,4,0,0" AutomationProperties.Name="Exercise calculations" />
-                        <TextBlock Text="{Binding EvidenceText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding RunText}" FontFamily="Consolas" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding EvidenceText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding RunText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,4,0,0" TextWrapping="Wrap" />
                         <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                             <StackPanel Width="320" Margin="0,0,8,0">
                                 <TextBlock Text="Retained run identity" Opacity="0.8" />
@@ -247,7 +247,7 @@
                             <Button Content="Load retained run" Command="{Binding LoadRunCommand}" Padding="12,6" Margin="0,0,8,0" VerticalAlignment="Bottom" />
                             <Button Content="Verify replay" Command="{Binding VerifyReplayCommand}" Padding="12,6" VerticalAlignment="Bottom" />
                         </StackPanel>
-                        <TextBlock Text="{Binding LoadedRunText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding LoadedRunText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <TextBlock Text="{Binding ReplayStatusText}" Margin="0,4,0,0" TextWrapping="Wrap" AutomationProperties.Name="Replay verification" />
                         <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
                             <StackPanel Width="320" Margin="0,0,8,0">
@@ -256,7 +256,7 @@
                             </StackPanel>
                             <Button Content="Compare runs" Command="{Binding CompareRunsCommand}" Padding="12,6" VerticalAlignment="Bottom" />
                         </StackPanel>
-                        <TextBlock Text="{Binding ComparisonText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.Name="Retained run comparison" />
+                        <TextBlock Text="{Binding ComparisonText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" AutomationProperties.Name="Retained run comparison" />
                         <ItemsControl ItemsSource="{Binding BlockerDeltas}" Margin="0,4,0,0" AutomationProperties.Name="Blocker differences" />
                         <DataGrid ItemsSource="{Binding CashDeltas}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" MaxHeight="240" Margin="0,4,0,0" AutomationProperties.Name="Net cash deltas by date">
                             <DataGrid.Columns>
@@ -347,7 +347,7 @@
                                 <DataTemplate>
                                     <StackPanel Margin="0,4,18,4" MinWidth="160">
                                         <TextBlock Text="{Binding Label}" Opacity="0.7" FontSize="11" TextWrapping="Wrap" />
-                                        <TextBlock Text="{Binding Value}" FontFamily="Consolas" />
+                                        <TextBlock Text="{Binding Value}" FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                     </StackPanel>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -479,7 +479,7 @@
                                 <DataGridTextColumn Header="Candidate interest" Binding="{Binding CandidateInterest}" />
                             </DataGrid.Columns>
                         </DataGrid>
-                        <TextBlock Text="{Binding FingerprintText}" FontFamily="Consolas" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding FingerprintText}" FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" Margin="0,6,0,0" TextWrapping="Wrap" />
                         <StackPanel Visibility="{Binding HasPreview, Converter={StaticResource BooleanToVisibility}}" Margin="0,8,0,0">
                             <TextBlock Text="Review justification (required; creates a draft only)" Opacity="0.8" />
                             <TextBox Text="{Binding Justification, UpdateSourceTrigger=PropertyChanged}" MaxLength="2000" AutomationProperties.Name="Review justification" />
