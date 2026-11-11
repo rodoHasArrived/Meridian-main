@@ -384,6 +384,8 @@ export async function workbenchProof(browser, base, report, output, axeSource) {
     await page.reload(); await page.getByRole("heading", { name: workbenchTitle, exact: true }).waitFor();
     assert.equal(await page.getByRole("combobox", { name: "Specimen surface", exact: true }).inputValue(), "light", "URL state restores after reload");
     await page.getByRole("button", { name: "Reset workbench", exact: true }).click();
+    await page.waitForURL(url => url.search === "");
+    await page.locator('[data-workbench-surface="inherited"]').waitFor();
     assert.equal(await page.getByRole("combobox", { name: "Data state", exact: true }).inputValue(), "populated");
     assert.equal(await page.getByRole("combobox", { name: "Button state", exact: true }).inputValue(), "normal");
     assert.equal(await page.getByRole("combobox", { name: "Specimen surface", exact: true }).inputValue(), "inherited");
