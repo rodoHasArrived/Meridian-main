@@ -22,6 +22,7 @@ public sealed class BrokerageSyncActualCashActivitySourceTests
             Cash("dividend-1", "DIV", 12m, "2026-06-10", "UST10"),
             Cash("other-symbol", "Bond Interest Received", 9m, "2026-06-15", "MSFT"),
             Cash("cash-interest", "INT", 3m, "2026-06-15", null),
+            Cash("alpaca-interest", "INT", 40m, "2026-06-16", "UST10"),
             Cash("late", "Bond Interest Received", 125.50m, "2026-07-15", "UST10")));
 
         var rows = await source.GetActualActivityAsync([Position()], PeriodStart, PeriodEnd);
@@ -29,7 +30,8 @@ public sealed class BrokerageSyncActualCashActivitySourceTests
         rows.Select(row => (row.ExternalTransactionId, row.Classification, row.IncomeAmount, row.PrincipalAmount, row.PayDate))
             .Should().Equal(
                 ("coupon-1", "Income", 125.50m, 0m, new DateOnly(2026, 6, 15)),
-                ("paydown-1", "Principal", 0m, 1_000m, new DateOnly(2026, 6, 20)));
+                ("paydown-1", "Principal", 0m, 1_000m, new DateOnly(2026, 6, 20)),
+                ("alpaca-interest", "Income", 40m, 0m, new DateOnly(2026, 6, 16)));
         rows.Should().OnlyContain(row =>
             row.SecurityId == BondSecurityId &&
             row.Symbol == "UST10" &&

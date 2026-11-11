@@ -119,6 +119,12 @@ public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashA
             return null;
         }
 
+        // Provider activity codes that do not spell the word out. Alpaca reports interest as `INT`.
+        if (string.Equals(transactionType.Trim(), "INT", StringComparison.OrdinalIgnoreCase))
+        {
+            return "Income";
+        }
+
         if (transactionType.Contains("principal", StringComparison.OrdinalIgnoreCase)
             || transactionType.Contains("paydown", StringComparison.OrdinalIgnoreCase))
         {

@@ -10,9 +10,12 @@ describe("ledgerPeriodAccountRunningBalanceEndpoint", () => {
     );
   });
 
-  it("omits optional filters that are not set", () => {
+  it("omits filters that are not given and sends an explicit empty filter for a null scope", () => {
+    expect(ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", financialAccountId: "1000" })).toBe(
+      `/api/ledger/periods/${periodId}/accounts/running-balance?account=Cash&financialAccountId=1000`
+    );
     expect(
-      ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", symbol: null, financialAccountId: "1000" })
-    ).toBe(`/api/ledger/periods/${periodId}/accounts/running-balance?account=Cash&financialAccountId=1000`);
+      ledgerPeriodAccountRunningBalanceEndpoint(periodId, { account: "Cash", symbol: null, financialAccountId: null })
+    ).toBe(`/api/ledger/periods/${periodId}/accounts/running-balance?account=Cash&symbol=&financialAccountId=`);
   });
 });

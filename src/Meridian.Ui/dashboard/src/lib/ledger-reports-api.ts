@@ -51,12 +51,15 @@ export function ledgerPeriodAccountRunningBalanceEndpoint(
   periodId: string,
   query: { account: string; symbol?: string | null; financialAccountId?: string | null }
 ): string {
+  // `undefined` omits a filter (any value); `null` or "" is sent empty and selects postings that
+  // have no symbol / no financial account, so an unscoped trial-balance row does not also return
+  // the account-scoped postings of the same account name.
   const params = new URLSearchParams({ account: query.account });
-  if (query.symbol) {
-    params.set("symbol", query.symbol);
+  if (query.symbol !== undefined) {
+    params.set("symbol", query.symbol ?? "");
   }
-  if (query.financialAccountId) {
-    params.set("financialAccountId", query.financialAccountId);
+  if (query.financialAccountId !== undefined) {
+    params.set("financialAccountId", query.financialAccountId ?? "");
   }
 
   return `${routeWithParam(UI_API_ROUTES.LedgerPeriodAccountRunningBalance, "periodId", periodId)}?${params.toString()}`;

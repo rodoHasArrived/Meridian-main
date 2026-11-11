@@ -2464,17 +2464,18 @@ public static partial class LedgerEndpoints
         string? symbol,
         string? financialAccountId)
     {
-        var symbolFilter = string.IsNullOrWhiteSpace(symbol) ? null : symbol.Trim();
-        var financialAccountFilter = string.IsNullOrWhiteSpace(financialAccountId) ? null : financialAccountId.Trim();
+        // An omitted filter (null) matches any value; a filter sent empty selects the lines that
+        // have no symbol or no financial account. Without that distinction, picking the unscoped
+        // row of an account would also return its account-scoped postings.
+        var symbolFilter = symbol?.Trim();
+        var financialAccountFilter = financialAccountId?.Trim();
         var lines = entries
             .OrderBy(static entry => entry.Entry.Timestamp)
             .ThenBy(static entry => entry.GlobalSequence)
             .SelectMany(static entry => entry.Entry.Lines.Select(line => (Record: entry, Line: line)))
             .Where(item => string.Equals(item.Line.Account.Name, accountName, StringComparison.OrdinalIgnoreCase))
-            .Where(item => symbolFilter is null
-                || string.Equals(item.Line.Account.Symbol, symbolFilter, StringComparison.OrdinalIgnoreCase))
-            .Where(item => financialAccountFilter is null
-                || string.Equals(item.Line.Account.FinancialAccountId, financialAccountFilter, StringComparison.OrdinalIgnoreCase))
+            .Where(item => MatchesOptionalAccountScope(item.Line.Account.Symbol, symbolFilter))
+            .Where(item => MatchesOptionalAccountScope(item.Line.Account.FinancialAccountId, financialAccountFilter))
             .ToArray();
 
         LedgerAccountType? accountType = lines.Length > 0 ? lines[0].Line.Account.AccountType : null;
@@ -2500,13 +2501,19 @@ public static partial class LedgerEndpoints
             ledgerBookId,
             accountName,
             accountType?.ToString(),
-            symbolFilter,
-            financialAccountFilter,
+            string.IsNullOrEmpty(symbolFilter) ? null : symbolFilter,
+            string.IsNullOrEmpty(financialAccountFilter) ? null : financialAccountFilter,
             lines.Sum(static item => item.Line.Debit),
             lines.Sum(static item => item.Line.Credit),
             balance,
             points);
     }
+
+    private static bool MatchesOptionalAccountScope(string? actual, string? filter)
+        => filter is null
+           || (filter.Length == 0
+               ? string.IsNullOrWhiteSpace(actual)
+               : string.Equals(actual?.Trim(), filter, StringComparison.OrdinalIgnoreCase));
 
     private static IReadOnlyList<LedgerJournalEntryDto> BuildJournalEntryDtos(
         IReadOnlyList<LedgerJournalEntryRecord> entries,

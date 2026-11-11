@@ -109,16 +109,11 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
         Guid periodId, string accountName, string? symbol, string? financialAccountId)
     {
         var route = $"{BuildPeriodRoute(UiApiRoutes.LedgerPeriodAccountRunningBalance, periodId)}?account={Uri.EscapeDataString(accountName)}";
-        if (!string.IsNullOrWhiteSpace(symbol))
-        {
-            route += $"&symbol={Uri.EscapeDataString(symbol)}";
-        }
-
-        if (!string.IsNullOrWhiteSpace(financialAccountId))
-        {
-            route += $"&financialAccountId={Uri.EscapeDataString(financialAccountId)}";
-        }
-
+        // Both scope filters are always sent. An empty value selects postings with no symbol or
+        // no financial account, so an unscoped trial-balance row does not also return the
+        // account-scoped postings of the same account name.
+        route += $"&symbol={Uri.EscapeDataString(symbol?.Trim() ?? string.Empty)}";
+        route += $"&financialAccountId={Uri.EscapeDataString(financialAccountId?.Trim() ?? string.Empty)}";
         return route;
     }
 
