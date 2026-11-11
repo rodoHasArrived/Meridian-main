@@ -123,6 +123,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -142,6 +144,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -499,6 +506,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -518,6 +527,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -833,6 +847,8 @@
       --ws-text: #F1EFEA;
       --ws-text-muted: #929CA6;
       --ws-text-secondary: #BEC4CA;
+      --ws-header-text-secondary: var(--ws-text-secondary);
+      --ws-tinted-text-secondary: var(--ws-text-secondary);
       --ws-masthead-bg: #0D1217;
       --ws-masthead-fg: #F1EFEA;
       /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -852,6 +868,11 @@
       --ws-rail-active: #2C4054;
       --ws-row-hover: #25303A;
       --ws-row-selected: #2C4054;
+      --ws-row-selected-text-secondary: var(--ws-text-secondary);
+      --ws-row-selected-muted-foreground: 210 10.169% 76.863%;
+      --ws-row-selected-danger-text: var(--red-dim);
+      --ws-row-selected-warning-text: var(--orange-dim);
+      --ws-row-selected-success-text: var(--green-dim);
       --ws-row-border: #26313B;
       --ws-inspector-bg: #171E25;
       --ws-canvas-bg: #1F2831;
@@ -1041,6 +1062,8 @@
     --ws-text: #F1EFEA;
     --ws-text-muted: #929CA6;
     --ws-text-secondary: #BEC4CA;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #0D1217;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -1060,6 +1083,11 @@
     --ws-rail-active: #2C4054;
     --ws-row-hover: #25303A;
     --ws-row-selected: #2C4054;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 10.169% 76.863%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #26313B;
     --ws-inspector-bg: #171E25;
     --ws-canvas-bg: #1F2831;
@@ -1251,6 +1279,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -1270,6 +1300,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -2075,7 +2110,7 @@
   }
 
   [aria-selected="true"] {
-    box-shadow: inset 3px 0 0 var(--cyan-primary);
+    box-shadow: inset 3px 0 0 var(--interaction-selected);
   }
 
 }
