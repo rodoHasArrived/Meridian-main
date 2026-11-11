@@ -16,6 +16,9 @@ public sealed partial class PrivateCapitalCloseCockpitServiceTests
     [InlineData("Blocked", null, false)]
     [InlineData("Claimed", null, false)]
     [InlineData("Drafted", "Posted", true)]
+    [InlineData("Drafted", "Reversed", true)]
+    [InlineData("Drafted", "Rebooked", true)]
+    [InlineData("Blocked", "Reversed", false)]
     [InlineData("NoDraftRequired", null, true)]
     public async Task RecurringJournalInThePeriod_GatesCloseUntilPostedOrNothingIsDue(string state, string? approval, bool ready)
     {

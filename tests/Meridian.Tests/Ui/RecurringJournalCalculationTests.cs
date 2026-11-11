@@ -302,6 +302,52 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task FxRevaluation_CurrencyScopedCashAccount_IsRevalued()
+    {
+        // Cash (EUR) carries its currency as the account symbol; it is cash, not an instrument.
+        var euroCash = LedgerAccounts.CashInCurrency("EUR");
+        _ledger.PostLines(At(new(2026, 1, 10)), "Buy EUR",
+        [
+            (euroCash, 108_000m, 0m, null, new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
+            (LedgerAccounts.InvestorCapitalFor("lp-1"), 0m, 108_000m, null, null)
+        ]);
+        await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 0m }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(Rates([new("EUR", "USD", 1.10m, JanuaryEnd)]));
+
+        (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle()
+            .Which.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Which.TotalDebits.Should().Be(2_000m);
+    }
+
+    [Fact]
+    public async Task ReversedOccurrence_IsBlockedInTheQueueUntilItsReversalIsPosted()
+    {
+        await SeedAsync(FundExpenseAccrualCalculation.CalculationKind,
+            new() { ["annualAmount"] = 36_500m, ["yearBasisDays"] = 365m }, new() { ["expenseId"] = "audit" }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync();
+        await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
+        var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        await fixture.Drafts.SaveAsync(draft with { Status = ManualJournalEntryStatusDto.Reversed });
+        var reversal = draft with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            Status = ManualJournalEntryStatusDto.Draft,
+            ReversalOfJournalEntryId = draft.JournalEntryId
+        };
+        await fixture.Drafts.SaveAsync(reversal);
+
+        var pending = (await fixture.Runner.GetQueueAsync(Fund, Book, Entity, tenantId: Tenant, companyId: Company)).Occurrences.Single();
+        pending.State.Should().Be("Blocked");
+        pending.Blockers.Should().ContainSingle().Which.Should().Contain("correction journal is not posted yet");
+
+        await fixture.Drafts.SaveAsync(reversal with { Status = ManualJournalEntryStatusDto.Posted });
+        var settled = (await fixture.Runner.GetQueueAsync(Fund, Book, Entity, tenantId: Tenant, companyId: Company)).Occurrences.Single();
+        settled.State.Should().Be(nameof(RecurringOccurrenceState.Drafted));
+        settled.ApprovalStatus.Should().Be(nameof(ManualJournalEntryStatusDto.Reversed));
+        settled.Blockers.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task FxRevaluation_FunctionalCashInSameAccount_DoesNotDraftAtAnUnchangedRate()
     {
         _ledger.PostLines(At(new(2026, 1, 10)), "Mixed-currency contribution",
@@ -643,6 +689,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
              new("opex", "Expenses:Fund Operating Expense", "Fund Operating Expense", "Expense"),
              new("accrued", "Liabilities:Accrued Expenses Payable", "Accrued Expenses Payable", "Liability"),
              new("eur-cash", "Assets:Cash EUR", EuroCash.Name, "Asset", FinancialAccountId: EuroCash.FinancialAccountId),
+             new("eur-cash-scoped", "Assets:Cash (EUR)", LedgerAccounts.CashInCurrency("EUR").Name, "Asset", Symbol: "EUR"),
              new("fx-gain", "Revenue:Unrealized FX Gain", LedgerAccounts.UnrealizedFxGain.Name, "Revenue"),
              new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
              new("bond", "Assets:Securities UST30", LedgerAccounts.Securities(Ticker).Name, "Asset", Symbol: Ticker),

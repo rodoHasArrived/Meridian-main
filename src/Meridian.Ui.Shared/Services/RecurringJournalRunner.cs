@@ -290,6 +290,7 @@ public sealed class RecurringJournalRunner(
         ArgumentException.ThrowIfNullOrWhiteSpace(companyId);
         await using var session = await store.OpenSessionAsync(ct).ConfigureAwait(false);
         var rows = new List<RecurringJournalOccurrenceDto>();
+        IReadOnlyList<ManualJournalEntryDraftDto>? allDrafts = null;
         foreach (var item in session.Occurrences.Where(o => Same(o.ScheduleDefinition.Scope.FundProfileId, fundProfileId) &&
                      o.ScheduleDefinition.Scope.LedgerBookId == ledgerBookId && Same(o.ScheduleDefinition.Scope.EntityId, entityId) &&
                      Same(o.ScheduleDefinition.Scope.TenantId, tenantId) && Same(o.ScheduleDefinition.Scope.CompanyId, companyId)))
@@ -300,6 +301,13 @@ public sealed class RecurringJournalRunner(
                 reasons.Add(item.Reason);
             if (draft is null && item.History.Any(h => h.State == RecurringOccurrenceState.Drafted))
                 reasons.Add("Retained draft state is unavailable; restore it before continuing.");
+            // A reversed or rebooked occurrence is settled only once its correction is posted.
+            if (draft?.Status is ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked)
+            {
+                allDrafts ??= await drafts.ListAsync(fundProfileId, ledgerBookId, ct, tenantId, companyId).ConfigureAwait(false);
+                if (!CorrectionIsPosted(draft, allDrafts))
+                    reasons.Add("This occurrence's journal was reversed or rebooked and the correction journal is not posted yet.");
+            }
             rows.Add(new(item.OccurrenceKey, item.ScheduleDefinition.ScheduleId, item.ScheduleDefinition.Version,
                 item.TemplateDefinition.TemplateId, item.TemplateDefinition.Version, item.EffectiveDate,
                 fundProfileId, ledgerBookId, entityId, item.PeriodId,
@@ -308,6 +316,27 @@ public sealed class RecurringJournalRunner(
                 item.ScheduleDefinition.Evidence.Select(e => e.Uri).ToArray(), item.LockOwner, item.ReopenPath));
         }
         return new(fundProfileId, ledgerBookId, entityId, rows.OrderByDescending(r => r.EffectiveDate).ToArray());
+    }
+
+    private static bool CorrectionIsPosted(ManualJournalEntryDraftDto corrected, IReadOnlyList<ManualJournalEntryDraftDto> all)
+    {
+        var current = corrected;
+        for (var depth = 0; depth < 16; depth++)
+        {
+            var id = current.JournalEntryId;
+            var next = current.Status == ManualJournalEntryStatusDto.Reversed
+                ? all.FirstOrDefault(item => item.ReversalOfJournalEntryId == id && item.Status != ManualJournalEntryStatusDto.Rejected)
+                : all.FirstOrDefault(item => item.RebookedFromJournalEntryId == id && item.Status != ManualJournalEntryStatusDto.Rejected);
+            if (next is null)
+                return false;
+            if (next.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked)
+                return true;
+            if (next.Status is not (ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked))
+                return false;
+            current = next;
+        }
+
+        return false;
     }
 
     private static AutomatedJournalScheduledRunResult Result(RecurringOccurrenceRecord claim, DateTimeOffset instant, string? reason)

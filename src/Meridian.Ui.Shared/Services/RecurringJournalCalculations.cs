@@ -477,9 +477,12 @@ public sealed class FxRevaluationCalculation(
         var journals = ledger.Journal.Where(journal => journal.Timestamp <= asOf).ToArray();
         var foreignLegs = journals
             .SelectMany(journal => journal.Lines)
-            // Monetary accounts only. A security's account also carries fair-value marks in book
+            // Monetary accounts only: no symbol, or a currency-scoped cash account whose symbol is
+            // its own currency. An instrument's account also carries fair-value marks in book
             // currency, so its balance cannot be compared with its foreign cost legs.
-            .Where(line => line.Currency is { IsFunctionalCurrency: false } && string.IsNullOrWhiteSpace(line.Account.Symbol) &&
+            .Where(line => line.Currency is { IsFunctionalCurrency: false } currency &&
+                (string.IsNullOrWhiteSpace(line.Account.Symbol) ||
+                 string.Equals(line.Account.Symbol.Trim(), currency.TransactionCurrency, StringComparison.OrdinalIgnoreCase)) &&
                 line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability)
             .GroupBy(line => line.Account)
             .ToArray();

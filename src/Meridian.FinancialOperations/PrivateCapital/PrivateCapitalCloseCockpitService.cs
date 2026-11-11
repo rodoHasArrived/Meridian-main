@@ -957,9 +957,13 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         if (rows.Length == 0)
             return null;
 
+        // The queue reports a reversed or rebooked occurrence as blocked until its correction
+        // journal is posted, so one that is still "Drafted" here has a posted correction.
         static bool IsPosted(RecurringJournalOccurrenceDto row) => row.State == "Drafted" &&
             (string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Posted), StringComparison.Ordinal) ||
-             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.CloseLocked), StringComparison.Ordinal));
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.CloseLocked), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Reversed), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Rebooked), StringComparison.Ordinal));
         var posted = rows.Count(IsPosted);
         var nothingDue = rows.Count(static row => row.State == "NoDraftRequired");
         var awaiting = rows.Count(row => row.State == "Drafted" && !IsPosted(row));
