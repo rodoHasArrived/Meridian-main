@@ -202,7 +202,7 @@
       "components/operations/ActionGuard.jsx": "62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213",
       "components/operations/ActionQueue.jsx": "c12a2d4e83557ab6dbc8a75f558eb0b02b90e46ebac05e20cf825037d1f54928",
       "components/operations/AdapterDiagnostics.jsx": "ea348bd829ab7d66317bdaf09a2fbf676afb7ece501bbe8d7d64c1cc5a2154ed",
-      "components/operations/AnnotationLayer.jsx": "873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed",
+      "components/operations/AnnotationLayer.jsx": "1085e0b28c3d9519faaf1c2ebe91b185bbe0ac0eb45fca97ef358378fb1a0139",
       "components/operations/AttestationPanel.jsx": "701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff",
       "components/operations/CaseQueue.jsx": "fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b",
       "components/operations/ChangeSetReview.jsx": "6ad0550059c4d172a021364096b0e8e8f924ff59a3581bd10ffe9bc85fe57e3f",
@@ -234,7 +234,7 @@
       "components/operations/conditions.js": "eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf",
       "components/operations/status.js": "3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8",
       "components/shell/GlobalSearch.jsx": "c38abc70df96a7e2ab28c3077a5e22ac2d93568a94880282da96c5cce83029ed",
-      "components/shell/NavRail.jsx": "623d14018e2948f4e6b9b2d73124c1e7fa7adec1bd1ad1edc4967b2d26ba5ab3",
+      "components/shell/NavRail.jsx": "07c53acb08e5e64f2536f16a749b60340088c2b30a20484e9117dce828e529c6",
       "components/shell/ReturnPath.jsx": "387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74",
       "components/shell/ScreenComposition.jsx": "34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892",
       "components/shell/SessionControls.jsx": "7dce6e37c88d6f60c386f83266b3d8a5f6f26c7ae4b1c78fc82a6803f7faee5a",
@@ -255,8 +255,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "7dde542d360bf33657141c097dd17e2ded87553f2589674f0c6b6af60b76a6d5",
-      "bytes": 1677339
+      "sha256": "613924737767495107c8279e69bb1cb29b54d2e0b007bd87cabfc712692e2bff",
+      "bytes": 1677659
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
