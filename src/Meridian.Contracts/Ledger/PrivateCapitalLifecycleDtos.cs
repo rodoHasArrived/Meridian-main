@@ -1,7 +1,7 @@
 namespace Meridian.Contracts.Ledger;
 
 /// <summary>A stable generation intent; retry the same operation and use a new ID for deliberate regeneration.</summary>
-public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId);
+public sealed record GeneratePrivateCapitalNoticeRequest(Guid OperationId, string? CommitmentId = null);
 
 /// <summary>Explicit authority scope shared by commitment, call, and receipt records.</summary>
 public sealed record PrivateCapitalScopeDto(
@@ -117,7 +117,8 @@ public sealed record PrivateCapitalNoticeSummaryDto(
     string GovernanceState,
     string? PackageId,
     string DeliveryState,
-    string Route);
+    string Route,
+    string CommitmentId);
 
 /// <summary>Create a new draft revision; expected revision zero creates a new commitment.</summary>
 public sealed record CreatePrivateCapitalCommitmentRequest(

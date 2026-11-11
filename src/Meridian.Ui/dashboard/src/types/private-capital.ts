@@ -32,11 +32,13 @@ export interface PrivateCapitalWorkbench {
   receipts: PrivateCapitalPostingReceipt[]; generatedAtUtc: string; notices: PrivateCapitalNotice[];
 }
 export interface PrivateCapitalNotice {
-  runId: string; callId: string; investorId: string; governanceState: string;
+  runId: string; callId: string; investorId: string; commitmentId: string; governanceState: string;
   packageId: string | null; deliveryState: string; route: string;
 }
 export interface GeneratePrivateCapitalNoticeRequest {
   readonly operationId: string;
+  /** Omitted only while recovering a migrated, unambiguous pre-selector operation. */
+  readonly commitmentId?: string;
 }
 export interface PrivateCapitalNoticeGenerationResult { run: { runId: string } }
 export interface CreatePrivateCapitalCommitment {

@@ -1535,8 +1535,10 @@ access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` p
 renders those values as policy evidence only; flattened principal ids are rejected at the API
 boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
-schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+payload and wires schedule save/upsert, run-now, pause, resume, disable, and delete (with an
+inline confirm step) controls through the shared schedule endpoints. Cadence presets cover daily,
+weekday, weekly, twice-monthly, first and last day of month, quarterly, and annual runs, and a
+time zone select sends the schedule's IANA `timeZoneId` (default `UTC`). Due schedules are leased and executed only by the hosted reporting worker; the
 browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
@@ -1628,8 +1630,13 @@ rows post approval or rejection decisions to the matching `/approve` and `/rejec
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
-custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+custom formula name/label/expression fields plus filter controls for field/operator/value
+slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
+rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
+matches every filter). The access-policy principal ID field and the
+schedule recipient principal ID field use `PrincipalIdInput`, which suggests role and role-profile
+names for `Group` principals and usernames for `User` principals (when the caller may list
+accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
@@ -1651,7 +1658,7 @@ source-backed option posts the selected payload-owned rows to the render endpoin
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
 formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+`basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
@@ -2272,14 +2279,19 @@ Import conflicts preserve existing cash fields and never create local balances o
 The bounded funding workflow uses the call's accounting period; closed-period or different-period
 receipts require a separately supported correction or receipt workflow and remain blocked here.
 Notice generation creates a Reporting draft; governance and delivery states remain separate.
+Each installment has its own notice action and retained status, including when one investor has
+multiple commitments in the call. New requests explicitly select that line's commitment.
 Each deliberate Generate/Regenerate notice action creates one operation UUID. An unconfirmed
 request retains that exact body for retry, recovering the original Reporting run; a deliberate
 regeneration creates a new operation and run. The shared mutation lock rejects duplicate clicks.
 Before sending, the original operation and exact tenant/company/entity/fund/book/currency/call/
-investor target are retained in this tab's session storage; no amounts or authority are stored.
+investor/commitment target are retained in this tab's session storage; no amounts or authority are stored.
 Reloading the original tab offers Recover original notice without sending automatically. The
 record clears only after the response identifies that operation's exact retained run. Missing
 storage blocks sending, and malformed records are removed with an explicit review notice.
+An earlier investor-level pending intent migrates only when that investor has one call line,
+preserving its UUID and original omitted-selector request body. Multiple lines leave that legacy
+intent untouched and explain that automatic recovery cannot select an installment.
 Browser reload recovery lasts while the original tab session retains its intent; server restart
 recovery requires that known operation ID and the authenticated scope to remain available.
 Only an authorized terminal-failure response matching the original operation's exact run enables
@@ -2293,4 +2305,5 @@ Changing book selection disables the previous scope until Apply. Scope/session c
 old results, input changes cancel pending previews, and unconfirmed writes retain the same request
 for retry. Journal and report links open the existing review workflows. The seven root workspaces
 remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
-`private-capital.api.test.ts`, and the existing pure capital-call presentation tests.
+`private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
+capital-call presentation tests.

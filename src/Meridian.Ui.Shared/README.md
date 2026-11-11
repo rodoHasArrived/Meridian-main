@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui.Shared
@@ -89,15 +89,20 @@ branch checks exact notice, investor, commitment and source bindings before acce
 Generation, approval, release, delivery and cash settlement remain distinct outcomes. Workbench
 notice summaries come from retained reporting and delivery records, never browser-local status.
 
-The notice POST body requires `{ "operationId": "<UUID>" }`. A retry reuses that identity and
+The notice POST body uses `{ "operationId": "<UUID>", "commitmentId": "<commitment>" }`. A retry reuses that exact body and
 recovers the exact retained run before reading current call or ledger inputs. The server binds it
-to the authenticated actor and full scope/call/investor identity; collisions refuse. Deliberate
+to the authenticated actor and full scope/call/investor/commitment identity; collisions refuse. Deliberate
 regeneration uses a new UUID. Durable PostgreSQL Reporting create claims and the original
 certified parameters preserve one run across concurrent hosts and lost responses; current access
 and permissions are still checked on recovery. Configure `MERIDIAN_REPORTING_CONNECTION_STRING`
 (or its documented ledger fallback) so `IReportingRunStore` resolves to
 `PostgresReportingRunStore`; file-backed compatibility stores do not support notice generation.
-This slice supports exactly one complete posted installment per investor per call.
+Each notice covers one complete posted commitment installment. Multiple commitments for the same
+investor in one call receive separate notices with exact commitment/journal filters, and retained
+summaries carry `CommitmentId`. The optional selector may be omitted for new generation only when
+the investor has one call installment. Existing pending operations whose original body omitted it
+retain that omitted-selector body and original hash; adding or changing a selector under the same
+UUID is a conflicting request.
 An authenticated recovery of an exact retained Failed operation returns HTTP 409 with
 `code: notice_operation_failed` and its exact `runId`; the failed manifest and audit remain intact.
 For a pending intent, only that confirmed terminal outcome permits the UI's explicit
@@ -613,7 +618,10 @@ health or fallback evidence for that scoped result, including after its credenti
 The shared lifecycle resolves its retained tenant, provider, external account and environment against
 the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
 connections are refused. Scoped Alpaca verification requires the returned account to match retained
-ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+ownership. The Alpaca brokerage routes (`/api/brokerage-connections/alpaca*`) have no provider-wide
+path: `AlpacaBrokerageConnectionService` binds connect, status and revoke to the connection named by
+`?connectionId=`, or to the tenant's single owned paper connection when the query is omitted, and
+verifies submitted keys against the retained account and environment before storing them. Other scoped providers remain unverified until a connection-bound live verifier exists;
 provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
 the legacy path during the unfinished workstation/default-runtime cutover.
 
@@ -2054,7 +2062,17 @@ previews can display the same audit trace as retained exports. Template governan
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
 approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
+`basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
+`IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
+`ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
+period-close schedule's as-of date; the schedule service never derives a period selector from a
+calendar date. Its `ResolveNextClosePeriodAsync` names the next period to close (the following
+period for monthly, the fiscal quarter-end or year-end period by ledger period number for
+quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
+When that lookup fails at advance time the schedule moves on by calendar and records
+`UnresolvedPeriodCloseAfter`; `RealignPeriodCloseToLedgerAsync` repeats the lookup before the next
+run, corrects the date and persists it under the execution lease before the run starts (lease
+renewal matches the stored payload), deferring a due run that is not yet due on the corrected date.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

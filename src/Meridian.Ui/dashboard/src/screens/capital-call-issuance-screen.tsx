@@ -182,16 +182,21 @@ function CallDetail({ call, generatedAtUtc, notices, locked, mutate }: { call: P
     <CapitalFundingForm call={call} locked={locked} mutate={mutate} />
     <section className="space-y-2" aria-label="Investor notices"><h3 className="text-sm font-semibold">Investor notices</h3>
       <p className="text-sm text-muted-foreground">Generate a draft notice from posted issuance. Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run. Release and delivery use the governed Reporting workflow and remain separate from cash.</p>
-      <div className="flex flex-wrap gap-2">{[...new Set(call.lines.filter(line => capitalIsPositive(line.issuedAmount)).map(line => line.investorId))].map(investorId => {
-        const regenerate = callNotices.some(notice => notice.investorId === investorId);
-        return <CapitalCallNoticeAction key={investorId} scope={call.scope} callId={call.callId} investorId={investorId} hasNotice={regenerate} locked={locked} mutate={mutate} />;
-      })}</div>
-      {callNotices.map(notice => <div key={notice.runId} className="rounded border border-border p-2 text-sm">
-        <p>{notice.investorId} · Governance: {notice.governanceState} · Delivery: {notice.deliveryState}</p>
-        <p className="text-xs text-muted-foreground">Package {notice.packageId ?? "not released"}</p>
-        {/^\/reporting(?:\/|\?|$)/.test(notice.route) ? <Link className="text-primary underline" to={notice.route}>Inspect notice run {notice.runId}</Link> : <span>Reporting route unavailable</span>}
-      </div>)}
-      {!callNotices.length ? <p className="text-sm">No retained notice run for this call. No delivery is inferred.</p> : null}
+      {call.lines.map(line => {
+        const installmentNotices = callNotices.filter(notice => notice.investorId === line.investorId && notice.commitmentId === line.commitmentId);
+        const investorInstallmentCount = call.lines.filter(candidate => candidate.investorId === line.investorId).length;
+        return <section key={line.installmentId} className="space-y-2 rounded border border-border p-3" aria-label={`Investor notice installment ${line.installmentId}`}>
+          <h4 className="text-sm font-semibold">{line.installmentId} · {line.investorId}</h4>
+          {capitalIsPositive(line.issuedAmount) ? <CapitalCallNoticeAction scope={call.scope} callId={call.callId} investorId={line.investorId}
+            commitmentId={line.commitmentId} investorInstallmentCount={investorInstallmentCount} hasNotice={installmentNotices.length > 0} locked={locked} mutate={mutate} /> : <p className="text-sm">This installment requires posted issuance before a notice can be generated.</p>}
+          {installmentNotices.map(notice => <div key={notice.runId} className="rounded border border-border p-2 text-sm">
+            <p>{notice.investorId} · Governance: {notice.governanceState} · Delivery: {notice.deliveryState}</p>
+            <p className="text-xs text-muted-foreground">Package {notice.packageId ?? "not released"}</p>
+            {/^\/reporting(?:\/|\?|$)/.test(notice.route) ? <Link className="text-primary underline" to={notice.route}>Inspect notice run {notice.runId}</Link> : <span>Reporting route unavailable</span>}
+          </div>)}
+          {!installmentNotices.length ? <p className="text-sm">No retained notice run for this installment. No delivery is inferred.</p> : null}
+        </section>;
+      })}
     </section>
   </section>;
 }

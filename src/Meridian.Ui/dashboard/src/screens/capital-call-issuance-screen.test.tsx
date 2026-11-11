@@ -89,7 +89,7 @@ describe("Native commitment-to-cash workbench", () => {
     expect(mocks.createPrivateCapitalCommitment.mock.calls[1][1]).toEqual(mocks.createPrivateCapitalCommitment.mock.calls[0][1]);
   });
   it("queues a separately identified partial receipt using retained installment scope", async () => {
-    mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall], notices: [{ runId: "notice-a", callId: "call-a", investorId: "investor-a", governanceState: "Released", packageId: "package-a", deliveryState: "Pending", route: "/reporting/runs/detail?runId=notice-a" }] });
+    mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall], notices: [{ runId: "notice-a", callId: "call-a", investorId: "investor-a", commitmentId: "commitment-a", governanceState: "Released", packageId: "package-a", deliveryState: "Pending", route: "/reporting/runs/detail?runId=notice-a" }] });
     mocks.intakePrivateCapitalFunding.mockResolvedValue({ producerSkips: [], intake: { created: [], skipped: [], needsFixCount: 0 }, evidenceAssessments: {}, readiness: 0, readinessBlockers: [] });
     mount(); await ready(); fireEvent.click(screen.getByRole("button", { name: "call-a · 250000.01 USD" }));
     expect(screen.getByText("investor-a · Governance: Released · Delivery: Pending")).toBeInTheDocument();
@@ -238,7 +238,7 @@ describe("Native commitment-to-cash workbench", () => {
     const runId = `capital-call-notice-op-${firstOperation.replaceAll("-", "")}`;
     const uuid = vi.spyOn(crypto, "randomUUID").mockReturnValueOnce(firstOperation).mockReturnValueOnce(secondOperation);
     const initial = { ...capitalWorkbench(), calls: [capitalCall] };
-    const recovered = { ...initial, notices: [{ runId, callId: "call-a", investorId: "investor-a", governanceState: "Draft", packageId: null, deliveryState: "NotQueued", route: `/reporting/runs/detail?runId=${runId}` }] };
+    const recovered = { ...initial, notices: [{ runId, callId: "call-a", investorId: "investor-a", commitmentId: "commitment-a", governanceState: "Draft", packageId: null, deliveryState: "NotQueued", route: `/reporting/runs/detail?runId=${runId}` }] };
     mocks.getPrivateCapitalWorkbench.mockResolvedValueOnce(initial).mockResolvedValue(recovered);
     mocks.generatePrivateCapitalNotice.mockRejectedValueOnce(new Error("The generated notice response was lost"))
       .mockResolvedValueOnce({ run: { runId } }).mockResolvedValueOnce({ run: { runId: `capital-call-notice-op-${secondOperation.replaceAll("-", "")}` } });
@@ -247,7 +247,7 @@ describe("Native commitment-to-cash workbench", () => {
     await screen.findByText("Write outcome is unconfirmed");
     expect(screen.getByRole("button", { name: "Recover original notice for investor-a" })).toBeDisabled();
     const originalBody = mocks.generatePrivateCapitalNotice.mock.calls[0][3];
-    expect(originalBody).toEqual({ operationId: firstOperation });
+    expect(originalBody).toEqual({ operationId: firstOperation, commitmentId: "commitment-a" });
     fireEvent.click(screen.getByRole("button", { name: "Retry same request" }));
     await screen.findByRole("button", { name: "Regenerate notice for investor-a" });
     expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toBe(originalBody);
@@ -256,7 +256,7 @@ describe("Native commitment-to-cash workbench", () => {
     expect(screen.getByText(/Regenerate creates a new notice run; retrying an unconfirmed request recovers its original run/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Regenerate notice for investor-a" }));
     await waitFor(() => expect(mocks.generatePrivateCapitalNotice).toHaveBeenCalledTimes(3));
-    expect(mocks.generatePrivateCapitalNotice.mock.calls[2][3]).toEqual({ operationId: secondOperation });
+    expect(mocks.generatePrivateCapitalNotice.mock.calls[2][3]).toEqual({ operationId: secondOperation, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledTimes(2);
   });
   it("admits one notice operation for a double click while generation is pending", async () => {
@@ -269,7 +269,7 @@ describe("Native commitment-to-cash workbench", () => {
     const generate = screen.getByRole("button", { name: "Generate notice for investor-a" });
     act(() => { generate.click(); generate.click(); });
     expect(mocks.generatePrivateCapitalNotice).toHaveBeenCalledOnce();
-    expect(mocks.generatePrivateCapitalNotice.mock.calls[0][3]).toEqual({ operationId });
+    expect(mocks.generatePrivateCapitalNotice.mock.calls[0][3]).toEqual({ operationId, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledOnce();
     expect(generate).toBeDisabled();
     await act(async () => { complete({ run: { runId: `capital-call-notice-op-${operationId.replaceAll("-", "")}` } }); });
@@ -277,16 +277,16 @@ describe("Native commitment-to-cash workbench", () => {
   it("recovers a lost notice response after unmount and remount without minting or automatically sending another operation", async () => {
     const operationId = "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66";
     const uuid = vi.spyOn(crypto, "randomUUID").mockReturnValue(operationId);
-    const target = noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a");
+    const target = noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a", "commitment-a");
     const key = noticeOperationStorageKey(target);
-    mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall], notices: [{ runId: "older-notice", callId: "call-a", investorId: "investor-a", governanceState: "Released", packageId: "old-package", deliveryState: "Delivered", route: "/reporting/runs/detail?runId=older-notice" }] });
+    mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall], notices: [{ runId: "older-notice", callId: "call-a", investorId: "investor-a", commitmentId: "commitment-a", governanceState: "Released", packageId: "old-package", deliveryState: "Delivered", route: "/reporting/runs/detail?runId=older-notice" }] });
     mocks.generatePrivateCapitalNotice.mockRejectedValueOnce(new Error("Successful notice acknowledgement was lost"))
       .mockResolvedValueOnce({ run: { runId: `capital-call-notice-op-${operationId.replaceAll("-", "")}` } });
     const first = mount(); await ready(); fireEvent.click(screen.getByRole("button", { name: "call-a · 250000.01 USD" }));
     fireEvent.click(screen.getByRole("button", { name: "Regenerate notice for investor-a" }));
     await screen.findByText("Write outcome is unconfirmed");
     const originalBody = mocks.generatePrivateCapitalNotice.mock.calls[0][3];
-    expect(JSON.parse(sessionStorage.getItem(key)!)).toEqual({ version: 1, target, operationId });
+    expect(JSON.parse(sessionStorage.getItem(key)!)).toEqual({ version: 2, target, operationId });
     first.unmount();
     mount(); await ready(); fireEvent.click(screen.getByRole("button", { name: "call-a · 250000.01 USD" }));
     const recover = await screen.findByRole("button", { name: "Recover original notice for investor-a" });
@@ -311,7 +311,7 @@ describe("Native commitment-to-cash workbench", () => {
   it("retains the original notice operation when a success response identifies another run", async () => {
     const operationId = "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66";
     vi.spyOn(crypto, "randomUUID").mockReturnValue(operationId);
-    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a"));
+    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a", "commitment-a"));
     mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall] });
     mocks.generatePrivateCapitalNotice.mockResolvedValue({ run: { runId: "a-different-notice-run" } });
     mount(); await ready(); fireEvent.click(screen.getByRole("button", { name: "call-a · 250000.01 USD" }));
@@ -323,7 +323,7 @@ describe("Native commitment-to-cash workbench", () => {
   });
   it("starts a fresh notice only after exact terminal failure and an explicit new action", async () => {
     const firstId = "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66", nextId = "9f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e77";
-    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a"));
+    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a", "commitment-a"));
     const uuid = vi.spyOn(crypto, "randomUUID").mockReturnValueOnce(firstId).mockReturnValueOnce(nextId);
     mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall] });
     mocks.generatePrivateCapitalNotice.mockRejectedValueOnce(new ApiError({ path: "/notice", status: 409,
@@ -340,7 +340,7 @@ describe("Native commitment-to-cash workbench", () => {
     expect(screen.getByText(/The original notice run failed; its audit remains retained/)).toBeInTheDocument();
     fireEvent.click(startNew);
     await waitFor(() => expect(mocks.generatePrivateCapitalNotice).toHaveBeenCalledTimes(2));
-    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId: nextId });
+    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId: nextId, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
   });
@@ -352,7 +352,7 @@ describe("Native commitment-to-cash workbench", () => {
     ["foreign run", 409, { code: "notice_operation_failed", runId: "capital-call-notice-op-9f7c8a521a444f4e9a2b6f0d5a7c9e77" }]
   ])("keeps the original notice identity for %s", async (_scenario, status, body) => {
     const operationId = "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66";
-    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a"));
+    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a", "commitment-a"));
     const uuid = vi.spyOn(crypto, "randomUUID").mockReturnValue(operationId);
     mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall] });
     mocks.generatePrivateCapitalNotice.mockRejectedValueOnce(new ApiError({ path: "/notice", status, responseBody: JSON.stringify(body) }));
@@ -380,12 +380,12 @@ describe("Native commitment-to-cash workbench", () => {
     expect(mocks.generatePrivateCapitalNotice).toHaveBeenCalledOnce();
     fireEvent.click(recover);
     await screen.findByRole("button", { name: "Generate new notice after confirmed failure for investor-a" });
-    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId });
+    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledOnce();
   });
   it("preserves a confirmed failed intent when retaining its explicit replacement fails", async () => {
     const firstId = "8f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e66", nextId = "9f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e77";
-    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a"));
+    const key = noticeOperationStorageKey(noticeOperationTarget(capitalCall.scope, capitalCall.callId, "investor-a", "commitment-a"));
     const uuid = vi.spyOn(crypto, "randomUUID").mockReturnValueOnce(firstId).mockReturnValueOnce(nextId);
     mocks.getPrivateCapitalWorkbench.mockResolvedValue({ ...capitalWorkbench(), calls: [capitalCall] });
     mocks.generatePrivateCapitalNotice.mockRejectedValueOnce(new ApiError({ path: "/notice", status: 409,
@@ -402,7 +402,7 @@ describe("Native commitment-to-cash workbench", () => {
     writes.mockRestore();
     fireEvent.click(screen.getByRole("button", { name: "Retry same request" }));
     await waitFor(() => expect(mocks.generatePrivateCapitalNotice).toHaveBeenCalledTimes(2));
-    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId: nextId });
+    expect(mocks.generatePrivateCapitalNotice.mock.calls[1][3]).toEqual({ operationId: nextId, commitmentId: "commitment-a" });
     expect(uuid).toHaveBeenCalledTimes(2);
     await waitFor(() => expect(sessionStorage.getItem(key)).toBeNull());
   });

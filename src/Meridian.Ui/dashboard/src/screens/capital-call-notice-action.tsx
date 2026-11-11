@@ -10,16 +10,16 @@ import type { CapitalMutation } from "@/screens/private-capital-presenters";
 import type { GeneratePrivateCapitalNoticeRequest, PrivateCapitalScope } from "@/types/private-capital";
 
 interface RecoveryState { key: string; operation: PendingNoticeOperation | null; error: string | null; clearedMalformed: boolean; failedOperationId: string | null }
-export function CapitalCallNoticeAction({ scope, callId, investorId, hasNotice, locked, mutate }: {
-  scope: PrivateCapitalScope; callId: string; investorId: string; hasNotice: boolean; locked: boolean; mutate: CapitalMutation
+export function CapitalCallNoticeAction({ scope, callId, investorId, commitmentId, investorInstallmentCount, hasNotice, locked, mutate }: {
+  scope: PrivateCapitalScope; callId: string; investorId: string; commitmentId: string; investorInstallmentCount: number; hasNotice: boolean; locked: boolean; mutate: CapitalMutation
 }) {
-  const target = useMemo(() => noticeOperationTarget(scope, callId, investorId), [scope, callId, investorId]);
+  const target = useMemo(() => noticeOperationTarget(scope, callId, investorId, commitmentId), [scope, callId, investorId, commitmentId]);
   const key = noticeOperationStorageKey(target);
   const [recovery, setRecovery] = useState<RecoveryState>({ key: "", operation: null, error: null, clearedMalformed: false, failedOperationId: null });
   useEffect(() => {
-    try { setRecovery({ key, ...readPendingNoticeOperation(target), error: null, failedOperationId: null }); }
+    try { setRecovery({ key, ...readPendingNoticeOperation(target, { investorInstallmentCount }), error: null, failedOperationId: null }); }
     catch (cause) { setRecovery({ key, operation: null, clearedMalformed: false, failedOperationId: null, error: cause instanceof Error ? cause.message : "Notice recovery storage is unavailable." }); }
-  }, [key, target]);
+  }, [key, target, investorInstallmentCount]);
   const ready = recovery.key === key && !recovery.error;
   const pending = recovery.key === key ? recovery.operation : null;
   const failedOriginal = pending && recovery.failedOperationId === pending.operationId ? pending : null;
@@ -29,10 +29,10 @@ export function CapitalCallNoticeAction({ scope, callId, investorId, hasNotice, 
     let request: GeneratePrivateCapitalNoticeRequest | undefined;
     void mutate(failedOriginal ? "New notice after confirmed failure" : pending ? "Original notice operation recovery" : hasNotice ? "Notice draft regeneration" : "Notice draft generation", async signal => {
       if (!operation) {
-        const retained = readPendingNoticeOperation(target).operation;
+        const retained = readPendingNoticeOperation(target, { investorInstallmentCount }).operation;
         if (failedOriginal && retained?.operationId !== failedOriginal.operationId) throw new Error("The confirmed failed notice intent changed. Recover the retained operation again before starting a new notice.");
-        operation = !failedOriginal && retained ? retained : { version: 1, target, operationId: crypto.randomUUID() };
-        request = Object.freeze({ operationId: operation.operationId });
+        operation = !failedOriginal && retained ? retained : { version: 2, target, operationId: crypto.randomUUID() };
+        request = Object.freeze(operation.legacyOmittedSelector ? { operationId: operation.operationId } : { operationId: operation.operationId, commitmentId });
       }
       // Retain before every attempt, including uncertain retries. A failed write never sends.
       if (failedOriginal) replaceFailedNoticeOperation(failedOriginal, operation);
@@ -54,7 +54,7 @@ export function CapitalCallNoticeAction({ scope, callId, investorId, hasNotice, 
   }
   const action = failedOriginal ? "Generate new notice after confirmed failure" : pending ? "Recover original notice" : hasNotice ? "Regenerate notice" : "Generate notice";
   return <div className="space-y-1">
-    <Button variant="outline" disabled={locked || !ready} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !ready ? recovery.error ?? "Loading notice recovery for this investor." : undefined} onClick={generate}>{action} for {investorId}</Button>
+    <Button variant="outline" disabled={locked || !ready} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !ready ? recovery.error ?? "Loading notice recovery for this investor." : undefined} onClick={generate}>{action} for {investorId}{investorInstallmentCount > 1 ? ` · ${commitmentId}` : ""}</Button>
     {pending ? <><p role="status" className="text-xs text-muted-foreground">{failedOriginal ? "The original notice run failed; its audit remains retained. A new notice requires the explicit action above." : "An original notice operation remains unconfirmed. Recover it before starting another run."}</p>
       <TechnicalDetails label="Pending notice operation reference"><p className="break-all text-xs">{pending.operationId}</p></TechnicalDetails></> : null}
     {recovery.error ? <p role="alert" className="text-xs text-danger">{recovery.error}</p> : null}

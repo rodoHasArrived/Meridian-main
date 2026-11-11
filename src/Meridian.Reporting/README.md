@@ -26,6 +26,12 @@ change the source checkpoint even when period activity rows are unchanged. Legac
 retained population cannot expose verified generated amount proof and require fresh certification.
 `ReportingRetainedLedgerPopulationValidation` verifies the same payload, scoped journals, counts,
 certified dataset, and source digest at every retained-manifest and artifact-production boundary.
+Canonical parameter serialization repeats certification's ordinal external-dimension key ordering
+on read-back, so PostgreSQL JSONB property ordering cannot change retained parameter bindings.
+The existing normalized parameter bytes and hashes remain unchanged.
+Retained validation also accepts the exact previous raw-dictionary serialization of the same
+parameter DTO. It preserves the original frozen JSON and validates its original parameter and
+snapshot hashes; changed keys, values, flags, casing or other fields do not match.
 
 ## Layer responsibility
 
@@ -164,14 +170,16 @@ shared client-document renderer and secure distribution after independent releas
 
 The `capital-call-notice` template consumes only the exact investor's posted issuance journal.
 Its generation operation uses one caller-supplied UUID, bound by the server to the authenticated
-actor and exact tenant/company/entity/fund/book/currency/call/investor scope. Replaying that
+actor and exact tenant/company/entity/fund/book/currency/call/investor/selected-commitment scope. Replaying that
 operation recovers the original certified manifest and retained package, including after restart
 or a lost response, before querying current accounting inputs. A deliberate regeneration requires
 a new UUID. PostgreSQL run-store create claims fence competing hosts; file-backed compatibility
-stores cannot run this operation. The first notice slice requires exactly one complete posted
-installment for the investor within the selected call.
+stores cannot run this operation. Each notice addresses one complete posted commitment installment;
+an investor with multiple commitments in one call receives separate notices. An omitted legacy
+selector is accepted for new generation only when the investor has one call installment, and a
+retained omitted-selector operation keeps its original request hash for recovery.
 UI Shared resolves the frozen call plan, approved commitment revision, and atomic posting receipt;
-the authoritative source then filters by investor, capital account, call ID, and issuance kind and
+the authoritative source then filters by investor, capital account, call ID, commitment ID, and issuance kind and
 checks journal identity and balanced call amount. Notice certification retains the call plan hash,
 installment, dates, commitment revision and posted journal bindings. A deployment-owned
 `PrivateCapital:NoticeRecipients` mapping explicitly connects tenant/company/fund/investor to a
@@ -256,8 +264,13 @@ and downstream exports can retain a source-backed audit trace without relying on
 synthesis. Formula lineage includes brace references, bare identifier references, and `total(...)`
 references, while the evaluator supports nested `abs(...)`, `min(...)`, `max(...)`,
 `safeDivide(numerator, denominator[, fallback])`, `percent(numerator, denominator[, fallback])`,
-`basisPoints(numerator, denominator[, fallback])`, and `round(value[, decimals])` expressions for
-guarded P&L, exposure, contribution, return, and basis-point calculations. Custom formula grids
+`basisPoints(numerator, denominator[, fallback])`, `round(value[, decimals])`, and
+`if(condition, whenTrue, whenFalse)` expressions for guarded P&L, exposure, contribution, return,
+and basis-point calculations. Comparisons (`=`, `<>`, `<`, `<=`, `>`, `>=`) yield 1 or 0 and are
+numeric only; `if` evaluates just the selected branch, so `if({mv} = 0, 0, {pnl} / {mv})` cannot
+raise a division-by-zero warning. The same function list is mirrored by hand in
+`ReportingWorkflowService.IsFormulaFunctionIdentifier` and the dashboard's
+`isReportWriterFormulaFunction`; update all three together. Custom formula grids
 therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
 rows retain those source-field pointers while still marking the column as generated.
 Generated Reporting run manifests also retain the report-writer grid

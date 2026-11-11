@@ -107,6 +107,7 @@ classDiagram
     }
     class Meridian_Contracts_Ledger_PrivateCapitalNoticeSummaryDto["PrivateCapitalNoticeSummaryDto"] {
         +string CallId
+        +string CommitmentId
         +string DeliveryState
         +string GovernanceState
         +string InvestorId

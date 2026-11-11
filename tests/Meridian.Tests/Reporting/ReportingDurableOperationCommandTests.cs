@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
@@ -6,6 +7,7 @@ using Meridian.Identity.Auth;
 using Meridian.Reporting;
 using Meridian.Storage.Reporting;
 using Meridian.Tests.Storage.Reporting;
+using Meridian.Tests.Ui;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
 
@@ -197,6 +199,192 @@ public sealed class ReportingDurableOperationCommandTests(ReportingArtifactDatab
     }
 
     [ReportingDatabaseFact]
+    public async Task SelectedCommitmentNotices_RetainSeparateExactRuns_RefuseRetargetAndRecoverLegacyOmission()
+    {
+        var fixture = CapitalCallNoticeReportingTests.MultipleCommitments();
+        var legacyFixture = CapitalCallNoticeReportingTests.MultipleCommitments(singleLegacyCommitment: true);
+        var firstIntent = Guid.NewGuid();
+        var firstOperation = CapitalCallNoticeReportingService.BuildOperation(fixture.Scope, fixture.Call.CallId,
+            "investor-a", firstIntent, "operator", fixture.Call.Lines[0].CommitmentId);
+        var secondOperation = CapitalCallNoticeReportingService.BuildOperation(fixture.Scope, fixture.Call.CallId,
+            "investor-a", Guid.NewGuid(), "operator", fixture.Call.Lines[1].CommitmentId);
+        var legacyOperation = CapitalCallNoticeReportingService.BuildOperation(legacyFixture.Scope, legacyFixture.Call.CallId,
+            "investor-a", Guid.NewGuid(), "operator");
+        var store = new PostgresReportingRunStore(database.Options);
+        var host = new ReportingOrchestrationService(new DefaultReportingTemplateCatalog(),
+            new DeterministicReportingSectionRenderer(), () => DateTimeOffset.UtcNow, store);
+        var cases = new[]
+        {
+            (Fixture: fixture, Line: fixture.Call.Lines[0], Operation: firstOperation, Legacy: false),
+            (Fixture: fixture, Line: fixture.Call.Lines[1], Operation: secondOperation, Legacy: false),
+            (Fixture: legacyFixture, Line: legacyFixture.Call.Lines[0], Operation: legacyOperation, Legacy: true)
+        };
+        var retained = new Dictionary<string, ReportingOutputManifest>(StringComparer.Ordinal);
+        foreach (var selected in cases)
+        {
+            var certified = await CapitalCallNoticeReportingTests.CertifiedSelectionAsync(
+                selected.Fixture, selected.Line, selected.Operation, selected.Legacy);
+            var manifest = await host.ExecuteAsync(certified.Contract, CancellationToken.None);
+            ReportPackRunReadService.HasCertifiedImmutableGovernanceBinding(manifest).Should().BeTrue();
+            manifest.ResolvedParameters!.AccountingBasis.Should().Be(ReportingAccountingBasisDto.Management);
+            manifest.AuthoritativeSource!.AccountingBasis.Should().Be("Primary");
+            ReportPackRunReadService.HasCertifiedImmutableGovernanceBinding(manifest with
+            { AuthoritativeSource = manifest.AuthoritativeSource with { AccountingBasis = "Gaap" } }).Should().BeFalse();
+            manifest.CertifiedDatasetRows.Should().HaveCount(2);
+            manifest.CertifiedDatasetRows.Should().OnlyContain(row => row["journalEntryId"] == selected.Line.IssuanceJournalEntryId!.Value.ToString("D")
+                && row["externalGl.commitmentId"] == selected.Line.CommitmentId);
+            manifest.CertifiedDatasetRows.Sum(row => decimal.Parse(row["debit"], CultureInfo.InvariantCulture))
+                .Should().Be(selected.Line.Amount);
+            var model = DocumentsReportingPrimaryDocumentRenderer.BuildModel(manifest);
+            model.HeaderFields.Should().Contain(field => field.Label == "Commitment" && field.Value == selected.Line.CommitmentId);
+            model.HeaderFields.Should().Contain(field => field.Label == "Posted issuance journal"
+                && field.Value == selected.Line.IssuanceJournalEntryId!.Value.ToString("D"));
+            model.Tables.Single().Rows.Should().ContainSingle(row => row[0] == "Amount due"
+                && row[1] == selected.Line.Amount.ToString("G29", CultureInfo.InvariantCulture));
+            retained.Add(manifest.RunId, manifest);
+        }
+
+        var governed = retained.Values.ToDictionary(manifest => manifest.RunId,
+            manifest => Governed(manifest, GovernedReportingState.Draft), StringComparer.Ordinal);
+        var coordinator = Substitute.For<IReportingGovernanceEndpointCoordinator>();
+        coordinator.GetAsync(Arg.Any<string>(), Caller, Arg.Any<CancellationToken>())
+            .Returns(call => governed[call.ArgAt<string>(0)]);
+        coordinator.ListRetainedArtifactsAsync(Arg.Any<string>(), Caller, Arg.Any<CancellationToken>())
+            .Returns(Array.Empty<ReportingGovernedArtifactDescriptor>());
+        var restarted = Command(new PostgresReportingRunStore(database.Options), coordinator);
+        foreach (var selected in cases)
+        {
+            var original = retained[selected.Operation.RunId];
+            var replay = await restarted.Service.RunOperationAsync(Request(original), selected.Operation, "operator", Access, Caller);
+            replay.Run.RunId.Should().Be(original.RunId);
+            replay.Run.ResolvedParameters.Should().BeEquivalentTo(original.ResolvedParameters);
+            store.GetManifest("tenant-a", original.RunId).Should().BeEquivalentTo(original);
+            store.GetAudit("tenant-a", original.RunId).Select(entry => entry.Action).Should().Equal("RunGenerated");
+        }
+        var retarget = CapitalCallNoticeReportingService.BuildOperation(fixture.Scope, fixture.Call.CallId,
+            "investor-a", firstIntent, "operator", fixture.Call.Lines[1].CommitmentId);
+        retarget.RunId.Should().Be(firstOperation.RunId);
+        var collision = () => restarted.Service.RunOperationAsync(Request(retained[firstOperation.RunId]), retarget,
+            "operator", Access, Caller);
+        await collision.Should().ThrowAsync<ReportingGovernanceException>().WithMessage("*different request or authority scope*");
+        AssertCurrentInputsUnused(restarted);
+        await coordinator.DidNotReceive().CreateFromCompletedCertifiedManifestAsync(
+            Arg.Any<string>(), Arg.Any<ReportingGovernanceCallerContext>(), Arg.Any<CancellationToken>());
+        store.ListRuns("tenant-a", "company-a").Should().HaveCount(3);
+
+        var summaries = await new CapitalCallNoticeReportingService(fixture.Validator, null!, restarted.Service,
+            runStore: store, governance: new SummaryGovernanceRepository(governed))
+            .ReadNoticeSummariesAsync(fixture.Scope, Access);
+        summaries.Should().HaveCount(3);
+        foreach (var selected in cases)
+            summaries.Should().ContainSingle(summary => summary.RunId == selected.Operation.RunId
+                && summary.CommitmentId == selected.Line.CommitmentId && summary.CallId == selected.Fixture.Call.CallId
+                && summary.InvestorId == "investor-a");
+    }
+
+    [ReportingDatabaseFact]
+    public async Task HistoricalRawParameterManifest_PostgresPreservesFrozenBytesAndRejectsReboundTampering()
+    {
+        var fixture = CapitalCallNoticeReportingTests.MultipleCommitments(singleLegacyCommitment: true);
+        var operation = CapitalCallNoticeReportingService.BuildOperation(fixture.Scope, fixture.Call.CallId,
+            "investor-a", Guid.NewGuid(), "operator");
+        var certified = await CapitalCallNoticeReportingTests.CertifiedSelectionAsync(
+            fixture, fixture.Call.Lines[0], operation, legacyFilter: true);
+        var contract = certified.Contract;
+        var parameters = contract.ResolvedParameters!;
+        parameters = parameters with
+        {
+            Scope = parameters.Scope with
+            {
+                Dimensions = parameters.Scope.Dimensions! with
+                {
+                    ExternalGlDimensions = new Dictionary<string, string>
+                    { ["capitalCallId"] = fixture.Call.CallId, ["capitalActivityKind"] = "CapitalCallIssuance" }
+                }
+            }
+        };
+        const string sortedMap = "\"capitalActivityKind\":\"CapitalCallIssuance\",\"capitalCallId\":\"legacy-call\"";
+        const string rawMap = "\"capitalCallId\":\"legacy-call\",\"capitalActivityKind\":\"CapitalCallIssuance\"";
+        var frozenRaw = contract.CertifiedSnapshot!.ParametersCanonicalJson!.Replace(sortedMap, rawMap, StringComparison.Ordinal);
+        frozenRaw.Should().NotBe(contract.CertifiedSnapshot.ParametersCanonicalJson);
+        var frozenHash = Sha256Digest.ComputeUtf8(frozenRaw);
+        var snapshot = contract.CertifiedSnapshot with { ParametersCanonicalJson = frozenRaw, ParametersHash = frozenHash };
+        var readiness = contract.Readiness! with { ResolvedParameters = parameters };
+        var template = new DefaultReportingTemplateCatalog().Get(contract.TemplateId);
+        var manifest = new ReportingOutputManifest(operation.RunId, contract.TemplateId, contract.AsOfDate,
+            ReportingRunStatus.Draft, [], ReportingArtifactDeclaration.Build(operation.RunId, template, parameters,
+                includeCertifiedSourceSchedule: true).Select(artifact => artifact.ArtifactId).ToImmutableArray(),
+            1, ReportingRunTrigger.AdHoc, ReportWriterGrids: [], RenderedReportWriterGrids: [],
+            ReportWriterGridDiffs: [], RunSeriesId: operation.RunId, RunAttemptOrdinal: 1,
+            ResolvedTemplate: contract.ResolvedTemplate, ResolvedParameters: parameters, Readiness: readiness,
+            OperationalScope: contract.OperationalScope, ImmutableAccessScope: contract.ImmutableAccessScope,
+            CertifiedSnapshot: snapshot, AuthoritativeSource: contract.AuthoritativeSource,
+            CertifiedDatasetRows: contract.DatasetRows!.ToImmutableArray());
+        var snapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(manifest);
+        snapshot = snapshot with { SnapshotHash = snapshotHash, SnapshotId = "report-snapshot-" + snapshotHash[..32] };
+        contract = contract with { ResolvedParameters = parameters, Readiness = readiness, CertifiedSnapshot = snapshot };
+        var renderer = new DeterministicReportingSectionRenderer();
+        manifest = manifest with
+        {
+            CertifiedSnapshot = snapshot,
+            Sections = template.Sections
+            .Select(section => renderer.RenderSection(operation.RunId, contract, template, section, 1)).ToImmutableArray()
+        };
+        ReportingCertifiedManifestValidation.Validate(manifest);
+        ReportPackRunReadService.HasCertifiedImmutableGovernanceBinding(manifest).Should().BeTrue();
+        var audit = new[] { new ReportingRunAuditEntry(operation.RunId, DateTimeOffset.UtcNow, "RunGenerated", "operator", "Historical raw parameter fixture") };
+        var store = new PostgresReportingRunStore(database.Options);
+
+        await store.SaveAsync(manifest, audit, CancellationToken.None);
+        var restarted = new PostgresReportingRunStore(database.Options);
+        var reloaded = restarted.GetManifest("tenant-a", operation.RunId);
+
+        reloaded.Should().BeEquivalentTo(manifest);
+        reloaded!.CertifiedSnapshot!.ParametersCanonicalJson.Should().Be(frozenRaw);
+        reloaded.CertifiedSnapshot.ParametersHash.Should().Be(frozenHash);
+        reloaded.CertifiedSnapshot.SnapshotHash.Should().Be(snapshotHash);
+        ReportingCanonicalParameterSerializer.Serialize(reloaded.ResolvedParameters!).Should().NotBe(frozenRaw);
+        var retainedContext = new CertifiedReportingRunContext(reloaded.OperationalScope!, reloaded.ImmutableAccessScope!,
+            reloaded.CertifiedSnapshot, reloaded.AuthoritativeSource!, reloaded.CertifiedDatasetRows, reloaded.Readiness!);
+        var certification = new ReportingRunCertificationService();
+        certification.BuildGovernanceReadiness(operation.RunId, retainedContext, reloaded.Readiness!)
+            .SnapshotHash.Should().Be(snapshotHash);
+        var rewrittenHash = retainedContext with
+        {
+            Snapshot = retainedContext.Snapshot with
+            { ParametersHash = ReportingCanonicalParameterSerializer.ComputeHash(reloaded.ResolvedParameters!) }
+        };
+        var changedReceipt = () => certification.BuildGovernanceReadiness(operation.RunId, rewrittenHash, reloaded.Readiness!);
+        changedReceipt.Should().Throw<InvalidOperationException>().WithMessage("*exact readiness and source checkpoint*");
+        var revision = restarted.GetRevision("tenant-a", operation.RunId);
+        revision.Should().NotBeNull();
+        var changed = new[]
+        {
+            frozenRaw.Replace(rawMap, rawMap.Replace("capitalCallId", "unknownCallId"), StringComparison.Ordinal),
+            frozenRaw.Replace(rawMap, rawMap.Replace("legacy-call", "other-call"), StringComparison.Ordinal),
+            frozenRaw[..^1] + ",\"extra\":true}"
+        };
+        foreach (var forgedJson in changed)
+        {
+            var forged = manifest with
+            {
+                CertifiedSnapshot = snapshot with
+                { ParametersCanonicalJson = forgedJson, ParametersHash = Sha256Digest.ComputeUtf8(forgedJson) }
+            };
+            forged = forged with
+            {
+                CertifiedSnapshot = forged.CertifiedSnapshot! with
+                { SnapshotHash = ReportingCertifiedManifestValidation.ComputeSnapshotHash(forged) }
+            };
+            var save = () => restarted.SaveAsync(forged, audit, revision, CancellationToken.None);
+            await save.Should().ThrowAsync<InvalidDataException>().WithMessage("*mismatched source bindings*");
+        }
+        restarted.GetManifest("tenant-a", operation.RunId).Should().BeEquivalentTo(manifest);
+        restarted.GetAudit("tenant-a", operation.RunId).Select(entry => entry.Action).Should().Equal("RunGenerated");
+        restarted.ListRuns("tenant-a", "company-a").Should().ContainSingle();
+    }
+
+    [ReportingDatabaseFact]
     public async Task TwoCommandHosts_RacingToResumeGovernance_ReturnTheSameCanonicalDraft()
     {
         var (store, manifest, operation) = await SeedAsync();
@@ -359,5 +547,22 @@ public sealed class ReportingDurableOperationCommandTests(ReportingArtifactDatab
             RenderCount++;
             throw new InvalidOperationException("Injected terminal notice rendering failure.");
         }
+    }
+
+    private sealed class SummaryGovernanceRepository : IReportingGovernanceRepository
+    {
+        private readonly IReportingGovernanceTransaction _transaction = Substitute.For<IReportingGovernanceTransaction>();
+
+        public SummaryGovernanceRepository(IReadOnlyDictionary<string, GovernedReportingRun> runs)
+        {
+            _transaction.GetRunsAsync(Arg.Any<string>(), Arg.Any<IReadOnlyCollection<string>>(), Arg.Any<CancellationToken>())
+                .Returns(call => ValueTask.FromResult<IReadOnlyList<GovernedReportingRun>>(runs.Values
+                    .Where(run => run.Scope.TenantId == call.ArgAt<string>(0)
+                        && call.ArgAt<IReadOnlyCollection<string>>(1).Contains(run.RunId)).ToArray()));
+        }
+
+        public ValueTask<TResult> ExecuteTransactionAsync<TResult>(
+            Func<IReportingGovernanceTransaction, CancellationToken, ValueTask<TResult>> operation,
+            CancellationToken cancellationToken = default) => operation(_transaction, cancellationToken);
     }
 }

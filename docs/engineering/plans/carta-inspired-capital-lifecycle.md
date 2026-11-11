@@ -40,8 +40,9 @@ it. A generated notice is a reporting artifact. It is not delivery confirmation 
   authority. Reuse the reporting engine rather than adding a separate document renderer.
   Stable notice operation UUIDs recover the original certified package after response loss,
   restart and concurrent retries; deliberate regeneration uses a new UUID. PostgreSQL Reporting
-  run claims are required. This bounded notice slice supports one complete posted installment
-  per investor per call.
+  run claims are required. Notices address one complete posted commitment installment each;
+  multiple commitments for one investor in the same call receive separate notices. The browser
+  includes the selected commitment ID and maps each retained notice to that exact call line.
 - Expose authority, current balances, blockers, source links and supported actions through shared
   contracts/services. Extend `/accounting/capital-calls` under the existing Accounting navigation;
   use the existing `/api/ledger/...` route family and authenticated server-side actors.

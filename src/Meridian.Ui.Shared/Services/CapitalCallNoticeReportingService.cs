@@ -29,15 +29,19 @@ public sealed class CapitalCallNoticeSourceValidator(
 
     public async Task<(PrivateCapitalCallDto Call, PrivateCapitalCallLineDto Line,
         PrivateCapitalCommitmentDto Commitment, string Recipient, string ReviewGroup)> ResolveAsync(
-        PrivateCapitalScopeDto scope, string callId, string investorId, CancellationToken ct = default)
+        PrivateCapitalScopeDto scope, string callId, string investorId, string? commitmentId = null,
+        CancellationToken ct = default)
     {
+        if (commitmentId is not null)
+            commitmentId = PrivateCapitalAuthorityRules.Id(commitmentId, nameof(commitmentId));
         var call = await capitalStore.GetCallAsync(scope, callId, ct).ConfigureAwait(false)
             ?? throw Blocked("The retained capital call was not found in the requested scope.");
         if (call.Scope != scope)
             throw Blocked("The retained capital call scope does not match the notice scope.");
-        var lines = call.Lines.Where(line => line.InvestorId == investorId).ToArray();
+        var lines = call.Lines.Where(line => line.InvestorId == investorId
+            && (commitmentId is null || line.CommitmentId == commitmentId)).ToArray();
         if (lines.Length != 1)
-            throw Blocked("A notice requires exactly one retained call installment for its investor.");
+            throw Blocked("A notice requires one exact retained commitment installment for its investor; select a commitment when the call has multiple installments.");
         var line = lines[0];
         if (line.IssuanceJournalEntryId is null || line.IssuanceJournalEntryId == Guid.Empty
             || line.Amount <= 0 || line.IssuedAmount != line.Amount)
@@ -64,7 +68,7 @@ public sealed class CapitalCallNoticeSourceValidator(
     {
         var scope = Scope(parameters, access);
         var resolved = await ResolveAsync(scope, Required(parameters, "capitalCallId"),
-            parameters.Scope.InvestorId!, ct).ConfigureAwait(false);
+            parameters.Scope.InvestorId!, Required(parameters, "commitmentId"), ct).ConfigureAwait(false);
         var expected = CapitalCallNoticeReportingService.BuildTemplateParameters(
             resolved.Call, resolved.Line, resolved.Commitment, resolved.Recipient, resolved.ReviewGroup);
         if (parameters.Scope.EntityScopeKind != ReportingEntityScopeKindDto.Investor
@@ -76,7 +80,8 @@ public sealed class CapitalCallNoticeSourceValidator(
             || dimensions.EntityId != scope.EntityId
             || dimensions.InvestorId != resolved.Line.InvestorId
             || dimensions.CapitalAccountId != resolved.Line.CapitalAccountId
-            || dimensions.ExternalGlDimensions.Count != 2
+            || !HasCommitmentFilter(dimensions.ExternalGlDimensions, resolved.Line.CommitmentId,
+                allowLegacy: resolved.Call.Lines.Count(line => line.InvestorId == resolved.Line.InvestorId) == 1)
             || !dimensions.ExternalGlDimensions.TryGetValue("capitalCallId", out var callId) || callId != resolved.Call.CallId
             || !dimensions.ExternalGlDimensions.TryGetValue("capitalActivityKind", out var kind) || kind != "CapitalCallIssuance"
             || parameters.AsOfDate != resolved.Call.NoticeDate || parameters.PeriodId != resolved.Call.PeriodId
@@ -105,6 +110,11 @@ public sealed class CapitalCallNoticeSourceValidator(
     internal static string Required(ReportingRunParametersDto parameters, string key) =>
         parameters.TemplateParameters.TryGetValue(key, out var value) && !string.IsNullOrWhiteSpace(value)
             ? value : throw Blocked($"The notice is missing retained binding '{key}'.");
+
+    internal static bool HasCommitmentFilter(IReadOnlyDictionary<string, string> dimensions,
+        string commitmentId, bool allowLegacy) =>
+        dimensions.Count == 3 && dimensions.TryGetValue("commitmentId", out var selected) && selected == commitmentId
+        || allowLegacy && dimensions.Count == 2;
 
     private static PrivateCapitalScopeDto Scope(ReportingRunParametersDto parameters, ReportAccessQueryContext access)
     {
@@ -183,7 +193,8 @@ public sealed class CapitalCallNoticeReportingService(
                         CapitalCallNoticeSourceValidator.Required(parameters, "capitalCallId"), parameters.Scope.InvestorId!,
                         retained.GovernanceState.ToString(), packageId,
                         latestDelivery?.State.ToString() ?? (deliveries is null ? "Unavailable" : "NotQueued"),
-                        $"/reporting/runs/detail?runId={Uri.EscapeDataString(retained.RunId)}"));
+                        $"/reporting/runs/detail?runId={Uri.EscapeDataString(retained.RunId)}",
+                        CapitalCallNoticeSourceValidator.Required(parameters, "commitmentId")));
                 }
             }
             if (page.Count < 200)
@@ -194,18 +205,20 @@ public sealed class CapitalCallNoticeReportingService(
 
     public async Task<ReportingRunResultDto> GenerateAsync(PrivateCapitalScopeDto scope,
         string callId, string investorId, Guid operationId, string actor, ReportAccessQueryContext access,
-        ReportingGovernanceCallerContext caller, CancellationToken ct = default)
+        ReportingGovernanceCallerContext caller, string? commitmentId = null, CancellationToken ct = default)
     {
         scope = PrivateCapitalAuthorityRules.NormalizeScope(scope);
         callId = PrivateCapitalAuthorityRules.Id(callId, nameof(callId));
         investorId = PrivateCapitalAuthorityRules.Id(investorId, nameof(investorId));
+        if (commitmentId is not null)
+            commitmentId = PrivateCapitalAuthorityRules.Id(commitmentId, nameof(commitmentId));
         if (!access.RequireBoundScope || access.TenantId != scope.TenantId || access.CompanyId != scope.CompanyId)
             throw new UnauthorizedAccessException("The notice scope must match the authenticated tenant and company.");
-        var operation = BuildOperation(scope, callId, investorId, operationId, actor);
+        var operation = BuildOperation(scope, callId, investorId, operationId, actor, commitmentId);
         if (await reporting.TryRecoverOperationAsync(TemplateId, operation, actor, access, caller, ct)
                 .ConfigureAwait(false) is { } recovered)
             return recovered;
-        var resolved = await source.ResolveAsync(scope, callId, investorId, ct).ConfigureAwait(false);
+        var resolved = await source.ResolveAsync(scope, callId, investorId, commitmentId, ct).ConfigureAwait(false);
         var book = await journals.GetLedgerBookAsync(scope.LedgerBookId, ct).ConfigureAwait(false)
             ?? throw new ReportingAuthoritativeSourceUnavailableException("The authoritative notice book is unavailable.");
         var basis = book.AccountingBasis switch
@@ -220,7 +233,8 @@ public sealed class CapitalCallNoticeReportingService(
             CapitalAccountId: resolved.Line.CapitalAccountId, ExternalGlDimensions: new Dictionary<string, string>
             {
                 ["capitalCallId"] = callId,
-                ["capitalActivityKind"] = "CapitalCallIssuance"
+                ["capitalActivityKind"] = "CapitalCallIssuance",
+                ["commitmentId"] = resolved.Line.CommitmentId
             });
         var parameters = new ReportingRunParametersDto(
             new ReportingRunScopeDto(scope.FundProfileId, ReportingEntityScopeKindDto.Investor,
@@ -235,19 +249,28 @@ public sealed class CapitalCallNoticeReportingService(
     }
 
     internal static ReportingRunOperation BuildOperation(PrivateCapitalScopeDto scope, string callId,
-        string investorId, Guid operationId, string actor)
+        string investorId, Guid operationId, string actor, string? commitmentId = null)
     {
         if (operationId == Guid.Empty)
             throw new ArgumentException("A nonempty notice operation ID is required.", nameof(operationId));
         ArgumentException.ThrowIfNullOrWhiteSpace(actor);
         scope = PrivateCapitalAuthorityRules.NormalizeScope(scope);
-        var requestIdentity = JsonSerializer.Serialize(new
+        // Preserve the original request bytes for retained UUIDs whose body omitted the selector.
+        var requestIdentity = commitmentId is null ? JsonSerializer.Serialize(new
         {
             TemplateId,
             Scope = scope,
             CallId = PrivateCapitalAuthorityRules.Id(callId, nameof(callId)),
             InvestorId = PrivateCapitalAuthorityRules.Id(investorId, nameof(investorId)),
             Actor = actor.Trim()
+        }) : JsonSerializer.Serialize(new
+        {
+            TemplateId,
+            Scope = scope,
+            CallId = PrivateCapitalAuthorityRules.Id(callId, nameof(callId)),
+            InvestorId = PrivateCapitalAuthorityRules.Id(investorId, nameof(investorId)),
+            Actor = actor.Trim(),
+            CommitmentId = PrivateCapitalAuthorityRules.Id(commitmentId, nameof(commitmentId))
         });
         return new ReportingRunOperation($"capital-call-notice-op-{operationId:N}", Sha256Digest.ComputeUtf8(requestIdentity));
     }
@@ -291,9 +314,10 @@ public sealed class CapitalCallNoticeReportingService(
             || !parameters.TemplateParameters.TryGetValue("operationalNoticeTemplateId", out var template) || template != TemplateId
             || !parameters.TemplateParameters.TryGetValue("capitalCallId", out var callId)
             || !parameters.TemplateParameters.TryGetValue("capitalAccountId", out var capitalAccount)
+            || !parameters.TemplateParameters.TryGetValue("commitmentId", out var commitmentId)
             || !parameters.TemplateParameters.TryGetValue("entityId", out var entityId)
             || dimensions.EntityId != entityId || dimensions.CapitalAccountId != capitalAccount
-            || dimensions.ExternalGlDimensions.Count != 2
+            || !CapitalCallNoticeSourceValidator.HasCommitmentFilter(dimensions.ExternalGlDimensions, commitmentId, allowLegacy: true)
             || dimensions.ExternalGlDimensions.GetValueOrDefault("capitalCallId") != callId
             || dimensions.ExternalGlDimensions.GetValueOrDefault("capitalActivityKind") != "CapitalCallIssuance")
             return false;

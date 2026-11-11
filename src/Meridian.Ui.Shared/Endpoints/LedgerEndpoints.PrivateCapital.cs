@@ -165,7 +165,7 @@ public static partial class LedgerEndpoints
                 try
                 {
                     return Results.Json(await notices.GenerateAsync(scope, callId, investorId, request.OperationId, actor, access, caller,
-                        context.RequestAborted).ConfigureAwait(false), json);
+                        request.CommitmentId, context.RequestAborted).ConfigureAwait(false), json);
                 }
                 catch (ReportingNoticeOperationFailedException exception)
                 {

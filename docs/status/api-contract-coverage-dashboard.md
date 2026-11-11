@@ -15,7 +15,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | Endpoint coverage | 30.6% |
 | Workstation contract coverage | 4.0% |
 | Endpoints documented | 227 / 742 |
-| Workstation contracts documented | 39 / 974 |
+| Workstation contracts documented | 39 / 976 |
 
 ## Endpoint Coverage
 
@@ -1281,19 +1281,19 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `RecurringJournalOccurrenceDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:8` |
 | `RecurringJournalQueueDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:28` |
 | `RejectWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30` |
-| `RenderReportTemplateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652` |
-| `RenderReportTemplateResponseDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1657` |
+| `RenderReportTemplateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1687` |
+| `RenderReportTemplateResponseDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1692` |
 | `ReopenWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:32` |
-| `ReportAccessEvaluationDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1639` |
-| `ReportAccessModeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1613` |
-| `ReportAccessPolicyDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1632` |
-| `ReportAccessPrincipalDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1627` |
-| `ReportAccessPrincipalKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1621` |
+| `ReportAccessEvaluationDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1674` |
+| `ReportAccessModeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1648` |
+| `ReportAccessPolicyDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1667` |
+| `ReportAccessPrincipalDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1662` |
+| `ReportAccessPrincipalKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656` |
 | `ReportBrandingThemeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138` |
 | `ReportLedgerAmountBindingDto` | Documented | `src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6` |
-| `ReportPackAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1720` |
-| `ReportPackChangedLineDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1723` |
-| `ReportPackCreateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1773` |
+| `ReportPackAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1755` |
+| `ReportPackChangedLineDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758` |
+| `ReportPackCreateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808` |
 | `ReportPackDeliveryAccessLinkDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:882` |
 | `ReportPackDeliveryApprovalStepDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:910` |
 | `ReportPackDeliveryArtifactDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:871` |
@@ -1307,75 +1307,77 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReportPackDeliveryRecipientDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:904` |
 | `ReportPackDeliveryRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1010` |
 | `ReportPackDeliveryStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:854` |
-| `ReportPackEvidenceLinkDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1722` |
-| `ReportPackLineProvenanceDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1724` |
-| `ReportPackPublicationManifestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1742` |
-| `ReportPackPublishRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1755` |
-| `ReportPackRejectRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1768` |
-| `ReportPackRejectionMetadataDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1788` |
-| `ReportPackRestateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1794` |
-| `ReportPackRestatementMetadataDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1781` |
-| `ReportPackWorkflowActionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1765` |
-| `ReportPackWorkflowRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800` |
-| `ReportPackWorkflowStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1379` |
-| `ReportTemplateAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1673` |
-| `ReportTemplateDecisionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1716` |
-| `ReportTemplateDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1644` |
-| `ReportTemplateDraftRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1705` |
-| `ReportTemplateGovernanceRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1681` |
-| `ReportTemplateLifecycleStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1665` |
-| `ReportTemplateParameterDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1394` |
-| `ReportWriterAggregateFunctionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1406` |
-| `ReportWriterCellStyleDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1464` |
-| `ReportWriterChartDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1489` |
-| `ReportWriterChartRenderDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1500` |
-| `ReportWriterChartSeriesDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1495` |
-| `ReportWriterChartTypeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1481` |
-| `ReportWriterDiffDirectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1580` |
-| `ReportWriterDiffRowStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1571` |
-| `ReportWriterFilterDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1441` |
-| `ReportWriterFilterLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1528` |
-| `ReportWriterFilterOperatorDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1427` |
-| `ReportWriterFormatRuleDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1472` |
-| `ReportWriterFormulaDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1420` |
-| `ReportWriterFormulaLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1523` |
-| `ReportWriterGridColumnDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1508` |
-| `ReportWriterGridDataDictionaryFieldDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1534` |
-| `ReportWriterGridDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1447` |
-| `ReportWriterGridDiffCellDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1586` |
-| `ReportWriterGridDiffDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1600` |
-| `ReportWriterGridDiffRowDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1593` |
-| `ReportWriterGridKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1397` |
-| `ReportWriterGridLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1548` |
-| `ReportWriterGridRenderDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1557` |
-| `ReportWriterGridRowDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1513` |
-| `ReportWriterGridValidationCheckDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1543` |
-| `ReportWriterMetricDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1414` |
-| `ReportWriterMetricLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1518` |
-| `ReportingAccountingBasisDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1234` |
-| `ReportingConsolidationLevelDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1244` |
+| `ReportPackEvidenceLinkDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757` |
+| `ReportPackLineProvenanceDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1759` |
+| `ReportPackPublicationManifestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1777` |
+| `ReportPackPublishRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1790` |
+| `ReportPackRejectRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1803` |
+| `ReportPackRejectionMetadataDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1823` |
+| `ReportPackRestateRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1829` |
+| `ReportPackRestatementMetadataDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1816` |
+| `ReportPackWorkflowActionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1800` |
+| `ReportPackWorkflowRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1835` |
+| `ReportPackWorkflowStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1414` |
+| `ReportTemplateAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1708` |
+| `ReportTemplateDecisionRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1751` |
+| `ReportTemplateDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1679` |
+| `ReportTemplateDraftRequestDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1740` |
+| `ReportTemplateGovernanceRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1716` |
+| `ReportTemplateLifecycleStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1700` |
+| `ReportTemplateParameterDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1429` |
+| `ReportWriterAggregateFunctionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1441` |
+| `ReportWriterCellStyleDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1499` |
+| `ReportWriterChartDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1524` |
+| `ReportWriterChartRenderDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1535` |
+| `ReportWriterChartSeriesDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1530` |
+| `ReportWriterChartTypeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1516` |
+| `ReportWriterDiffDirectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1615` |
+| `ReportWriterDiffRowStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1606` |
+| `ReportWriterFilterDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1476` |
+| `ReportWriterFilterLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1563` |
+| `ReportWriterFilterOperatorDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1462` |
+| `ReportWriterFormatRuleDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1507` |
+| `ReportWriterFormulaDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1455` |
+| `ReportWriterFormulaLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1558` |
+| `ReportWriterGridColumnDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1543` |
+| `ReportWriterGridDataDictionaryFieldDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1569` |
+| `ReportWriterGridDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1482` |
+| `ReportWriterGridDiffCellDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1621` |
+| `ReportWriterGridDiffDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1635` |
+| `ReportWriterGridDiffRowDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1628` |
+| `ReportWriterGridKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432` |
+| `ReportWriterGridLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1583` |
+| `ReportWriterGridRenderDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1592` |
+| `ReportWriterGridRowDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1548` |
+| `ReportWriterGridValidationCheckDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1578` |
+| `ReportWriterMetricDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1449` |
+| `ReportWriterMetricLineageDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1553` |
+| `ReportingAccountingBasisDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1269` |
+| `ReportingConsolidationLevelDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1279` |
 | `ReportingDeploymentCapabilityDto` | Documented | `src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:16` |
 | `ReportingDeploymentComponentDto` | Gap | `src/Meridian.Contracts/Workstation/ReportingDeploymentDtos.cs:6` |
-| `ReportingDueScheduleRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1219` |
-| `ReportingEntityScopeKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1225` |
-| `ReportingFinalityDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1263` |
-| `ReportingLedgerBookSelectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1285` |
-| `ReportingOutputFormatDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1253` |
-| `ReportingRunAuditEntryDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1349` |
-| `ReportingRunAuditTrailDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1356` |
-| `ReportingRunParametersDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1289` |
-| `ReportingRunReadinessCheckDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1307` |
-| `ReportingRunReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1321` |
-| `ReportingRunReadinessStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1270` |
-| `ReportingRunRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1333` |
-| `ReportingRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1346` |
-| `ReportingRunScopeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1277` |
+| `ReportingDueScheduleRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1254` |
+| `ReportingEntityScopeKindDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1260` |
+| `ReportingFinalityDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1298` |
+| `ReportingLedgerBookSelectionDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1320` |
+| `ReportingOutputFormatDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1288` |
+| `ReportingRunAuditEntryDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1384` |
+| `ReportingRunAuditTrailDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1391` |
+| `ReportingRunParametersDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1324` |
+| `ReportingRunReadinessCheckDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1342` |
+| `ReportingRunReadinessDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1356` |
+| `ReportingRunReadinessStatusDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1305` |
+| `ReportingRunRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1368` |
+| `ReportingRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1381` |
+| `ReportingRunScopeDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1312` |
 | `ReportingScheduleDeliveryPlanDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1079` |
 | `ReportingScheduleDeliveryTargetDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1033` |
+| `ReportingSchedulePeriodCadenceDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1221` |
+| `ReportingSchedulePeriodFrequencyDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1210` |
 | `ReportingScheduleRecordDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1165` |
-| `ReportingScheduleRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1213` |
+| `ReportingScheduleRunResultDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1248` |
 | `ReportingScheduleStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1122` |
-| `ReportingScheduleUpsertRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1195` |
+| `ReportingScheduleUpsertRequestDto` | Documented | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1224` |
 | `ReportingScheduledReleaseHandoffDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1054` |
 | `ReportingScheduledReleaseHandoffStateDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1043` |
 | `ReportingStarterKitDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1139` |
@@ -1632,7 +1634,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `UpdateSecurityFieldRequest` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:41` |
 | `ValidateLedgerDraft` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:24` |
 | `ValuationFreshnessPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/MarkFreshnessDtos.cs:16` |
-| `VersionedReportTemplateIdDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1392` |
+| `VersionedReportTemplateIdDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1427` |
 | `WorkflowActionDto` | Gap | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:29` |
 | `WorkflowBlockerSummary` | Gap | `src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:42` |
 | `WorkflowDefinitionDto` | Gap | `src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:14` |
@@ -1746,7 +1748,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 515 mapped endpoint gap(s).
-- Document or intentionally suppress 935 workstation contract gap(s).
+- Document or intentionally suppress 937 workstation contract gap(s).
 
 ---
 

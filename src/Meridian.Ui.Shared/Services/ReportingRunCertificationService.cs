@@ -441,11 +441,12 @@ public sealed class ReportingRunCertificationService
         ArgumentNullException.ThrowIfNull(readiness);
         if (!string.Equals(certified.Readiness.EvaluationId, readiness.EvaluationId, StringComparison.Ordinal)
             || !string.Equals(certified.Readiness.EvidenceHash, readiness.EvidenceHash, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(
-                certified.Snapshot.ParametersHash,
-                ComputeParametersHash(
-                    readiness.ResolvedParameters,
-                    certified.Snapshot.RequiresCertifiedLedgerPresentation),
+            || !ReportingCanonicalParameterSerializer.MatchesRetained(
+                certified.Snapshot.ParametersCanonicalJson,
+                readiness.ResolvedParameters,
+                certified.Snapshot.RequiresCertifiedLedgerPresentation)
+            || !string.Equals(certified.Snapshot.ParametersHash,
+                ComputeHash(certified.Snapshot.ParametersCanonicalJson!),
                 StringComparison.OrdinalIgnoreCase)
             || !string.Equals(certified.Snapshot.SourceCheckpointId, certified.AuthoritativeSource.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(certified.Snapshot.SourceCheckpointHash, certified.AuthoritativeSource.CheckpointHash, StringComparison.OrdinalIgnoreCase))

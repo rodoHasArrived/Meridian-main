@@ -340,11 +340,14 @@ PostgreSQL `reporting_run_snapshots` and `reporting_schedule_snapshots` state.
 Capital-call notice generation additionally relies on PostgreSQL run-create claims for its stable
 operation UUID. Configure `MERIDIAN_REPORTING_CONNECTION_STRING` (or the documented ledger
 fallback) and preserve the run snapshots and create-claim tables together. The POST body contains
-`operationId`; retry an uncertain result with the same UUID and exact call/investor target. The
+`operationId` and the selected `commitmentId`; retry an uncertain result with the same UUID and
+exact call/investor/commitment target and body. The
 server checks current permissions and returns the original certified run without recertifying
-current source data. Deliberate regeneration uses a new UUID. The notice slice requires exactly
-one complete posted installment per investor per call; multiple commitments for that investor in
-one call must be handled outside this bounded notice workflow.
+current source data. Deliberate regeneration uses a new UUID. Each notice covers one complete
+posted commitment installment. Select each commitment separately when an investor has multiple
+commitments in the same call. Legacy omission of `commitmentId` is accepted for new generation
+only when the investor has a single call installment. Recover an older omitted-selector request
+with that original body; adding a selector under its existing UUID changes the request identity.
 
 If recovery confirms that exact retained operation is Failed, it returns
 `409 {code: "notice_operation_failed", runId: "<original run ID>"}`. Inspect the failed attempt,

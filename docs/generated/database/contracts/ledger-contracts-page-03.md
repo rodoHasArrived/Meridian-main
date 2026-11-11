@@ -441,6 +441,7 @@ classDiagram
         +IReadOnlyList~string~ StatementIds
     }
     class Meridian_Contracts_Ledger_GeneratePrivateCapitalNoticeRequest["GeneratePrivateCapitalNoticeRequest"] {
+        +string? CommitmentId
         +Guid OperationId
     }
     class Meridian_Contracts_Ledger_GeneratedPostingLineDto["GeneratedPostingLineDto"] {
