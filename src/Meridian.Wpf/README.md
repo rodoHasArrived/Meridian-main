@@ -1129,3 +1129,10 @@ summary/journal arrivals, missing summaries, basis preservation, scope resets, a
 pending proof invalidation.
 
 Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).
+
+### Posted-ledger account postings
+
+`PostedLedgerViewModel.SelectedTrialBalanceRow` loads the selected account's postings for the
+period into `AccountPostings` through `ILedgerReportsApiClient.GetAccountRunningBalanceAsync`,
+the same shared running-balance route the browser workstation uses. A response for a row or period
+that is no longer selected is discarded, and reloading the trial balance clears the selection.

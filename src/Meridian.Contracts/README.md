@@ -1970,6 +1970,11 @@ payload keeps investor-level account evidence, allocation rules, statement/resta
 audit drill-throughs on shared DTOs while naming broader cap-table, LP portal, live-payment, and
 forecasting behavior as planned rather than live.
 
+`LedgerAccountRunningBalanceDto` and `LedgerAccountRunningBalancePointDto` carry one account's
+posting history inside a ledger period with a running balance in the account's normal-balance
+sign, served from `UiApiRoutes.LedgerPeriodAccountRunningBalance`
+(`/api/ledger/periods/{periodId}/accounts/running-balance`).
+
 ## Security Master governance controls (2026-11)
 
 - **Contract-multiplier requirement.** `InstrumentTypeDescriptorCatalog.RequiresContractMultiplier(assetClass)` is true only when a descriptor whose *primary* asset class matches declares `multiplier` among its required economic terms (listed options and futures; not swaps, warrants or FX forwards). Compatible-class lists are deliberately ignored. Clients call this instead of matching asset-class names, so they cannot diverge.
