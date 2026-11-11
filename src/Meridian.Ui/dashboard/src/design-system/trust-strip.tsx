@@ -65,8 +65,6 @@ export function DesignSystemTrustStrip({
   const headline = attention && !attention.clear ? attention.title : decisionBrief && decisionBrief.statusTone !== "ready" ? decisionBrief.title : summaryValue;
   const statusLabel = attention?.statusLabel ?? decisionBrief?.statusLabel;
   const showEnvironment = viewModel.environment.variant !== "live" || provenance === "real";
-  const summaryVisibleLabel = [showEnvironment ? viewModel.environment.label : null,
-    badge.visible ? badge.label : null, statusLabel, headline].filter(Boolean).join(" ");
   const summaryAriaLabel = `Environment, provenance, and provider posture. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
@@ -91,7 +89,6 @@ export function DesignSystemTrustStrip({
             `workstation-trust-item-${summaryTone}`,
             `mds-status--${summaryTone}`
           )}
-          aria-label={summaryVisibleLabel}
           aria-describedby={summaryDescriptionId}
         >
           {showEnvironment ? <DesignSystemBadge className="workstation-trust-environment" variant={viewModel.environment.variant} dot data-environment={viewModel.environment.variant}>{viewModel.environment.label}</DesignSystemBadge> : null}

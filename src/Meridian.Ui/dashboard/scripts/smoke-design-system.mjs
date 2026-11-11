@@ -10,7 +10,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { chromium } from "playwright";
-import { chromiumLaunchOptions, parseDesignSystemOptions } from "./design-system-smoke-helpers.mjs";
+import { chromiumLaunchOptions, parseDesignSystemOptions, readOnlySmokeResponse } from "./design-system-smoke-helpers.mjs";
 import { runExpandedDesignSystemSmoke } from "./design-system-smoke-profile.mjs";
 
 const args = process.argv.slice(2);
@@ -30,7 +30,7 @@ const themes = {
   light: { canvas: "#F2F0EB", panel: "#F8F7F3", border: "#D2CDC3", signal: "#C56343", axis: "#29323A", focus: "#2D6FB3" },
   dark: { canvas: "#11171D", panel: "#171E25", border: "#2C3640", signal: "#D88466", axis: "#F1EFEA", focus: "#5C9FE5" }
 };
-const report = { sourceRoot, url: base, browser: "Chromium / Playwright", evidenceScope: "Synthetic fixture-only workstation; no backend or live-account validation", checks: [], accessibility: [], fixtureLimitations: [], consoleErrors: [], exceptions: [], assetFailures: [] };
+const report = { sourceRoot, url: base, browser: "Chromium / Playwright", evidenceScope: "Synthetic fixture-only workstation; no backend or live-account validation", checks: [], accessibility: [], fixtureLimitations: [], syntheticReadOnlyFixtures: [], consoleErrors: [], exceptions: [], assetFailures: [] };
 await mkdir(output, { recursive: true });
 const browser = await chromium.launch(chromiumLaunchOptions());
 const pendingResponses = [];
@@ -45,7 +45,16 @@ const knownFixtureGaps = new Set([
   "/api/providers/capability-matrix", "/api/security-master/corporate-actions/inbox",
   "/api/security-master/quality-report/latest"
 ]);
-function monitor(page) {
+async function monitor(page) {
+  await page.route("**/api/**", async route => {
+    const request = route.request();
+    // Never substitute support data until an actual fixture response has proved
+    // this server's provenance. A connected/production failure stays a failure.
+    const response = fixtureServer && readOnlySmokeResponse(request.url(), request.method());
+    if (!response) return route.continue();
+    report.syntheticReadOnlyFixtures.push(response.smokeFixture);
+    await route.fulfill({ status: response.status, contentType: "application/json", headers: response.headers, body: JSON.stringify(response.body) });
+  });
   page.setDefaultTimeout(20000);
   page.setDefaultNavigationTimeout(20000);
   page.on("pageerror", error => report.exceptions.push(error.message));
@@ -82,6 +91,28 @@ async function ready(page, workspace) {
   assert.equal(await page.locator(".workstation-frame").count(), 1, "The real workstation shell is rendered");
   assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true, `${workspace}: page-level horizontal overflow`);
   assert.equal(await page.locator("vite-error-overlay").count(), 0, "No Vite overlay");
+}
+
+async function portfolioProofRecord(page) {
+  assert.equal(new URL(page.url()).pathname, new URL(base + "/portfolio").pathname, "Canonical Portfolio route");
+  await page.getByRole("heading", { name: "Portfolio", level: 1, exact: true }).waitFor();
+  await ready(page, "Portfolio");
+  await page.getByRole("region", { name: "Portfolio workbench context", exact: true })
+    .getByRole("heading", { name: "Execution-linked holdings", exact: true }).waitFor();
+  const summary = page.getByText("Retained run records and evidence · separate from current holdings", { exact: true });
+  const disclosure = summary.locator("xpath=parent::details");
+  if (await disclosure.getAttribute("open") === null) await summary.click();
+  const explorer = page.getByRole("region", { name: "Portfolio Explorer", exact: true });
+  await explorer.getByRole("heading", { name: "Portfolio Explorer", exact: true }).waitFor();
+  await explorer.getByText("Demo portfolio data and Mean Reversion FX evidence are ready for review.", { exact: true }).waitFor();
+  const scope = explorer.getByLabel("Explorer scope", { exact: true });
+  await scope.getByText("Demo portfolio data", { exact: true }).waitFor();
+  await scope.getByText("Mean Reversion FX", { exact: true }).waitFor();
+  const grid = explorer.getByRole("grid", { name: "Portfolio Explorer records", exact: true });
+  const record = grid.getByRole("row").filter({ has: page.getByText("MSFT", { exact: true }) });
+  await record.waitFor();
+  assert.equal(await record.count(), 1, "Exact MSFT retained record, separate from open holdings");
+  return record;
 }
 async function tokens(page, expectedTheme) {
   await page.waitForFunction(() => {
@@ -136,14 +167,12 @@ async function scan(page, label) {
   // Each appearance scene gets a fresh document and axe engine. Reproduce the
   // same public interaction so no prior scan or transition can supply stale styles.
   const audit = await browser.newPage({ storageState: await page.context().storageState(), viewport: page.viewportSize(), reducedMotion: "reduce" });
-  monitor(audit);
+  await monitor(audit);
   try {
     await audit.emulateMedia({ colorScheme: await page.evaluate(() => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"), reducedMotion: "reduce" });
     await audit.goto(page.url());
     if (new URL(page.url()).pathname.endsWith("/portfolio")) {
-      await audit.getByRole("heading", { name: "Portfolio Explorer", exact: true }).waitFor();
-      await ready(audit, "Portfolio");
-      const record = audit.getByRole("row", { name: /MSFT/ }).first();
+      const record = await portfolioProofRecord(audit);
       await record.focus(); await audit.keyboard.press("Enter");
       await audit.getByRole("dialog", { name: "MSFT proof detail", exact: true }).waitFor();
       await audit.waitForFunction(() => document.querySelector("[role=dialog]")?.textContent.includes("$6,747.20"));
@@ -231,7 +260,7 @@ try {
   for (const theme of ["light", "dark"]) {
     for (const [width, height] of [[1920, 1080], [1440, 900], [1366, 768]]) {
       const page = await browser.newPage({ viewport: { width, height }, colorScheme: theme, reducedMotion: "reduce" });
-      monitor(page);
+      await monitor(page);
       await page.addInitScript(({ key, theme }) => localStorage.setItem(key, theme), { key: appearanceKey, theme });
       await page.goto(`${base}/trading`);
       await page.getByRole("button", { name: "Open strategy controls panel", exact: true }).waitFor();
@@ -277,7 +306,7 @@ try {
     }
   }
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion: "reduce" });
-  monitor(page);
+  await monitor(page);
   await page.goto(`${base}/trading`);
   await page.getByRole("button", { name: "Open strategy controls panel", exact: true }).waitFor();
   for (const workspace of workspaces) {
@@ -287,8 +316,7 @@ try {
     report.checks.push({ case: `navigation-${workspace}`, title: await page.title(), tableRows: await page.locator("main tbody tr").count(), screenshot: await screenshot(page, `after-${workspace.toLowerCase()}-1440`) });
   }
   await page.goto(`${base}/portfolio`);
-  await page.getByRole("heading", { name: "Portfolio Explorer", exact: true }).waitFor(); await ready(page, "Portfolio");
-  const record = page.getByRole("row", { name: /MSFT/ }).first();
+  const record = await portfolioProofRecord(page);
   await record.focus(); await page.keyboard.press("Enter");
   const proof = page.getByRole("dialog", { name: "MSFT proof detail", exact: true });
   await proof.waitFor();

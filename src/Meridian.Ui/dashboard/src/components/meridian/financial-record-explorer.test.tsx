@@ -17,6 +17,9 @@ describe("FinancialRecordExplorerShell", () => {
     renderExplorer();
 
     expect(screen.getByRole("heading", { name: "Ledger Explorer" })).toBeInTheDocument();
+    const inspect = screen.getByRole("link", { name: "Inspect record — selected record" });
+    expect(inspect).toHaveTextContent("Inspect record");
+    expect(inspect).toHaveAttribute("href", expect.stringMatching(/^\/accounting\/ledger/));
     expect(screen.getByLabelText("Explorer summary")).toHaveTextContent("$1,000.00");
     expect(screen.getByRole("cell", { name: "Cash" })).toBeInTheDocument();
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
