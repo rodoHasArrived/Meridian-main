@@ -18,6 +18,7 @@ describe("native workbench entry", () => {
     expect(isDesignSystemWorkbenchEntry(DESIGN_SYSTEM_WORKBENCH_PATH, false, "fixture-only")).toBe(false);
     expect(isDesignSystemWorkbenchEntry(DESIGN_SYSTEM_WORKBENCH_PATH, true, "backend-connected")).toBe(false);
     expect(isDesignSystemWorkbenchEntry(DESIGN_SYSTEM_WORKBENCH_PATH, true, "")).toBe(false);
+    expect(isDesignSystemWorkbenchEntry(DESIGN_SYSTEM_WORKBENCH_PATH, true, undefined)).toBe(false);
   });
 
   it("keeps startup preference reads out of the reserved preview entry", () => {
