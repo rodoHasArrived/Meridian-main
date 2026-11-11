@@ -1429,6 +1429,17 @@ describe("LiveQuotesScreen quick trade", () => {
       name: "Inspect AAPL ask level 1 at 188.07; Buy AAPL at 188.07"
     });
 
+    // The depth chart carries its own name and description: a single image (no wrapping
+    // role="img" around it), described by what it plots and where the levels are listed.
+    const depthCharts = screen.getAllByRole("img", { name: /depth profile/ });
+    expect(depthCharts).toHaveLength(1);
+    expect(depthCharts[0]).toHaveAccessibleName("Order-book depth profile for AAPL");
+    expect(depthCharts[0].tagName.toLowerCase()).toBe("svg");
+    expect(depthCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
+    expect(depthCharts[0]).toHaveAccessibleDescription(
+      "Cumulative bid and ask size around the mid price. The depth ladder below lists each price level."
+    );
+
     expect(bidLevel).toHaveAttribute("aria-controls", "live-quotes-depth-level-detail");
     expect(bidLevel).toHaveAttribute("aria-expanded", "true");
     expect(askLevel).toHaveAttribute("aria-expanded", "false");

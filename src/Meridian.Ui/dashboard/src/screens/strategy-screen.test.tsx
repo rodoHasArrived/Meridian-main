@@ -286,7 +286,12 @@ describe("StrategyScreen", () => {
 
     expect(screen.getByText("Distribution profile")).toBeInTheDocument();
     expect(screen.getByText("Residual distribution")).toBeInTheDocument();
-    expect(screen.getByLabelText("PlotTool residual distribution chart")).toBeInTheDocument();
+    // The label sits on the chart svg itself, not on a wrapping role="img" div, so there is
+    // exactly one image with this name and it is not nested inside another image.
+    const distributionCharts = screen.getAllByRole("img", { name: "PlotTool residual distribution chart" });
+    expect(distributionCharts).toHaveLength(1);
+    expect(distributionCharts[0].tagName.toLowerCase()).toBe("svg");
+    expect(distributionCharts[0].parentElement?.closest('[role="img"]')).toBeNull();
     expect(screen.getByText("Regression frame")).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "PlotTool moments table" })).toBeInTheDocument();
     expect(screen.getByText("PlotTool moments for the active strategy pair.")).toBeInTheDocument();
