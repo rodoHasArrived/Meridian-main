@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Meridian mark on dark surfaces">
+      <title>Meridian mark on dark surfaces</title>
+      
+      <path d="M 60.00 112.00 A 60.00 60.00 0 0 1 180.00 112.00" fill="none" stroke="#3D4853" stroke-width="1.35" stroke-linecap="round"></path>
+<path d="M 38.00 112.00 A 82.00 82.00 0 0 1 202.00 112.00" fill="none" stroke="#3D4853" stroke-width="1.35" stroke-linecap="round"></path>
+<path d="M 16.00 112.00 A 104.00 104.00 0 0 1 224.00 112.00" fill="none" stroke="#3D4853" stroke-width="1.35" stroke-linecap="round"></path>
+<circle cx="24.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="52.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="80.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="108.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="136.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="164.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="192.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="220.00" cy="108.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="24.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="52.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="80.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="108.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="136.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="164.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="192.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="220.00" cy="136.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="24.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="52.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="80.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="108.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="136.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="164.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="192.00" cy="164.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="52.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="80.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="108.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="136.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="164.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="192.00" cy="192.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="80.00" cy="220.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="108.00" cy="220.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="136.00" cy="220.00" r="4.40" fill="#BEC4CA"></circle>
+<circle cx="164.00" cy="220.00" r="4.40" fill="#BEC4CA"></circle>
+<line x1="120.00" y1="16.00" x2="120.00" y2="226.00" stroke="#F1EFEA" stroke-width="2.00" stroke-linecap="round"></line>
+<circle cx="120.00" cy="16.00" r="4.20" fill="#F1EFEA"></circle>
+<circle cx="120.00" cy="226.00" r="4.20" fill="#F1EFEA"></circle>
+<circle cx="220.00" cy="164.00" r="5.30" fill="#D88466"></circle>
+    </svg>

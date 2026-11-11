@@ -879,7 +879,10 @@ graphite global app bar, paper page bands, compact filter bars, and dense table 
 `Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
 workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
 `ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
-(`ConsoleAccentCyan`, `ModePaperColor`, chart primary line) is the brand signal only. New
+(`ConsoleAccentCyan`, `ModePaperColor`, chart primary line) is the brand signal only. Brand art in
+`Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
+window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
+the package reserves the light mark for graphite surfaces and WPF does not load SVG directly. New
 workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and

@@ -34,7 +34,7 @@
                 </Grid.RowDefinitions>
 
                 <StackPanel Grid.Row="0">
-                    <Image Source="pack://application:,,,/Meridian.Desktop;component/Assets/Brand/meridian-tile-256.png"
+                    <Image Source="pack://application:,,,/Meridian.Desktop;component/Assets/Brand/meridian-mark-light-256.png"
                            Width="56"
                            Height="56"
                            HorizontalAlignment="Left"

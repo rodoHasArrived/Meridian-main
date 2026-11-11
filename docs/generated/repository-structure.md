@@ -3263,7 +3263,9 @@ Meridian-main
 │   │   │   ├── CashFlowLadder.jsx
 │   │   │   ├── CashFlowLadder.prompt.md
 │   │   │   ├── chart-interaction.card.html
+│   │   │   ├── ChartAnnotations.d.ts
 │   │   │   ├── ChartAnnotations.jsx
+│   │   │   ├── ChartAnnotations.prompt.md
 │   │   │   ├── ChartCard.d.ts
 │   │   │   ├── ChartCard.jsx
 │   │   │   ├── ChartCard.prompt.md
@@ -3290,10 +3292,15 @@ Meridian-main
 │   │   │   ├── DepthChart.d.ts
 │   │   │   ├── DepthChart.jsx
 │   │   │   ├── DepthChart.prompt.md
+│   │   │   ├── DistributionRange.d.ts
 │   │   │   ├── DistributionRange.jsx
+│   │   │   ├── DistributionRange.prompt.md
+│   │   │   ├── DonutChart.d.ts
 │   │   │   ├── DonutChart.jsx
+│   │   │   ├── DonutChart.prompt.md
 │   │   │   ├── DotMatrix.d.ts
 │   │   │   ├── DotMatrix.jsx
+│   │   │   ├── DotMatrix.prompt.md
 │   │   │   ├── DrawdownChart.d.ts
 │   │   │   ├── DrawdownChart.jsx
 │   │   │   ├── DrawdownChart.prompt.md
@@ -3324,7 +3331,9 @@ Meridian-main
 │   │   │   ├── OwnershipGraph.d.ts
 │   │   │   ├── OwnershipGraph.jsx
 │   │   │   ├── OwnershipGraph.prompt.md
+│   │   │   ├── PeerComparisonStrip.d.ts
 │   │   │   ├── PeerComparisonStrip.jsx
+│   │   │   ├── PeerComparisonStrip.prompt.md
 │   │   │   ├── pnl-calendar.card.html
 │   │   │   ├── PnLCalendar.d.ts
 │   │   │   ├── PnLCalendar.jsx
@@ -3332,9 +3341,12 @@ Meridian-main
 │   │   │   ├── ScatterChart.d.ts
 │   │   │   ├── ScatterChart.jsx
 │   │   │   ├── ScatterChart.prompt.md
+│   │   │   ├── ScenarioSelector.d.ts
 │   │   │   ├── ScenarioSelector.jsx
+│   │   │   ├── ScenarioSelector.prompt.md
 │   │   │   ├── SmallMultiples.d.ts
 │   │   │   ├── SmallMultiples.jsx
+│   │   │   ├── SmallMultiples.prompt.md
 │   │   │   ├── Sparkline.d.ts
 │   │   │   ├── Sparkline.jsx
 │   │   │   ├── Sparkline.prompt.md
@@ -3351,7 +3363,9 @@ Meridian-main
 │   │   │   ├── viz-plates.card.html
 │   │   │   ├── viz-workbench.card.html
 │   │   │   ├── viz.js
+│   │   │   ├── WatchlistStrip.d.ts
 │   │   │   ├── WatchlistStrip.jsx
+│   │   │   ├── WatchlistStrip.prompt.md
 │   │   │   ├── WaterfallChart.d.ts
 │   │   │   ├── WaterfallChart.jsx
 │   │   │   ├── WaterfallChart.prompt.md
@@ -3826,12 +3840,14 @@ Meridian-main
 │   │   │   ├── global-search.card.html
 │   │   │   ├── GlobalSearch.d.ts
 │   │   │   ├── GlobalSearch.jsx
+│   │   │   ├── GlobalSearch.prompt.md
 │   │   │   ├── NavRail.d.ts
 │   │   │   ├── NavRail.jsx
 │   │   │   ├── NavRail.prompt.md
 │   │   │   ├── return-path.card.html
 │   │   │   ├── ReturnPath.d.ts
 │   │   │   ├── ReturnPath.jsx
+│   │   │   ├── ReturnPath.prompt.md
 │   │   │   ├── screen-composition.card.html
 │   │   │   ├── ScreenComposition.d.ts
 │   │   │   ├── ScreenComposition.jsx
@@ -3916,6 +3932,7 @@ Meridian-main
 │   │   ├── adoption-census-4.0.json
 │   │   ├── architecture.card.html
 │   │   ├── ARCHITECTURE.md
+│   │   ├── AUDIT_4_3_0.md
 │   │   ├── COMPONENT_API_REFERENCE.card.html
 │   │   ├── conformance.card.html
 │   │   ├── contract-audit.card.html
@@ -3925,6 +3942,7 @@ Meridian-main
 │   │   ├── COORDINATED_COMPONENTS.md
 │   │   ├── DEPLOYMENT_CHECKLIST_4_1.md
 │   │   ├── eligibility.card.html
+│   │   ├── EXPORT_4_3_0.md
 │   │   ├── GETTING_STARTED.md
 │   │   ├── METRICS.md
 │   │   ├── PERFORMANCE.md
@@ -4041,6 +4059,9 @@ Meridian-main
 │   │   ├── institutional-workstation.html
 │   │   ├── preview-common.css
 │   │   ├── reference-workbench.html
+│   │   ├── release-readiness.css
+│   │   ├── release-readiness.html
+│   │   ├── release-readiness.js
 │   │   ├── screen-recipes.html
 │   │   ├── spacing-radii.html
 │   │   ├── spacing-scale.html
@@ -4084,6 +4105,7 @@ Meridian-main
 │   │   ├── probe-td.png
 │   │   └── unit-4.2.0.jpg
 │   ├── scripts
+│   │   ├── build_package.mjs
 │   │   ├── bundle_extensions.json
 │   │   ├── check_contrast.py
 │   │   ├── check_design_system_governance.py
@@ -4093,6 +4115,7 @@ Meridian-main
 │   │   ├── codemod_4_0.py
 │   │   ├── compile_bundle_extensions.py
 │   │   ├── create-workstation.sh
+│   │   ├── export_release.py
 │   │   ├── generate_families.py
 │   │   ├── generate_inventory.py
 │   │   ├── governance-baseline.json
@@ -4390,6 +4413,7 @@ Meridian-main
 │   │   ├── A11Y_RUN_4.3.0.md
 │   │   ├── A11Y_STATIC_AUDIT_4.1.md
 │   │   ├── action-contract.html
+│   │   ├── agency-regression.mjs
 │   │   ├── books-loop.html
 │   │   ├── BROWSER_TEST_PLAN.md
 │   │   ├── conformance-rules.js
@@ -4399,10 +4423,12 @@ Meridian-main
 │   │   ├── mock-transport.js
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
+│   │   ├── release-browser.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
 │   │   ├── test_contrast.py
 │   │   ├── test_design_system_governance.py
+│   │   ├── test_release.py
 │   │   ├── unit-tests.html
 │   │   ├── unit.html
 │   │   └── verify-new-components.html
@@ -4442,10 +4468,12 @@ Meridian-main
 │   ├── uploads
 │   │   └── ChatGPT Image Apr 24, 2026, 03_58_29 PM.png
 │   ├── .designsystem-cleaned
+│   ├── .gitignore
 │   ├── .thumbnail
 │   ├── _adherence.oxlintrc.json
 │   ├── _ds_bundle.js
 │   ├── _ds_manifest.json
+│   ├── _preview_runtime.js
 │   ├── Accounting Reconciliation (standalone).html
 │   ├── BRAND_GUIDELINES.md
 │   ├── Canvas.dc.html
@@ -4458,8 +4486,12 @@ Meridian-main
 │   ├── ICONOGRAPHY.md
 │   ├── index.html
 │   ├── INSPIRATION_BRIEF.md
+│   ├── LICENSE
+│   ├── package-lock.json
+│   ├── package.json
 │   ├── PATTERNS.md
 │   ├── README.md
+│   ├── release-build.json
 │   ├── release.json
 │   ├── SKILL.md
 │   ├── styles.css
@@ -9791,6 +9823,8 @@ Meridian-main
 │   │   ├── Assets
 │   │   │   ├── Brand
 │   │   │   │   ├── meridian-hero.svg
+│   │   │   │   ├── meridian-mark-light-256.png
+│   │   │   │   ├── meridian-mark-light.svg
 │   │   │   │   ├── meridian-mark.svg
 │   │   │   │   ├── meridian-tile-256.png
 │   │   │   │   ├── meridian-tile.svg
