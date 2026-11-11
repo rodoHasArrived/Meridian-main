@@ -11,6 +11,13 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Audit browsing and complete CSV export share one HTTP authority. Execution records remain the
+existing retained host feed, with its brokerage-account guard; this is not a full WAL-history
+query. Operations timelines require their read permission and exact book/account-to-fund
+tenant/company ownership before timeline loading. Mismatched returned identities refuse the
+read. Export preserves submitted filters, selected columns and deterministic ordering, labels
+the two source namespaces, and refuses an oversized response rather than returning partial CSV.
+
 Workstation chart evidence includes bounded verification histories for exactly owned provider
 connections, projected from the existing credential audit without exposing credentials or actor
 metadata. Pending audit publication or malformed audit data refuses an apparently complete

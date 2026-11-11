@@ -6,13 +6,17 @@ using Meridian.Execution.Services;
 
 namespace Meridian.Ui.Shared.Services;
 
+public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
+
 /// <summary>
 /// Projects execution audit records into the shared cross-object audit timeline contract.
 /// </summary>
 public sealed class AuditTrailExplorerService
 {
+    public const int MaximumExportEntries = 250_000;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly IOperationsContinuityWorkflowService? _operationsContinuity;
+    public bool HasSource => _auditTrail is not null || _operationsContinuity is not null;
 
     public AuditTrailExplorerService(
         ExecutionAuditTrailService? auditTrail = null,
@@ -22,9 +26,23 @@ public sealed class AuditTrailExplorerService
         _operationsContinuity = operationsContinuity;
     }
 
-    public async Task<AuditTrailExplorerResultDto> SearchAsync(
+    public Task<AuditTrailExplorerResultDto> SearchAsync(
         AuditTrailExplorerQueryDto? query = null,
         CancellationToken ct = default)
+        => ReadAsync(query, null, complete: false, ct);
+
+    /// <summary>HTTP reads authorize each operations source before loading its timeline.</summary>
+    public Task<AuditTrailExplorerResultDto> SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: false, ct);
+
+    /// <summary>Every authorized retained match; the browser/1,000-row browse cap is never an export limit.</summary>
+    public Task<AuditTrailExplorerResultDto> ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: true, ct);
+
+    private async Task<AuditTrailExplorerResultDto> ReadAsync(AuditTrailExplorerQueryDto? query,
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>>? canReadWorkflow, bool complete, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         query ??= new AuditTrailExplorerQueryDto();
@@ -33,6 +51,8 @@ public sealed class AuditTrailExplorerService
         if (_auditTrail is not null)
         {
             var executionEntries = await _auditTrail.GetAllAsync(ct).ConfigureAwait(false);
+            if (complete && executionEntries.Count > MaximumExportEntries)
+                throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
             entries.AddRange(executionEntries.Select(static (entry, index) => MapExecution(entry, index + 1)));
         }
 
@@ -42,7 +62,12 @@ public sealed class AuditTrailExplorerService
             foreach (var workflow in workflows)
             {
                 ct.ThrowIfCancellationRequested();
+                if (canReadWorkflow is not null && !await canReadWorkflow(workflow, ct).ConfigureAwait(false)) continue;
                 var timeline = await _operationsContinuity.GetTimelineAsync(workflow.WorkflowId, ct).ConfigureAwait(false);
+                if (canReadWorkflow is not null && timeline.Any(entry => entry.WorkflowId != workflow.WorkflowId || entry.FundAccountId != workflow.FundAccountId))
+                    throw new InvalidDataException("An audit timeline did not match its authorized workflow/account identity.");
+                if (complete && timeline.Count > MaximumExportEntries - entries.Count)
+                    throw new AuditTrailExportLimitException("The complete retained audit source exceeds the export row quota. No partial export was produced.");
                 entries.AddRange(timeline.Select(static (entry, index) => MapOperations(entry, index + 1)));
             }
         }
@@ -51,10 +76,10 @@ public sealed class AuditTrailExplorerService
             .Where(entry => Matches(entry, query))
             .OrderByDescending(static entry => entry.OccurredAt)
             .ThenBy(static entry => entry.AuditId, StringComparer.OrdinalIgnoreCase)
+            .ThenBy(static entry => entry.ActionLedgerSource, StringComparer.Ordinal)
+            .ThenBy(static entry => entry.ObjectId, StringComparer.Ordinal)
             .ToArray();
-        var returned = matched
-            .Take(Math.Clamp(query.Limit, 1, 1_000))
-            .ToArray();
+        var returned = complete ? matched : matched.Take(Math.Clamp(query.Limit, 1, 1_000)).ToArray();
 
         return new AuditTrailExplorerResultDto(
             DateTimeOffset.UtcNow,

@@ -457,6 +457,22 @@ describe("TradingScreen", () => {
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("retains source order and fill prices and identifies their unavailable currency", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen(data, "/trading/orders");
+    const order = screen.getByRole("row", { name: /inspect order po-1/i });
+    const fill = screen.getByRole("row", { name: /inspect fill fl-1/i });
+    expect(within(order).getByText("414.20")).toBeInTheDocument();
+    expect(within(fill).getByText("948.20")).toBeInTheDocument();
+    expect(order).not.toHaveTextContent("$414.20");
+    expect(fill).not.toHaveTextContent("$948.20");
+    const basis = "Prices in source quote units · currency not supplied.";
+    expect(screen.getAllByText(basis)).toHaveLength(3);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveTextContent(basis);
+    await user.click(fill);
+    expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toHaveTextContent(basis);
+  });
+
   it("announces active workflow side panels from the trading shell view model", async () => {
     const user = userEvent.setup();
     await renderTradingScreen();

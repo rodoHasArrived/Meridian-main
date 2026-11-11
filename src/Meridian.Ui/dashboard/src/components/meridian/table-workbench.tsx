@@ -56,6 +56,8 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  const frame = useRef<HTMLDivElement>(null);
+  const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const session = useRef(0);
   const writeController = useRef<AbortController | null>(null);
   useEffect(() => {
@@ -74,6 +76,23 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     return () => { controller.abort(); writeController.current?.abort(); ++session.current; };
   }, [workbenchId, sourceKey]);
   const visibleColumns = visibleIds.map(columnId => columns.find(column => column.id === columnId)).filter((column): column is TableWorkbenchColumn<T> => Boolean(column));
+  useEffect(() => {
+    const scroller = frame.current?.querySelector<HTMLElement>(".dense-data-table-wrap");
+    if (!scroller) return;
+    const update = () => {
+      const left = scroller.scrollLeft > 1;
+      const right = scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
+      setScrollEdges(current => current.left === left && current.right === right ? current : { left, right });
+    };
+    update();
+    scroller.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    const observer = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(update);
+    observer?.observe(scroller);
+    const table = scroller.querySelector("table");
+    if (table) observer?.observe(table);
+    return () => { scroller.removeEventListener("scroll", update); window.removeEventListener("resize", update); observer?.disconnect(); };
+  }, [visibleIds, rows, density, search]);
   const filteredRows = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return query && getSearchText ? rows.filter(row => getSearchText(row).toLocaleLowerCase().includes(query)) : rows;
@@ -155,7 +174,9 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
       </div>
       {error ? <p role="alert" className="text-danger text-sm">{error}</p> : null}
       {notice ? <p role="status" className="text-muted-foreground text-xs">{notice}</p> : null}
-      <DenseDataTable {...tableProps} columns={visibleColumns} rows={filteredRows} sort={sort} onToggleSort={onToggleSort} />
+      <div ref={frame} className="table-workbench-frame" data-scroll-left={scrollEdges.left} data-scroll-right={scrollEdges.right}>
+        <DenseDataTable {...tableProps} columns={visibleColumns} rows={filteredRows} sort={sort} onToggleSort={onToggleSort} />
+      </div>
     </section>
   );
 }

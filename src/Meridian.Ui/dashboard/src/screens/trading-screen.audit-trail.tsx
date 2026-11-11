@@ -16,6 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { searchExecutionAuditTrail } from "@/lib/api/execution-audit.api";
+import { exportTableQuery } from "@/lib/table-workbench";
 import {
   buildAuditTrailPanelViewModel,
   type AuditTrailTone
@@ -62,7 +63,7 @@ export function ExecutionAuditTrailPanel() {
               Execution audit trail
             </CardTitle>
             <CardDescription>
-              Every recorded order, control, and operator action with its actor, outcome, and
+              Retained order, control, and operator actions with their actor, outcome, and
               action-ledger chain position.
             </CardDescription>
           </div>
@@ -100,8 +101,9 @@ export function ExecutionAuditTrailPanel() {
           </div>
         </form>
 
-        <TableWorkbench<(typeof vm.rows)[number]> workbenchId="trading-execution-audit" sourceKey={appliedSearch} sourceDescription="Execution action audit query; canonical actor, outcome, context and ledger status retained."
+        <TableWorkbench<(typeof vm.rows)[number]> workbenchId="trading-execution-audit" sourceKey={appliedSearch} sourceDescription="Authorized retained execution and Operations audit query; host execution retention limits apply. Actor, outcome, context and ledger status are retained."
  completePopulation={!loading && !error && Boolean(result) && !vm.truncated} rows={vm.rows} getRowId={(row)=>row.auditId} getRowAriaLabel={(row)=>row.ariaLabel}
+ onExportAll={!loading && !error && result ? (columns, _search, sort, signal) => exportTableQuery("trading-execution-audit", columns, appliedSearch, sort?.columnId, sort?.direction, signal) : undefined}
  ariaLabel="Execution audit trail entries" emptyText={loading ? "Loading audit trail…" : vm.emptyState}
  filterState={{search:appliedSearch}} onRestoreFilters={(filters)=>{setSearchText(filters.search??"");setAppliedSearch(filters.search??"");}}
  columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<>{row.occurredAt}</>),exportValue:(row)=>row.occurredAt},

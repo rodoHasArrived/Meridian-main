@@ -69,6 +69,8 @@ public static partial class WorkstationEndpoints
             if (!TryResolveRequiredTenantId(context, out _) || !TryResolveCurrentUser(context, out _)) return Results.Unauthorized();
             var dataExport = await TryExportWorkstationDataTableAsync(tableId, request, context, jsonOptions).ConfigureAwait(false);
             if (dataExport is not null) return dataExport;
+            var auditExport = await TryExportExecutionAuditAsync(tableId, request, context, jsonOptions).ConfigureAwait(false);
+            if (auditExport is not null) return auditExport;
             if (tableId != "strategy-runs") return Results.Problem("A complete export adapter is not registered for this source.", statusCode: 501);
             var columns = new Dictionary<string, string>(StringComparer.Ordinal)
             {

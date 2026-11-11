@@ -104,6 +104,7 @@ const dataToneClass: Record<TradingDataTone, string> = {
 };
 
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
+const TRADING_QUOTE_PRICE_BASIS = "Prices in source quote units · currency not supplied.";
 
 interface TradingRouteTab {
   id: string;
@@ -831,7 +832,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       <section id="trading-actions" className="workspace-section-band" aria-label="Order blotter and selected detail">
       <WorkspaceWorkbenchShell label="Trading orders workbench" switchInspector inspectorRole="region" inspector={(
 <div className="min-w-0 space-y-4">
-          <TradingBlotterDetailPanel id="trading-order-fill-detail" detail={orderDetailSource === "orders" ? blotterVm.selectedOrder : blotterVm.selectedFill} emptyText={orderDetailSource === "orders" ? blotterVm.orderEmptyText : blotterVm.fillEmptyText} selectedSourceLabel={orderDetailSource === "orders" ? "Selected from open orders" : "Selected from recent fills"} />
+          <TradingBlotterDetailPanel id="trading-order-fill-detail" detail={orderDetailSource === "orders" ? blotterVm.selectedOrder : blotterVm.selectedFill} emptyText={orderDetailSource === "orders" ? blotterVm.orderEmptyText : blotterVm.fillEmptyText} selectedSourceLabel={orderDetailSource === "orders" ? "Selected from open orders" : "Selected from recent fills"} priceBasis={TRADING_QUOTE_PRICE_BASIS} />
         </div>
       )}>
 
@@ -1039,6 +1040,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All open orders in the current authorized workspace snapshot; filters do not alter the scope of Cancel all."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
               completePopulation getSearchText={(row) => `${row.orderId} ${row.symbol} ${row.side} ${row.type} ${row.status}`}
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
@@ -1053,6 +1055,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(order) => { blotterVm.selectOrder(order.id); setOrderDetailSource("orders"); }}
               emptyText={blotterVm.orderEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
 
@@ -1075,6 +1078,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <TableWorkbench
               workbenchId="trading-fills" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
               sourceDescription="All recent fills in the authorized workspace snapshot, not a complete historical execution ledger."
+              exportContext={{ "Price basis": TRADING_QUOTE_PRICE_BASIS }}
               completePopulation getSearchText={(row) => `${row.fillId} ${row.orderId} ${row.symbol} ${row.side} ${row.venue}`}
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
@@ -1089,6 +1093,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               onRowSelect={(fill) => { blotterVm.selectFill(fill.id); setOrderDetailSource("fills"); }}
               emptyText={blotterVm.fillEmptyText}
             />
+            <p className="text-xs text-muted-foreground">{TRADING_QUOTE_PRICE_BASIS}</p>
           </CardContent>
         </Card>
         </div>
@@ -2313,12 +2318,14 @@ function TradingBlotterDetailPanel({
   id,
   detail,
   emptyText,
-  selectedSourceLabel
+  selectedSourceLabel,
+  priceBasis
 }: {
   id: string;
   detail: TradingBlotterDetail | null;
   emptyText: string;
   selectedSourceLabel: string;
+  priceBasis?: string;
 }) {
   return (
     <DetailRail
@@ -2336,6 +2343,7 @@ function TradingBlotterDetailPanel({
       {detail ? (
         <>
           <p className="mt-2 text-xs text-muted-foreground">{detail.subtitle}</p>
+          {priceBasis ? <p className="mt-2 text-xs text-muted-foreground">{priceBasis}</p> : null}
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </>
       ) : (
