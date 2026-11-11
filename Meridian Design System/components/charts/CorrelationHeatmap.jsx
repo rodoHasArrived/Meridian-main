@@ -17,7 +17,7 @@ function inject() {
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
 .mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
   color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;cursor:default;}
-.mds-corr__cell--diag{color:var(--text-muted,#6B737B);}
+.mds-corr__cell--diag{color:var(--text-muted,#606870);}
 .mds-corr__corner{background:var(--bg-medium,#EBE8E1);}
 `;
   const el = document.createElement("style");

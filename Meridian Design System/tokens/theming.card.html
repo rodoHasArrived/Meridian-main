@@ -10,14 +10,14 @@
   .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
   .brand-swatch { border: 1px solid var(--border); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
   .swatch-color { width: 100%; height: 80px; border: 1px solid var(--border); }
-  .swatch-code { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); }
+  .swatch-code { font-family: var(--font-data); font-size: 11px; color: var(--text-muted); }
   .density-row { display: flex; gap: 16px; align-items: center; padding: 8px; border-bottom: 1px solid var(--border); }
   .density-label { width: 100px; font-weight: 600; }
   .density-demo { flex: 1; display: flex; gap: 8px; }
   .btn-demo { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; }
   h2 { font-size: 16px; font-weight: 600; margin: 16px 0 12px; }
   h3 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 12px 0 8px; }
-  code { background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-mono); }
+  code { background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-data); }
 </style>
 </head>
 <body>
@@ -76,7 +76,7 @@
   <div class="density-row" style="background: var(--bg-medium); border-bottom: 2px solid var(--border);">
     <div class="density-label">Terminal</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 4px 9px; font-size: 10px;">Button</button>
+      <button type="button" class="btn-demo" style="padding: 4px 9px; font-size: 10px;">Button</button>
       <div style="padding: 4px 9px; border: 1px solid var(--border); font-size: 10px;">Input row height: 26px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="terminal"</code>
@@ -84,7 +84,7 @@
   <div class="density-row">
     <div class="density-label">Compact (dense)</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 6px 12px; font-size: 11px;">Button</button>
+      <button type="button" class="btn-demo" style="padding: 6px 12px; font-size: 11px;">Button</button>
       <div style="padding: 6px 12px; border: 1px solid var(--border); font-size: 11px;">Input row height: 28px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="compact"</code>
@@ -93,7 +93,7 @@
   <div class="density-row">
     <div class="density-label">Standard (default)</div>
     <div class="density-demo">
-      <button class="btn-demo">Button</button>
+      <button type="button" class="btn-demo">Button</button>
       <div style="padding: 8px 12px; border: 1px solid var(--border); font-size: 13px;">Input row height: 36px</div>
     </div>
     <code style="font-size: 10px;">no data-theme-density (default)</code>
@@ -102,7 +102,7 @@
   <div class="density-row">
     <div class="density-label">Spacious (review)</div>
     <div class="density-demo">
-      <button class="btn-demo" style="padding: 12px 20px; font-size: 14px;">Button</button>
+      <button type="button" class="btn-demo" style="padding: 12px 20px; font-size: 14px;">Button</button>
       <div style="padding: 12px 18px; border: 1px solid var(--border); font-size: 14px;">Input row height: 44px</div>
     </div>
     <code style="font-size: 10px;">data-theme-density="spacious"</code>
@@ -110,7 +110,7 @@
 </div>
 
 <h2 style="margin-top: 32px;">Usage</h2>
-<div style="background: var(--bg-medium); padding: 16px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border);">
+<div style="background: var(--bg-medium); padding: 16px; font-family: var(--font-data); font-size: 12px; border: 1px solid var(--border);">
 <pre style="margin: 0; color: var(--text-primary);">&lt;!-- Single brand, default density --&gt;
 &lt;html data-brand="indigo"&gt;
   &lt;body&gt;...&lt;/body&gt;
@@ -128,7 +128,7 @@ document.body.setAttribute('data-theme-density', 'spacious');</pre>
 
 <h2 style="margin-top: 32px;">CSS Custom Properties</h2>
 <p style="color: var(--text-secondary); margin: 0 0 12px; font-size: 12px;">All theme variables available at <code>--theme-*</code>; automatically mapped to component tokens.</p>
-<div style="background: var(--bg-active); padding: 12px; border: 1px solid var(--border); font-family: var(--font-mono); font-size: 11px;">
+<div style="background: var(--bg-active); padding: 12px; border: 1px solid var(--border); font-family: var(--font-data); font-size: 11px;">
 <div>--theme-accent: <code style="background: transparent;">#C56343</code></div>
 <div>--theme-accent-dim: <code style="background: transparent;">#CB6E4E</code></div>
 <div>--theme-primary-text: <code style="background: transparent;">#20252B</code></div>

@@ -23,10 +23,10 @@ function inject() {
   color:var(--text-primary,#20252B);}
 .mds-toast__detail{font-family:var(--font-data);font-size:11px;color:var(--text-secondary,#535C65);margin-top:2px;}
 .mds-toast__close{appearance:none;border:none;background:transparent;cursor:pointer;
-  color:var(--text-muted,#6B737B);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
+  color:var(--text-muted,#606870);font-size:16px;line-height:1;padding:0;flex-shrink:0;}
 .mds-toast__close:hover{color:var(--text-primary,#20252B);}
 .mds-toast__action{appearance:none;border:1px solid var(--brand-signal,#C56343);background:transparent;
-  cursor:pointer;color:var(--brand-signal-dim,#A64E33);font-family:var(--font-body);font-size:12px;
+  cursor:pointer;color:var(--brand-signal-ink,#944A32);font-family:var(--font-body);font-size:12px;
   font-weight:600;padding:4px 10px;margin-top:8px;align-self:flex-start;border-radius:var(--radius-button,2px);}
 .mds-toast__action:hover{background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-toast__action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px;}

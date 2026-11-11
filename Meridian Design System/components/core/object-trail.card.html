@@ -14,7 +14,7 @@ function Screen(){const trail=useObjectTrail();const [note,setNote]=React.useSta
   <div className="page">
    <main className="plane">
     <div className="sub">The screen records its own arrivals — the trail never infers navigation.</div>
-    <div className="open">{CATALOG.map(o=><button key={o.id} onClick={()=>{trail.visit(o);setNote(null)}}><em>{o.type}</em><b>{o.label}</b></button>)}</div>
+    <div className="open">{CATALOG.map(o=><button type="button" key={o.id} onClick={()=>{trail.visit(o);setNote(null)}}><em>{o.type}</em><b>{o.label}</b></button>)}</div>
     {current?<ObjectHeader type={current.type} id={current.id} name={current.label} version={current.version} condition={trail.moved(current)?"superseded":"confirmed"} asOf="2026-07-31" context={{portfolio:"General Account",book:"STAT"}}/>:<p style={{fontSize:12,color:"var(--text-muted)"}}>Open an object above, then press ‹ to go back. JE-88213 was viewed at v18 and is now v21 — going back to it produces a notice rather than a silent load.</p>}
    </main>
    <aside className="rail">

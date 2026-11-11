@@ -1,11 +1,9 @@
 // Meridian strategy-onboarding — template screen. Mounted by the DC via <x-import>; reads design-system
 // components from the compiled bundle.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  Stepper, ProgressBar, Input, TextArea, Select, SegmentedControl, RadioGroup,
-  Callout, KeyValueGrid
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Stepper, ProgressBar, Input, TextArea, Select, SegmentedControl, RadioGroup, Callout, KeyValueGrid;
 const { useState } = React;
 
 const NAV = [
@@ -35,7 +33,8 @@ const STEPS = [
 
 const FIELD_CHIPS = ["PRICE", "YTM", "DURATION", "RATING", "SPREAD_TSY", "COUPON", "CLEAN_PRICE", "CONVEXITY"];
 
-function StrategyOnboardingScreen() {
+function StrategyOnboardingScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Stepper, ProgressBar, Input, TextArea, Select, SegmentedControl, RadioGroup, Callout, KeyValueGrid } = window.MeridianDesignSystem_205d17);
   const [step, setStep] = useState(0);
   const [name, setName] = useState("Bond Carry & Roll");
   const [asset, setAsset] = useState("fixed-income");
@@ -126,7 +125,7 @@ function StrategyOnboardingScreen() {
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="New Strategy" environment="FIXTURE" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="New Strategy" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="builder" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 24, display: "flex", justifyContent: "center" }}>
@@ -136,6 +135,7 @@ function StrategyOnboardingScreen() {
               <Eyebrow>New strategy</Eyebrow>
               <h1 style={{ font: "600 24px var(--font-display)", margin: "2px 0 0", color: "var(--text-primary)" }}>Set up your strategy</h1>
             </div>
+          <DataStateSwitch state={dataState} label="Strategy setup">
 
             <Stepper steps={STEPS} activeStep={step} onStepChange={setStep} showStepNumber={false} />
             <ProgressBar value={Math.round(((step + 1) / STEPS.length) * 100)} showValue label={"Step " + (step + 1) + " of " + STEPS.length} />
@@ -155,7 +155,8 @@ function StrategyOnboardingScreen() {
                 ? <Button variant="primary" size="sm" onClick={() => setStep((s) => Math.min(STEPS.length - 1, s + 1))}>Continue</Button>
                 : <Button variant="primary" size="sm">Create &amp; run backtest</Button>}
             </div>
-          </div>
+                    </DataStateSwitch>
+        </div>
         </main>
       </div>
       <StatusBar items={[

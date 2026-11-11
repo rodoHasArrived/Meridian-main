@@ -7,7 +7,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
     <nav aria-label="breadcrumb" style={{
       display:"flex", alignItems:"center", gap:6,
       fontFamily:"var(--font-data)", fontSize:12,
-      color:"var(--text-muted,#6B737B)",
+      color:"var(--text-muted,#606870)",
       flexWrap:"wrap",
     }}>
       {items.map((item, i) => {
@@ -30,13 +30,12 @@ export function Breadcrumb({ items = [], separator = "·" }) {
                 onClick={item.onClick}
                 style={{
                   appearance:"none", border:"none", background:"transparent", padding:0,
-                  color:"var(--brand-signal,#C56343)", fontFamily:"var(--font-data)", fontSize:12,
+                  color:"var(--brand-signal-ink,#944A32)", fontFamily:"var(--font-data)", fontSize:12,
                   cursor:item.onClick ? "pointer" : "default",
                   textDecoration:"none",
-                  transition:"opacity .1s ease",
                 }}
-                onMouseEnter={e => { if (item.onClick) e.currentTarget.style.opacity = "0.7"; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                onMouseEnter={e => { if (item.onClick) e.currentTarget.style.textDecoration = "underline"; }}
+                onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
               >
                 {item.label}
               </button>

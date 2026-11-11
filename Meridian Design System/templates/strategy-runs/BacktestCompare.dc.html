@@ -165,7 +165,7 @@ class Component extends DCLogic {
       limitedNote: A && B && !seriesOk ? (A.legacy ? A.id : B.id) + " carries no raw series — StrategyRunModel keeps legacy reported figures separate from derived evidence, so only the tabular comparison is shown." : "",
       curvesSubtitle: A && B ? "B " + (B ? B.id : "") + " (graphite) vs A " + (A ? A.id : "") + " (slate, dashed) · indexed to 100" : "",
       eqReadout: seriesOk ? [{ label: "windows", value: (A.request.window ? K.isoD(A.request.window.start) : "—") + "… / " + (B.request.window ? K.isoD(B.request.window.start) : "—") + "…" }] : [],
-      eqSeries: seriesOk ? [{ label: "B · " + B.id, color: "var(--series-actual, #29323A)", points: sB.values }, { label: "A · " + A.id, color: "var(--series-prior, #5D7286)", points: sA.values, dashed: true, area: false }] : [],
+      eqSeries: seriesOk ? [{ label: "B · " + B.id, color: "var(--series-actual, #29323A)", points: sB.values }, { label: "A · " + A.id, color: "var(--series-prior, #7890A4)", points: sA.values, dashed: true, area: false }] : [],
       monthLabels: (sB.labels.length ? sB : sA).labels,
       aId: A ? A.id : "—", bId: B ? B.id : "—",
       ddA: sA.values.length ? K.ddPct(sA.values) : [], ddB: sB.values.length ? K.ddPct(sB.values) : [],

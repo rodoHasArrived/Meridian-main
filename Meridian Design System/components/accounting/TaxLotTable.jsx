@@ -18,7 +18,7 @@ function inject() {
 .tlt thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;z-index:1;
   background:var(--bg-medium,#EBE8E1);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tlt thead th:last-child{border-right:none;}
 .tlt th.tlt--r{text-align:right;}
@@ -33,15 +33,15 @@ function inject() {
 .tlt tbody tr.tlt__row--on td{background:var(--bg-active,#E7EDF2);}
 .tlt tbody tr.tlt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .tlt tbody tr.tlt__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.tlt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
+.tlt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .tlt__date{color:var(--text-secondary,#535C65);}
 .tlt__sym{font-weight:600;color:var(--text-primary,#20252B);}
-.tlt__days{color:var(--text-muted,#6B737B);font-size:11px;}
+.tlt__days{color:var(--text-muted,#606870);font-size:11px;}
 .tlt__hp{display:inline-flex;align-items:center;gap:5px;border:1px solid;border-radius:var(--radius-chip,2px);
   padding:2px 7px;font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;white-space:nowrap;line-height:1.3;}
-.tlt__hp--short{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
-.tlt__hp--long{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal,#C56343);}
+.tlt__hp--short{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
+.tlt__hp--long{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);}
 .tlt__hp__dot{height:5px;width:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
 .tlt__pct{font-family:var(--font-data);font-size:10.5px;margin-left:7px;}
 .tlt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
@@ -149,7 +149,7 @@ export function TaxLotTable({
               <td className="tlt--r">
                 <AmountCell value={r.gain} currency={currency} mode="pnl" signed zeroDash />
                 {isFinite(r.pct) && (
-                  <span className="tlt__pct" style={{ color: r.gain < 0 ? "var(--red-dim,#7D322F)" : r.gain > 0 ? "var(--green-dim,#375D46)" : "var(--text-muted,#6B737B)" }}>
+                  <span className="tlt__pct" style={{ color: r.gain < 0 ? "var(--red-dim,#883832)" : r.gain > 0 ? "var(--green-dim,#225840)" : "var(--text-muted,#606870)" }}>
                     {r.gain >= 0 ? "+" : "\u2212"}{Math.abs(r.pct).toFixed(2)}%
                   </span>
                 )}

@@ -8,6 +8,9 @@
   --theme-accent: #C56343;
   --theme-accent-dim: #CB6E4E;
   --theme-accent-hover: #D2795A;
+  /* A light-identity input, rather than a direct output override: OS dark can
+     then supply readable dark ink without losing a specificity contest. */
+  --theme-text-on-accent: #0D1217;
 
   --theme-primary-text: #20252B;
   --theme-secondary-text: #535C65;
@@ -124,7 +127,7 @@ html[data-brand="indigo"] {
   --theme-accent-dim: #4338CA;
   --theme-accent-hover: #5F62EE;
   --theme-brand-color: #4F46E5;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 html[data-brand="emerald"] {
@@ -132,7 +135,7 @@ html[data-brand="emerald"] {
   --theme-accent-dim: #0A6748;
   --theme-accent-hover: #0E875F;
   --theme-brand-color: #0B7A55;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 html[data-brand="rose"] {
@@ -140,7 +143,7 @@ html[data-brand="rose"] {
   --theme-accent-dim: #BE123C;
   --theme-accent-hover: #D8274E;
   --theme-brand-color: #E11D48;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 html[data-brand="slate"] {
@@ -148,7 +151,7 @@ html[data-brand="slate"] {
   --theme-accent-dim: #475569;
   --theme-accent-hover: #59687B;
   --theme-brand-color: #64748B;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 html[data-brand="cyan"] {
@@ -156,7 +159,7 @@ html[data-brand="cyan"] {
   --theme-accent-dim: #0B5E76;
   --theme-accent-hover: #0E7490;
   --theme-brand-color: #0C6A85;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 html[data-brand="amber"] {
@@ -164,7 +167,7 @@ html[data-brand="amber"] {
   --theme-accent-dim: #8F4108;
   --theme-accent-hover: #B45309;
   --theme-brand-color: #A34A08;
-  --text-on-accent: #FFFFFF;
+  --theme-text-on-accent: #FFFFFF;
 }
 
 /* ── Map theme tokens to component tokens ── */
@@ -175,6 +178,7 @@ html[data-brand="amber"] {
   --accent: var(--theme-accent);
   --accent-dim: var(--theme-accent-dim);
   --accent-hover: var(--theme-accent-hover);
+  --text-on-accent: var(--theme-text-on-accent);
   --text-primary: var(--theme-primary-text);
   --text-secondary: var(--theme-secondary-text);
   --text-muted: var(--theme-muted-text);

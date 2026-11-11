@@ -20,28 +20,28 @@ function inject() {
 .rec__seg{display:inline-flex;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);overflow:hidden;background:var(--bg-light,#F8F7F3);}
 .rec__seg button{appearance:none;border:none;background:transparent;cursor:pointer;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-muted,#6B737B);padding:4px 10px;line-height:1.4;border-left:1px solid var(--border,#D2CDC3);}
+  color:var(--text-muted,#606870);padding:4px 10px;line-height:1.4;border-left:1px solid var(--border,#D2CDC3);}
 .rec__seg button:first-child{border-left:none;}
 .rec__seg button[aria-pressed="true"]{background:var(--bg-medium,#EBE8E1);color:var(--text-primary,#20252B);box-shadow:inset 0 -2px 0 var(--interaction-selected,#496C8F);}
 .rec__searchwrap{position:relative;display:flex;align-items:center;}
-.rec__searchicon{position:absolute;left:8px;width:11px;height:11px;color:var(--text-muted,#6B737B);pointer-events:none;}
+.rec__searchicon{position:absolute;left:8px;width:11px;height:11px;color:var(--text-muted,#606870);pointer-events:none;}
 .rec__cols{display:grid;grid-template-columns:1fr 1fr;}
 .rec__side{min-width:0;display:flex;flex-direction:column;}
 .rec__side + .rec__side{border-left:1px solid var(--border,#D2CDC3);}
 .rec__head{display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:9px 12px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border,#D2CDC3);}
 .rec__title{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);}
 .rec__counts{display:flex;gap:6px;}
 .rec__chip{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,2px);padding:1px 6px;line-height:1.4;white-space:nowrap;}
-.rec__chip--ok{background:var(--green-a10,rgba(74,124,94,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.rec__chip--open{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
+.rec__chip--ok{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.rec__chip--open{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
 .rec__tablewrap{overflow-x:auto;}
 .rec__table{width:100%;border-collapse:collapse;table-layout:auto;}
 .rec__table th{position:sticky;top:0;background:var(--bg-light,#F8F7F3);text-align:left;
   font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
-  color:var(--text-muted,#6B737B);padding:6px 10px;border-bottom:1px solid var(--border,#D2CDC3);
+  color:var(--text-muted,#606870);padding:6px 10px;border-bottom:1px solid var(--border,#D2CDC3);
   white-space:nowrap;cursor:pointer;user-select:none;}
 .rec__table th:hover{color:var(--text-primary,#20252B);}
 .rec__table th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--text-primary,#20252B);}
@@ -52,25 +52,25 @@ function inject() {
 .rec__caret--desc{border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;}
 .rec__table td{font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);
   padding:6px 10px;border-top:1px solid var(--border,#D2CDC3);vertical-align:baseline;white-space:nowrap;}
-.rec__table td.mono{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-muted,#6B737B);}
+.rec__table td.mono{font-family:var(--font-data);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-muted,#606870);}
 .rec__table td.memo{white-space:normal;max-width:0;width:99%;}
 .rec__table td.num{text-align:right;}
 .rec__table tbody tr{position:relative;}
 .rec__table tbody tr td:first-child{position:relative;padding-left:8px;}
-.rec__table tr.matched td{background:var(--green-a10,rgba(74,124,94,.06));}
-.rec__table tr.open td{background:var(--orange-a10,rgba(183,121,31,.06));}
+.rec__table tr.matched td{background:var(--green-a10,rgba(46,118,85,.06));}
+.rec__table tr.open td{background:var(--orange-a10,rgba(152,103,23,.06));}
 .rec__status-pill{display:inline-block;width:7px;height:7px;border-radius:50%;}
-.rec__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#6B737B);text-align:center;}
+.rec__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .rec__summary{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center;
   padding:10px 14px;border-top:2px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1);}
 .rec__sumcell{display:flex;flex-direction:column;gap:2px;min-width:0;}
 .rec__sumlabel{font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#6B737B);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);}
 .rec__statusbox{display:flex;align-items:center;gap:7px;justify-self:end;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;border:1px solid;border-radius:var(--radius-chip,2px);padding:4px 10px;}
-.rec__statusbox--bal{background:var(--green-a10,rgba(74,124,94,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.rec__statusbox--out{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.rec__statusbox--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.rec__statusbox--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .rec__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 `;
   const el = document.createElement("style");
@@ -104,7 +104,7 @@ function SortHead({ col, sort, onSort }) {
   );
 }
 
-function Side({ side, columns, currency, status, query, sort, onSort }) {
+function Side({ side, columns, currency, status, query, sort, onSort, onToggleItem, onToggleAll }) {
   const items = side.items || [];
   const matched = items.filter((i) => i.matched).length;
   const open = items.length - matched;
@@ -139,11 +139,12 @@ function Side({ side, columns, currency, status, query, sort, onSort }) {
             <tr>
               <th scope="col" aria-label="Matched" style={{ width: 28, textAlign: "center" }}>
                 <Checkbox
+                  aria-label={`Matched status for all ${side.title} items`}
                   checked={rows.every(i => i.matched)}
-                  onChange={(e) => onToggleAll && onToggleAll(side, e.target.checked)}
+                  onChange={(checked) => onToggleAll && onToggleAll(side, checked)}
                 />
               </th>
-              {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} />)}
+              {columns.map((c) => <SortHead key={c.key} col={c} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />)}
             </tr>
           </thead>
           <tbody>
@@ -154,8 +155,9 @@ function Side({ side, columns, currency, status, query, sort, onSort }) {
               <tr key={it.id ?? i} className={it.matched ? "matched" : "open"}>
                 <td style={{ textAlign: "center", paddingLeft: 6, paddingRight: 6 }}>
                   <Checkbox
+                    aria-label={`Matched: ${side.title} ${it.ref ?? it.id}`}
                     checked={it.matched || false}
-                    onChange={(e) => onToggleItem && onToggleItem(it.id, e.target.checked)}
+                    onChange={(checked) => onToggleItem && onToggleItem(it.id, checked)}
                   />
                 </td>
                 {columns.map((c) =>
@@ -242,6 +244,7 @@ export function ReconciliationPanel({
           {searchable && (
             <div className="rec__searchwrap">
               <Input
+                aria-label="Filter reconciliation items by memo or reference"
                 placeholder="Filter memo, ref…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
@@ -251,8 +254,8 @@ export function ReconciliationPanel({
         </div>
       )}
       <div className="rec__cols">
-        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} />
-        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} />
+        <Side side={left} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
+        <Side side={right} columns={cols} currency={currency} status={status} query={query} sort={sort} onSort={onSort} onToggleItem={onToggleItem} onToggleAll={onToggleAll} />
       </div>
       <div className="rec__summary">
         <div className="rec__sumcell">

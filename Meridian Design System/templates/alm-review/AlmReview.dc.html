@@ -60,6 +60,7 @@
 <div class="al-pane">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" actions="{{ contextActions }}" hint-size="100%,40px"></x-import>
 <main class="al-main">
+<h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">Asset-liability review</h1>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ bookHeader }}" hint-size="100%,92px"></x-import>
 <div class="al-head">
 <div class="al-seg">
@@ -239,7 +240,9 @@ class Component extends DCLogic {
   componentDidMount(){this.applyChrome()}
   componentDidUpdate(){this.applyChrome()}
 
-  money(v){return v==null?"—":`$${window.MeridianDesignSystem_205d17.Format.number(Math.abs(v)/1e6,{maxDecimals:1,minDecimals:0})}M`}
+  // The template logic can run before ds-base finishes loading the numeric authority.
+  // Preserve missingness until the import resolver rerenders with the compiled bundle.
+  money(v){const F=window.MeridianDesignSystem_205d17?.Format;return v==null||!F?"—":`$${F.number(Math.abs(v)/1e6,{maxDecimals:1,minDecimals:0})}M`}
   signed(v){return v==null?"—":(v<0?"−":"+")+this.money(v)}
   net(b,scen){return scen?(b.scenarioAssets??b.assets)-(b.scenarioLiabilities??b.liabilities):b.assets-b.liabilities}
 

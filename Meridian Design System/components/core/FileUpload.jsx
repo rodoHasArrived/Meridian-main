@@ -9,13 +9,13 @@ function inject() {
   const css = `
 .mds-upload-wrap{display:block;width:100%;}
 .mds-upload-label{display:block;font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);margin-bottom:5px;}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);margin-bottom:5px;}
 .mds-upload-zone{border:2px dashed var(--border,#D2CDC3);padding:20px;text-align:center;
   background:var(--bg-light,#F8F7F3);cursor:pointer;}
 .mds-upload-zone--drag{border-color:var(--brand-signal,#C56343);background:var(--bg-active,#E7EDF2);}
 .mds-upload-icon{color:var(--text-disabled,#A4ABB2);margin-bottom:8px;display:flex;align-items:center;justify-content:center;}
 .mds-upload-text{font-family:var(--font-body);font-size:12px;color:var(--text-secondary,#535C65);}
-.mds-upload-hint{font-family:var(--font-body);font-size:10px;color:var(--text-muted,#6B737B);margin-top:4px;}
+.mds-upload-hint{font-family:var(--font-body);font-size:10px;color:var(--text-muted,#606870);margin-top:4px;}
 .mds-upload-input{display:none;}
 .mds-file-list{list-style:none;padding:0;margin:8px 0 0;}
 .mds-file-item{display:flex;align-items:center;gap:8px;padding:6px 8px;

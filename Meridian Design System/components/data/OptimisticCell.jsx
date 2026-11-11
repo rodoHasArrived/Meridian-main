@@ -20,8 +20,8 @@ function inject() {
 .mds-opt--pending .mds-opt__mark{color:var(--cond-provisional-fg,#2F648A);}
 .mds-opt--confirmed .mds-opt__mark{color:var(--cond-confirmed-fg,#2E7655);}
 .mds-opt--rejected .mds-opt__mark,.mds-opt--reverted .mds-opt__mark{color:var(--red,#B54B42);}
-.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,#2F648A);}
-.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,#2E7655);}
+.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,rgba(47, 100, 138, 0.34));}
+.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,rgba(46, 118, 85, 0.34));}
 .mds-opt--rejected .mds-editable__display{border:1px solid var(--red,#B54B42);}
 .mds-opt__prior{font:11px var(--font-data);color:var(--text-muted,#606870);text-decoration:line-through;white-space:nowrap;}
 .mds-opt__revert{background:none;border:1px solid transparent;border-radius:2px;padding:0 4px;min-height:24px;
@@ -69,6 +69,20 @@ function createLedger(handlers = { current: {} }) {
   const subs = new Set();
   const emit = () => subs.forEach((f) => f(entries));
   const patch = (id, fn) => { entries = entries.map((e) => (e.id === id ? { ...e, ...fn(e) } : e)); emit(); };
+  const reportSettlementError = (error) => {
+    // Observer failures are application faults, not rejected financial writes.
+    // Surface them without rejecting a settled operation that a caller may retry.
+    if (typeof globalThis.reportError === "function") {
+      try { globalThis.reportError(error); return; } catch { /* Fall back to the console if reporting itself fails. */ }
+    }
+    console.error("Meridian OptimisticProvider onSettle observer failed", error);
+  };
+  const notifySettlement = (edit) => {
+    try {
+      const result = h().onSettle && h().onSettle(edit);
+      if (result && typeof result.then === "function") Promise.resolve(result).catch(reportSettlementError);
+    } catch (error) { reportSettlementError(error); }
+  };
   const api = {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
     get entries() { return entries; },
@@ -77,15 +91,16 @@ function createLedger(handlers = { current: {} }) {
     async commit(edit) {
       const e = { id: `opt-${++seq}`, status: "pending", at: Date.now(), ...edit };
       entries = [...entries, e]; emit();
+      let settled;
       try {
         const r = h().commit ? await h().commit(e) : undefined;
-        patch(e.id, () => ({ status: "confirmed", settledAt: Date.now(), receipt: r && r.receipt }));
-        h().onSettle && h().onSettle({ ...e, status: "confirmed" });
+        settled = { status: "confirmed", settledAt: Date.now(), receipt: r && r.receipt };
       } catch (err) {
         const reason = (err && err.message) || String(err || "rejected by the write path");
-        patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
-        h().onSettle && h().onSettle({ ...e, status: "rejected", reason });
+        settled = { status: "rejected", settledAt: Date.now(), reason };
       }
+      patch(e.id, () => settled);
+      notifySettlement({ ...e, ...settled });
     },
     async revert(ids, reason) {
       const list = Array.isArray(ids) ? ids : [ids];
@@ -101,10 +116,12 @@ function createLedger(handlers = { current: {} }) {
       targets.forEach((t) => patch(t.id, () => ({ status: "reverting" })));
       try {
         if (h().revert) await h().revert(targets, reason);
-        targets.forEach((t) => { patch(t.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })); h().onSettle && h().onSettle({ ...t, status: "reverted", reason }); });
       } catch (err) {
         targets.forEach((t) => patch(t.id, () => ({ status: "confirmed", revertError: (err && err.message) || String(err) })));
+        return;
       }
+      targets.forEach((t) => patch(t.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })));
+      targets.forEach((t) => notifySettlement({ ...t, status: "reverted", reason }));
     },
     dismiss(id) { patch(id, () => ({ status: "dismissed" })); },
   };

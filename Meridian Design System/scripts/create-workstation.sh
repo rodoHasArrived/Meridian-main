@@ -82,7 +82,7 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     .controls { display: flex; gap: 12px; flex-wrap: wrap; }
     input, select { padding: 8px 12px; border: 1px solid var(--border, #E4E3DE); background: var(--bg-light, #FBFAF8); font-size: 13px; }
     input:focus, select:focus { outline: none; border-color: var(--border-focus, #A85436);
-      box-shadow: 0 0 0 2px var(--accent-a10, rgba(168,84,54,.2)); }
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--interaction-focus) 20%, transparent); }
   </style>
 </head>
 <body>

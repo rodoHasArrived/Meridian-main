@@ -45,6 +45,8 @@ function App() {
   const ts = useTableState(ALL);
   const cols = useTableColumns(BASE_COLS, { persistKey: "table-depth-demo.cols" });
   const sel = useRowSelection(ts.data, (r) => r.id);
+  // DataGrid reports identity/index; the specimen supplies modifiers to the hooks.
+  const gesture = React.useRef(null);
   return (
     <div style={{ maxWidth: 920, display: "flex", flexDirection: "column", gap: 10 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
@@ -57,18 +59,22 @@ function App() {
         <SelectionToolbar count={sel.count === "all" ? ts.data.length : sel.count} onClear={sel.clear}
           actions={[{ label: "Cancel orders", onClick: () => {} }, { label: "Export", onClick: () => ts.exportCSV("orders.csv") }]} />
       )}
-      <DataGrid rowKey="index"
+      <div onClickCapture={(event) => { gesture.current = event.nativeEvent; }}
+        onKeyDownCapture={(event) => { gesture.current = event.nativeEvent; }}>
+      <DataGrid rowKey="id" label="Orders"
         columns={cols.visibleColumns}
         rows={ts.data}
-        sortInfo={ts.sortInfo}
-        onSort={ts.toggleSort}
+        sortKey={ts.sortBy?.column ?? null}
+        sortDir={ts.sortBy?.direction ?? "asc"}
+        onSort={(column) => ts.toggleSort(column, Boolean(gesture.current?.shiftKey))}
         onColumnResize={cols.resize}
         onColumnReorder={cols.reorder}
         onColumnPin={cols.togglePin}
-        onRowClick={(row, i, e) => sel.onRowClick(row, i, e)}
-        isRowSelected={(row) => sel.isSelected(row)}
+        onRowClick={(row, _key, index) => sel.onRowClick(row, index, gesture.current)}
+        selected={[...sel.selectedKeys]}
         maxHeight={420}
       />
+      </div>
       <div style={{ fontSize: 11, color: "var(--text-muted)", fontFamily: "var(--font-data)" }}>
         {ts.data.length} rows · sort stack: {ts.sortStack.map((s) => `${s.column} ${s.direction}`).join(" → ") || "none"} · {sel.count === "all" ? "all" : sel.count} selected
       </div>

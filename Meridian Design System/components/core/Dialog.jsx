@@ -17,7 +17,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-dialog-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
   z-index: var(--z-modal, 200); display: flex; align-items: center; justify-content: center;
   animation: mds-dialog-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }
@@ -53,7 +53,7 @@ function inject() {
 }
 .mds-dialog-close:hover { color: var(--text-primary, #20252B); }
 .mds-dialog-close:focus-visible {
-  outline: 2px solid var(--border-focus, #C56343); outline-offset: 2px;
+  outline: 2px solid var(--border-focus, #2D6FB3); outline-offset: 2px;
 }
 .mds-dialog-bd {
   flex: 1; overflow-y: auto; padding: var(--space-lg, 16px);

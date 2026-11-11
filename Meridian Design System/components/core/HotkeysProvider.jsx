@@ -15,7 +15,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(30,28,26,.5));z-index:var(--z-hotkey,400);
+.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(17,23,29,.5));z-index:var(--z-hotkey,400);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9vh;
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}
@@ -26,10 +26,10 @@ function inject() {
   border-bottom:1px solid var(--border,#D2CDC3);position:sticky;top:0;background:var(--bg-light,#F8F7F3);}
 .mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#20252B);}
 .mds-hotkeys-x{appearance:none;border:none;background:transparent;cursor:pointer;font-size:16px;
-  color:var(--text-muted,#6B737B);padding:2px 6px;}
+  color:var(--text-muted,#606870);padding:2px 6px;}
 .mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);}
 .mds-hotkeys-group{padding:10px 16px 4px;font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#6B737B);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);}
 .mds-hotkeys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
   padding:6px 16px;font-size:12px;color:var(--text-secondary,#535C65);}
 .mds-hotkeys-row+.mds-hotkeys-row{border-top:1px solid var(--border-divider,#E2DED5);}

@@ -1,22 +1,24 @@
-<!-- @dsCard group="Data" viewport="1200x600" name="FilteredDataTable" subtitle="Compound component: search + sort + filter + export in one UI" -->
+<!-- @dsCard group="Data" viewport="1200x600" name="Filtered transactions" subtitle="DataGrid + TableHooks — search, sort, filter and CSV export" -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FilteredDataTable</title>
+  <title>Filtered transactions</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body);">
   <div style="max-width: 1200px; margin: 0 auto;">
-    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #22252A);">FilteredDataTable</h2>
+    <h2 style="margin: 0 0 24px 0; font-size: 22px; color: var(--text-primary, #20252B);">Filtered transactions</h2>
 
     <div id="demo"></div>
   </div>
 
   <script type="text/babel">
-    const { FilteredDataTable } = window.MeridianDesignSystem_4f61be;
+    const { DataGrid, Input, Select, Button, TableHooks } = window.MeridianDesignSystem_205d17;
 
     // Sample transaction data
     const sampleTransactions = [
@@ -38,15 +40,27 @@
       { key: "amount", label: "Amount", align: "right", sortable: true },
     ];
 
-    ReactDOM.render(
-      <FilteredDataTable
-        data={sampleTransactions}
-        columns={columns}
-        title="General Ledger Transactions"
-        localStorageKey="gl-transactions"
-      />,
-      document.getElementById("demo")
-    );
+    function FilteredTransactions() {
+      const table = TableHooks.useTableState(sampleTransactions, "gl-transactions");
+      const category = table.filters.category?.[0] || "";
+      return <div style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "end", gap: 12 }}>
+          <Input label="Search transactions" value={table.query} onChange={(event) => table.setQuery(event.target.value)} />
+          <Select label="Category" value={category} options={[
+            { value: "", label: "All categories" },
+            ...["Income", "Expense", "Liability"].map(value => ({ value, label: value })),
+          ]} onChange={value => table.setFilters(value ? { category: [value] } : {})} />
+          <Button variant="ghost" onClick={table.clearAllFilters}>Clear filters</Button>
+          <Button onClick={() => table.exportCSV("general-ledger-transactions.csv")}>Export CSV</Button>
+        </div>
+        <DataGrid rowKey="id" columns={columns} rows={table.data} label="General ledger transactions"
+          sortKey={table.sortBy?.column ?? null} sortDir={table.sortBy?.direction ?? "asc"} onSort={table.toggleSort}
+          emptyText="No transactions match the search and category" />
+        <span>{table.resultCount} of {sampleTransactions.length} transactions</span>
+      </div>;
+    }
+    ReactDOM.createRoot(document.getElementById("demo")).render(<FilteredTransactions />);
+
   </script>
 </body>
 </html>

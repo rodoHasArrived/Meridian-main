@@ -22,31 +22,39 @@ export function ScenarioSelector({
 }) {
   const inert = typeof onChange !== "function";
   const ids = scenarios.map((s) => s.id);
-  const move = (dir) => {
-    if (inert) return;
-    const i = ids.indexOf(value);
-    const next = ids[(i + dir + ids.length) % Math.max(1, ids.length)];
-    if (next != null) onChange(next);
-  };
-  const onKeyDown = (e) => {
-    if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); move(1); }
-    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); move(-1); }
+  const optionRefs = React.useRef([]);
+  const tabStop = Math.max(0, ids.indexOf(value));
+  const onKeyDown = (e, index) => {
+    if (inert || e.target !== e.currentTarget || e.altKey || e.ctrlKey || e.metaKey) return;
+    let nextIndex;
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") nextIndex = (index + 1) % ids.length;
+    else if (e.key === "ArrowUp" || e.key === "ArrowLeft") nextIndex = (index - 1 + ids.length) % ids.length;
+    else if (e.key === " " || e.key === "Enter") {
+      e.preventDefault();
+      onChange(ids[index]);
+      return;
+    } else return;
+    e.preventDefault();
+    optionRefs.current[nextIndex]?.focus();
+    onChange(ids[nextIndex]);
   };
 
   return (
     <div>
-      <div role="radiogroup" aria-label={ariaLabel} onKeyDown={onKeyDown} style={{
+      <div role="radiogroup" aria-label={ariaLabel} aria-orientation={layout === "columns" ? "horizontal" : "vertical"} style={{
         display: layout === "columns" ? "grid" : "flex",
         gridTemplateColumns: layout === "columns" ? `repeat(${Math.max(1, scenarios.length)},minmax(0,1fr))` : undefined,
         flexDirection: layout === "columns" ? undefined : "column",
         gap: 6,
       }}>
-        {scenarios.map((s) => {
+        {scenarios.map((s, index) => {
           const on = s.id === value;
           return (
             <div key={s.id} role="radio" aria-checked={on} aria-disabled={inert || undefined}
-              tabIndex={inert ? -1 : on || (value == null && s.id === ids[0]) ? 0 : -1}
-              onClick={inert ? undefined : () => onChange(s.id)}
+              ref={(node) => { optionRefs.current[index] = node; }}
+              tabIndex={inert ? -1 : index === tabStop ? 0 : -1}
+              onKeyDown={(e) => onKeyDown(e, index)}
+              onClick={inert ? undefined : (e) => { e.currentTarget.focus(); onChange(s.id); }}
               style={{
                 display: "flex", alignItems: "center", gap: 12, minWidth: 0,
                 padding: "10px 12px 10px 10px",

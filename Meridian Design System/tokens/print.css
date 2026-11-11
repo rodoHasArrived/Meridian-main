@@ -37,7 +37,7 @@
   margin: 0 auto;
   box-sizing: border-box;
   padding: 60px 68px;
-  background: var(--bg-light, #fff);
+  background: var(--bg-light, #F8F7F3);
   border: 1px solid var(--border, #D2CDC3);
   position: relative;
   overflow: hidden;

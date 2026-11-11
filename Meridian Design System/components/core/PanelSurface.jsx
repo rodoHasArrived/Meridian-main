@@ -7,7 +7,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-panel{background:var(--card-surface,#fff);border:1px solid var(--border,#D2CDC3);}
+.mds-panel{background:var(--card-surface,#F8F7F3);border:1px solid var(--border,#D2CDC3);}
 .mds-panel--raised{background:var(--card-surface-raised,#FCFBF8);}
 .mds-panel--elevated{border:1px solid var(--border,#D2CDC3);}
 .mds-panel--flat{border:none;}

@@ -70,25 +70,25 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#6B737B);background:var(--bg-light,#F8F7F3);white-space:nowrap}
+.mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870);background:var(--bg-light,#F8F7F3);white-space:nowrap}
 .mds-asr::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
-.mds-asr[data-stage="prepared"]{color:var(--pending-dim,#7A6B52);border-color:var(--pending,#B89B62)}
-.mds-asr[data-stage="reviewed"]{color:var(--info-dim,#3D5F8A);border-color:var(--info,#5C82B3)}
-.mds-asr[data-stage="certified"]{color:var(--green-dim,#2E6B3A);border-color:var(--green,#4E8F5C);background:var(--green-a10,rgba(78,143,92,.1))}
-.mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B44D48)}
+.mds-asr[data-stage="prepared"]{color:var(--state-pending-fg,#5C503E);border-color:var(--pending,#7A6B52)}
+.mds-asr[data-stage="reviewed"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A)}
+.mds-asr[data-stage="certified"]{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1))}
+.mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B54B42)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
 .mds-cert{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);font-family:var(--font-data,monospace);font-size:11.5px}
 .mds-cert table{width:100%;border-collapse:collapse}
-.mds-cert th{padding:7px 10px;text-align:left;font:600 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#6B737B);background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border-strong,#AAA49A)}
+.mds-cert th{padding:7px 10px;text-align:left;font:600 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border-strong,#AAA49A)}
 .mds-cert th.c,.mds-cert td.c{text-align:center;width:88px}
 .mds-cert td{padding:6px 10px;border-top:1px solid var(--border-divider,#E2DED5);color:var(--text-primary,#20252B);white-space:nowrap}
 .mds-cert td.r{text-align:right;font-variant-numeric:tabular-nums}
 .mds-cert tr[data-click="true"]{cursor:pointer}.mds-cert tr[data-click="true"]:hover td{background:var(--bg-hover,#EDEFF0)}
 .mds-cert tr[data-click="true"]:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-cert__dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:50%;background:transparent;vertical-align:middle}
-.mds-cert__dot[data-on="true"]{background:var(--green,#4E8F5C);border-color:var(--green,#4E8F5C)}
-.mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B44D48);border-style:dashed}
-.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--pending-dim,#7A6B52);margin-left:6px}
+.mds-cert__dot[data-on="true"]{background:var(--green,#2E7655);border-color:var(--green,#2E7655)}
+.mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B54B42);border-style:dashed}
+.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--state-pending-fg,#5C503E);margin-left:6px}
 .mds-cert__foot{display:flex;gap:14px;align-items:center;padding:8px 10px;border-top:1px solid var(--border,#D2CDC3);font-size:11px;color:var(--text-secondary,#535C65)}
 .mds-cert__foot b{color:var(--text-primary,#20252B);font-weight:600}
 `;
@@ -134,7 +134,7 @@ export function CertificationMatrix({ accounts = [], records = {}, balances = {}
     <div className="mds-cert__foot">
       <span><b>{cov.rows.filter((r) => r.covered).length}</b> of {cov.rows.length} accounts {STAGE[requiredStage].label.toLowerCase()}</span>
       <span><b>{cov.rows.filter((r) => r.material && r.covered).length}</b> of {cov.rows.filter((r) => r.material).length} material</span>
-      {cov.rows.some((r) => r.voided) ? <span style={{ color: "var(--red-dim,#7D322F)" }}><b>{cov.rows.filter((r) => r.voided).length}</b> signature{cov.rows.filter((r) => r.voided).length === 1 ? "" : "s"} void — balance moved since signing</span> : null}
+      {cov.rows.some((r) => r.voided) ? <span style={{ color: "var(--red-dim,#883832)" }}><b>{cov.rows.filter((r) => r.voided).length}</b> signature{cov.rows.filter((r) => r.voided).length === 1 ? "" : "s"} void — balance moved since signing</span> : null}
     </div>
   </div>;
 }

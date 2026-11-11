@@ -13,10 +13,10 @@ const CSS = `
 .mds-rpanel{display:grid;gap:8px;min-width:0;border:1px solid var(--severity-info-bd,#D2CDC3);
   border-left:3px solid var(--severity-info-fg,#606870);border-radius:var(--radius-card,2px);
   background:var(--bg-panel,var(--bg-light,var(--ws-surface,#F8F7F3)));padding:12px 14px;}
-.mds-rpanel--ready{border-color:var(--severity-ready-bd,rgba(58,122,86,.36));border-left-color:var(--severity-ready-fg,#2C5C40);}
-.mds-rpanel--review{border-color:var(--severity-review-bd,rgba(168,84,54,.36));border-left-color:var(--severity-review-fg,#CB6E4E);}
-.mds-rpanel--action{border-color:var(--severity-action-bd,rgba(138,92,18,.42));border-left-color:var(--severity-action-fg,#68450E);}
-.mds-rpanel--blocked{border-color:var(--severity-blocked-bd,rgba(168,68,60,.40));border-left-color:var(--severity-blocked-fg,#7E332D);}
+.mds-rpanel--ready{border-color:var(--severity-ready-bd,rgba(46,118,85,.36));border-left-color:var(--severity-ready-fg,#225840);}
+.mds-rpanel--review{border-color:var(--severity-review-bd,rgba(197,99,67,.36));border-left-color:var(--severity-review-fg,#8E4730);}
+.mds-rpanel--action{border-color:var(--severity-action-bd,rgba(152,103,23,.42));border-left-color:var(--severity-action-fg,#724D11);}
+.mds-rpanel--blocked{border-color:var(--severity-blocked-bd,rgba(181,75,66,.40));border-left-color:var(--severity-blocked-fg,#883832);}
 .mds-rpanel__head{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;}
 .mds-rpanel__score{font-family:var(--font-data,monospace);font-size:11px;font-weight:700;
   color:var(--text-secondary,var(--ws-text-secondary,#535C65));font-variant-numeric:tabular-nums;white-space:nowrap;}
@@ -24,7 +24,7 @@ const CSS = `
   overflow:hidden;text-overflow:ellipsis;}
 .mds-rpanel__detail{margin:0;color:var(--text-muted,var(--ws-text-muted,#606870));font-size:12px;line-height:1.45;}
 .mds-rpanel__foot{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;
-  border-top:1px solid var(--border,#D2CDC3);padding-top:10px;margin-top:2px;}
+  border-top:1px solid var(--border-color,#D2CDC3);padding-top:10px;margin-top:2px;}
 `;
 
 export interface ReadinessPanelProps {

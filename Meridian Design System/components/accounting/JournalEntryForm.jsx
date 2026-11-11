@@ -21,7 +21,7 @@ function inject() {
   border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);}
 .jnl__grid{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data);font-size:12px;}
 .jnl__grid th{padding:8px 12px;text-align:left;font-family:var(--font-body);font-size:10px;
-  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border,#D2CDC3);}
 .jnl__grid th.jnl--r{text-align:right;}
 .jnl__grid th.jnl--x{width:36px;}
@@ -30,8 +30,8 @@ function inject() {
 .jnl__grid td.jnl--r{text-align:right;}
 .jnl__del{width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;
   border:1px solid transparent;border-radius:var(--radius-button,2px);background:transparent;cursor:pointer;
-  color:var(--text-muted,#6B737B);font-size:14px;line-height:1;transition:color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
-.jnl__del:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+  color:var(--text-muted,#606870);font-size:14px;line-height:1;transition:color 120ms cubic-bezier(.2,0,0,1),background-color 120ms cubic-bezier(.2,0,0,1);}
+.jnl__del:hover{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .jnl__grid tfoot td{padding:8px 12px;border-top:2px solid var(--border-strong,#AAA49A);
   background:var(--bg-medium,#EBE8E1);font-weight:600;}
 .jnl__grid tfoot td.jnl--r{text-align:right;}
@@ -41,11 +41,11 @@ function inject() {
 .jnl__status{display:inline-flex;align-items:center;gap:7px;
   font-family:var(--font-body);font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
   border:1px solid;border-radius:var(--radius-chip,2px);padding:5px 10px;}
-.jnl__status--bal{background:var(--green-a10,rgba(74,124,94,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.jnl__status--out{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.jnl__status--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.jnl__status--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .jnl__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 .jnl__block{display:grid;gap:2px;padding:9px 14px;border-top:1px solid var(--border,#D2CDC3);
-  background:var(--red-a10,rgba(166,67,63,.10));font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-primary,#20252B);}
+  background:var(--red-a10,rgba(181,75,66,.10));font-family:var(--font-body);font-size:11px;line-height:1.5;color:var(--text-primary,#20252B);}
 .jnl__block b{font-weight:600;}
 .jnl__block small{font-family:var(--font-data);font-size:10px;color:var(--text-secondary,#535C65);}
 `;
@@ -70,6 +70,7 @@ export function JournalEntryForm({
   onPost,
 }) {
   inject();
+  const headerId = React.useId();
   const [header, setHeader] = useState(() => ({ date: "", ref: "", memo: "", ...initialHeader }));
   const [lines, setLines] = useState(() =>
     initialLines && initialLines.length ? initialLines.map((l) => ({ ...blankLine(), ...l })) : [blankLine(), blankLine()]
@@ -99,18 +100,18 @@ export function JournalEntryForm({
     <div className="jnl" role="group" aria-label="Journal entry">
       <div className="jnl__hd">
         <div className="jnl__field">
-          <label className="jnl__lbl">Date</label>
-          <Input type="date" value={header.date}
+          <label className="jnl__lbl" htmlFor={`${headerId}-date`}>Date</label>
+          <Input id={`${headerId}-date`} type="date" value={header.date}
             onChange={(e) => setH("date", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Reference</label>
-          <Input placeholder="JE-0001" value={header.ref}
+          <label className="jnl__lbl" htmlFor={`${headerId}-ref`}>Reference</label>
+          <Input id={`${headerId}-ref`} placeholder="JE-0001" value={header.ref}
             onChange={(e) => setH("ref", e.target.value)} />
         </div>
         <div className="jnl__field">
-          <label className="jnl__lbl">Memo</label>
-          <Input placeholder="Description" value={header.memo}
+          <label className="jnl__lbl" htmlFor={`${headerId}-memo`}>Memo</label>
+          <Input id={`${headerId}-memo`} placeholder="Description" value={header.memo}
             onChange={(e) => setH("memo", e.target.value)} />
         </div>
       </div>
@@ -134,15 +135,15 @@ export function JournalEntryForm({
           {lines.map((row, i) => (
             <tr key={i}>
               <td>
-                <Input placeholder="Account" value={row.account}
+                <Input aria-label={`Account line ${i + 1}`} placeholder="Account" value={row.account}
                   onChange={(e) => setL(i, "account", e.target.value)} list={dlId} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.debit}
+                <Input aria-label={`Debit line ${i + 1}`} type="number" placeholder="0.00" value={row.debit}
                   onChange={(e) => setL(i, "debit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" value={row.credit}
+                <Input aria-label={`Credit line ${i + 1}`} type="number" placeholder="0.00" value={row.credit}
                   onChange={(e) => setL(i, "credit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">

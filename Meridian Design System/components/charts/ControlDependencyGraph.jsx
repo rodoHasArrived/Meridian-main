@@ -30,7 +30,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cdg__toggle{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-cdg__toggle button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-cdg__toggle button:first-child{border-left:0}
-.mds-cdg__toggle button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-cdg__toggle button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-cdg__toggle button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-cdg svg{width:100%;height:auto;display:block;background:var(--surface-well,var(--card-surface-raised,#FCFBF8));border:1px solid var(--border,#D2CDC3)}
 .mds-cdg__edge{fill:none;stroke:var(--border-strong,#AAA49A);stroke-width:1.25}
@@ -42,9 +42,9 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cdg__node .label{font:600 10px var(--font-body);fill:var(--text-primary,#20252B)}
 .mds-cdg__node .meta{font:8px var(--font-data,monospace);fill:var(--text-muted,#606870)}
 .mds-cdg__node--done rect{stroke:var(--green,#2E7655)}
-.mds-cdg__node--blocked rect{stroke:var(--red,#B54B42);fill:var(--red-surface,rgba(181,75,66,.08))}
+.mds-cdg__node--blocked rect{stroke:var(--red,#B54B42);fill:var(--red-surface,rgba(245,229,226,.08))}
 .mds-cdg__node--review rect{stroke:var(--orange,#986717)}
-.mds-cdg__node--active rect{stroke:var(--info,#2F648A)}
+.mds-cdg__node--active rect{stroke:var(--color-info,#2F648A)}
 .mds-cdg__node--downstream rect{stroke-dasharray:3 2}
 .mds-cdg__node--critical rect{stroke-width:1.75}
 .mds-cdg__datum{fill:none;stroke:var(--selected,#496C8F);stroke-width:2}

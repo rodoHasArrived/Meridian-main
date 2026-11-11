@@ -15,17 +15,17 @@
 [data-rw-show="off"]{display:none}
 tr[data-rw-state] td:first-child{position:relative;padding-left:13px}
 tr[data-rw-state] td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0}
-tr[data-rw-state="matched"] td:first-child::before{background:var(--green,#4A7C5E)}
-tr[data-rw-state="timing"] td:first-child::before{background:var(--orange,#B7791F)}
-tr[data-rw-state="break"] td:first-child::before{background:var(--red,#A6433F)}
+tr[data-rw-state="matched"] td:first-child::before{background:var(--green,#2E7655)}
+tr[data-rw-state="timing"] td:first-child::before{background:var(--orange,#986717)}
+tr[data-rw-state="break"] td:first-child::before{background:var(--red,#B54B42)}
 tr[data-rw-state="timing"] td{background:rgba(183,121,31,.05)}
-tr[data-rw-state="break"] td{background:var(--red-a10,rgba(186,63,85,.07))}
-tr[data-rw-state]:hover td{background:var(--bg-hover,#F1EEE7)}
-tr[data-rw-sel="on"] td{background:var(--blue-a10,rgba(47,111,143,.10))}
-tr[data-rw-cross="on"] td{background:var(--blue-a10,rgba(47,111,143,.06));outline:1px dashed var(--brand-signal,#C56343);outline-offset:-1px}
-tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-child::before{background:var(--brand-signal,#C56A4A)}
-[data-rw-dot="matched"]{background:var(--green,#4A7C5E)}[data-rw-dot="timing"]{background:var(--orange,#B7791F)}[data-rw-dot="break"]{background:var(--red,#A6433F)}
-[data-rw-warn="on"]{color:var(--severity-action-fg,#986717)}
+tr[data-rw-state="break"] td{background:var(--red-a10,rgba(181,75,66,.07))}
+tr[data-rw-state]:hover td{background:var(--bg-hover,#EDEFF0)}
+tr[data-rw-sel="on"] td{background:var(--blue-a10,rgba(47,100,138,.10))}
+tr[data-rw-cross="on"] td{background:var(--blue-a10,rgba(47,100,138,.06));outline:1px dashed var(--brand-signal,#C56343);outline-offset:-1px}
+tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-child::before{background:var(--brand-signal,#C56343)}
+[data-rw-dot="matched"]{background:var(--green,#2E7655)}[data-rw-dot="timing"]{background:var(--orange,#986717)}[data-rw-dot="break"]{background:var(--red,#B54B42)}
+[data-rw-warn="on"]{color:var(--severity-action-fg,#724D11)}
 @keyframes rw-fade{from{opacity:0}}
 @keyframes rw-slide{from{transform:translateX(24px);opacity:.6}}</style>
 </helmet>
@@ -201,12 +201,12 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationProvider" object-id="REC-2026-07-CASH" object-version="{{ recVersion }}" author="you" hint-size="100%,420px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="reconciliation-matcher" regions="{{ mLayoutRegions }}" layouts="{{ mLayoutPresets }}" slots="{{ mLayoutSlots }}" gap="{{ 0 }}" style="flex:1;min-height:0;border:1px solid var(--border);border-radius:var(--radius-card,8px) var(--radius-card,8px) 0 0;overflow:hidden;background:var(--bg-light);box-shadow:var(--shadow-card,0 1px 1px rgba(0,0,0,.08))" hint-size="100%,420px">
 <div style="display:flex;flex-direction:column;min-width:0;overflow:hidden;height:100%">
-<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#F6F4EF);border-bottom:1px solid var(--border);flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border);flex-shrink:0">
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted)">Custodian Statement</span>
 <span style="display:flex;gap:5px">
-<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#4A7C5E);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(22,136,95,.10));color:var(--green-dim,#126C4D)">{{ stmtMatchedChip }}</span>
-<span data-rw-show="{{ stmtTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#B7791F);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(183,121,31,.10));color:var(--orange-dim,#946216)">{{ stmtTimingChip }}</span>
-<span data-rw-show="{{ stmtBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#A6433F);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(186,63,85,.10));color:var(--red-dim,#983244)">{{ stmtBreakChip }}</span>
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#2E7655);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(46,118,85,.10));color:var(--green-dim,#225840)">{{ stmtMatchedChip }}</span>
+<span data-rw-show="{{ stmtTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#986717);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(152,103,23,.10));color:var(--orange-dim,#724D11)">{{ stmtTimingChip }}</span>
+<span data-rw-show="{{ stmtBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#B54B42);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(181,75,66,.10));color:var(--red-dim,#883832)">{{ stmtBreakChip }}</span>
 </span>
 </div>
 <div style="overflow-y:auto;flex:1;min-height:0">
@@ -224,7 +224,7 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.date }}</td>
 <td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.ref }}</td>
 <td style="font-size:12px;color:var(--text-primary);padding:6px 10px;border-top:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ it.anchor }}" hint-size="100%,16px">{{ it.memo }}</x-import></td>
-<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#F6F4EF);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
 <td style="padding:6px 10px;border-top:1px solid var(--border);text-align:right;white-space:nowrap"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ it.amount }}" currency="USD" parens="{{ true }}" hint-size="80px,16px"></x-import></td>
 </tr>
 </sc-for>
@@ -233,12 +233,12 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 </div>
 </div>
 <div style="display:flex;flex-direction:column;min-width:0;overflow:hidden;height:100%;border-left:1px solid var(--border)">
-<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#F6F4EF);border-bottom:1px solid var(--border);flex-shrink:0">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border);flex-shrink:0">
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted)">Internal Ledger</span>
 <span style="display:flex;gap:5px">
-<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#4A7C5E);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(22,136,95,.10));color:var(--green-dim,#126C4D)">{{ ldgrMatchedChip }}</span>
-<span data-rw-show="{{ ldgrTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#B7791F);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(183,121,31,.10));color:var(--orange-dim,#946216)">{{ ldgrTimingChip }}</span>
-<span data-rw-show="{{ ldgrBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#A6433F);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(186,63,85,.10));color:var(--red-dim,#983244)">{{ ldgrBreakChip }}</span>
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#2E7655);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(46,118,85,.10));color:var(--green-dim,#225840)">{{ ldgrMatchedChip }}</span>
+<span data-rw-show="{{ ldgrTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#986717);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(152,103,23,.10));color:var(--orange-dim,#724D11)">{{ ldgrTimingChip }}</span>
+<span data-rw-show="{{ ldgrBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#B54B42);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(181,75,66,.10));color:var(--red-dim,#883832)">{{ ldgrBreakChip }}</span>
 </span>
 </div>
 <div style="overflow-y:auto;flex:1;min-height:0">
@@ -256,7 +256,7 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.date }}</td>
 <td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.ref }}</td>
 <td style="font-size:12px;color:var(--text-primary);padding:6px 10px;border-top:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ it.anchor }}" hint-size="100%,16px">{{ it.memo }}</x-import></td>
-<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#F6F4EF);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
 <td style="padding:6px 10px;border-top:1px solid var(--border);text-align:right;white-space:nowrap"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ it.amount }}" currency="USD" parens="{{ true }}" hint-size="80px,16px"></x-import></td>
 </tr>
 </sc-for>
@@ -265,7 +265,7 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 </div>
 </div>
 </x-import>
-<div style="display:grid;grid-template-columns:1fr 1fr auto;border:1px solid var(--border);border-top:2px solid var(--border-strong,#AAB4BF);border-radius:0 0 var(--radius-card,8px) var(--radius-card,8px);background:var(--bg-medium,#F6F4EF)">
+<div style="display:grid;grid-template-columns:1fr 1fr auto;border:1px solid var(--border);border-top:2px solid var(--border-strong,#AAA49A);border-radius:0 0 var(--radius-card,8px) var(--radius-card,8px);background:var(--bg-medium,#EBE8E1)">
 <div style="padding:10px 14px;display:flex;flex-direction:column;gap:3px">
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Statement balance</span>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ stmtTotal }}" currency="USD" parens="{{ true }}" strong="{{ true }}" hint-size="90px,18px"></x-import>
@@ -274,8 +274,8 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Ledger balance</span>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ ldgrTotal }}" currency="USD" parens="{{ true }}" strong="{{ true }}" hint-size="90px,18px"></x-import>
 </div>
-<div data-rw-show="{{ reconciledShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--green-dim,#126C4D)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Reconciled</div>
-<div data-rw-show="{{ outShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--red-dim,#983244)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Out by {{ outAmount }}</div>
+<div data-rw-show="{{ reconciledShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--green-dim,#225840)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Reconciled</div>
+<div data-rw-show="{{ outShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--red-dim,#883832)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Out by {{ outAmount }}</div>
 </div>
 <div style="margin-top:8px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationPanel" title="Notes on lines" empty-text="Hover a memo and press ¶ to annotate that line. Follow-notes go stale when a match changes the reconciliation; pinned notes keep their version." hint-size="100%,60px"></x-import>
@@ -302,7 +302,7 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Reference</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dRef }}</span>
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Date</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">2026-{{ dDate }}</span>
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Memo</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dMemo }}</span>
-<span style="font-size:11px;color:var(--text-muted);font-weight:500">Category</span><span><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#F6F4EF);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ dCategory }}</span></span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Category</span><span><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ dCategory }}</span></span>
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Amount</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dAmountEnv }}</span>
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Source</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dSource }}</span>
 <span style="font-size:11px;color:var(--text-muted);font-weight:500">Match status</span><span style="display:flex;align-items:center;gap:6px;font-family:var(--font-data);font-size:12px;color:var(--text-primary)"><span data-rw-dot="{{ dState }}" style="display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>{{ dStateLabel }}</span>
@@ -313,8 +313,8 @@ tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-chil
 <div style="margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-card,8px);padding:10px 12px;background:var(--bg-light);display:flex;flex-direction:column;gap:4px">
 <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">{{ counterSideLabel }}</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ cRef }}</span></div>
 <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Memo</span><span style="font-family:var(--font-data);font-size:11px;color:var(--text-primary)">{{ cMemo }}</span></div>
-<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Date</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">2026-{{ cDate }}<span data-rw-show="{{ cDateDiffShow }}" style="font-family:var(--font-data);font-size:11px;color:var(--orange,#B7791F)"> {{ cDateDiff }}</span></span></div>
-<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Amount</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary);display:inline-flex;align-items:baseline;gap:4px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ cAmount }}" currency="USD" parens="{{ true }}" hint-size="70px,16px"></x-import><span data-rw-show="{{ cAmtDiffShow }}" style="font-size:11px;color:var(--orange,#B7791F)">{{ cAmtDiff }}</span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Date</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">2026-{{ cDate }}<span data-rw-show="{{ cDateDiffShow }}" style="font-family:var(--font-data);font-size:11px;color:var(--orange,#986717)"> {{ cDateDiff }}</span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Amount</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary);display:inline-flex;align-items:baseline;gap:4px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ cAmount }}" currency="USD" parens="{{ true }}" hint-size="70px,16px"></x-import><span data-rw-show="{{ cAmtDiffShow }}" style="font-size:11px;color:var(--orange,#986717)">{{ cAmtDiff }}</span></span></div>
 </div>
 </div>
 <div data-rw-show="{{ noMatchShow }}">

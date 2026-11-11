@@ -23,9 +23,9 @@ function inject() {
   background:var(--bg-light,#F8F7F3);display:flex;align-items:center;justify-content:center;}
 .mds-chk-box:focus-within{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:var(--focus-ring-offset,1px);}
 .mds-chk-box--on{background:var(--interaction-selected,#496C8F);border-color:var(--interaction-selected,#496C8F);}
-.mds-chk-check{color:var(--text-on-accent,#fff);display:flex;}
+.mds-chk-check{color:var(--text-on-accent,#0D1217);display:flex;}
 .mds-chk-label{font-family:var(--font-body);font-size:13px;color:var(--text-primary,#20252B);}
-.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#6B737B);margin-top:1px;}
+.mds-chk-hint{font-family:var(--font-body);font-size:11px;color:var(--text-muted,#606870);margin-top:1px;}
 
 .mds-tog-wrap{display:inline-flex;align-items:center;gap:10px;min-height:24px;cursor:pointer;user-select:none;}
 .mds-tog-wrap--disabled{opacity:.5;cursor:not-allowed;}
@@ -43,7 +43,7 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function Checkbox({ checked = false, indeterminate = false, onChange, label, hint, disabled = false }) {
+export function Checkbox({ checked = false, indeterminate = false, onChange, label, hint, disabled = false, "aria-label": ariaLabel }) {
   inject();
   const inputRef = React.useRef(null);
   // Native indeterminate lives on the element, not an attribute — AT then reads "mixed".
@@ -54,7 +54,7 @@ export function Checkbox({ checked = false, indeterminate = false, onChange, lab
   return (
     <label className={`mds-chk-wrap${disabled ? " mds-chk-wrap--disabled" : ""}`}>
       <div className={`mds-chk-box${checked || indeterminate ? " mds-chk-box--on" : ""}`}>
-        <input ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked}
+        <input ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked} aria-label={ariaLabel}
           onChange={e => onChange?.(e.target.checked)} disabled={disabled} />
         {mark && <span className="mds-chk-check" aria-hidden="true">{mark}</span>}
       </div>

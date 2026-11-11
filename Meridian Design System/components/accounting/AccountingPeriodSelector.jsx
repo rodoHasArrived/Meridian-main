@@ -27,14 +27,14 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-aps select:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
 .mds-aps__state{position:absolute;right:8px;pointer-events:none;font:600 9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border:1px solid var(--border,#D2CDC3);border-radius:2px;background:var(--surface-plate,#F8F7F3);color:var(--text-muted,#606870)}
 .mds-aps__state[data-tone="open"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655)}
-.mds-aps__state[data-tone="review"]{color:var(--orange-dim,#725012);border-color:var(--orange,#986717)}
+.mds-aps__state[data-tone="review"]{color:var(--orange-dim,#724D11);border-color:var(--orange,#986717)}
 .mds-aps__state[data-tone="stop"]{color:var(--red-dim,#873832);border-color:var(--red,#B54B42)}
 .mds-aps__meta{display:grid;gap:1px;padding:6px 8px;border:1px solid var(--border-divider,#E2DED5);border-top:0;background:var(--surface-plate,var(--bg-light,#F8F7F3))}
 .mds-aps__kv{display:flex;justify-content:space-between;gap:10px;font:9px/15px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-aps__kv b{font-weight:600;color:var(--text-primary,#20252B)}
 .mds-aps__note{font:10px/15px var(--font-body);color:var(--text-secondary,#535C65);padding:5px 8px;border:1px solid var(--border-divider,#E2DED5);border-top:0;background:var(--surface-well,#FCFBF8)}
-.mds-aps__note[data-tone="stop"]{border-color:var(--red,#B54B42);background:var(--red-surface,rgba(181,75,66,.1));color:var(--red-dim,#873832)}
-.mds-aps__note[data-tone="review"]{border-color:var(--orange,#986717);background:var(--orange-surface,rgba(152,103,23,.1));color:var(--orange-dim,#725012)}
+.mds-aps__note[data-tone="stop"]{border-color:var(--red,#B54B42);background:var(--red-surface,rgba(245,229,226,.1));color:var(--red-dim,#873832)}
+.mds-aps__note[data-tone="review"]{border-color:var(--orange,#986717);background:var(--orange-surface,rgba(242,234,216,.1));color:var(--orange-dim,#724D11)}
 .mds-aps__dates{display:grid;gap:1px;padding:6px 8px;border:1px solid var(--border-divider,#E2DED5);border-top:0;background:var(--surface-well,#FCFBF8)}
 .mds-aps__dates h4{margin:0 0 2px;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870)}
 `;document.head.appendChild(el)}

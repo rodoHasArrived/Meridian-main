@@ -1,10 +1,9 @@
 // Meridian strategy-builder — template screen. Mounted by the DC via <x-import>; reads design-system
 // components from the compiled bundle.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  SegmentedControl, Input, KeyValueGrid, StatusBanner, SeverityBadge, WorksheetGrid
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SegmentedControl, Input, KeyValueGrid, StatusBanner, SeverityBadge, WorksheetGrid;
 const { useState } = React;
 
 const NAV = [
@@ -89,10 +88,10 @@ function cellRefsIn(formula) {
   return m ? Array.from(new Set(m)) : [];
 }
 
-function StrategyBuilderScreen() {
+function StrategyBuilderScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, SegmentedControl, Input, KeyValueGrid, StatusBanner, SeverityBadge, WorksheetGrid } = window.MeridianDesignSystem_205d17);
   const [active, setActive] = useState("E2");
   const [mode, setMode] = useState("formula");
-  const [env] = useState("PAPER");
   const [cells, setCells] = useState(CELLS);
   const cell = cells[active] || {};
 
@@ -100,7 +99,7 @@ function StrategyBuilderScreen() {
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="Strategy Builder" environment={env} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="Strategy Builder" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="builder" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -108,14 +107,15 @@ function StrategyBuilderScreen() {
           {/* Title + toolbar */}
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Bond Carry &amp; Roll</h1>
-            <Badge variant="paper" dot>PAPER</Badge>
+            <Badge variant={environment.toLowerCase()} dot>{environment}</Badge>
             <Badge variant="neutral">v4 · draft</Badge>
             <div style={{ flex: 1 }}></div>
             <SegmentedControl size="sm" value={mode} onChange={setMode}
               options={[{ value: "visual", label: "Visual" }, { value: "formula", label: "Formula" }, { value: "code", label: "Code" }]} />
-            <Button variant="ghost" size="sm">Save</Button>
-            <Button variant="primary" size="sm">Run strategy</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Save</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm">Run strategy</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Strategy worksheet">
 
           {/* Grid + formula bar — Meridian WorksheetGrid component */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 12, alignItems: "start" }}>
@@ -155,6 +155,7 @@ function StrategyBuilderScreen() {
             ? <StatusBanner tone="danger" title={"Cell " + active + " — division by zero"} detail="=YTM(B7) / 0 · fix the divisor or guard with IF before running. 1 blocking error across 38 cells." />
             : <StatusBanner tone="success" title="Worksheet recalculated" detail="38 cells · 1 error · last run 14:12:04Z · portfolio YTM 4.87% · duration 8.34" />}
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

@@ -24,7 +24,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cfl__row--action{cursor:pointer}
 .mds-cfl__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-cfl__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,#E7EDF2)}
 .mds-cfl__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-cfl__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-cfl__track{position:relative;height:22px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}

@@ -23,7 +23,7 @@
 <a href="#sect-0" onClick="{{ jump0 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid var(--sidebar-active-ind,#C56343);background:var(--sidebar-active,#E7EDF2)">Organization<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 1</span></a>
 <a href="#sect-1" onClick="{{ jump1 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Data providers<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 2</span></a>
 <a href="#sect-2" onClick="{{ jump2 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Notifications<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 3</span></a>
-<a href="#sect-3" onClick="{{ jump3 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--red-dim,#8C2F40);border-left:2px solid transparent" style-hover="color:var(--red,#B54B42)">Danger zone<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 4</span></a>
+<a href="#sect-3" onClick="{{ jump3 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--red-dim,#883832);border-left:2px solid transparent" style-hover="color:var(--red,#B54B42)">Danger zone<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 4</span></a>
 </nav>
 <div style="flex:1;min-width:0;padding:18px">
 <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
@@ -80,7 +80,7 @@
 </div>
 </div>
 <div id="sect-3" style="background:var(--bg-light);border:1px solid var(--red,#B54B42);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:14px">
-<h2 style="font:600 15px var(--font-display);margin:0;color:var(--red-dim,#8C2F40)">Danger zone</h2>
+<h2 style="font:600 15px var(--font-display);margin:0;color:var(--red-dim,#883832)">Danger zone</h2>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="danger" title="Destructive actions" hint-size="100%,60px">These operate on the shared archive. They cannot be undone from the workstation.</x-import>
 <div style="display:flex;gap:10px;align-items:center">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" on-click="{{ onOpenWipe }}" hint-size="140px,28px">Purge fixture data…</x-import>

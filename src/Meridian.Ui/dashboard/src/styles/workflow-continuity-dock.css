@@ -469,7 +469,7 @@
 }
 
 .workflow-continuity-expanded-decision a {
-  color: var(--primary);
+  color: hsl(var(--primary));
   font-weight: 700;
   text-decoration: none;
 }
@@ -538,8 +538,8 @@
 }
 
 .workflow-continuity-scope-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 0.5rem; }
-.workflow-continuity-edit { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; font-size: 0.75rem; color: var(--primary); border-radius: var(--radius-sm); }
-.workflow-continuity-edit:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.workflow-continuity-edit { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem; font-size: 0.75rem; color: hsl(var(--primary)); border-radius: var(--radius-sm); }
+.workflow-continuity-edit:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
 .workflow-continuity-scope-applicability { font-size: 0.6875rem; color: var(--ws-text-muted); }
 .workflow-continuity-scope-chip dd { overflow-wrap: anywhere; }
 .workflow-continuity-expanded-flow span:last-child,

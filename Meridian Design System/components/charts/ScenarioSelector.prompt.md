@@ -18,8 +18,11 @@ the parent must state why no alternatives are available. Keep model output
 separate from observed data and show stale/missing model inputs outside this
 selector; it does not validate the model or persist the choice.
 
-The current keyboard handler supports Up/Down/Left/Right selection through the
-controlled callback. It does not move focus to the newly selected item and does
-not implement Space/Enter on its div-based radios. Validate or supply a complete
-radio interaction before adopting it in a keyboard-dependent production flow;
-the presence of ARIA roles alone does not establish accessibility.
+Tab enters at the selected option, or the first option when no supplied id
+matches. Up/Down/Left/Right move focus and request the next or previous scenario,
+wrapping at either end; Space/Enter request the focused scenario. The caller
+remains the selection authority. If it declines a request, the checked state
+continues to reflect its supplied value. Tab leaves the group without visiting
+every option. Noninteractive records have no radio tab stops or selection
+callbacks. Keyboard selection only requests the modeled choice; it must not
+execute a trade or post a journal.

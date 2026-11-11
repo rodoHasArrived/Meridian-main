@@ -43,15 +43,15 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.act{border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);
+.act{border:1px solid var(--border-color,#D2CDC3);border-radius:var(--radius-chip,2px);
   overflow:hidden;background:var(--bg-light,#F8F7F3);}
 .act__head{display:grid;grid-template-columns:1fr auto;gap:12px;padding:8px 12px;
-  background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border,#D2CDC3);
+  background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border-color,#D2CDC3);
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);}
 .act__head .act--r{text-align:right;}
 .act__row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;
-  padding:6px 12px;border-top:1px solid var(--border,#D2CDC3);}
+  padding:6px 12px;border-top:1px solid var(--border-color,#D2CDC3);}
 .act__row:hover{background:var(--bg-hover,#EDEFF0);}
 .act__row--sel{cursor:pointer;}
 .act__row--on{background:var(--bg-active,#E7EDF2);box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}

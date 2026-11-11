@@ -18,11 +18,11 @@ import { formatNumber } from "../core/format.js";
 /** Series roles — the ledger. Color is assigned here and nowhere else. */
 export const FIGURE_ROLES = {
   actual:    { label: "Actual",    stroke: "var(--series-actual, #29323A)",    dash: null,    fill: "var(--series-actual, #29323A)" },
-  prior:     { label: "Prior",     stroke: "var(--series-prior, #6E7A85)",     dash: null,    fill: "var(--series-prior, #6E7A85)" },
-  benchmark: { label: "Benchmark", stroke: "var(--series-benchmark, #A4ABB2)", dash: "4 3",   fill: "var(--series-benchmark, #A4ABB2)" },
+  prior:     { label: "Prior",     stroke: "var(--series-prior, #7890A4)",     dash: null,    fill: "var(--series-prior, #7890A4)" },
+  benchmark: { label: "Benchmark", stroke: "var(--series-benchmark, #8C918F)", dash: "4 3",   fill: "var(--series-benchmark, #8C918F)" },
   scenario:  { label: "Scenario",  stroke: "var(--series-scenario, #C56343)",        dash: "5 3",   fill: "var(--series-scenario, #C56343)" },
   target:    { label: "Target",    stroke: "var(--text-muted, #606870)",    dash: "1 3",   fill: "none" },
-  estimated: { label: "Estimated", stroke: "var(--series-actual, #29323A)",    dash: "3 2",   fill: "var(--series-prior, #6E7A85)" },
+  estimated: { label: "Estimated", stroke: "var(--series-actual, #29323A)",    dash: "3 2",   fill: "var(--series-prior, #7890A4)" },
 };
 
 export const GEOMETRIES = ["ladder", "plate", "distribution", "trace"];
@@ -40,8 +40,8 @@ function inject() {
 .mds-fig__hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 10px;border-bottom:1px solid var(--border,#D2CDC3);}
 .mds-fig__ti{font-family:var(--font-body,system-ui);font-size:13px;font-weight:var(--weight-medium,500);color:var(--text-primary,#20252B);}
 .mds-fig__cl{font-family:var(--font-data,ui-monospace);font-size:10px;color:var(--text-muted,#606870);white-space:nowrap;}
-.mds-fig__bd{padding:10px;background:var(--bg-surface, #FCFBF8);}
-.mds-fig__lg{display:flex;flex-wrap:wrap;gap:12px;padding:6px 10px;border-top:1px solid var(--border-divider,#E4E0D8);
+.mds-fig__bd{padding:10px;background:var(--bg-surface, #F8F7F3);}
+.mds-fig__lg{display:flex;flex-wrap:wrap;gap:12px;padding:6px 10px;border-top:1px solid var(--border-divider,#E2DED5);
   font-family:var(--font-body,system-ui);font-size:11px;color:var(--text-secondary,#535C65);}
 .mds-fig__lgi{display:inline-flex;align-items:center;gap:5px;}
 .mds-fig__sw{width:14px;height:0;border-top-width:2px;border-top-style:solid;display:inline-block;}
@@ -160,9 +160,9 @@ function Plate({ rows = [], columns = [], cells = [] }) {
       <tbody>
         {rows.map((r, ri) => (
           <tr key={r.key || r.label || ri}>
-            <td style={{ padding: "4px 8px", borderBottom: "1px solid var(--border-divider,#E4E0D8)", fontFamily: "var(--font-body,system-ui)", color: "var(--text-secondary,#535C65)" }}>{r.label}</td>
+            <td style={{ padding: "4px 8px", borderBottom: "1px solid var(--border-divider,#E2DED5)", fontFamily: "var(--font-body,system-ui)", color: "var(--text-secondary,#535C65)" }}>{r.label}</td>
             {columns.map((c, ci) => (
-              <td key={c.key || ci} style={{ padding: "4px 8px", textAlign: "right", borderBottom: "1px solid var(--border-divider,#E4E0D8)", color: "var(--text-primary,#20252B)" }}>{get(ri, ci)}</td>
+              <td key={c.key || ci} style={{ padding: "4px 8px", textAlign: "right", borderBottom: "1px solid var(--border-divider,#E2DED5)", color: "var(--text-primary,#20252B)" }}>{get(ri, ci)}</td>
             ))}
           </tr>
         ))}

@@ -14,12 +14,12 @@
 <style>html,body{margin:0;padding:0;height:100%}
 [data-bl-show="off"]{display:none}
 tbody[data-bl-pick] tr{cursor:pointer}
-tbody[data-bl-pick] tr:hover td{background:var(--bg-hover,#F1EEE7)}
-tr[data-bl-sel="on"] td{background:var(--blue-a10,rgba(47,111,143,.10))}
+tbody[data-bl-pick] tr:hover td{background:var(--bg-hover,#EDEFF0)}
+tr[data-bl-sel="on"] td{background:var(--blue-a10,rgba(47,100,138,.10))}
 tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,#C56343)}
 @media (max-width:1180px){[data-bl-grid="journal"]{grid-template-columns:minmax(0,1fr)}}</style>
 </helmet>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Books" action-label="Retry" on-action="{{ noop }}" hint-size="100%,900px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Books" hint-size="100%,900px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextProvider" value="{{ context }}" hint-size="100%,900px">
 <div data-screen-label="Books loop" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Books" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
@@ -43,6 +43,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 <span style="font:11px/1.4 var(--font-data);color:var(--text-muted)">Selected · {{ selectedLabel }}</span>
 </div>
 <main style="flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
+<h1 style="margin:0;font:600 20px var(--font-display);color:var(--text-primary)">Books · {{ scopeLabel }}</h1>
 <div data-bl-show="{{ tieoutShow }}" style="display:flex;flex-direction:column;gap:12px">
 <div style="display:flex;gap:10px;flex-wrap:wrap">
 <div style="flex:1;min-width:210px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:11px 13px">
@@ -193,7 +194,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 </x-import>
 </x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;confirms&quot;,&quot;refuses&quot;,&quot;never answers&quot;],&quot;default&quot;:&quot;confirms&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapter&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;FIXTURE&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tieout&quot;,&quot;journal&quot;,&quot;ledger&quot;,&quot;trial&quot;,&quot;account&quot;],&quot;default&quot;:&quot;tieout&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;confirms&quot;,&quot;refuses&quot;,&quot;never answers&quot;],&quot;default&quot;:&quot;confirms&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapter&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;FIXTURE&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tieout&quot;,&quot;journal&quot;,&quot;ledger&quot;,&quot;trial&quot;,&quot;account&quot;],&quot;default&quot;:&quot;tieout&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -212,12 +213,19 @@ class Component extends DCLogic {
     this.syncEnv();
     this.nameCrumbs();
   }
-  componentDidUpdate(prev) { if (prev.environment !== this.props.environment) this.syncEnv(); }
+  componentDidUpdate(prev) {
+    this.syncEnv();
+    if (prev.startView !== this.props.startView) this.setState({ view: this.props.startView || "tieout" });
+  }
   componentWillUnmount() { if (this.unsub) this.unsub(); if (this.timer) clearTimeout(this.timer); }
 
   syncEnv() {
-    document.documentElement.setAttribute("data-environment", String(this.props.environment || "FIXTURE").toUpperCase());
+    const prefs = window.MeridianPrefs;
+    document.documentElement.setAttribute("data-environment", this.env());
+    document.documentElement.setAttribute("data-theme", prefs ? prefs.theme(this.props.theme || "light") : (this.props.theme || "light"));
+    if (document.body) document.body.setAttribute("data-theme-density", prefs ? prefs.density(this.props.density || "compact") : (this.props.density || "compact"));
   }
+  env() { const seed = String(this.props.environment || "FIXTURE").toUpperCase(); return window.MeridianPrefs ? window.MeridianPrefs.environment(seed) : seed; }
   nameCrumbs() {
     const M = window.MeridianAppMap, m = this.model();
     if (!M || !M.nameObject || !m) return;
@@ -311,6 +319,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
+    this.syncEnv();
     const B = window.MeridianBooks, I = window.MeridianInstructions, M = window.MeridianAppMap;
     const s = this.state, m = this.model();
     const noop = () => {};
@@ -384,8 +393,8 @@ class Component extends DCLogic {
     }
 
     return {
-      dataState: "ready", noop: noop,
-      envLabel: String(this.props.environment || "FIXTURE").toUpperCase(),
+      dataState: this.props.dataState || "ready", noop: noop,
+      envLabel: this.env(),
       nav: M ? M.sections("accounting") : [],
       onNav: (id) => M && M.go(id),
       context: {
