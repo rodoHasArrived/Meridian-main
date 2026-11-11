@@ -100,6 +100,16 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         },
         "sinkingFund": {
             "schedule": [ { "sinkDate": "2028-01-15", "amount": 5000000 } ], "sinkFrequency": "Annual", "isProRata": true
+        },
+        "exercise": {
+            "optionRight": "Call", "strikePrice": 105.5, "strikeRate": 0.0325, "exerciseStyle": "European",
+            "underlyingSecurityId": "9e9e9e9e-0000-0000-0000-000000000004", "premiumAmount": 125000
+        },
+        "currencyPair": { "baseCurrency": "EUR", "quoteCurrency": "USD", "settlementCurrency": "USD", "forwardRate": 1.0875 },
+        "notional": { "notional": 10000000, "denomination": 1000, "committedAmount": 5000000, "fundedAmount": 3250000, "unfundedAmount": 1750000 },
+        "profileEnvelope": {
+            "customProfileId": "co-invest-spv", "profileVersion": 2,
+            "terms": { "schemaVersion": 3, "customProfileId": "co-invest-spv", "profileVersion": 2, "profileFields": { "vehicle": "SPV I" } }
         }
     }
     """);
@@ -249,6 +259,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("multiCalendar")]
     [InlineData("inflationLinked")]
     [InlineData("sinkingFund")]
+    [InlineData("exercise")]
+    [InlineData("currencyPair")]
+    [InlineData("notional")]
+    [InlineData("profileEnvelope")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -292,6 +306,10 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("multiCalendar")]
     [InlineData("inflationLinked")]
     [InlineData("sinkingFund")]
+    [InlineData("exercise")]
+    [InlineData("currencyPair")]
+    [InlineData("notional")]
+    [InlineData("profileEnvelope")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated
