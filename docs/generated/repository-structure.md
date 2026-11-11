@@ -8441,7 +8441,9 @@ Meridian-main
 │   │   │   │   │   ├── dev-fixtures
 │   │   │   │   │   │   ├── bootstrap-fixtures.ts
 │   │   │   │   │   │   ├── fixture-resolver.ts
-│   │   │   │   │   │   └── market-data-fixtures.ts
+│   │   │   │   │   │   ├── market-data-fixtures.ts
+│   │   │   │   │   │   ├── workstation-surface-fixtures.test.ts
+│   │   │   │   │   │   └── workstation-surface-fixtures.ts
 │   │   │   │   │   ├── first-run
 │   │   │   │   │   │   ├── activation.test.ts
 │   │   │   │   │   │   └── activation.ts

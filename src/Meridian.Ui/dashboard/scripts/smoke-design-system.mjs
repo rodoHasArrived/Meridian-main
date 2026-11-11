@@ -38,13 +38,23 @@ let fixtureServer = false;
 // Known gaps observed on the unchanged fixture-only baseline. A live server is
 // never allowed this exception; successful fixture-provenance headers prove scope.
 const knownFixtureGaps = new Set([
-  "/api/workstation/operator/scope-preference", "/api/risk/escalations",
-  "/api/workstation/operations/financial-operations-command-center",
-  "/api/ledger/journal-automation/daily-mark-to-market-schedules",
-  "/api/workstation/operator/visits/reconciliation-breaks", "/api/quality/dashboard", "/api/ledger/books",
-  "/api/providers/capability-matrix", "/api/security-master/corporate-actions/inbox",
-  "/api/security-master/quality-report/latest"
+  // Large composite projections with no synthetic fixture yet (issue #3510).
+  "/api/workstation/operations/financial-operations-command-center"
 ]);
+// Paths that have a fixture. A 501 on one of these is a regression, never an accepted gap.
+const servedFixturePaths = [
+  "/api/workstation/operator/scope-preference", "/api/risk/escalations",
+  "/api/ledger/journal-automation/daily-mark-to-market-schedules", "/api/quality/dashboard", "/api/ledger/books",
+  "/api/providers/capability-matrix", "/api/security-master/corporate-actions/inbox",
+  "/api/security-master/quality-report/latest", "/api/workstation/reconciliation/queue-status",
+  "/api/workstation/reconciliation/cases", "/api/workstation/reconciliation/break-queue/taxonomy",
+  "/api/workstation/reconciliation/statement-runs/run-42/validation",
+  "/api/workstation/reconciliation/statement-runs/run-42/breaks"
+];
+const servedFixturePatterns = [/^\/api\/workstation\/operator\/visits\/[^/]+$/];
+const hasFixture = (method, pathname) => method === "GET"
+  && (servedFixturePaths.includes(pathname) || servedFixturePatterns.some(pattern => pattern.test(pathname)));
+
 function monitor(page) {
   page.setDefaultTimeout(20000);
   page.setDefaultNavigationTimeout(20000);
@@ -64,7 +74,9 @@ function monitor(page) {
       const body = await response.json().catch(() => null);
       const declaredFixtureGap = body?.mode === "fixture-only" && body?.title === "Development fixture unavailable";
       const baselineFixtureGap = fixtureServer && (knownFixtureGaps.has(url.pathname) || /^\/api\/ledger\/close-management\/period-plan\/[^/]+$/.test(url.pathname));
-      if (url.pathname.startsWith("/api/") && response.status() === 501 && (declaredFixtureGap || baselineFixtureGap)) {
+      if (response.status() === 501 && fixtureServer && hasFixture(response.request().method(), url.pathname)) {
+        report.assetFailures.push(`Fixture regression: ${response.request().method()} ${url.pathname} returned 501`);
+      } else if (url.pathname.startsWith("/api/") && response.status() === 501 && (declaredFixtureGap || baselineFixtureGap)) {
         report.fixtureLimitations.push({ method: response.request().method(), path: url.pathname });
       } else report.assetFailures.push(`HTTP ${response.status()}: ${response.url()}`);
     })());
