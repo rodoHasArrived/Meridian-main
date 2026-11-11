@@ -122,7 +122,7 @@ async function screenshot(page, name) {
 async function scan(page, label) {
   // Each appearance scene gets a fresh document and axe engine. Reproduce the
   // same public interaction so no prior scan or transition can supply stale styles.
-  const audit = await page.context().newPage();
+  const audit = await browser.newPage({ storageState: await page.context().storageState(), viewport: page.viewportSize(), reducedMotion: "reduce" });
   monitor(audit);
   try {
     await audit.emulateMedia({ colorScheme: await page.evaluate(() => matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"), reducedMotion: "reduce" });
