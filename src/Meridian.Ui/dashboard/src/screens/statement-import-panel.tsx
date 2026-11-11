@@ -35,7 +35,7 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
       <PanelSurface className="p-4">
-        <h1 className="text-base font-semibold text-foreground">Import statement</h1>
+        <h2 className="text-base font-semibold text-foreground">Import statement</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Upload a broker or custodian statement, or fetch it through a configured provider. Review the canonical
           mapping and confidence before records enter the reconciliation queue.
