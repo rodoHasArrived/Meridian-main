@@ -84,6 +84,25 @@ public sealed class ReportingSchedulePeriodPlannerTests
     }
 
     [Theory]
+    // The browser's zonedWallTimeToUtc (lib/time-zone.ts) is tested against these same instants,
+    // so a due time saved from the form and one advanced by the worker agree.
+    // Skipped hour, 8 March 2026: 02:30 does not exist and moves to 03:00 EDT.
+    [InlineData(2026, 3, 8, 2, 30, "2026-03-08T07:00:00Z")]
+    // Repeated hour, 1 November 2026: 01:30 resolves to its second, standard-time occurrence.
+    [InlineData(2026, 11, 1, 1, 30, "2026-11-01T06:30:00Z")]
+    [InlineData(2026, 7, 1, 8, 0, "2026-07-01T12:00:00Z")]
+    public void DueAtUtc_ResolvesSkippedAndRepeatedWallTimesTheSameWayAsTheBrowser(
+        int year, int month, int day, int hour, int minute, string expectedUtc)
+    {
+        var newYork = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
+
+        var due = ReportingSchedulePeriodPlanner.DueAtUtc(
+            new DateOnly(year, month, day), 0, newYork, new TimeOnly(hour, minute));
+
+        due.Should().Be(DateTimeOffset.Parse(expectedUtc, System.Globalization.CultureInfo.InvariantCulture));
+    }
+
+    [Theory]
     [InlineData(-1)]
     [InlineData(367)]
     public void IsValid_RejectsDueOffsetsOutsideTheSupportedRange(int dueDays)

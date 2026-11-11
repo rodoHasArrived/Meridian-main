@@ -16,7 +16,7 @@ export function listTimeZoneOptions(currentTimeZoneId: string): string[] {
 
 /**
  * Converts a wall-clock time in an IANA zone to the UTC instant; unknown zones fall back to UTC.
- * A wall time skipped by a spring-forward change resolves to the equivalent time after the gap;
+ * A wall time skipped by a spring-forward change resolves to the first valid time after the gap;
  * a wall time repeated by a fall-back change resolves to its second occurrence (standard time).
  */
 export function zonedWallTimeToUtc(
@@ -59,21 +59,26 @@ export function zonedWallTimeToUtc(
     return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second) - instant;
   };
 
-  // Two passes settle the offset when the first guess lands on the other side of a
-  // daylight-saving change.
-  const firstGuess = wallAsUtc - offsetAt(wallAsUtc);
-  const settled = wallAsUtc - offsetAt(firstGuess);
-  const showsRequestedWallTime = (instant: number) => instant + offsetAt(instant) === wallAsUtc;
-  if (showsRequestedWallTime(settled)) {
-    return new Date(settled);
-  }
-  if (showsRequestedWallTime(firstGuess)) {
-    return new Date(firstGuess);
+  // A zone has at most two offsets around any one day (before and after a daylight-saving
+  // change), so the requested wall time maps to at most two instants. Keep the ones that read
+  // back as that wall time.
+  const DAY = 24 * 60 * 60 * 1000;
+  const resolve = (wall: number): number[] => {
+    const candidates = new Set([wall - offsetAt(wall - DAY), wall - offsetAt(wall + DAY)]);
+    return [...candidates].filter((instant) => instant + offsetAt(instant) === wall).sort((x, y) => x - y);
+  };
+
+  // These rules mirror the server (ReportingSchedulePeriodPlanner.DueAtUtc), so a due time saved
+  // from the form and one advanced by the worker agree:
+  // - a wall time repeated by a fall-back change resolves to its second, standard-time occurrence;
+  // - a wall time skipped by a spring-forward change moves forward in 30-minute steps to the
+  //   first time that exists (02:30 becomes 03:00).
+  for (let wall = wallAsUtc, step = 0; step <= 8; wall += 30 * 60 * 1000, step += 1) {
+    const instants = resolve(wall);
+    if (instants.length > 0) {
+      return new Date(instants[instants.length - 1]);
+    }
   }
 
-  // Neither candidate reads back as the requested wall time: it falls in a spring-forward gap
-  // and does not exist (02:30 on the day clocks jump from 02:00 to 03:00). Use the later
-  // candidate, which is the same distance past the gap (03:30), rather than a time before it.
-  // The server's period planner applies the same "first valid time after the gap" rule.
-  return new Date(Math.max(settled, firstGuess));
+  return new Date(wallAsUtc);
 }
