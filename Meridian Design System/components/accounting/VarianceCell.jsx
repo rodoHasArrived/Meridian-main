@@ -40,7 +40,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-var--action{background:none;border:0;border-left:2px solid transparent;font:inherit;color:inherit;cursor:pointer;padding:1px 3px 1px 7px}
 .mds-var--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-var--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:1px}
-.mds-var[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,var(--bg-active,#E7EDF2))}
+.mds-var[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--interaction-selected-surface,var(--bg-active,#E7EDF2))}
 .mds-var--inline{grid-auto-flow:column;align-items:baseline;gap:8px;justify-items:start;text-align:left;min-width:0}
 .mds-var--inline .mds-var__note{display:none}
 `;document.head.appendChild(el)}

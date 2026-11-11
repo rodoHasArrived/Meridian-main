@@ -35,6 +35,8 @@ function inject() {
   document.head.appendChild(el);
 }
 
+// `sections` defaults to none: a screen that mounts the rail before its navigation model has
+// loaded (the strategy-runs views do, on their first render) drew nothing but threw here.
 export function NavRail({ sections = [], activeId, onSelect }) {
   inject();
   return (

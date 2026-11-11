@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 import {
   useCallback,
   useEffect,
@@ -49,7 +50,6 @@ import type {
   SecureReportingIssuedAccessGrant
 } from "@/types/reporting-governance";
 import { formatUtcTimestamp } from "@/lib/format";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 type ResourcePhase = "loading" | "ready" | "unavailable";
 
@@ -976,23 +976,7 @@ function ArtifactPanel({
             ) : null}
             {release.artifacts.length > 0 ? (
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[48rem] text-left text-sm">
-                  <caption className="sr-only">Immutable artifacts in the released report package</caption>
-                  <thead>
-                    <tr className="border-b border-border text-xs text-muted-foreground">
-                      <th scope="col" className="px-2 py-2">Include</th>
-                      <th scope="col" className="px-2 py-2">Artifact</th>
-                      <th scope="col" className="px-2 py-2">Bytes</th>
-                      <th scope="col" className="px-2 py-2">SHA-256</th>
-                      <th scope="col" className="px-2 py-2">Verified download</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {release.artifacts.map((artifact) => {
-                      const inputId = `report-artifact-${safeDomId(artifact.artifactId)}`;
-                      return (
-                        <tr key={artifact.artifactId} className="border-b border-border/60 align-top">
-                          <td className="px-2 py-2">
+                <TableWorkbench<(typeof release.artifacts)[number]> workbenchId="reporting-released-artifacts" sourceKey={JSON.stringify(release.artifacts)} rows={release.artifacts} columns={[{id:"field-0",label:"Include",render:(artifact)=>{const inputId = `report-artifact-${safeDomId(artifact.artifactId)}`;return <>
                             <input
                               id={inputId}
                               type="checkbox"
@@ -1001,23 +985,18 @@ function ArtifactPanel({
                               onChange={() => onToggleArtifact(artifact.artifactId)}
                               aria-label={`Include ${artifact.artifactId} in distribution`}
                             />
-                          </td>
-                          <td className="break-all px-2 py-2 font-mono text-xs">{artifact.artifactId}</td>
-                          <td className="px-2 py-2 font-mono text-xs">{formatBytes(artifact.byteLength)}</td>
-                          <td className="break-all px-2 py-2 font-mono text-xs">{artifact.artifactHash}</td>
-                          <td className="px-2 py-2">
+                          </>;}},
+{id:"field-1",label:"Artifact",exportValue:(artifact)=>artifact.artifactId,render:(artifact)=>{return <>{artifact.artifactId}</>;}},
+{id:"field-2",label:"Bytes",exportValue:(artifact)=>artifact.byteLength,render:(artifact)=>{return <>{formatBytes(artifact.byteLength)}</>;}},
+{id:"field-3",label:"SHA-256",exportValue:(artifact)=>artifact.artifactHash,render:(artifact)=>{return <>{artifact.artifactHash}</>;}},
+{id:"field-4",label:"Verified download",render:(artifact)=>{return <>
                             <a
                               className="font-semibold text-primary underline underline-offset-2"
                               href={secureReportingArtifactDownloadPath(run.runId, artifact.artifactId)}
                             >
                               Download exact bytes
                             </a>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </>;}}]} getRowId={(artifact)=>artifact.artifactId} getSearchText={(artifact)=>[artifact.artifactId,artifact.byteLength,artifact.artifactHash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Immutable artifacts in the released report package" caption="Immutable artifacts in the released report package" emptyText="No retained records returned." />
               </div>
             ) : (
               <StatusBanner
@@ -1054,31 +1033,20 @@ function AuditPanel({ run }: { run: GovernedReportingRun }) {
           />
         ) : (
           <div className="overflow-x-auto">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Version", className: "px-2 py-2 font-mono text-xs", render: (entry) => <>{entry.aggregateVersion}</> },
-            { id: "column-2", label: "When", className: "px-2 py-2", render: (entry) => <>{formatTimestamp(entry.occurredAtUtc)}</> },
-            { id: "column-3", label: "Action", className: "px-2 py-2", render: (entry) => <>
+            <TableWorkbench<(typeof run.auditTrail)[number]> tableClassName={"w-full min-w-[64rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-run-audit" sourceKey={JSON.stringify(run.auditTrail)} rows={run.auditTrail} columns={[{id:"field-0",label:"Version",exportValue:(entry)=>entry.aggregateVersion,render:(entry)=>{return <>{entry.aggregateVersion}</>;}},
+{id:"field-1",label:"When",exportValue:(entry)=>entry.occurredAtUtc,render:(entry)=>{return <>{formatTimestamp(entry.occurredAtUtc)}</>;}},
+{id:"field-2",label:"Action",exportValue:(entry)=>entry.action,render:(entry)=>{return <>
                       <div>{entry.action}</div>
                       <div className="font-mono text-xs text-muted-foreground">{entry.permissionUsed}</div>
-                    </> },
-            { id: "column-4", label: "Actor", className: "px-2 py-2", render: (entry) => <>{entry.authority.actorId}</> },
-            { id: "column-5", label: "Transition", className: "px-2 py-2", render: (entry) => <>
+                    </>;}},
+{id:"field-3",label:"Actor",exportValue:(entry)=>entry.authority.actorId,render:(entry)=>{return <>{entry.authority.actorId}</>;}},
+{id:"field-4",label:"Transition",exportValue:(entry)=>presentTransition(entry.fromGovernanceState, entry.toGovernanceState),render:(entry)=>{return <>
                       {presentTransition(entry.fromGovernanceState, entry.toGovernanceState)}
-                    </> },
-            { id: "column-6", label: "Note", className: "max-w-xs px-2 py-2 text-muted-foreground", render: (entry) => <>
+                    </>;}},
+{id:"field-5",label:"Note",exportValue:(entry)=>redactReportingCredentialText(entry.note ?? ""),render:(entry)=>{return <>
                       {entry.note ? redactReportingCredentialText(entry.note) : "No note"}
-                    </> },
-            { id: "column-7", label: "Hash", className: "max-w-xs break-all px-2 py-2 font-mono text-xs", render: (entry) => <>{entry.hash}</> }
-          ]}
-          rows={run.auditTrail}
-          getRowId={(entry) => String(entry.eventId)}
-          getRowClassName={() => "border-b border-border/60 align-top"}
-          ariaLabel={"Retained governed reporting audit events"}
-          tableClassName={"w-full min-w-[64rem] text-left text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>;}},
+{id:"field-6",label:"Hash",exportValue:(entry)=>entry.hash,render:(entry)=>{return <>{entry.hash}</>;}}]} getRowId={(entry)=>entry.eventId} getSearchText={(entry)=>[entry.aggregateVersion,entry.occurredAtUtc,entry.action,entry.authority.actorId,presentTransition(entry.fromGovernanceState, entry.toGovernanceState),redactReportingCredentialText(entry.note ?? ""),entry.hash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Retained governed reporting audit events" caption="Retained governed reporting audit events" emptyText="No retained records returned." />
           </div>
         )}
       </CardContent>
@@ -1156,10 +1124,8 @@ function RestatementPanel({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Revision", className: "px-2 py-2 font-mono text-xs", render: (revision) => <>{revision.revision}</> },
-            { id: "column-2", label: "Run", className: "px-2 py-2", render: (revision) => <>
+              <TableWorkbench<(typeof history.runs)[number]> tableClassName={"w-full min-w-[42rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-series-revisions" sourceKey={JSON.stringify(history.runs)} rows={history.runs} columns={[{id:"field-0",label:"Revision",exportValue:(revision)=>revision.revision,render:(revision)=>{return <>{revision.revision}</>;}},
+{id:"field-1",label:"Run",exportValue:(revision)=>revision.runId,render:(revision)=>{return <>
                         {revision.runId === run.runId ? (
                           <span className="font-mono text-xs">{revision.runId} (current)</span>
                         ) : (
@@ -1170,19 +1136,10 @@ function RestatementPanel({
                             {revision.runId}
                           </Link>
                         )}
-                      </> },
-            { id: "column-3", label: "Execution", className: "px-2 py-2", render: (revision) => <>{revision.executionState}</> },
-            { id: "column-4", label: "Governance", className: "px-2 py-2", render: (revision) => <>{revision.governanceState}</> },
-            { id: "column-5", label: "Snapshot", className: "max-w-xs break-all px-2 py-2 font-mono text-xs", render: (revision) => <>{revision.snapshot.snapshotHash}</> }
-          ]}
-          rows={history.runs}
-          getRowId={(revision) => String(revision.runId)}
-          getRowClassName={() => "border-b border-border/60"}
-          ariaLabel={"Governed revisions in this report series"}
-          tableClassName={"w-full min-w-[42rem] text-left text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                      </>;}},
+{id:"field-2",label:"Execution",exportValue:(revision)=>revision.executionState,render:(revision)=>{return <>{revision.executionState}</>;}},
+{id:"field-3",label:"Governance",exportValue:(revision)=>revision.governanceState,render:(revision)=>{return <>{revision.governanceState}</>;}},
+{id:"field-4",label:"Snapshot",exportValue:(revision)=>revision.snapshot.snapshotHash,render:(revision)=>{return <>{revision.snapshot.snapshotHash}</>;}}]} getRowId={(revision)=>revision.runId} getSearchText={(revision)=>[revision.revision,revision.runId,revision.executionState,revision.governanceState,revision.snapshot.snapshotHash].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Governed revisions in this report series" caption="Governed revisions in this report series" emptyText="No retained records returned." />
             </div>
 
             {history.restatementRequests.length > 0 ? (
@@ -1578,28 +1535,28 @@ function DistributionPanel({
             <p className="text-sm text-muted-foreground">No access grants are retained for this run.</p>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[64rem] text-left text-sm">
-                <caption className="sr-only">Durable recipient access grants</caption>
-                <thead>
-                  <tr className="border-b border-border text-xs text-muted-foreground">
-                    <th scope="col" className="px-2 py-2">Grant</th>
-                    <th scope="col" className="px-2 py-2">Audience</th>
-                    <th scope="col" className="px-2 py-2">State</th>
-                    <th scope="col" className="px-2 py-2">Expiry</th>
-                    <th scope="col" className="px-2 py-2">Uses</th>
-                    <th scope="col" className="px-2 py-2">Artifacts</th>
-                    <th scope="col" className="px-2 py-2">Control</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {grants.data.map((grant) => {
-                    const revoked = Boolean(grant.revokedAtUtc) || normalizeToken(grant.state) === "revoked";
-                    const canRevoke = released
+              <TableWorkbench<(typeof grants.data)[number]> workbenchId="reporting-access-grants" sourceKey={JSON.stringify(grants.data)} rows={grants.data} columns={[{id:"field-0",label:"Grant",exportValue:(grant)=>grant.grantId,render:(grant)=>{return <>{grant.grantId}</>;}},
+{id:"field-1",label:"Audience",exportValue:(grant)=>grant.audience,render:(grant)=>{return <>{grant.audience}</>;}},
+{id:"field-2",label:"State",exportValue:(grant)=>grant.state,render:(grant)=>{const revoked = Boolean(grant.revokedAtUtc) || normalizeToken(grant.state) === "revoked";return <>
+                          <Badge variant={revoked ? "danger" : "outline"}>{grant.state}</Badge>
+                          {grant.revocationReason ? (
+                            <div className="mt-1 text-xs text-muted-foreground">
+                              {redactReportingCredentialText(grant.revocationReason)}
+                            </div>
+                          ) : null}
+                        </>;}},
+{id:"field-3",label:"Expiry",exportValue:(grant)=>grant.expiresAtUtc,render:(grant)=>{return <>{formatTimestamp(grant.expiresAtUtc)}</>;}},
+{id:"field-4",label:"Uses",exportValue:(grant)=>`${grant.useCount}/${grant.maxUses}`,render:(grant)=>{return <>{grant.useCount}/{grant.maxUses}</>;}},
+{id:"field-5",label:"Artifacts",exportValue:(grant)=>grant.artifactIds.join("; "),render:(grant)=>{return <>
+                          {grant.artifactIds.length} · {grant.allowPackageRead ? "package read" : "artifact only"}
+                        </>;}},
+{id:"field-6",label:"Control",render:(grant)=>{const revoked = Boolean(grant.revokedAtUtc) || normalizeToken(grant.state) === "revoked";
+const canRevoke = released
                       && transports.phase === "ready"
                       && transports.data.canRevokeAccessGrant
                       && !revoked
                       && Boolean(revocationReason.trim());
-                    const revokeReason = revoked
+const revokeReason = revoked
                       ? "This grant is already revoked."
                       : !released
                         ? "The owning run is not Released."
@@ -1609,25 +1566,7 @@ function DistributionPanel({
                             ? transports.data.actionDisabledReasonCode ?? "The server did not authorize access-grant revocation for this caller."
                             : !revocationReason.trim()
                               ? "Enter a revocation reason."
-                              : "Another reporting command is running.";
-                    return (
-                      <tr key={grant.grantId} className="border-b border-border/60 align-top">
-                        <td className="break-all px-2 py-2 font-mono text-xs">{grant.grantId}</td>
-                        <td className="break-all px-2 py-2">{grant.audience}</td>
-                        <td className="px-2 py-2">
-                          <Badge variant={revoked ? "danger" : "outline"}>{grant.state}</Badge>
-                          {grant.revocationReason ? (
-                            <div className="mt-1 text-xs text-muted-foreground">
-                              {redactReportingCredentialText(grant.revocationReason)}
-                            </div>
-                          ) : null}
-                        </td>
-                        <td className="px-2 py-2">{formatTimestamp(grant.expiresAtUtc)}</td>
-                        <td className="px-2 py-2 font-mono text-xs">{grant.useCount}/{grant.maxUses}</td>
-                        <td className="px-2 py-2 font-mono text-xs">
-                          {grant.artifactIds.length} · {grant.allowPackageRead ? "package read" : "artifact only"}
-                        </td>
-                        <td className="px-2 py-2">
+                              : "Another reporting command is running.";return <>
                           <Button
                             type="button"
                             size="sm"
@@ -1638,12 +1577,7 @@ function DistributionPanel({
                           >
                             Revoke
                           </Button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                        </>;}}]} getRowId={(grant)=>grant.grantId} getSearchText={(grant)=>[grant.grantId,grant.audience,grant.state,grant.expiresAtUtc,`${grant.useCount}/${grant.maxUses}`,grant.artifactIds.join("; ")].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Durable recipient access grants" caption="Durable recipient access grants" emptyText="No retained records returned." />
             </div>
           )}
         </section>
@@ -1664,15 +1598,13 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
         <p className="text-sm text-muted-foreground">No durable delivery jobs are retained for this run.</p>
       ) : (
         <div className="overflow-x-auto">
-          <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Job", className: "break-all px-2 py-2 font-mono text-xs", render: (delivery) => <>
+          <TableWorkbench<(typeof resource.data)[number]> tableClassName={"w-full min-w-[68rem] text-left text-sm"} maxVisibleRows={null}  workbenchId="reporting-delivery-history" sourceKey={JSON.stringify(resource.data)} rows={resource.data} columns={[{id:"field-0",label:"Job",exportValue:(delivery)=>delivery.jobId,render:(delivery)=>{return <>
                     <div>{delivery.jobId}</div>
                     <div className="mt-1 text-muted-foreground">release v{delivery.releaseVersion}</div>
                     <div className="mt-1">{delivery.artifactManifestHashSha256}</div>
-                  </> },
-            { id: "column-2", label: "Transport", className: "px-2 py-2", render: (delivery) => <>{delivery.transportId}</> },
-            { id: "column-3", label: "Recipient", className: "px-2 py-2", render: (delivery) => <>
+                  </>;}},
+{id:"field-1",label:"Transport",exportValue:(delivery)=>delivery.transportId,render:(delivery)=>{return <>{delivery.transportId}</>;}},
+{id:"field-2",label:"Recipient",exportValue:(delivery)=>redactReportingCredentialText(delivery.recipient),render:(delivery)=>{return <>
                     <div>
                       <span className="text-xs text-muted-foreground">{delivery.recipientKind ?? "User"}</span>
                       {" · "}{redactReportingCredentialText(delivery.recipient)}
@@ -1680,8 +1612,8 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                     <div className="mt-1 break-all text-xs text-muted-foreground">
                       {redactReportingCredentialText(delivery.destination)}
                     </div>
-                  </> },
-            { id: "column-4", label: "State", className: "px-2 py-2", render: (delivery) => <>
+                  </>;}},
+{id:"field-3",label:"State",exportValue:(delivery)=>delivery.state,render:(delivery)=>{return <>
                     <Badge variant={deliveryStateVariant(delivery.state)}>{delivery.state}</Badge>
                     {delivery.lastErrorCode ? <div className="mt-1 text-xs text-danger">{delivery.lastErrorCode}</div> : null}
                     {delivery.lastError ? (
@@ -1689,14 +1621,14 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                         {redactReportingCredentialText(delivery.lastError)}
                       </div>
                     ) : null}
-                  </> },
-            { id: "column-5", label: "Attempts", className: "px-2 py-2 font-mono text-xs", render: (delivery) => <>{delivery.attemptCount}/{delivery.maxAttempts}</> },
-            { id: "column-6", label: "Provider reference", className: "break-all px-2 py-2 font-mono text-xs", render: (delivery) => <>
+                  </>;}},
+{id:"field-4",label:"Attempts",exportValue:(delivery)=>`${delivery.attemptCount}/${delivery.maxAttempts}`,render:(delivery)=>{return <>{delivery.attemptCount}/{delivery.maxAttempts}</>;}},
+{id:"field-5",label:"Provider reference",exportValue:(delivery)=>redactReportingCredentialText(delivery.providerMessageId ?? ""),render:(delivery)=>{return <>
                     {delivery.providerMessageId
                       ? redactReportingCredentialText(delivery.providerMessageId)
                       : "Pending"}
-                  </> },
-            { id: "column-7", label: "Receipts", className: "px-2 py-2", render: (delivery) => <>
+                  </>;}},
+{id:"field-6",label:"Receipts",exportValue:(delivery)=>JSON.stringify(delivery.receipts.map(receipt => ({id:receipt.receiptId,kind:receipt.kind,at:receipt.occurredAtUtc,reference:redactReportingCredentialText(receipt.providerReference ?? ""),detail:redactReportingCredentialText(receipt.detail ?? "")}))),render:(delivery)=>{return <>
                     {delivery.receipts.length > 0 ? (
                       <ul className="space-y-1" aria-label={`Receipts for ${delivery.jobId}`}>
                         {delivery.receipts.map((receipt) => (
@@ -1716,16 +1648,7 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                         ))}
                       </ul>
                     ) : "No receipts"}
-                  </> }
-          ]}
-          rows={resource.data}
-          getRowId={(delivery) => String(delivery.jobId)}
-          getRowClassName={() => "border-b border-border/60 align-top"}
-          ariaLabel={"Durable report deliveries and provider receipts"}
-          tableClassName={"w-full min-w-[68rem] text-left text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                  </>;}}]} getRowId={(delivery)=>delivery.jobId} getSearchText={(delivery)=>[delivery.jobId,delivery.transportId,redactReportingCredentialText(delivery.recipient),delivery.state,`${delivery.attemptCount}/${delivery.maxAttempts}`,redactReportingCredentialText(delivery.providerMessageId ?? "")].join(" ")} completePopulation sourceDescription="Complete authorized retained report snapshot for the selected run or series; text follows credential redaction." ariaLabel="Durable report deliveries and provider receipts" caption="Durable report deliveries and provider receipts" emptyText="No retained records returned." />
         </div>
       )}
     </section>

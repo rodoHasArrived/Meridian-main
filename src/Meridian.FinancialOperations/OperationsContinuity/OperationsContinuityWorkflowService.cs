@@ -18,6 +18,12 @@ namespace Meridian.FinancialOperations.OperationsContinuity;
 /// </summary>
 public interface IOperationsContinuityWorkflowService
 {
+    Task<OperationsApprovalCollaborationDto?> GetApprovalCollaborationAsync(Guid workflowId, CancellationToken ct = default)
+        => Task.FromResult<OperationsApprovalCollaborationDto?>(null);
+    Task<OperationsTransitionResultDto> AddApprovalCommentAsync(Guid workflowId, OperationsApprovalCommentRequestDto request, CancellationToken ct = default)
+        => throw new NotSupportedException("Approval discussion is not supported by this service.");
+    Task<OperationsTransitionResultDto> ReassignApprovalAsync(Guid workflowId, OperationsApprovalReassignRequestDto request, CancellationToken ct = default)
+        => throw new NotSupportedException("Approval reassignment is not supported by this service.");
     Task<OperationsTransitionResultDto> StartWorkflowAsync(OperationsStartWorkflowRequestDto request, CancellationToken ct = default);
 
     Task<OperationsTransitionResultDto> StartPreparedWorkflowAsync(

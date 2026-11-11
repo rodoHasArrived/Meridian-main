@@ -5,6 +5,8 @@
   <meta charset="UTF-8" />
   <title>CommandPalette</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:0;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
@@ -44,7 +46,7 @@ function Demo() {
         <div style={{ fontFamily:"var(--font-data)", fontSize:13, color:"var(--text-secondary)" }}>
           Last action: <strong style={{ color:"var(--text-primary)" }}>{last}</strong>
         </div>
-        <button onClick={() => setOpen(true)} style={{ marginTop:14, display:"inline-flex", alignItems:"center", gap:10, padding:"8px 12px", background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, fontFamily:"var(--font-data)", fontSize:13, color:"var(--text-secondary)", cursor:"pointer" }}>
+        <button type="button" onClick={() => setOpen(true)} style={{ marginTop:14, display:"inline-flex", alignItems:"center", gap:10, padding:"8px 12px", background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, fontFamily:"var(--font-data)", fontSize:13, color:"var(--text-secondary)", cursor:"pointer" }}>
           <span style={{ color:"var(--text-muted)" }}>⌕</span> Search…
           <span style={{ fontSize:10, fontWeight:600, border:"1px solid var(--border)", padding:"1px 6px", borderRadius:2 }}>Ctrl K</span>
         </button>

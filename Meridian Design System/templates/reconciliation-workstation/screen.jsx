@@ -3,11 +3,9 @@
 // rationale, sign-off), StatementImportSummaryDto, statement-run evidence, and
 // ReconciliationQueueAccountStatusDto (queue state · next best action).
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout,
-  Tabs, TabPanel, DenseDataTable, SeverityBadge, KeyValueGrid, TrustStrip, EvidenceLink,
-  CaseQueue, SlaChip, SegmentedControl
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, Tabs, TabPanel, DataGrid, SeverityBadge, KeyValueGrid, TrustStrip, EvidenceLink, CaseQueue, SlaChip, SegmentedControl;
 const { useState } = React;
 
 const NOW = "2026-07-05T14:32:00Z";
@@ -121,7 +119,8 @@ function CaseDetail({ c }) {
   );
 }
 
-function ReconciliationWorkstationScreen() {
+function ReconciliationWorkstationScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, Tabs, TabPanel, DataGrid, SeverityBadge, KeyValueGrid, TrustStrip, EvidenceLink, CaseQueue, SlaChip, SegmentedControl } = window.MeridianDesignSystem_205d17);
   const [selId, setSelId] = useState("CASE-4181");
   const [filt, setFilt] = useState("all");
   const list = CASES.filter((c) =>
@@ -134,7 +133,7 @@ function ReconciliationWorkstationScreen() {
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="Reconciliation" environment="OPS" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="Reconciliation" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="cases" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -143,9 +142,10 @@ function ReconciliationWorkstationScreen() {
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Statement Reconciliation</h1>
             <Badge variant="neutral">June close</Badge>
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm">Run matcher</Button>
-            <Button variant="primary" size="sm">Import statement</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Run matcher</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm">Import statement</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Reconciliation records">
 
           <TrustStrip items={[
             { label: "Imports", value: IMPORTS.length + " this cycle", state: "ready" },
@@ -169,7 +169,7 @@ function ReconciliationWorkstationScreen() {
             <TabPanel>
               <div style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: 10 }}>
                 <PanelSurface style={{ padding: 0 }}>
-                  <DenseDataTable
+                  <DataGrid
                     columns={[
                       { key: "runId", label: "Run" },
                       { key: "custodian", label: "Custodian" },
@@ -177,12 +177,12 @@ function ReconciliationWorkstationScreen() {
                       { key: "period", label: "Period" },
                       { key: "validation", label: "Validation" },
                       { key: "match", label: "Match summary" },
-                      { key: "status", label: "Status", render: (r) => <SeverityBadge status={r.status} /> },
+                      { key: "status", label: "Status", cell: (r) => <SeverityBadge status={r.status} /> },
                     ]}
                     rows={RUNS} />
                 </PanelSurface>
                 <PanelSurface style={{ padding: 0 }}>
-                  <DenseDataTable
+                  <DataGrid
                     columns={[
                       { key: "importId", label: "Import" },
                       { key: "broker", label: "Broker / source" },
@@ -190,7 +190,7 @@ function ReconciliationWorkstationScreen() {
                       { key: "importedAtUtc", label: "Imported" },
                       { key: "rawRowCount", label: "Raw rows", align: "right" },
                       { key: "normalizedRowCount", label: "Normalized", align: "right",
-                        render: (r) => <span style={{ color: r.normalizedRowCount < r.rawRowCount ? "var(--severity-action-fg)" : "inherit" }}>{r.normalizedRowCount.toLocaleString()}</span> },
+                        cell: (r) => <span style={{ color: r.normalizedRowCount < r.rawRowCount ? "var(--severity-action-fg)" : "inherit" }}>{r.normalizedRowCount.toLocaleString()}</span> },
                     ]}
                     rows={IMPORTS} />
                 </PanelSurface>
@@ -200,12 +200,12 @@ function ReconciliationWorkstationScreen() {
             <TabPanel>
               <div style={{ paddingTop: 10 }}>
                 <PanelSurface style={{ padding: 0 }}>
-                  <DenseDataTable
+                  <DataGrid
                     columns={[
                       { key: "accountCode", label: "Account" },
-                      { key: "queueState", label: "Queue state", render: (r) => <SeverityBadge status={r.queueState} /> },
+                      { key: "queueState", label: "Queue state", cell: (r) => <SeverityBadge status={r.queueState} /> },
                       { key: "unresolvedBreakCount", label: "Unresolved", align: "right" },
-                      { key: "signOffReady", label: "Sign-off", render: (r) => <Badge variant={r.signOffReady ? "success" : "warning"}>{r.signOffReady ? "Ready" : "Blocked"}</Badge> },
+                      { key: "signOffReady", label: "Sign-off", cell: (r) => <Badge variant={r.signOffReady ? "success" : "warning"}>{r.signOffReady ? "Ready" : "Blocked"}</Badge> },
                       { key: "nextBestAction", label: "Next best action" },
                       { key: "blockerReason", label: "Blocker" },
                     ]}
@@ -215,6 +215,7 @@ function ReconciliationWorkstationScreen() {
             </TabPanel>
           </Tabs>
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

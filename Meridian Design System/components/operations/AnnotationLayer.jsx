@@ -192,6 +192,7 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
   const root = React.useRef(null);
   const popup = React.useRef(null);
   const [placement, setPlacement] = React.useState({left:8,top:8});
+  // Placeholder rows keep their body until a usable anchor is supplied.
   const validAnchor=anchor&&typeof anchor.ref==="string"&&anchor.ref.trim()!=="";
   const mine = validAnchor?layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref):[];
   React.useEffect(()=>{setOpen(false);setAdding(false)},[anchor?.ref,layer.objectId]);
@@ -219,7 +220,7 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
     document.addEventListener("pointerdown", off);
     return () => document.removeEventListener("pointerdown", off);
   }, [open,validAnchor,anchor?.ref]);
-  if(!validAnchor)return <span className={`mds-ann ${block?"mds-ann--block":""} ${className}`} title="Annotations unavailable until an anchor is supplied" {...rest}>{children}</span>;
+  if(!validAnchor)return <span className={`mds-ann ${block?"mds-ann--block":""} ${className}`} title="Annotations unavailable until an anchor is supplied" {...rest}><span className="mds-ann__body">{children}</span></span>;
   const label = mine.length ? `${mine.length} annotation${mine.length === 1 ? "" : "s"}${stale ? ", some stale" : ""} on ${anchor.label || anchor.ref}` : `Annotate ${anchor.label || anchor.ref}`;
   return (
     <span ref={root} className={`mds-ann ${block ? "mds-ann--block" : ""} ${className}`} onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); setAdding(false); } }} {...rest}>

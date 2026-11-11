@@ -1,3 +1,5 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { formatNumber, formatPercent, formatRatioAsPercent } from "@/lib/format";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { DatabaseZap, HardDrive, RefreshCcw, ShieldCheck } from "lucide-react";
@@ -27,7 +29,6 @@ import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { formatUtcTimestamp } from "@/lib/format";
 import { Select } from "@/components/ui/select";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export function IngestionOperationsWorkstream() {
   const [snapshot, setSnapshot] = useState<IngestionOperationsSnapshot | null>(null);
@@ -96,24 +97,22 @@ export function IngestionOperationsWorkstream() {
           </label>
         </div>
         <div className="overflow-x-auto rounded-[2px] border border-border">
-          <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Job", className: "px-3 py-3", render: (job) => <><div className="font-mono font-semibold">{job.jobId}</div><div className="text-xs text-muted-foreground">{job.provider} · {job.workloadType}<br />{job.symbols.join(", ")}</div></> },
-            { id: "column-2", label: "State", className: "px-3 py-3", render: (job) => <><Badge variant={stateVariant(job.state)} dot>{job.state}</Badge>{job.errorMessage ? <div className="mt-1 max-w-64 text-xs text-danger">{job.errorMessage}</div> : null}</> },
-            { id: "column-3", label: "Progress", className: "px-3 py-3 font-mono", render: (job) => <>{job.progressPercent.toFixed(1)}%</> },
-            { id: "column-4", label: "Checkpoint", className: "px-3 py-3", render: (job) => <>{job.isResumable ? <Badge variant="success">Durable</Badge> : <span className="text-muted-foreground">None</span>}</> },
-            { id: "column-5", label: "Retry", className: "px-3 py-3 font-mono text-xs", render: (job) => <>{job.attemptCount}/{job.maxRetries}</> },
-            { id: "column-6", label: "Evidence", className: "px-3 py-3", render: (job) => <>{job.evidenceRoute ? <Link className="text-primary underline-offset-2 hover:underline" to={job.evidenceRoute}>Open</Link> : "—"}</> },
-            { id: "column-7", label: "Actions", className: "px-3 py-3", render: (job) => <><div className="flex flex-wrap gap-1">{job.actions.map((action) => <Button key={action.action} size="sm" variant="outline" disabled={!action.enabled || busy !== null || !rationale.trim()} title={action.disabledReason ?? undefined} onClick={() => void apply(job, action.action)}>{busy === `${job.jobId}:${action.action}` ? "Applying…" : action.label}</Button>)}</div></> }
-          ]}
-          rows={jobs}
-          getRowId={(job) => String(job.jobId)}
-          getRowClassName={() => "border-t border-border align-top"}
-          ariaLabel={"Ingestion jobs with state, checkpoint posture, retries, evidence, and available actions."}
-          tableClassName={"w-full min-w-[58rem] text-left text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+          <TableWorkbench workbenchId="data-ingestion-operations" sourceKey={snapshot?.generatedAt ?? "loading"}
+            tableClassName="w-full min-w-[58rem] text-left text-sm" maxVisibleRows={null}
+            sourceDescription="Authorized ingestion-operation snapshot; active State filter is applied before search and export."
+            completePopulation={Boolean(snapshot) && !error} rows={jobs} getRowId={(job) => job.jobId}
+            getSearchText={(job) => `${job.jobId} ${job.provider} ${job.workloadType} ${job.symbols.join(" ")} ${job.state}`}
+            filterState={{ state: stateFilter }} onRestoreFilters={(filters) => setStateFilter(filters.state ?? "All")}
+            ariaLabel="Ingestion jobs" emptyText={!snapshot ? "Loading ingestion operations…" : "No jobs match this filter."}
+            columns={[
+              { id: "job", label: "Job", render: (job) => <><strong className="font-mono">{job.jobId}</strong><span className="block text-xs">{job.provider} · {job.workloadType} · {job.symbols.join(", ")}</span></>, exportValue: (job) => job.jobId },
+              { id: "state", label: "State", render: (job) => <><Badge variant={stateVariant(job.state)}>{job.state}</Badge>{job.errorMessage ? <p className="text-xs text-danger">{job.errorMessage}</p> : null}</>, exportValue: (job) => job.state },
+              { id: "progress", label: "Progress", render: (job) => formatPercent(job.progressPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }), exportValue: (job) => job.progressPercent },
+              { id: "checkpoint", label: "Checkpoint", render: (job) => job.isResumable ? "Durable" : "None", exportValue: (job) => job.isResumable },
+              { id: "retry", label: "Retry", render: (job) => `${job.attemptCount}/${job.maxRetries}`, exportValue: (job) => job.attemptCount },
+              { id: "evidence", label: "Evidence", render: (job) => job.evidenceRoute ? <Link to={job.evidenceRoute}>Open</Link> : "—", exportValue: (job) => job.evidenceRoute },
+              { id: "actions", label: "Actions", render: (job) => <div className="flex flex-wrap gap-1">{job.actions.map((action) => <Button key={action.action} size="sm" variant="outline" disabled={!action.enabled || busy !== null || !rationale.trim()} title={action.disabledReason ?? undefined} onClick={() => void apply(job, action.action)}>{busy === `${job.jobId}:${action.action}` ? "Applying…" : action.label}</Button>)}</div> }
+            ]} />
         </div>
       </CardContent>
     </section>
@@ -162,9 +161,9 @@ export function StorageAssuranceWorkstream() {
         {result ? <StatusBanner tone={result.status === "Completed" ? "success" : "warning"} title={`${result.action} ${result.status}`} detail={`${formatBytes(result.affectedBytes)} affected · evidence ${result.evidenceVaultId ?? "not retained"}`} /> : null}
         <div className="grid gap-2 md:grid-cols-4">
           <Metric label="Storage" value={snapshot?.health.status ?? "Loading"} icon={HardDrive} />
-          <Metric label="Quality" value={snapshot ? `${(snapshot.quality.averageScore * 100).toFixed(1)}%` : "—"} icon={ShieldCheck} />
-          <Metric label="Canonical match" value={snapshot ? `${snapshot.canonicalization.matchRatePercent.toFixed(1)}%` : "—"} icon={DatabaseZap} />
-          <Metric label="Capacity used" value={snapshot ? `${snapshot.capacity.usedPercent.toFixed(1)}%` : "—"} />
+          <Metric label="Quality" value={snapshot ? formatRatioAsPercent(snapshot.quality.averageScore, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} icon={ShieldCheck} />
+          <Metric label="Canonical match" value={snapshot ? formatPercent(snapshot.canonicalization.matchRatePercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} icon={DatabaseZap} />
+          <Metric label="Capacity used" value={snapshot ? formatPercent(snapshot.capacity.usedPercent, { minimumFractionDigits: 1, maximumFractionDigits: 1 }) : "—"} />
         </div>
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_22rem]">
           <div className="space-y-3">
@@ -207,7 +206,7 @@ function formatBytes(value: number): string {
   let current = value / 1024;
   let index = 0;
   while (current >= 1024 && index < units.length - 1) { current /= 1024; index += 1; }
-  return `${current.toFixed(1)} ${units[index]}`;
+  return `${formatNumber(current, { minimumFractionDigits: 1, maximumFractionDigits: 1 })} ${units[index]}`;
 }
 
 function formatDate(value: string): string { return formatUtcTimestamp(new Date(value)); }

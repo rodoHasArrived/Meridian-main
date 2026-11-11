@@ -259,6 +259,12 @@ without a ledger database. `LoanAccountingProjector` therefore resolves the ledg
 optionally and fails closed on every ledger-impacting event when none is composed; no substitute
 ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
 
+`LoanAccountingProjector` fails closed on amounts: a ledger-impacting loan event whose payload is
+missing its required amount, carries a non-numeric amount member, or produces a negative amount
+fails the command with a validation error instead of persisting the event with no journal. Zero
+amounts and non-ledger events still produce no journal. `DirectLendingOutboxDispatcher` rejects a
+journal draft that carries a negative amount or whose debits and credits differ.
+
 
 Direct-lending projection and reconciliation endpoints preserve `X-Command-Id` through the
 shared service into committed run identity handling. Repeating a command on the same loan

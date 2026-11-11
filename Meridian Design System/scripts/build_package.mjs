@@ -6,41 +6,14 @@ import { readFile, writeFile, readdir } from 'node:fs/promises';
 import { dirname, resolve, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
-import { rootTokenDefaults, refreshScopedTokens } from './token_defaults.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const check = process.argv.includes('--check');
 if (process.argv.slice(2).some(arg => arg !== '--check')) throw new Error('Usage: node scripts/build_package.mjs [--check]');
 const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const oldManifest = JSON.parse(await readFile(resolve(root, '_ds_manifest.json'), 'utf8'));
-// Preserve published specimen identities while keeping their discovery text tied
-// to the authored marker, rather than carrying stale metadata into each rebuild.
-for (const card of oldManifest.cards) {
-  const source = await readFile(resolve(root, card.path), 'utf8');
-  const marker = source.match(/<!--\s*@dsCard\s+([\s\S]*?)-->/)?.[1];
-  if (!marker) throw new Error(`Published specimen marker is missing: ${card.path}`);
-  const attributes = Object.fromEntries([...marker.matchAll(/(\w+)="([^"]*)"/g)].map(match => [match[1], match[2]]));
-  for (const field of ['group', 'viewport', 'subtitle', 'name']) if (attributes[field] !== undefined) card[field] = attributes[field];
-}
-// Preserve base token identities while refreshing default values
-// from their authored stylesheets. A source token repair must not leave the
-// browser's manifest and documentation describing the previous value.
-const tokenSheets = new Map();
-for (const token of oldManifest.tokens) {
-  if (token.scope || !token.definedIn?.endsWith('.css')) continue;
-  if (!tokenSheets.has(token.definedIn)) tokenSheets.set(token.definedIn,
-    rootTokenDefaults(await readFile(resolve(root, token.definedIn), 'utf8'),
-      token.definedIn.endsWith('/colors-dark.css') ? ':root[data-theme="dark"]' : ':root'));
-  const value = tokenSheets.get(token.definedIn).get(token.name);
-  if (!value) throw new Error(`Published token declaration is missing: ${token.name} in ${token.definedIn}`);
-  if (value.replace(/\s+/g, ' ') !== token.value.replace(/\s+/g, ' ')) token.value = value;
-}
-const scopes = new Map();
-for (const token of oldManifest.tokens.filter(token => token.scope)) {
-  const key = `${token.definedIn}\0${token.scope}`;
-  if (!scopes.has(key)) scopes.set(key, rootTokenDefaults(await readFile(resolve(root, token.definedIn), 'utf8'), token.scope));
-}
-oldManifest.tokens = refreshScopedTokens(oldManifest.tokens, scopes);
+// Token/card metadata is synchronized by scripts/sync_manifest_metadata.py.
+// Keep one source-derived selector/default precedence contract for build and export.
 const identity = JSON.parse(await readFile(resolve(root, 'release.json'), 'utf8'));
 if (pkg.version !== identity.version) throw new Error('package.json must match authoritative release.json');
 const namespace = oldManifest.namespace;
@@ -85,6 +58,7 @@ const common = { absWorkingDir: root, bundle: true, write: false, format: 'iife'
 const header = { format: 4, version: pkg.version, namespace, components, sourceHashAlgorithm: 'sha256', sourceHashes, inlinedExternals: [], unexposedExports };
 const bundle = await build({
   ...common,
+  metafile: true,
   treeShaking: false,
   stdin: { contents: entry, resolveDir: root, sourcefile: 'meridian-design-system-entry.js', loader: 'js' },
   jsxFactory: 'window.React.createElement', jsxFragment: 'window.React.Fragment',
@@ -103,19 +77,43 @@ const runtime = await build({ ...common,
   banner: { js: `/* Meridian ${pkg.version} offline preview runtime. React / React DOM ${pkg.devDependencies.react}; MIT. See THIRD_PARTY_NOTICES.md. */` }
 });
 const manifest = oldManifest;
+// The in-browser JSX compiler for standalone specimen pages. Cards, UI kits and test pages keep
+// their demo source as hand-readable JSX in <script type="text/babel">; loading this file after
+// _preview_runtime.js compiles those blocks on the page with no network request. It is the
+// pinned @babel/standalone build, redistributed unmodified under its MIT license.
+const babelVersion = pkg.devDependencies['@babel/standalone'];
+const jsxCompiler = `/* Meridian ${pkg.version} offline JSX preview compiler. @babel/standalone ${babelVersion}; MIT. See THIRD_PARTY_NOTICES.md. */\n`
+  + await readFile(resolve(root, 'node_modules/@babel/standalone/babel.min.js'), 'utf8');
+// The template host (support.js, generated) is pinned to React and ReactDOM 18.3.1 by SRI.
+// templates/_scaffold/vendor/ carries those two files so a template opens with no network;
+// they must be the exact bytes the host's own integrity hashes name, or the host would be
+// running on something other than what it was generated for.
+const hostSource = await readFile(resolve(root, 'templates/_scaffold/support.js'), 'utf8');
+const hostRuntime = {};
+for (const [constant, file] of [['REACT_SRI', 'react-18.3.1.production.min.js'], ['REACT_DOM_SRI', 'react-dom-18.3.1.production.min.js']]) {
+  const pinned = hostSource.match(new RegExp(`var ${constant} = "(sha384-[^"]+)"`))?.[1];
+  if (!pinned) throw new Error(`templates/_scaffold/support.js no longer declares ${constant}`);
+  const bytes = await readFile(resolve(root, 'templates/_scaffold/vendor', file));
+  const actual = 'sha384-' + createHash('sha384').update(bytes).digest('base64');
+  if (actual !== pinned) throw new Error(`templates/_scaffold/vendor/${file} is ${actual}; the host pins ${pinned}`);
+  hostRuntime[`templates/_scaffold/vendor/${file}`] = { integrity: actual, bytes: bytes.length };
+}
 const generated = {
   '_ds_bundle.js': bundle.outputFiles[0].text,
   '_preview_runtime.js': runtime.outputFiles[0].text,
   '_ds_manifest.json': JSON.stringify(manifest) + '\n',
+  '_preview_jsx.js': jsxCompiler,
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
   counts: { exports: components.length, cards: manifest.cards.length, templates: manifest.templates.length, tokenRecords: manifest.tokens.length },
-  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, sourceHashes },
+  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, jsxPreview: babelVersion, hostRuntime, sourceHashes,
+    bundledSources: Object.keys(bundle.metafile.inputs).map(path => path.split('\\').join('/'))
+      .filter(path => Object.hasOwn(sourceHashes, path)).sort() },
   assets: Object.fromEntries(Object.entries({ ...generated,
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')
   }).map(([path, content]) => [path, { sha256: hash(content), bytes: Buffer.byteLength(content) }])),
   evidenceScope: 'Design-system package export; synthetic examples; not application production certification',
-  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements', preview: 'Offline React production runtime and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
+  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements; its pinned React 18.3.1 runtime is included under templates/_scaffold/vendor', preview: 'Offline React production runtime, offline JSX compiler and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
 };
 generated['release-build.json'] = JSON.stringify(release, null, 2) + '\n';
 for (const [name, content] of Object.entries(generated)) {

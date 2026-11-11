@@ -2,4 +2,11 @@ OptimisticCell — EditableCell's write counterpart. A committed edit shows as P
 
 Batch compensation unwinds newest first; keep that order when applying `prior` values in a revert handler or `onSettle`. Entries beneath a newer provisional/reverting write, or a newer confirmed write outside the selected batch, wait for that write to settle or be reverted first. This prevents an older undo from overwriting a newer value on the same field.
 
-Transport outcomes own the ledger state. Synchronous `onSettle`, `onChange`, and subscription errors are reported to the console as observer failures; they cannot turn a confirmed write into a rejection, undo a successful compensation, or stop the remaining batch notifications. Keep observers synchronous and repair or reload a failed consumer projection from its authoritative source; a callback failure is not evidence that the write failed.
+Transport outcomes own the ledger state. `onSettle`, `onChange`, and subscriptions
+are observers: synchronous errors and rejected promises are reported through
+`globalThis.reportError` (`console.error` fallback). Notifications are not awaited;
+a fault cannot turn a confirmed write into a rejection, undo a successful
+compensation, or stop other subscribers or later batch notifications. Transport
+failures retain their original rejection/revert reason. A callback failure is not
+evidence that the write failed: repair or reload a failed consumer projection
+from its authoritative source, and monitor the host error channel for faults.

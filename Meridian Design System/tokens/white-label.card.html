@@ -43,8 +43,8 @@
   <div class="panel">
     <p class="eyebrow">Accent surfaces</p>
     <div class="row" style="margin-bottom:14px;">
-      <button class="btn">Primary</button>
-      <button class="btn btn--ghost">Ghost</button>
+      <button type="button" class="btn">Primary</button>
+      <button type="button" class="btn btn--ghost">Ghost</button>
       <a class="link" href="#">Text link</a>
       <span class="chk">✓</span>
     </div>
@@ -72,7 +72,7 @@ function setBrand(b){
   refreshSampleCaption();
 }
 for(const [label,b] of BRANDS){
-  const btn=document.createElement("button"); btn.className="brand"; btn.dataset.b=b;
+  const btn=document.createElement("button"); btn.type="button"; btn.className="brand"; btn.dataset.b=b;
   const dot=document.createElement("span"); dot.className="dot"; dot.style.background=MAP[b];
   btn.append(dot,document.createTextNode(label));
   btn.onclick=()=>setBrand(b);

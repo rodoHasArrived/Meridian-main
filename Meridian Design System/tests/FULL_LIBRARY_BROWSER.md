@@ -3,8 +3,11 @@
 `full-library-browser.mjs` discovers specimens from `_ds_manifest.json` and every
 declared template entry from `api/template-eligibility.json`. It serves authored
 HTML through a temporary loopback host with the package's local React 19 peer
-runtime and pinned Babel 7.29.0. Known historical React/Babel CDN tags are
-substituted with those local dependencies. Unknown external requests fail.
+runtime and the package's pinned Babel 7.29.0 `_preview_jsx.js`. Known historical
+React/Babel CDN tags and exact published local peer tags are supplied once by
+the audit host. This tests project React19 compatibility, including templates
+whose published host ordinarily pins its vendored React18 peer. Unknown external
+requests fail, and unrelated local dependencies retain normal loading checks.
 The host transpiles authored JSX without modifying source or generated files.
 DC entries receive the compiled namespace before their logic executes, as the
 documented consumer contract requires.
@@ -26,7 +29,7 @@ and supported density
 scopes. `MERIDIAN_CHROMIUM_PATH` selects a browser; otherwise the system
 Chromium is used. Outputs default to `/tmp/pr3501-full-audit` and include
 `browser-results.json` and screenshots for every measured theme/viewport/zoom.
-Each run captures immutable bundle bytes and reports their SHA-256, so concurrent
+Each run captures immutable bundle/compiler bytes and reports their SHA-256, so concurrent
 rebuilds cannot mix compiled snapshots. Nothing is written into the package
 unless a source repair is explicitly made separately.
 

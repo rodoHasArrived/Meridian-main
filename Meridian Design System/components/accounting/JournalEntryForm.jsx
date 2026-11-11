@@ -141,15 +141,15 @@ export function JournalEntryForm({
           {lines.map((row, i) => (
             <tr key={i}>
               <td>
-                <Input placeholder="Account" aria-label={`Line ${i + 1} account`} value={row.account}
+                <Input aria-label={`Account line ${i + 1}`} placeholder="Account" value={row.account}
                   onChange={(e) => setL(i, "account", e.target.value)} list={dlId} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" aria-label={`Line ${i + 1} debit`} value={row.debit}
+                <Input aria-label={`Debit line ${i + 1}`} type="number" placeholder="0.00" value={row.debit}
                   onChange={(e) => setL(i, "debit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">
-                <Input type="number" placeholder="0.00" aria-label={`Line ${i + 1} credit`} value={row.credit}
+                <Input aria-label={`Credit line ${i + 1}`} type="number" placeholder="0.00" value={row.credit}
                   onChange={(e) => setL(i, "credit", e.target.value)} style={{ textAlign: "right" }} />
               </td>
               <td className="jnl--r">

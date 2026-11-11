@@ -2441,7 +2441,7 @@ export function SettingsScreen({
 
       <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
 
-      {showChooserSection ? <SettingsTaskChooser /> : null}
+      {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">

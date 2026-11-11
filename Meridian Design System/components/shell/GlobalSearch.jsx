@@ -13,13 +13,14 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-gsearch__scrim{position:fixed;inset:0;z-index:2147481000;background:var(--scrim,rgba(32,37,43,.32));
+.mds-gsearch__scrim{position:fixed;inset:0;z-index:2147481000;background:var(--scrim,rgba(17,23,29,.32));
   display:flex;justify-content:center;align-items:flex-start;padding-top:56px;}
 .mds-gsearch{width:min(680px,calc(100vw - 32px));max-height:min(60vh,520px);display:flex;flex-direction:column;
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
-  box-shadow:var(--shadow-menu,0 12px 32px rgba(0,0,0,.24));font-family:var(--font-body);}
+  box-shadow:var(--shadow-menu,0 12px 32px rgba(17,23,29,.24));font-family:var(--font-body);}
 .mds-gsearch__field{display:flex;align-items:center;gap:9px;padding:0 12px;height:44px;flex:none;
   border-bottom:1px solid var(--border,#D2CDC3);}
+.mds-gsearch__field:focus-within{outline:var(--focus-ring,2px solid var(--interaction-focus,#2D6FB3));outline-offset:-2px;}
 .mds-gsearch__glyph{color:var(--text-muted,#606870);font-size:14px;line-height:1;}
 .mds-gsearch__input{flex:1;min-width:0;appearance:none;border:none;outline:none;background:transparent;
   font-family:var(--font-body);font-size:14px;color:var(--text-primary,#20252B);}
@@ -38,7 +39,7 @@ function inject() {
 .mds-gsearch__row[data-active="true"]{background:var(--sidebar-active,#E7EDF2);
   border-left-color:var(--sidebar-active-ind,#C56343);color:var(--text-primary,#20252B);}
 .mds-gsearch__label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mds-gsearch__label mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal-dim,#CB6E4E);
+.mds-gsearch__label mark{background:var(--brand-signal-ghost,#F6E6DF);color:var(--brand-signal-ink,#944A32);
   font-weight:600;padding:0 1px;}
 .mds-gsearch__meta{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#606870);
   white-space:nowrap;font-variant-numeric:tabular-nums;}

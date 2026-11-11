@@ -23,7 +23,8 @@ public sealed class BacktestEngine(
     ISecurityTradingParametersQueryService? securityMasterQueryService,
     ICorporateActionAdjustmentService? corporateActionAdjustment = null,
     IBacktestPreflightService? backtestPreflightService = null,
-    ISecurityIdentityQueryService? securityIdentityQueryService = null)
+    ISecurityIdentityQueryService? securityIdentityQueryService = null,
+    IBacktestAssetEventSource? assetEventSource = null)
 {
     /// <summary>Retains the aggregate-query constructor used by compiled consumers.</summary>
     public BacktestEngine(
@@ -141,7 +142,10 @@ public sealed class BacktestEngine(
         var allSnapshots = new List<PortfolioSnapshot>();
         var allCashFlows = new List<CashFlowEntry>();
         var allFills = new List<FillEvent>();
-        var assetEventsByDate = BuildAssetEventIndex(request.AssetEvents, request.From, request.To);
+        var assetEventsByDate = BuildAssetEventIndex(
+            await ResolveAssetEventsAsync(request, universe, ct).ConfigureAwait(false),
+            request.From,
+            request.To);
 
         // 3. Initialise strategy
         ctx.CurrentTime = startTimestamp;
@@ -488,6 +492,44 @@ public sealed class BacktestEngine(
                 yield return evt;
             }
         }
+    }
+
+    /// <summary>
+    /// Explicit request events always win. Otherwise, when the request opts in, events come from
+    /// the configured source. The opt-in fails closed rather than silently running without events
+    /// or counting each action twice on back-adjusted prices.
+    /// </summary>
+    private async Task<IReadOnlyList<AssetEvent>?> ResolveAssetEventsAsync(
+        BacktestRequest request,
+        IReadOnlyCollection<string> universe,
+        CancellationToken ct)
+    {
+        if (request.AssetEvents is not null || !request.PopulateAssetEventsFromSecurityMaster)
+        {
+            return request.AssetEvents;
+        }
+
+        if (request.AdjustForCorporateActions)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster requires AdjustForCorporateActions = false: " +
+                "back-adjusted prices already contain dividends and splits, so applying them as asset events would count them twice.");
+        }
+
+        if (assetEventSource is null)
+        {
+            throw new InvalidOperationException(
+                "PopulateAssetEventsFromSecurityMaster was requested but no Security Master asset-event source is configured on this host.");
+        }
+
+        var assetEvents = await assetEventSource
+            .GetAssetEventsAsync(universe, request.From, request.To, ct)
+            .ConfigureAwait(false);
+        logger.LogInformation(
+            "Populated {Count} asset events from the Security Master for {SymbolCount} symbols",
+            assetEvents.Count,
+            universe.Count);
+        return assetEvents;
     }
 
     private static Dictionary<DateOnly, List<AssetEvent>> BuildAssetEventIndex(

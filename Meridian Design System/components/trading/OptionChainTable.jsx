@@ -11,6 +11,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --ochain-row{syntax:"*";inherits:true;}
 .mds-ochain{font-family:var(--font-data);font-size:12px;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);display:block;width:100%;min-width:0;max-width:100%;overflow:auto;box-sizing:border-box;outline:none;}
 .mds-ochain__grid{display:grid;}
@@ -42,7 +43,7 @@ function inject() {
 .mds-ochain__spot{grid-column:1/-1;display:flex;align-items:center;gap:8px;height:20px;padding:0 8px;
   background:var(--card-surface-raised,#FCFBF8);border-top:1px solid var(--brand-signal,#C56343);
   border-bottom:1px solid var(--border,#D2CDC3);}
-.mds-ochain__spotlab{font-size:11px;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;font-weight:600;}
+.mds-ochain__spotlab{font-size:11px;color:var(--brand-signal-ink,#944A32);font-variant-numeric:tabular-nums;font-weight:600;}
 .mds-ochain__spotrule{flex:1;border-top:1px dashed color-mix(in srgb,var(--brand-signal,#C56343) 45%,transparent);}
 `;
   const el = document.createElement("style");

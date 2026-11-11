@@ -20,8 +20,8 @@ function inject() {
 .mds-opt--pending .mds-opt__mark{color:var(--cond-provisional-fg,#2F648A);}
 .mds-opt--confirmed .mds-opt__mark{color:var(--cond-confirmed-fg,#2E7655);}
 .mds-opt--rejected .mds-opt__mark,.mds-opt--reverted .mds-opt__mark{color:var(--red,#B54B42);}
-.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,#2F648A);}
-.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,#2E7655);}
+.mds-opt--pending .mds-editable__display{background:var(--cond-provisional-bg,transparent);border:1px dashed var(--cond-provisional-bd,rgba(47, 100, 138, 0.34));}
+.mds-opt--confirmed .mds-editable__display{border-left:2px solid var(--cond-confirmed-bd,rgba(46, 118, 85, 0.34));}
 .mds-opt--rejected .mds-editable__display{border:1px solid var(--red,#B54B42);}
 .mds-opt__prior{font:11px var(--font-data);color:var(--text-muted,#606870);text-decoration:line-through;white-space:nowrap;}
 .mds-opt__revert{background:none;border:1px solid transparent;border-radius:2px;padding:0 4px;min-height:24px;
@@ -67,15 +67,23 @@ function createLedger(handlers = { current: {} }) {
   const h = () => handlers.current || {};
   let entries = [];
   const subs = new Set();
-  // Observers cannot change the outcome of a write that the transport already
-  // confirmed, or prevent another subscriber from receiving that outcome.
-  const notify = (listener, value, name) => {
-    try { listener && listener(value); }
-    catch (err) { console.error(`OptimisticProvider: ${name} observer failed`, err); }
-  };
-  const emit = () => subs.forEach((f) => notify(f, entries, "ledger"));
-  const settle = (edit) => notify(h().onSettle, edit, "onSettle");
   const patch = (id, fn) => { entries = entries.map((e) => (e.id === id ? { ...e, ...fn(e) } : e)); emit(); };
+  const reportObserverError = (error, name) => {
+    // Observer failures are application faults, not rejected financial writes.
+    // Surface them without rejecting a settled operation that a caller may retry.
+    if (typeof globalThis.reportError === "function") {
+      try { globalThis.reportError(error); return; } catch { /* Fall back to the console if reporting itself fails. */ }
+    }
+    console.error(`OptimisticProvider: ${name} observer failed`, error);
+  };
+  const notify = (listener, value, name) => {
+    try {
+      const result = listener && listener(value);
+      if (result && typeof result.then === "function") Promise.resolve(result).catch(error => reportObserverError(error, name));
+    } catch (error) { reportObserverError(error, name); }
+  };
+  const emit = () => subs.forEach(listener => notify(listener, entries, "ledger"));
+  const notifySettlement = edit => notify(h().onSettle, edit, "onSettle");
   const api = {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
     get entries() { return entries; },
@@ -84,18 +92,17 @@ function createLedger(handlers = { current: {} }) {
     async commit(edit) {
       const e = { ...edit, id: `opt-${++seq}`, status: "pending", at: Date.now() };
       entries = [...entries, e]; emit();
-      let result;
+      let settled;
       try {
         if (typeof h().commit !== "function") throw new Error("No write handler configured; change was not submitted");
-        result = await h().commit(e);
+        const result = await h().commit(e);
+        settled = { status: "confirmed", settledAt: Date.now(), receipt: result && result.receipt };
       } catch (err) {
         const reason = (err && err.message) || String(err || "rejected by the write path");
-        patch(e.id, () => ({ status: "rejected", settledAt: Date.now(), reason }));
-        settle({ ...e, status: "rejected", reason });
-        return;
+        settled = { status: "rejected", settledAt: Date.now(), reason };
       }
-      patch(e.id, () => ({ status: "confirmed", settledAt: Date.now(), receipt: result && result.receipt }));
-      settle({ ...e, status: "confirmed" });
+      patch(e.id, () => settled);
+      notifySettlement({ ...e, ...settled });
     },
     async revert(ids, reason) {
       const list = Array.isArray(ids) ? ids : [ids];
@@ -118,7 +125,7 @@ function createLedger(handlers = { current: {} }) {
         return;
       }
       targets.forEach((t) => patch(t.id, () => ({ status: "reverted", reason, revertedAt: Date.now() })));
-      targets.forEach((t) => settle({ ...t, status: "reverted", reason }));
+      targets.forEach((t) => notifySettlement({ ...t, status: "reverted", reason }));
     },
     dismiss(id) { patch(id, () => ({ status: "dismissed" })); },
   };
@@ -133,7 +140,7 @@ export function OptimisticProvider({ commit, revert, onSettle, onChange, childre
   const ref = React.useRef(null);
   if (!ref.current) ref.current = createLedger(handlers);
   const [, force] = React.useState(0);
-  React.useEffect(() => ref.current.subscribe((entries) => { force((n) => n + 1); onChange && onChange(entries); }), [onChange]);
+  React.useEffect(() => ref.current.subscribe((entries) => { force((n) => n + 1); return onChange && onChange(entries); }), [onChange]);
   return <Ctx.Provider value={ref.current}>{children}</Ctx.Provider>;
 }
 

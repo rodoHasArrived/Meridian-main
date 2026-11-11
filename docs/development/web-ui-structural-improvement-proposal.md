@@ -1,5 +1,10 @@
 # Web UI Structural Improvement Proposal
 
+**Current implementation (2026-11-11):** see the
+[browser workstation UX program](../engineering/plans/browser-workstation-ux-program.md)
+for the subsequent shell, table, Accounting workflow and verification changes. The dated
+delivery assessment below is retained as historical evidence.
+
 **Status:** in delivery (Phases A–D shipped; shell pattern rolled out to every workspace)
 **Owner:** core-team
 **Reviewed:** 2026-07-13

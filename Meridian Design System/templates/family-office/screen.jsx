@@ -3,11 +3,9 @@
 // FamilyOwnershipGraphDto (nodes/edges), FamilyAccountSummaryDto (with the provenance
 // tuple), CapitalCommitmentDto / CapitalActivityDto, FamilyOfficeReadinessDto.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout,
-  DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink,
-  OwnershipGraph, CommitmentBar, ProvenanceChip
-} = window.MeridianDesignSystem_205d17;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip;
 const { useState } = React;
 
 const NAV = [
@@ -76,7 +74,8 @@ const ACTIVITY = [
   { activityId: "ACT-0912", vehicle: "Growth Fund III LP", activityType: "Distribution", amount: "$180,000", noticeDate: "2026-05-28", dueDate: "2026-06-15", status: "Settled" },
 ];
 
-function FamilyOfficeScreen({ environment = "FIXTURE" } = {}) {
+function FamilyOfficeScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip } = window.MeridianDesignSystem_205d17);
   const [sel, setSel] = useState("tr1");
   const [section, setSection] = useState("overview");
   const [evidenceOpen, setEvidenceOpen] = useState(false);
@@ -96,9 +95,10 @@ function FamilyOfficeScreen({ environment = "FIXTURE" } = {}) {
             <Badge variant="neutral">USD · as-of 2026-06-30</Badge>
             <SeverityBadge status="ReviewRequired" label="Review required" />
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm" onClick={() => setEvidenceOpen((open) => !open)}>Evidence binder</Button>
-            <Button variant="primary" size="sm" onClick={() => setReviewNote(`Synthetic review noted for ${selNode?.label || sel}. Open blockers remain unresolved; no review was submitted.`)}>Record example review</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => setEvidenceOpen((open) => !open)}>Evidence binder</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm" onClick={() => setReviewNote(`Synthetic review noted for ${selNode?.label || sel}. Open blockers remain unresolved; no review was submitted.`)}>Record example review</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Family office records">
 
           <Callout tone="info" title="Synthetic retained example">Entity, account and capital figures are fixture data. Actions below only change this local example.</Callout>
           {reviewNote ? <div role="status">{reviewNote}</div> : null}
@@ -186,6 +186,7 @@ function FamilyOfficeScreen({ environment = "FIXTURE" } = {}) {
               rows={ACTIVITY} rowKey="activityId" label="Example capital activity" />
           </PanelSurface>
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

@@ -1,13 +1,15 @@
+import { exportTableQuery } from "@/lib/table-workbench";
 import { ClipboardCopy, Download, Save, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { EmptyState as ConcreteEmptyState } from "@/components/data/empty-state";
 import { Pagination } from "@/components/data/pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { BackfillCoverageChart } from "@/components/meridian/backfill-coverage-chart";
 import type { DataQueryPanelViewModel } from "@/screens/data-screen.query-panel.view-model";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
@@ -28,9 +30,10 @@ import { Select } from "@/components/ui/select";
 
 type DataOperationsVm = ReturnType<typeof useDataViewModel>;
 
-const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = [
+const backfillQueueColumns: TableWorkbenchColumn<DataOperationsBackfillRow>[] = [
   {
     id: "job",
+    exportValue: (row) => row.jobId,
     label: "Job",
     render: (backfill) => (
       <span className="block min-w-0">
@@ -46,6 +49,7 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
   },
   {
     id: "status",
+    exportValue: (row) => row.status,
     label: "Status",
     render: (backfill) => (
       <Badge
@@ -57,6 +61,7 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
   },
   {
     id: "progress",
+    exportValue: (row) => row.progress,
     label: "Progress",
     render: (backfill) => (
       <span className="block min-w-[8rem]">
@@ -69,14 +74,16 @@ const backfillQueueColumns: DenseDataTableColumn<DataOperationsBackfillRow>[] = 
   },
   {
     id: "updated",
+    exportValue: (row) => row.updatedAt,
     label: "Updated",
     render: (backfill) => <span className="font-mono text-xs text-muted-foreground">{backfill.updatedAt}</span>
   }
 ];
 
-const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>[] = [
+const remediationQueueColumns: TableWorkbenchColumn<BackfillRemediationQueueRow>[] = [
   {
     id: "execution",
+    exportValue: (row) => row.executionId,
     label: "Execution",
     render: (row) => (
       <span className="block min-w-0">
@@ -87,17 +94,20 @@ const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>
   },
   {
     id: "provider",
+    exportValue: (row) => row.provider,
     label: "Provider",
     render: (row) => <span className="font-mono text-xs">{row.provider}</span>
   },
   {
     id: "tier",
+    exportValue: (row) => row.tier,
     label: "SLA tier",
     sortable: true,
     render: (row) => <Badge variant={row.tierSort === 0 ? "warning" : "outline"}>{row.tier}</Badge>
   },
   {
     id: "status",
+    exportValue: (row) => row.status,
     label: "Status",
     render: (row) => (
       <Badge variant={row.status === "Overdue" || row.status === "Failed" ? "danger" : row.status === "Completed" ? "success" : "warning"}>
@@ -107,12 +117,14 @@ const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>
   },
   {
     id: "deadline",
+    exportValue: (row) => row.deadline,
     label: "Deadline",
     sortable: true,
     render: (row) => <span className="font-mono text-xs">{row.deadline}</span>
   },
   {
     id: "ownership",
+    exportValue: (row) => `${row.workflow}; ${row.owner}`,
     label: "Workflow / owner",
     render: (row) => (
       <span className="block min-w-0">
@@ -123,6 +135,7 @@ const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>
   },
   {
     id: "outcome",
+    exportValue: (row) => `${row.outcome}; ${row.evidence}`,
     label: "Outcome / evidence",
     render: (row) => (
       <span className="block min-w-0">
@@ -133,9 +146,10 @@ const remediationQueueColumns: DenseDataTableColumn<BackfillRemediationQueueRow>
   }
 ];
 
-const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
+const exportColumns: TableWorkbenchColumn<DataOperationsExportRow>[] = [
   {
     id: "profile",
+    exportValue: (row) => row.profile,
     label: "Profile",
     render: (item) => (
       <span className="block min-w-0">
@@ -146,22 +160,26 @@ const exportColumns: DenseDataTableColumn<DataOperationsExportRow>[] = [
   },
   {
     id: "target",
+    exportValue: (row) => row.target,
     label: "Target",
     render: (item) => <span className="text-muted-foreground">{item.target}</span>
   },
   {
     id: "status",
+    exportValue: (row) => row.statusLabel,
     label: "Status",
     render: (item) => <Badge variant={item.statusVariant} dot>{item.statusLabel}</Badge>
   },
   {
     id: "rows",
+    exportValue: (row) => row.rows,
     label: "Rows",
     align: "right",
     render: (item) => <span className="font-mono text-xs text-foreground">{item.rows}</span>
   },
   {
     id: "updated",
+    exportValue: (row) => row.updatedAt,
     label: "Updated",
     render: (item) => <span className="font-mono text-xs text-muted-foreground">{item.updatedAt}</span>
   }
@@ -184,7 +202,10 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
       <CardContent className="space-y-3">
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
           {vm.backfillSection.hasRows ? (
-            <DenseDataTable
+            <TableWorkbench workbenchId="data-backfill-queue" sourceKey={vm.backfillSection.rows.map((row) => row.jobId).join("|")}
+              sourceDescription="Current source-backed Data workspace backfill snapshot; execution history is a separate source."
+              onExportAll={(columns, search, sort, signal) => exportTableQuery("data-backfill-queue", columns, search, sort?.columnId, sort?.direction, signal)}
+              getSearchText={(row) => `${row.jobId} ${row.provider} ${row.scope} ${row.status}`}
               columns={backfillQueueColumns}
               rows={vm.backfillSection.rows}
               getRowId={(backfill) => backfill.rowId}
@@ -208,6 +229,7 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
             emptyState={vm.backfillDetailEmptyState ?? vm.backfillSection.emptyState}
           />
         </div>
+        {vm.retainedBackfillHistory && !vm.remediationHistoryError && !vm.remediationHistoryLoading ? <BackfillCoverageChart history={vm.retainedBackfillHistory} /> : null}
         <section aria-labelledby="backfill-remediation-sla-title" className="mt-5 space-y-3 border-t border-border/70 pt-4">
           <div className="flex flex-wrap items-start justify-between gap-2">
             <div>
@@ -228,7 +250,10 @@ export function DataBackfillWorkstream({ vm }: { vm: DataOperationsVm }) {
           ) : vm.remediationHistoryLoading ? (
             <p role="status" className="text-sm text-muted-foreground">Loading durable remediation history…</p>
           ) : vm.remediationQueueState && vm.remediationQueueState.rows.length > 0 ? (
-            <DenseDataTable
+            <TableWorkbench workbenchId="data-remediation-queue" sourceKey={vm.remediationQueueState.observedAt}
+              sourceDescription="Global host backfill history. View is a bounded execution window; CSV filters all retained remediation executions."
+              onExportAll={(columns, search, sort, signal) => exportTableQuery("data-remediation-queue", columns, search, sort?.columnId, sort?.direction, signal)}
+              getSearchText={(row) => `${row.executionId} ${row.symbols} ${row.provider} ${row.status} ${row.workflow}`}
               columns={remediationQueueColumns}
               rows={vm.remediationQueueState.rows}
               getRowId={(row) => row.executionId}
@@ -262,7 +287,10 @@ export function DataExportWorkstream({ vm }: { vm: DataOperationsVm }) {
       <CardContent>
         <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.48fr)]">
           {vm.exportSection.hasRows ? (
-            <DenseDataTable
+            <TableWorkbench workbenchId="data-export-packages" sourceKey={vm.exportSection.rows.map((row) => row.exportId).join("|")}
+              sourceDescription="Complete current Data workspace package projection; not the historical report-package catalog."
+              onExportAll={(columns, search, sort, signal) => exportTableQuery("data-export-packages", columns, search, sort?.columnId, sort?.direction, signal)}
+              getSearchText={(row) => `${row.exportId} ${row.profile} ${row.target} ${row.statusLabel}`}
               columns={exportColumns}
               rows={vm.exportSection.rows}
               getRowId={(item) => item.rowId}
@@ -432,7 +460,7 @@ export function DataQueryWorkstream({
               disabled={!queryPanel.canCopyOrExport}
             >
               <Download className="h-3.5 w-3.5" aria-hidden="true" />
-              Download CSV
+              Export result preview CSV
             </Button>
             {queryPanel.result ? (
               <span className="text-sm text-muted-foreground" role="status">
@@ -451,26 +479,15 @@ export function DataQueryWorkstream({
           ) : null}
           {queryPanel.result && queryPanel.result.columns.length > 0 ? (
             <div className="overflow-x-auto rounded-md border border-border/70" aria-label="Query results">
-              <table className="dense-data-table min-w-full">
-                <thead>
-                  <tr>
-                    {queryPanel.result.columns.map((column) => (
-                      <th key={column} scope="col">{column}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {queryPanel.visibleRows.map((row, rowIndex) => (
-                    <tr key={rowIndex}>
-                      {row.map((value, columnIndex) => (
-                        <td key={`${rowIndex}-${queryPanel.result?.columns[columnIndex] ?? columnIndex}`}>
-                          {value ?? "null"}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <TableWorkbench workbenchId="data-query-results" sourceKey={queryPanel.result.executionId ?? "unretained-preview"}
+                sourceDescription={queryPanel.result.executionId
+                  ? `CSV uses the last completed retained execution (${queryPanel.result.retainedRowCount ?? "all"} rows). Run again to apply SQL edits.`
+                  : "This result has no retained execution reference. Run the query again to enable complete CSV export; result preview export covers loaded records only."}
+                onExportAll={queryPanel.result.executionId ? (columns, search, sort, signal) => exportTableQuery("data-query-results", columns, search, sort?.columnId, sort?.direction, signal, { executionId: queryPanel.result!.executionId! }) : undefined}
+                columns={queryPanel.result.columns.map((column, index) => ({ id: `${index}:${column}`, label: column,
+                  render: (row: { id: string; values: (string | null)[] }) => row.values[index] ?? "null", exportValue: (row: { id: string; values: (string | null)[] }) => row.values[index] }))}
+                rows={queryPanel.visibleRows.map((values, index) => ({ id: String(index), values }))} getRowId={(row) => row.id}
+                getSearchText={(row) => row.values.join(" ")} ariaLabel="Query results" emptyText="No query results." />
             </div>
           ) : null}
           {queryPanel.result && queryPanel.resultRowCount > queryPanel.rowsPerPage ? (

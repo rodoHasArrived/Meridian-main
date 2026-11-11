@@ -93,12 +93,12 @@ try {
     for (const checkbox of await all.all()) { assert(await checkbox.isDisabled()); assert(!(await checkbox.isChecked())); await checkbox.evaluate(node => node.click()); }
     await page.getByRole('button', { name: 'Open', exact: true }).press('Space'); assert.equal(await page.getByRole('button', { name: 'Open', exact: true }).getAttribute('aria-pressed'), 'true');
     const sort = page.getByRole('region', { name: 'Statement items' }).getByRole('columnheader', { name: 'Reference', exact: true }); await sort.press('Enter'); assert.equal(await sort.getAttribute('aria-sort'), 'ascending');
-    await page.getByRole('textbox', { name: 'Filter reconciliation items' }).fill('absent'); assert.equal(await page.getByText('No matching items', { exact: true }).count(), 2); assert.deepEqual(await events(), []); assert(!/NaN|Infinity/.test(await text()));
+    await page.getByRole('textbox', { name: 'Filter reconciliation items by memo or reference' }).fill('absent'); assert.equal(await page.getByText('No matching items', { exact: true }).count(), 2); assert.deepEqual(await events(), []); assert(!/NaN|Infinity/.test(await text()));
   });
   await check(['ReconciliationPanel'], 'Population recovery enables exact zero-identifier match callbacks without treating empty filter as missing data', ['recovery', 'zero', 'exact-callback', 'keyboard', 'focus'], async () => {
     await mount('reconciliation', { loaded: true }); const zero = page.getByRole('checkbox', { name: 'Match Statement item EXACT/0', exact: true }); await zero.press('Space'); assert.deepEqual(await events(), [{ id: 0, matched: true }]);
     await page.getByRole('checkbox', { name: 'Mark all Ledger items matched', exact: true }).press('Space'); assert.deepEqual((await events()).at(-1), { side: 'Ledger', ids: ['L/0'], matched: true });
-    await page.getByRole('textbox', { name: 'Filter reconciliation items' }).fill('absent'); assert.equal(await page.getByText('No matching items', { exact: true }).count(), 2); assert(!(await page.getByRole('checkbox', { name: 'Mark all Statement items matched', exact: true }).isDisabled()), 'Filter emptiness does not erase the loaded population');
+    await page.getByRole('textbox', { name: 'Filter reconciliation items by memo or reference' }).fill('absent'); assert.equal(await page.getByText('No matching items', { exact: true }).count(), 2); assert(!(await page.getByRole('checkbox', { name: 'Mark all Statement items matched', exact: true }).isDisabled()), 'Filter emptiness does not erase the loaded population');
   });
   await check(['TimeframeSwitcher'], 'Uncontrolled timeframe owns keyboard selection and preserves roving focus', ['uncontrolled', 'keyboard', 'focus', 'selection', 'callback'], async () => {
     await mount('timeframe', { defaultValue: '1W' }); const week = page.getByRole('radio', { name: '1W', exact: true }); assert.equal(await week.getAttribute('aria-checked'), 'true'); await week.press('End');

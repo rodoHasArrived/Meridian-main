@@ -7,7 +7,14 @@ import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount, formatCurrency as formatCurrencyAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
+import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
+import { ApprovalCollaborationPanel } from "@/components/meridian/approval-collaboration-panel";
+import { focusDenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailRail } from "@/components/meridian/detail-rail";
+import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { DesignSystemStatus } from "@/design-system/status";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -149,7 +156,6 @@ import {
   approvalNextAction,
   approvalSignerLabel,
   approvalWorkflowStatusLabel,
-  approvalWorkflowStatusTone,
   buildApprovalActionDisabledReason,
   formatApprovalDate,
   formatApprovalError,
@@ -196,14 +202,6 @@ function resolveExplorerSecurityId(recordId: string): string | null {
 }
 
 // trialBalanceColumns moved to components/accounting/TrialBalanceRowDetail.tsx for reuse by trial-balance-screen.tsx.
-
-const accountingSystemStatusVariant = {
-  Matched: "success",
-  Variance: "warning",
-  MissingExternal: "warning",
-  MissingMeridian: "danger",
-  ReviewRequired: "warning"
-} as const;
 
 const accountingSystemEvidencePackageVariant = {
   Ready: "success",
@@ -344,7 +342,7 @@ function AccountingSystemReconciliationPanel({
     ?? null;
   const quickBooksProvider = providers.find((provider) => provider.providerId === "quickbooks");
   const selectedCompanyLabel = activeProvider?.connection?.companyName ?? activeProvider?.connection?.companyId ?? null;
-  const rows = reconciliation?.rows.slice(0, 5) ?? [];
+  const rows = reconciliation?.rows ?? [];
   const evidencePackages = reconciliation?.evidencePackages?.slice(0, 4) ?? [];
   const mappedProviderIds = new Set(mappingProfiles.map((profile) => profile.providerId));
   const selectedMappingProfile = activeProvider
@@ -426,65 +424,21 @@ function AccountingSystemReconciliationPanel({
         </div>
         {providers.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
-            <table className="w-full min-w-[900px] text-sm" aria-label="External GL provider import posture">
-              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Provider</th>
-                  <th className="px-3 py-2 text-left">State</th>
-                  <th className="px-3 py-2 text-left">Connection</th>
-                  <th className="px-3 py-2 text-left">Import</th>
-                  <th className="px-3 py-2 text-left">Mapping</th>
-                  <th className="px-3 py-2 text-left">Posting</th>
-                </tr>
-              </thead>
-              <tbody>
-                {providers.slice(0, 6).map((provider) => {
-                  const hasMappingProfile = mappedProviderIds.has(provider.providerId);
-                  const importKinds = [
-                    provider.supportsChartOfAccounts ? "chart" : null,
-                    provider.supportsJournalEntries ? "journals" : null,
-                    provider.supportsTrialBalance ? "trial balance" : null
-                  ].filter((item): item is string => Boolean(item));
-                  const connectionLabel = provider.connection?.statusLabel
-                    ?? (provider.state === "Planned"
-                      ? "Direct connection unavailable"
-                      : provider.requiresCredentials ? "Credentials required" : "No credentials required");
-                  const postingLabel = provider.supportsPosting
-                    ? "Posting gated by export certification"
-                    : "Live posting disabled";
-                  const mappingRequirementLabels = (provider.mappingRequirements ?? [])
-                    .filter((requirement) => requirement.requiredForGuardedExport)
-                    .slice(0, 2)
-                    .map((requirement) => requirement.label);
-
-                  return (
-                    <tr
-                      key={provider.providerId}
-                      className={cn(
-                        "border-t border-border/60 align-top",
-                        provider.providerId === activeProvider?.providerId ? "bg-primary/5" : "bg-background/30"
-                      )}
-                    >
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{presentExternalGlProviderName(provider.displayName)}</div>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={provider.state === "Available" ? "success" : provider.state === "Planned" ? "outline" : "warning"}>
-                          {presentExternalGlState(provider.state)}
-                        </Badge>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{connectionLabel}</td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{importKinds.length > 0 ? `Import: ${importKinds.join(", ")}` : "Import: not configured"}</td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        <div>{hasMappingProfile ? "Mapping profile retained" : "Mapping profile needed"}</div>
-                        <div className="mt-1">{mappingRequirementLabels.length > 0 ? `Requires: ${mappingRequirementLabels.join(", ")}` : "Requires: mapping evidence"}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">{postingLabel}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <TableWorkbench<AccountingSystemProvider>
+              workbenchId="accounting-external-gl-providers" sourceKey={importDetail?.summary.importId ?? "provider-catalog"}
+              sourceDescription="All authorized External GL provider capabilities in the current catalog snapshot."
+              completePopulation={!loading && !error} rows={providers} getRowId={(provider) => provider.providerId}
+              getSearchText={(provider) => `${provider.displayName} ${provider.state} ${provider.connection?.statusLabel ?? ""}`}
+              ariaLabel="External GL provider import posture" emptyText="No External GL providers are available."
+              columns={[
+                { id: "provider", label: "Provider", render: (provider) => presentExternalGlProviderName(provider.displayName), exportValue: (provider) => provider.displayName },
+                { id: "state", label: "State", render: (provider) => <DesignSystemStatus status={provider.state === "Available" ? "ready" : provider.state === "Planned" ? "info" : "action"}>{presentExternalGlState(provider.state)}</DesignSystemStatus>, exportValue: (provider) => provider.state },
+                { id: "connection", label: "Connection", render: (provider) => provider.connection?.statusLabel ?? (provider.state === "Planned" ? "Direct connection unavailable" : provider.requiresCredentials ? "Credentials required" : "No credentials required"), exportValue: (provider) => provider.connection?.statusLabel ?? null },
+                { id: "imports", label: "Import", render: (provider) => [provider.supportsChartOfAccounts ? "chart" : null, provider.supportsJournalEntries ? "journals" : null, provider.supportsTrialBalance ? "trial balance" : null].filter(Boolean).join(", ") || "Import: not configured", exportValue: (provider) => [provider.supportsChartOfAccounts ? "chart" : null, provider.supportsJournalEntries ? "journals" : null, provider.supportsTrialBalance ? "trial balance" : null].filter(Boolean).join(", ") },
+                { id: "mapping", label: "Mapping", render: (provider) => <><div>{mappedProviderIds.has(provider.providerId) ? "Mapping profile retained" : "Mapping profile needed"}</div><div className="mt-1 text-xs">Requires: {(provider.mappingRequirements ?? []).filter((requirement) => requirement.requiredForGuardedExport).map((requirement) => requirement.label).join(", ") || "mapping evidence"}</div></>, exportValue: (provider) => mappedProviderIds.has(provider.providerId) ? "Mapping profile retained" : "Mapping profile needed" },
+                { id: "posting", label: "Posting", render: (provider) => provider.supportsPosting ? "Posting gated by export certification" : "Live posting disabled", exportValue: (provider) => provider.supportsPosting }
+              ]}
+            />
             <TechnicalDetails label="Provider identifiers" className="m-3">
               <dl className="grid gap-3 text-xs sm:grid-cols-2">
                 {providers.slice(0, 6).map((provider) => (
@@ -502,50 +456,20 @@ function AccountingSystemReconciliationPanel({
         ) : null}
         {mappingProfiles.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70 bg-background/70 shadow-xs">
-            <table className="w-full min-w-[760px] text-sm" aria-label="External GL mapping profiles">
-              <thead className="bg-secondary/35 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Profile</th>
-                  <th className="px-3 py-2 text-left">Provider</th>
-                  <th className="px-3 py-2 text-right">Accounts</th>
-                  <th className="px-3 py-2 text-right">Dimensions</th>
-                  <th className="px-3 py-2 text-left">Certification</th>
-                </tr>
-              </thead>
-              <tbody>
-                {mappingProfiles.slice(0, 4).map((profile) => {
-                  const accountMappingCount = Object.keys(profile.accountMappings).length;
-                  const externalDimensionCount = profile.dimensionMappings.reduce((count, mapping) => (
-                    count + Object.keys(mapping.externalDimensions.externalGlDimensions ?? {}).length
-                  ), 0);
-                  const isSelected = profile.profileId === selectedMappingProfile?.profileId;
-
-                  return (
-                    <tr
-                      key={profile.profileId}
-                      className={cn(
-                        "border-t border-border/60 align-top",
-                        isSelected ? "bg-primary/5" : "bg-background/30"
-                      )}
-                    >
-                      <td className="px-3 py-2">
-                        <div className="font-semibold text-foreground">{profile.displayName}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
-                        {presentExternalGlProviderName(providers.find((provider) => provider.providerId === profile.providerId)?.displayName ?? "External GL provider")}
-                      </td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{accountMappingCount}</td>
-                      <td className="px-3 py-2 text-right font-mono text-xs text-foreground">{`${profile.dimensionMappings.length}/${externalDimensionCount}`}</td>
-                      <td className="px-3 py-2">
-                        <Badge variant={profile.certificationState === "Certified" ? "success" : "warning"}>
-                          {presentExternalGlState(profile.certificationState)}
-                        </Badge>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            <TableWorkbench<ExternalGlMappingProfile>
+              workbenchId="accounting-external-gl-mappings" sourceKey={activeProvider?.providerId ?? "none"}
+              sourceDescription="All authorized retained External GL mapping profiles in this snapshot."
+              completePopulation={!loading && !error} rows={mappingProfiles} getRowId={(profile) => profile.profileId}
+              getSearchText={(profile) => `${profile.displayName} ${profile.providerId} ${profile.certificationState}`}
+              ariaLabel="External GL mapping profiles" emptyText="No External GL mapping profiles are available."
+              columns={[
+                { id: "profile", label: "Profile", render: (profile) => profile.displayName, exportValue: (profile) => profile.displayName },
+                { id: "provider", label: "Provider", render: (profile) => presentExternalGlProviderName(providers.find((provider) => provider.providerId === profile.providerId)?.displayName ?? "External GL provider"), exportValue: (profile) => profile.providerId },
+                { id: "accounts", label: "Accounts", align: "right", render: (profile) => Object.keys(profile.accountMappings).length, exportValue: (profile) => Object.keys(profile.accountMappings).length },
+                { id: "dimensions", label: "Dimensions", align: "right", render: (profile) => `${profile.dimensionMappings.length}/${profile.dimensionMappings.reduce((count, mapping) => count + Object.keys(mapping.externalDimensions.externalGlDimensions ?? {}).length, 0)}`, exportValue: (profile) => profile.dimensionMappings.length },
+                { id: "certification", label: "Certification", render: (profile) => <DesignSystemStatus status={profile.certificationState}>{presentExternalGlState(profile.certificationState)}</DesignSystemStatus>, exportValue: (profile) => profile.certificationState }
+              ]}
+            />
             <TechnicalDetails label="Mapping profile identifiers" className="m-3">
               <dl className="grid gap-3 text-xs sm:grid-cols-2">
                 {mappingProfiles.slice(0, 4).map((profile) => (
@@ -578,49 +502,23 @@ function AccountingSystemReconciliationPanel({
                 </div>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full min-w-[820px] text-sm" aria-label="External GL reconciliation rows">
-                  <thead className="border-b border-border/70 bg-secondary/20 text-xs uppercase tracking-[0.14em] text-muted-foreground">
-                    <tr>
-                      <th className="px-4 py-2 text-left">Statement</th>
-                      <th className="px-4 py-2 text-right">Statement amount</th>
-                      <th className="px-4 py-2 text-left">Ledger</th>
-                      <th className="px-4 py-2 text-right">Ledger amount</th>
-                      <th className="px-4 py-2 text-left">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {rows.map((row) => {
-                      const isMatched = row.status === "Matched";
-                      return (
-                        <tr
-                          key={row.rowId}
-                          className={cn(
-                            "border-b border-border/60 last:border-b-0",
-                            isMatched ? "bg-background/50" : "bg-warning/5"
-                          )}
-                        >
-                          <td className={cn("border-l-4 px-4 py-3", isMatched ? "border-l-success" : "border-l-warning")}>
-                            <div className="font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">{row.accountCode}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                            {formatGlAmount(row.externalDebit - row.externalCredit, row.currency)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-semibold text-foreground">{row.accountName}</div>
-                            <div className="mt-1 font-mono text-[11px] text-muted-foreground">Meridian ledger · {row.accountCode}</div>
-                          </td>
-                          <td className="px-4 py-3 text-right font-mono tabular-nums text-foreground">
-                            {formatGlAmount(row.meridianDebit - row.meridianCredit, row.currency)}
-                          </td>
-                          <td className="px-4 py-3">
-                            <Badge variant={accountingSystemStatusVariant[row.status]}>{presentExternalGlState(row.status)}</Badge>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <TableWorkbench<(typeof rows)[number]>
+                  workbenchId="accounting-external-gl-reconciliation" sourceKey={reconciliation.reconciliationId}
+                  sourceDescription="All rows in the selected retained External GL reconciliation. Source debit/credit amounts retain their own currency."
+                  completePopulation rows={rows} getRowId={(row) => row.rowId}
+                  getSearchText={(row) => `${row.accountName} ${row.accountCode} ${row.status} ${row.currency}`}
+                  ariaLabel="External GL reconciliation rows" emptyText="No External GL reconciliation rows."
+                  columns={[
+                    { id: "statement", label: "Statement", render: (row) => <><div className="font-semibold">{row.accountName}</div><div className="font-mono text-xs text-muted-foreground">{row.accountCode}</div></>, exportValue: (row) => row.accountName },
+                    { id: "statement-debit", label: "Statement debit", align: "right", render: (row) => formatGlAmount(row.externalDebit, row.currency), exportValue: (row) => row.externalDebit },
+                    { id: "statement-credit", label: "Statement credit", align: "right", render: (row) => formatGlAmount(row.externalCredit, row.currency), exportValue: (row) => row.externalCredit },
+                    { id: "ledger", label: "Ledger", render: (row) => <><div>{row.accountName}</div><div className="text-xs text-muted-foreground">Meridian ledger · {row.accountCode}</div></>, exportValue: (row) => row.accountCode },
+                    { id: "ledger-debit", label: "Ledger debit", align: "right", render: (row) => formatGlAmount(row.meridianDebit, row.currency), exportValue: (row) => row.meridianDebit },
+                    { id: "ledger-credit", label: "Ledger credit", align: "right", render: (row) => formatGlAmount(row.meridianCredit, row.currency), exportValue: (row) => row.meridianCredit },
+                    { id: "currency", label: "Currency", render: (row) => row.currency || "Unavailable", exportValue: (row) => row.currency },
+                    { id: "status", label: "Status", render: (row) => <DesignSystemStatus status={row.status === "MissingMeridian" ? "blocked" : row.status}>{presentExternalGlState(row.status)}</DesignSystemStatus>, exportValue: (row) => row.status }
+                  ]}
+                />
               </div>
               <TechnicalDetails label="Reconciliation technical details" className="m-3">
                 <dl className="grid gap-3 text-xs sm:grid-cols-2">
@@ -1033,7 +931,9 @@ function AccountingApprovalsWorkstream() {
   const { search } = useLocation();
   const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
-  const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
+  const [loadedDetail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
+  const [detailReload, setDetailReload] = useState(0);
+  const detail = loadedDetail?.workflowId === selectedWorkflowId ? loadedDetail : null;
   const [loading, setLoading] = useState(true);
   const [detailLoading, setDetailLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -1096,7 +996,7 @@ function AccountingApprovalsWorkstream() {
     return () => {
       cancelled = true;
     };
-  }, [selectedWorkflowId]);
+  }, [selectedWorkflowId, detailReload]);
 
   const selectedApproval = selectApproval(detail, requestedApprovalId);
   const selectedWorkflow = detail ?? workflows.find((workflow) => workflow.workflowId === selectedWorkflowId) ?? null;
@@ -1152,7 +1052,26 @@ function AccountingApprovalsWorkstream() {
   };
 
   return (
-    <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading">
+    <section id="accounting-approvals" className="workspace-section-band" aria-labelledby="accounting-approvals-heading"
+      onKeyDownCapture={(event) => {
+        if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey
+          || event.nativeEvent.isComposing || !(event.target instanceof HTMLElement)
+          || event.target.closest("input,textarea,select,button,a,[contenteditable=true],[role=dialog],[role=menu]")) return;
+        const rowId = event.target.closest<HTMLElement>("[data-dense-row-id]")?.dataset.denseRowId;
+        if (!rowId || !workflows.some((workflow) => workflow.workflowId === rowId)) return;
+        if (event.key === "r") {
+          event.preventDefault(); event.stopPropagation();
+          setSelectedWorkflowId(rowId);
+          focusDenseRowDetailPanel("accounting-approval-detail");
+        } else if (event.key === "a" && detail?.workflowId === rowId) {
+          const reviewer = event.currentTarget.querySelector<HTMLInputElement>("[data-approval-reviewer-input]");
+          if (!reviewer || reviewer.disabled) return;
+          event.preventDefault(); event.stopPropagation();
+          const disclosure = reviewer.closest("details");
+          if (disclosure) disclosure.open = true;
+          reviewer.focus();
+        }
+      }}>
       <div className="workspace-section-subheader">
         <div className="min-w-0">
           <p className="eyebrow-label">Approvals</p>
@@ -1174,85 +1093,53 @@ function AccountingApprovalsWorkstream() {
             <CardDescription>Pending, blocked, approved, and rejected close workflows ready for sign-off review.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
+            <p className="text-xs text-muted-foreground">With a queue row focused: j/k or arrow keys move; Enter or r reviews; a opens reviewer assignment when available. Escape returns from detail to the selected row.</p>
             <ApprovalStatusMessage loading={loading} error={error} empty={!loading && workflows.length === 0} />
             {workflows.length > 0 ? (
               <div className="overflow-hidden rounded-md border border-border/70" role="region" aria-label="Accounting approval queue">
-                <table className="w-full text-left text-sm">
-                  <caption className="sr-only">Accounting approval queue backed by operations continuity workflows.</caption>
-                  <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                    <tr>
-                      <th className="px-3 py-2 font-medium">Period</th>
-                      <th className="px-3 py-2 font-medium">Status</th>
-                      <th className="px-3 py-2 font-medium">Signer</th>
-                      <th className="px-3 py-2 font-medium">Evidence</th>
-                      <th className="px-3 py-2 font-medium">Updated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {workflows.map((workflow) => {
-                      const selected = workflow.workflowId === selectedWorkflowId;
-                      return (
-                        <tr
-                          key={workflow.workflowId}
-                          tabIndex={0}
-                          aria-selected={selected}
-                          className={cn("cursor-pointer border-t border-border/60 hover:bg-secondary/30", selected && "bg-primary/10")}
-                          onClick={() => setSelectedWorkflowId(workflow.workflowId)}
-                          onKeyDown={(event) => {
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setSelectedWorkflowId(workflow.workflowId);
-                            }
-                          }}
-                        >
-                          <td className="px-3 py-2">
-                            <span className="block font-semibold text-foreground">{workflow.periodId}</span>
-                          </td>
-                          <td className="px-3 py-2">
-                            <Badge variant={approvalWorkflowStatusTone(workflow, detail)}>
-                              {approvalWorkflowStatusLabel(workflow, detail)}
-                            </Badge>
-                          </td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : [])}</td>
-                          <td className="px-3 py-2 text-muted-foreground">{approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null)}</td>
-                          <td className="px-3 py-2 font-mono text-muted-foreground">{formatApprovalDate(workflow.updatedAtUtc)}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <TableWorkbench<OperationsContinuityWorkflowSummary>
+                  workbenchId="accounting-approval-workflows" sourceKey={new URLSearchParams(search).get("fundAccountId") ?? "authorized-workflows"}
+                  sourceDescription="All authorized operations-continuity workflow summaries in the current approval queue."
+                  completePopulation={!loading && !error} rows={workflows} getRowId={(workflow) => workflow.workflowId}
+                  getSearchText={(workflow) => `${workflow.periodId} ${workflow.status} ${workflow.updatedAtUtc}`}
+                  ariaLabel="Accounting approval queue" caption="Accounting approval queue backed by operations continuity workflows."
+                  emptyText="No approval workflows are available." selectedRowId={selectedWorkflowId} onRowSelect={(workflow) => setSelectedWorkflowId(workflow.workflowId)}
+                  getRowAriaControls={() => "accounting-approval-detail"} getRowAriaExpanded={(workflow) => workflow.workflowId === selectedWorkflowId}
+                  getRowAriaLabel={(workflow) => `${workflow.periodId}, ${approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}`}
+                  columns={[
+                    { id: "period", label: "Period", render: (workflow) => workflow.periodId, exportValue: (workflow) => workflow.periodId },
+                    { id: "status", label: "Status", render: (workflow) => <DesignSystemStatus status={workflow.status}>{approvalWorkflowStatusLabel(workflow, detail?.workflowId === workflow.workflowId ? detail : null)}</DesignSystemStatus>, exportValue: (workflow) => workflow.status },
+                    { id: "signer", label: "Signer", render: (workflow) => approvalSignerLabel(detail?.workflowId === workflow.workflowId ? detail.approvals : []), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalSignerLabel(detail.approvals) : null },
+                    { id: "evidence", label: "Evidence", render: (workflow) => approvalEvidenceSummary(detail?.workflowId === workflow.workflowId ? detail : null), exportValue: (workflow) => detail?.workflowId === workflow.workflowId ? approvalEvidenceSummary(detail) : null },
+                    { id: "updated", label: "Updated", render: (workflow) => <span className="whitespace-nowrap">{formatApprovalDate(workflow.updatedAtUtc)}</span>, exportValue: (workflow) => workflow.updatedAtUtc }
+                  ]}
+                />
               </div>
             ) : null}
           </CardContent>
         </Card>
 
-        <Card className="panel-surface" role="region" aria-label="Selected approval detail">
-          <CardHeader>
-            <div className="flex flex-wrap items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-base">Selected item detail</CardTitle>
-                <CardDescription>{selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Select an approval queue row."}</CardDescription>
-              </div>
-              {selectedWorkflow ? (
-                <Badge variant={approvalWorkflowStatusTone(selectedWorkflow, detail)}>
-                  {approvalWorkflowStatusLabel(selectedWorkflow, detail)}
-                </Badge>
-              ) : null}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm">
+        <DetailRail id="accounting-approval-detail" ariaLabel="Selected approval detail"
+          title={selectedWorkflow ? `${selectedWorkflow.periodId} close workflow` : "Choose an approval"}
+          status={selectedWorkflow ? <DesignSystemStatus status={approvalWorkflowStatusLabel(selectedWorkflow, detail)}>{approvalWorkflowStatusLabel(selectedWorkflow, detail)}</DesignSystemStatus> : undefined}
+          fields={selectedWorkflow ? [
+            { label: "Period", value: selectedWorkflow.periodId },
+            { label: "Workflow state", value: approvalWorkflowStatusLabel(selectedWorkflow, detail) },
+            { label: "Approval decision", value: selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted" },
+            { label: "Required signers", value: approvalSignerLabel(detail?.approvals ?? []) },
+            { label: "Missing evidence", value: missingApprovalEvidenceLabel(detail) }
+          ] : []}
+          actions={selectedWorkflow ? <>
+            <Button size="sm" disabled={approveDisabledReason !== null} disabledReason={approveDisabledReason} busy={action === "approve"} busyLabel="Approving" onClick={() => void runDecision("approve")}>Approve</Button>
+            <Button size="sm" variant="outline" disabled={rejectDisabledReason !== null} disabledReason={rejectDisabledReason} busy={action === "reject"} busyLabel="Rejecting" onClick={() => void runDecision("reject")}>Reject</Button>
+            <Button size="sm" variant="ghost" disabled={requestChangesDisabledReason !== null} disabledReason={requestChangesDisabledReason} busy={action === "request-changes"} busyLabel="Requesting changes" onClick={() => void runDecision("request-changes")}>Request changes</Button>
+          </> : undefined}>
+          <div className="mt-4 space-y-4 text-sm">
             {detailLoading ? <p role="status" className="text-muted-foreground">Loading selected approval detail...</p> : null}
             {detailError ? <StatusBanner tone="danger" role="alert" title={detailError} /> : null}
             {actionError ? <StatusBanner tone="danger" role="alert" title={actionError} /> : null}
             {selectedWorkflow ? (
               <>
-                <div className="grid gap-2">
-                  <AccountingValue label="Period" value={selectedWorkflow.periodId} />
-                  <AccountingValue label="Workflow state" value={approvalWorkflowStatusLabel(selectedWorkflow, detail)} />
-                  <AccountingValue label="Approval decision" value={selectedApproval ? splitApprovalWords(selectedApproval.status) : "Not submitted"} />
-                  <AccountingValue label="Required signers" value={approvalSignerLabel(detail?.approvals ?? [])} />
-                  <AccountingValue label="Missing evidence" value={missingApprovalEvidenceLabel(detail)} />
-                </div>
                 <TechnicalDetails label="Workflow identifiers">
                   <div className="grid gap-2 sm:grid-cols-2">
                     <AccountingValue label="Workflow" value={selectedWorkflow.workflowId} />
@@ -1268,17 +1155,13 @@ function AccountingApprovalsWorkstream() {
                   <div className="text-xs font-semibold uppercase text-muted-foreground">Next action</div>
                   <p className="mt-2 leading-6 text-muted-foreground">{approvalNextAction(detail, selectedWorkflow)}</p>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button size="sm" disabled={approveDisabledReason !== null} disabledReason={approveDisabledReason} busy={action === "approve"} busyLabel="Approving" onClick={() => void runDecision("approve")}>Approve</Button>
-                  <Button size="sm" variant="outline" disabled={rejectDisabledReason !== null} disabledReason={rejectDisabledReason} busy={action === "reject"} busyLabel="Rejecting" onClick={() => void runDecision("reject")}>Reject</Button>
-                  <Button size="sm" variant="ghost" disabled={requestChangesDisabledReason !== null} disabledReason={requestChangesDisabledReason} busy={action === "request-changes"} busyLabel="Requesting changes" onClick={() => void runDecision("request-changes")}>Request changes</Button>
-                </div>
+                {detail?.workflowId === selectedWorkflowId ? <ApprovalCollaborationPanel key={detail.workflowId} workflowId={detail.workflowId} onChanged={() => { setDetailReload((value) => value + 1); void refreshWorkflows(); }} /> : null}
               </>
             ) : (
               <p className="text-muted-foreground">No approval workflow is selected.</p>
             )}
-          </CardContent>
-        </Card>
+          </div>
+        </DetailRail>
       </div>
 
       <Card className="panel-surface" role="region" aria-label="Approval audit trail">
@@ -2173,6 +2056,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
           <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
+          <TechnicalDetails label="Break aging"><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></TechnicalDetails>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
         </>
@@ -2183,6 +2067,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
+          {closeWorkflow?.closeChecklist ? <TechnicalDetails label="Close task progress"><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></TechnicalDetails> : null}
           <AccountingCaseWorkbench
             breakRows={reconciliation.rows}
             selectedBreakId={reconciliation.selectedBreakId}
@@ -2204,6 +2089,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             }}
           />
           <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
+          {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
           <TechnicalDetails label="System details" className="panel-surface">
             <div className="space-y-4">
               {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
@@ -3438,9 +3324,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.paymentIntents.length > 0 ? (
           <>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Payment intent", className: "px-3 py-2", render: (intent) => <>
+              <TableWorkbench<(typeof activity.paymentIntents)[number]> tableClassName={"w-full min-w-[1040px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-payment-evidence-workflows" sourceDescription="Payment intent and cash evidence workflows · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.paymentIntents.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.paymentIntents} getRowId={(intent) => intent.id} getSearchText={(intent) => JSON.stringify(intent)}
+ ariaLabel="Payment intent and cash evidence workflows" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Payment intent", render: (intent) => (<>
                         <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
                         <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
@@ -3455,19 +3343,19 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                             {intent.workbenchRouteLabel}
                           </a>
                         ) : null}
-                      </> },
-            { id: "column-2", label: "Status", className: "px-3 py-2", render: (intent) => <>
+                      </>), exportValue: (intent) => [intent.title, intent.subtitle, intent.requestedLabel, intent.workbenchRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Status", render: (intent) => (<>
                         <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
-                      </> },
-            { id: "column-3", label: "Expected cash", className: "px-3 py-2 text-xs", render: (intent) => <>
+                      </>), exportValue: (intent) => [intent.statusTone, intent.statusLabel, intent.readinessReasonLabel, intent.executionDeferredLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Expected cash", render: (intent) => (<>
                         <div className="font-mono">{intent.expectedCashLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
-                      </> },
-            { id: "column-4", label: "Approvals", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.approvalLabel}</> },
-            { id: "column-5", label: "Cash evidence", className: "px-3 py-2 text-xs", render: (intent) => <>
+                      </>), exportValue: (intent) => [intent.expectedCashLabel, intent.requestMetadataLabel, intent.sourceEvidenceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Approvals", render: (intent) => (<>{intent.approvalLabel}</>), exportValue: (intent) => [intent.approvalLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Cash evidence", render: (intent) => (<>
                         <div>{intent.bankEvidenceLabel}</div>
                         {intent.evidenceRouteLabel !== "No evidence route" ? (
                           <a
@@ -3480,18 +3368,10 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                             {intent.evidenceRouteLabel}
                           </a>
                         ) : null}
-                      </> },
-            { id: "column-6", label: "Reconciliation", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.reconciliationLabel}</> },
-            { id: "column-7", label: "Audit", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.auditLabel}</> }
-          ]}
-          rows={activity.paymentIntents}
-          getRowId={(intent) => String(intent.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Payment intent and cash evidence workflows"}
-          tableClassName={"w-full min-w-[1040px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                      </>), exportValue: (intent) => [intent.bankEvidenceLabel, intent.evidenceRouteLabel, intent.title].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Reconciliation", render: (intent) => (<>{intent.reconciliationLabel}</>), exportValue: (intent) => [intent.reconciliationLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-7", label: "Audit", render: (intent) => (<>{intent.auditLabel}</>), exportValue: (intent) => [intent.auditLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
             </div>
 
             <section className="space-y-3" aria-label="Payment intent cash evidence drilldowns">
@@ -3645,9 +3525,11 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.fundEventLedgerRecords.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Fund event", className: "px-3 py-2", render: (record) => <>
+            <TableWorkbench<(typeof activity.fundEventLedgerRecords)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-events" sourceDescription="Private-capital fund event ledger records · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.fundEventLedgerRecords.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.fundEventLedgerRecords} getRowId={(record) => record.id} getSearchText={(record) => JSON.stringify(record)}
+ ariaLabel="Private-capital fund event ledger records" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Fund event", render: (record) => (<>
                       <div className="font-semibold text-foreground">{record.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
@@ -3677,8 +3559,8 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       >
                         {record.commandCenterRouteLabel}
                       </a>
-                    </> },
-            { id: "column-2", label: "Approval", className: "px-3 py-2", render: (record) => <>
+                    </>), exportValue: (record) => [record.title, record.subtitle, record.memoLabel, record.referenceLabel, record.paymentEvidenceTone, record.paymentEvidenceLabel, record.paymentEvidenceSummaryLabel, record.paymentEvidenceRequiredLabel, record.activityRouteLabel, record.commandCenterRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Approval", render: (record) => (<>
                       <Badge variant={record.statusTone} dot>{record.statusLabel}</Badge>
                       <div className="mt-2">
                         <Badge variant={record.readinessTone} dot>{record.readinessLabel}</Badge>
@@ -3709,23 +3591,23 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {record.approvalRouteLabel}
                         </a>
                       ) : null}
-                    </> },
-            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (record) => <>{record.effectiveDateLabel}</> },
-            { id: "column-4", label: "Net", className: "px-3 py-2 font-mono text-xs", render: (record) => <>
+                    </>), exportValue: (record) => [record.statusTone, record.statusLabel, record.readinessTone, record.readinessLabel, record.readinessReasonLabel, record.issueLabel, record.nextActionRouteLabel, record.title, record.nextActionLabel, record.approvalRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Effective", render: (record) => (<>{record.effectiveDateLabel}</>), exportValue: (record) => [record.effectiveDateLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Net", render: (record) => (<>
                       <div>{record.netActivityLabel}</div>
                       <div className="mt-1 text-[11px] text-muted-foreground">{record.grossActivityLabel} gross</div>
-                    </> },
-            { id: "column-5", label: "Subledger", className: "px-3 py-2 text-xs", render: (record) => <>
+                    </>), exportValue: (record) => [record.netActivityLabel, record.grossActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Subledger", render: (record) => (<>
                       <div>{record.subledgerLabel}</div>
                       <div className="mt-1 text-muted-foreground">{record.capitalAccountRollForwardLabel}</div>
-                    </> },
-            { id: "column-6", label: "GL impact", className: "px-3 py-2 text-xs", render: (record) => <>{record.ledgerImpactLabel}</> },
-            { id: "column-7", label: "Report output", className: "px-3 py-2 text-xs", render: (record) => <>
+                    </>), exportValue: (record) => [record.subledgerLabel, record.capitalAccountRollForwardLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "GL impact", render: (record) => (<>{record.ledgerImpactLabel}</>), exportValue: (record) => [record.ledgerImpactLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-7", label: "Report output", render: (record) => (<>
                       <div>{record.reportOutputLabel}</div>
                       <div className="mt-1 text-muted-foreground">{record.reportOutputDetailLabel}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.reportOutputRouteLabel}</div>
-                    </> },
-            { id: "column-8", label: "Evidence", className: "px-3 py-2 text-xs", render: (record) => <>
+                    </>), exportValue: (record) => [record.reportOutputLabel, record.reportOutputDetailLabel, record.reportOutputRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-8", label: "Evidence", render: (record) => (<>
                       <div>{record.evidenceLabel}</div>
                       {record.evidenceRouteLabel !== "No evidence route" ? (
                         <a
@@ -3758,56 +3640,44 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : (
                         <div className="mt-2 text-[11px] text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
                       )}
-                    </> }
-          ]}
-          rows={activity.fundEventLedgerRecords}
-          getRowId={(record) => String(record.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital fund event ledger records"}
-          tableClassName={"w-full min-w-[980px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (record) => [record.evidenceLabel, record.evidenceRouteLabel, record.title, record.evidenceCategories, record.evidenceCategorySummaryLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 
         {activity.capitalAccounts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Capital account", className: "px-3 py-2", render: (account) => <>
+            <TableWorkbench<(typeof activity.capitalAccounts)[number]> tableClassName={"w-full min-w-[760px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-activity" sourceDescription="Private-capital capital account activity · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.capitalAccounts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccounts} getRowId={(account) => account.id} getSearchText={(account) => JSON.stringify(account)}
+ ariaLabel="Private-capital capital account activity" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Capital account", render: (account) => (<>
                       <div className="break-all font-mono text-xs text-foreground">{account.title}</div>
                       <div className="mt-1 break-all text-[11px] text-muted-foreground">{account.subtitle}</div>
-                    </> },
-            { id: "column-2", label: "Net", className: "px-3 py-2 font-mono", render: (account) => <>{account.netActivityLabel}</> },
-            { id: "column-3", label: "Calls", className: "px-3 py-2 font-mono", render: (account) => <>{account.contributionLabel}</> },
-            { id: "column-4", label: "Distributions", className: "px-3 py-2 font-mono", render: (account) => <>{account.distributionLabel}</> },
-            { id: "column-5", label: "Other", className: "px-3 py-2 text-xs", render: (account) => <>
+                    </>), exportValue: (account) => [account.title, account.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Net", render: (account) => (<>{account.netActivityLabel}</>), exportValue: (account) => [account.netActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Calls", render: (account) => (<>{account.contributionLabel}</>), exportValue: (account) => [account.contributionLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Distributions", render: (account) => (<>{account.distributionLabel}</>), exportValue: (account) => [account.distributionLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Other", render: (account) => (<>
                       <div>Subscriptions {account.subscriptionLabel}</div>
                       <div>Redemptions {account.redemptionLabel}</div>
                       <div>Fees {account.managementFeeLabel}</div>
-                    </> },
-            { id: "column-6", label: "Last event", className: "px-3 py-2 text-xs", render: (account) => <>
+                    </>), exportValue: (account) => [account.subscriptionLabel, account.redemptionLabel, account.managementFeeLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Last event", render: (account) => (<>
                       <div>{account.eventCountLabel}</div>
                       <div className="mt-1 text-muted-foreground">{account.lastEventLabel}</div>
-                    </> }
-          ]}
-          rows={activity.capitalAccounts}
-          getRowId={(account) => String(account.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital capital account activity"}
-          tableClassName={"w-full min-w-[760px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (account) => [account.eventCountLabel, account.lastEventLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 
         {activity.capitalAccountSubledgers.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Capital account", className: "px-3 py-2", render: (subledger) => <>
+            <TableWorkbench<(typeof activity.capitalAccountSubledgers)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-subledgers" sourceDescription="Private-capital capital account subledgers · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.capitalAccountSubledgers.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgers} getRowId={(subledger) => subledger.id} getSearchText={(subledger) => JSON.stringify(subledger)}
+ ariaLabel="Private-capital capital account subledgers" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Capital account", render: (subledger) => (<>
                       <div className="break-all font-mono text-xs text-foreground">{subledger.title}</div>
                       <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.subtitle}</div>
                       {subledger.activityRouteLabel !== "No subledger route" ? (
@@ -3821,29 +3691,29 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {subledger.activityRouteLabel}
                         </a>
                       ) : null}
-                    </> },
-            { id: "column-2", label: "Status", className: "px-3 py-2", render: (subledger) => <>
+                    </>), exportValue: (subledger) => [subledger.title, subledger.subtitle, subledger.activityRouteLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Status", render: (subledger) => (<>
                       <Badge variant={subledger.statusTone} dot>{subledger.statusLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{subledger.issueLabel}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{subledger.dateRangeLabel}</div>
-                    </> },
-            { id: "column-3", label: "Roll-forward", className: "px-3 py-2 font-mono text-xs", render: (subledger) => <>
+                    </>), exportValue: (subledger) => [subledger.statusTone, subledger.statusLabel, subledger.issueLabel, subledger.dateRangeLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Roll-forward", render: (subledger) => (<>
                       <div>{subledger.openingLabel} opening</div>
                       <div className="mt-1">{subledger.netActivityLabel} net</div>
                       <div className="mt-1">{subledger.endingLabel} ending</div>
-                    </> },
-            { id: "column-4", label: "Activity", className: "px-3 py-2 text-xs", render: (subledger) => <>
+                    </>), exportValue: (subledger) => [subledger.openingLabel, subledger.netActivityLabel, subledger.endingLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Activity", render: (subledger) => (<>
                       <div>Calls {subledger.contributionLabel}</div>
                       <div>Distributions {subledger.distributionLabel}</div>
                       <div className="mt-1 text-muted-foreground">{subledger.otherActivityLabel}</div>
-                    </> },
-            { id: "column-5", label: "Counts", className: "px-3 py-2 text-xs", render: (subledger) => <>
+                    </>), exportValue: (subledger) => [subledger.contributionLabel, subledger.distributionLabel, subledger.otherActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Counts", render: (subledger) => (<>
                       <div>{subledger.eventCountLabel}</div>
                       <div className="mt-1">{subledger.approvalQueueLabel}</div>
                       <div className="mt-1">{subledger.postedEventLabel}</div>
                       <div className="mt-1">{subledger.publishedReportLabel}</div>
-                    </> },
-            { id: "column-6", label: "Evidence", className: "px-3 py-2 text-xs", render: (subledger) => <>
+                    </>), exportValue: (subledger) => [subledger.eventCountLabel, subledger.approvalQueueLabel, subledger.postedEventLabel, subledger.publishedReportLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Evidence", render: (subledger) => (<>
                       <div>{subledger.evidenceLabel}</div>
                       <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-1">
@@ -3872,111 +3742,85 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : (
                         <div className="mt-2 text-[11px] text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
                       )}
-                    </> }
-          ]}
-          rows={activity.capitalAccountSubledgers}
-          getRowId={(subledger) => String(subledger.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital capital account subledgers"}
-          tableClassName={"w-full min-w-[980px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (subledger) => [subledger.evidenceLabel, subledger.paymentEvidenceTone, subledger.paymentEvidenceLabel, subledger.paymentEvidenceSummaryLabel, subledger.paymentEvidenceRequiredLabel, subledger.evidenceCategories, subledger.title, subledger.evidenceCategorySummaryLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 
         {activity.capitalAccountSubledgerEntries.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Event", className: "px-3 py-2", render: (entry) => <>
+            <TableWorkbench<(typeof activity.capitalAccountSubledgerEntries)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-subledger" sourceDescription="Private-capital capital account subledger · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.capitalAccountSubledgerEntries.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgerEntries} getRowId={(entry) => entry.id} getSearchText={(entry) => JSON.stringify(entry)}
+ ariaLabel="Private-capital capital account subledger" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Event", render: (entry) => (<>
                       <div className="font-semibold text-foreground">{entry.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{entry.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{entry.memoLabel}</div>
-                    </> },
-            { id: "column-2", label: "Status", className: "px-3 py-2", render: (entry) => <>
+                    </>), exportValue: (entry) => [entry.title, entry.subtitle, entry.memoLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Status", render: (entry) => (<>
                       <Badge variant={entry.statusTone} dot>{entry.statusLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{entry.issueLabel}</div>
-                    </> },
-            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (entry) => <>{entry.effectiveDateLabel}</> },
-            { id: "column-4", label: "Net", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.netActivityLabel}</> },
-            { id: "column-5", label: "Running", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.runningBalanceLabel}</> },
-            { id: "column-6", label: "Gross", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.grossAmountLabel}</> },
-            { id: "column-7", label: "Evidence", className: "px-3 py-2 text-xs", render: (entry) => <>{entry.evidenceLabel}</> }
-          ]}
-          rows={activity.capitalAccountSubledgerEntries}
-          getRowId={(entry) => String(entry.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital capital account subledger"}
-          tableClassName={"w-full min-w-[820px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (entry) => [entry.statusTone, entry.statusLabel, entry.issueLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Effective", render: (entry) => (<>{entry.effectiveDateLabel}</>), exportValue: (entry) => [entry.effectiveDateLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Net", render: (entry) => (<>{entry.netActivityLabel}</>), exportValue: (entry) => [entry.netActivityLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Running", render: (entry) => (<>{entry.runningBalanceLabel}</>), exportValue: (entry) => [entry.runningBalanceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Gross", render: (entry) => (<>{entry.grossAmountLabel}</>), exportValue: (entry) => [entry.grossAmountLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-7", label: "Evidence", render: (entry) => (<>{entry.evidenceLabel}</>), exportValue: (entry) => [entry.evidenceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 
         {activity.ledgerImpacts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Impact", className: "px-3 py-2", render: (impact) => <>
+            <TableWorkbench<(typeof activity.ledgerImpacts)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-ledger-impacts" sourceDescription="Private-capital ledger impacts · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.ledgerImpacts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.ledgerImpacts} getRowId={(impact) => impact.id} getSearchText={(impact) => JSON.stringify(impact)}
+ ariaLabel="Private-capital ledger impacts" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Impact", render: (impact) => (<>
                       <div className="font-semibold text-foreground">{impact.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{impact.subtitle}</div>
-                    </> },
-            { id: "column-2", label: "Readiness", className: "px-3 py-2", render: (impact) => <>
+                    </>), exportValue: (impact) => [impact.title, impact.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Readiness", render: (impact) => (<>
                       <Badge variant={impact.readinessTone} dot>{impact.readinessLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{impact.issueLabel}</div>
-                    </> },
-            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (impact) => <>{impact.effectiveDateLabel}</> },
-            { id: "column-4", label: "Debits", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.debitLabel}</> },
-            { id: "column-5", label: "Credits", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.creditLabel}</> },
-            { id: "column-6", label: "Imbalance", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.imbalanceLabel}</> },
-            { id: "column-7", label: "Evidence", className: "px-3 py-2 text-xs", render: (impact) => <>
+                    </>), exportValue: (impact) => [impact.readinessTone, impact.readinessLabel, impact.issueLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Effective", render: (impact) => (<>{impact.effectiveDateLabel}</>), exportValue: (impact) => [impact.effectiveDateLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Debits", render: (impact) => (<>{impact.debitLabel}</>), exportValue: (impact) => [impact.debitLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Credits", render: (impact) => (<>{impact.creditLabel}</>), exportValue: (impact) => [impact.creditLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Imbalance", render: (impact) => (<>{impact.imbalanceLabel}</>), exportValue: (impact) => [impact.imbalanceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-7", label: "Evidence", render: (impact) => (<>
                       <div>{impact.evidenceLabel}</div>
                       <div className="mt-1 text-muted-foreground">{impact.lineLabel}</div>
-                    </> }
-          ]}
-          rows={activity.ledgerImpacts}
-          getRowId={(impact) => String(impact.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital ledger impacts"}
-          tableClassName={"w-full min-w-[820px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (impact) => [impact.evidenceLabel, impact.lineLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 
         {activity.reportOutputs.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Output", className: "px-3 py-2", render: (output) => <>
+            <TableWorkbench<(typeof activity.reportOutputs)[number]> tableClassName={"w-full min-w-[960px] text-sm"} maxVisibleRows={null}
+ workbenchId="accounting-private-capital-report-outputs" sourceDescription="Private-capital report outputs · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
+ sourceKey={JSON.stringify(activity.reportOutputs.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.reportOutputs} getRowId={(output) => output.id} getSearchText={(output) => JSON.stringify(output)}
+ ariaLabel="Private-capital report outputs" emptyText="No retained records are available in this scope."
+ columns={[{ id: "column-1", label: "Output", render: (output) => (<>
                       <div className="font-semibold text-foreground">{output.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{output.subtitle}</div>
-                    </> },
-            { id: "column-2", label: "Readiness", className: "px-3 py-2", render: (output) => <>
+                    </>), exportValue: (output) => [output.title, output.subtitle].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-2", label: "Readiness", render: (output) => (<>
                       <Badge variant={output.readinessTone} dot>{output.readinessLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{output.issueLabel}</div>
-                    </> },
-            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (output) => <>{output.effectiveDateLabel}</> },
-            { id: "column-4", label: "Amount", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (output) => <>{output.amountLabel}</> },
-            { id: "column-5", label: "Evidence", className: "px-3 py-2 text-xs", render: (output) => <>{output.evidenceLabel}</> },
-            { id: "column-6", label: "Workflow", className: "px-3 py-2 text-xs", render: (output) => <>
+                    </>), exportValue: (output) => [output.readinessTone, output.readinessLabel, output.issueLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-3", label: "Effective", render: (output) => (<>{output.effectiveDateLabel}</>), exportValue: (output) => [output.effectiveDateLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-4", label: "Amount", render: (output) => (<>{output.amountLabel}</>), exportValue: (output) => [output.amountLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-5", label: "Evidence", render: (output) => (<>{output.evidenceLabel}</>), exportValue: (output) => [output.evidenceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-6", label: "Workflow", render: (output) => (<>
                       <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.publicationLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.provenanceLabel}</div>
-                    </> },
-            { id: "column-7", label: "Route", className: "px-3 py-2 break-all font-mono text-[11px] text-muted-foreground", render: (output) => <>{output.routeLabel}</> }
-          ]}
-          rows={activity.reportOutputs}
-          getRowId={(output) => String(output.id)}
-          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
-          ariaLabel={"Private-capital report outputs"}
-          tableClassName={"w-full min-w-[960px] text-sm"}
-          emptyText={"No records."}
-          maxVisibleRows={null}
-        />
+                    </>), exportValue: (output) => [output.workflowLabel, output.publicationLabel, output.provenanceLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") },
+{ id: "column-7", label: "Route", render: (output) => (<>{output.routeLabel}</>), exportValue: (output) => [output.routeLabel].filter((value) => value != null).map((value) => typeof value === "object" ? JSON.stringify(value) : String(value)).join(" | ") }]}
+/>
           </div>
         ) : null}
 

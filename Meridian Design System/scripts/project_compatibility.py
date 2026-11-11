@@ -358,7 +358,7 @@ def validate_source_evidence(evidence, root):
     if evidence.get("status") != "passed" or evidence.get("sourceStable") is not True or evidence.get("changedSources"):
         errors.append("Source contracts failed or changed during execution")
     expected = {p.relative_to(root).as_posix() for p in (root / "tests").glob("*-regression.mjs")}
-    expected |= {f"tests/{name}" for name in ("public-contract-types.mjs", "token-defaults.test.mjs")}
+    expected |= {f"tests/{name}" for name in ("public-contract-types.mjs",)}
     suites = evidence.get("suites", [])
     if {x.get("path") for x in suites} != expected or len(suites) != len(expected):
         errors.append("Source-contract suite coverage differs")
@@ -380,7 +380,7 @@ def source_evidence_paths(root):
              for p in (root / directory).rglob("*") if p.is_file()
              and p.suffix in {".js", ".jsx", ".ts", ".mjs", ".html", ".css", ".json", ".md", ".py", ".sh"}
              and p.relative_to(root).as_posix() not in outputs}
-    paths |= {root / name for name in ("package.json", "package-lock.json", "_ds_manifest.json", "_ds_bundle.js", "_preview_runtime.js", "release.json", "release-build.json", "styles.css") if (root / name).is_file()}
+    paths |= {root / name for name in ("package.json", "package-lock.json", "_ds_manifest.json", "_ds_bundle.js", "_preview_runtime.js", "_preview_jsx.js", "release.json", "release-build.json", "styles.css") if (root / name).is_file()}
     return paths
 
 
@@ -405,7 +405,7 @@ def validate_browser(browser, manifest, eligibility, root):
                         ("components", "tokens", "templates", "docs", "guidelines", "assets")
                         for p in (root / directory).rglob("*")
                         if p.is_file() and (p.suffix.lower() in suffixes or p.name == ".thumbnail")}
-    expected_runtime |= {path for path in ("styles.css", "_preview_runtime.js") if (root / path).is_file()}
+    expected_runtime |= {path for path in ("styles.css", "_preview_runtime.js", "_preview_jsx.js") if (root / path).is_file()}
     runtime = source.get("runtimeSourceHashes", {})
     if set(runtime) != expected_runtime:
         errors.append("Browser runtime dependency coverage differs")

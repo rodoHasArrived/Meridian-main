@@ -709,6 +709,8 @@ public static class UiApiRoutes
 
     // Workstation root and compatibility workspace endpoints
     public const string WorkstationSession = "/api/workstation/session";
+    public const string WorkstationProviderVerificationHistory = "/api/workstation/provider-verification-history/{connectionId}";
+    public const string WorkstationAccountBalanceHistory = "/api/workstation/accounts/{accountId}/balance-history";
     public const string WorkstationStream = "/api/workstation/stream";
     public const string WorkstationResearch = "/api/workstation/research";
     public const string WorkstationStrategy = "/api/workstation/strategy";
@@ -773,6 +775,8 @@ public static class UiApiRoutes
     public const string WorkstationFinancialRecordExplorer = "/api/workstation/financial-record-explorers/{explorerId}";
     public const string WorkstationFinancialRecordExplorerRecord = "/api/workstation/financial-record-explorers/{explorerId}/records/{recordId}";
     public const string WorkstationFinancialRecordExplorerSavedViews = "/api/workstation/financial-record-explorers/{explorerId}/saved-views";
+    public const string WorkstationTableViews = "/api/workstation/tables/{tableId}/views";
+    public const string WorkstationTableExport = "/api/workstation/tables/{tableId}/export";
     public const string WorkstationTradingReadiness = "/api/workstation/trading/readiness";
 
     public const string WorkstationTradingBrokerageRecovery = "/api/workstation/trading/brokerage-recovery";
@@ -824,6 +828,9 @@ public static class UiApiRoutes
     public const string OperationsContinuityApprovalPolicyRules = "/api/workstation/operations/continuity/approval-policy-rules";
     public const string OperationsContinuityCloseCalendarItems = "/api/workstation/operations/continuity/close-calendar-items";
     public const string OperationsContinuityApprovalSubmit = "/api/workstation/operations/continuity/{workflowId:guid}/approval/submit";
+    public const string OperationsContinuityApprovalCollaboration = "/api/workstation/operations/continuity/{workflowId:guid}/approval/collaboration";
+    public const string OperationsContinuityApprovalComments = "/api/workstation/operations/continuity/{workflowId:guid}/approval/comments";
+    public const string OperationsContinuityApprovalReviewer = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reviewer";
     public const string OperationsContinuityApprovalApprove = "/api/workstation/operations/continuity/{workflowId:guid}/approval/approve";
     public const string OperationsContinuityApprovalReject = "/api/workstation/operations/continuity/{workflowId:guid}/approval/reject";
     public const string OperationsContinuityClose = "/api/workstation/operations/continuity/{workflowId:guid}/close";
@@ -907,6 +914,7 @@ public static class UiApiRoutes
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string LedgerPeriodJournalEntries = "/api/ledger/periods/{periodId:guid}/journal-entries";
+    public const string LedgerPeriodAccountRunningBalance = "/api/ledger/periods/{periodId:guid}/accounts/running-balance";
     public const string LedgerJournalEntryTaxResults = "/api/ledger/periods/{periodId:guid}/journal-entries/{journalEntryId:guid}/tax-results";
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
     public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";

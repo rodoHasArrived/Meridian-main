@@ -34,9 +34,12 @@ function inject() {
 }
 
 export function ClaimHeader({
-  context, claim, note, states = [], wide = false, flush = false, children, className = "", ...rest
+  context, claim, note, states = [], wide = false, flush = false, headingLevel = 1, children, className = "", ...rest
 }) {
   inject();
+  // The claim is the page heading by default. A screen that already names itself with an <h1>
+  // passes headingLevel={2}; two visible <h1>s left a screen-reader user without one page title.
+  const Heading = "h" + (headingLevel >= 1 && headingLevel <= 6 ? Math.round(headingLevel) : 1);
   const ctx = Array.isArray(context) ? context : context ? [context] : [];
   return (
     <header
@@ -54,7 +57,7 @@ export function ClaimHeader({
             ))}
           </div>
         ) : null}
-        <h1 className="mds-claim__h">{claim}</h1>
+        <Heading className="mds-claim__h">{claim}</Heading>
         {note ? <p className="mds-claim__note">{note}</p> : null}
       </div>
       {(states.length || children) ? (

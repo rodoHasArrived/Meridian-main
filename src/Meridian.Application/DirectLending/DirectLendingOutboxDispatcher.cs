@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.DirectLending;
+using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -283,6 +284,22 @@ public sealed class DirectLendingOutboxDispatcher : BackgroundService
         if (lines.Count == 0)
         {
             return;
+        }
+
+        // Fail closed: a drafted journal that does not balance (or carries a negative amount) is
+        // never saved; the delivery is retained for recovery instead.
+        if (lines.Any(line => line.DebitAmount < 0m || line.CreditAmount < 0m))
+        {
+            throw new LedgerValidationException(
+                $"Direct lending journal draft for event '{envelope.SourceEventId}' ({sourceEvent.EventType}) contains a negative amount.");
+        }
+
+        var totalDebits = lines.Sum(line => line.DebitAmount);
+        var totalCredits = lines.Sum(line => line.CreditAmount);
+        if (totalDebits != totalCredits)
+        {
+            throw new LedgerValidationException(
+                $"Direct lending journal draft for event '{envelope.SourceEventId}' ({sourceEvent.EventType}) does not balance: debits {totalDebits}, credits {totalCredits}.");
         }
 
         var entry = new JournalEntryDto(

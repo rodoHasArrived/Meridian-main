@@ -71,7 +71,7 @@
     {
       "name": "ARCHETYPES",
       "kind": "constant",
-      "reviewedSourceHash": "9dc9b4f19b793078a185b46a5a19f49b5aa3ac8fca74d91a5689d4395afca85f",
+      "reviewedSourceHash": "df9da50b9e27bddf3fc8192658d3583a7aac9fa855af4eea8e54343bb0d9a586",
       "applicableStates": [
         "declaration-compilation",
         "contract-logic"
@@ -960,7 +960,7 @@
     {
       "name": "ColumnChooser",
       "kind": "component",
-      "reviewedSourceHash": "b172e9a6012c8c7f3044d0162a01d6c3f09f3e75be5dcff35071e60870af77c5",
+      "reviewedSourceHash": "09e73a456f3d3b4fa1ea9ca11f2ca87b6fc91382afd51384ef50daa10c123572",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -1026,7 +1026,7 @@
     {
       "name": "ColumnManager",
       "kind": "component",
-      "reviewedSourceHash": "7c06cc93769065bebbd7f0ad33f8b28d5190726e2261f8f705bb816263e7babd",
+      "reviewedSourceHash": "be0613f85d7eb92be7a76cfb276bd219b5f47a24d98f0f19b555e8667e117f56",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -1104,7 +1104,7 @@
     {
       "name": "Combobox",
       "kind": "component",
-      "reviewedSourceHash": "ac5ee3784941ee6ef0a7673136dd3accd26466a2f444e42e63340e9ac7ddcac9",
+      "reviewedSourceHash": "f56d3c087cea9c9a98dcb6c8e3cfe823939ffe4aa12071f88d4aede6b9c4d65c",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -1185,7 +1185,7 @@
     {
       "name": "CommandPalette",
       "kind": "component",
-      "reviewedSourceHash": "0b55f81f8fa6847e2cba21dc8098b9f99038f570db260cc223aebaa964b0228b",
+      "reviewedSourceHash": "3c422df1465932eb812144bff6fc654f50926f0663b7cf51a5761db929eddd10",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -1606,7 +1606,7 @@
     {
       "name": "ConnectionDot",
       "kind": "component",
-      "reviewedSourceHash": "a9c91e365b257da35572d624486c0789905b67e75b66a8fbf566be837bfae12d",
+      "reviewedSourceHash": "8eee4e48dc3dc0e8851c822850c1a0e3b957b23bd2ed90e197f18424aaa30483",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -2187,7 +2187,7 @@
     {
       "name": "DatePicker",
       "kind": "component",
-      "reviewedSourceHash": "9b82d922ad6b2211649f84be6aff287d9a9f2d217fc5fa982b8316d545d67aa5",
+      "reviewedSourceHash": "7609d3dbc617a5c24e5f08517e1bf37e96f972fc42fdd38fe435f5e411acfde8",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -2273,7 +2273,7 @@
     {
       "name": "DateRangePicker",
       "kind": "component",
-      "reviewedSourceHash": "92070aec60d2246d04f447be58356001d7d4fb2b257327f88f0fbe8661165b76",
+      "reviewedSourceHash": "180561eebf197b2324b7bd3ff75554b0f9eb6ac7499bff722d208064248bef40",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -2368,7 +2368,7 @@
     {
       "name": "Datum",
       "kind": "component",
-      "reviewedSourceHash": "85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa",
+      "reviewedSourceHash": "e2fb9dded291421679a2c4f4dc410209ec96e4d582b5f580c2653d8d02f414b8",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -2445,7 +2445,7 @@
     {
       "name": "DatumGroup",
       "kind": "component",
-      "reviewedSourceHash": "85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa",
+      "reviewedSourceHash": "e2fb9dded291421679a2c4f4dc410209ec96e4d582b5f580c2653d8d02f414b8",
       "applicableStates": [
         "declaration-compilation",
         "measured-layout",
@@ -2999,7 +2999,7 @@
     {
       "name": "Dialog",
       "kind": "component",
-      "reviewedSourceHash": "6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24",
+      "reviewedSourceHash": "9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -3085,7 +3085,7 @@
     {
       "name": "DialogBody",
       "kind": "component",
-      "reviewedSourceHash": "6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24",
+      "reviewedSourceHash": "9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -3136,7 +3136,7 @@
     {
       "name": "DialogFooter",
       "kind": "component",
-      "reviewedSourceHash": "6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24",
+      "reviewedSourceHash": "9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -3187,7 +3187,7 @@
     {
       "name": "DialogForm",
       "kind": "component",
-      "reviewedSourceHash": "6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24",
+      "reviewedSourceHash": "9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -3267,7 +3267,7 @@
     {
       "name": "DialogHeader",
       "kind": "component",
-      "reviewedSourceHash": "6760f120328805ad4381a15e58e8bd9169875b863d9612fda74e979a8f0bfd24",
+      "reviewedSourceHash": "9b557467a9c6ef1cd870c2585794c6a3f9992217c16b34f41ffe2340a89bd3a1",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -4267,7 +4267,7 @@
     {
       "name": "Drawer",
       "kind": "component",
-      "reviewedSourceHash": "18a2108d4481a16c6f5c165872dacf0cab58648f52a215357c552f6fcc88e166",
+      "reviewedSourceHash": "1f11e4b4181c9a8780ba828fcfd9437da64c687cabde31cb051af1dea0a6eea6",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -4347,7 +4347,7 @@
     {
       "name": "DrawerBody",
       "kind": "component",
-      "reviewedSourceHash": "18a2108d4481a16c6f5c165872dacf0cab58648f52a215357c552f6fcc88e166",
+      "reviewedSourceHash": "1f11e4b4181c9a8780ba828fcfd9437da64c687cabde31cb051af1dea0a6eea6",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -4398,7 +4398,7 @@
     {
       "name": "DrawerHeader",
       "kind": "component",
-      "reviewedSourceHash": "18a2108d4481a16c6f5c165872dacf0cab58648f52a215357c552f6fcc88e166",
+      "reviewedSourceHash": "1f11e4b4181c9a8780ba828fcfd9437da64c687cabde31cb051af1dea0a6eea6",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -4931,7 +4931,7 @@
     {
       "name": "FilterBuilder",
       "kind": "component",
-      "reviewedSourceHash": "0f36bd83ca2d3cf16a8feda63bb0f0367a6b249b4ffd0a91fb932f77ee81e4cb",
+      "reviewedSourceHash": "dd57859d033457c66906d67ff6023795c34be41c6372aa6fa1bdc36db76298d8",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -5155,9 +5155,13 @@
     {
       "name": "FormField",
       "kind": "component",
-      "reviewedSourceHash": "89e422156aca449eefb259e654257acdeef0cbb3ab67505cfa1b67899d47ce09",
+      "reviewedSourceHash": "3a29d58557ed66c9cc20418a0b0749fbdd2a30868aa619752eb5169792d6e5e7",
       "applicableStates": [
-        "declaration-compilation"
+        "declaration-compilation",
+        "label-association",
+        "native-props",
+        "rerender",
+        "validation-linkage"
       ],
       "ownsInteraction": false,
       "ownsState": false,
@@ -5181,10 +5185,28 @@
           "states": [],
           "evidence": "/tmp/pr3501-full-audit/core-final-regressions.json",
           "reference": "tests/core-form-regression.mjs"
+        },
+        {
+          "name": "Stable and provided labels, deduplicated external descriptions and preserved native consumer props",
+          "path": "tests/form-field-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "label-association",
+            "validation-linkage",
+            "rerender",
+            "native-props"
+          ],
+          "evidence": "api/source-contract-results.json",
+          "reference": "tests/form-field-regression.mjs"
         }
       ],
       "testedStates": [
-        "declaration-compilation"
+        "declaration-compilation",
+        "label-association",
+        "native-props",
+        "rerender",
+        "validation-linkage"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
@@ -5728,7 +5750,7 @@
     {
       "name": "FreshnessIndicator",
       "kind": "component",
-      "reviewedSourceHash": "a9c91e365b257da35572d624486c0789905b67e75b66a8fbf566be837bfae12d",
+      "reviewedSourceHash": "8eee4e48dc3dc0e8851c822850c1a0e3b957b23bd2ed90e197f18424aaa30483",
       "applicableStates": [
         "declaration-compilation",
         "relative-time",
@@ -5908,13 +5930,14 @@
     {
       "name": "GlobalSearch",
       "kind": "component",
-      "reviewedSourceHash": "a03e856723baf1bbe90764f1cccb49ebc42d214a9d2a39e2c0453f8c152840eb",
+      "reviewedSourceHash": "60bdddc86209a55b87abf86ff6109dda399768b105574b29bfb3667d6d50e039",
       "applicableStates": [
-        "declaration-compilation",
-        "keyboard",
-        "focus",
+        "close",
         "controlled-open",
-        "close"
+        "declaration-compilation",
+        "focus",
+        "keyboard",
+        "light-dark-theme"
       ],
       "ownsInteraction": true,
       "ownsState": false,
@@ -5956,6 +5979,18 @@
           "references": [
             "tests/core-composition-regression.mjs"
           ]
+        },
+        {
+          "name": "Visible input focus uses the current appearance role without invoking search actions",
+          "path": "tests/global-search-focus-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "focus",
+            "light-dark-theme"
+          ],
+          "evidence": "api/source-contract-results.json",
+          "reference": "tests/global-search-focus-regression.mjs"
         }
       ],
       "testedStates": [
@@ -5963,7 +5998,8 @@
         "controlled-open",
         "declaration-compilation",
         "focus",
-        "keyboard"
+        "keyboard",
+        "light-dark-theme"
       ],
       "remainingApplicableStates": [],
       "coverageStatus": "complete",
@@ -6007,7 +6043,7 @@
     {
       "name": "HandoverBrief",
       "kind": "component",
-      "reviewedSourceHash": "8a631ad71f9e7d02824b77da0247619033afc38a55e9846a1a8c5fc340fe3aef",
+      "reviewedSourceHash": "8a2c8b9b3a967ee0f69924c4fc5ac7621557d5c6cf8d1a0e6a30035c11dd2044",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -6079,7 +6115,7 @@
     {
       "name": "HandoverBriefChip",
       "kind": "component",
-      "reviewedSourceHash": "8a631ad71f9e7d02824b77da0247619033afc38a55e9846a1a8c5fc340fe3aef",
+      "reviewedSourceHash": "8a2c8b9b3a967ee0f69924c4fc5ac7621557d5c6cf8d1a0e6a30035c11dd2044",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -6151,7 +6187,7 @@
     {
       "name": "HotkeysProvider",
       "kind": "provider",
-      "reviewedSourceHash": "4aaca98852c6d8b9fd8d0a31294bc9240cf3b1fc38a7cc73d8eb441be99a903d",
+      "reviewedSourceHash": "46eb481763a34bfc82942b242abd1cafb280c62f909c6923a22ee7e9cfb006f8",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -6306,7 +6342,7 @@
     {
       "name": "InstrumentChip",
       "kind": "component",
-      "reviewedSourceHash": "3eb39312c583688d6ae4c7afcb719f3df87382351d557f5a5912eca1a5104a5c",
+      "reviewedSourceHash": "daed5108ebd74c049bf8501970f38aae941fdbdff1937a3e28a7a01182e2ea50",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -7263,7 +7299,7 @@
     {
       "name": "MultiSelect",
       "kind": "component",
-      "reviewedSourceHash": "9ea0741d102e606787e4721072ec310daa6ed44ddbdfcb4464a85fa314ba40b5",
+      "reviewedSourceHash": "5a66db396773327acfad70c9ee88d905999eca4cab78e81c7da904a341902db2",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -7398,7 +7434,7 @@
     {
       "name": "NavRail",
       "kind": "component",
-      "reviewedSourceHash": "53da459725d42cc997d2254ddde223653f083766393915df977e0d2f106a427a",
+      "reviewedSourceHash": "49f658365c1efc3dbc993168d7858a29b40013339f0ba5946ab8d48a78af16e6",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -7481,7 +7517,7 @@
     {
       "name": "NotificationCenter",
       "kind": "component",
-      "reviewedSourceHash": "13d93c0d57ba3767f09b1d87b3d2b985ff0ebcc02a07aad0f70f67d5f91bb35a",
+      "reviewedSourceHash": "a8b9914289969cff037dbb9a1e251c89189282afe4f7559eb348b0e31b32f89f",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -8142,7 +8178,7 @@
     {
       "name": "ObjectTrail",
       "kind": "component",
-      "reviewedSourceHash": "8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29",
+      "reviewedSourceHash": "cd18716648dd40ebc644e08a91a018411984bba954bdec864955bb3ff44de71c",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -8253,7 +8289,7 @@
     {
       "name": "ObjectTrailList",
       "kind": "component",
-      "reviewedSourceHash": "8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29",
+      "reviewedSourceHash": "cd18716648dd40ebc644e08a91a018411984bba954bdec864955bb3ff44de71c",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -8364,7 +8400,7 @@
     {
       "name": "ObjectTrailProvider",
       "kind": "provider",
-      "reviewedSourceHash": "8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29",
+      "reviewedSourceHash": "cd18716648dd40ebc644e08a91a018411984bba954bdec864955bb3ff44de71c",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -8476,7 +8512,7 @@
     {
       "name": "OptimisticCell",
       "kind": "component",
-      "reviewedSourceHash": "5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867",
+      "reviewedSourceHash": "73b7a2d14d58e7f6a721fddf2790d3d5b2e9dc1134e51b7507a6336acade8157",
       "applicableStates": [
         "declaration-compilation",
         "loading",
@@ -8554,17 +8590,19 @@
     {
       "name": "OptimisticHooks",
       "kind": "hook-carrier",
-      "reviewedSourceHash": "5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867",
+      "reviewedSourceHash": "73b7a2d14d58e7f6a721fddf2790d3d5b2e9dc1134e51b7507a6336acade8157",
       "applicableStates": [
+        "async-observer-fault",
+        "compensation",
+        "confirmed",
         "declaration-compilation",
         "loading",
-        "confirmed",
-        "rejected",
-        "recovery",
-        "compensation",
         "missing-transport",
-        "required-reason",
-        "observer-fault"
+        "observer-fault",
+        "receipt",
+        "recovery",
+        "rejected",
+        "required-reason"
       ],
       "ownsInteraction": false,
       "ownsState": true,
@@ -8610,15 +8648,33 @@
           "references": [
             "tests/optimistic-observer-regression.mjs"
           ]
+        },
+        {
+          "name": "Transport receipts and rejection reasons survive synchronous/asynchronous observer faults; batch compensation remains settled",
+          "path": "tests/optimistic-settlement-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "confirmed",
+            "rejected",
+            "compensation",
+            "observer-fault",
+            "async-observer-fault",
+            "receipt"
+          ],
+          "evidence": "api/source-contract-results.json",
+          "reference": "tests/optimistic-settlement-regression.mjs"
         }
       ],
       "testedStates": [
+        "async-observer-fault",
         "compensation",
         "confirmed",
         "declaration-compilation",
         "loading",
         "missing-transport",
         "observer-fault",
+        "receipt",
         "recovery",
         "rejected",
         "required-reason"
@@ -8627,23 +8683,26 @@
       "coverageStatus": "complete",
       "notes": [
         "This export owns no independent UI action. Its state/helper/delegated contracts, where present, are listed explicitly; inherited HTML handlers alone do not create a component-owned interaction.",
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "Merge preserves protected internal edit identity/status, required write/compensation handlers and nonblank compensation reasons, while independently reporting async observer failures."
       ]
     },
     {
       "name": "OptimisticProvider",
       "kind": "provider",
-      "reviewedSourceHash": "5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867",
+      "reviewedSourceHash": "73b7a2d14d58e7f6a721fddf2790d3d5b2e9dc1134e51b7507a6336acade8157",
       "applicableStates": [
+        "async-observer-fault",
+        "compensation",
+        "confirmed",
         "declaration-compilation",
         "loading",
-        "confirmed",
-        "rejected",
-        "recovery",
-        "compensation",
         "missing-transport",
-        "required-reason",
-        "observer-fault"
+        "observer-fault",
+        "receipt",
+        "recovery",
+        "rejected",
+        "required-reason"
       ],
       "ownsInteraction": false,
       "ownsState": true,
@@ -8689,15 +8748,33 @@
           "references": [
             "tests/optimistic-observer-regression.mjs"
           ]
+        },
+        {
+          "name": "Transport receipts and rejection reasons survive synchronous/asynchronous observer faults; batch compensation remains settled",
+          "path": "tests/optimistic-settlement-regression.mjs",
+          "line": 1,
+          "status": "passed",
+          "states": [
+            "confirmed",
+            "rejected",
+            "compensation",
+            "observer-fault",
+            "async-observer-fault",
+            "receipt"
+          ],
+          "evidence": "api/source-contract-results.json",
+          "reference": "tests/optimistic-settlement-regression.mjs"
         }
       ],
       "testedStates": [
+        "async-observer-fault",
         "compensation",
         "confirmed",
         "declaration-compilation",
         "loading",
         "missing-transport",
         "observer-fault",
+        "receipt",
         "recovery",
         "rejected",
         "required-reason"
@@ -8706,13 +8783,14 @@
       "coverageStatus": "complete",
       "notes": [
         "This export owns no independent UI action. Its state/helper/delegated contracts, where present, are listed explicitly; inherited HTML handlers alone do not create a component-owned interaction.",
-        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive."
+        "Recipe states are the actual published contracts, not a Cartesian set of disabled/loading/error states for every primitive.",
+        "Merge preserves protected internal edit identity/status, required write/compensation handlers and nonblank compensation reasons, while independently reporting async observer failures."
       ]
     },
     {
       "name": "OptimisticRowBar",
       "kind": "component",
-      "reviewedSourceHash": "5e8cb56aa087c90e2d6142bbf858274ccf86be19a15fa4a1f91b663ba7246867",
+      "reviewedSourceHash": "73b7a2d14d58e7f6a721fddf2790d3d5b2e9dc1134e51b7507a6336acade8157",
       "applicableStates": [
         "declaration-compilation",
         "loading",
@@ -9091,7 +9169,7 @@
     {
       "name": "ReadOnlyBanner",
       "kind": "component",
-      "reviewedSourceHash": "6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622",
+      "reviewedSourceHash": "78da229d48085f29fd6b1fe1dda7225b8e07d6cdd9ce9fc514e9156e48f840b2",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -9305,7 +9383,7 @@
     {
       "name": "RoleBadge",
       "kind": "component",
-      "reviewedSourceHash": "6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622",
+      "reviewedSourceHash": "78da229d48085f29fd6b1fe1dda7225b8e07d6cdd9ce9fc514e9156e48f840b2",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -9491,7 +9569,7 @@
     {
       "name": "SavedViews",
       "kind": "component",
-      "reviewedSourceHash": "5bf23a3f8498a99cab6090f861d95e8091753b8416cd5b87b5220ac5aea8ddd8",
+      "reviewedSourceHash": "3b8f6470fb3081bfe0af7d75732d4490f6469608f2cd77327fdb1775f7bb8d22",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -9906,7 +9984,7 @@
     {
       "name": "ScreenComposition",
       "kind": "component",
-      "reviewedSourceHash": "9dc9b4f19b793078a185b46a5a19f49b5aa3ac8fca74d91a5689d4395afca85f",
+      "reviewedSourceHash": "df9da50b9e27bddf3fc8192658d3583a7aac9fa855af4eea8e54343bb0d9a586",
       "applicableStates": [
         "declaration-compilation"
       ],
@@ -10778,7 +10856,7 @@
     {
       "name": "SelectionToolbar",
       "kind": "component",
-      "reviewedSourceHash": "9e213785d57a09602f4a3d4b7c254a614bd7c74d90eef1446c2e9ae59d791557",
+      "reviewedSourceHash": "9e31ec6d40d9268fb50488d728c9e2ad091845127a4f7f02122d98fc8113f6d3",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -10847,7 +10925,7 @@
     {
       "name": "SessionControls",
       "kind": "utility",
-      "reviewedSourceHash": "6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622",
+      "reviewedSourceHash": "78da229d48085f29fd6b1fe1dda7225b8e07d6cdd9ce9fc514e9156e48f840b2",
       "applicableStates": [
         "declaration-compilation",
         "carrier-identity"
@@ -11262,7 +11340,7 @@
     {
       "name": "Stepper",
       "kind": "component",
-      "reviewedSourceHash": "e89f0eba8314a47cab20645d2bcf4d6ad5bda992e53e52ab738036399ef08eec",
+      "reviewedSourceHash": "689e04416d9ebaaaf85de705cf91a522865921445cc5979d6472c326eba537d5",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -11416,7 +11494,7 @@
     {
       "name": "TIME_ROLES",
       "kind": "constant",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "contract-logic"
@@ -11818,7 +11896,7 @@
     {
       "name": "TimeContext",
       "kind": "utility",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "controlled-value",
@@ -11944,7 +12022,7 @@
     {
       "name": "TimeContextPanel",
       "kind": "component",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "missing",
@@ -12047,7 +12125,7 @@
     {
       "name": "TimeContextProvider",
       "kind": "provider",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "controlled-value",
@@ -12172,7 +12250,7 @@
     {
       "name": "TimeHooks",
       "kind": "hook-carrier",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "controlled-value",
@@ -12297,7 +12375,7 @@
     {
       "name": "TimeRole",
       "kind": "component",
-      "reviewedSourceHash": "f9a1fafde007dd549ba95d4e837da70b2624f9ca113cdcfb227cc863b0532f0d",
+      "reviewedSourceHash": "81cde957377603e35d04ba634caae13e74fbd602489b4f8a44872e5bed9c0f37",
       "applicableStates": [
         "declaration-compilation",
         "controlled-value",
@@ -12491,7 +12569,7 @@
     {
       "name": "Toast",
       "kind": "component",
-      "reviewedSourceHash": "971662ad43f8cb5f2788c3f4a40d85c9d96a967c1d8f6710ec4fc677f061bdfb",
+      "reviewedSourceHash": "f72b28c904e5274e483ccd5cb44034c9d1be1a2373b7f3a08dddbcc9e353620b",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -12571,7 +12649,7 @@
     {
       "name": "ToastProvider",
       "kind": "provider",
-      "reviewedSourceHash": "971662ad43f8cb5f2788c3f4a40d85c9d96a967c1d8f6710ec4fc677f061bdfb",
+      "reviewedSourceHash": "f72b28c904e5274e483ccd5cb44034c9d1be1a2373b7f3a08dddbcc9e353620b",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -12860,7 +12938,7 @@
     {
       "name": "Tooltip",
       "kind": "component",
-      "reviewedSourceHash": "b5e716f82cce768d641013c188e2b434ad7f77cdfd9feecf602bf6cab88ed6d2",
+      "reviewedSourceHash": "c548793bb71e340c23b67193debb87e2603b9c983b9cfade4472309d5c909074",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -12940,7 +13018,7 @@
     {
       "name": "TrailHooks",
       "kind": "hook-carrier",
-      "reviewedSourceHash": "8ab82030526bd3d4edc2d3ebc43b17186ad43aaba9e2e6b8cb12a657b5bb7c29",
+      "reviewedSourceHash": "cd18716648dd40ebc644e08a91a018411984bba954bdec864955bb3ff44de71c",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -13052,7 +13130,7 @@
     {
       "name": "TreeView",
       "kind": "component",
-      "reviewedSourceHash": "8c1f26f183e0606b33309796c89cd8fd1220fd3feab741d64a2a76f84f75d6cd",
+      "reviewedSourceHash": "d1130a771b2cbf92437f5f01a1622ca93a39f895d4213b54a27a4ff2739dca9a",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -13127,7 +13205,7 @@
     {
       "name": "UserMenu",
       "kind": "component",
-      "reviewedSourceHash": "6d6fccb4a5e29d1f865f0f2f0e145de7d0d06b29a90e8c5cb97273cbbae9b622",
+      "reviewedSourceHash": "78da229d48085f29fd6b1fe1dda7225b8e07d6cdd9ce9fc514e9156e48f840b2",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",
@@ -13338,7 +13416,7 @@
     {
       "name": "WorksheetGrid",
       "kind": "component",
-      "reviewedSourceHash": "f419364dd37a1768b312d082ec5dfe68fdc318e599f817492b4bf9782498c9c6",
+      "reviewedSourceHash": "cf34e3fbce46f5045a52cb662174235a4b3604f2e70d40f608b1d7133262916b",
       "applicableStates": [
         "declaration-compilation",
         "keyboard",

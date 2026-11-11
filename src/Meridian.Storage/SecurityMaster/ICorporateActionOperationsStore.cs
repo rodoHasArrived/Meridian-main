@@ -9,6 +9,11 @@ namespace Meridian.Storage.SecurityMaster;
 /// </summary>
 public interface ICorporateActionOperationsStore
 {
+    /// <summary>Complete export population, without the browse API's 500-row window.</summary>
+    Task<CorporateActionInboxExportSource> ReadInboxExportSourceAsync(
+        string tenantId, string companyId, CancellationToken ct = default)
+        => Task.FromException<CorporateActionInboxExportSource>(new NotSupportedException("Complete corporate-action inbox export is not configured."));
+
     Task<CorporateActionSourceProposalDto> RecordSourceProposalAsync(
         CorporateActionSourceProposalDto proposal,
         CancellationToken ct = default);

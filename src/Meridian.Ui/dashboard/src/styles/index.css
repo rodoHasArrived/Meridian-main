@@ -155,6 +155,7 @@
     --ws-accent: #C56343;
     --ws-accent-hover: #D2795A;  /* signal variant; labels use --text-on-accent */
     --ws-accent-pressed: #CB6E4E;
+    --ws-selection-edge: var(--interaction-selected);
     /* Concrete is flat: the workstation shadow token carries NO card shadow;
        borders carry structure. Only detached overlays float (--shadow-float). */
     --ws-shadow: none;
@@ -200,6 +201,7 @@
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
     --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -268,7 +270,7 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--brand-signal-text);
+    --severity-review-fg: var(--brand-signal-ink);
     --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
     --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
@@ -585,6 +587,7 @@
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
     --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -653,7 +656,7 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--brand-signal-text);
+    --severity-review-fg: var(--brand-signal-ink);
     --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
     --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
@@ -883,6 +886,7 @@
       --ws-accent: #D88466;
       --ws-accent-hover: #E5A088;
       --ws-accent-pressed: #E19479;
+      --ws-selection-edge: var(--interaction-selected);
 
       --accent-ghost: #35251F;
       --green: #65A983;
@@ -899,6 +903,7 @@
       --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
       /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
       --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+      --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
       --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
       --border-hover: var(--ws-border-hover);
@@ -1100,6 +1105,7 @@
     --ws-accent: #D88466;
     --ws-accent-hover: #E5A088;
     --ws-accent-pressed: #E19479;
+    --ws-selection-edge: var(--interaction-selected);
 
     --accent-ghost: #35251F;
     --green: #65A983;
@@ -1116,6 +1122,7 @@
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
     --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
@@ -1319,6 +1326,7 @@
     --ws-accent: #C56343;
     --ws-accent-hover: #D2795A;  /* signal variant; labels use --text-on-accent */
     --ws-accent-pressed: #CB6E4E;
+    --ws-selection-edge: var(--interaction-selected);
 
     --accent-ghost: #F6E6DF;
     --green: #2E7655;
@@ -1335,6 +1343,7 @@
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
     /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
     --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);

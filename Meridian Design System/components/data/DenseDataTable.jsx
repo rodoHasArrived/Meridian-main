@@ -56,9 +56,10 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
   background-size:12px;background-position:center;background-repeat:no-repeat;}
 .dds__sort{margin-left:6px;font-size:9px;opacity:.4;}
 .dds th.dds--sorted{color:var(--text-secondary,#535C65);}
-.dds th.dds--sorted .dds__sort{opacity:1;color:var(--brand-signal-text,#8E4730);}
-/* Small sort/rank text uses the readable brand text role on header bands. */
-.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--brand-signal-text,#8E4730);vertical-align:super;}
+.dds th.dds--sorted .dds__sort{opacity:1;color:var(--brand-signal-ink,#944A32);}
+/* Small sort/rank text sits on the header band. Signal fill/pressed variants are
+   not text inks; the dedicated ink role keeps this retained adapter readable. */
+.dds__rank{margin-left:3px;font-size:8px;font-weight:700;color:var(--brand-signal-ink,#944A32);vertical-align:super;}
 /* pinned columns: sticky to the left edge, raised above scrolling cells, right divider */
 .dds th.dds--pin,.dds td.dds--pin{position:sticky;z-index:var(--z-raised,10);
   background:var(--bg-medium,#EBE8E1);}
@@ -71,7 +72,7 @@ body[data-theme-density="spacious"] .dds td{padding-top:15px;padding-bottom:15px
   user-select:none;touch-action:none;}
 .dds__grip:hover,.dds__grip--active{background:var(--accent,#C56343);opacity:.35;}
 .dds th{position:relative;}
-.dds th[tabindex]:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--brand-signal-text,#8E4730);}
+.dds th[tabindex]:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--brand-signal-ink,#944A32);}
 .dds th.dds--drag{opacity:.5;}
 .dds th.dds--drop{box-shadow:inset 2px 0 0 var(--accent,#C56343);}
 `;

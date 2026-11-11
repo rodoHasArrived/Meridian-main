@@ -31,8 +31,8 @@ function inject() {
 .mds-colchz__ck--on{background:var(--interaction-selected,#496C8F);border-color:var(--interaction-selected,#496C8F);color:var(--text-on-accent,#0D1217);}
 .mds-colchz__foot{padding:8px 12px;border-top:1px solid var(--border,#D2CDC3);}
 .mds-colchz__reset{appearance:none;border:none;background:transparent;
-  font-family:var(--font-body);font-size:11px;color:var(--brand-signal,#C56343);cursor:pointer;padding:0;}
-.mds-colchz__reset:hover{opacity:.75;}
+  font-family:var(--font-body);font-size:11px;color:var(--brand-signal-ink,#944A32);cursor:pointer;padding:0;}
+.mds-colchz__reset:hover{text-decoration:underline;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds","colchooser");

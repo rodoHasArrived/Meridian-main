@@ -395,7 +395,7 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
             [
                 'select:has(option[value="run-42"]:checked)',
                 '#reconciliation-break-queue tr[data-dense-row-id="run-42:cash"][aria-selected="true"]',
-                '#reconciliation-break-detail-panel [aria-label="Reconciliation break detail for run-42:cash"]',
+                '#reconciliation-break-detail-panel[aria-label="Reconciliation break detail for run-42:cash"]',
             ],
             reconciliation.get("waitForSelectors"),
             "Reconciliation readiness must prove the loaded run, selected queue row, and corresponding inspector",
@@ -458,7 +458,10 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         # 80 after adding W02F (web-portfolio-loan-book) for the new /portfolio/loan-book
         # screen, which gives the browser the direct-lending read surface that previously
         # only the desktop client reached.
-        self.assertEqual(80, len(captures))
+        # 82 includes dedicated Factor Paydown and Consolidation child workflows.
+        self.assertEqual(82, len(captures))
+        self.assertEqual("/accounting/factor-paydown", captures["W03FP"].get("path"))
+        self.assertEqual("/accounting/consolidation", captures["W03CO"].get("path"))
         self.assertNotIn("W05E", captures)
         self.assertEqual("/data/import", captures["W06I"].get("path"))
         self.assertEqual("/data/operations", captures["W06J"].get("path"))

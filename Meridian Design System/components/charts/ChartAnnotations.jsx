@@ -35,10 +35,11 @@ export function ChartAnnotations({
 }) {
   const uid = React.useId();
   const ref = React.useRef(null);
+  const accessiblePane = g && pane ? g.pane(pane) : null;
   const description = [
-    ...bands.map(band => `Band ${band.label || ""} from index ${band.from} to index ${band.to}`),
-    ...events.map((event, index) => `Event ${event.badge ?? index + 1}${event.label ? `: ${event.label}` : ""}`),
-    ...(pane ? callouts.map(callout => callout.text).filter(Boolean) : []),
+    ...bands.map((band,index) => `${band.label || `Band ${index+1}`} (${band.kind || "event"}), positions ${band.from} to ${band.to}`),
+    ...events.map((event,index) => `Event ${event.badge ?? index+1}${event.label ? `: ${event.label}` : ""} (${event.kind || "event"}), position ${event.index}${event.detail ? `: ${event.detail}` : ""}`),
+    ...(accessiblePane?.y ? callouts.map(callout => `${callout.text}${callout.kind ? ` (${callout.kind})` : ""}, position ${callout.index}, value ${callout.value}`) : []),
   ].join(". ");
   React.useLayoutEffect(() => {
     const svg = ref.current?.ownerSVGElement;
@@ -93,6 +94,7 @@ export function ChartAnnotations({
         const w = Math.max(16, badge.length * 7 + 9);
         return (
           <g key={"e" + i}>
+            <title>{[e.label || `Event ${badge}`, e.detail].filter((part) => part != null && part !== "").join(": ")}</title>
             {showRules && (
               <line x1={x} x2={x} y1={by + 8} y2={b} stroke={c} strokeWidth="1" strokeDasharray="var(--viz-dash-flow,3 4)" opacity="0.7" />
             )}

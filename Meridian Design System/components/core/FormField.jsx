@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * Meridian FormField — Wrapper combining label, input, error, and hint.
  * Reduces boilerplate in forms by bundling all field furniture.
@@ -7,7 +9,6 @@
  *   <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
  * </FormField>
  */
-import React from "react";
 
 export function FormField({
   label,
@@ -22,6 +23,10 @@ export function FormField({
   const control = React.isValidElement(children) ? children : null;
   const fieldId = control?.props.id || generatedId;
   const messageId = `${fieldId}-message`;
+  const describedBy = [...new Set([
+    ...(control?.props["aria-describedby"] || "").split(/\s+/).filter(Boolean),
+    ...((hint || error) ? [messageId] : []),
+  ])].join(" ");
 
   return (
     <div
@@ -57,7 +62,7 @@ export function FormField({
         id: fieldId,
         "aria-required": required || control.props["aria-required"],
         "aria-invalid": error ? true : control.props["aria-invalid"],
-        "aria-describedby": [control.props["aria-describedby"], hint || error ? messageId : null].filter(Boolean).join(" ") || undefined,
+        "aria-describedby": describedBy || undefined,
       }) : children}
 
       {/* Hint or error message */}

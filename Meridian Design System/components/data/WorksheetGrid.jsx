@@ -160,7 +160,7 @@ export function WorksheetGrid({
           <div className="mds-ws__ref">{active || "—"}</div>
           <div className="mds-ws__fx">fx</div>
           <div className="mds-ws__formula" style={barIsError ? { color: "var(--red-dim)" } : undefined}>
-            {barText !== "" ? barText : <span style={{ color: "var(--text-muted,#6B737B)" }}>{emptyFormulaText}</span>}
+            {barText !== "" ? barText : <span style={{ color: "var(--text-muted,#606870)" }}>{emptyFormulaText}</span>}
           </div>
         </div>
       )}

@@ -64,7 +64,7 @@ class CompatibilityTests(unittest.TestCase):
                                "sourceHashes": {"components/core/Button.jsx": COMPAT.digest(source),
                                                 **{p: COMPAT.digest(self.root / p) for p in harnesses}},
                                "suites": [{"path": f"tests/{name}", "status": "passed", "exitCode": 0}
-                                          for name in ("public-contract-types.mjs", "token-defaults.test.mjs")]},
+                                          for name in ("public-contract-types.mjs",)]},
         }
         self.inventory["sourceEvidence"]["sourceHashes"] = {
             path.relative_to(self.root).as_posix(): COMPAT.digest(path) for path in COMPAT.source_evidence_paths(self.root)

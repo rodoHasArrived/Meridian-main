@@ -191,7 +191,7 @@ function AcctAccountSheetView(props) {
                 <tbody>
                   {open.map((l, i) => (
                     <tr key={i} style={{ cursor: "pointer" }} onClick={() => props.onInspect && props.onInspect(l.ref)}>
-                      <td style={{ padding: "6px 0", borderBottom: "1px solid var(--border-divider)", fontFamily: "var(--font-data)", color: "var(--accent)" }}>{l.ref}</td>
+                      <td style={{ padding: "6px 0", borderBottom: "1px solid var(--border-divider)", fontFamily: "var(--font-data)", color: "var(--brand-signal-ink)" }}>{l.ref}</td>
                       <td style={{ padding: "6px 8px", borderBottom: "1px solid var(--border-divider)", color: "var(--text-secondary)" }}>{l.memo}</td>
                       <td style={{ ...num, padding: "6px 0", borderBottom: "1px solid var(--border-divider)", textAlign: "right", color: "var(--text-primary)" }}>{money((Money.toNumber(l.debit) || 0) - (Money.toNumber(l.credit) || 0))}</td>
                       <td style={{ ...meta, padding: "6px 0 6px 8px", borderBottom: "1px solid var(--border-divider)", textAlign: "right", whiteSpace: "nowrap" }}>due {l.envelope.clocks.settlement}</td>

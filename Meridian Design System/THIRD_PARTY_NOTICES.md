@@ -33,6 +33,21 @@ with the licenses alongside (`assets/fonts/OFL-IBMPlexSans.txt`, `assets/fonts/O
 declared with a `local()` short-circuit. Copyright IBM Corp. Licensed under the SIL OFL 1.1:
 https://github.com/IBM/plex/blob/master/LICENSE.txt
 
+## React and ReactDOM 18.3.1 for the template host — MIT License
+`templates/_scaffold/vendor/react-18.3.1.production.min.js` and
+`react-dom-18.3.1.production.min.js` are the unmodified production builds the Design Component
+host (`support.js`) is pinned to by integrity hash. Template entries load them from static tags so
+a template opens with no network; `scripts/build_package.mjs` fails if their bytes stop matching
+the host's hashes. Copyright (c) Facebook, Inc. and its affiliates. MIT License, text above.
+
+## Babel standalone — MIT License
+`_preview_jsx.js` redistributes `@babel/standalone` 7.29.0 unmodified, behind a one-line banner.
+Standalone specimen pages (component cards, UI kits, test pages) load it after
+`_preview_runtime.js` so their hand-readable `<script type="text/babel">` demo source compiles in
+the browser with no network request. It is preview tooling only: the component bundle does not
+depend on it and consumers do not need it. Copyright (c) 2014-present Sebastian McKenzie and
+other contributors. Distributed under the MIT License, whose text is reproduced above for React.
+
 ## oxlint rule-file format
 `_adherence.oxlintrc.json` is a GENERATED configuration in the oxlint (MIT) file format; no
 oxlint code is vendored here. https://github.com/oxc-project/oxc/blob/main/LICENSE

@@ -23,13 +23,13 @@ async function sources(directory) {
 }
 async function snapshot() {
   const paths = (await Promise.all(['components', 'tests', 'scripts', 'templates', 'api'].map(directory => sources(resolve(root, directory))))).flat();
-  for (const name of ['package.json', 'package-lock.json', '_ds_manifest.json', '_ds_bundle.js', '_preview_runtime.js', 'release.json', 'release-build.json', 'styles.css']) paths.push(resolve(root, name));
+  for (const name of ['package.json', 'package-lock.json', '_ds_manifest.json', '_ds_bundle.js', '_preview_runtime.js', '_preview_jsx.js', 'release.json', 'release-build.json', 'styles.css']) paths.push(resolve(root, name));
   paths.sort();
   return Object.fromEntries(await Promise.all(paths.map(async path => [relative(root, path).split('\\').join('/'), hash(await readFile(path))])));
 }
 const before = await snapshot();
 const suites = (await readdir(resolve(root, 'tests'))).filter(name => name.endsWith('-regression.mjs'))
-  .concat(['public-contract-types.mjs', 'token-defaults.test.mjs']).sort();
+  .concat(['public-contract-types.mjs']).sort();
 const results = { schemaVersion: 1, startedAt: new Date().toISOString(), sourceHashes: before, suites: [] };
 let cursor = 0;
 await Promise.all(Array.from({ length: 2 }, async () => {

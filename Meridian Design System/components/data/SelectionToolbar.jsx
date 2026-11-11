@@ -21,7 +21,7 @@ function inject() {
   color:var(--text-primary,#20252B);}
 .mds-seltb__shortcuts{display:flex;gap:12px;}
 .mds-seltb__shortcut{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--brand-signal,#C56343);
+  font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--brand-signal-ink,#944A32);
   text-decoration:underline;padding:0;line-height:1;}
 .mds-seltb__shortcut:hover{opacity:.8;}
 .mds-seltb__actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}

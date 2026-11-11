@@ -48,12 +48,14 @@ cat > "$PROJECT_DIR/index.html" << 'ENDHTML'
     <p>Edit <code>index.html</code> or <code>screens/</code> to get started.</p>
   </main>
 
-  <!-- Design system bundle -->
+  <!-- Local runtime (React 19), JSX compiler, then the design system bundle — order matters, all offline -->
+  <script src="_ds/_preview_runtime.js"></script>
+  <script src="_ds/_preview_jsx.js"></script>
   <script src="_ds/_ds_bundle.js"></script>
   <!-- Your app logic -->
   <script>
-    const { Button, Input, Badge, Modal } = window.MeridianDesignSystem_4f61be;
-    console.log("✅ Design system loaded", { Button, Input, Badge, Modal });
+    const { Button, Input, Badge, Dialog } = window.MeridianDesignSystem_205d17;
+    console.log("✅ Design system loaded", { Button, Input, Badge, Dialog });
   </script>
 </body>
 </html>
@@ -146,9 +148,11 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     </div>
   </div>
 
+  <script src="../_ds/_preview_runtime.js"></script>
+  <script src="../_ds/_preview_jsx.js"></script>
   <script src="../_ds/_ds_bundle.js"></script>
   <script>
-    const { Button } = window.MeridianDesignSystem_4f61be;
+    const { Button } = window.MeridianDesignSystem_205d17;
     document.getElementById("btn-primary").style.background = "var(--accent, #C56343)";
     document.getElementById("btn-primary").style.color = "white";
     document.getElementById("btn-primary").style.border = "none";
@@ -181,7 +185,7 @@ A consuming project built with the Meridian Design System.
    ```bash
    ln -s /path/to/meridian-design-system _ds
    ```
-   Or copy `_ds_bundle.js`, `styles.css`, and fonts manually.
+   Or copy `_preview_runtime.js`, `_preview_jsx.js`, `_ds_bundle.js`, `styles.css`, and fonts manually.
 
 2. **Open `index.html`** in a browser to see the example screen.
 
@@ -189,7 +193,7 @@ A consuming project built with the Meridian Design System.
 
 4. **Use design-system components**:
    ```js
-   const { Button, Input, Modal } = window.MeridianDesignSystem_4f61be;
+   const { Button, Input, Dialog } = window.MeridianDesignSystem_205d17;
    ```
 
 ## Folder Structure
@@ -203,6 +207,8 @@ my-workstation/
 ├── assets/                 # Images, icons, fonts
 └── _ds/                    # Design system (linked or copied)
     ├── styles.css
+    ├── _preview_runtime.js  # React + ReactDOM (load first)
+    ├── _preview_jsx.js      # offline JSX compiler for <script type="text/babel">
     ├── _ds_bundle.js
     └── tokens/
 ```
@@ -215,9 +221,9 @@ Full component documentation is in the Meridian Design System repo under `compon
 - `Button` — primary, secondary, ghost variants
 - `Input` — text field with optional error state
 - `Select` — single-select dropdown
-- `Modal`, `ModalForm` — dialog + form modal
+- `Dialog`, `DialogForm` — dialog + form dialog (width via `size`)
 - `Badge` — status/category badge
-- `DenseDataTable` — institutional data grid
+- `DataGrid` — institutional data grid
 - `Tabs`, `TabPanel` — tabbed interface
 
 ## Theming
@@ -249,13 +255,29 @@ cat > "$PROJECT_DIR/_ds-base.js" << 'ENDDS'
   link.href = base + "/styles.css";
   document.head.appendChild(link);
 
-  // Load bundle
-  const script = document.createElement("script");
-  script.src = base + "/_ds_bundle.js";
-  script.onerror = function() {
-    console.error("Failed to load " + script.src + ". Make sure _ds folder is linked or copied.");
-  };
-  document.head.appendChild(script);
+  // Load the local runtime (React), the JSX compiler, then the bundle — in order
+  ["/_preview_runtime.js", "/_preview_jsx.js", "/_ds_bundle.js"].forEach(function(file) {
+    const script = document.createElement("script");
+    script.src = base + file;
+    script.async = false;  // dynamically inserted scripts must opt in to ordered execution
+    script.onload = function() {
+      // These scripts finish after the page is parsed, so the compiler's own DOMContentLoaded pass
+      // would run before the bundle (or not at all): switch it off and compile the
+      // <script type="text/babel"> blocks once the bundle is in.
+      if (file === "/_preview_jsx.js") window.Babel.disableScriptTags();
+      if (file === "/_ds_bundle.js") {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function() { window.Babel.transformScriptTags(); });
+        } else {
+          window.Babel.transformScriptTags();
+        }
+      }
+    };
+    script.onerror = function() {
+      console.error("Failed to load " + script.src + ". Make sure _ds folder is linked or copied.");
+    };
+    document.head.appendChild(script);
+  });
 })();
 ENDDS
 
@@ -296,4 +318,3 @@ echo "  3. Edit screens/ and components/ to build your workstation"
 echo ""
 echo "👉 For a quick preview, open: $PROJECT_DIR/screens/ExampleScreen.html"
 echo ""
-ENDHTML

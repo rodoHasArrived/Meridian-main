@@ -15,7 +15,7 @@ import {
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
 import { qualityToneBadgeVariant, resultToneClass } from "@/screens/data-screen.tone-styles";
-import { formatCount, formatUtcTimestamp } from "@/lib/format";
+import { formatCount, formatNumber, formatUtcTimestamp } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Reveal the provider capability matrix region in response to a contextual "compare" action. */
@@ -259,7 +259,7 @@ export function DataQualityRegion({
                                       <span className="text-muted-foreground">({component.availability})</span>
                                       <span className="block text-xs text-muted-foreground">{component.detail}</span>
                                     </span>
-                                    <span className="font-mono">{component.score === null ? "—" : component.score.toFixed(1)}</span>
+                                    <span className="font-mono">{component.score === null ? "—" : formatNumber(component.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
                                   </li>
                                 ))}
                               </ul>

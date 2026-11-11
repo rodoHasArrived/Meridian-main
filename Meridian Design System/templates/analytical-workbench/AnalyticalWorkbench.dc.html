@@ -3,6 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 <title>Investigate · Analytical Workbench — Meridian</title>
 </head>
@@ -26,7 +30,7 @@
         <x-import component="TrailBridge" from="../_scaffold/trail-bridge.jsx" on-api="{{ onTrailApi }}" hint-size="0px,0px"></x-import>
       </x-import>
       <h1 style="margin:0;font:600 11px var(--font-body);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);">Analytical workbench · yield-curve evidence</h1>
-      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ClaimHeader" context="{{ claimContext }}" claim="The belly steepened while the long end remained anchored." note="Current versus one-month prior on a shared tenor scale. The scenario curve is model-derived and labelled as such — it is not an observation." states="{{ claimStates }}" hint-size="100%,86px">
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.ClaimHeader" heading-level="{{ 2 }}" context="{{ claimContext }}" claim="The belly steepened while the long end remained anchored." note="Current versus one-month prior on a shared tenor scale. The scenario curve is model-derived and labelled as such — it is not an observation." states="{{ claimStates }}" hint-size="100%,86px">
         <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ view }}" options="{{ viewOptions }}" on-change="{{ onView }}" hint-size="200px,26px"></x-import>
       </x-import>
       <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="analytical-workbench" storage="{{ sessionStore }}" regions="{{ layoutRegions }}" layouts="{{ layoutPresets }}" slots="{{ layoutSlots }}" direction="row" gap="{{ 12 }}" style="flex:1;min-height:0" hint-size="100%,900px">
@@ -145,7 +149,6 @@ class Component extends DCLogic {
   renderVals() {
     this.applyChrome();
     // This curve is a retained synthetic observation, not a fresh market tick.
-    const observedAt = "2026-05-14 14:32:08Z";
     const TENORS = this.TENORS;
     const layer = this.operatorLayer();
     const L = window.MeridianOperatorLayer;
@@ -153,6 +156,10 @@ class Component extends DCLogic {
     const PRIOR = [4.36,4.38,4.36,4.26,4.09,4.05,4.11,4.20,4.34,4.63,4.74];
     const SCENARIO = [4.22,4.27,4.29,4.33,4.36,4.39,4.42,4.50,4.60,4.74,4.88];
     const i = this.state.index;
+    // Retained synthetic evidence keeps its original timestamp. Mounting the
+    // template must not promote this fixed curve into a fresh market observation.
+    if (!this._observedAt) this._observedAt = "2026-05-14 14:32:08Z";
+    const observedAt = this._observedAt;
     const bp = Math.round((CURRENT[i] - PRIOR[i]) * 100);
     const R = React;
     const el = (Name, props) => R.createElement(window.MeridianDesignSystem_205d17[Name], props);

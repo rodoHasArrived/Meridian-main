@@ -1,3 +1,5 @@
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
+import { exportTableQuery } from "@/lib/table-workbench";
 /**
  * Archive-maintenance operations panel for Data → Storage assurance.
  *
@@ -14,7 +16,6 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { Select } from "@/components/ui/select";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cancelMaintenanceExecution,
   executeMaintenanceTask,
@@ -43,6 +44,7 @@ import { usesTrackedCaps } from "@/design-system/label-case";
 import { formatUtcTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
+type MaintenanceExecutionRow = MaintenanceExecutionRowViewModel & { source: ArchiveMaintenanceExecution };
 
 export function ArchiveMaintenanceOperations() {
   const [status, setStatus] = useState<MaintenanceServiceStatus | null>(null);
@@ -91,7 +93,7 @@ export function ArchiveMaintenanceOperations() {
     [status, statistics, scheduleSummary]
   );
   const rows = useMemo(
-    () => executions.map((execution) => buildMaintenanceExecutionRow(execution, taskTypes)),
+    () => executions.map((execution) => ({ ...buildMaintenanceExecutionRow(execution, taskTypes), source: execution })),
     [executions, taskTypes]
   );
   const runnableTaskType = selectedTaskType || taskTypes[0]?.value || "";
@@ -130,22 +132,22 @@ export function ArchiveMaintenanceOperations() {
     }
   }
 
-  const executionColumns: DenseDataTableColumn<MaintenanceExecutionRowViewModel>[] = [
-    { id: "task", label: "Task", render: (row) => row.taskTypeLabel },
+  const executionColumns: TableWorkbenchColumn<MaintenanceExecutionRow>[] = [
+    { id: "task", label: "Task", render: (row) => row.taskTypeLabel, exportValue: (row) => row.source.taskType },
     {
-      id: "status", label: "Status", render: (row) => (
+      id: "status", label: "Status", exportValue: (row) => row.source.status, render: (row) => (
         <>
           <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
           {row.errorMessage ? <div className="mt-1 text-xs text-danger">{row.errorMessage}</div> : null}
         </>
       )
     },
-    { id: "trigger", label: "Trigger", render: (row) => row.triggerLabel },
-    { id: "started", label: "Started", render: (row) => <span className="font-mono text-xs">{formatTimestamp(row.startedAt)}</span> },
-    { id: "duration", label: "Duration", render: (row) => row.durationLabel },
-    { id: "files", label: "Files", numeric: true, render: (row) => row.filesProcessed },
-    { id: "issues", label: "Issues fixed", numeric: true, render: (row) => row.issuesLabel },
-    { id: "reclaimed", label: "Reclaimed", numeric: true, render: (row) => row.bytesSavedLabel },
+    { id: "trigger", label: "Trigger", render: (row) => row.triggerLabel, exportValue: (row) => row.source.manualTrigger },
+    { id: "started", label: "Started", render: (row) => <span className="font-mono text-xs">{formatTimestamp(row.startedAt)}</span>, exportValue: (row) => row.source.startedAt },
+    { id: "duration", label: "Duration", render: (row) => row.durationLabel, exportValue: (row) => row.source.duration },
+    { id: "files", label: "Files", numeric: true, render: (row) => row.filesProcessed, exportValue: (row) => row.source.filesProcessed },
+    { id: "issues", label: "Issues fixed", numeric: true, render: (row) => row.issuesLabel, exportValue: (row) => row.source.issuesResolved },
+    { id: "reclaimed", label: "Reclaimed", numeric: true, render: (row) => row.bytesSavedLabel, exportValue: (row) => row.source.bytesSaved },
     {
       id: "actions", label: "", srLabel: "Actions", align: "right", render: (row) => row.cancellable ? (
         <Button
@@ -227,13 +229,13 @@ export function ArchiveMaintenanceOperations() {
           </Button>
         </div>
 
-        <DenseDataTable
-          columns={executionColumns}
-          rows={rows}
-          getRowId={(row) => row.executionId}
-          emptyText={failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
-          ariaLabel="Maintenance execution history"
-        />
+        <TableWorkbench workbenchId="data-maintenance-executions" sourceKey={failedOnly ? "failed" : "all"}
+          sourceDescription="View shows the latest 25 executions. CSV includes all authorized retained matches; host retention applies."
+          filterState={{ failedOnly: String(failedOnly) }} onRestoreFilters={(filters) => setFailedOnly(filters.failedOnly === "true")}
+          onExportAll={(columns, search, sort, signal) => exportTableQuery("data-maintenance-executions", columns, search, sort?.columnId, sort?.direction, signal, { failedOnly: String(failedOnly) })}
+          rows={rows} getRowId={(row) => row.executionId} getSearchText={(row) => `${row.taskTypeLabel} ${row.statusLabel} ${row.triggerLabel} ${row.errorMessage ?? ""}`}
+          ariaLabel="Maintenance execution history" emptyText={failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
+          columns={executionColumns} maxVisibleRows={null} />
       </CardContent>
     </section>
   );

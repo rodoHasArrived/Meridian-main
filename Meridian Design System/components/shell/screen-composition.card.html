@@ -5,15 +5,18 @@
 <meta charset="UTF-8" />
 <title>Screen composition</title>
 <link rel="stylesheet" href="../../styles.css" />
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+
+
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { ScreenComposition, ARCHETYPES, DataGrid, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
+const { ScreenComposition, DataGrid, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
+const ARCHETYPES = ScreenComposition.archetypes;
 const defineScreen = ScreenComposition.define;
 function Panel({ eyebrow, title, note, children, style }) {
   return (
@@ -26,7 +29,7 @@ function Panel({ eyebrow, title, note, children, style }) {
   );
 }
 
-const tieOut = defineScreen({
+const tieOut = ScreenComposition.define({
   name: "Close tie-out", archetype: "investigate",
   regions: [
     { id:"context", title:"Period and entity" },
@@ -36,7 +39,7 @@ const tieOut = defineScreen({
     { id:"action", title:"Disposition" },
   ],
 });
-const drift = defineScreen({ name:"Drifted screen", archetype:"report", regions:["masthead","primary","evidence","notes"] });
+const drift = ScreenComposition.define({ name:"Drifted screen", archetype:"report", regions:["masthead","primary","evidence","notes"] });
 
 const TB = [
   { code:"1000", account:"Cash", debit:4820115.22, credit:0 },
@@ -48,7 +51,7 @@ function Demo() {
   return (
     <div style={{ display:"grid", gap:16, maxWidth:1140 }}>
       <Panel eyebrow="Declaration" title="Investigate archetype, five regions"
-        note="defineScreen states the manifest; ScreenComposition lays it on the 12-column grid and fills each region from slots. Changing the archetype changes every screen that declares it — one edit instead of thirty-one.">
+        note="ScreenComposition.define states the manifest; ScreenComposition lays it on the 12-column grid and fills each region from slots. Changing the archetype changes every screen that declares it — one edit instead of thirty-one.">
         <ScreenComposition screen={tieOut} showRoles slots={{
           context: <span style={{ fontSize:12, color:"var(--text-secondary)" }}>Meridian Core Fund · June 2026 · close deadline Jul 10</span>,
           claim: <span style={{ fontSize:13, color:"var(--text-primary)" }}>The June trial balance ties to the custodian statement within tolerance.</span>,

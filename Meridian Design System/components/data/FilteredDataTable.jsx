@@ -48,9 +48,9 @@ function inject() {
   transition: background 100ms ease;
 }
 .fdt-table th:hover { background: var(--bg-light, #F8F7F3); }
-.fdt-table th:focus-visible { outline: var(--focus-ring); outline-offset: -2px; color: var(--brand-signal-text, #8E4730); }
+.fdt-table th:focus-visible { outline: var(--focus-ring); outline-offset: -2px; color: var(--brand-signal-ink,#944A32); }
 .fdt-table th.fdt--sorted {
-  background: var(--bg-light, #F8F7F3); color: var(--brand-signal-text, #8E4730);
+  background: var(--bg-light, #F8F7F3); color: var(--brand-signal-ink,#944A32);
 }
 .fdt-table th.fdt--r { text-align: right; }
 .fdt-table td {

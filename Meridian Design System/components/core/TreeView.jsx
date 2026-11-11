@@ -11,6 +11,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --tree-row-height{syntax:"*";inherits:true;}
 .mds-tree{font-family:var(--font-data);font-size:13px;color:var(--text-primary,#20252B);user-select:none;position:relative;}
 .mds-tree:focus-visible{outline:var(--focus-ring);outline-offset:2px;}
 .mds-tree-row{display:flex;align-items:center;gap:6px;height:var(--tree-row-height,var(--theme-row-height,36px));padding:0 8px;cursor:pointer;border-left:2px solid transparent;position:relative;}

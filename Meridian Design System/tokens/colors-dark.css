@@ -251,6 +251,11 @@
   --text-disabled:      #A4ABB2;
   --ink-inverse:        #F5F3EE;
 
+  --accent:             var(--theme-accent, #C56343);
+  --accent-dim:         var(--theme-accent-dim, #CB6E4E);
+  --accent-hover:       var(--theme-accent-hover, #D2795A);
+  --accent-ghost:       var(--theme-accent-ghost, #F6E6DF);
+  --text-on-accent:     var(--theme-text-on-accent, #0D1217);
   --text-on-fill:       #FFFFFF;
 
   --focus:              #2D6FB3;

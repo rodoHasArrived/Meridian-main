@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Execution audit trail panel for Trading → Risk.
  *
@@ -14,26 +15,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { searchExecutionAuditTrail } from "@/lib/api/execution-audit.api";
+import { exportTableQuery } from "@/lib/table-workbench";
 import {
   buildAuditTrailPanelViewModel,
-  type AuditTrailTone,
-  type AuditTrailRowViewModel
+  type AuditTrailTone
 } from "@/screens/trading-screen.audit-trail.view-model";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
 
 const AUDIT_LIMIT = 50;
 
-const auditColumns: DenseDataTableColumn<AuditTrailRowViewModel>[] = [
-  { id: "occurred", label: "Occurred", render: row => <span className="font-mono text-xs">{row.occurredAt}</span> },
-  { id: "object", label: "Object", render: row => <span className="font-mono text-xs">{row.objectLabel}</span> },
-  { id: "action", label: "Action", render: row => row.actionLabel },
-  { id: "outcome", label: "Outcome", render: row => <Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge> },
-  { id: "actor", label: "Actor", render: row => row.actor },
-  { id: "context", label: "Context", render: row => <span className="block max-w-[24rem] break-words text-xs text-muted-foreground">{row.context}</span> },
-  { id: "ledger", label: "Action ledger", render: row => <Badge variant={badgeVariant(row.ledgerTone)}>{row.ledgerLabel}</Badge> }
-];
 
 export function ExecutionAuditTrailPanel() {
   const [result, setResult] = useState<AuditTrailExplorerResult | null>(null);
@@ -73,7 +64,7 @@ export function ExecutionAuditTrailPanel() {
               Execution audit trail
             </CardTitle>
             <CardDescription>
-              Every recorded order, control, and operator action with its actor, outcome, and
+              Retained order, control, and operator actions with their actor, outcome, and
               action-ledger chain position.
             </CardDescription>
           </div>
@@ -111,15 +102,18 @@ export function ExecutionAuditTrailPanel() {
           </div>
         </form>
 
-        <DenseDataTable
-          columns={auditColumns}
-          rows={vm.rows}
-          getRowId={row => row.auditId}
-          getRowAriaLabel={row => row.ariaLabel}
-          ariaLabel="Execution audit trail entries"
-          emptyText={loading ? "Loading audit trail…" : vm.emptyState}
-          maxVisibleRows={null}
-        />
+        <TableWorkbench<(typeof vm.rows)[number]> maxVisibleRows={null}  workbenchId="trading-execution-audit" sourceKey={appliedSearch} sourceDescription="Authorized retained execution and Operations audit query; host execution retention limits apply. Actor, outcome, context and ledger status are retained."
+ completePopulation={!loading && !error && Boolean(result) && !vm.truncated} rows={vm.rows} getRowId={(row)=>row.auditId} getRowAriaLabel={(row)=>row.ariaLabel}
+ onExportAll={!loading && !error && result ? (columns, _search, sort, signal) => exportTableQuery("trading-execution-audit", columns, appliedSearch, sort?.columnId, sort?.direction, signal) : undefined}
+ ariaLabel="Execution audit trail entries" emptyText={loading ? "Loading audit trail…" : vm.emptyState}
+ filterState={{search:appliedSearch}} onRestoreFilters={(filters)=>{setSearchText(filters.search??"");setAppliedSearch(filters.search??"");}}
+ columns={[{id:"column-1",label:"Occurred",className:"whitespace-nowrap",render:(row)=>(<>{row.occurredAt}</>),exportValue:(row)=>row.occurredAt},
+{id:"column-2",label:"Object",render:(row)=>(<>{row.objectLabel}</>),exportValue:(row)=>row.objectLabel},
+{id:"column-3",label:"Action",render:(row)=>(<>{row.actionLabel}</>),exportValue:(row)=>row.actionLabel},
+{id:"column-4",label:"Outcome",render:(row)=>(<><Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge></>),exportValue:(row)=>row.outcome},
+{id:"column-5",label:"Actor",render:(row)=>(<>{row.actor}</>),exportValue:(row)=>row.actor},
+{id:"column-6",label:"Context",render:(row)=>(<>{row.context}</>),exportValue:(row)=>row.context},
+{id:"column-7",label:"Action ledger",render:(row)=>(<><Badge variant={badgeVariant(row.ledgerTone)}>{row.ledgerLabel}</Badge></>),exportValue:(row)=>row.ledgerLabel}]} />
       </CardContent>
     </Card>
   );

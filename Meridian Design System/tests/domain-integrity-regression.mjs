@@ -223,13 +223,13 @@ try {
   assert.equal(await page.getByLabel('Memo', { exact: true }).count(), 2);
   const lists = await page.locator('datalist').evaluateAll(nodes => nodes.map(node => node.id));
   assert.equal(new Set(lists).size, 2, 'Independent forms have independent datalists');
-  assert.equal(await page.getByRole('spinbutton', { name: 'Line 1 debit', exact: true }).count(), 2);
+  assert.equal(await page.getByRole('spinbutton', { name: 'Debit line 1', exact: true }).count(), 2);
 
   await mount('reconciliation');
   const rowMatch = page.getByRole('checkbox', { name: 'Match Statement item REF1', exact: true });
   await rowMatch.focus(); await page.keyboard.press('Space');
   assert.deepEqual(await page.evaluate(() => window.events[0]), { id: 's-1', matched: true });
-  await page.getByRole('textbox', { name: 'Filter reconciliation items' }).fill('REF2');
+  await page.getByRole('textbox', { name: 'Filter reconciliation items by memo or reference' }).fill('REF2');
   await page.getByRole('checkbox', { name: 'Mark all Statement items matched', exact: true }).click();
   assert.deepEqual(await page.evaluate(() => window.events.at(-1)), { side: 'Statement', ids: ['s-1', 's-2'], matched: true });
   await mount('reconciliation', { readOnly: true });

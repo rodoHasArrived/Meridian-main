@@ -161,7 +161,7 @@
 }
 
 .operator-rail-compact .operator-nav-item {
-  grid-template-columns: 16px minmax(0, 1fr);
+  grid-template-columns: 16px minmax(0, 1fr) max-content;
   min-height: 32px;
 }
 

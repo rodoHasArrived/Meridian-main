@@ -51,12 +51,12 @@ export interface WorkstationStatusPageFreshness {
 const MAX_FRESHNESS_VALUE_LENGTH = 56;
 
 export function buildWorkstationStatusItems({
-  workspaceLabel,
   refreshing,
   hasError,
   attention = null,
   pageFreshness = null
 }: {
+  /** Compatibility input: the shared header already presents the route name. */
   workspaceLabel: string;
   refreshing: boolean;
   hasError: boolean;
@@ -64,10 +64,11 @@ export function buildWorkstationStatusItems({
   pageFreshness?: WorkstationStatusPageFreshness | null;
 }): WorkstationStatusBarItem[] {
   // "Sync" only says the workstation's own read of the API is current. When the shell attention
-  // state needs review or is blocked, the footer repeats the masthead pill's worst issue beside
+  // state needs review or is blocked, the footer repeats the masthead disclosure's worst issue beside
   // it, so a green sync dot is never the footer's whole answer while the masthead is warning.
-  // It reads the same attention state as the pill, so the two cannot disagree. A clear or
-  // still-loading state adds nothing, which keeps the footer to sync and workspace normally.
+  // It reads the same attention state as the masthead, so the two cannot disagree. A clear or
+  // still-loading state adds nothing; route names and provider inventory stay in their existing
+  // header/disclosure surfaces instead of repeating in the footer.
   const attentionItems: WorkstationStatusBarItem[] =
     attention && (attention.tone === "review" || attention.tone === "blocked")
       ? [{
@@ -107,13 +108,7 @@ export function buildWorkstationStatusItems({
             : "up to date"
     },
     ...freshnessItems,
-    ...attentionItems,
-    {
-      key: "workspace",
-      label: "Workspace",
-      value: workspaceLabel,
-      push: true
-    }
+    ...attentionItems
   ];
 }
 

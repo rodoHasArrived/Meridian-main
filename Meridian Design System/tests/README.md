@@ -57,7 +57,7 @@ node tests/accounting-interaction-regression.mjs
 npm run test:chart-trading
 npm run test:components
 npm run test:agency
-node --test tests/token-defaults.test.mjs
+python3 -m unittest discover -s tests -p test_manifest_metadata.py
 python3 -m unittest discover -s tests -p 'test_*.py'
 ```
 

@@ -3,10 +3,9 @@
 // and the single global React. Functional: two synchronized panes show custodian statement vs.
 // internal ledger; clicking a row cross-highlights its match on the other side; unmatched rows
 // open a break resolution drawer.
-const {
-  WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge,
-  MetricCard, AmountCell, Select
-} = window.MeridianDesignSystem_205d17;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select;
 const { useState, useMemo, useCallback, useRef, useEffect } = React;
 
 /* ── screen-level CSS ── */
@@ -25,7 +24,7 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
   padding:6px 12px;border-right:1px solid var(--border);transition:background-color .12s,color .12s;}
 .spr-seg button:last-child{border-right:none;}
 .spr-seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#E7EDF2);color:var(--brand-signal-text,#8E4730);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#E7EDF2);color:var(--brand-signal-ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .spr-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .spr-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);
   border-radius:var(--radius-card,8px);overflow:hidden;background:var(--bg-light);
@@ -386,7 +385,8 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 }
 
 /* ── main screen ── */
-function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
+function SplitPaneReconciliationScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select } = window.MeridianDesignSystem_205d17);
   const [period,  setPeriod]  = useState(PERIODS[0]);
   const [account, setAccount] = useState(ACCOUNTS[0]);
   const [filter,  setFilter]  = useState("all");
@@ -508,6 +508,7 @@ function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
       <WorkstationTopbar
         moduleLabel="Accounting"
         environment={environment}
+        clock="14:32:08 UTC"
         brandSrc="../../assets/brand/meridian-mark-light.svg"
       />
 
@@ -526,13 +527,13 @@ function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
               Statement vs. Ledger · {period}
             </span>
             <div style={{ flex:1 }} />
-            <Button variant="ghost" size="sm" onClick={() => {
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => {
               const content = JSON.stringify({ synthetic: true, period, account, statement: stmtItems, ledger: ldgrItems }, null, 2);
               const url = URL.createObjectURL(new Blob([content], { type: "application/json" }));
               const anchor = document.createElement("a"); anchor.href = url; anchor.download = "synthetic-reconciliation.json"; anchor.click(); URL.revokeObjectURL(url);
             }}>Export example</Button>
-            <Button variant="ghost" size="sm" onClick={() => window.print()}>Print report</Button>
-            <Button
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => window.print()}>Print report</Button>
+            <Button disabled={dataState !== "ready"}
               variant={totalBreaks > 0 ? "primary" : "ghost"}
               size="sm"
               onClick={() => {
@@ -543,6 +544,7 @@ function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
               Auto-match{totalBreaks > 0 ? ` (${stmtTiming + ldgrTiming} timing)` : ""}
             </Button>
           </div>
+          <DataStateSwitch state={dataState} label="Statement and ledger records">
 
           <p role="note">Synthetic retained example. Matches and resolution actions change only this local demonstration; no journal or reconciliation decision is submitted.</p>
           {/* Controls */}
@@ -654,6 +656,7 @@ function SplitPaneReconciliationScreen({ environment = "FIXTURE" } = {}) {
             </div>
           </div>
 
+                  </DataStateSwitch>
         </main>
       </div>
 

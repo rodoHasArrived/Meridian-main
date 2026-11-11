@@ -35,7 +35,7 @@ export function scheduleApplies(properties,requires){
 }
 
 let injected=false;function inject(){if(injected||typeof document==="undefined")return;injected=true;const el=document.createElement("style");el.setAttribute("data-mds","schedule-ladder");el.textContent=`
-.mds-sl{border:1px solid var(--border,#D2CDC3);background:var(--surface-well,#FCFBF8);font-family:var(--font-body);color:var(--text-secondary,#535C65)}
+.mds-sl{border:1px solid var(--border,#D2CDC3);background:var(--surface-well,var(--bg-light,#F8F7F3));font-family:var(--font-body);color:var(--text-secondary,#535C65)}
 .mds-sl__head{display:flex;flex-wrap:wrap;gap:4px 12px;align-items:baseline;padding:9px 11px;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-sl__title{margin:0;font-size:13px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-sl__object,.mds-sl__meta{font:10px/14px var(--font-data,monospace);color:var(--text-muted,#606870)}

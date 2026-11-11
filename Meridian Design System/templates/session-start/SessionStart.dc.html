@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 <title>Start · Session Start — Meridian</title>
 </head>
@@ -13,7 +16,7 @@
 <script src="./ds-base.js"></script>
 <script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="session-start">
-<style>html,body{margin:0;padding:0;height:100%}[data-ss-sel="off"] [data-ss-dot-inner]{display:none}[data-ss-kind="live"][data-ss-sel="on"]{background:var(--state-live-bg,#B54B42);border-color:var(--state-live-bd,#B54B42);box-shadow:inset 2px 0 0 var(--mode-live,#B54B42)}[data-ss-kind="live"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-live,#B54B42)}[data-ss-kind="live"] [data-ss-dot-inner]{background:var(--mode-live,#B54B42)}[data-ss-kind="paper"][data-ss-sel="on"]{background:var(--state-paper-bg,#5D7286);border-color:var(--state-paper-bd,#5D7286);box-shadow:inset 2px 0 0 var(--mode-paper,#5D7286)}[data-ss-kind="paper"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-paper,#5D7286)}[data-ss-kind="paper"] [data-ss-dot-inner]{background:var(--mode-paper,#5D7286)}[data-ss-kind="fixture"][data-ss-sel="on"]{background:var(--state-warn-bg,#986717);border-color:var(--state-warn-bd,#986717);box-shadow:inset 2px 0 0 var(--mode-fixture,#986717)}[data-ss-kind="fixture"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-fixture,#986717)}[data-ss-kind="fixture"] [data-ss-dot-inner]{background:var(--mode-fixture,#986717)}</style>
+<style>html,body{margin:0;padding:0;height:100%}[data-ss-sel="off"] [data-ss-dot-inner]{display:none}[data-ss-kind="live"][data-ss-sel="on"]{background:var(--state-live-bg,rgba(181, 75, 66, 0.12));border-color:var(--state-live-bd,rgba(181, 75, 66, 0.42));box-shadow:inset 2px 0 0 var(--mode-live,#B54B42)}[data-ss-kind="live"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-live,#B54B42)}[data-ss-kind="live"] [data-ss-dot-inner]{background:var(--mode-live,#B54B42)}[data-ss-kind="paper"][data-ss-sel="on"]{background:var(--state-paper-bg,rgba(93, 114, 134, 0.1));border-color:var(--state-paper-bd,rgba(93, 114, 134, 0.34));box-shadow:inset 2px 0 0 var(--mode-paper,#5D7286)}[data-ss-kind="paper"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-paper,#5D7286)}[data-ss-kind="paper"] [data-ss-dot-inner]{background:var(--mode-paper,#5D7286)}[data-ss-kind="fixture"][data-ss-sel="on"]{background:var(--state-warn-bg,rgba(152, 103, 23, 0.11));border-color:var(--state-warn-bd,rgba(152, 103, 23, 0.38));box-shadow:inset 2px 0 0 var(--mode-fixture,#986717)}[data-ss-kind="fixture"][data-ss-sel="on"] [data-ss-dot]{border-color:var(--mode-fixture,#986717)}[data-ss-kind="fixture"] [data-ss-dot-inner]{background:var(--mode-fixture,#986717)}</style>
 </helmet>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Sign-in" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
 <div data-screen-label="Session start" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">

@@ -14,7 +14,9 @@ different API from a historical checkout.
 
 `scripts/build_package.mjs` rebuilds `_ds_bundle.js` from the manifest's current
 sources. `release-build.json` records source hashes, generated asset hashes,
-counts, and tool versions. The separate `_preview_runtime.js` supplies a pinned
+counts, and tool versions. `_preview_jsx.js` is the pinned in-browser JSX compiler that
+standalone specimen pages load so their readable JSX demo source runs offline.
+The separate `_preview_runtime.js` supplies a pinned
 local React/ReactDOM runtime for the ordinary HTML smoke page. Application
 consumers should use their own React instance and omit that preview runtime.
 
@@ -23,6 +25,7 @@ directory:
 
 ```bash
 npm ci
+python3 scripts/sync_manifest_metadata.py --write
 npm run build
 npm run build:check
 npm run test:release
@@ -54,6 +57,37 @@ the executed browser matrix. Its validator rejects stale or incomplete proof;
 assembly requires supplied reviewer records and a complete executed report.
 See `tests/README.md` for reconstruction inputs and the source/test freeze rule.
 Package checks establish the scoped artifact and synthetic browser contracts.
+The additional `tests/optimistic-settlement-regression.mjs` and
+`tests/chart-accessibility-regression.mjs` cover observer reporting and the chart
+keyboard/data-alternative contracts. Run the full specimen matrix after the
+central build using [`tests/SPECIMEN_MATRIX.md`](../tests/SPECIMEN_MATRIX.md).
+It requires a separately prepared, pinned peer cache and preserves the original
+conformance assertions and raw findings. The inspected cards contain 84 peer
+script references without declared SRI; local byte-pin verification does not
+change that source-integrity limitation or prove live CDN access.
+
+The initial expanded export recorded 67 governance findings and 25 warnings.
+The final merged source through `7952be63ba` passed the complete 135-test Python
+suite and full contrast check. All seven release gates passed after the runtime
+alias update; parity passed 12 tests and the full 502-declared/227-shared-name
+check with zero findings. The 743-token metadata refresh adds 39 brand-scoped/
+default records, with other catalogue counts unchanged. The brand browser matrix
+passed 28 states, 1,932 AA pairs and 60 actual dark-role mapping checks. Native
+browser coverage passed 64 cases and 15 axe scans with zero reported violations.
+The byte-identical component bundle and public runtime retain the strict
+135/135-card proof. Source-hash and README checks reported zero errors.
+
+The 13-test metadata suite includes unconditional-default precedence.
+Build/source freshness and release integrity passed for 1,347 curated files.
+The retired-export declaration is enforced by 29 governance tests; the actual
+package reports zero governance failures and warnings.
+Regenerate the artifact after final documentation edits and associate its
+checksum with the delivered source. Use the audit's continuation status for the
+precise scope, historical dashboard evidence and documentation gate that did not
+converge.
+Build/export integrity validates the curated artifact; it cannot turn a failed
+or unrun gate into release certification. Keep NVDA/VoiceOver, Firefox/WebKit,
+native Windows/Edge and full-monorepo checks explicit when they were not run.
 
 ## Archive and verification
 

@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 /**
  * Banking payment-approval queue for Accounting → Approvals.
  *
@@ -28,7 +29,6 @@ import {
 import type { BankTransaction, PendingPayment } from "@/types/banking-payments.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
-import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 type DecisionKind = "approve" | "reject";
 
@@ -109,7 +109,7 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
     };
   }, [refresh]);
 
-  const rows = useMemo(() => payments.map(buildPendingPaymentRow), [payments]);
+  const rows = useMemo(() => payments.map(payment => ({ ...buildPendingPaymentRow(payment), source: payment })), [payments]);
   const summary = useMemo(() => buildPaymentQueueSummary(payments, transactions), [payments, transactions]);
 
   async function submitDecision() {
@@ -184,24 +184,21 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
           <Metric label="Evidence recorded" value={String(summary.evidenceCount)} />
         </div>
 
-        <DenseDataTable
-          columns={[
-            { id: "column-1", label: "Amount", className: "py-2", render: (row) => <>
-                  <div className="font-mono text-xs">{row.amount}</div>
-                  <div className={row.currencyMissing ? "text-xs text-warning" : "text-xs text-muted-foreground"}>
-                    {row.currencyLabel}
-                  </div>
-                </> },
-            { id: "column-2", label: "Effective", className: "font-mono text-xs", render: (row) => <>{row.effectiveDate}</> },
-            { id: "column-3", label: "Reference", className: "max-w-[16rem] break-words text-xs text-muted-foreground", render: (row) => <>{row.externalRef}</> },
-            { id: "column-4", label: "Status", render: (row) => <>
-                  <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+        <TableWorkbench<(typeof rows)[number]> tableClassName={"w-full text-sm"} maxVisibleRows={null}  workbenchId="accounting-payment-intents" sourceKey={entityId ?? "unselected"}
+ rows={rows} columns={[{id:"amount",label:"Amount",exportValue: row => row.source.amount,render: row => <>
+<div className="font-mono text-xs">{row.amount}</div>
+
+</>},{id:"currency",label:"Currency",exportValue:row=>row.source.currency ?? "Currency not retained",render:row=><span className={row.currencyMissing ? "text-xs text-warning" : "text-xs text-muted-foreground"}>{row.currencyLabel}</span>},{id:"effective",label:"Effective",exportValue: row => row.source.effectiveDate,render: row => <>
+{row.effectiveDate}
+</>},{id:"reference",label:"Reference",exportValue: row => row.source.externalRef,render: row => <>
+{row.externalRef}
+</>},{id:"status",label:"Status",exportValue: row => row.statusLabel,render: row => <>
+<Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   {row.decisionSummary ? (
                     <div className="mt-1 text-xs text-muted-foreground">{row.decisionSummary}</div>
                   ) : null}
-                </> },
-            { id: "column-5", label: "Actions", className: "text-right", render: (row) => <>
-                  {row.canDecide ? (
+</>},{id:"actions",label:"Actions",render: row => <>
+{row.canDecide ? (
                     decision?.id === row.pendingPaymentId ? (
                       <span className="flex flex-wrap items-center justify-end gap-2">
                         <Input
@@ -235,17 +232,12 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
                       </span>
                     )
                   ) : null}
-                </> }
-          ]}
-          rows={rows}
-          getRowId={(row) => String(row.pendingPaymentId)}
-          getRowClassName={() => "border-t border-border/60"}
-          getRowAriaLabel={(row) => row.ariaLabel}
-          ariaLabel={"Payment intents"}
-          tableClassName={"w-full text-sm"}
-          emptyText={!entityId ? "Select an entity to load payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
-          maxVisibleRows={null}
-        />
+</>}]} getRowId={row => row.pendingPaymentId} getRowAriaLabel={row => row.ariaLabel}
+ getSearchText={row => `${row.externalRef} ${row.currencyLabel} ${row.effectiveDate} ${row.statusLabel}`}
+ completePopulation={Boolean(entityId && !loading && !error)} sourceDescription="All payment intents returned by the authorized entity payment queue. Decisions remain in the governed payment workflow."
+ exportContext={{ Entity: entityId ?? "Unselected" }}
+ emptyText={!entityId ? "Select an entity to load payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
+ ariaLabel="Payment intents" />
       </CardContent>
     </Card>
   );

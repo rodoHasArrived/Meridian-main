@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 import { AlertTriangle, ChevronRight, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
+import type { DataProvenanceKind } from "@/app-shell.data-provenance-badge";
 import { Button } from "@/components/ui/button";
 import { WorkspaceOverflowMenu } from "@/components/meridian/workspace-views-menu";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
@@ -50,6 +51,9 @@ interface WorkspaceHeaderProps {
   routeKey?: string;
   /** The operating-scope chip, centred in the row. */
   scope?: ReactNode;
+  /** Persistent scope and optional workflow disclosure in the compact header. */
+  context?: ReactNode;
+  dataProvenance?: DataProvenanceKind;
 }
 
 export function WorkspaceHeader({
@@ -61,7 +65,9 @@ export function WorkspaceHeader({
   actions,
   overflowActions,
   routeKey,
-  scope
+  scope,
+  context,
+  dataProvenance
 }: WorkspaceHeaderProps) {
   const currentCrumb = breadcrumbItems.at(-1);
   const ancestors = breadcrumbItems.slice(0, -1);
@@ -70,7 +76,8 @@ export function WorkspaceHeader({
     session,
     canRefresh: Boolean(onRefresh),
     refreshing,
-    pageTitle: typeof currentCrumb?.label === "string" ? currentCrumb.label : undefined
+    pageTitle: typeof currentCrumb?.label === "string" ? currentCrumb.label : undefined,
+    dataProvenance
   });
 
   return (
@@ -121,7 +128,7 @@ export function WorkspaceHeader({
             </li>
           </ol>
         </nav>
-        {scope ? <div className="workstation-header-scope">{scope}</div> : null}
+        {context || scope ? <div className="workstation-header-scope">{context ?? scope}</div> : null}
         <div className="workstation-header-actions">
           {viewModel.refreshAction && onRefresh ? (
             <Button

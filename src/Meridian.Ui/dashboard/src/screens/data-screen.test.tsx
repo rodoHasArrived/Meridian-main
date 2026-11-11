@@ -5,6 +5,7 @@ import { vi } from "vitest";
 import * as api from "@/lib/api";
 import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
+import * as tableApi from "@/lib/table-workbench";
 import { DataScreen } from "@/screens/data-screen";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
@@ -391,11 +392,31 @@ describe("DataScreen", () => {
     expect(screen.queryByText("SYM101")).not.toBeInTheDocument();
     expect(screen.getByText("Showing 100 of 102 returned rows on this page.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Copy CSV" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Download CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export result preview CSV" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Page 2" }));
 
     expect(screen.getByText("SYM101")).toBeInTheDocument();
+  });
+
+  it("exports the exact retained SQL execution after editor text changes", async () => {
+    const user = userEvent.setup();
+    const run = vi.spyOn(api, "runDataQuery").mockResolvedValueOnce({
+      success: true, error: null, columns: ["symbol"], columnTypes: ["VARCHAR"], rows: [["AAPL"]],
+      rowCount: 1, truncated: true, elapsedMs: 2, executionId: "retained-execution-1", retainedRowCount: 500
+    });
+    const exported = vi.spyOn(tableApi, "exportTableQuery").mockResolvedValue(undefined);
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/query"] });
+    await user.click(screen.getByRole("button", { name: "Run query" }));
+    await screen.findByRole("table", { name: "Query results" });
+    fireEvent.change(screen.getByRole("textbox", { name: "SQL statement" }), { target: { value: "SELECT 'edited statement'" } });
+    const controls = screen.getByRole("group", { name: "Query results table controls" });
+    await user.type(within(controls).getByRole("searchbox"), "AAPL");
+    await user.click(within(controls).getByRole("button", { name: "Export CSV" }));
+    expect(exported).toHaveBeenCalledWith("data-query-results", ["0:symbol"], "AAPL", undefined, undefined,
+      expect.any(AbortSignal), { executionId: "retained-execution-1" });
+    expect(run).toHaveBeenCalledTimes(1);
+    exported.mockRestore();
   });
 
   it("keeps the SQL query library secondary until requested", async () => {
@@ -468,6 +489,8 @@ describe("DataScreen", () => {
     expect(screen.getByText(/pinned host-key fingerprint/i)).toBeInTheDocument();
     expect(screen.getByText("4 of 7 required mapping fields matched in trades.csv.")).toBeInTheDocument();
     expect(screen.getAllByText("AAPL").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("button", { name: "Export preview CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export preview CSV" })).toHaveAttribute("title", expect.stringContaining("not the full uploaded file"));
 
     previewDataUpload.mockRestore();
   });
@@ -944,10 +967,14 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
   });
 
-  it("leads Data with repair work and keeps focused tools available", async () => {
+  it("leads Data with provider health before repair work and keeps focused tools available", async () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 
     expect(screen.getByRole("treegrid", { name: "Historical repair jobs" })).toBeInTheDocument();
+    const health = screen.getByRole("region", { name: "Provider health overview" });
+    const repairs = screen.getByRole("treegrid", { name: "Historical repair jobs" });
+    expect(health.compareDocumentPosition(repairs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText("Diagnostics ready")).not.toBeInTheDocument();
     await userEvent.setup().click(screen.getByText("Data tools and connections"));
     expect(screen.getByRole("link", { name: "Open Import retained files: Import retained files" })).toHaveAttribute("href", "/data/import");
     expect(screen.getAllByRole("link", { name: "Open Provider connections: Provider connections" })[0]).toHaveAttribute("href", "/data/providers");

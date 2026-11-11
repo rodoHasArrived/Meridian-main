@@ -1,22 +1,71 @@
 import { ChevronDown } from "lucide-react";
 import { useId } from "react";
 import { Link } from "react-router-dom";
-import type { AppShellTrustStripState } from "@/app-shell.view-model";
-import { DesignSystemBadge } from "@/design-system/badge";
+import type { AppShellAttentionState, AppShellTrustStripState, AppShellWorkflowContinuityViewModel } from "@/app-shell.view-model";
+import { buildDataProvenanceBadgeViewModel, type DataProvenanceKind } from "@/app-shell.data-provenance-badge";
+import { DataProvenanceBanner } from "@/components/meridian/data-provenance-banner";
 import { cn } from "@/lib/utils";
+import { DesignSystemBadge } from "@/design-system/badge";
+
+const trustToneRank = { ready: 0, pending: 1, review: 2, blocked: 3 } as const;
 
 /**
- * The masthead environment badge: PAPER / LIVE / DEMO, plus the data qualifier (SEEDED,
- * SIMULATED, SAMPLE, UNKNOWN) whenever the loaded data is not confirmed real. It says what the
- * operator is looking at and nothing else; what needs attention is the attention pill's job, so
- * this badge never changes colour for a provider or queue issue. Build, environment, provenance
- * and provider facts stay available in a native disclosure.
+ * One masthead disclosure for environment, persistent data provenance and the worst workstation
+ * issue. Its attention headline uses the same state as Today, page status rows and the footer;
+ * source details and recovery links remain inspectable without repeating separate chrome.
+ * A LIVE badge is shown only when real provenance agrees with the live session.
  */
-export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
-  const { environment } = viewModel;
+/** Preserve the optional adapter API without promoting a session environment to data evidence. */
+export function trustStripProvenance(viewModel: AppShellTrustStripState): DataProvenanceKind {
+  const retainedSource = viewModel.items.find((item) => item.id === "source")?.value.trim().toLowerCase();
+  const qualifier = retainedSource ?? viewModel.environment.dataLabel?.trim().toLowerCase();
+  switch (qualifier) {
+    case "real": return retainedSource === "real" ? "real" : "unknown";
+    case "seeded": return "seeded";
+    case "simulated": return "simulated";
+    case "sample": return "sample";
+    default: return "unknown";
+  }
+}
+
+export function DesignSystemTrustStrip({
+  viewModel,
+  provenance = trustStripProvenance(viewModel),
+  onRetryLiveData,
+  retryBusy = false,
+  decisionBrief,
+  attention
+}: {
+  viewModel: AppShellTrustStripState;
+  provenance?: DataProvenanceKind;
+  onRetryLiveData?: () => void;
+  retryBusy?: boolean;
+  decisionBrief?: AppShellWorkflowContinuityViewModel["decisionBrief"];
+  attention?: AppShellAttentionState;
+}) {
   const summaryDescriptionId = useId();
-  const summaryVisibleLabel = [environment.label, environment.dataLabel].filter(Boolean).join(" ");
-  const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const attentionDescriptionId = useId();
+  const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
+  const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
+  const provider = viewModel.items.find((item) => item.id === "providers");
+  const childTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
+    (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
+    "ready"
+  );
+  const briefTone = attention?.tone ?? decisionBrief?.statusTone ?? "ready";
+  const provenanceTone = provenance === "real" ? "ready" : "review";
+  const summaryTone = ([childTone, briefTone, provenanceTone] as const).reduce<typeof childTone>((current, tone) =>
+    trustToneRank[tone] > trustToneRank[current] ? tone : current, "ready");
+  const badge = buildDataProvenanceBadgeViewModel({ provenance });
+  const summaryValue = provenance !== "real"
+    ? provider && provider.tone !== "ready" ? provider.value : badge.headline
+    : provider && provider.tone !== "ready"
+    ? `${mode} · ${source} · ${provider.value}`
+    : `${mode} · ${source}`;
+  const headline = attention && !attention.clear ? attention.title : decisionBrief && decisionBrief.statusTone !== "ready" ? decisionBrief.title : summaryValue;
+  const statusLabel = attention?.statusLabel ?? decisionBrief?.statusLabel;
+  const showEnvironment = viewModel.environment.variant !== "live" || provenance === "real";
+  const summaryAriaLabel = `Environment, provenance, and provider posture. ${attention?.ariaLabel ?? ""} ${badge.ariaLabel} ${decisionBrief ? `${decisionBrief.statusLabel}: ${decisionBrief.title}. ` : ""}${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section
@@ -27,24 +76,27 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
       data-design-system-component="Status"
     >
       <span id={summaryDescriptionId} className="sr-only">{summaryAriaLabel}</span>
-      <details className="workstation-trust-details">
-        <summary className="workstation-trust-summary" aria-label={summaryVisibleLabel} aria-describedby={summaryDescriptionId}>
-          <DesignSystemBadge
-            className="workstation-trust-environment"
-            variant={environment.variant}
-            dot
-            data-environment={environment.variant}
-          >
-            {environment.label}
-          </DesignSystemBadge>
-          {environment.dataLabel ? (
-            <>
-              <span className="workstation-trust-sep" aria-hidden="true">·</span>
-              <span className="workstation-trust-value workstation-trust-data" data-testid="masthead-data-label">
-                {environment.dataLabel}
-              </span>
-            </>
-          ) : null}
+      {attention ? <span id={attentionDescriptionId} className="sr-only">{attention.ariaLabel}</span> : null}
+      <details className="workstation-trust-details" onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          event.currentTarget.open = false;
+          event.currentTarget.querySelector("summary")?.focus();
+        }
+      }}>
+        <summary
+          className={cn(
+            "workstation-trust-summary",
+            `workstation-trust-item-${summaryTone}`,
+            `mds-status--${summaryTone}`
+          )}
+          aria-describedby={summaryDescriptionId}
+        >
+          {showEnvironment ? <DesignSystemBadge className="workstation-trust-environment" variant={viewModel.environment.variant} dot data-environment={viewModel.environment.variant}>{viewModel.environment.label}</DesignSystemBadge> : null}
+          <DataProvenanceBanner provenance={provenance} compact />
+          {statusLabel ? <span className="workstation-trust-blocker">{statusLabel}</span> : null}
+          <span className="workstation-trust-value" title={headline}>
+            {headline}
+          </span>
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>
         <div
@@ -52,6 +104,25 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           role="group"
           aria-label="Environment, provenance, and provider details"
         >
+          {badge.visible ? <p className="workstation-trust-detail">{badge.headline}. {badge.detail}</p> : null}
+          {provenance === "unknown" && onRetryLiveData ? (
+            <button type="button" className="workstation-trust-retry" disabled={retryBusy} onClick={onRetryLiveData}
+              aria-label={retryBusy ? "Retrying live Meridian workspace data" : "Retry live Meridian workspace data"}>
+              {retryBusy ? "Retrying live data" : "Retry live data"}
+            </button>
+          ) : null}
+          {attention ? <Link to={attention.href} className="workstation-trust-item" aria-label={`${attention.statusLabel} ${attention.title}`} aria-describedby={attentionDescriptionId} data-attention-tone={attention.tone}>
+            <span className="workstation-trust-label">{attention.statusLabel}</span>
+            <span className="workstation-trust-value">{attention.title}</span>
+          </Link> : null}
+          {decisionBrief ? (
+            <Link to={decisionBrief.actionHref} className="workstation-trust-item" aria-label={decisionBrief.actionAriaLabel}>
+              <span className="workstation-trust-label">{decisionBrief.statusLabel}</span>
+              <span className="workstation-trust-value">{decisionBrief.title}</span>
+              <span className="workstation-trust-detail">{decisionBrief.summary}</span>
+              <span className="workstation-trust-detail">{decisionBrief.actionLabel}</span>
+            </Link>
+          ) : null}
           {viewModel.items.map((item) => {
             const content = (
               <>

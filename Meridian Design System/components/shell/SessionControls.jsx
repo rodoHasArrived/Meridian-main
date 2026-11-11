@@ -38,7 +38,7 @@ function inject() {
   letter-spacing:.04em;background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);}
 .mds-rolebadge--admin{border-color:var(--purple,#2F648A);color:var(--purple-dim,#234B68);
   background:var(--purple-a10,rgba(47,100,138,.10));}
-.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--text-secondary,#535C65);
+.mds-rolebadge--operator{border-color:var(--brand-signal,#C56343);color:var(--brand-signal-ink,#944A32);
   background:var(--brand-signal-ghost,#F6E6DF);}
 .mds-rolebadge--viewer{border-color:var(--border-strong,#AAA49A);}
 .mds-readonly{display:flex;align-items:center;gap:10px;padding:7px 14px;

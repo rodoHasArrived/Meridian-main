@@ -29,7 +29,7 @@ function inject() {
 .mds-dr-btn:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-dr-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);display:flex;
-  box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-dr-cal--above{top:auto;bottom:calc(100% + 4px);}
 .mds-dr-cal--right{left:auto;right:0;}
 .mds-dr-presets{flex:0 0 auto;display:flex;flex-direction:column;gap:2px;padding:10px;

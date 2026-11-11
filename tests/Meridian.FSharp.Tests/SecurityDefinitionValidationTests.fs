@@ -340,3 +340,58 @@ let ``an option with an exercise style the flat codec would not read back is ref
     Assert.Contains("option_exercise_style_invalid", definitionCodes)
     for definitionCode in definitionCodes do
         Assert.Contains(definitionCode, kindCodes)
+
+// ── Members a class does not persist ─────────────────────────────────────────────────────────
+//
+// A record holds whole term modules, so it can hold a member its class's flat row does not carry.
+// The rule is over the record, not the definition: an economic document may hold members no flat
+// row has (its retained document keeps them), so only the kind surface refuses. The list itself is
+// pinned against the flat codec by SecurityKindPersistenceTests; these pin the wiring.
+
+let private optionOf (kind: SecurityKind) =
+    match kind with
+    | SecurityKind.Option terms -> terms
+    | _ -> failwith "expected an option"
+
+[<Fact>]
+let ``an option holding a strike rate and a premium is refused on the kind surface only`` () =
+    let terms = optionOf (optionWithStyle (Some "European"))
+    let kind =
+        SecurityKind.Option { terms with Exercise = { terms.Exercise with StrikeRate = Some 0.04m; PremiumAmount = Some 2.5m } }
+    let errors = SecurityMaster.validateKindInvariants kind
+    let error = Assert.Single errors
+    Assert.Equal("term_member_not_persisted", error.Code)
+    Assert.Equal(
+        "Option does not persist Exercise.StrikeRate, Exercise.PremiumAmount; a value there would be dropped by the next write of the record.",
+        error.Message)
+    Assert.Equal<string list>([ "Exercise.StrikeRate"; "Exercise.PremiumAmount" ], SecurityKindPersistence.unpersistedMembers kind)
+    let _, definitionCodes = bothSurfaces "Option" kind
+    Assert.Empty definitionCodes
+
+[<Fact>]
+let ``an unpersisted member is reported across every module that holds one`` () =
+    let terms = optionOf (optionWithStyle None)
+    let kind =
+        SecurityKind.Option {
+            terms with
+                Dates = { terms.Dates with IssueDate = Some (DateOnly(2026, 1, 2)) }
+                ListingDetail = { terms.ListingDetail with RootSymbol = Some "ES" }
+                TradingParameters = { terms.TradingParameters with TickSize = Some 0.25m }
+        }
+    Assert.Equal<string list>(
+        [ "Dates.IssueDate"; "ListingDetail.RootSymbol"; "TradingParameters.TickSize" ],
+        SecurityKindPersistence.unpersistedMembers kind)
+
+[<Fact>]
+let ``a swap issued on another date than its effective date is refused, and one with no issue date is not`` () =
+    let effective = DateOnly(2026, 1, 15)
+    let swap issueDate =
+        SecurityKind.Swap {
+            Dates = { EffectiveDate = Some effective; IssueDate = issueDate; MaturityDate = Some (DateOnly(2031, 1, 15)) }
+            SwapLegs = { Legs = [ swapLeg ] }
+            RateConvention = None
+        }
+    let codes kind = SecurityMaster.validateKindInvariants kind |> List.map (fun e -> e.Code)
+    Assert.Equal<string list>([ "term_member_value_not_persisted" ], codes (swap (Some (DateOnly(2025, 12, 1)))))
+    Assert.Empty (codes (swap (Some effective)))
+    Assert.Empty (codes (swap None))

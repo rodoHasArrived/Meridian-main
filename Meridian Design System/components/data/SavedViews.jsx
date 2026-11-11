@@ -19,7 +19,7 @@ function inject() {
 .mds-savedviews__dirty{font-family:var(--font-data);font-size:10.5px;color:var(--orange-dim,#724D11);}
 .mds-savedviews__caret{font-size:9px;color:var(--text-muted,#606870);}
 .mds-savedviews__menu{position:absolute;top:calc(100% + 4px);left:0;z-index:1000;min-width:252px;
-  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 2px 6px rgba(0,0,0,.18));padding:4px 0;}
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 2px 6px rgba(17,23,29,.18));padding:4px 0;}
 .mds-savedviews__label{padding:6px 12px 3px;font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870);}
 .mds-savedviews__item{display:flex;align-items:center;gap:8px;}
 .mds-savedviews__row{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:6px 12px;border:0;background:none;

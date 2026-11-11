@@ -13,6 +13,7 @@
     "test:release": "python3 -m unittest discover -s tests -p test_release.py",
     "test:browser": "node tests/release-browser.mjs",
     "test:agency": "node tests/agency-regression.mjs",
+    "test:specimens": "node tests/specimen-matrix.mjs",
     "test:components": "node tests/scenario-selector-regression.mjs && node tests/optimistic-observer-regression.mjs",
     "test:library": "node tests/full-library-browser.mjs",
     "test:cards": "node tests/full-library-browser.mjs --kind=cards",

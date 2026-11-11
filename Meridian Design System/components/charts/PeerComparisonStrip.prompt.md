@@ -24,6 +24,8 @@ are not clamped. Explain the cause of missingness in the surrounding workflow.
 Empty peers yield no median or rank. The strip owns no loading, stale-data,
 filtering, or drilldown workflow.
 
-Supply `ariaLabel` to emit the subject/median/rank table, including every finite
-peer value. `showRank={false}` also removes rank from that table. Peer marks are
-not keyboard controls; expose related evidence in an adjacent inspector.
+Supply `ariaLabel` to emit the subject, median, rank and every finite peer value
+in a text table. `showRank={false}` also removes rank from that table. Peer marks
+use native titles and are not keyboard controls; the table exposes the same
+formatted individual values without requiring hover. Put source evidence and
+supported drilldown in an accessible adjacent inspector.

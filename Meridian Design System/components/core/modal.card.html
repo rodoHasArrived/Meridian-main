@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Modal System</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
 <body style="margin: 0; padding: 24px; background: var(--bg-canvas, #F2F0EC); font-family: var(--font-body);">
@@ -20,7 +22,7 @@
   </div>
 
   <script type="text/babel">
-    const { Modal, ModalHeader, ModalBody, ModalFooter, ModalForm, Button } = window.MeridianDesignSystem_4f61be;
+    const { Dialog, DialogHeader, DialogBody, DialogFooter, DialogForm, Button } = window.MeridianDesignSystem_205d17;
     const { useState } = React;
 
     // 1. Confirmation Modal
@@ -29,16 +31,16 @@
       return (
         <div>
           <Button variant="primary" onClick={() => setOpen(true)}>Open Confirm</Button>
-          <Modal open={open} onClose={() => setOpen(false)}>
-            <ModalHeader title="Delete transaction?" onClose={() => setOpen(false)} />
-            <ModalBody>
+          <Dialog open={open} onClose={() => setOpen(false)} size="md">
+            <DialogHeader title="Delete transaction?" onClose={() => setOpen(false)} />
+            <DialogBody>
               This action cannot be undone. Transaction TXN-1847 will be permanently removed from the ledger.
-            </ModalBody>
-            <ModalFooter>
-              <button className="mdl-btn" onClick={() => setOpen(false)}>Cancel</button>
-              <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)} style={{ background: "var(--red, #B54B42)", borderColor: "var(--red, #B54B42)" }}>Delete</button>
-            </ModalFooter>
-          </Modal>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+              <Button variant="danger" onClick={() => setOpen(false)}>Delete</Button>
+            </DialogFooter>
+          </Dialog>
         </div>
       );
     }
@@ -56,7 +58,7 @@
       return (
         <div>
           <Button variant="primary" onClick={() => setOpen(true)}>Open Form</Button>
-          <ModalForm
+          <DialogForm
             open={open}
             onClose={() => setOpen(false)}
             title="Create journal entry"
@@ -78,7 +80,7 @@
                 <input type="text" placeholder="2100 · Margin payable" style={{ padding: "7px 10px", border: "1px solid var(--border)", borderRadius: 6, fontFamily: "var(--font-data)", fontSize: 13 }} />
               </label>
             </div>
-          </ModalForm>
+          </DialogForm>
         </div>
       );
     }
@@ -89,19 +91,19 @@
       return (
         <div>
           <Button variant="primary" onClick={() => setOpen(true)}>Open Alert</Button>
-          <Modal open={open} onClose={() => setOpen(false)}>
-            <ModalHeader title="Reconciliation complete" onClose={() => setOpen(false)} />
-            <ModalBody>
+          <Dialog open={open} onClose={() => setOpen(false)} size="md">
+            <DialogHeader title="Reconciliation complete" onClose={() => setOpen(false)} />
+            <DialogBody>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 <p style={{ margin: 0 }}>✓ All 47 items matched</p>
                 <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>Cash on hand: $82,440.00</p>
                 <p style={{ margin: 0, fontSize: 12, color: "var(--text-muted)" }}>Ledger balance: $82,440.00</p>
               </div>
-            </ModalBody>
-            <ModalFooter>
-              <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)}>Done</button>
-            </ModalFooter>
-          </Modal>
+            </DialogBody>
+            <DialogFooter>
+              <Button variant="primary" onClick={() => setOpen(false)}>Done</Button>
+            </DialogFooter>
+          </Dialog>
         </div>
       );
     }

@@ -11,6 +11,14 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui/dashboard
 
+The main order ticket retains local quantity and limit/stop-price text while the existing numeric
+model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.
+Instrument, order-type, account-scope and close/reset transitions discard stale editor text;
+account changes invalidate review acknowledgement in their first render. Numeric transport and
+server authority remain unchanged. Native number inputs can normalize characters before validation;
+the strict decimal parser validates the text the browser actually supplies. Focused coverage lives
+in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
+
 Native capital-call previews accept the server's canonical case-normalized call identity while
 retaining the reviewed plan hash; a preview for another call is rejected before retention.
 
@@ -22,6 +30,23 @@ ignored configuration. Missing governance evidence is explicit. Put and call/put
 rows use operator-facing labels. Focused coverage: `security-master-policy-evidence.test.tsx`.
 An independent cash-flow calculation blocker (including `NegativeInterestUnsupported`) stays visible
 even when the record's declared exercise dates resolved successfully.
+
+Data overview leads with provider health and scoped retained verification events before backfill
+work. Verification probes are discrete observations, not uptime; absent, pending or malformed
+history is explicit. Backfill coverage cells retain execution state and requested dates without
+asserting that every market session is complete. Settings overview is a setup checklist based on
+loaded connection and session evidence, with default browser preferences counted as valid.
+Shared chart alternatives retain exact source values through the table workbench. Complete server
+exports read their authorized source before filtering. Upload and workbook downloads explicitly
+export all filtered preview records, with preview-only metadata; they do not claim whole-file coverage.
+Account history keeps cash and securities
+components separate by currency and source; it does not substitute strategy-run equity or derive
+an unprovided account net-equity total.
+Close burndown renders only retained canonical workflow snapshots and breaks the line across
+missing snapshots or workflow-version gaps. Legacy histories and one-point observations remain
+explicit. Metric payloads may carry a version-1 Number Passport reference to the existing
+subject-addressed evidence API; missing references remain unverified, and this additive contract
+does not grant W10/W11 roadmap acceptance.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
@@ -54,7 +79,8 @@ connection's raw identity, tenant, account and environment.
 Live/production acknowledgement also recognizes case and surrounding whitespace in retained
 environment labels without changing the environment sent to the server.
 
-Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
+Accounting → Factor Paydown (`/accounting/factor-paydown`) provides the governed paydown workbench.
+Ledger Explorer links to it and to `/accounting/consolidation`, preserving book and period scope. Exact factor text and
 existing retained evidence identities go to the shared preparation endpoint; the server supplies
 principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
 a review draft requires an explicit description and confirmation of the preview. The shared draft
@@ -2028,6 +2054,14 @@ component references, patterns, templates, and governance scripts. The browser w
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
+Native adapters use complete workstation color values such as `--border-color` and `--ws-border`.
+Tailwind role variables such as `--border`, `--primary`, `--danger` and `--warning` contain HSL
+channels; direct CSS color values must wrap them in `hsl(...)`. The source contract in
+`src/design-system-color-values.test.ts` prevents raw channel values from reaching native CSS or
+arbitrary utilities. `node scripts/test-native-adapter-colors.mjs` checks computed native borders,
+chart separators, validation colors and keyboard focus in light and dark Chromium appearances.
+Set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium installation.
+
 Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
 is the primary action and chrome color, terracotta (`#C56343`) is the brand/scenario signal only,
 and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
@@ -2472,3 +2506,15 @@ for retry. Journal and report links open the existing review workflows. The seve
 remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
 `private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
 capital-call presentation tests.
+
+### Posted-ledger account drill-down
+
+Selecting a trial-balance account in the Accounting posted-ledger panel renders
+`LedgerAccountRunningBalancePanel`, which lists the account's postings for the selected period
+with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`.
+The panel sends the selected row's accounting basis, symbol, financial account and dimension set,
+so the postings and ending balance are those of that row only. Basis and row changes discard the
+previous scope's response. Missing book currency remains explicitly unavailable rather than
+defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
+route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
+which is at its file-size limit.

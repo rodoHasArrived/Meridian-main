@@ -249,7 +249,7 @@ export function ReconciliationPanel({
           {searchable && (
             <div className="rec__searchwrap">
               <Input
-                aria-label="Filter reconciliation items"
+                aria-label="Filter reconciliation items by memo or reference"
                 placeholder="Filter memo, ref…"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}

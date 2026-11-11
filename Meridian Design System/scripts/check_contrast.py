@@ -1,25 +1,23 @@
 #!/usr/bin/env python3
 """WCAG contrast checker for the Meridian token system.
 
-Computes contrast ratios directly from tokens/colors.css (light) and tokens/colors-dark.css
-(dark), including custom-property aliases/fallbacks, HSL channel values, and two-color sRGB color-mix().
-Structural primary-action checks read the actual package Button CSS and workstation adapter
-utilities in light, auto-dark, manual-dark and forced-light contexts. Fails with exit 1 when any checked pair drops
-below its threshold — so token edits that break AA are caught before they ship.
+Computes contrast from the current token roles and component source across light/dark
+appearances, including recursive var() resolution, HSL channels and two-color srgb mixes.
+Transparent chip washes are composited over their actual material surfaces. Fails with
+exit 1 when a checked text/graphic pair drops below its AA threshold or retained source
+conformance checks fail.
 
 This closes the "known follow-up" in guidelines/ACCESSIBILITY.md: the contrast table there was
 hand-measured; this script re-derives it on every run.
 
 Usage:  python3 scripts/check_contrast.py [--root PATH] [--scope all|browser] [--actions-only]
-
-The default includes native palette/asset parity. --scope browser is an explicit scoped
-check for package/browser work; it never reports the excluded native checks as passed.
 """
 
 from __future__ import annotations
 
 import argparse
 import colorsys
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
@@ -28,6 +26,11 @@ from pathlib import Path
 TOKEN_PATTERN = re.compile(r"(--[a-z0-9-]+)\s*:\s*([^;]+);")
 HEX_PATTERN = re.compile(r"^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$")
 VAR_PATTERN = re.compile(r"^var\(\s*(--[a-z0-9-]+)\s*\)$")
+CSS_VAR_PATTERN = re.compile(r"^var\(\s*(--[a-z0-9-]+)\s*(?:,\s*(.+))?\)$")
+HSL_PATTERN = re.compile(r"^hsl\(\s*(.+)\s*\)$")
+MIX_PATTERN = re.compile(
+    r"^color-mix\(in srgb,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*(.+?)\)$"
+)
 
 # (name, fg token, bg token, minimum ratio)
 # 4.5 = AA normal text · 3.0 = AA large text / graphical objects (dots, checkmark glyphs).
@@ -84,11 +87,15 @@ WASH_PAIRS = [
     ("orange-dim on orange-a10 wash", "--orange-dim", "--orange", 0.10, "--bg-light", 4.5),
     ("purple-dim on purple-a10 wash", "--purple-dim", "--purple", 0.10, "--bg-light", 4.5),
     ("green-dim on green-a20 wash",   "--green-dim",  "--green",  0.20, "--bg-light", 4.5),
-    # Signal marks can sit on a signal wash; text uses the semantic/link roles above.
-    ("signal on signal wash (non-text)", "--accent", "--accent", 0.10, "--bg-light", 3.0),
-    ("brand-signal-text text on accent wash", "--brand-signal-text", "--accent", 0.10, "--bg-light", 4.5),
-    ("brand-signal-text on accent wash, canvas", "--brand-signal-text", "--accent", 0.10, "--bg", 4.5),
-    ("brand-signal-text on accent wash, band", "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
+    # A signal wash lifts the surface toward its hue. Graphic marks still need
+    # 3:1, while the migrated normal text uses the separate AA ink role.
+    ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
+    ("signal ink on signal wash",       "--brand-signal-ink", "--accent", 0.10, "--bg-light",  4.5),
+    ("signal ink on wash, canvas",      "--brand-signal-ink", "--accent", 0.10, "--bg",        4.5),
+    ("signal ink on wash, band",        "--brand-signal-ink", "--accent", 0.10, "--bg-medium", 4.5),
+    ("signal text on signal wash",      "--brand-signal-text", "--accent", 0.10, "--bg-light", 4.5),
+    ("signal text on wash, canvas",     "--brand-signal-text", "--accent", 0.10, "--bg",       4.5),
+    ("signal text on wash, band",       "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -100,13 +107,19 @@ WASH_PAIRS = [
     ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
     ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
     ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
-    # Paper and pending are measured on their OWN wash: since 4.3.0 paper is the Field slate
-    # and pending is the warm taupe, not the accent and the information blue.
+    # Paper and pending retain their Field-slate and warm-taupe meanings.
     ("state-paper chip",       "--state-paper-fg",      "--brand-field", 0.10, "--bg-light",  4.5),
     ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
     ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
     ("state-pending chip",     "--state-pending-fg",    "--pending", 0.10, "--bg-light",  4.5),
 ]
+
+CHIP_ROLES = (
+    "severity-blocked", "severity-action", "severity-review", "severity-ready", "severity-info",
+    "state-healthy", "state-warn", "state-danger", "state-paper", "state-strategy",
+    "state-live", "state-muted", "state-pending",
+)
+CHIP_SURFACES = ("--bg", "--bg-light", "--bg-medium", "--card-surface-raised")
 
 
 def blank_comments(text: str) -> str:
@@ -123,6 +136,78 @@ def strip_comments(text: str) -> str:
     to the --ws-* compatibility block, which shipped entirely undefined behind a green gate.
     """
     return re.sub(r"/\*.*?\*/", "", text, flags=re.DOTALL)
+
+
+def blank_source_comments(text: str, suffix: str) -> str:
+    """Mask source comments without hiding CSS held in JavaScript string literals."""
+    if suffix == ".css":
+        return blank_comments(text)
+    result = list(text)
+    index, quote = 0, None
+    while index < len(text):
+        character = text[index]
+        if quote:
+            if character == "\\":
+                index += 2
+                continue
+            if character == quote:
+                quote = None
+            index += 1
+            continue
+        if character in "\"'`":
+            quote = character
+            index += 1
+            continue
+        close = None
+        if character == "/" and not text.startswith(("//", "/*"), index):
+            previous = index - 1
+            while previous >= 0 and text[previous].isspace():
+                previous -= 1
+            prefix = text[max(0, previous - 16):previous + 1]
+            starts_regex = (previous < 0 or text[previous] in "=(:,[!&|?;{}"
+                            or re.search(r"(?<![.\w])(?:return|case|throw|yield)$", prefix))
+            if starts_regex:
+                cursor, character_class = index + 1, False
+                while cursor < len(text) and text[cursor] not in "\r\n":
+                    token = text[cursor]
+                    if token == "\\":
+                        cursor += 2
+                        continue
+                    if token == "[":
+                        character_class = True
+                    elif token == "]":
+                        character_class = False
+                    elif token == "/" and not character_class:
+                        for offset in range(index, cursor + 1):
+                            result[offset] = " "
+                        index = cursor + 1
+                        break
+                    cursor += 1
+                else:
+                    cursor = None
+                if cursor is not None:
+                    continue
+        if text.startswith("/*", index):
+            stop = text.find("*/", index + 2)
+            close = len(text) if stop < 0 else stop + 2
+        elif text.startswith("//", index) and (index == 0 or text[index - 1] != "\\"):
+            stop = text.find("\n", index + 2)
+            close = len(text) if stop < 0 else stop
+        elif text.startswith("<!--", index):
+            stop = text.find("-->", index + 4)
+            close = len(text) if stop < 0 else stop + 3
+        if close is not None:
+            for offset in range(index, close):
+                if result[offset] not in "\r\n":
+                    result[offset] = " "
+            index = close
+        else:
+            index += 1
+    return "".join(result)
+
+
+def is_test_source(path: Path) -> bool:
+    return bool(re.search(r"\.(?:test|spec)\.[cm]?[jt]sx?$", path.name))
 
 
 def parse_tokens(text: str) -> dict[str, str]:
@@ -271,6 +356,7 @@ def resolve(value: str, tokens: dict[str, str], depth: int = 0) -> tuple[float, 
     return color[:3] if color is not None and color[3] == 1 else None
 
 
+
 def luminance(rgb: tuple[float, float, float]) -> float:
     def channel(c: float) -> float:
         c /= 255.0
@@ -285,11 +371,60 @@ def ratio(fg: tuple[float, float, float], bg: tuple[float, float, float]) -> flo
     return (l1 + 0.05) / (l2 + 0.05)
 
 
-def action_tokens(tokens: dict[str, str]) -> dict[str, str]:
-    """The exact source Button expressions, with no extra published token names."""
-    return {**tokens,
-            "--check-primary-hover": "color-mix(in srgb, var(--brand-axis) 88%, var(--bg-light))",
-            "--check-primary-pressed": "color-mix(in srgb, var(--brand-axis) 78%, var(--bg-light))"}
+def composite(value: str, tokens: dict[str, str], surface: tuple[float, float, float],
+              depth: int = 0) -> tuple[float, float, float] | None:
+    """Resolve a chip fill over its actual surface, retaining transparent wash alpha."""
+    if depth > 8:
+        return None
+    value = value.strip()
+    alias = VAR_PATTERN.match(value)
+    if alias:
+        target = tokens.get(alias.group(1))
+        return composite(target, tokens, surface, depth + 1) if target else None
+    mix = MIX_PATTERN.match(value)
+    if mix and mix.group(3).strip() == "transparent":
+        hue = resolve(mix.group(1), tokens)
+        if hue is None:
+            return None
+        fraction = float(mix.group(2)) / 100.0
+        return tuple(hue[i] * fraction + surface[i] * (1 - fraction) for i in range(3))
+    return resolve(value, tokens)
+
+
+def check_semantic_chips(mode: str, tokens: dict[str, str]) -> list[str]:
+    """Measure exported chip roles against their own fill, rather than an assumed hue."""
+    failures = []
+    for role in CHIP_ROLES:
+        foreground = resolve(f"var(--{role}-fg)", tokens)
+        for surface_name in CHIP_SURFACES:
+            surface = resolve(f"var({surface_name})", tokens)
+            background = composite(f"var(--{role}-bg)", tokens, surface) if surface else None
+            if foreground is None or background is None:
+                failures.append(f"[{mode}] {role} on {surface_name}: cannot resolve chip colours")
+                continue
+            value = ratio(foreground, background)
+            if value < 4.5:
+                failures.append(f"[{mode}] {role} on {surface_name}: {value:.2f}:1 < 4.5:1")
+    if not failures:
+        print(f"[{mode}] all {len(CHIP_ROLES)} semantic chip roles pass AA on {len(CHIP_SURFACES)} surfaces")
+    return failures
+
+
+def check_signal_ink(mode: str, tokens: dict[str, str]) -> list[str]:
+    """Measure both published signal text roles on materials, selection and washes."""
+    failures = []
+    for name, role in (("signal ink", "--brand-signal-ink"), ("signal text", "--brand-signal-text")):
+        foreground = resolve(f"var({role})", tokens)
+        for background_name in (*CHIP_SURFACES, "--bg-active", "--accent-ghost", "--blue-a10"):
+            backdrops = CHIP_SURFACES if background_name == "--blue-a10" else ("--bg-light",)
+            for backdrop_name in backdrops:
+                backdrop = resolve(f"var({backdrop_name})", tokens)
+                background = composite(f"var({background_name})", tokens, backdrop) if backdrop else None
+                if foreground is None or background is None:
+                    failures.append(f"[{mode}] {name} on {background_name}: cannot resolve actual roles")
+                elif ratio(foreground, background) < 4.5:
+                    failures.append(f"[{mode}] {name} on {background_name}: {ratio(foreground, background):.2f}:1 < 4.5:1")
+    return failures
 
 
 def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
@@ -325,12 +460,48 @@ def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
 
 BRAND_BLOCK = re.compile(r'html\[data-brand="(\w+)"\]\s*\{(.*?)\n\}', re.S)
 
-def package_modes(root: Path, brand: dict[str, str] | None = None, brand_name: str | None = None) -> dict[str, dict[str, str]]:
-    """Apply actual root selector/source-order cascades across the published sheets."""
-    css = "\n".join((root / "tokens" / name).read_text(encoding="utf-8") for name in ("colors.css", "theme.css", "colors-dark.css"))
-    contexts = mode_tokens(css, brand_name)
-    return {"light": contexts["light"], "forced-light": contexts["forced-light"],
-            "auto-dark": contexts["auto-dark"], "dark": contexts["manual-dark"]}
+# Filled signal states a brand can restate. Each uses its declared signal label;
+# structural primary actions are measured separately from the Button source.
+BRAND_PAIRS = [("base", "accent"), ("hover", "accent-hover"), ("pressed", "accent-dim")]
+
+
+def appearance_scopes(light: dict[str, str], dark_css: str) -> dict[str, dict[str, str]]:
+    """Resolve the current source's default, OS-dark, manual-dark and forced-light scopes."""
+    modes = {"light": light}
+    patterns = {
+        "auto dark": r'@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root(?::not\(\[data-theme="light"\]\))?\s*\{([^{}]+)\}',
+        "manual dark": r':root\[data-theme="dark"\]\s*\{([^{}]+)\}',
+        "forced light": r':root\[data-theme="light"\]\s*\{([^{}]+)\}',
+    }
+    for name, pattern in patterns.items():
+        match = re.search(pattern, strip_comments(dark_css), re.S)
+        if match:
+            modes[name] = {**light, **parse_tokens(match.group(1))}
+    return modes
+
+
+def check_primary_buttons(root: Path, mode: str, tokens: dict[str, str]) -> list[str]:
+    """Measure the published Button's structural action rules, including hover and press."""
+    source = root / "components/core/Button.jsx"
+    if not source.exists():
+        return [f"[{mode}] primary button source is missing"]
+    rules = {
+        state or "base": body
+        for state, body in re.findall(r"\.mds-btn--primary(:hover|:active)?\s*\{([^{}]+)\}",
+                                     source.read_text(encoding="utf-8"))
+    }
+    failures = []
+    base = rules.get("base", "")
+    label_match = re.search(r"(?:^|;)\s*color\s*:\s*([^;]+)", base)
+    label = resolve(label_match.group(1), tokens) if label_match else None
+    for state in ("base", ":hover", ":active"):
+        fill_match = re.search(r"(?:^|;)\s*background\s*:\s*([^;]+)", rules.get(state, ""))
+        fill = resolve(fill_match.group(1), tokens) if fill_match else None
+        if label is None or fill is None:
+            failures.append(f"[{mode}] primary button {state}: cannot resolve actual label/fill")
+        elif ratio(label, fill) < 4.5:
+            failures.append(f"[{mode}] primary button {state}: {ratio(label, fill):.2f}:1 < 4.5:1")
+    return failures
 
 
 def check_brands(root: Path) -> list[str]:
@@ -346,9 +517,19 @@ def check_brands(root: Path) -> list[str]:
             required = {name for name in defaults if name.startswith("--theme-accent") or name.startswith("--theme-dark-accent")}
             required.add("--theme-text-on-accent")
             for missing in sorted(required - set(declared)):
-                failures.append(f"[brand {brand}] declared signal identity is incomplete: missing {missing}")
+                failures.append(f"[brand {brand}] missing declared identity role {missing}")
         for mode, tokens in package_modes(root, declared, brand).items():
-            failures.extend(check_mode(f"{mode} · brand {brand}", tokens))
+            scope = f"{mode} · brand {brand}"
+            failures.extend(check_mode(scope, tokens))
+            for state, suffix in BRAND_PAIRS:
+                label = resolve("var(--text-on-accent)", tokens)
+                fill = resolve(f"var(--{suffix})", tokens)
+                if label is None or fill is None or ratio(label, fill) < 4.5:
+                    failures.append(f"[{mode.replace("-", " ")} · brand {brand}] {state} signal label: below 4.5:1 or unresolved")
+            failures.extend(check_semantic_chips(scope, tokens))
+            failures.extend(check_signal_ink(scope, tokens))
+            if (root / "components/core/Button.jsx").exists():
+                failures.extend(check_primary_buttons(root, scope, tokens))
             expected_role = "--theme-accent" if mode in ("light", "forced-light") else "--theme-dark-accent"
             if expected_role in declared:
                 expected = resolve(declared[expected_role], tokens)
@@ -358,18 +539,25 @@ def check_brands(root: Path) -> list[str]:
     return failures
 
 
+# The browser adapter now uses structural primary roles. Read its actual state classes;
+# brand-signal fills and invented white labels are not the adapter's contrast contract.
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
 
 
-def scoped_tokens(text: str, selector: str) -> dict[str, str]:
-    """Read declarations from exact leaf selectors, using CSS's last declaration wins."""
-    out = {}
-    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", blank_comments(text)):
-        if selector not in [part.strip() for part in match.group(1).split(",")]:
-            continue
-        out.update(dict(TOKEN_PATTERN.findall(match.group(2))))
-    return {name: value.strip() for name, value in out.items()}
+def button_colour_utility(classes: list[str], kind: str, state: str = "") -> str | None:
+    """Read one actual Tailwind colour expression; ambiguous/unknown utilities fail closed."""
+    prefix = f"{state}:" if state else ""
+    values = [value[len(prefix + kind + "-"):] for value in classes
+              if value.startswith(prefix + kind + "-")]
+    if len(values) != 1:
+        return None
+    value = values[0]
+    if value.startswith("[") and value.endswith("]"):
+        # Tailwind arbitrary values encode CSS whitespace with underscores.
+        return value[1:-1].replace("_", " ")
+    return {("bg", "primary"): "hsl(var(--primary))",
+            ("text", "primary-foreground"): "hsl(var(--primary-foreground))"}.get((kind, value))
 
 
 def css_leaf_rules(text: str):
@@ -407,57 +595,56 @@ def css_leaf_rules(text: str):
             segment = index + 1
 
 
-def root_selector(selector: str, attributes: dict[str, str]):
-    """Match the simple compound root selectors authored in token sheets.
-
-    Attributes and :not(attribute) contribute their argument specificity; :not has
-    no extra specificity of its own. Unsupported/descendant selectors never match
-    the root. This keeps brand and forced-light decisions separate from source order.
-    """
-    prefix = re.match(r"^(html|:root)", selector)
-    if prefix is None:
+def root_selector_specificity(selector: str, brand: str | None, appearance: str | None):
+    """Match the authored root/brand/theme selectors and retain their cascade priority."""
+    root = re.match(r"(:root|html)", selector)
+    if root is None:
         return None
-    tail = selector[prefix.end():]
-    score = 0 if prefix.group(1) == "html" else 1
-    attribute = re.compile(r"(?P<not>:not\()?\[(?P<name>[a-zA-Z0-9_-]+)(?:\s*=\s*(?:\"(?P<double>[^\"]*)\"|'(?P<single>[^']*)'|(?P<plain>[^\]\s]+)))?\](?(not)\))")
-    cursor = 0
-    while cursor < len(tail):
-        match = attribute.match(tail, cursor)
-        if match is None:
+    rest = selector[root.end():]
+    classes, elements = (1, 0) if root.group() == ":root" else (0, 1)
+    attributes = {"brand": brand, "theme": appearance}
+    while rest:
+        negative = rest.startswith(":not(")
+        candidate = rest[5:] if negative else rest
+        attribute = re.match(r'''\[data-(brand|theme)(?:=["']?([a-z0-9-]+)["']?)?\]''', candidate)
+        if attribute is None:
             return None
-        name = match.group("name")
-        value = next((match.group(part) for part in ("double", "single", "plain") if match.group(part) is not None), None)
-        matches = name in attributes and (value is None or attributes[name] == value)
-        if bool(match.group("not")) == matches:
+        rest = candidate[attribute.end():]
+        if negative:
+            if not rest.startswith(")"):
+                return None
+            rest = rest[1:]
+        actual, expected = attributes[attribute.group(1)], attribute.group(2)
+        matches = actual is not None if expected is None else actual == expected
+        if matches == negative:
             return None
-        score += 1
-        cursor = match.end()
-    return (0, score, 1 if prefix.group(1) == "html" else 0)
+        classes += 1  # :not() contributes its attribute argument's specificity.
+    return classes, elements
 
 
 def mode_tokens(text: str, brand: str | None = None) -> dict[str, dict[str, str]]:
-    """Compute root declaration cascades for each authored appearance context."""
-    contexts = {name: {} for name in ("light", "auto-dark", "manual-dark", "forced-light")}
-    scores = {name: {} for name in contexts}
-    for order, (selector_list, body, ancestors) in enumerate(css_leaf_rules(text)):
+    """Resolve actual root/brand/theme rules by specificity and source order."""
+    modes = {"light": (False, None), "auto-dark": (True, None),
+             "manual-dark": (False, "dark"), "forced-light": (True, "light")}
+    contexts = {name: {} for name in modes}
+    priorities = {name: {} for name in modes}
+    for selector_list, body, ancestors in css_leaf_rules(text):
         media = [ancestor for ancestor in ancestors if ancestor.startswith("@media")]
+        # Print/high-contrast modes remain separate user choices.
         if any(not re.search(r"prefers-color-scheme\s*:\s*dark", ancestor) for ancestor in media):
             continue
-        declarations = {name: value.strip() for name, value in TOKEN_PATTERN.findall(body)}
-        for mode in contexts:
-            if media and mode == "light":
+        values = {name: value.strip() for name, value in TOKEN_PATTERN.findall(body)}
+        for mode, (os_dark, appearance) in modes.items():
+            if media and not os_dark:
                 continue
-            attributes = {"data-brand": brand} if brand is not None else {}
-            if mode in ("manual-dark", "forced-light"):
-                attributes["data-theme"] = "dark" if mode == "manual-dark" else "light"
             for selector in split_arguments(selector_list):
-                specificity = root_selector(selector.strip(), attributes)
+                specificity = root_selector_specificity(selector, brand, appearance)
                 if specificity is None:
                     continue
-                score = (*specificity, order)
-                for name, value in declarations.items():
-                    if name not in scores[mode] or score >= scores[mode][name]:
-                        contexts[mode][name], scores[mode][name] = value, score
+                for name, value in values.items():
+                    if specificity >= priorities[mode].get(name, (-1, -1)):
+                        contexts[mode][name] = value
+                        priorities[mode][name] = specificity
     return contexts
 
 
@@ -488,7 +675,7 @@ def primary_css_states(text: str) -> dict[str, tuple[str, str]]:
     return states
 
 
-def composite(color, surface):
+def composite_color(color, surface):
     return tuple(color[index] * color[3] + surface[index] * (1 - color[3]) for index in range(3))
 
 
@@ -507,10 +694,10 @@ def check_primary_states(track: str, contexts: dict[str, dict[str, str]], states
                 if surface is None or surface[3] != 1:
                     failures.append(f"[{mode} · {track}] structural primary {state}: cannot resolve required opaque supporting surface --bg-light")
                     continue
-                effective_background = composite(bg, surface)
+                effective_background = composite_color(bg, surface)
             else:
                 effective_background = bg[:3]
-            value = ratio(composite(fg, effective_background), effective_background)
+            value = ratio(composite_color(fg, effective_background), effective_background)
             status = "ok" if value >= 4.5 else "FAIL"
             print(f"[{mode} · {track}] structural primary {state} label: {value:.2f}:1 (min 4.5) {status}")
             if value < 4.5:
@@ -532,16 +719,8 @@ def check_package_primary(root: Path) -> list[str]:
 
 
 def utility_color(classes: str, property_name: str, prefix: str = "") -> str:
-    matches = [name[len(prefix + property_name + "-"):] for name in classes.split()
-               if name.startswith(prefix + property_name + "-")]
-    if len(matches) != 1:
-        return ""  # a required absent/ambiguous mapping fails resolution
-    value = matches[0]
-    if value.startswith("[") and value.endswith("]"):
-        return value[1:-1].replace("_", " ")
-    if re.fullmatch(r"[a-z][a-z0-9-]*", value):
-        return f"hsl(var(--{value}))"
-    return f"unsupported {prefix}{property_name} utility: {value}"
+    """Use the same fail-closed parser for named legacy and arbitrary color classes."""
+    return button_colour_utility(classes.split(), property_name, prefix.rstrip(":")) or ""
 
 
 def check_workstation(root: Path) -> list[str]:
@@ -569,6 +748,7 @@ def check_workstation(root: Path) -> list[str]:
               "pressed": (utility_color(classes, "text", "active:") if "active:text-" in classes else label,
                           utility_color(classes, "bg", "active:") if "active:bg-" in classes else base)}
     return semantic_failures + check_primary_states("workstation", mode_tokens(index.read_text(encoding="utf-8")), states)
+
 
 
 # The package publishes a --ws-* compatibility layer beside the canonical tokens. The two
@@ -667,31 +847,6 @@ def tracks(root: Path) -> dict[str, list[Path]]:
     }
 
 
-def production_paths(base: Path):
-    """Production sources and shipped artifacts; tests are evidence, not rendered CSS."""
-    for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
-        if not path.is_file() or (path != base and path.suffix not in CALL_SITE_SUFFIXES):
-            continue
-        if re.search(r"\.(?:test|spec)\.[^.]+$", path.name) or path.name.endswith(".d.ts"):
-            continue
-        yield path
-
-
-STYLE_VALUE = re.compile(r"(?:[\w-]+[\"']?\s*:\s*[^;{}]*|\[[^\]]*)var\(")
-
-
-def style_lines(path: Path, text: str):
-    """A var() is CSS only in a declaration/value or an arbitrary-style class.
-
-    Scanning all JavaScript strings incorrectly treated GovernanceLints' replacement
-    string 'var(--x)' and test assertions as styles shipped to the browser.
-    """
-    text = blank_comments(text)
-    for lineno, line in enumerate(text.splitlines(), 1):
-        if path.suffix == ".css" or STYLE_VALUE.search(line):
-            yield lineno, line
-
-
 def check_var_chains(root: Path) -> list[str]:
     """Fail when a bare var() names a token its own track never declares.
 
@@ -759,7 +914,7 @@ def check_var_chains(root: Path) -> list[str]:
         if not base.exists():
             continue
         for path in production_paths(base):
-            text = path.read_text(encoding="utf-8", errors="replace")
+            text = blank_source_comments(path.read_text(encoding="utf-8", errors="replace"), path.suffix)
             declared = workstation_tokens if track == "workstation" else package_tokens
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
             for lineno, line in style_lines(path, text):
@@ -814,6 +969,66 @@ MIX_ALPHA = re.compile(r"^color-mix\(in srgb,\s*(.+?)\s+(\d+(?:\.\d+)?)%\s*,\s*t
 VAR_CALL = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)\s*(,)?")
 HEX_LITERAL = re.compile(r"#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{3}\b")
 RGBA_LITERAL = re.compile(r"rgba?\(\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*([\d.]+)")
+COLOR_LITERAL = re.compile(r"#[0-9A-Fa-f]{8}\b|#[0-9A-Fa-f]{6}\b|#[0-9A-Fa-f]{4}\b|#[0-9A-Fa-f]{3}\b|rgba?\([^()]*\)", re.I)
+
+
+def literal_colours(text: str) -> list[dict]:
+    """Read literal channels and alpha in lexical order, including modern RGB syntax."""
+    colours = []
+    for match in COLOR_LITERAL.finditer(text):
+        value = match.group()
+        if value.startswith("#"):
+            expanded = "".join(character * 2 for character in value[1:]) if len(value) in (4, 5) else value[1:]
+            rgb = tuple(float(int(expanded[offset:offset + 2], 16)) for offset in (0, 2, 4))
+            alpha = int(expanded[6:], 16) / 255 if len(expanded) == 8 else 1.0
+        else:
+            components = re.split(r"\s*[,/]\s*|\s+", value[value.index("(") + 1:-1].strip())
+            if len(components) not in (3, 4):
+                continue
+            try:
+                rgb = tuple(float(component.rstrip("%")) * (255 / 100 if component.endswith("%") else 1)
+                            for component in components[:3])
+                alpha = float(components[3].rstrip("%")) / (100 if components[3].endswith("%") else 1) if len(components) == 4 else 1.0
+            except ValueError:
+                continue
+        if all(0 <= channel <= 255 for channel in rgb) and 0 <= alpha <= 1:
+            colours.append({"literal": value, "rgb": rgb, "alpha": alpha, "start": match.start(), "end": match.end()})
+    return colours
+
+
+def var_call_end(text: str, start: int) -> int | None:
+    depth, quote, index = 0, None, start
+    while index < len(text):
+        character = text[index]
+        if quote:
+            if character == "\\":
+                index += 2
+                continue
+            if character == quote:
+                quote = None
+        elif character in "\"'":
+            quote = character
+        elif character == "(":
+            depth += 1
+        elif character == ")":
+            depth -= 1
+            if depth == 0:
+                return index + 1
+        index += 1
+    return None
+
+
+def without_nested_vars(value: str) -> str:
+    result, position = list(value), 0
+    for match in VAR_CALL.finditer(value):
+        if match.start() < position:
+            continue
+        end = var_call_end(value, match.start())
+        if end is None:
+            continue
+        result[match.start():end] = " " * (end - match.start())
+        position = end
+    return "".join(result)
 INNER_VAR = re.compile(r"var\(\s*(--[a-zA-Z0-9-]+)")
 # Directories whose sources carry `var(--token, literal)` call sites. The package's own
 # `src/` governance snapshot is deliberately absent: it is a frozen pre-restyle copy.
@@ -890,7 +1105,7 @@ def deref(name: str, tokens: dict[str, str], depth: int = 0) -> str:
     return value
 
 
-def token_colours(value: str, tokens: dict[str, str]) -> list[tuple[float, float, float]]:
+def token_colours(value: str, tokens: dict[str, str], depth: int = 0) -> list[tuple[float, float, float]]:
     """The colours a token's declared value resolves to, in order.
 
     A plain colour yields one. A composite such as `2px solid var(--border-focus)` yields the
@@ -899,11 +1114,23 @@ def token_colours(value: str, tokens: dict[str, str]) -> list[tuple[float, float
     direct = resolve(value, tokens)
     if direct is not None:
         return [direct]
-    out = []
-    for name in INNER_VAR.findall(value):
-        rgb = resolve(f"var({name})", tokens)
-        if rgb is not None:
-            out.append(rgb)
+    if depth > 8:
+        return []
+    out, position = [], 0
+    for match in re.finditer(r"var\(|" + COLOR_LITERAL.pattern, value, re.I):
+        if match.start() < position:
+            continue
+        if match.group().startswith("var("):
+            end = var_call_end(value, match.start())
+            parsed = split_var_call(value, match.start())
+            if end is None or parsed is None:
+                continue
+            name, fallback = parsed
+            out.extend(token_colours(tokens.get(name, fallback), tokens, depth + 1))
+            position = end
+        else:
+            colours = literal_colours(match.group())
+            out.extend(colour["rgb"] for colour in colours)
     return out
 
 
@@ -920,62 +1147,143 @@ KNOWN_UNDECLARED = frozenset({
 
 
 def check_fallbacks(root: Path) -> list[str]:
-    """Validate fallback reachability, not equality with a value that prevents it rendering.
+    """Every `var(--token, literal)` literal must be the value that token resolves to.
 
-    CSS var(--defined, fallback) uses the defined custom property. Its fallback need not
-    equal that value (and cannot equal both light and dark values). Missing dependencies,
-    cycles and undeclared names are still failures: those make the fallback load-bearing.
-    Token contrast checks measure the values actually rendered; bundle parity still proves
-    that the shipped rules match their sources. A fallback is not an allowance for a missing
-    public token, even if its literal looks acceptable in one theme.
+    The literal is what renders wherever the stylesheet is absent — a component pasted into a
+    consuming app, a static export, a card rendered on its own. A literal left on the previous
+    palette is invisible in the app and wrong everywhere else, which is exactly how the
+    superseded colours survived three rounds of review. Only the RGB channels are compared:
+    the alpha on a wash fallback is the author's opacity choice, not a palette value.
+
+    A token the package never declares is a failure rather than a skip. The fallback is then
+    not a fallback at all — it is what renders always, stylesheet or no stylesheet — and
+    skipping it reported success over a live defect (`--accent-a10`, never declared, kept the
+    case-queue selection wash on the superseded steel).
     """
-    token_sets = {}
-    for track, paths in tracks(root).items():
-        tokens = {}
-        sheets = sorted((root / "tokens").glob("*.css")) if track == "package" else paths
-        for sheet in sheets:
-            if sheet.exists():
-                for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
-                    tokens.setdefault(name, value)
-        token_sets[track] = tokens
-    failures, checked, guarded = [], 0, 0
+    # A fallback renders in place of the LIGHT default, so colors.css and theme.css are
+    # authoritative here; colors-dark.css must never win. The remaining sheets only widen the
+    # set of names the package declares (elevation, typography, motion), which is what lets a
+    # composite like `var(--focus-ring, 2px solid #…)` be checked at all.
+    package_tokens = {**parse_tokens((root / "tokens" / "theme.css").read_text(encoding="utf-8")),
+                      **parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))}
+    for sheet in sorted((root / "tokens").glob("*.css")):
+        if sheet.name in ("colors.css", "colors-dark.css", "theme.css"):
+            continue
+        for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
+            package_tokens.setdefault(name, value)
+    # The workstation is its own track and declares tokens the package never will (the chart
+    # overlay channels, for one). Resolving its call sites against the package's table reported
+    # every one of those as undeclared, which is how seven live chart channels reached a
+    # "known gap" list instead of being fixed.
+    workstation = root.parent / WORKSTATION_TRACK[0]
+    workstation_tokens = dict(package_tokens)
+    if workstation.exists():
+        workstation_tokens.update(parse_tokens(workstation.read_text(encoding="utf-8")))
     superseded = superseded_values(root)
+    failures: list[str] = []
+    notes: list[str] = []
+    checked = 0
     for track, base in call_sites(root):
         if not base.exists():
             continue
-        tokens = token_sets[track]
-        for path in production_paths(base):
-            text = path.read_text(encoding="utf-8", errors="replace")
+        paths = [base] if base.is_file() else sorted(base.rglob("*"))
+        for path in paths:
+            if not path.is_file():
+                continue
+            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
+                continue
+            if is_test_source(path):
+                continue
+            text = blank_source_comments(path.read_text(encoding="utf-8", errors="replace"), path.suffix)
+            text = re.sub(r"\.replace\(/[^\n]*?/[gimsuy]*,\s*[\"\'][^\"\']*[\"\']\)", "", text)
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
-            for lineno, line in style_lines(path, text):
+            tokens = workstation_tokens if track == "workstation" else package_tokens
+            for lineno, line in enumerate(text.splitlines(), 1):
                 for found in VAR_CALL.finditer(line):
-                    if not found.group(2):
+                    if not found.group(2):        # no comma: no fallback to check
                         continue
                     parsed = split_var_call(line, found.start())
                     if parsed is None:
                         continue
                     name, fallback = parsed
-                    if not fallback or not (HEX_LITERAL.search(fallback) or RGBA_LITERAL.search(fallback)):
+                    if not fallback:
                         continue
-                    checked += 1
-                    if name in tokens or name in local or name.startswith(LOCAL_PREFIXES):
-                        guarded += 1
+                    nested = VAR_CALL.search(fallback)
+                    owned = literal_colours(without_nested_vars(fallback))
+                    if nested:
+                        # Each nested literal is checked against its own innermost role.
+                        # An outer role may legitimately have a different default.
+                        if owned:
+                            failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) "
+                                            "mixes nested roles with owned literals; scoped review required")
                         continue
-                    # Existing known-gap debt remains visible as a note, never grows here.
-                    if name in KNOWN_UNDECLARED:
-                        stale = sorted({value.upper() for value in HEX_LITERAL.findall(fallback) if len(value) == 7} & superseded)
-                        if stale:
-                            failures.append(f"[fallback] {_rel(path, root)}:{lineno}: existing undeclared {name} renders retired palette {', '.join(stale)}")
-                        else:
-                            print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
+                    if not owned:
                         continue
-                    failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) — this track declares no such token; the fallback is always active")
-    # This debt list belongs to package consumers, not similarly named workstation aliases.
-    for name in sorted(KNOWN_UNDECLARED & set(token_sets["package"])):
-        failures.append(f"[fallback] {name} is declared now — drop it from KNOWN_UNDECLARED so the exemption cannot outlive the gap")
-    for failure in failures[:10]:
-        print(failure)
-    print(f"[fallback] {checked} production fallback expressions, {guarded} guarded by declared/local tokens; {len(failures)} undeclared dependencies")
+                    if name not in tokens:
+                        if name.startswith(LOCAL_PREFIXES) or name in local:
+                            continue
+                        checked += 1
+                        stale = ["#" + "".join(f"{round(channel):02X}" for channel in colour["rgb"])
+                                 for colour in owned if colour["literal"].startswith("#")]
+                        stale = [colour for colour in stale if colour in superseded]
+                        where = f"{_rel(path, root)}:{lineno}: var({name}, …)"
+                        if name in KNOWN_UNDECLARED and not stale:
+                            notes.append(f"[fallback-note] {where} — undeclared (known gap)")
+                            continue
+                        detail = (f"so {', '.join(stale)} is what renders, always"
+                                  if stale else "so the literal is what renders, always")
+                        failures.append(f"[fallback] {where} — the package declares no such "
+                                        f"token, {detail}")
+                        continue
+                    wants = token_colours(tokens[name], tokens)
+                    if not wants:
+                        continue
+                    # A wash token's literal carries the hue at the author's own alpha. Follow
+                    # bare aliases first: --blue-a10 is declared as var(--accent-a10), and the
+                    # color-mix only appears one level down.
+                    mix = MIX_ALPHA.match(deref(name, tokens))
+                    declared_literals = literal_colours(deref(name, tokens))
+                    declared_alpha = None
+                    if mix:
+                        hue = resolve(mix.group(1), tokens)
+                        wants = [hue] if hue is not None else []
+                        declared_alpha = float(mix.group(2)) / 100
+                    elif len(declared_literals) == 1 and declared_literals[0]["literal"] == deref(name, tokens):
+                        declared_alpha = declared_literals[0]["alpha"]
+                    if declared_alpha is not None and declared_alpha < 1 and any(colour["alpha"] >= 1 for colour in owned):
+                        checked += 1
+                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) "
+                                        "has an opaque fallback for a translucent role; retain the declared wash alpha")
+                        continue
+                    if len(owned) != len(wants):
+                        checked += 1
+                        failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) "
+                                        "has a different colour shape from its declared role")
+                        continue
+                    for index, colour in enumerate(owned):
+                        got = colour["rgb"]
+                        if got is None or index >= len(wants):
+                            continue
+                        want = wants[index]
+                        checked += 1
+                        if max(abs(want[i] - got[i]) for i in range(3)) > 1.0:
+                            shown = colour["literal"]
+                            failures.append(
+                                f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …{shown}…) — "
+                                f"the token resolves to "
+                                f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
+    for stale_entry in sorted(KNOWN_UNDECLARED & package_tokens.keys()):
+        failures.append(f"[fallback] {stale_entry} is declared now — drop it from "
+                        "KNOWN_UNDECLARED so the exemption cannot outlive the gap")
+    for f in failures[:10]:
+        print(f)
+    if notes:
+        print(f"[fallback-note] {len(notes)} call site(s) name one of the "
+              f"{len(KNOWN_UNDECLARED)} known-undeclared tokens")
+    if failures:
+        print(f"[fallback] {len(failures)} of {checked} literals disagree with the token they guard")
+    else:
+        print(f"[fallback] all {checked} literals mirror the token they guard")
     return failures
 
 
@@ -987,27 +1295,40 @@ SOURCE_RULE = re.compile(r"^[.#&\[][^{]*\{[^{}]*var\(--[a-z0-9-]+[^{}]*\}$")
 
 
 def check_bundle_parity(root: Path) -> list[str]:
-    """Every token-bearing CSS rule in a component source must be in the compiled bundle."""
+    """Every bundled input's CSS must match; retained non-public files are not exports."""
     bundle_path = root / COMPILED_BUNDLE
     if not bundle_path.exists():
-        return []
+        return [f"[bundle] {COMPILED_BUNDLE} is missing; rebuild the package"]
+    try:
+        provenance = json.loads((root / "release-build.json").read_text(encoding="utf-8"))
+        manifest = json.loads((root / "_ds_manifest.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as error:
+        return [f"[bundle] cannot read build input inventory: {error}"]
+    build = provenance.get("build", {})
+    bundled = build.get("bundledSources")
+    retained = build.get("sourceHashes", {})
+    if not isinstance(bundled, list) or not bundled or not all(isinstance(path, str) for path in bundled):
+        return ["[bundle] bundled input inventory is missing; run npm run build"]
+    if not isinstance(retained, dict):
+        return ["[bundle] retained source-hash inventory is missing; run npm run build"]
+    public = {component["sourcePath"] for component in manifest.get("components", [])
+              if isinstance(component.get("sourcePath"), str)}
+    failures = [f"[bundle] public source {path} is absent from the compiler input inventory"
+                for path in sorted(public - set(bundled))]
     bundle = bundle_path.read_text(encoding="utf-8", errors="replace")
-    failures: list[str] = []
     checked = 0
-    # The bundle is built from the manifest's export list, so a source the manifest no longer
-    # exports (the table renderers DataGrid replaced in 4.0, the pre-Dialog Modal) is retained
-    # for migration and deliberately absent from the bundle. Holding those to bundle parity
-    # reported 35 "shipped component differs" findings for components that do not ship.
-    shipped: set[str] | None = None
-    manifest_path = root / "_ds_manifest.json"
-    if manifest_path.exists():
-        import json
-        shipped = {c.get("sourcePath", "") for c in
-                   json.loads(manifest_path.read_text(encoding="utf-8")).get("components", [])}
-    for path in sorted((root / "components").rglob("*.jsx")):
-        if shipped is not None and path.relative_to(root).as_posix() not in shipped:
+    for relative in sorted(set(bundled)):
+        path = root / relative
+        if Path(relative).is_absolute() or ".." in Path(relative).parts or relative not in retained:
+            failures.append(f"[bundle] invalid compiler input path: {relative}")
             continue
-        for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
+        if not path.is_file():
+            failures.append(f"[bundle] compiler input {relative} is missing from the package")
+            continue
+        if path.suffix not in (".jsx", ".js", ".tsx", ".ts"):
+            continue
+        text = blank_source_comments(path.read_text(encoding="utf-8", errors="replace"), path.suffix)
+        for lineno, line in enumerate(text.splitlines(), 1):
             rule = line.strip()
             if not SOURCE_RULE.match(rule):
                 continue
@@ -1019,7 +1340,7 @@ def check_bundle_parity(root: Path) -> list[str]:
     for f in failures[:10]:
         print(f)
     if not failures:
-        print(f"[bundle] all {checked} token-bearing component rules are present verbatim in "
+        print(f"[bundle] all {checked} token-bearing bundled-source rules are present verbatim in "
               f"{COMPILED_BUNDLE}")
     return failures
 
@@ -1148,24 +1469,24 @@ BRAND_RETIRED = frozenset({
     "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
     "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
 })
+# IBM Plex is loaded by tokens/fonts.css; metadata about outlined fonts does not render.
+BRAND_FONTS = ("Space Grotesk", "JetBrains Mono", "Inter")
 GENERIC_FONTS = {"serif", "sans-serif", "monospace", "system-ui", "ui-sans-serif", "ui-monospace"}
 
 
-def primary_font(stack: str) -> str:
-    return stack.split(",", 1)[0].strip().strip("\"'")
-
-
-def svg_fonts(text: str) -> set[str]:
+def svg_font_families(text: str) -> set[str]:
+    """Read rendered font declarations; path provenance and comments do not render fonts."""
     tree = ET.fromstring(text)
-    stacks = []
-    for node in tree.iter():
-        if node.get("font-family"):
-            stacks.append(node.get("font-family"))
-        stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.get("style", "")))
-        if node.tag.rsplit("}", 1)[-1] == "style":
-            stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.text or ""))
-    return {primary_font(stack) for stack in stacks}
-
+    families = set()
+    for element in tree.iter():
+        declarations = [element.attrib.get("font-family", "")]
+        style = element.attrib.get("style", "")
+        if element.tag.rsplit("}", 1)[-1] == "style":
+            style += element.text or ""
+        declarations += re.findall(r"font-family\s*:\s*([^;}]+)", strip_comments(style))
+        for declaration in declarations:
+            families.update(value.strip(" \t\n\"'") for value in declaration.split(",") if value.strip())
+    return families
 
 
 def check_brand_assets(root: Path, scope: str = "all") -> list[str]:
@@ -1212,14 +1533,14 @@ def check_brand_assets(root: Path, scope: str = "all") -> list[str]:
 # rule and nothing was reading the call sites. An accent-tinted surface lifts the background
 # toward the accent, so the accent on it is 3.87–4.41:1 — fine for a border or an icon, under AA
 # for a label.
-ACCENT_SURFACES = ("--blue-a10", "--accent-a10", "--bg-active", "--accent-ghost")
+ACCENT_SURFACES = ("--blue-a10", "--accent-a10", "--bg-active", "--accent-ghost", "--brand-signal-ghost", "--brand-signal-a10")
 CSS_RULE = re.compile(r"[^{}]*\{[^{}]*\}", re.S)
 RULE_BG = re.compile(r"background(?:-color)?\s*:\s*([^;}]+)")
-RULE_FG_ACCENT = re.compile(r"(?<![-a-z])color\s*:\s*var\(\s*--accent\s*[,)]")
+RULE_FG_ACCENT = re.compile(r"(?<![-a-z])color\s*:\s*var\(\s*--(?:accent(?:-dim|-hover)?|brand-signal(?:-dim|-hover)?)\s*[,)]")
 
 
 def check_accent_on_wash(root: Path) -> list[str]:
-    """No rule may put raw `--accent` text on an accent-tinted surface."""
+    """No rule may use a signal fill variant as text on a tinted surface."""
     failures: list[str] = []
     scanned = 0
     for track, base in call_sites(root):
@@ -1239,12 +1560,12 @@ def check_accent_on_wash(root: Path) -> list[str]:
                     selector = body.split("{", 1)[0].strip().splitlines()[-1].strip()
                     failures.append(
                         f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
-                        f"{selector[:44]} puts --accent text on an accent-tinted surface "
-                        "(3.33:1) — wash text is --brand-signal-text")
+                        f"{selector[:44]} uses a signal fill as text on a tinted surface "
+                        "— normal text requires the AA --brand-signal-ink role")
     for f in failures[:10]:
         print(f)
     if not failures:
-        print(f"[accent-wash] none of the {scanned} accent-tinted rules uses the raw accent as text")
+        print(f"[accent-wash] none of the {scanned} tinted rules uses signal fills as text")
     return failures
 
 
@@ -1405,15 +1726,171 @@ def run_checks(root: Path, scope: str = "all") -> list[str]:
     modes = package_modes(root)
     failures = [failure for mode, tokens in modes.items() for failure in check_mode(mode, tokens)]
     return (failures
+            + [failure for mode, tokens in modes.items() for failure in check_semantic_chips(mode, tokens)]
+            + [failure for mode, tokens in modes.items() for failure in check_signal_ink(mode, tokens)]
             + check_brands(root) + check_package_primary(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
-            + check_var_chains(root) + check_fallbacks(root)
+            + check_var_chains(root) + check_runtime_fallbacks(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
             + check_elevation_guidance(root) + check_bundle_parity(root)
             + check_tailwind_literals(root) + check_catalog_palette(root)
             + (check_runtime_palette(root) if scope == "all" else [])
             + check_accent_on_wash(root)
             + check_brand_assets(root, scope))
+
+
+def action_tokens(tokens: dict[str, str]) -> dict[str, str]:
+    """The exact source Button expressions, with no extra published token names."""
+    return {**tokens,
+            "--check-primary-hover": "color-mix(in srgb, var(--brand-axis) 88%, var(--bg-light))",
+            "--check-primary-pressed": "color-mix(in srgb, var(--brand-axis) 78%, var(--bg-light))"}
+
+
+def package_modes(root: Path, brand: dict[str, str] | None = None, brand_name: str | None = None) -> dict[str, dict[str, str]]:
+    """Apply actual root selector/source-order cascades across the published sheets."""
+    css = "\n".join((root / "tokens" / name).read_text(encoding="utf-8") for name in ("colors.css", "theme.css", "colors-dark.css"))
+    contexts = mode_tokens(css, brand_name)
+    return {"light": contexts["light"], "forced-light": contexts["forced-light"],
+            "auto-dark": contexts["auto-dark"], "dark": contexts["manual-dark"]}
+
+
+def scoped_tokens(text: str, selector: str) -> dict[str, str]:
+    """Read declarations from exact leaf selectors, using CSS's last declaration wins."""
+    out = {}
+    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", blank_comments(text)):
+        if selector not in [part.strip() for part in match.group(1).split(",")]:
+            continue
+        out.update(dict(TOKEN_PATTERN.findall(match.group(2))))
+    return {name: value.strip() for name, value in out.items()}
+
+
+def root_selector(selector: str, attributes: dict[str, str]):
+    """Match the simple compound root selectors authored in token sheets.
+
+    Attributes and :not(attribute) contribute their argument specificity; :not has
+    no extra specificity of its own. Unsupported/descendant selectors never match
+    the root. This keeps brand and forced-light decisions separate from source order.
+    """
+    prefix = re.match(r"^(html|:root)", selector)
+    if prefix is None:
+        return None
+    tail = selector[prefix.end():]
+    score = 0 if prefix.group(1) == "html" else 1
+    attribute = re.compile(r"(?P<not>:not\()?\[(?P<name>[a-zA-Z0-9_-]+)(?:\s*=\s*(?:\"(?P<double>[^\"]*)\"|'(?P<single>[^']*)'|(?P<plain>[^\]\s]+)))?\](?(not)\))")
+    cursor = 0
+    while cursor < len(tail):
+        match = attribute.match(tail, cursor)
+        if match is None:
+            return None
+        name = match.group("name")
+        value = next((match.group(part) for part in ("double", "single", "plain") if match.group(part) is not None), None)
+        matches = name in attributes and (value is None or attributes[name] == value)
+        if bool(match.group("not")) == matches:
+            return None
+        score += 1
+        cursor = match.end()
+    return (0, score, 1 if prefix.group(1) == "html" else 0)
+
+
+def production_paths(base: Path):
+    """Production sources and shipped artifacts; tests are evidence, not rendered CSS."""
+    for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
+        if not path.is_file() or (path != base and path.suffix not in CALL_SITE_SUFFIXES):
+            continue
+        if re.search(r"\.(?:test|spec)\.[^.]+$", path.name) or path.name.endswith(".d.ts"):
+            continue
+        yield path
+
+
+STYLE_VALUE = re.compile(r"(?:[\w-]+[\"']?\s*:\s*[^;{}]*|\[[^\]]*)var\(")
+
+
+def style_lines(path: Path, text: str):
+    """A var() is CSS only in a declaration/value or an arbitrary-style class.
+
+    Scanning all JavaScript strings incorrectly treated GovernanceLints' replacement
+    string 'var(--x)' and test assertions as styles shipped to the browser.
+    """
+    text = blank_comments(text)
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if path.suffix == ".css" or STYLE_VALUE.search(line):
+            yield lineno, line
+
+
+def primary_font(stack: str) -> str:
+    return stack.split(",", 1)[0].strip().strip("\"'")
+
+
+def svg_fonts(text: str) -> set[str]:
+    tree = ET.fromstring(text)
+    stacks = []
+    for node in tree.iter():
+        if node.get("font-family"):
+            stacks.append(node.get("font-family"))
+        stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.get("style", "")))
+        if node.tag.rsplit("}", 1)[-1] == "style":
+            stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.text or ""))
+    return {primary_font(stack) for stack in stacks}
+
+
+def check_runtime_fallbacks(root: Path) -> list[str]:
+    """Validate fallback reachability, not equality with a value that prevents it rendering.
+
+    CSS var(--defined, fallback) uses the defined custom property. Its fallback need not
+    equal that value (and cannot equal both light and dark values). Missing dependencies,
+    cycles and undeclared names are still failures: those make the fallback load-bearing.
+    Token contrast checks measure the values actually rendered; bundle parity still proves
+    that the shipped rules match their sources. A fallback is not an allowance for a missing
+    public token, even if its literal looks acceptable in one theme.
+    """
+    token_sets = {}
+    for track, paths in tracks(root).items():
+        tokens = {}
+        sheets = sorted((root / "tokens").glob("*.css")) if track == "package" else paths
+        for sheet in sheets:
+            if sheet.exists():
+                for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
+                    tokens.setdefault(name, value)
+        token_sets[track] = tokens
+    failures, checked, guarded = [], 0, 0
+    superseded = superseded_values(root)
+    for track, base in call_sites(root):
+        if not base.exists():
+            continue
+        tokens = token_sets[track]
+        for path in production_paths(base):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
+            for lineno, line in style_lines(path, text):
+                for found in VAR_CALL.finditer(line):
+                    if not found.group(2):
+                        continue
+                    parsed = split_var_call(line, found.start())
+                    if parsed is None:
+                        continue
+                    name, fallback = parsed
+                    if not fallback or not (HEX_LITERAL.search(fallback) or RGBA_LITERAL.search(fallback)):
+                        continue
+                    checked += 1
+                    if name in tokens or name in local or name.startswith(LOCAL_PREFIXES):
+                        guarded += 1
+                        continue
+                    # Existing known-gap debt remains visible as a note, never grows here.
+                    if name in KNOWN_UNDECLARED:
+                        stale = sorted({value.upper() for value in HEX_LITERAL.findall(fallback) if len(value) == 7} & superseded)
+                        if stale:
+                            failures.append(f"[fallback] {_rel(path, root)}:{lineno}: existing undeclared {name} renders retired palette {', '.join(stale)}")
+                        else:
+                            print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
+                        continue
+                    failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) — this track declares no such token; the fallback is always active")
+    # This debt list belongs to package consumers, not similarly named workstation aliases.
+    for name in sorted(KNOWN_UNDECLARED & set(token_sets["package"])):
+        failures.append(f"[fallback] {name} is declared now — drop it from KNOWN_UNDECLARED so the exemption cannot outlive the gap")
+    for failure in failures[:10]:
+        print(failure)
+    print(f"[fallback] {checked} production fallback expressions, {guarded} guarded by declared/local tokens; {len(failures)} undeclared dependencies")
+    return failures
 
 
 def main() -> int:
@@ -1436,6 +1913,7 @@ def main() -> int:
         return 1
     print("\nAll primary action contrast pairs pass." if args.actions_only else "\nAll token contrast pairs pass.")
     return 0
+
 
 
 if __name__ == "__main__":

@@ -31,12 +31,12 @@ const eligibility = JSON.parse(await readFile(resolve(root, 'api/template-eligib
 const journeyBytes = await readFile(resolve(root, 'tests/template-journeys.json')).catch(error => error.code === 'ENOENT' ? Buffer.from('{"schemaVersion":1,"entries":{}}') : Promise.reject(error));
 const journeys = JSON.parse(journeyBytes);
 const runtime = await readFile(resolve(root, '_preview_runtime.js'), 'utf8');
-const babelBrowser = await readFile(resolve(root, 'node_modules/@babel/standalone/babel.min.js'), 'utf8');
+const babelBrowser = await readFile(resolve(root, '_preview_jsx.js'), 'utf8');
 const axe = await readFile(resolve(root, 'node_modules/axe-core/axe.min.js'), 'utf8');
 const bundle = await readFile(resolve(root, '_ds_bundle.js'), 'utf8');
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 async function snapshotRuntimeSources() {
-  const filenames = ['styles.css','_preview_runtime.js'];
+  const filenames = ['styles.css','_preview_runtime.js','_preview_jsx.js'];
   const extensions = new Set(['.js','.jsx','.html','.css','.svg','.woff2','.woff','.ttf','.png','.jpg','.jpeg','.webp','.avif','.gif','.ico','.thumbnail']);
   async function walk(relative) {
     const entries=await readdir(resolve(root,relative),{withFileTypes:true});
@@ -99,6 +99,21 @@ function prepareHtml(source, filename) {
   // Replace their host-provided runtime with the pinned local audit runtime;
   // unknown remote dependencies remain network failures below.
   source = source.replace(/<script\b[^>]*src=["']https:\/\/unpkg\.com\/(?:react(?:-dom)?@18\.3\.1\/umd\/react(?:-dom)?\.(?:development|production\.min)\.js|@babel\/standalone@7\.29\.0\/babel\.min\.js)["'][^>]*>\s*<\/script>/gi, '');
+  // Published previews now load local assets. The project-compatibility host
+  // supplies its React19 peer and the published pinned compiler once, before
+  // instrumentation. Only these exact known assets are deduplicated; unknown
+  // local or remote dependencies retain their normal loading/failure checks.
+  const peerAssets=new Set(['/_preview_runtime.js','/_preview_jsx.js',
+    '/templates/_scaffold/vendor/react-18.3.1.production.min.js',
+    '/templates/_scaffold/vendor/react-dom-18.3.1.production.min.js']);
+  const documentPath=filename.startsWith(root+sep)?filename.slice(root.length):'/__audit/theme.html';
+  source=source.replace(/<script\b([^>]*)>\s*<\/script>/gi,(whole,attributes)=>{
+    const src=attributes.match(/\bsrc\s*=\s*["']([^"']+)["']/i)?.[1];
+    if(!src)return whole;
+    const url=new URL(src,new URL(documentPath,'http://audit.local'));
+    if(url.origin!=='http://audit.local')return whole;
+    return peerAssets.has(url.pathname)||(dcTemplate&&url.pathname==='/_ds_bundle.js')?'':whole;
+  });
   // The DC host ordinarily transpiles authored JSX. Do that same transformation
   // in the local test server; never edit the authored specimen/template bytes.
   source = source.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (whole, attributes, contents) => {
@@ -123,6 +138,7 @@ const server = createServer(async (request, response) => {
     if (extname(filename) === '.html') source = prepareHtml(source.toString('utf8'), filename);
     // One immutable compiled snapshot per run, even during a coordinator rebuild.
     if (filename === resolve(root, '_ds_bundle.js')) source = bundle + instrumentBundle;
+    if (filename === resolve(root, '_preview_jsx.js')) source = babelBrowser;
     response.writeHead(200, { 'content-type': `${contentTypes[extname(filename)] || 'application/octet-stream'}; charset=utf-8`, 'cache-control': 'no-store' });
     response.end(source);
   } catch (error) { response.writeHead(error.code === 'ENOENT' ? 404 : 500, { 'content-type': 'text/plain' }); response.end(error.message); }

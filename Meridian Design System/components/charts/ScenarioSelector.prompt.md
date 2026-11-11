@@ -18,11 +18,15 @@ the parent must state why no alternatives are available. Keep model output
 separate from observed data and show stale/missing model inputs outside this
 selector; it does not validate the model or persist the choice.
 
-The selector uses native buttons with radio semantics. Tab enters the selected
-option (or the first option when the selection is absent or no longer available).
-Arrow keys wrap through options, moving focus and calling `onChange`; Home/End
-move to the first/last option. Space/Enter activate the focused option through
-the native button behavior. The caller must update `value` to reflect selection.
-An unavailable selection remains unselected until the operator chooses an option;
-the fallback Tab stop never silently changes the model. Printed records remain
-disabled and outside the Tab order.
+The selector uses native buttons with radio semantics and declares its horizontal
+or vertical orientation. Tab enters the selected option, or the first option
+when the supplied id is absent or no longer available. Arrow keys wrap through
+options, moving focus and requesting selection; Home/End move to the first/last
+option. Space/Enter activate the focused option through native button behavior,
+without submitting a surrounding form. Unrelated or modified keys do not select.
+
+The caller remains the selection authority: if it declines a request, checked
+state continues to reflect its supplied `value`. The fallback Tab stop never
+silently changes the model. Tab leaves without visiting every option. Printed
+records are disabled, have no radio tab stops and produce no selection callbacks.
+Selecting a scenario must not execute a trade or post a journal.

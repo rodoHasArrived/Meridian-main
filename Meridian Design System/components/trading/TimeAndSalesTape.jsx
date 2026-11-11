@@ -29,7 +29,7 @@ function inject() {
 .mds-tape__size--t1{color:var(--text-secondary,#535C65);}
 .mds-tape__size--t2{color:var(--text-primary,#20252B);font-weight:600;}
 .mds-tape__blk{font-family:var(--font-body);font-size:9px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--text-primary,#20252B);margin-left:6px;}
+  letter-spacing:.05em;color:var(--brand-signal-ink,#944A32);margin-left:6px;}
 .mds-tape__venue{color:var(--text-muted,#606870);font-size:10px;text-align:right;}
 .mds-tape__empty{padding:18px 10px;text-align:center;font-family:var(--font-body);
   font-size:12px;color:var(--text-muted,#606870);}

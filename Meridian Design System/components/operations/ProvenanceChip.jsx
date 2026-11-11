@@ -21,7 +21,7 @@ button.mds-prov:hover{border-color:var(--border-strong,#AAA49A);background:var(-
 button.mds-prov:focus-visible{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:2px;}
 .mds-prov__dot{height:6px;width:6px;border-radius:50%;flex:0 0 auto;}
 .mds-prov__dot--ready{background:var(--severity-ready-fg,#225840);}
-.mds-prov__dot--review{background:var(--severity-review-fg,#8E4730);}
+.mds-prov__dot--review{background:var(--severity-review-fg,#944A32);}
 .mds-prov__dot--action{background:var(--severity-action-fg,#724D11);}
 .mds-prov__dot--blocked{background:var(--severity-blocked-fg,#883832);}
 .mds-prov__dot--info{background:var(--severity-info-fg,#606870);}

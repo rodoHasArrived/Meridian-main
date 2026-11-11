@@ -4,14 +4,14 @@
 import React from "react";
 import { useOverlayFocus } from "./useOverlayFocus";
 
-const ModalTitleContext = React.createContext(null);
+const ModalTitleIdContext = React.createContext(null);
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5)); z-index: 50;
+.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5)); z-index: 50;
   display: flex; align-items: center; justify-content: center;
   animation: mdl-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out); }
 @keyframes mdl-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -63,7 +63,7 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
   }, [open, closeOnEsc, onClose]);
   if (!open) return null;
   return (
-    <ModalTitleContext.Provider value={titleId}>
+    <ModalTitleIdContext.Provider value={titleId}>
     <div className="mdl-overlay" onClick={onClose} ref={ref}>
       <div
         className="mdl-wrap"
@@ -75,16 +75,16 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
         {children}
       </div>
     </div>
-    </ModalTitleContext.Provider>
+    </ModalTitleIdContext.Provider>
   );
 }
 
 export function ModalHeader({ title, onClose }) {
-  const contextTitleId = React.useContext(ModalTitleContext);
-  const fallbackTitleId = React.useId();
+  const modalTitleId = React.useContext(ModalTitleIdContext);
+  const standaloneTitleId = React.useId();
   return (
     <div className="mdl-hd">
-      <h2 className="mdl-title" id={contextTitleId || fallbackTitleId}>{title}</h2>
+      <h2 className="mdl-title" id={modalTitleId ?? standaloneTitleId}>{title}</h2>
       <button type="button" className="mdl-close" onClick={onClose} aria-label="Close">×</button>
     </div>
   );

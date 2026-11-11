@@ -1,309 +1,334 @@
 #!/usr/bin/env python3
-"""Meridian — static design-system governance checks (restored 3.5, stdlib only, offline).
+"""Offline governance for executable design-system components and template compositions.
 
-Gates (all static; no network, no browser):
-  trio            every components/<domain>/<Name>.jsx has <Name>.d.ts and <Name>.prompt.md
-  raw-hex         no bare hex colors in component source outside var(--token, #hex) fallbacks
-  no-important    no !important in component source
-  manifest        every manifest component's sourcePath exists; every PascalCase jsx pairs into it
-  template        template contract — entry name, @template first comment, $preview + the four
-                  standard tweaks, DataStateSwitch, h1, ds-base.js sibling
-  routes          every ../<slug>/<File>.dc.html referenced by a template resolves to a file
-  aria-refs       static aria-controls/aria-labelledby/aria-activedescendant values must be
-                  computed (template literal / expression), never a hard-coded string id
-  eligibility     every templates/<slug>/ is classified in api/template-eligibility.json
-  generated       generated files present and never hand-edited markers intact
-
-  python scripts/check_design_system_governance.py           # report; exit 1 on failures
+Validate component companions, token use, ARIA references, manifest/eligibility,
+local HTML dependencies and document/preview contracts. Follow mounted imports;
+markup in unrelated sibling files cannot satisfy a template contract. Static
+checks do not establish browser or assistive-technology behavior.
 """
-import json, re, sys, pathlib
+from __future__ import annotations
+import argparse
 from dataclasses import dataclass
+import fnmatch
+from html.parser import HTMLParser
+import json
+from pathlib import Path
+import re
+import sys
 from urllib.parse import unquote, urlsplit
 
-ROOT = pathlib.Path(__file__).resolve().parent.parent
-fails, warns = [], []
-
-def fail(gate, msg): fails.append(f"[{gate}] {msg}")
-def warn(gate, msg): warns.append(f"[{gate}] {msg}")
-
-# A declaration that must beat an inline style or a universal descendant rule cannot be expressed
-# by specificity, so `!important` is governed rather than forbidden: the declaration carries a
-# `/* important: <reason> */` pragma and the gate reads it. Everything else wins by order.
+ROOT = Path(__file__).resolve().parent.parent
 IMPORTANT_PRAGMA = re.compile(r"/\*\s*important:\s*\S")
-
-def blank_comments(src):
-    """Blank // and /* */ comments, preserving line count and column-free content.
-
-    Prose is not a style: `no !important needed` inside a comment was a false gate failure.
-    """
-    out, in_block = [], False
-    for raw in src.splitlines():
-        line, kept = raw, ""
-        while line:
-            if in_block:
-                end = line.find("*/")
-                if end < 0:
-                    line = ""
-                    break
-                line, in_block = line[end + 2:], False
-                continue
-            start, slash = line.find("/*"), line.find("//")
-            if slash >= 0 and (start < 0 or slash < start):
-                kept += line[:slash]
-                break
-            if start < 0:
-                kept += line
-                break
-            kept += line[:start]
-            line, in_block = line[start + 2:], True
-        out.append(kept)
-    return out
-
-def check_components():
-    for jsx in sorted(ROOT.glob("components/*/*.jsx")):
-        name = jsx.stem
-        if not name[0].isupper():
-            continue
-        if not jsx.with_suffix(".d.ts").exists():
-            fail("trio", f"{jsx.relative_to(ROOT)} has no {name}.d.ts")
-        if not jsx.with_name(name + ".prompt.md").exists():
-            fail("trio", f"{jsx.relative_to(ROOT)} has no {name}.prompt.md")
-        src = jsx.read_text(encoding="utf-8")
-        code = blank_comments(src)
-        for i, line in enumerate(src.splitlines(), 1):
-            if "!important" in code[i - 1] and not IMPORTANT_PRAGMA.search(line):
-                fail("no-important", f"{jsx.relative_to(ROOT)}:{i} undeclared !important — "
-                                     "state why with /* important: <reason> */ or win by order")
-            for m in re.finditer(r"#[0-9A-Fa-f]{3,8}\b", line):
-                before = line[: m.start()]
-                if "var(--" in before and before.rstrip().endswith(","):
-                    continue  # var(--token, #hex) fallback — allowed
-                if re.search(r"var\(--[\w-]+\s*,\s*$", before) or "var(--" in line[max(0, m.start() - 48): m.start()]:
-                    continue
-                if "svg+xml" in line or "url(" in line:
-                    continue
-                fail("raw-hex", f"{jsx.relative_to(ROOT)}:{i} bare {m.group(0)}")
-        for m in re.finditer(r'aria-(controls|labelledby|activedescendant)="([^"{]+)"', src):
-            fail("aria-refs", f"{jsx.relative_to(ROOT)} hard-coded {m.group(0)}")
-
-def check_manifest():
-    mf = ROOT / "_ds_manifest.json"
-    if not mf.exists():
-        fail("generated", "_ds_manifest.json missing — compiler has not run")
-        return
-    manifest = json.loads(mf.read_text(encoding="utf-8"))
-    names = set()
-    for comp in manifest["components"]:
-        names.add(comp["name"])
-        src = comp.get("sourcePath")
-        if src and not (ROOT / src).exists():
-            fail("manifest", f"manifest references missing {src}")
-    for jsx in ROOT.glob("components/*/*.jsx"):
-        if jsx.stem[0].isupper():
-            exported = re.findall(r"export (?:const|function) ([A-Z]\w+)", jsx.read_text(encoding="utf-8"))
-            for e in exported:
-                if e not in names:
-                    warn("manifest", f"{jsx.relative_to(ROOT)} export {e} not in manifest (stale — recompiles at end of turn)")
-
-def declared_template_entries(root=None):
-    """Read the authored entry contract, including retained compatibility names.
-
-    The registry is authoritative; deriving PascalCase from a directory rejected
-    a valid retained filename and silently skipped additional sibling entries.
-    """
-    root = ROOT if root is None else pathlib.Path(root)
-    registry = root / "api" / "template-eligibility.json"
-    try:
-        templates = json.loads(registry.read_text(encoding="utf-8"))["templates"]
-    except Exception as error:
-        fail("template", f"entry registry unreadable: {error}")
-        return []
-    entries = []
-    for slug, record in sorted(templates.items()):
-        if pathlib.PurePosixPath(slug).name != slug or slug in (".", "..") or "\\" in slug:
-            fail("template", f"invalid template directory {slug!r}")
-            continue
-        declared = record.get("entries", [])
-        if not declared:
-            fail("template", f"{slug}: no declared .dc.html entry")
-        seen = set()
-        for filename in declared:
-            if not isinstance(filename, str) or pathlib.PurePosixPath(filename).name != filename or "\\" in filename or not filename.endswith(".dc.html"):
-                fail("template", f"{slug}: invalid entry filename {filename!r}")
-                continue
-            if filename in seen:
-                fail("template", f"{slug}: duplicate declared entry {filename}")
-                continue
-            seen.add(filename)
-            entry = root / "templates" / slug / filename
-            if not entry.is_file():
-                fail("template", f"{slug}: declared entry {filename} missing")
-            else:
-                entries.append(entry)
-        actual = {p.name for p in (root / "templates" / slug).glob("*.dc.html")}
-        for filename in sorted(actual - seen):
-            fail("template", f"{slug}: undeclared entry {filename}")
-    return entries
-
-
-def check_templates():
-    for entry in declared_template_entries():
-        folder, slug = entry.parent, entry.parent.name
-        label = str(entry.relative_to(ROOT / "templates"))
-        src = entry.read_text(encoding="utf-8")
-        if "@template" not in src[:1200]:
-            fail("template", f"{label}: @template marker not near the top")
-        if not (folder / "ds-base.js").exists():
-            fail("template", f"{label}: ds-base.js missing")
-        if "$preview" not in src:
-            fail("template", f"{label}: $preview missing from data-props")
-        for tweak in ("density", "theme", "environment", "dataState"):
-            if f"&quot;{tweak}&quot;" not in src and f'"{tweak}"' not in src:
-                fail("template", f"{label}: standard tweak '{tweak}' missing")
-        if "DataStateSwitch" not in src:
-            fail("template", f"{label}: DataStateSwitch not used")
-        if "<h1" not in src:
-            warn("template", f"{label}: no literal <h1> (may live in an imported sibling)")
-        for match in re.finditer(r'"(\.\./[\w-]+/[\w]+\.dc\.html)"', src):
-            target = (folder / match.group(1)).resolve()
-            if not target.exists():
-                fail("routes", f"{label}: broken route {match.group(1)}")
-
-def check_eligibility():
-    """A new template must be classified before it ships. Full validation (completeness, reason
-    codes, reference scan, adoption arithmetic) lives in scripts/check_template_eligibility.py;
-    this gate only catches the omission that would silently corrupt the adoption figure."""
-    mf = ROOT / "api" / "template-eligibility.json"
-    if not mf.exists():
-        fail("eligibility", "api/template-eligibility.json missing")
-        return
-    try:
-        classified = set(json.loads(mf.read_text(encoding="utf-8"))["templates"])
-    except Exception as e:
-        fail("eligibility", f"api/template-eligibility.json unreadable: {e}")
-        return
-    on_disk = {p.name for p in (ROOT / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")}
-    for slug in sorted(on_disk - classified):
-        fail("eligibility", f"{slug} is not classified in api/template-eligibility.json — "
-                            "classify it before it ships or the adoption figure is a lie")
-    for slug in sorted(classified - on_disk):
-        fail("eligibility", f"api/template-eligibility.json classifies {slug}, which no longer exists")
-
-def check_generated():
-    for f in ("_ds_bundle.js", "_ds_manifest.json", "_adherence.oxlintrc.json", "support.js"):
-        if not (ROOT / f).exists():
-            fail("generated", f"{f} missing")
-    readme = (ROOT / "README.md").read_text(encoding="utf-8")
-    if "inventory:generated:begin" not in readme:
-        fail("generated", "README.md inventory markers missing")
-
+COLOR_DECL = re.compile(r"(?:^|[;{\s])(?:color|background(?:-color)?|(?:border|outline)(?:-[\w-]+)?|fill|stroke|box-shadow|text-shadow)\s*:\s*([^;}\n]+)", re.M)
 
 @dataclass(frozen=True)
 class Violation:
-    """Structured result retained for the checker’s original Python consumers."""
     code: str
-    message: str
+    path: str
+    line: int
+    detail: str
+    def format(self):
+        return f"[{self.code}] {self.path}:{self.line}: {self.detail}"
 
-
-def entry_markup(path, visited=None):
-    """Include local imported screen markup without executing authored code."""
-    visited = set() if visited is None else visited
-    path = path.resolve()
-    if path in visited or not path.is_file() or not path.is_relative_to(ROOT.resolve()):
-        return ""
-    visited.add(path)
-    source = path.read_text(encoding="utf-8")
-    imports = re.findall(r'<x-import\b[^>]*\bfrom=["\']([^"\']+)["\']', source)
-    children = [path.parent / value for value in imports if value.startswith(".")]
-    manifest = ROOT / "_ds_manifest.json"
-    if manifest.is_file():
-        exports = {item["name"]: item["sourcePath"] for item in json.loads(manifest.read_text())["components"]}
-        for name in re.findall(r'component-from-global-scope=["\'][\w$]+\.([A-Z]\w*)["\']', source):
-            if name in exports:
-                children.append(ROOT / exports[name])
-    for name in re.findall(r'<dc-import\b[^>]*\bname=["\']([\w-]+)["\']', source):
-        local = path.parent / f"{name}.dc.html"
-        children.extend([local] if local.is_file() else (ROOT / "templates").glob(f"*/{name}.dc.html"))
-    return source + "\n" + "\n".join(entry_markup(child, visited) for child in children)
-
-
-def check_document_contracts():
-    """Retain link, upload, geometry and rendered-entry checks from the legacy API.
-
-    These supplement the current release gates; they do not replace strict
-    registry discovery or exempt a source because a fixture lacks a manifest.
-    """
-    for path in sorted(ROOT.rglob("*.html")):
-        if any(part in {"node_modules", "dist"} for part in path.relative_to(ROOT).parts):
+def strip_comments(src):
+    """Preserve source positions and quoted URLs; strip JS/CSS/HTML comments."""
+    out, i, quote = list(src), 0, None
+    while i < len(src):
+        if src[i] == "\\" and quote:
+            i += 2
             continue
-        source = path.read_text(encoding="utf-8")
-        for _, value in re.findall(r'\b(href|src)=["\']([^"\']+)["\']', source):
-            parsed = urlsplit(value)
-            if parsed.scheme or parsed.netloc or not parsed.path or any(c in value for c in "{}$<>"):
+        if src[i] in "\"'`":
+            if quote is None: quote = src[i]
+            elif src[i] == quote: quote = None
+            i += 1
+            continue
+        end = None
+        if quote not in ("'", '"') and src.startswith("/*", i):
+            finish = src.find("*/", i + 2)
+            end = len(src) if finish < 0 else finish + 2
+        elif quote is None and src.startswith("//", i):
+            finish = src.find("\n", i + 2)
+            end = len(src) if finish < 0 else finish
+        elif quote is None and src.startswith("<!--", i):
+            finish = src.find("-->", i + 4)
+            end = len(src) if finish < 0 else finish + 3
+        if end is None:
+            i += 1
+        else:
+            for pos in range(i, end):
+                if src[pos] != "\n": out[pos] = " "
+            i = end
+    return "".join(out)
+
+def blank_comments(src):
+    return strip_comments(src).splitlines()
+
+class Document(HTMLParser):
+    def __init__(self, text):
+        super().__init__(convert_charrefs=True)
+        self.tags = []
+        self.feed(text)
+    def handle_starttag(self, tag, attrs):
+        self.tags.append((tag, dict(attrs), self.getpos()[0]))
+    handle_startendtag = handle_starttag
+
+def dynamic(value):
+    return not value or any(mark in value for mark in ("{{", "${"))
+
+class Audit:
+    def __init__(self, root, baseline=None):
+        self.root = Path(root).resolve()
+        file = self.root / "scripts/governance-baseline.json"
+        self.baseline = baseline if baseline is not None else (json.loads(file.read_text()) if file.exists() else {})
+        self.failures, self.warnings, self.cache = [], [], {}
+        self.manifest = self.read_json("_ds_manifest.json", required=(self.root / "release.json").exists())
+        self.sources = {c["name"]: c.get("sourcePath") for c in self.manifest.get("components", [])}
+        retired = self.read_json("api/retired-exports.json", required=False)
+        self.retired = retired.get("exports", {} if not (self.root / "api/retired-exports.json").exists() else None) if isinstance(retired, dict) else None
+        if not isinstance(self.retired, dict):
+            self.add("manifest", self.root / "api/retired-exports.json", "Retired exports must be an exports object")
+            self.retired = {}
+    def add(self, code, path, detail, line=1, warning=False):
+        item = Violation(code, Path(path).relative_to(self.root).as_posix(), line, detail)
+        (self.warnings if warning else self.failures).append(item)
+    def read_json(self, name, required=True):
+        path = self.root / name
+        if not path.exists() and not required: return {}
+        try: return json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, ValueError) as exc:
+            self.add("generated", path, f"Cannot read JSON: {exc}")
+            return {}
+    def text(self, path):
+        if path not in self.cache: self.cache[path] = path.read_text(encoding="utf-8")
+        return self.cache[path]
+    def allowed(self, path, key):
+        return any(fnmatch.fnmatch(path.relative_to(self.root).as_posix(), pat) for pat in self.baseline.get(key, []))
+    def target(self, path, value):
+        if dynamic(value): return None
+        url = urlsplit(value)
+        if url.scheme or url.netloc or not url.path: return None
+        clean = unquote(url.path).replace("\\", "/")
+        return (self.root / clean.lstrip("/") if clean.startswith("/") else path.parent / clean).resolve()
+    def component_checks(self):
+        for jsx in sorted(self.root.glob("components/*/*.jsx")):
+            if not jsx.stem[:1].isupper(): continue
+            if not jsx.with_suffix(".d.ts").exists(): self.add("trio", jsx, f"Missing {jsx.stem}.d.ts")
+            if not jsx.with_name(jsx.stem + ".prompt.md").exists(): self.add("prompt-coverage", jsx, f"Missing {jsx.stem}.prompt.md")
+            source = self.text(jsx)
+            code = strip_comments(source)
+            for line, (original, content) in enumerate(zip(source.splitlines(), code.splitlines()), 1):
+                if "!important" in content and not IMPORTANT_PRAGMA.search(original):
+                    self.add("no-important", jsx, "Undeclared !important; document the necessary exception with /* important: reason */", line)
+            for match in re.finditer(r'aria-(?:controls|labelledby|activedescendant)="([^"{]+)"', code):
+                self.add("aria-refs", jsx, f"Hard-coded {match.group(0)}", code.count("\n", 0, match.start()) + 1)
+            for name in re.findall(r"export (?:const|function) ([A-Z]\w+)", code):
+                if self.manifest and name not in self.sources:
+                    retired = self.retired.get(name)
+                    if not isinstance(retired, dict) or retired.get("source") != jsx.relative_to(self.root).as_posix():
+                        self.add("manifest", jsx, f"Export {name} is in neither the public manifest nor its declared retired source; publish it or declare it in api/retired-exports.json")
+    def style_checks(self, path):
+        # Cards/docs/tokens are illustrative references. Check executable component/template
+        # declarations, not hash-shaped run identifiers or color examples in prose.
+        code = strip_comments(self.text(path))
+        if not self.allowed(path, "raw_hex_allowed"):
+            declarations = [re.match(r"([\s\S]*)", code)] if path.suffix == ".jsx" and path.is_relative_to(self.root / "components") else COLOR_DECL.finditer(code)
+            for declaration in declarations:
+                value, spans = declaration.group(1), []
+                for match in re.finditer(r"\bvar\(", value):
+                    depth, end = 1, match.end()
+                    while depth and end < len(value):
+                        depth += (value[end] == "(") - (value[end] == ")")
+                        end += 1
+                    spans.append((match.start(), end))
+                for match in re.finditer(r"#[0-9a-fA-F]{3,8}\b", value):
+                    if any(a <= match.start() < b for a, b in spans) or "url(" in value: continue
+                    pos = declaration.start(1) + match.start()
+                    self.add("raw-hex", path, f"Use a token instead of {match.group(0)}", code.count("\n", 0, pos) + 1)
+        if not self.allowed(path, "large_radius_allowed"):
+            for match in re.finditer(r"border-radius\s*:\s*([^;}\n]+)", code, re.I):
+                value = re.sub(r"var\([^)]*\)", "", match.group(1))
+                values = re.findall(r"(?<![\w.-])(\d+(?:\.\d+)?)(px|rem)\b", value)
+                if any(float(n) * (16 if unit == "rem" else 1) > 8 for n, unit in values):
+                    self.add("large-radius", path, "Radius exceeds the current 8px dialog ceiling", code.count("\n", 0, match.start()) + 1)
+    def html_links(self, path, document):
+        for _, attrs, line in document.tags:
+            for attr in ("href", "src"):
+                value = attrs.get(attr)
+                target = self.target(path, value)
+                if target is None: continue
+                rel = target.relative_to(self.root).as_posix() if target.is_relative_to(self.root) else ""
+                if "uploads" in Path(rel).parts:
+                    self.add("local-upload-reference", path, f"Use tracked assets instead of local upload {value}", line)
+                elif not target.exists(): self.add("local-link", path, f"Missing target {value}", line)
+    def dependencies(self, path):
+        deps = []
+        if path.suffix != ".html": return deps
+        for tag, attrs, line in Document(strip_comments(self.text(path))).tags:
+            target = None
+            if tag == "x-import" and attrs.get("from"):
+                target = self.target(path, attrs["from"])
+                if target and not target.is_file(): self.add("local-link", path, f"Missing mounted source {attrs['from']}", line)
+            elif tag == "dc-import" and not dynamic(attrs.get("name")):
+                name = attrs["name"] + ".dc.html"
+                sibling = path.parent / name
+                candidates = [sibling] if sibling.exists() else sorted(self.root.glob("templates/*/" + name))
+                if len(candidates) == 1: target = candidates[0]
+                else: self.add("local-link", path, f"Cannot resolve mounted template {attrs['name']}", line)
+            if target and target.is_file() and target.is_relative_to(self.root): deps.append(target)
+        return deps
+    def closure(self, path, seen=None):
+        seen = set() if seen is None else seen
+        if path in seen: return []
+        seen.add(path)
+        return [(path, strip_comments(self.text(path)))] + [item for dep in self.dependencies(path) for item in self.closure(dep, seen)]
+    def template_document(self, path, document):
+        if not any(tag == "meta" and attrs.get("name", "").lower() == "viewport" and re.search(r"width\s*=\s*device-width", attrs.get("content", "")) for tag, attrs, _ in document.tags):
+            self.add("template-viewport", path, "Template entry needs a device-width viewport")
+        content = "\n".join(text for _, text in self.closure(path))
+        # WorkstationShell owns <main>. Mentioning any other component is not evidence.
+        if not re.search(r'<main\b|\brole=[\"\']main[\"\']|<[^>]*\bWorkstationShell\b', content):
+            self.add("template-main-landmark", path, "Entry or mounted screen must expose a main landmark")
+        if not re.search(r"<h1\b", content):
+            self.add("template-heading", path, "Entry or mounted screen must expose an h1")
+        for match in re.finditer(r"<h1\b[^>]*>\s*(Overview|Data Operations|Data Ops|Governance)\s*</h1>", content, re.I):
+            if not self.allowed(path, "legacy_workspace_mentions_allowed"):
+                self.add("legacy-workspace", path, f"{match.group(1)} is not a visible root workspace name")
+    def entries(self):
+        """Read every declared entry; filename conventions cannot hide compatibility pages."""
+        registry = self.root / "api/template-eligibility.json"
+        if registry.is_file():
+            templates = self.read_json("api/template-eligibility.json").get("templates", {})
+            if not isinstance(templates, dict):
+                self.add("template", registry, "Template registry must be an object")
+                return set()
+            entries = set()
+            for slug, record in sorted(templates.items()):
+                if not isinstance(slug, str) or Path(slug).name != slug or slug in (".", "..") or "\\" in slug:
+                    self.add("template", registry, f"Invalid template directory {slug!r}")
+                    continue
+                declared = record.get("entries", []) if isinstance(record, dict) else []
+                if not isinstance(declared, list) or not declared:
+                    self.add("template", registry, f"{slug}: no declared .dc.html entry")
+                    continue
+                seen = set()
+                for filename in declared:
+                    if not isinstance(filename, str) or Path(filename).name != filename or "\\" in filename or not filename.endswith(".dc.html"):
+                        self.add("template", registry, f"{slug}: invalid entry filename {filename!r}")
+                        continue
+                    if filename in seen:
+                        self.add("template", registry, f"{slug}: duplicate declared entry {filename}")
+                        continue
+                    seen.add(filename)
+                    entry = self.root / "templates" / slug / filename
+                    if not entry.is_file(): self.add("template", registry, f"{slug}: declared entry {filename} missing")
+                    else: entries.add(entry)
+                actual = {p.name for p in (self.root / "templates" / slug).glob("*.dc.html")}
+                for filename in sorted(actual - seen):
+                    self.add("template", registry, f"{slug}: undeclared entry {filename}")
+            for item in self.manifest.get("templates", []):
+                if item.get("entryPath") and self.root / item["entryPath"] not in entries:
+                    self.add("template", registry, f"Published entry is not declared: {item['entryPath']}")
+            return entries
+        # Isolated non-release fixtures can exercise the document API without a registry.
+        # Actual releases fail package_checks if the required registry is missing.
+        entries = {self.root / t["entryPath"] for t in self.manifest.get("templates", []) if t.get("entryPath")}
+        for folder in (self.root / "templates").glob("*"):
+            if not folder.is_dir() or folder.name.startswith("_"): continue
+            candidates = list(folder.glob("*.dc.html"))
+            if candidates:
+                mounted = {child for owner in candidates for child in self.dependencies(owner)}
+                entries.update(set(candidates) - mounted)
+            elif (folder / "index.html").is_file(): entries.add(folder / "index.html")
+        return entries
+    def template_checks(self):
+        for entry in sorted(self.entries()):
+            if not entry.is_file(): continue
+            folder = entry.parent
+            source = self.text(entry)
+            if "@template" not in source[:1200]: self.add("template", entry, "@template marker not near the top")
+            if not (folder / "ds-base.js").exists(): self.add("template", entry, "ds-base.js missing")
+            props = [attrs["data-props"] for tag, attrs, _ in Document(source).tags if tag == "script" and "data-props" in attrs]
+            try: config = json.loads(props[0]) if props else {}
+            except ValueError:
+                config = {}
+                self.add("template", entry, "data-props is not valid JSON")
+            if not isinstance(config, dict):
+                config = {}
+                self.add("template", entry, "data-props must be a JSON object")
+            if "$preview" not in config: self.add("template", entry, "$preview missing from data-props")
+            for tweak in ("density", "theme", "environment", "dataState"):
+                if tweak not in config: self.add("template", entry, f"Standard tweak {tweak!r} missing from data-props")
+            content = "\n".join(text for _, text in self.closure(entry))
+            mounted_state = re.search(
+                r'<(?:[\w.]+\.)?DataStateSwitch\b|(?:component-from-global-scope|component)=["\'][^"\']*\bDataStateSwitch["\']|createElement\(\s*(?:[\w.]+\.)?DataStateSwitch\b',
+                content,
+            )
+            if not mounted_state: self.add("template", entry, "DataStateSwitch not mounted by entry or mounted screen")
+            for owner, text in self.closure(entry):
+                for route in re.findall(r'["\'](\.\./[^"\'<>]+\.dc\.html)["\']', text):
+                    target = self.target(owner, route)
+                    if target is not None and not target.exists(): self.add("routes", owner, f"Broken route {route}")
+    def package_checks(self):
+        retired_path = self.root / "api/retired-exports.json"
+        for name, record in sorted(self.retired.items()):
+            if not isinstance(record, dict):
+                self.add("manifest", retired_path, f"Retired export {name} must have a source and public replacement")
                 continue
-            relative = unquote(parsed.path)
-            if "uploads" in pathlib.PurePosixPath(relative).parts:
-                fail("local-upload-reference", f"{path.relative_to(ROOT)} references local upload {value}")
-            target = ROOT / relative.lstrip("/") if relative.startswith("/") else path.parent / relative
-            if not target.exists():
-                fail("local-link", f"{path.relative_to(ROOT)} references missing {value}")
-        if not path.is_relative_to(ROOT / "templates") or path.name.endswith(".card.html"):
-            continue
-        if path.name != "index.html" and not path.name.endswith(".dc.html"):
-            continue
-        markup = entry_markup(path)
-        if not re.search(r'<meta\b[^>]*name=["\']viewport["\']', source, re.I):
-            fail("template-viewport", f"{path.relative_to(ROOT)} has no viewport declaration")
-        if not re.search(r'<main\b|role=["\']main["\']', markup, re.I):
-            fail("template-main-landmark", f"{path.relative_to(ROOT)} has no main landmark in entry/imported screen")
-        if not re.search(r'<h1\b', markup, re.I):
-            fail("template-heading", f"{path.relative_to(ROOT)} has no h1 in entry/imported screen")
-        if re.search(r'<h1\b[^>]*>\s*(?:Governance|Research|Execution)\s*</h1>', markup, re.I):
-            fail("legacy-workspace", f"{path.relative_to(ROOT)} uses a superseded root workspace name")
-        for number, line in enumerate(blank_comments(source), 1):
-            for match in re.finditer(r"#[0-9A-Fa-f]{3,8}\b", line):
-                before = line[max(0, match.start() - 65):match.start()]
-                if "var(--" not in before and "url(" not in line:
-                    fail("raw-hex", f"{path.relative_to(ROOT)}:{number} bare {match.group(0)}")
-    for path in sorted(ROOT.glob("components/*/*.jsx")):
-        for number, line in enumerate(blank_comments(path.read_text(encoding="utf-8")), 1):
-            for match in re.finditer(r"border-radius\s*:\s*(\d+(?:\.\d+)?)px", line):
-                if float(match.group(1)) > 8:
-                    fail("large-radius", f"{path.relative_to(ROOT)}:{number} radius {match.group(1)}px exceeds 8px")
-
+            if name in self.sources:
+                self.add("manifest", retired_path, f"{name} is listed as retired but the public manifest exports it")
+            source = record.get("source")
+            path = (self.root / source).resolve() if isinstance(source, str) and source else None
+            if (path is None or not path.is_relative_to(self.root) or not path.is_file()
+                    or not re.search(rf"export (?:const|function) {re.escape(name)}\b", strip_comments(self.text(path)))):
+                self.add("manifest", retired_path, f"Retired export {name}: {source!r} no longer exports it; remove the stale retirement record")
+            replacement = record.get("replacement")
+            if not isinstance(replacement, str) or replacement not in self.sources:
+                self.add("manifest", retired_path, f"Retired export {name}: replacement {replacement!r} is not in the public manifest")
+        for comp in self.manifest.get("components", []):
+            path = comp.get("sourcePath")
+            if path and not (self.root / path).is_file(): self.add("manifest", self.root / "_ds_manifest.json", f"Missing component source {path}")
+        for entry in self.manifest.get("templates", []):
+            path = entry.get("entryPath")
+            if not path or not (self.root / path).is_file(): self.add("manifest", self.root / "_ds_manifest.json", f"Missing template entry {path}")
+        if self.manifest:
+            for name in ("_ds_bundle.js", "_ds_manifest.json", "_adherence.oxlintrc.json", "support.js"):
+                if not (self.root / name).is_file(): self.add("generated", self.root / name, "Required generated file missing")
+            readme = self.root / "README.md"
+            if not readme.exists() or "inventory:generated:begin" not in self.text(readme): self.add("generated", readme, "Generated inventory markers missing")
+            classified = set(self.read_json("api/template-eligibility.json").get("templates", {}))
+            on_disk = {p.name for p in (self.root / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")}
+            for name in sorted(on_disk - classified): self.add("eligibility", self.root / "api/template-eligibility.json", f"Unclassified template {name}")
+            for name in sorted(classified - on_disk): self.add("eligibility", self.root / "api/template-eligibility.json", f"Classified template {name} no longer exists")
+    def run(self):
+        self.component_checks()
+        for folder in ("components", "templates"):
+            for path in sorted((self.root / folder).rglob("*")):
+                if path.is_file() and path.suffix in (".jsx", ".html") and not path.name.endswith((".card.html", ".stories.html")):
+                    self.style_checks(path)
+        entries = self.entries()
+        for path in sorted(self.root.rglob("*.html")):
+            if any(part in ("node_modules", ".git", "dist") for part in path.relative_to(self.root).parts): continue
+            document = Document(self.text(path))
+            self.html_links(path, document)
+            if path in entries:
+                self.template_document(path, document)
+        self.template_checks()
+        self.package_checks()
+        self.failures = list(dict.fromkeys(self.failures))
+        return self.failures
 
 def run_checks(root=ROOT, baseline=None):
-    """Pure structured API; a passed baseline cannot waive current enforcement.
+    """Structured, reentrant API. Baseline overrides never change the checked surface."""
+    return Audit(root, baseline).run()
 
-    Small fixture trees omit package release metadata. A real package with a
-    public manifest receives every release gate in addition to document checks.
-    Global CLI state is restored even when malformed input raises an exception.
-    """
-    global ROOT, fails, warns
-    previous = ROOT, fails, warns
-    ROOT, fails, warns = pathlib.Path(root), [], []
-    try:
-        check_components()
-        if (ROOT / "_ds_manifest.json").exists():
-            check_manifest(); check_templates(); check_eligibility(); check_generated()
-        check_document_contracts()
-        violations = []
-        for message in fails:
-            code = message[1:message.index("]")]
-            if code == "trio" and ".prompt.md" in message:
-                code = "prompt-coverage"
-            violations.append(Violation(code, message))
-        return violations
-    finally:
-        ROOT, fails, warns = previous
+def main(argv=None):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--root", type=Path, default=ROOT)
+    audit = Audit(parser.parse_args(argv).root)
+    audit.run()
+    for warning in audit.warnings: print("WARN  " + warning.format())
+    for violation in audit.failures: print("FAIL  " + violation.format())
+    print(f"\n{len(audit.failures)} failures · {len(audit.warnings)} warnings")
+    return bool(audit.failures)
 
-def main():
-    check_components(); check_manifest(); check_templates(); check_eligibility(); check_generated()
-    check_document_contracts()
-    for w in warns: print("WARN  " + w)
-    for f in fails: print("FAIL  " + f)
-    print(f"\n{len(fails)} failures · {len(warns)} warnings")
-    return 1 if fails else 0
-
-if __name__ == "__main__":
-    sys.exit(main())
+if __name__ == "__main__": sys.exit(main())

@@ -1,5 +1,5 @@
 <!-- @dsCard group="Operations" viewport="1100x720" name="Action queue" subtitle="ActionQueue · ActionQueueChip — every unresolved instruction stays on screen: submitted → acknowledged → confirmed | rejected | timed out" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Action queue</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Action queue</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>
 body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
 .wrap{display:grid;grid-template-columns:280px 1fr;gap:16px;max-width:1060px;align-items:start}
 .rail h1{margin:0 0 6px;font-size:14px;color:var(--text-primary)}
@@ -34,10 +34,10 @@ function Card(){
         <h1>Actions in flight</h1>
         <p>Between “operator pressed Post” and “the ledger agrees” there was no surface. The queue keeps every unresolved instruction visible: submitted → acknowledged → confirmed, or rejected with its reason, or timed out with a same-key retry.</p>
         <div className="acts">
-          <button onClick={()=>{setMode("ok");api.submit("basket.commit",{idempotencyKey:"BSK-"+Date.now()})}}>Commit basket<span>answers in 0.9 s → confirmed</span></button>
-          <button onClick={()=>{setMode("slow");api.submit("settings.save",{idempotencyKey:"CFG-"+Date.now()})}}>Save settings<span>answers in 3.2 s → acknowledged, then confirmed</span></button>
-          <button onClick={()=>{setMode("reject");api.submit("pack.deliver",{idempotencyKey:"RP-"+Date.now()})}}>Deliver report pack<span>refused with a reason → rejected</span></button>
-          <button onClick={()=>{setMode("silent");api.submit("pack.deliver",{idempotencyKey:"RP-SILENT-"+Date.now()})}}>Deliver pack · adapter silent<span>no answer in 4 s → timed out, retry same key</span></button>
+          <button type="button" onClick={()=>{setMode("ok");api.submit("basket.commit",{idempotencyKey:"BSK-"+Date.now()})}}>Commit basket<span>answers in 0.9 s → confirmed</span></button>
+          <button type="button" onClick={()=>{setMode("slow");api.submit("settings.save",{idempotencyKey:"CFG-"+Date.now()})}}>Save settings<span>answers in 3.2 s → acknowledged, then confirmed</span></button>
+          <button type="button" onClick={()=>{setMode("reject");api.submit("pack.deliver",{idempotencyKey:"RP-"+Date.now()})}}>Deliver report pack<span>refused with a reason → rejected</span></button>
+          <button type="button" onClick={()=>{setMode("silent");api.submit("pack.deliver",{idempotencyKey:"RP-SILENT-"+Date.now()})}}>Deliver pack · adapter silent<span>no answer in 4 s → timed out, retry same key</span></button>
         </div>
       </div>
       <div className="main">
