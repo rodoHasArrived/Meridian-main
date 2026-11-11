@@ -77,7 +77,19 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
     }
 
     /// <inheritdoc />
+    /// <remarks>
+    /// Keeps the degrade-to-empty contract of <see cref="ICorporateActionProvider.FetchAsync"/>:
+    /// a fetch that failed or was cut short yields no observations. Callers that must tell that
+    /// apart from an empty history use <see cref="FetchWithOutcomeAsync"/>.
+    /// </remarks>
     public async Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
+        string ticker,
+        Guid securityId,
+        CancellationToken ct = default)
+        => (await FetchWithOutcomeAsync(ticker, securityId, ct).ConfigureAwait(false)).Observations;
+
+    /// <inheritdoc />
+    public async Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
         string ticker,
         Guid securityId,
         CancellationToken ct = default)
@@ -98,7 +110,7 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         {
             _logger.LogDebug(
                 "Alpaca API credentials not configured; corporate action fetch for {Ticker} skipped.", ticker);
-            return [];
+            return CorporateActionFetchResult.Unavailable("Alpaca API credentials are not configured.");
         }
 
         using var client = _httpClientFactory.CreateClient("alpaca-corp-actions");
@@ -106,16 +118,16 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         client.DefaultRequestHeaders.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);
 
-        var results = await FetchActionsAsync(client, ticker.Trim(), securityId, ct).ConfigureAwait(false);
+        var result = await FetchActionsAsync(client, ticker.Trim(), securityId, ct).ConfigureAwait(false);
 
         _logger.LogDebug(
-            "Fetched {Count} corporate action(s) for {Ticker} from Alpaca.",
-            results.Count, ticker);
+            "Fetched {Count} corporate action(s) for {Ticker} from Alpaca ({FetchStatus}).",
+            result.Observations.Count, ticker, result.Status);
 
-        return results;
+        return result;
     }
 
-    private async Task<IReadOnlyList<CorporateActionCommand>> FetchActionsAsync(
+    private async Task<CorporateActionFetchResult> FetchActionsAsync(
         HttpClient client,
         string ticker,
         Guid securityId,
@@ -129,9 +141,13 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
         var seenPageTokens = new HashSet<string>(StringComparer.Ordinal);
         string? pageToken = null;
 
+        // Pages read in full so far. A failure before the first one means nothing was read
+        // (unavailable); a failure after it means the history was cut short (incomplete).
+        var pagesRead = 0;
+
         try
         {
-            for (var page = 0; ; page++)
+            while (true)
             {
                 var url = pageToken is null ? baseUrl : $"{baseUrl}&page_token={Uri.EscapeDataString(pageToken)}";
                 using var response = await client.GetAsync(url, ct).ConfigureAwait(false);
@@ -140,10 +156,14 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                 {
                     // A refused request is not an empty history. It is logged where an operator
                     // will see it, and no partial result is returned as if it were complete.
+                    // Only the status code is reported; the response body is never read.
+                    var statusCode = (int)response.StatusCode;
                     _logger.LogWarning(
                         "Alpaca corporate actions returned {StatusCode} for {Ticker}; no actions were taken from this fetch.",
-                        (int)response.StatusCode, ticker);
-                    return [];
+                        statusCode, ticker);
+                    return NotComplete(string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Alpaca returned HTTP {statusCode} for page {pagesRead + 1}."));
                 }
 
                 await using var jsonStream = await response.Content.ReadAsStreamAsync(ct).ConfigureAwait(false);
@@ -169,23 +189,52 @@ public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProv
                     }
                 }
 
+                pagesRead++;
                 pageToken = document.RootElement.TryGetProperty("next_page_token", out var next)
                     && next.ValueKind == JsonValueKind.String
                         ? next.GetString()
                         : null;
                 if (string.IsNullOrEmpty(pageToken))
                     break;
-                if (page + 1 >= MaxPages || !seenPageTokens.Add(pageToken))
-                    throw new JsonException("Alpaca corporate-actions pagination did not terminate.");
+
+                // A token seen before would request the same page again, and a history longer
+                // than the page limit is not followed further; either way the fetch stops here
+                // without having reached the end of the provider's history.
+                if (!seenPageTokens.Add(pageToken))
+                {
+                    _logger.LogWarning(
+                        "Alpaca corporate actions repeated a page token for {Ticker} after {PagesRead} page(s); no actions were taken from this fetch.",
+                        ticker, pagesRead);
+                    return NotComplete("Alpaca repeated a next_page_token; pagination did not terminate.");
+                }
+
+                if (pagesRead >= MaxPages)
+                {
+                    _logger.LogWarning(
+                        "Alpaca corporate actions exceeded {MaxPages} pages for {Ticker}; no actions were taken from this fetch.",
+                        MaxPages, ticker);
+                    return NotComplete(string.Create(
+                        CultureInfo.InvariantCulture,
+                        $"Alpaca pagination exceeded the {MaxPages}-page limit."));
+                }
             }
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(ex, "Failed to fetch Alpaca corporate actions for {Ticker}.", ticker);
-            return [];
+
+            // The exception type is reported, not its message, so nothing the provider sent is echoed.
+            return NotComplete(string.Create(
+                CultureInfo.InvariantCulture,
+                $"Alpaca request for page {pagesRead + 1} failed ({ex.GetType().Name})."));
         }
 
-        return ActionGroups.SelectMany(group => byGroup[group.Group]).ToArray();
+        return CorporateActionFetchResult.Complete(
+            ActionGroups.SelectMany(group => byGroup[group.Group]).ToArray());
+
+        CorporateActionFetchResult NotComplete(string reason) => pagesRead == 0
+            ? CorporateActionFetchResult.Unavailable(reason)
+            : CorporateActionFetchResult.Incomplete(reason, byGroup.Values.Sum(static commands => commands.Count));
     }
 
     private CorporateActionCommand? MapToCommand(
