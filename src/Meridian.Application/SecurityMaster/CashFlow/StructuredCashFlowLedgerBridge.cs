@@ -50,7 +50,11 @@ public sealed class StructuredCashFlowLedgerBridge : IStructuredCashFlowLedgerBr
         // stale source or a rate-shocked what-if projection to the general ledger.
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
         {
-            return StructuredCashFlowLedgerPostingResult.Blocked(projection.SecurityId, blockReason);
+            return StructuredCashFlowLedgerPostingResult.Blocked(projection.SecurityId, blockReason) with
+            {
+                Blocker = projection.Blocker ?? (projection.Schedule.Any(static entry => entry.InterestAmount < 0m)
+                    ? SecurityInterestSupport.NegativeInterestBlocker : null)
+            };
         }
 
         var carryingValueAccount = LedgerAccounts.Securities(normalizedSymbol, normalizedFinancialAccountId);

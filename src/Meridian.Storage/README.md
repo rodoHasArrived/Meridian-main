@@ -11,6 +11,12 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.Storage
 
+Security Master migration 062 now checks its apply conditions in the runner without changing
+the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,
+hold source-table write locks through commit, and refuse the usual thirty-second command timeout
+above one million identifier rows. Fresh installations and already-applied restarts are exempt
+from upgrade attestations. See the [migration procedure](../../docs/operators/security-master-governed-edit-rollout.md#identifier-history-migration-062).
+
 `JsonlBackfillBarWriter` gives every granularity its own file prefix (`bar_4hour`, `bar_weekly`, `bar_monthly` alongside the existing ones) and throws for an unknown granularity instead of writing it as `bar_daily`.
 
 `SharedStorageCoordinationStore` accepts an optional `TimeProvider` for lease expiry and takeover decisions (system clock by default).

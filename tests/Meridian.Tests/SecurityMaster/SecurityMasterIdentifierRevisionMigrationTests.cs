@@ -1,6 +1,8 @@
 using FluentAssertions;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.Migrations;
+using Meridian.Storage.SecurityMaster;
 using Meridian.TestSupport;
 using Npgsql;
 
@@ -16,6 +18,102 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class SecurityMasterIdentifierRevisionMigrationTests
 {
     private const string RevisionMigration = "062_security_master_identifier_revisions.sql";
+
+    [SecurityMasterDatabaseTheory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    public async Task Upgrade_RefusesMissingDeploymentAttestation_WithoutPublishingMigration(bool writersStopped, bool legacyWritersRetired)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SeedAsync();
+        await fixture.WriteMigrationAsync(fixture.MigrationSql);
+        var receipts = await fixture.ReceiptsAsync();
+
+        var migrate = () => fixture.Runner(writersStopped, legacyWritersRetired).EnsureMigratedAsync();
+        await migrate.Should().ThrowAsync<InvalidOperationException>().WithMessage("*migration 062 requires stopped writers*");
+        (await fixture.ReceiptsAsync()).Should().Be(receipts);
+        (await fixture.ScalarAsync($"select to_regclass('{fixture.Schema}.security_identifier_revisions') is null")).Should().Be("True");
+    }
+
+    [SecurityMasterDatabaseTheory]
+    [InlineData("securities")]
+    [InlineData("security_identifiers")]
+    public async Task Upgrade_RefusesConcurrentWriter_AndReleasesLocksForRetry(string table)
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SeedAsync();
+        await fixture.WriteMigrationAsync(fixture.MigrationSql);
+        await using var writer = new NpgsqlConnection(fixture.ConnectionString);
+        await writer.OpenAsync();
+        await using var writerTransaction = await writer.BeginTransactionAsync();
+        await using (var command = writer.CreateCommand())
+        {
+            command.Transaction = writerTransaction;
+            command.CommandText = $"select * from {fixture.Schema}.{table} for update;";
+            await command.ExecuteNonQueryAsync();
+        }
+
+        var migrate = () => fixture.Runner().EnsureMigratedAsync();
+        await migrate.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Stop every Security Master writer*");
+        await writerTransaction.RollbackAsync();
+
+        // In the child-table case the runner acquired the parent lock before refusing. Its
+        // failed transaction must release that lock, leaving neither a receipt nor a blocker.
+        await using (var retryLockTransaction = await writer.BeginTransactionAsync())
+        {
+            await using var command = writer.CreateCommand();
+            command.Transaction = retryLockTransaction;
+            command.CommandText = $"lock table {fixture.Schema}.securities, {fixture.Schema}.security_identifiers in exclusive mode nowait;";
+            await command.ExecuteNonQueryAsync();
+            await retryLockTransaction.RollbackAsync();
+        }
+        await fixture.Runner().EnsureMigratedAsync();
+        (await fixture.ScalarAsync($"select count(*) from {fixture.Schema}.security_identifier_revisions")).Should().Be("6");
+        // Apply conditions gate a pending upgrade, not every subsequent startup.
+        await fixture.Runner(writersStopped: false, legacyWritersRetired: false).EnsureMigratedAsync();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task FreshInstall_DefaultProductionRunner_DoesNotRequireUpgradeAttestation()
+    {
+        await using var server = await PostgresTestServer.CreateAsync("MERIDIAN_SECURITY_MASTER_CONNECTION_STRING");
+        var options = new SecurityMasterOptions
+        {
+            ConnectionString = server.ConnectionString,
+            Schema = server.CreateSchemaName("identifier_revision_fresh")
+        };
+        var runner = new SecurityMasterMigrationRunner(options);
+        await runner.EnsureMigratedAsync();
+        await runner.EnsureMigratedAsync();
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task Upgrade_LargeBaselineRefusesDefaultTimeout_BeforePublishingHistory()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        await fixture.SeedAsync();
+        await fixture.WriteMigrationAsync(fixture.MigrationSql);
+        await using var connection = new NpgsqlConnection(fixture.ConnectionString);
+        await connection.OpenAsync();
+        await using (var seed = connection.CreateCommand())
+        {
+            seed.CommandTimeout = 120;
+            seed.CommandText = $"""
+                insert into {fixture.Schema}.security_identifiers (
+                    security_id, identifier_kind, identifier_value, normalized_identifier_value,
+                    is_primary, valid_from, source, manual_override)
+                select '11111111-1111-1111-1111-111111111111', 'ProviderSymbol',
+                       'TIMEOUT-' || n, 'TIMEOUT-' || n, false, '2026-01-01T00:00:00Z', 'Synthetic', false
+                from generate_series(1, 1000001) n;
+                """;
+            await seed.ExecuteNonQueryAsync();
+        }
+
+        var migrate = () => fixture.Runner().EnsureMigratedAsync();
+        await migrate.Should().ThrowAsync<InvalidOperationException>().WithMessage("*Raise Command Timeout above 30 seconds*");
+        (await fixture.ScalarAsync($"select to_regclass('{fixture.Schema}.security_identifier_revisions') is null")).Should().Be("True");
+    }
 
     [SecurityMasterDatabaseFact]
     public async Task PopulatedUpgrade_BackfillsOneBaselinePerIdentifierRow_AcrossFailureRetryAndRestart()
@@ -86,6 +184,7 @@ public sealed class SecurityMasterIdentifierRevisionMigrationTests
     {
         public string Schema { get; } = schema;
         public string MigrationSql { get; } = migrationSql;
+        public string ConnectionString => server.ConnectionString;
 
         /// <summary>A schema migrated through the last migration before 062.</summary>
         public static async Task<Fixture> CreateAsync()
@@ -117,15 +216,22 @@ public sealed class SecurityMasterIdentifierRevisionMigrationTests
             }
         }
 
-        public PostgresMigrationRunner Runner() => new(new PostgresMigrationRunnerOptions
+        public PostgresMigrationRunner Runner(bool writersStopped = true, bool legacyWritersRetired = true) => new(new PostgresMigrationRunnerOptions
         {
-            ConnectionString = server.ConnectionString,
+            ConnectionString = new NpgsqlConnectionStringBuilder(server.ConnectionString) { CommandTimeout = 30 }.ConnectionString,
             Schema = Schema,
             ScriptsSubdirectory = scripts,
             DisplayName = "Security Master",
             LockScopeName = "security_master",
             ConnectionStringSettingName = "MERIDIAN_SECURITY_MASTER_CONNECTION_STRING",
-            TrackOrdinals = true
+            TrackOrdinals = true,
+            BeforeScriptAsync = (fileName, connection, transaction, isUpgrade, ct) =>
+                SecurityMasterMigrationRunner.CheckIdentifierHistoryApplyConditionsAsync(new SecurityMasterOptions
+                {
+                    Schema = Schema,
+                    IdentifierHistoryMigrationWritersStopped = writersStopped,
+                    IdentifierHistoryMigrationLegacyWritersRetired = legacyWritersRetired
+                }, fileName, connection, transaction, isUpgrade, ct)
         });
 
         public Task WriteMigrationAsync(string sql) => File.WriteAllTextAsync(Path.Combine(scripts, RevisionMigration), sql);
@@ -177,4 +283,10 @@ public sealed class SecurityMasterIdentifierRevisionMigrationTests
             }
         }
     }
+}
+
+// Keep the same environment and Docker availability policy as the surrounding database facts.
+file sealed class SecurityMasterDatabaseTheoryAttribute : TheoryAttribute
+{
+    public SecurityMasterDatabaseTheoryAttribute() => Skip = new SecurityMasterDatabaseFactAttribute().Skip;
 }

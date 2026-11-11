@@ -11,6 +11,13 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
+classes without schedule anchors. Publishing the approved edit promotes only its declaration,
+preserves the stored rate amount, emits `rateConvention` economics, and feeds the same normalized
+unit to cash-flow, preview, obligation and accounting readers. The explicit replacement stamps the
+new contract version; unrelated amendments cannot activate a stray old unit key. Direct and system
+ingest amendments cannot change this field, even where other direct edits are permitted.
+
 Historical backfill enforces its adaptive concurrency: after a provider rate limit, workers beyond the reduced limit wait for a slot instead of continuing at the original parallelism.
 
 Backfill resume checkpoints are written only after the final pipeline flush succeeds, and a flush failure fails the run, so a crash or flush error can no longer skip dates on resume that never reached disk. `PersistentDedupLedger` rolls its cache entry back when the ledger write fails or is cancelled (a retry is no longer dropped as a duplicate) and fsyncs compacted ledgers before the rename. Scheduled catch-up skips an empty window instead of queueing From > To.
@@ -18,7 +25,12 @@ Backfill resume checkpoints are written only after the final pipeline flush succ
 Backfill runs publish into an `EventPipeline` with `BoundedChannelFullMode.Wait`, so a
 provider that outpaces the JSONL sink is back-pressured instead of silently evicting queued bars.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v3`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 and v2 through their original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+
+Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
+schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject
+an entire signed-interest schedule before any period posts. Calculation-only signed-interest
+previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 

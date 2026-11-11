@@ -255,6 +255,17 @@ public sealed class SecurityMasterReplayCorpusTests
         var predating = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
         foreach (var key in laterKeys)
         {
+            if (key == "rateConvention")
+            {
+                predating.ContainsKey(key).Should().BeFalse("an undeclared unit has no default module");
+                continue;
+            }
+            if (!predating.ContainsKey(key))
+            {
+                // Exact additive homes emit no key when the class has no such fact. Their
+                // representative-class coverage is pinned by the module-inventory test.
+                continue;
+            }
             predating[key].Should().BeNull($"the {assetClass} twin does not feed the {key} module");
             predating.Remove(key).Should().BeTrue();
         }
@@ -267,6 +278,98 @@ public sealed class SecurityMasterReplayCorpusTests
             .Should().BeFalse("an image that only predates later module keys still holds everything the flat row holds");
         SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetRawText()
             .Should().Be(economic.EconomicTerms.GetRawText(), "the next event is the current image of the same document");
+    }
+
+    [Fact]
+    public void IdentityGate_HistoricalCertificateImageShedsOnlyTheRedundantCarry()
+    {
+        var source = HistoricalCertificateImage();
+        source.EconomicTerms.TryGetProperty("declaredSchedule", out _).Should().BeFalse();
+        var recovered = SecurityEconomicDefinitionAdapter.ToProjection(source);
+        var golden = JsonSerializer.Deserialize<Dictionary<string, string>>(File.ReadAllText(LocateFixture(GoldenFileName)!))!;
+        recovered.AssetSpecificTerms.GetRawText().Should().Be(golden["certificateofdeposit-image.rebuild"],
+            "a new exact home cannot re-age an already lossless historical projection");
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(recovered.AssetSpecificTerms, out _).Should().BeFalse();
+        SecurityEconomicDefinitionAdapter.ToEconomicRecord(recovered).EconomicTerms.GetProperty("declaredSchedule")
+            .ValueKind.Should().Be(JsonValueKind.Object, "only the next event gains the derivable canonical home");
+    }
+
+    [Theory]
+    [InlineData("window")]
+    [InlineData("notice")]
+    [InlineData("roll")]
+    [InlineData("lag")]
+    [InlineData("calendar")]
+    [InlineData("existing-summary")]
+    public void IdentityGate_DerivableScheduleProofRejectsEveryAdditionalFact(string mutation)
+    {
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate(includeCall: mutation is "window" or "notice");
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(
+            JsonSerializer.SerializeToElement(rebuilt), source, "CertificateOfDeposit").Should().BeTrue();
+        var declaration = rebuilt["declaredSchedule"]!;
+        switch (mutation)
+        {
+            case "window":
+                declaration["callSchedule"]![0]!["callEndDate"] = "2027-07-31";
+                break;
+            case "notice":
+                declaration["callSchedule"]![0]!["minimumNoticeDays"] = 30;
+                break;
+            case "roll":
+                declaration["scheduleConventions"]!["rollConvention"] = "Imm";
+                break;
+            case "lag":
+                declaration["scheduleConventions"]!["paymentLagBusinessDays"] = 2;
+                break;
+            case "calendar":
+                declaration["scheduleConventions"]!["paymentCalendars"] = new JsonArray("GBLO");
+                break;
+            case "existing-summary":
+                rebuilt["coupon"]!["couponRate"] = 9m;
+                break;
+        }
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(
+            JsonSerializer.SerializeToElement(rebuilt), source, "CertificateOfDeposit").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IdentityGate_DerivableScheduleProofDoesNotTreatAnExplicitNullAsAnAbsentHome()
+    {
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate();
+        var explicitNull = JsonNode.Parse(source.GetRawText())!;
+        explicitNull["declaredSchedule"] = null;
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(JsonSerializer.SerializeToElement(rebuilt),
+            JsonSerializer.SerializeToElement(explicitNull), "CertificateOfDeposit").Should().BeFalse();
+    }
+
+    [Fact]
+    public void IdentityGate_DerivableScheduleProofFailsClosedWhenTheHistoricalSummaryRefusesRecovery()
+    {
+        var (source, rebuilt) = RebuildHistoricalCertificateWithoutGate();
+        var refusing = JsonNode.Parse(source.GetRawText())!;
+        refusing["call"]!["callSchedule"] = "not-an-array";
+        Action conversion = () => SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(
+            JsonSerializer.SerializeToElement(refusing), "CertificateOfDeposit");
+        conversion.Should().Throw<InvalidOperationException>();
+        SecurityEconomicDefinitionAdapter.EqualsBeforeLaterModuleKeys(JsonSerializer.SerializeToElement(rebuilt),
+            JsonSerializer.SerializeToElement(refusing), "CertificateOfDeposit").Should().BeFalse();
+    }
+
+    private static SecurityEconomicDefinitionRecord HistoricalCertificateImage()
+        => BuildRecord(LoadCorpus().Single(replayCase => replayCase.GetProperty("name").GetString() == "certificateofdeposit-image"));
+
+    private static (JsonElement Source, JsonObject Rebuilt) RebuildHistoricalCertificateWithoutGate(bool includeCall = false)
+    {
+        var source = HistoricalCertificateImage();
+        if (includeCall)
+        {
+            var withCall = JsonNode.Parse(source.EconomicTerms.GetRawText())!;
+            withCall["call"]!["callSchedule"] = JsonNode.Parse("""[{"callDt":"2027-06-30","callPx":100,"isParCall":true,"callType":"European"}]""");
+            source = source with { EconomicTerms = JsonSerializer.SerializeToElement(withCall) };
+        }
+        var legacy = SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.Convert(source.EconomicTerms, "CertificateOfDeposit").Payload;
+        var projection = SecurityEconomicDefinitionAdapter.ToProjection(source with { LegacyAssetSpecificTerms = legacy });
+        return (source.EconomicTerms, JsonNode.Parse(SecurityEconomicDefinitionAdapter.ToEconomicRecord(projection).EconomicTerms.GetRawText())!.AsObject());
     }
 
     [Fact]

@@ -74,10 +74,10 @@ public sealed class SwapLegRoundTripTests
         floatingLeg.DayCountConvention.Should().Be("ACT/360");
         floatingLeg.ExchangesPrincipal.Should().BeFalse();
 
-        // A leg written at the class's write version carries the element fields that version declares;
-        // a field the node only reads (ADR-024) is absent until a node writes its version.
-        var writes = SecurityAssetClassCatalog.GetTermsVersion("Swap");
-        var declared = SecurityAssetTermsSchema.ElementFields("Swap", "legs").Where(field => field.SinceTermsVersion <= writes).ToArray();
+        // The emitted row's own stamp controls its decoded element fields. A later writable
+        // rate-unit declaration does not promote this row or activate calculation-only conventions.
+        var stamp = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(projection.AssetSpecificTerms);
+        var declared = SecurityAssetTermsSchema.ElementFields("Swap", "legs").Where(field => field.SinceTermsVersion <= stamp).ToArray();
         declared.Should().NotBeEmpty();
         foreach (var emittedLeg in projection.AssetSpecificTerms.GetProperty("legs").EnumerateArray())
         {

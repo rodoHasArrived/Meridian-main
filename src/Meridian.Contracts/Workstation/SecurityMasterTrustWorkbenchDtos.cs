@@ -70,7 +70,21 @@ public sealed record SecurityMasterTrustSnapshotDto(
     public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }
     public InstrumentPassportDto? InstrumentPassport { get; init; }
     public IReadOnlyList<CorporateActionDescriptorDto>? CorporateActionDescriptors { get; init; }
+    /// <summary>The host's effective requirements, including profile latching and ignored configuration.</summary>
+    public SecurityMasterGovernanceDto? Governance { get; init; }
+    /// <summary>Base calculation refusal on the selected terms at RetrievedAtUtc; distinct from exercise-date resolution.</summary>
+    public SecurityMasterScheduleBlockerDto? CashFlowBlocker { get; init; }
 }
+
+/// <summary>Read-only governance evidence from the same requirements seam that enforces edits.</summary>
+public sealed record SecurityMasterGovernanceDto(
+    string Profile,
+    string ProfileSource,
+    bool IsProfileLatched,
+    bool RequireGovernedTermAmendments,
+    bool RequireIndependentReviewer,
+    bool RequireIndependentProfileApprover,
+    IReadOnlyList<string> ContradictedKeys);
 
 /// <summary>
 /// Canonical-taxonomy projection of one effective corporate action for workbench surfaces:

@@ -11,6 +11,14 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.Ui.Shared
 
+Security Master trust snapshots include read-only `Governance` evidence from the effective
+`ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
+requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
+an unavailable requirements seam remains unavailable rather than implying Standard defaults.
+The snapshot also carries the selected terms' Base cash-flow calculation blocker at the snapshot's
+evaluation time. Typed signed-interest refusals remain visible to both clients and prevent payment,
+cash-flow, ledger and close readiness; current reads never recalculate a legacy receipt to obtain it.
+
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
 Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.

@@ -85,7 +85,7 @@ stages are ordered so each is independently valuable and the decision can stop a
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Per-class model | `src/Meridian.FSharp/Domain/SecurityMaster.fs` | `SecurityKind` union and per-class term records |
-| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The term modules (25 at acceptance; 29 since the stage-3 S3-E module homes) |
+| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The term modules (25 at acceptance; 52 after the S3-E contraction) |
 | Economic definition | `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs` | Classification + modules record events carry |
 | Bridge (upgrade) | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs` | Flat record → economic definition |
 | Bridge (mapping) | `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Commands, DTOs, event envelopes |
@@ -98,10 +98,13 @@ Every component above is existing evidence. Stage 1 is in progress as remediatio
 (per-module increments with their own proof obligations); stages 2 and 3 are accepted but not
 started.
 
-*Status at 2026-11-10:* stages 1 and 2 are complete. In stage 3 both codec arms are asserted from
-the schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). The record contraction
-(S3-E) has module homes for strikes, currency pairs, notionals and the profile envelope
-(pull request #3446); the contraction of the per-class records has not started.
+*Status at 2026-11-11:* stages 1 and 2 are complete. Both codec arms are asserted from the
+schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). S3-E now replaces every
+per-class scalar field with one of the 52 shared module homes, including the residual complement
+and complete declared schedules. Each field group has replay checks; a global reflection ratchet
+requires every stored field on all 32 payloads to use a registered module type. The permanent
+legacy upcaster and retained-history fold remain. See the remediation plan's follow-through
+section for current-output extensions and compatibility boundaries.
 
 ## Preconditions the decision item names
 

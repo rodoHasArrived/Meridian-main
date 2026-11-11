@@ -327,16 +327,24 @@ public static class SecurityTermsEnvelope
         reason = null;
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
-        if (reads == writes)
-        {
-            return false;
-        }
-
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > reads)
         {
             return false;
         }
+
+        if (!IsProfileGovernedPayload(assetClass, payload))
+        {
+            var unavailable = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, 1)
+                .FirstOrDefault(term => !term.Field.AuthoringEnabled);
+            if (unavailable.Field is not null)
+            {
+                reason = DescribeAuthoringDisabled(unavailable.Path);
+                return true;
+            }
+        }
+        if (reads == writes)
+            return false;
 
         if (declaredVersion > writes)
         {
@@ -377,6 +385,9 @@ public static class SecurityTermsEnvelope
     /// The shared reason a term this node reads cannot be set by it: the refusal every write path,
     /// term-block amend and field edit gives for a term introduced above the class's write version.
     /// </summary>
+    public static string DescribeAuthoringDisabled(string path)
+        => $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
+
     public static string DescribeNotYetWritable(string assetClass, string path, int sinceTermsVersion)
         => $"'{path}' is an asset-class terms version {sinceTermsVersion} term of '{assetClass}'. This node reads it but writes " +
            $"{AssetClassTermsVersionKey} {SecurityAssetClassCatalog.GetTermsVersion(assetClass)}, so a create, amend, import or field edit " +

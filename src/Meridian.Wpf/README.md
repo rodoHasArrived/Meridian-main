@@ -11,6 +11,15 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
+evaluation date, retained security version, window count, coded blockers and notice diagnostics.
+It also displays the host's effective governance profile, source, restart latch, enforced edit and
+review requirements and ignored contradictory configuration from the trust snapshot. Missing host
+governance evidence is shown as unavailable. `SecurityMasterViewModelTests` covers this composition;
+Windows execution is required to verify the native view.
+An independent typed cash-flow calculation blocker appears alongside schedule-date evidence, so a
+resolved call/put schedule cannot hide unsupported signed interest.
+
 Data Quality "Acknowledge All" removes only alerts the server acknowledged and reports partial failures; its action continuations stay on the UI thread. Data Browser CSV export writes the whole filtered result with RFC 4180 quoting and invariant-culture numbers.
 
 The credential vault moves an unreadable vault file aside (`credentials.enc.unreadable-*.bak`) before the next save and writes through a flushed temp file plus atomic rename. The environment designer rejects drafts missing `definition`/`name` and reports save failures instead of crashing.

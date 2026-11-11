@@ -633,3 +633,22 @@ person. Mark unperformed checks pending; this procedure records no production ac
   mapping, the calendar files and the ledger gate)
 - [Startup capability line](../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs)
 - [Business-Day Calendar](../domain/business-day-calendar.md)
+
+
+## Governed scalar rate-unit repair
+
+Classes without the schedule anchors required by a populated `scheduleConventions` block can declare
+`assetSpecificTerms.rateUnit` through the existing draft, approve and publish lifecycle. Allowed values
+are `Fraction`, `Percent` and `BasisPoints`. This changes the interpretation of the retained rate,
+never the stored number: review source evidence before approving a unit. Missing declarations do not
+gain defaults, and magnitude never chooses a unit. Bond continues using its schedule declaration.
+Changing or clearing a declaration always requires its approved field revision, including under the
+Standard profile; neither the direct amendment path nor system ingest can bypass that requirement.
+
+The new declaration is version 5 on CertificateOfDeposit, 6 on StructuredCredit, 4 on Swap, 3 on
+DirectLoan, and 2 on Deposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swaption, CapFloor and
+StructuredNote. Deploy readers of these versions before publishing a declaration. Published field
+replacement raises the row's stamp; old stamped stray keys remain inert through unrelated amendments.
+The economic `rateConvention` module restores that stamp on an economic-only replay. Absent modules
+leave historical economic bytes unchanged. These version advances do not enable authoring the
+calculation-only `cashFlowContract` companion or swap leg convention blocks.

@@ -41,6 +41,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
     private readonly ISecurityMasterDataQualityService? _dataQualityService;
     private readonly IFundProfileTenancyRegistry? _tenancyRegistry;
     private readonly IHttpContextAccessor? _httpContextAccessor;
+    private readonly ISecurityMasterGovernanceRequirements? _governanceRequirements;
 
     public SecurityMasterWorkbenchQueryService(
         Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService queryService,
@@ -61,7 +62,8 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         Meridian.Contracts.Calendars.IBusinessDayCalendarSource? calendars = null,
         Meridian.Contracts.FixedIncome.IBondCalculationPolicy? bondCalculationPolicy = null,
         TimeProvider? timeProvider = null,
-        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null)
+        Microsoft.Extensions.Logging.ILogger<SecurityMasterWorkbenchQueryService>? logger = null,
+        ISecurityMasterGovernanceRequirements? governanceRequirements = null)
     {
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _validationService = validationService ?? throw new ArgumentNullException(nameof(validationService));
@@ -78,6 +80,7 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         _dataQualityService = dataQualityService;
         _tenancyRegistry = tenancyRegistry;
         _httpContextAccessor = httpContextAccessor;
+        _governanceRequirements = governanceRequirements;
         _calendars = calendars;
         _bondCalculationPolicy = bondCalculationPolicy;
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -151,6 +154,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
         var changeHistory = BuildChangeHistory(history);
         var declaredExercise = await ResolveDeclaredExerciseAsync(detail, nowUtc, ct).ConfigureAwait(false);
         var scheduleSummary = BuildScheduleSummary(detail, economic, corporateActions, winningSource, declaredExercise);
+        var cashFlowBlocker = await ResolveCashFlowBlockerAsync(detail, nowUtc, ct).ConfigureAwait(false);
+        if (cashFlowBlocker is not null)
+            scheduleSummary = scheduleSummary with { Summary = $"{scheduleSummary.Summary} Cash-flow calculation is blocked ({cashFlowBlocker.Code}): {cashFlowBlocker.Reason}" };
         var lotModel = BuildLotModel(detail, economic, trading);
         var scheduleBook = BuildScheduleBook(detail, economic, corporateActions, history, winningSource, scheduleSummary, declaredExercise);
         var openLotReadModel = await BuildOpenLotReadModelAsync(detail, economic, trading, fundProfileId, nowUtc, ct).ConfigureAwait(false);
@@ -191,7 +197,9 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
             LotModel = lotModel,
             ScheduleBook = scheduleBook,
             OpenLotReadModel = openLotReadModel,
-            CorporateActionDescriptors = corporateActionDescriptors
+            CorporateActionDescriptors = corporateActionDescriptors,
+            Governance = BuildGovernance(_governanceRequirements?.Current),
+            CashFlowBlocker = cashFlowBlocker
         };
 
         return snapshot with
@@ -199,6 +207,16 @@ public sealed partial class SecurityMasterWorkbenchQueryService : ISecurityMaste
             InstrumentPassport = await BuildInstrumentPassportAsync(snapshot, trading, fundProfileId, ct).ConfigureAwait(false)
         };
     }
+
+    private static SecurityMasterGovernanceDto? BuildGovernance(SecurityMasterGovernanceSnapshot? snapshot)
+        => snapshot is null ? null : new(
+            snapshot.Profile.ToString(),
+            snapshot.ProfileSource.ToString(),
+            snapshot.IsProfileLatched,
+            snapshot.RequireGovernedTermAmendments,
+            snapshot.RequireIndependentReviewer,
+            snapshot.RequireIndependentProfileApprover,
+            snapshot.ContradictedKeys.ToArray());
 
     public async Task<InstrumentPassportDto?> GetInstrumentPassportAsync(
         Guid securityId,

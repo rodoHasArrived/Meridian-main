@@ -11,7 +11,7 @@ public sealed partial class SecurityMasterCashFlowService
         SecurityDetailDto security, StructuredCashFlowSourceKind sourceKind, StructuredCashFlowScenario scenario,
         StructuredCashFlowStaleness staleness, DateTimeOffset? sourceLastUpdatedUtc, StructuredCashFlowTerms terms,
         DeclaredScheduleResolution declared, DateTimeOffset asOf, DateOnly asOfDate,
-        IReadOnlyDictionary<string, SecurityForwardCurve>? curves, bool unifiedEconomics = false)
+        IReadOnlyDictionary<string, SecurityForwardCurve>? curves, bool unifiedEconomics = false, bool rejectNegativeInterest = false)
     {
         StructuredCashFlowProjectionDto Blocked(string reason) => new(security.SecurityId, sourceKind, scenario,
             asOf, [], staleness, sourceLastUpdatedUtc, terms.FactorSchedule, terms, BlockedReason: reason);
@@ -75,7 +75,9 @@ public sealed partial class SecurityMasterCashFlowService
             if (leg.FloorRate is not null)
                 rate = Math.Max(rate, floorFraction);
             if (rate < 0m)
-                return Blocked("Negative floating coupon cash flows require a separately supported signed-interest model.");
+                return rejectNegativeInterest
+                    ? Blocked(SecurityInterestSupport.NegativeInterestReason) with { Blocker = SecurityInterestSupport.NegativeInterestBlocker }
+                    : Blocked("Negative floating coupon cash flows require a separately supported signed-interest model.");
             if (!ScheduleDayCount.TryPeriodFraction(dayCount, period, schedule, out var fraction, out var refusal))
                 return Blocked("Declared floating bond interest could not be computed: " + refusal);
             BondFloatingRateEvidence? rateEvidence = null;
