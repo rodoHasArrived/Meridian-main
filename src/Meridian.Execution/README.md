@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION
 path: src/Meridian.Execution
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Execution
@@ -493,6 +493,7 @@ rather than measured at a size the broker will not route.
 - **Broker cancels.** `BrokerageGatewayAdapter.CancelAsync` propagates caller cancellation instead of returning `false` ("broker refused").
 - **Futures P&L.** `FuturePosition.UnrealizedPnl` excludes mark-to-market already settled into `RealizedPnl`, so each daily settlement is counted once.
 - **Allocation weights.** `ProportionalAllocationEngine.Allocate` validates rule weights (non-empty, non-negative, non-zero sum) even for rules built with `AllocationRule`'s positional constructor.
+- **Lot relief method.** `PaperTradingPortfolio.LotSelectionMethod` exposes the relief method fixed at construction, which every closing fill applies. An order carries no lot instruction, so the blotter close action compares a requested selection against this value and refuses one the fill would not honour.
 
 ## Diagrams
 

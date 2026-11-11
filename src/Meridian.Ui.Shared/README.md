@@ -1078,6 +1078,10 @@ flags without an accounting/reporting evidence chain.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.
+The keyed close action refuses a `lotSelection` it cannot honour instead of accepting and ignoring
+it: the close is an ordinary order with no lot instruction, so a specific lot is always refused, any
+selection is refused for a broker-backed position, and for the paper book a method is accepted only
+when it equals `PaperTradingPortfolio.LotSelectionMethod`. A request without the field is unchanged.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
