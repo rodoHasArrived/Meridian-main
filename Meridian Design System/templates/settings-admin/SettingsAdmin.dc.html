@@ -147,7 +147,7 @@ class Component extends DCLogic {
     const s = this.state;
     if (!this._actions || !s.dirty || this.issues().some((i) => i.severity === "Critical")) return;
     const payload = { orgName: s.orgName, tz: s.tz, rateLimit: s.rateLimit, autoBackfill: s.autoBackfill, validateBars: s.validateBars, alertPolicy: s.alertPolicy, recipients: s.recipients.length };
-    this._actions.submit("settings.save", { label: "Save settings · cfg-2214 → next", idempotencyKey: "CFG-" + JSON.stringify(payload).length + "-" + s.recipients.length + "-" + s.rateLimit, payload });
+    this._actions.submit("settings.save", { label: "Save settings · cfg-2214 → next", idempotencyKey: "CFG-" + [...JSON.stringify(payload)].reduce((h, ch) => Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0, 2166136261).toString(36), payload });
   }
   purge() {
     this.setState({ wipeOpen: false, wipeText: "" });

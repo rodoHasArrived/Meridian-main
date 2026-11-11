@@ -98,6 +98,15 @@ export function ContinuityFrame({
   const retained = RETAINED.includes(state);
   const locked = readOnly ?? ["offline", "stale", "error"].includes(state);
   const dimmed = dim === "auto" ? ["offline", "stale", "error"].includes(state) : Boolean(dim);
+  // pointer-events alone left the retained body keyboard-operable (Tab + Enter on a "Read only"
+  // control). `inert` removes it from focus and activation too; the status retry sits outside it.
+  // Set via a ref so it works whether the host React treats `inert` as a string or a boolean.
+  const bodyRef = React.useRef(null);
+  React.useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    if (locked) el.setAttribute("inert", ""); else el.removeAttribute("inert");
+  }, [locked]);
   return <section
     className={`mds-cont mds-cont--${state}${dimmed ? " mds-cont--dim" : ""}${locked ? " mds-cont--locked" : ""}${className ? " " + className : ""}`}
     data-continuity-state={state}
@@ -108,7 +117,7 @@ export function ContinuityFrame({
       state={state} subject={subject} snapshotAt={snapshotAt} age={age} since={since}
       coverage={coverage} readOnly={locked} onRetry={onRetry} retryLabel={retryLabel} retrying={retrying}
     />
-    <div className="mds-cont__body" aria-busy={state === "recovering" || undefined}>
+    <div ref={bodyRef} className="mds-cont__body" aria-busy={state === "recovering" || undefined}>
       {retained && retainedLabel ? <span className="mds-cont__retained">{retainedLabel}</span> : null}
       {children}
     </div>

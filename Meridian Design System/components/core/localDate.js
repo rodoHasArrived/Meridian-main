@@ -47,10 +47,21 @@ export const parseLoose = (raw) => {
   if (!s) return null;
   const iso = fromISO(s);
   if (iso) return iso;
+  // An ISO-shaped value that fromISO refused (2026-02-30) is invalid — never let the looser parsers
+  // below roll it over into a different day.
+  if (/^\d{4}-\d{1,2}-\d{1,2}/.test(s)) return null;
   const slash = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
-  if (slash) { const d = new Date(+slash[3], +slash[1] - 1, +slash[2]); return isNaN(d) ? null : d; }
+  if (slash) {
+    const d = new Date(+slash[3], +slash[1] - 1, +slash[2]);
+    // Round-trip check: 2/30/2026 or 13/01/2026 must not silently become a different date.
+    return d.getFullYear() === +slash[3] && d.getMonth() === +slash[1] - 1 && d.getDate() === +slash[2] ? d : null;
+  }
   const any = new Date(s);
-  return isNaN(any) ? null : new Date(any.getFullYear(), any.getMonth(), any.getDate());
+  if (isNaN(any)) return null;
+  // "30 Feb 2026" parses with overflow; the day the operator typed must survive the parse.
+  const day = /(?:^|\D)(\d{1,2})(?!\d)/.exec(s);
+  if (day && +day[1] !== any.getDate()) return null;
+  return new Date(any.getFullYear(), any.getMonth(), any.getDate());
 };
 
 export const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];

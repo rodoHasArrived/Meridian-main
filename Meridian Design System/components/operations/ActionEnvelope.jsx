@@ -262,6 +262,12 @@ export function ActionEnvelopeProvider({ actions = {}, transport, timeoutMs = 80
   const epoch = React.useRef(`S${Date.now().toString(36).toUpperCase()}`);
   const listRef = React.useRef(instructions);
   listRef.current = instructions;
+  // Keys reserved synchronously at submit time: several submit() calls before React re-renders all
+  // see the same stale listRef, so the in-flight guard cannot rely on state alone.
+  const reserved = React.useRef(new Map());
+  // The effective declaration (declared action + per-call overrides) each instruction was sent with,
+  // so a retry resends exactly that instruction rather than rebuilding it without its overrides.
+  const sentDecls = React.useRef(new Map());
 
   const patch = React.useCallback((id, next) => {
     setInstructions((list) => list.map((i) => (i.id === id ? { ...i, ...next } : i)));
@@ -269,6 +275,7 @@ export function ActionEnvelopeProvider({ actions = {}, transport, timeoutMs = 80
 
   const send = React.useCallback(async (actionId, decl, attempt, key, priorId, keyDeclared = true) => {
     const id = priorId || `INS-${++seq.current}`;
+    sentDecls.current.set(id, decl);
     const started = Date.now();
     const stamp = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z");
     const record = {
@@ -319,12 +326,18 @@ export function ActionEnvelopeProvider({ actions = {}, transport, timeoutMs = 80
     // A double-clicked Submit is one instruction, not two: the key is the identity. The undeclared
     // fallback is stable per provider rather than per click — an invented-per-click key made this
     // guard unreachable, which is the defect the declaration panel was already reporting in words.
+    const pending = reserved.current.get(key);
+    if (pending) return pending.then((r) => ({ id: r.id, state: r.state, deduped: true }));
     const existing = listRef.current.find((i) => i.idempotencyKey === key && (i.state === "inflight" || i.state === "landed"));
     if (existing) {
       patch(existing.id, { receipt: { ...existing.receipt, duplicateOf: existing.receipt?.id || existing.id } });
       return Promise.resolve({ id: existing.id, state: existing.state, deduped: true });
     }
-    return send(actionId, decl, 1, key, null, keyDeclared);
+    const run = send(actionId, decl, 1, key, null, keyDeclared);
+    reserved.current.set(key, run);
+    const release = () => { if (reserved.current.get(key) === run) reserved.current.delete(key); };
+    run.then(release, release);
+    return run;
   }, [actions, patch, send]);
 
   const retry = React.useCallback((actionId) => {
@@ -335,7 +348,7 @@ export function ActionEnvelopeProvider({ actions = {}, transport, timeoutMs = 80
       if (typeof console !== "undefined") console.warn(`[Meridian] retry("${actionId}"): no unresolved instruction to retry. Use submit() to send one.`);
       return Promise.resolve(null);
     }
-    const decl = actions[actionId] || {};
+    const decl = sentDecls.current.get(prior.id) || actions[actionId] || {};
     // Same key, incremented attempt — the retry asks "did the first one land?", it does not resend.
     return send(actionId, decl, (prior.receipt?.attempt || 1) + 1, prior.idempotencyKey, prior.id, prior.keyDeclared !== false);
   }, [actions, send]);

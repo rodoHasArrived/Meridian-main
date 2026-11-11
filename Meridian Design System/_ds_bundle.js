@@ -6137,6 +6137,12 @@ function ContinuityFrame({
   const retained = RETAINED.includes(state);
   const locked = readOnly ?? ["offline", "stale", "error"].includes(state);
   const dimmed = dim === "auto" ? ["offline", "stale", "error"].includes(state) : Boolean(dim);
+  const bodyRef = React.useRef(null);
+  React.useEffect(() => {
+    const el = bodyRef.current;
+    if (!el) return;
+    if (locked) el.setAttribute("inert", "");else el.removeAttribute("inert");
+  }, [locked]);
   return /*#__PURE__*/React.createElement("section", _extends({
     className: `mds-cont mds-cont--${state}${dimmed ? " mds-cont--dim" : ""}${locked ? " mds-cont--locked" : ""}${className ? " " + className : ""}`,
     "data-continuity-state": state,
@@ -6153,6 +6159,7 @@ function ContinuityFrame({
     retryLabel: retryLabel,
     retrying: retrying
   }), /*#__PURE__*/React.createElement("div", {
+    ref: bodyRef,
     className: "mds-cont__body",
     "aria-busy": state === "recovering" || undefined
   }, retained && retainedLabel ? /*#__PURE__*/React.createElement("span", {
@@ -20559,11 +20566,15 @@ function bind(surface) {
     moneyCompact: (v, o) => __ds_scope.formatMoneyCompact(v, withBase(o)),
     compact: (v, o) => __ds_scope.formatCompact(v, withBase(o)),
     quantity: (v, max) => __ds_scope.formatQuantity(v, max ?? surface.quantityDecimals, surface.locale),
-    price: (v, o) => __ds_scope.formatPrice(v, {
-      tick: surface.tick,
-      decimals: surface.priceDecimals,
-      ...withBase(o)
-    }),
+    price: (v, o) => {
+      const opts = withBase(o);
+      const tick = opts.tick ?? surface.tick;
+      return __ds_scope.formatPrice(v, {
+        ...opts,
+        tick,
+        decimals: opts.decimals ?? (tick != null ? undefined : surface.priceDecimals)
+      });
+    },
     percent: (v, o) => __ds_scope.formatPercent(v, withBase(o)),
     bps: (v, o) => __ds_scope.formatBps(v, withBase(o)),
     delta: __ds_scope.formatSignedDelta,
@@ -21534,13 +21545,17 @@ const parseLoose = raw => {
   if (!s) return null;
   const iso = fromISO(s);
   if (iso) return iso;
+  if (/^\d{4}-\d{1,2}-\d{1,2}/.test(s)) return null;
   const slash = /^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})$/.exec(s);
   if (slash) {
     const d = new Date(+slash[3], +slash[1] - 1, +slash[2]);
-    return isNaN(d) ? null : d;
+    return d.getFullYear() === +slash[3] && d.getMonth() === +slash[1] - 1 && d.getDate() === +slash[2] ? d : null;
   }
   const any = new Date(s);
-  return isNaN(any) ? null : new Date(any.getFullYear(), any.getMonth(), any.getDate());
+  if (isNaN(any)) return null;
+  const day = /(?:^|\D)(\d{1,2})(?!\d)/.exec(s);
+  if (day && +day[1] !== any.getDate()) return null;
+  return new Date(any.getFullYear(), any.getMonth(), any.getDate());
 };
 const DOW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
 const dowLabels = (weekStartsOn = 0) => DOW.slice(weekStartsOn).concat(DOW.slice(0, weekStartsOn));
@@ -28875,6 +28890,8 @@ function ActionEnvelopeProvider({
   const epoch = React.useRef(`S${Date.now().toString(36).toUpperCase()}`);
   const listRef = React.useRef(instructions);
   listRef.current = instructions;
+  const reserved = React.useRef(new Map());
+  const sentDecls = React.useRef(new Map());
   const patch = React.useCallback((id, next) => {
     setInstructions(list => list.map(i => i.id === id ? {
       ...i,
@@ -28883,6 +28900,7 @@ function ActionEnvelopeProvider({
   }, []);
   const send = React.useCallback(async (actionId, decl, attempt, key, priorId, keyDeclared = true) => {
     const id = priorId || `INS-${++seq.current}`;
+    sentDecls.current.set(id, decl);
     const started = Date.now();
     const stamp = () => new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z");
     const record = {
@@ -28975,6 +28993,12 @@ function ActionEnvelopeProvider({
     // A double-clicked Submit is one instruction, not two: the key is the identity. The undeclared
     // fallback is stable per provider rather than per click — an invented-per-click key made this
     // guard unreachable, which is the defect the declaration panel was already reporting in words.
+    const pending = reserved.current.get(key);
+    if (pending) return pending.then(r => ({
+      id: r.id,
+      state: r.state,
+      deduped: true
+    }));
     const existing = listRef.current.find(i => i.idempotencyKey === key && (i.state === "inflight" || i.state === "landed"));
     if (existing) {
       patch(existing.id, {
@@ -28989,7 +29013,13 @@ function ActionEnvelopeProvider({
         deduped: true
       });
     }
-    return send(actionId, decl, 1, key, null, keyDeclared);
+    const run = send(actionId, decl, 1, key, null, keyDeclared);
+    reserved.current.set(key, run);
+    const release = () => {
+      if (reserved.current.get(key) === run) reserved.current.delete(key);
+    };
+    run.then(release, release);
+    return run;
   }, [actions, patch, send]);
   const retry = React.useCallback(actionId => {
     const prior = listRef.current.find(i => i.action === actionId && (i.state === "unlanded" || i.state === "rejected"));
@@ -28999,7 +29029,7 @@ function ActionEnvelopeProvider({
       if (typeof console !== "undefined") console.warn(`[Meridian] retry("${actionId}"): no unresolved instruction to retry. Use submit() to send one.`);
       return Promise.resolve(null);
     }
-    const decl = actions[actionId] || {};
+    const decl = sentDecls.current.get(prior.id) || actions[actionId] || {};
     // Same key, incremented attempt — the retry asks "did the first one land?", it does not resend.
     return send(actionId, decl, (prior.receipt?.attempt || 1) + 1, prior.idempotencyKey, prior.id, prior.keyDeclared !== false);
   }, [actions, send]);

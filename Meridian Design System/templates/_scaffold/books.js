@@ -185,6 +185,14 @@
     if (!String(draft.rationale || "").trim()) issues.push({ label: "Rationale not recorded", detail: "the reviewed payload carries it — it is not a comment" });
     if (!(draft.attachments || []).length) issues.push({ label: "No evidence attached", detail: "the break's statement page is the minimum" });
     if (p && p.state !== "open") issues.push({ label: "Period is " + p.state, detail: p.label + " refuses a posting" });
+    var dt = String(draft.date || "");
+    var dm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dt);
+    var dv = dm && new Date(Date.UTC(+dm[1], +dm[2] - 1, +dm[3]));
+    if (!dv || dv.getUTCFullYear() !== +dm[1] || dv.getUTCMonth() !== +dm[2] - 1 || dv.getUTCDate() !== +dm[3]) {
+      issues.push({ label: "Posting date is not a valid date", detail: dt || "no date entered" });
+    } else if (p && (dt < p.start || dt > p.end)) {
+      issues.push({ label: "Posting date is outside " + p.label, detail: dt + " belongs to another period — the selected period's lock does not cover it" });
+    }
     return {
       ok: issues.length === 0, issues: issues,
       journal: {

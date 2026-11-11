@@ -33,7 +33,12 @@ function bind(surface) {
     moneyCompact: (v, o) => formatMoneyCompact(v, withBase(o)),
     compact: (v, o) => formatCompact(v, withBase(o)),
     quantity: (v, max) => formatQuantity(v, max ?? surface.quantityDecimals, surface.locale),
-    price: (v, o) => formatPrice(v, { tick: surface.tick, decimals: surface.priceDecimals, ...withBase(o) }),
+    // The surface's default decimals is a fallback only: a per-call decimals or an effective tick wins.
+    price: (v, o) => {
+      const opts = withBase(o);
+      const tick = opts.tick ?? surface.tick;
+      return formatPrice(v, { ...opts, tick, decimals: opts.decimals ?? (tick != null ? undefined : surface.priceDecimals) });
+    },
     percent: (v, o) => formatPercent(v, withBase(o)),
     bps: (v, o) => formatBps(v, withBase(o)),
     delta: formatSignedDelta,
