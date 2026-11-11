@@ -244,6 +244,65 @@ public sealed class ReportPackWorkflowServiceTests
     }
 
     [Fact]
+    public void TemplateRegistry_DraftWithIfFormula_PassesGovernanceValidationAndRenders()
+    {
+        var svc = new ReportTemplateRegistryService();
+        var draft = svc.CreateDraft(
+            new ReportTemplateDraftRequestDto(
+                "conditional-formula-grid",
+                "Conditional Formula Grid",
+                [],
+                [],
+                Family: "CustomReport",
+                Rationale: "Allow simple conditional bucketing without pre-processing the dataset",
+                Grids:
+                [
+                    new ReportWriterGridDefinitionDto(
+                        "strategy-conditional",
+                        "Strategy Conditional",
+                        ReportWriterGridKindDto.Pivot,
+                        RowFields: ["strategy"],
+                        Metrics:
+                        [
+                            new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
+                            new ReportWriterMetricDefinitionDto("pnl", "pnl")
+                        ],
+                        Formulas:
+                        [
+                            new ReportWriterFormulaDefinitionDto("returnPct", "if({marketValue} = 0, 0, round({pnl} / {marketValue} * 100, 2))"),
+                            new ReportWriterFormulaDefinitionDto("isLoss", "if(returnPct < 0, 1, 0)")
+                        ])
+                ]),
+            "report.author");
+
+        draft.ValidationIssues.Should().BeEmpty(
+            "'if' is a formula function, not an unknown metric reference");
+
+        svc.Submit(draft.Definition.TemplateId, "report.author", "ready");
+        svc.Approve(
+            draft.Definition.TemplateId,
+            new ReportTemplateDecisionRequestDto("Controller approved conditional formulas", "APP-FORMULA-IF"),
+            "controller.admin");
+        var rendered = svc.Render(new RenderReportTemplateRequestDto(
+            draft.Definition.TemplateId,
+            new Dictionary<string, string>(),
+            [
+                new Dictionary<string, string> { ["strategy"] = "Core", ["marketValue"] = "200", ["pnl"] = "10" },
+                new Dictionary<string, string> { ["strategy"] = "Credit", ["marketValue"] = "100", ["pnl"] = "-5" },
+                new Dictionary<string, string> { ["strategy"] = "Flat", ["marketValue"] = "0", ["pnl"] = "0" }
+            ]));
+
+        var grid = rendered.Grids.Should().ContainSingle().Subject;
+        grid.Warnings.Should().BeEmpty();
+        grid.Rows.Should().Contain(row =>
+            row.Values["strategy"] == "Core" && row.Values["returnPct"] == "5" && row.Values["isLoss"] == "0");
+        grid.Rows.Should().Contain(row =>
+            row.Values["strategy"] == "Credit" && row.Values["returnPct"] == "-5" && row.Values["isLoss"] == "1");
+        grid.Rows.Should().Contain(row =>
+            row.Values["strategy"] == "Flat" && row.Values["returnPct"] == "0" && row.Values["isLoss"] == "0");
+    }
+
+    [Fact]
     public void TemplateRegistry_RenderFormulaGridWithReportingMathFunctions_ReturnsRoundedPercentAndBasisPoints()
     {
         var svc = new ReportTemplateRegistryService();
