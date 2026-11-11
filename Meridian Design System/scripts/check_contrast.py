@@ -312,29 +312,17 @@ def check_brands(root: Path) -> list[str]:
     return failures
 
 
-# The browser workstation keeps a parallel --ws-* track in its own index.css. Its primary
+# The browser workstation keeps a parallel token track in its own index.css. Its primary
 # button used to be the accent with a white label, and its hover read --ws-accent-hover; that
 # track shipped a 3.86:1 hover behind a green gate because nothing here looked at it. Since
-# 4.3.0 the primary action is graphite (Tailwind --primary under --primary-foreground) and the
-# hover/pressed fills are 88% / 78% mixes of it toward the panel, exactly as Button.jsx does.
-# The button kept reading the accent states for hover and pressed through the retone, which put
-# a paper label on the lighter terracotta at 3.17:1; this now measures what the button paints
-# and fails if it reaches for an accent fill again.
+# 4.3.0 the button paints --brand-axis under an --ink-inverse label, and its hover/pressed
+# fills are 88% / 78% mixes of --brand-axis toward --bg-light (an alias of --ws-surface),
+# exactly as Button.jsx does. This reads those three tokens per mode, and fails if the button
+# stops naming them, so a token swap in button.tsx cannot leave the measurement behind.
 WS_INDEX = Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 WS_BUTTON = Path("src/Meridian.Ui/dashboard/src/design-system/button.tsx")
-HSL_TRIPLE = re.compile(r"^(-?[\d.]+)\s+([\d.]+)%\s+([\d.]+)%$")
+WS_BUTTON_TOKENS = ("--brand-axis", "--ink-inverse", "--ws-surface")
 WS_PRIMARY_MIX = [("base", 1.0), ("hover", 0.88), ("pressed", 0.78)]
-
-
-def hsl_to_rgb(value: str) -> tuple[float, float, float] | None:
-    """A Tailwind `H S% L%` channel triple as RGB."""
-    found = HSL_TRIPLE.match(value.strip())
-    if not found:
-        return None
-    import colorsys
-    h, s_, l = float(found.group(1)) / 360.0, float(found.group(2)) / 100.0, float(found.group(3)) / 100.0
-    r, g, b = colorsys.hls_to_rgb(h % 1.0, l, s_)
-    return (r * 255.0, g * 255.0, b * 255.0)
 
 
 def check_workstation(root: Path) -> list[str]:
@@ -343,34 +331,37 @@ def check_workstation(root: Path) -> list[str]:
     if not index.exists():
         return []  # package used standalone, without the monorepo around it
     text = blank_comments(index.read_text(encoding="utf-8"))
+    decl = re.compile(r"(--brand-axis|--ink-inverse|--ws-surface)\s*:\s*(#[0-9A-Fa-f]{6})\s*;")
     # First declaration of each token is the light block; the dark blocks follow.
-    wanted = ("--primary", "--primary-foreground", "--ws-surface")
     blocks: dict[str, dict[str, str]] = {"light": {}, "dark": {}}
-    decl = re.compile(r"(--primary(?:-foreground)?|--ws-surface)\s*:\s*([^;]+);")
     for m in decl.finditer(text):
-        blocks["light"].setdefault(m.group(1), m.group(2).strip())
+        blocks["light"].setdefault(m.group(1), m.group(2))
     dark = re.search(r"prefers-color-scheme:\s*dark(.*)", text, re.S)
     if dark:
         for m in decl.finditer(dark.group(1)):
-            blocks["dark"].setdefault(m.group(1), m.group(2).strip())
+            blocks["dark"].setdefault(m.group(1), m.group(2))
 
     failures: list[str] = []
     button = root.parent / WS_BUTTON
-    if button.exists() and re.search(r"mds-btn--primary[^\n]*bg-\[var\(--ws-accent",
-                                     button.read_text(encoding="utf-8")):
-        failures.append("[workstation] the primary button paints an accent fill on hover/pressed; "
-                        "its label is the primary foreground, which fails AA on the signal")
-        print("[workstation] primary button reads --ws-accent-* as a fill: FAIL")
+    if button.exists():
+        primary = next((line for line in button.read_text(encoding="utf-8").splitlines()
+                        if "mds-btn--primary" in line), "")
+        if re.search(r"bg-\[var\(--ws-accent", primary):
+            failures.append("[workstation] the primary button paints an accent fill on hover/pressed; "
+                            "its label fails AA on the signal")
+            print("[workstation] primary button reads --ws-accent-* as a fill: FAIL")
+        missing = [t for t in ("--brand-axis", "--ink-inverse") if f"var({t})" not in primary]
+        if missing:
+            failures.append(f"[workstation] the primary button no longer names {', '.join(missing)}; "
+                            "this check measures those tokens, so update both together")
+            print(f"[workstation] primary button does not name {', '.join(missing)}: FAIL")
     for mode, tokens in blocks.items():
-        if any(name not in tokens for name in wanted):
-            failures.append(f"[{mode} \u00b7 workstation] cannot read {', '.join(wanted)}")
+        absent = [name for name in WS_BUTTON_TOKENS if name not in tokens]
+        if absent:
+            failures.append(f"[{mode} \u00b7 workstation] cannot read {', '.join(absent)} as a literal")
+            print(f"[{mode} \u00b7 workstation] cannot read {', '.join(absent)}: FAIL")
             continue
-        fill = hsl_to_rgb(tokens["--primary"])
-        label = hsl_to_rgb(tokens["--primary-foreground"])
-        surface = hex_to_rgb(tokens["--ws-surface"])
-        if fill is None or label is None or surface is None:
-            failures.append(f"[{mode} \u00b7 workstation] primary button tokens are not literals")
-            continue
+        fill, label, surface = (hex_to_rgb(tokens[name]) for name in WS_BUTTON_TOKENS)
         for state, share in WS_PRIMARY_MIX:
             mixed = tuple(fill[i] * share + surface[i] * (1 - share) for i in range(3))
             value = ratio(label, mixed)
