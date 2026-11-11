@@ -1532,8 +1532,10 @@ access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` p
 renders those values as policy evidence only; flattened principal ids are rejected at the API
 boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
-schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+payload and wires schedule save/upsert, run-now, pause, resume, disable, and delete (with an
+inline confirm step) controls through the shared schedule endpoints. Cadence presets cover daily,
+weekday, weekly, twice-monthly, first and last day of month, quarterly, and annual runs, and a
+time zone select sends the schedule's IANA `timeZoneId` (default `UTC`). Due schedules are leased and executed only by the hosted reporting worker; the
 browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
@@ -1625,8 +1627,13 @@ rows post approval or rejection decisions to the matching `/approve` and `/rejec
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
-custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+custom formula name/label/expression fields plus filter controls for field/operator/value
+slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
+rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
+matches every filter). The access-policy principal ID field and the
+schedule recipient principal ID field use `PrincipalIdInput`, which suggests role and role-profile
+names for `Group` principals and usernames for `User` principals (when the caller may list
+accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
@@ -1648,7 +1655,7 @@ source-backed option posts the selected payload-owned rows to the render endpoin
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
 formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+`basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
