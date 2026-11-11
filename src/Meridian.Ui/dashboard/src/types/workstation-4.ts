@@ -1420,6 +1420,20 @@ export interface ReportingScheduleRecord {
   releaseDeliveryHandoffs?: ReportingScheduledReleaseHandoff[] | null;
   accessPolicySnapshotHash?: string | null;
   deliveryTargetsSnapshotHash?: string | null;
+  /** IANA time zone the cron expression is evaluated in. Absent or null means UTC. */
+  timeZoneId?: string | null;
+  /** When set, the schedule advances by accounting period instead of by cron. */
+  periodCadence?: ReportingSchedulePeriodCadence | null;
+  /** Set while a calendar-fallback close awaits re-resolution from the ledger at its next run. */
+  unresolvedPeriodCloseAfter?: string | null;
+}
+
+export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually";
+
+export interface ReportingSchedulePeriodCadence {
+  frequency: ReportingSchedulePeriodFrequency;
+  /** Days between the period end (the as-of date) and the due date. */
+  dueDaysAfterPeriodEnd: number;
 }
 
 export interface ReportingScheduleUpsertRequest {
@@ -1439,6 +1453,10 @@ export interface ReportingScheduleUpsertRequest {
   brandingThemeOverride?: ReportBrandingTheme | null;
   template?: VersionedReportTemplateId | null;
   runParameters?: ReportingRunParameters | null;
+  /** IANA time zone. Null keeps the retained zone on update; send "UTC" to reset to UTC. */
+  timeZoneId?: string | null;
+  /** Replaced on every upsert: null returns the schedule to plain cron advancement. */
+  periodCadence?: ReportingSchedulePeriodCadence | null;
 }
 
 export interface ReportingScheduleRunResult {
