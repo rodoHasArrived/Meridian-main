@@ -525,7 +525,7 @@ Latest package verification after integrating the incoming commits through
 `0c10785dfc03`:
 
 - All seven release gates and the complete **127-test Python suite** passed.
-  The initial 30-test, incoming 45-test and intermediate 99-test results above
+  The initial 30-test, incoming 45-test and intermediate 99-test results
   retain their checkpoint-specific scope.
 - The full contrast check passed across 8,115 color fallbacks, 10,944 bare
   variables, 1,882 bundled rules and 29 assets. Token parity passed for 227 shared
@@ -547,13 +547,20 @@ Latest package verification after integrating the incoming commits through
   1,346 curated files. The archive checksum must be associated with the delivered
   source and final documentation content when the artifact is regenerated.
 
+The latest managed dashboard `npm run check:design-system` passed end to end:
+126 focused tests across 13 files, plus assets, ratchets, typography, gallery,
+parity, contrast, build freshness, release and export checks. A separate native
+raw-color/contract matrix passed 45 tests across ten files. Production browser
+verification passed nine scenes and 200%-equivalent reflow; font checks verified
+ten WOFF2 assets and two license files. The expanded managed 36-scene browser
+matrix remains pending.
+
 The earlier standalone browser run passed 22 theme/condition accessibility
 states with zero recorded axe, remote-request or runtime errors. The focused
-dashboard matrix passed 196 tests at its checkpoint; the later workstation smoke
-passed 22 cases and nine desktop scenes, and production font checks verified ten
-WOFF2 assets and their licenses. The incoming 4,947-assertion full-dashboard run
-above retains its own source and scope. Latest managed dashboard commands remain
-pending; these results are not combined into a new unrun full-suite count.
+dashboard matrix passed 196 tests and the workstation smoke passed 22 cases at
+their respective checkpoints. The incoming 4,947-assertion full-dashboard run
+above retains its own source and scope; these results are not combined into a
+new unrun full-suite count.
 
 The documentation generators were attempted and each generation step exited
 successfully, but the aggregate `verify-docs` check did not converge against the

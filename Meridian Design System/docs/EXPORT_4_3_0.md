@@ -57,7 +57,7 @@ The initial expanded export recorded 67 governance findings and 25 warnings.
 After integration through `0c10785dfc03`, all seven release gates, the complete
 127-test package Python suite and the strict 135/135-card matrix passed. The
 contrast and parity checks passed, including the forced-light cycle correction;
-all 13 metadata tests cover unconditional-default precedence. Build/source
+the 13-test metadata suite includes unconditional-default precedence. Build/source
 freshness and release integrity passed for 1,346 curated files. Regenerate the
 artifact after final documentation edits and associate its checksum with the
 delivered source. Use the audit's continuation status for the precise scope,
