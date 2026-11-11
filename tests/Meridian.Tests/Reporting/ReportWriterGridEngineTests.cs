@@ -587,6 +587,40 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_FormulaLineageSplitsLikeTheEvaluatorWhenOnlyASourceFieldIsHyphenated()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"), ("pnl-fees", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "source-hyphen-grid",
+                "Source Hyphen Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    // The output name is 'raw'; only its source field is hyphenated.
+                    new ReportWriterMetricDefinitionDto("raw", "pnl-fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("afterFees", "pnl-fees")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["afterFees"].Should().Be("11");
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "afterFees").SourceFields
+            .Should().Equal("fees", "pnl");
+    }
+
+    [Fact]
     public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
     {
         var rows = new[]

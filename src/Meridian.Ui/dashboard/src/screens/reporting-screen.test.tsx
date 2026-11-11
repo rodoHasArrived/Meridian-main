@@ -2586,6 +2586,22 @@ describe("ReportingScreen", () => {
     expect(screen.queryByRole("group", { name: "Custom report 1 new report-writer grid" })).not.toBeInTheDocument();
   });
 
+  it("does not restore a discarded new report's edits into the next new report", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/report-builder"] });
+
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+    let grid = screen.getByRole("group", { name: "Custom report 1 new report-writer grid" });
+    fireEvent.change(within(grid).getByLabelText("Custom report 1 draft display name"), {
+      target: { value: "Edited then discarded" }
+    });
+    await user.click(screen.getByRole("button", { name: "Discard new reports" }));
+    await user.click(screen.getByRole("button", { name: "New custom report" }));
+
+    grid = screen.getAllByRole("group", { name: /new report-writer grid$/ })[0];
+    expect(within(grid).getByLabelText(/draft display name$/)).not.toHaveValue("Edited then discarded");
+  });
+
   it("names a new custom report so it cannot collide with a retained template", async () => {
     const user = userEvent.setup();
     const retained = accounting.reporting.templates![0];

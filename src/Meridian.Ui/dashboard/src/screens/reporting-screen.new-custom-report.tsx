@@ -13,6 +13,10 @@ const newCustomReportDefaultFields: ReportingTemplateGridFieldMetadata[] = [
   { name: "pnl", label: "P&L", role: "Metric", dataType: "decimal", dataset: "Preview fixture" }
 ];
 
+// Editor state (layout, settings, pasted rows, preview) is keyed by grid id and outlives a
+// discarded grid, so every blank grid gets an id that is never reused in this browser session.
+let newCustomReportGridSequence = 0;
+
 /**
  * Builds a blank report-writer grid so an operator can start a custom report in the browser.
  * Nothing is persisted until the operator saves it as a template draft. The field palette comes
@@ -43,7 +47,7 @@ export function buildNewCustomReportWriterGrid(
   );
 
   return {
-    id: `new:${templateId}:${gridId}`,
+    id: `new:${templateId}:${gridId}:${(newCustomReportGridSequence += 1)}`,
     gridId,
     templateId,
     templateVersion: "",

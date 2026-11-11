@@ -410,8 +410,10 @@ public static class ReportWriterGridEngine
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
         IReadOnlyList<ReportWriterFilterDefinitionDto> filters)
     {
+        // Same namespace the evaluator resolves bare references in: the rendered row's names
+        // (metric output names, formula names, dimensions). Metric source-field names are not
+        // row names, so they must not decide how a hyphenated reference is split.
         var knownReferences = metrics.Select(static metric => metric.Name)
-            .Concat(metrics.Select(static metric => metric.SourceField))
             .Concat(formulas.Select(static formula => formula.Name))
             .Concat(dimensions)
             .Where(static name => !string.IsNullOrWhiteSpace(name))
