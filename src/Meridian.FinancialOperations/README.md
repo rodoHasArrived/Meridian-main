@@ -6,7 +6,7 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-14
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.FinancialOperations
@@ -36,6 +36,9 @@ liability credits/debits to positive retained quantities. The atomic store certi
 cash/liability/result economics; approvals, period control and exact replay remain shared.
 Projection retains explicit direction before drafting; the candidate cannot change it or use an
 opposite-side position. The canonical relief guard also checks the carrying account's type.
+A short-correction reversal must invert the posted journal line for line:
+`ShortCorrectionGuard.IsExactInverse` consumes each reversal line at most once, so duplicate
+economic lines need distinct inverses and one reversal line cannot satisfy two posted lines.
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 

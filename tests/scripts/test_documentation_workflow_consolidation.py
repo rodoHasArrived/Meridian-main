@@ -42,7 +42,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
 
     def gate_result(self, result: str | None) -> subprocess.CompletedProcess:
         step, = self.gate["steps"]
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             env = {**os.environ, "GITHUB_STEP_SUMMARY": str(Path(directory) / "summary.md")}
             env.pop("DOCS_RESULT", None)
             if result is not None:

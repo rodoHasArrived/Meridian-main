@@ -18,7 +18,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             summary_path = temp_path / "wave1-validation-summary.json"
             signoff_path = temp_path / "dk1-operator-signoff.json"
@@ -76,7 +76,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             summary_path = temp_path / "wave1-validation-summary.json"
             signoff_path = temp_path / "dk1-operator-signoff.json"
@@ -147,7 +147,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             summary_path = temp_path / "wave1-validation-summary.json"
             signoff_path = temp_path / "dk1-operator-signoff.json"
@@ -191,7 +191,7 @@ class GenerateDk1PilotParityPacketTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             summary_path = temp_path / "wave1-validation-summary.json"
             signoff_path = temp_path / "dk1-operator-signoff.json"

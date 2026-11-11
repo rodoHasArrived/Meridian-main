@@ -124,7 +124,7 @@ class ProductionCertificationCheckpointTests(unittest.TestCase):
     def setUp(self) -> None:
         self.pwsh = shutil.which("pwsh")
         self.assertIsNotNone(self.pwsh, "PowerShell 7 is required for recovery checkpoint tests.")
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         steps = yaml.load(WORKFLOW_PATH.read_text(), Loader=yaml.BaseLoader)["jobs"]["recovery-drill"]["steps"]
