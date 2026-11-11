@@ -681,6 +681,31 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_UntrimmedHyphenatedMetricNameDoesNotCreateAFalseCycle()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("net", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "whitespace-grid",
+                "Whitespace Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                // The configured name carries trailing whitespace; normalization trims it.
+                Metrics: [new ReportWriterMetricDefinitionDto("pnl-fees ", "net")],
+                Formulas: [new ReportWriterFormulaDefinitionDto("pnl", "pnl-fees")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Rows.Single().Values["pnl"].Should().Be("100");
+    }
+
+    [Fact]
     public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
     {
         var rows = new[]

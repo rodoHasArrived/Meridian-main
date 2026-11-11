@@ -413,11 +413,14 @@ public static class ReportWriterGridEngine
         IEnumerable<ReportWriterMetricDefinitionDto> metrics,
         IEnumerable<ReportWriterFormulaDefinitionDto> formulas,
         IEnumerable<string> dimensions) =>
+        // Names are trimmed here because callers may pass raw grid definitions; validation and
+        // metric normalization trim them too, so ' pnl-fees ' is the same name as 'pnl-fees'.
         metrics.Select(static metric => metric.Name)
             .Concat(formulas.Select(static formula => formula.Name))
             .Concat(dimensions)
             .Concat(kind == ReportWriterGridKindDto.Contribution ? ContributionGeneratedFields : [])
             .Where(static name => !string.IsNullOrWhiteSpace(name))
+            .Select(static name => name.Trim())
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     private static ReportWriterGridLineageDto BuildLineage(
