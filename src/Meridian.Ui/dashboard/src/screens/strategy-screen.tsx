@@ -1631,7 +1631,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Observation sheet</CardTitle>
-            <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
+            <CardDescription>Recent records packaged for analyst review without leaving Strategy.</CardDescription>
           </CardHeader>
           <CardContent>
             <DenseDataTable

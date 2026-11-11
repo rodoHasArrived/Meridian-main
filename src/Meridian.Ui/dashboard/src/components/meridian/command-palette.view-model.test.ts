@@ -1217,7 +1217,7 @@ describe("command palette view model", () => {
 
   it("keeps local route commands available when the workflow backend is unavailable", () => {
     const model = buildCommandPaletteViewModel("/settings", undefined, {
-      workflowError: "Request failed for /api/workstation/workflows (503)"
+      workflowError: "Meridian could not complete this request. Try again."
     });
 
     expect(model.items).toHaveLength(63);

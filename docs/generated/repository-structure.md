@@ -7560,6 +7560,8 @@ Meridian-main
 │   │   │   │   │       ├── drawer.tsx
 │   │   │   │   │       ├── error-boundary.test.tsx
 │   │   │   │   │       ├── error-boundary.tsx
+│   │   │   │   │       ├── error-notice.test.tsx
+│   │   │   │   │       ├── error-notice.tsx
 │   │   │   │   │       ├── eyebrow.tsx
 │   │   │   │   │       ├── feedback-primitives.test.tsx
 │   │   │   │   │       ├── field-support.test.tsx
@@ -7585,6 +7587,8 @@ Meridian-main
 │   │   │   │   │       ├── number-input.test.tsx
 │   │   │   │   │       ├── number-input.tsx
 │   │   │   │   │       ├── order-status-banner.tsx
+│   │   │   │   │       ├── overflow-menu.test.tsx
+│   │   │   │   │       ├── overflow-menu.tsx
 │   │   │   │   │       ├── panel-surface.tsx
 │   │   │   │   │       ├── popover.test.tsx
 │   │   │   │   │       ├── popover.tsx
@@ -7822,6 +7826,8 @@ Meridian-main
 │   │   │   │   │   ├── metric-trust.test.ts
 │   │   │   │   │   ├── metric-trust.ts
 │   │   │   │   │   ├── onboarding.ts
+│   │   │   │   │   ├── page-trust-context.test.tsx
+│   │   │   │   │   ├── page-trust-context.tsx
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
