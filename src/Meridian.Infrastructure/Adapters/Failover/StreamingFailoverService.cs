@@ -204,7 +204,15 @@ public sealed class StreamingFailoverService : IDisposable
         if (_isDisposed)
             return;
 
-        _healthMonitor.RecordHeartbeat(ProviderIdentity.NormalizeId(providerId));
+        var key = ProviderIdentity.NormalizeId(providerId);
+
+        // A provider that sat on standby long enough is marked lost by the monitor, and a
+        // heartbeat alone does not reverse that. Re-registering (a no-op while it is still
+        // monitored) restores timeout-based monitoring once its transport is live again.
+        if (_providerHealth.ContainsKey(key))
+            _healthMonitor.RegisterConnection(key, key);
+
+        _healthMonitor.RecordHeartbeat(key);
     }
 
     /// <summary>

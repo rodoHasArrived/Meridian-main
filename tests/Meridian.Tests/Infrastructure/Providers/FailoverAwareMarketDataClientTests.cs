@@ -544,6 +544,45 @@ public sealed class FailoverAwareMarketDataClientTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task Scenario_StandbyThatBecomesActive_IsMonitoredAgain()
+    {
+        var clock = new ManualClock(new DateTimeOffset(2026, 8, 5, 12, 0, 0, TimeSpan.Zero));
+        using var harness = new TransportHealthHarness(clock);
+        await using var sut = harness.CreateClient();
+        await sut.ConnectAsync();
+        harness.Primary.RaiseTransportState(ProviderConnectionLifecycleState.Connected);
+
+        // The idle standby ages out of the monitor while the primary stays live.
+        for (var scan = 0; scan < 4; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        harness.HealthMonitor.GetConnectionStatus("backup")!.Value.IsConnected.Should().BeFalse();
+        sut.ActiveProviderId.Should().Be("primary");
+
+        harness.Primary.RaiseTransportState(ProviderConnectionLifecycleState.Failed);
+        await WaitUntilAsync(() => sut.ActiveProviderId == "backup");
+        harness.Backup.RaiseTransportState(ProviderConnectionLifecycleState.Connected);
+
+        harness.HealthMonitor.GetConnectionStatus("backup")!.Value.IsConnected.Should().BeTrue(
+            "a standby that became the current connection must be monitored for silence again");
+
+        // A recoverable transport state followed by silence is counted against the new active provider.
+        harness.Backup.RaiseTransportState(ProviderConnectionLifecycleState.Degraded);
+        for (var scan = 0; scan < 2; scan++)
+        {
+            clock.Advance(TimeSpan.FromSeconds(61));
+            await harness.HealthMonitor.CheckHeartbeatsOnceAsync().WaitAsync(SyncTimeout);
+        }
+
+        harness.Service.GetProviderHealthSnapshots()
+            .Single(snapshot => snapshot.ProviderId == "backup")
+            .ConsecutiveFailures.Should().BeGreaterThan(0);
+    }
+
+    [Fact]
     public async Task Scenario_TransportInterruptionOnActiveProvider_FailsOverToFirstViableBackup()
     {
         await _sut.DisposeAsync();
