@@ -423,3 +423,28 @@ HTTP in Chromium in ready, loading and error states, light and dark, with no pag
 errors or failed requests. Build freshness, the release check, 12 release tests,
 component and agency regressions pass. The whole-release validator still fails
 on governance alone.
+
+## Retained Python suite follow-up (issue #3506)
+
+Observed on the same tree as the governance follow-up above. The suite now runs
+**44 tests with 2 failures and no errors** (was 30 tests, 1 failure, 14 errors).
+
+The 14 errors were one cause: `tests/test_design_system_governance.py` called
+`run_checks(root, baseline=...)` and read violation codes from the earlier,
+baseline-driven checker. The 4.3.0 export ships a different checker with no such
+function. The tests are ported to the shipped checker and cover each of its
+gates (trio, raw-hex, no-important, aria-refs, manifest, template, routes,
+eligibility, generated). The checker source is unchanged.
+
+Rules the earlier checker enforced and the shipped one does not: local link
+integrity, local upload references, radius ceiling, decorative gradients, legacy
+workspace names, template viewport/main-landmark/heading, white-on-fill, and
+gallery coverage. Their tests could not be ported because nothing implements
+them. Restoring those rules is a maintainer decision.
+
+Remaining failures, both real findings, neither hidden:
+
+| Test | Cause |
+| --- | --- |
+| `test_clean_package_passes` | The 56 governance findings recorded above |
+| `test_contrast.test_all_pairs_pass` | Twelve brand-variant findings from `scripts/check_contrast.py`, six brands times two rules. Dark: a brand states a light accent only, and the dark blocks re-point `--theme-accent` at higher specificity, so every brand renders the default terracotta in dark mode. Light: the rule requires each brand to restate `--theme-border-focus`, written when the focus ring followed the accent; 4.3.0 makes focus a separate blue interaction role |
