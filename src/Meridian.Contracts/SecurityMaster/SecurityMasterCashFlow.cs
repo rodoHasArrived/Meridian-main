@@ -286,6 +286,29 @@ public sealed record StructuredCashFlowProjectionDto(
     /// <summary>Exact dependencies selected by the context-aware calculation path.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Meridian.Contracts.FixedIncome.BondCalculationInput>? InputManifest { get; init; }
+
+    /// <summary>
+    /// A stable code for <see cref="BlockedReason"/> when the refusal has one
+    /// (<see cref="StructuredCashFlowBlockedReasonCodes"/>); omitted from JSON otherwise.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BlockedReasonCode { get; init; }
+}
+
+/// <summary>Stable codes a blocked <see cref="StructuredCashFlowProjectionDto"/> may carry.</summary>
+public static class StructuredCashFlowBlockedReasonCodes
+{
+    /// <summary>
+    /// A rate field that permits negative values resolved below zero, and this projection does not
+    /// model signed interest. It blocks instead of flooring the rate at zero (review D10, owner
+    /// decision 2026-11-11).
+    /// </summary>
+    public const string SignedInterestUnsupported = "SIGNED_INTEREST_UNSUPPORTED";
+
+    /// <summary>The operator-facing sentence for <see cref="SignedInterestUnsupported"/>.</summary>
+    public static string DescribeSignedInterestUnsupported(string? assetClass, string fieldKey)
+        => $"{assetClass} {fieldKey} resolves to a negative rate, and this projection does not model signed interest; "
+            + "no cash flow was projected and the rate was not floored at zero.";
 }
 
 /// <summary>

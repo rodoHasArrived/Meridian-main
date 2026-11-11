@@ -113,23 +113,71 @@ public sealed class DeclaredRateUnitParityTests
     }
 
     [Fact]
-    public async Task ASupportedNegativeDepositRate_ResolvesToTheSameFraction_InBothCashFlowReaders()
+    public async Task ASupportedNegativeDepositRate_BlocksTheLegacyProjection_AndIsNeverFloored()
     {
-        // Deposit declares Fraction with negative rates permitted. Both readers accept the unit; their
-        // downstream sign policies still differ and are pinned here as an open D3 item: the legacy
-        // projection floors a negative annual rate at zero, while the contractual preview pays signed
-        // (negative) interest. The accounting slice does not post Deposits (outside the slice).
+        // Deposit declares Fraction with negative rates permitted. The legacy projection has no
+        // signed-interest model, so it blocks with a typed code; it used to floor the rate at zero and
+        // project rows of zero interest (review D10, owner decision 2026-11-11). The contractual
+        // preview models signed interest and still pays it.
         var security = Deposit(-0.005m);
 
         var projection = await ProjectAsync(security);
-        projection.BlockedReason.Should().BeNull();
-        projection.Schedule.Should().NotBeEmpty();
-        projection.Schedule.Should().OnlyContain(static row => row.InterestAmount == 0m);
+        projection.Schedule.Should().BeEmpty("a floored schedule would read as a deposit paying nothing");
+        projection.BlockedReasonCode.Should().Be(StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported);
+        projection.BlockedReason.Should().Contain("interestRate").And.Contain("negative rate").And.Contain("not floored");
 
         var preview = await PreviewAsync(security);
         preview.Blockers.Should().BeEmpty();
         preview.Events.Where(static e => e.AccrualStart is not null).Select(static e => decimal.Round(e.CashInterest, 2))
             .Should().AllBeEquivalentTo(decimal.Round(Par * -0.005m * 0.25m, 2));
+    }
+
+    [Fact]
+    public async Task APositiveDepositRate_StillProjects_WithNoBlockCode()
+    {
+        var projection = await ProjectAsync(Deposit(0.02m));
+
+        projection.BlockedReason.Should().BeNull();
+        projection.BlockedReasonCode.Should().BeNull();
+        projection.Schedule.Select(static row => decimal.Round(row.InterestAmount, 2))
+            .Should().NotBeEmpty().And.AllBeEquivalentTo(decimal.Round(Par * 0.02m * 0.25m, 2));
+    }
+
+    [Fact]
+    public async Task ANegativeFloatingLegRate_BlocksEveryLeg_AndIsNeverFloored()
+    {
+        // Zero fixing and a -125 bp spread: the leg's all-in rate is negative. The projection used to
+        // floor it and return rows of zero interest.
+        var projection = await ProjectAsync(FloatingSwap(spreadBps: -125m));
+
+        projection.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().BeNullOrEmpty("one floored leg would misstate the net");
+        projection.BlockedReasonCode.Should().Be(StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported);
+        projection.BlockedReason.Should().Contain("legs.currentIndexRate");
+    }
+
+    [Fact]
+    public async Task ANegativeFixedLegRate_IsRefusedForItsUnitFirst_AndIsNeverFloored()
+    {
+        // A swap leg's fixed rate has no default unit and a legacy leg cannot declare one, so a
+        // non-zero rate is refused for its unit before its sign is read. Either way nothing is floored.
+        var projection = await ProjectAsync(FixedSwap(fixedRate: -0.25m));
+
+        projection.Schedule.Should().BeEmpty();
+        projection.BlockedReason.Should().Contain("legs.fixedRate").And.Contain("has no declared unit");
+    }
+
+    [Fact]
+    public void ANegativeRepoRate_IsReportedByAccounting_NotDroppedSilently()
+    {
+        // Repo's financing rate permits negatives. Accounting posts no signed interest; before the
+        // owner decision it returned no accrual and no issue.
+        var accounting = Account(-0.005m, RateUnit.Fraction, termsAssetClass: "Repo");
+
+        accounting.AccrualCalculations.Should().BeEmpty();
+        accounting.ExpectedEvents.Should().BeEmpty();
+        accounting.Issues.Should().ContainSingle(static issue => issue.Code == "SM_COUPON_RATE_SIGNED_INTEREST_UNSUPPORTED")
+            .Which.Severity.Should().Be(ReconciliationBreakSeverity.High);
     }
 
     [Fact]
@@ -237,6 +285,27 @@ public sealed class DeclaredRateUnitParityTests
             })
         });
 
+    private static SecurityDetailDto FixedSwap(decimal fixedRate)
+        => Security("Swap", new JsonObject
+        {
+            ["effectiveDate"] = "2041-01-01",
+            ["issueDate"] = "2041-01-01",
+            ["maturityDate"] = "2042-01-01",
+            ["maturity"] = "2042-01-01",
+            ["legs"] = new JsonArray(new JsonObject
+            {
+                ["legId"] = "fixed",
+                ["legType"] = "Fixed",
+                ["currency"] = "USD",
+                ["direction"] = "Receive",
+                ["fixedRate"] = fixedRate,
+                ["notional"] = Par,
+                ["paymentFrequency"] = "Quarterly",
+                ["dayCount"] = "30/360",
+                ["exchangesPrincipal"] = false
+            })
+        });
+
     private static SecurityDetailDto Security(string assetClass, JsonObject terms)
         => new(Guid.NewGuid(), assetClass, SecurityStatusDto.Active, "Rate parity " + assetClass, "USD",
             JsonSerializer.SerializeToElement(new { displayName = "Rate parity", currency = "USD" }),
@@ -266,7 +335,7 @@ public sealed class DeclaredRateUnitParityTests
         return preview!;
     }
 
-    private static SecurityMasterAccountingEventResult Account(decimal coupon, RateUnit? recordUnit)
+    private static SecurityMasterAccountingEventResult Account(decimal coupon, RateUnit? recordUnit, string termsAssetClass = "Bond")
     {
         var securityId = Guid.NewGuid();
         var security = new SecurityMasterAccountingSecurity(
@@ -284,7 +353,7 @@ public sealed class DeclaredRateUnitParityTests
                 MaturityDate: Maturity)
             {
                 CouponRateUnit = recordUnit,
-                TermsAssetClass = "Bond"
+                TermsAssetClass = termsAssetClass
             },
             new SecurityAccountingRule("AvailableForSale", "GAAP"));
         var request = new SecurityMasterAccountingEventRequest(

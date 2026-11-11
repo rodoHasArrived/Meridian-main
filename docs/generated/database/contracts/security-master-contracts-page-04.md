@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 4 of 7
 
-Objects 241-320 of 507. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 508. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram

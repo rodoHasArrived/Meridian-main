@@ -420,6 +420,24 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
                 ReconciliationBreakSeverity.High));
         }
 
+        // A negative rate on a field that permits one is not accrued: this service posts no signed
+        // interest. It is reported instead of being dropped silently (review D10, owner decision
+        // 2026-11-11).
+        if (terms.CouponRate is { } signedRate
+            && terms.CouponType?.Equals("Fixed", StringComparison.OrdinalIgnoreCase) == true
+            && ResolveCouponRate(security, signedRate) is var (signedResolution, signedField)
+            && signedResolution.TryGetFraction(out var signedFraction)
+            && signedFraction < 0m)
+        {
+            issues.Add(CreateIssue(
+                "SM_COUPON_RATE_SIGNED_INTEREST_UNSUPPORTED",
+                "security-master",
+                security.Symbol,
+                accountId,
+                $"Security '{security.Symbol}': {terms.TermsAssetClass ?? security.AssetClass} {signedField} resolves to a negative rate, and accounting does not model signed interest. No coupon accrual or receipt was generated.",
+                ReconciliationBreakSeverity.High));
+        }
+
         if (string.IsNullOrWhiteSpace(terms.DayCountConvention))
         {
             issues.Add(CreateIssue("SM_DAY_COUNT_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing day-count convention.", ReconciliationBreakSeverity.High));

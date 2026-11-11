@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 507. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 508. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -384,6 +384,8 @@ classDiagram
         +string EventType
         +decimal? Ratio
     }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowBlockedReasonCodes["StructuredCashFlowBlockedReasonCodes"] {
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence["StructuredCashFlowCalendarEvidence"] {
         +string CalendarId
         +string ContentHash
@@ -444,6 +446,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto["StructuredCashFlowProjectionDto"] {
         +DateTimeOffset AsOf
         +string? BlockedReason
+        +string? BlockedReasonCode
         +IReadOnlyList~StructuredFactorScheduleEntry~? FactorSchedule
         +IReadOnlyList~Meridian_Contracts_FixedIncome_BondCalculationInput~? InputManifest
         +bool IsNormalizedPer100
@@ -453,11 +456,6 @@ classDiagram
         +StructuredCashFlowScheduleEvidence? ScheduleEvidence
         +Guid SecurityId
         +StructuredCashFlowSourceKind SourceKind
-        +DateTimeOffset? SourceLastUpdatedUtc
-    }
-    class Meridian_Contracts_SecurityMaster_StructuredCashFlowResetFixing["StructuredCashFlowResetFixing"] {
-        +decimal? FixingRate
-        +DateOnly ResetDate
     }
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
@@ -494,6 +492,5 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowNotionalStep
-    Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg --> Meridian_Contracts_SecurityMaster_StructuredCashFlowResetFixing
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLegSchedule
 ```

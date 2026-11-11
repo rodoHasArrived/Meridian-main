@@ -84,6 +84,14 @@ public sealed partial class SecurityMasterCashFlowService
         var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
+            // As on the undeclared path: a field that permits negative rates blocks, and only a
+            // downward scenario shock on a field that cannot be negative is floored at zero.
+            if (PermitsNegativeRate(security.AssetClass, couponField))
+            {
+                var signedInterestBlock = Empty(StructuredCashFlowBlockedReasonCodes.DescribeSignedInterestUnsupported(security.AssetClass, couponField));
+                return signedInterestBlock with { BlockedReasonCode = StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported };
+            }
+
             annualRate = 0m;
         }
 

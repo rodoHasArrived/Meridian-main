@@ -527,5 +527,9 @@ Remaining work, none of it started:
   cannot carry a `scheduleConventions` block, with no field default.
 - **D10, negative rates:** readers that do not model signed interest block with a typed reason
   where the field permits negatives, and never floor.
+  *Implemented 2026-11-11 (follow-up 1)* for the legacy cash-flow projection and the accounting
+  event service; see the review's
+  [follow-up 1](../../architecture/security-master-extensibility-review.md#follow-up-1--negative-rates-block--2026-11-11).
+  `AssetObligationProjectionService` was not changed and still needs the same reading.
 - **D10, StructuredNote:** fair value through profit or loss from valuation marks, with no accrual
   posting, when its accounting template is added.

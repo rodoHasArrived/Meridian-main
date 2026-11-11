@@ -47,6 +47,9 @@ Portfolio position read models carry shared mark-freshness assessments. A positi
 sign policy) and no accrual or coupon receipt is generated; the retired `> 1 means percent` guess is
 gone. Accounting-slice membership comes from the catalog's explicit disposition, so StructuredNote,
 which is outside the slice, cannot reach bond posting through its `FixedIncome` taxonomy.
+A rate that resolves negative on a field that permits negatives (Deposit, Repo) raises a High
+`SM_COUPON_RATE_SIGNED_INTEREST_UNSUPPORTED` issue: the service posts no signed interest, and it
+reports that instead of returning no accrual and no issue.
 
 ## Reconciliation source lineage
 

@@ -451,6 +451,15 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         var annualRate = couponFraction + ScenarioRateShift(scenario);
         if (annualRate < 0m)
         {
+            // A field that permits negative rates is never floored: this projection has no signed-
+            // interest model, so it blocks. A field that cannot be negative only gets here through a
+            // downward scenario shock, which stays floored at zero.
+            if (PermitsNegativeRate(security.AssetClass, couponField))
+            {
+                var signedInterestBlock = Empty(StructuredCashFlowBlockedReasonCodes.DescribeSignedInterestUnsupported(security.AssetClass, couponField));
+                return signedInterestBlock with { BlockedReasonCode = StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported };
+            }
+
             annualRate = 0m;
         }
 
@@ -646,6 +655,17 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 security.SecurityId, sourceKind, scenario, asOf, [], staleness,
                 sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: ex.Message);
         }
+        catch (SignedInterestUnsupportedException ex)
+        {
+            // A negative leg rate blocks every leg for the same reason: flooring one side at zero
+            // would misstate the net.
+            return new StructuredCashFlowProjectionDto(
+                security.SecurityId, sourceKind, scenario, asOf, [], staleness,
+                sourceLastUpdatedUtc, factorSchedule, terms, BlockedReason: ex.Message)
+            {
+                BlockedReasonCode = StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported
+            };
+        }
 
         // Net receive-minus-pay only when every leg's direction is known (a single directionless
         // leg projects as Receive). A multi-leg structure with an unknown direction cannot be
@@ -757,7 +777,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
         if (leg.RateKind == CashFlowLegRateKind.Fixed)
         {
             var fixedRate = LegRateFraction(assetClass, leg, "fixedRate", leg.FixedRate ?? 0m);
-            return fixedRate < 0m ? 0m : fixedRate;
+            return fixedRate < 0m ? throw SignedInterestUnsupported(assetClass, "fixedRate") : fixedRate;
         }
 
         // A period that has already reset uses the fixing recorded for its reset date when the leg
@@ -778,7 +798,12 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
             rate = Math.Min(rate, LegRateFraction(assetClass, leg, "capRate", cap));
         if (leg.FloorRate is { } floor)
             rate = Math.Max(rate, LegRateFraction(assetClass, leg, "floorRate", floor));
-        return rate < 0m ? 0m : rate;
+        // The index, spread, cap and floor all permit negative values, and a declared floor has
+        // already been applied above. What is still negative is a signed coupon this projection
+        // cannot pay, so it blocks; it is never floored at zero.
+        return rate < 0m
+            ? throw SignedInterestUnsupported(assetClass, recordedFixing is not null ? "resetSchedule.fixingRate" : "currentIndexRate")
+            : rate;
     }
 
     private static IReadOnlyList<StructuredCashFlowScheduleEntry> BuildNetSchedule(
@@ -856,9 +881,7 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     /// </summary>
     private static decimal LegRateFraction(string assetClass, StructuredCashFlowLeg leg, string member, decimal value)
     {
-        var key = SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
-            ? "legs." + member
-            : member;
+        var key = LegFieldKey(assetClass, member);
         var resolution = RateUnitNormalizer.Normalize(assetClass, key, value, RateUnitNormalizer.FromCouponRateUnit(leg.RateUnit));
         return resolution.TryGetFraction(out var fraction)
             ? fraction
@@ -866,6 +889,19 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
     }
 
     private sealed class RateUnitUnavailableException(string message) : Exception(message);
+
+    private sealed class SignedInterestUnsupportedException(string message) : Exception(message);
+
+    private static SignedInterestUnsupportedException SignedInterestUnsupported(string assetClass, string member)
+        => new(StructuredCashFlowBlockedReasonCodes.DescribeSignedInterestUnsupported(assetClass, LegFieldKey(assetClass, member)));
+
+    private static string LegFieldKey(string assetClass, string member)
+        => SecurityAssetClassCatalog.GetOrDefault(assetClass).CashFlowBehavior == SecurityCashFlowBehavior.SwapLegs
+            ? "legs." + member
+            : member;
+
+    private static bool PermitsNegativeRate(string? assetClass, string fieldKey)
+        => SecurityRateFieldUnits.Find(assetClass, fieldKey)?.AllowsNegative == true;
 
     private static decimal ScenarioRateShift(StructuredCashFlowScenario scenario)
         => scenario switch

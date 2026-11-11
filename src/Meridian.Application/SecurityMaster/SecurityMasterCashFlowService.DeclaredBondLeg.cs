@@ -75,7 +75,10 @@ public sealed partial class SecurityMasterCashFlowService
             if (leg.FloorRate is not null)
                 rate = Math.Max(rate, floorFraction);
             if (rate < 0m)
-                return Blocked("Negative floating coupon cash flows require a separately supported signed-interest model.");
+            {
+                var signedInterestBlock = Blocked("Negative floating coupon cash flows require a separately supported signed-interest model.");
+                return signedInterestBlock with { BlockedReasonCode = StructuredCashFlowBlockedReasonCodes.SignedInterestUnsupported };
+            }
             if (!ScheduleDayCount.TryPeriodFraction(dayCount, period, schedule, out var fraction, out var refusal))
                 return Blocked("Declared floating bond interest could not be computed: " + refusal);
             BondFloatingRateEvidence? rateEvidence = null;

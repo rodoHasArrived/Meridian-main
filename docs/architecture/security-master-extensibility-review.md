@@ -3,7 +3,7 @@
 **Status:** active
 **Owner:** core-team
 **Reviewed:** 2026-11-11
-**Review history:** owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
+**Review history:** follow-up 1 (negative rates) 2026-11-11; owner decisions on the close-out pass 2026-11-11; close-out pass 2026-11-10; increment 8b resolution pass 2026-11-10; increment 8a resolution pass 2026-11-09; dual-model audit reconciliation 2026-11-09; post-slice-6 source check 2026-11-06; slice-4 D3 decision 2026-11-05; slice 6 disposition 2026-11-04; slice-4 disposition 2026-11-04; scheduled institutional-requirements pass 2026-11-01; consolidation pass 2026-10-28; resolution pass 2026-10-10; scheduled institutional-requirements pass; scheduled institutional-requirements pass 2026-09-08; scheduled institutional-requirements pass 2026-09-01; scheduled institutional-requirements pass 2026-08-31; scheduled institutional-requirements pass 2026-08-28; scheduled institutional-requirements pass 2026-08-27; resolution pass 2026-08-26; scheduled institutional-requirements pass 2026-08-26; independent verification pass, post-resolution 2026-08-24; resolution pass 2026-08-24; verification pass 2026-08-14; original review 2026-08-12
 **Scope:** Engineering
 **Review Cadence:** Per significant Security Master change
 
@@ -9632,8 +9632,40 @@ record did.
   None of the three is implemented. Source still behaves as D10 describes: a CertificateOfDeposit
   with a non-zero coupon and no declared unit blocks with no repair path, and the legacy
   projection still floors a negative rate at zero.
+  *(2026-11-11, later: the negative-rate decision is implemented for two readers. See
+  [follow-up 1](#follow-up-1--negative-rates-block--2026-11-11).)*
 - **Sequencing: follow-up pull requests.** The ADR-027 S3-E record contraction, and the code for
   the two D10 decisions that need code, are done in pull requests that follow this one, not
   stacked on it. S3-E proceeds one field group at a time, each with its own replay-compatibility
   proof, as S3-E1 to S3-E4 did. The module homes for the residual complement are part of that
   work.
+
+### Follow-up 1 — negative rates block — 2026-11-11
+
+Implements the owner's D10 decision on negative rates: where a field permits negatives, a reader
+that does not model signed interest blocks with a typed reason and never floors. This is the first
+follow-up to the close-out pass and is its own pull request.
+
+| Reader | Before | Now |
+| --- | --- | --- |
+| `SecurityMasterCashFlowService`, coupon walk (undeclared and declared conventions) | A negative annual rate was set to zero and the schedule showed rows of zero interest | Blocks with `BlockedReasonCode` `SIGNED_INTEREST_UNSUPPORTED` when the coupon field permits negatives (Deposit `interestRate`, Repo `repoRate`). No row is projected |
+| `SecurityMasterCashFlowService`, legacy leg schedules | A negative fixed or all-in floating leg rate was set to zero | Blocks every leg with the same code. A declared floor is still applied first, so a floored floating rate that is zero or above is unaffected |
+| `SecurityMasterCashFlowService`, declared floating bond leg | Already blocked, with a sentence only | Same sentence, now with the code |
+| `SecurityMasterAccountingEventService` | A negative rate on a field that permits one produced no accrual and no issue | Raises High `SM_COUPON_RATE_SIGNED_INTEREST_UNSUPPORTED`; still no accrual or receipt |
+
+What it does not change:
+
+- **Downward scenario shocks on fields that cannot be negative.** A Bond coupon under `Down300`
+  can still fall below zero in the legacy coupon walk, and that shocked rate is still floored at
+  zero. The stored value is not negative and the field does not permit one, so the decision does
+  not reach it. Whether a fixed coupon should move with a rate scenario at all is a separate
+  question and is not answered here.
+- **`ContractualCashFlowPreviewService`.** It models signed interest and still pays it.
+- **`AssetObligationProjectionService`.** It converts a negative Deposit rate to percentage points
+  and hands it to the bond projection. How that projection treats it was not examined in this
+  follow-up, so it is neither confirmed sound nor changed.
+- **A legacy swap leg's negative fixed rate** is refused for its undeclared unit before its sign
+  is read, as before. The sign check behind it is reachable only by a leg that carries a unit.
+
+`BlockedReasonCode` is an optional member of `StructuredCashFlowProjectionDto`, omitted from JSON
+when absent, so an unblocked projection keeps its wire shape. No dashboard type mirrors this DTO.

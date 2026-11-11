@@ -1324,6 +1324,10 @@ value at or below 1 as a fraction and divided anything larger by 100. A rate wit
 (no `couponRateUnit` and no field default in `SecurityRateFieldUnits`) now blocks: the projection
 carries a `BlockedReason` quoting the raw value, and the preview returns a `RateUnitUndeclared`
 blocker (`RateOutsideDeclaredRange` for a declared value outside the field's range or sign policy).
+Negative rates (review D10, owner decision 2026-11-11): the legacy projection has no signed-interest
+model, so a rate that resolves negative on a field that permits negatives blocks with
+`BlockedReasonCode` `SIGNED_INTEREST_UNSUPPORTED` and is never floored at zero. A downward scenario
+shock on a field that cannot be negative is still floored.
 Zero needs no unit, forward-curve rates stay fractions, and `*Bps` spreads stay basis points. The
 undeclared-legacy policy is decided (D3, 2026-11-05: undeclared non-zero rates block); swap legs
 cannot declare a per-leg unit yet, so their non-zero rates block too. Verify with

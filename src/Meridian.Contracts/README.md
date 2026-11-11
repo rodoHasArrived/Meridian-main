@@ -549,7 +549,10 @@ accepts older numeric status payloads; persisted queue records already use text 
   default unit (Fraction, Percent or BasisPoints), fraction range and negative-rate policy. Only
   `*Bps` fields (BasisPoints) and Deposit/CashSweep rates (Fraction) declare a default; fields
   stored both ways declare none. D3 (decided 2026-11-05): undeclared non-zero rates block; no field
-  default is added.
+  default is added. A blocked `StructuredCashFlowProjectionDto` may carry `BlockedReasonCode`
+  (`StructuredCashFlowBlockedReasonCodes`, omitted from JSON when absent);
+  `SIGNED_INTEREST_UNSUPPORTED` marks a rate that resolved negative on a field that permits
+  negatives in a projection with no signed-interest model.
   Every `SecurityAssetClassCatalog` descriptor also declares an accounting disposition: an
   `AccountingInstrumentClass` or `AccountingOutsideSlice` (StructuredNote is outside the slice).
   `ResolveAccountingInstrumentClass` returns null for a catalogued outside-slice name before the
