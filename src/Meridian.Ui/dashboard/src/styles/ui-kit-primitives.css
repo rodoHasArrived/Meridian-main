@@ -31,7 +31,7 @@
   border-radius: var(--radius-sm);
   background: rgba(20, 18, 15, 0.92);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -125,7 +125,7 @@
 .dense-data-table th {
   padding: var(--dense-head-py) var(--dense-cell-px);
   color: var(--fg-muted);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.75rem;
   font-weight: 500;
   letter-spacing: 0.14em;
@@ -283,7 +283,7 @@
 
 .dense-data-table-sorted .dense-data-table-sort-indicator {
   opacity: 1;
-  color: var(--accent, #C56343);
+  color: var(--interaction-selected, #496C8F);
 }
 
 .dense-data-table-sorted .dense-data-table-sort-button {
@@ -305,7 +305,7 @@
   border-radius: var(--radius-sm);
   background: rgba(217, 138, 100, 0.10);
   color: var(--cyan-primary);
-  font-family: "Cascadia Mono", "JetBrains Mono", Consolas, ui-monospace, monospace;
+  font-family: "IBM Plex Mono", ui-monospace, Consolas, monospace;
   font-size: 0.6875rem;
   font-weight: 600;
   cursor: pointer;
@@ -432,7 +432,7 @@
 }
 
 .dense-data-table thead {
-  background: #F4F3EF;
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {

@@ -16,16 +16,16 @@ const CSS = `
   cursor:pointer;font-family:var(--font-data,monospace);font-size:12px;font-weight:500;
   display:flex;align-items:center;justify-content:center;
   transition:background .1s ease,border-color .1s ease;}
-.pgn-btn:hover:not(:disabled){background:var(--bg-active,#E7EDF2);border-color:var(--accent,#C56343);}
-.pgn-btn:focus-visible{outline:var(--focus-ring,2px solid var(--ws-accent,#C56343));outline-offset:1px;}
+.pgn-btn:hover:not(:disabled){background:var(--bg-active,#E7EDF2);border-color:var(--interaction-selected,#496C8F);}
+.pgn-btn:focus-visible{outline:var(--focus-ring,2px solid var(--interaction-focus, #2D6FB3));outline-offset:1px;}
 .pgn-btn:disabled{opacity:.4;cursor:not-allowed;}
-.pgn-btn--active{background:var(--accent,#C56343);color:#fff;border-color:var(--accent,#C56343);}
+.pgn-btn--active{background:var(--interaction-selected,#496C8F);color:var(--ink-inverse,#F5F3EE);border-color:var(--interaction-selected,#496C8F);}
 .pgn-ellipsis{padding:0 4px;color:var(--text-muted,#606870);}
 .pgn-jump{height:28px;padding:4px 8px;width:52px;text-align:center;
   border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-button,2px);
   background:var(--bg-panel,var(--bg-light,#F8F7F3));color:var(--text-primary,#20252B);
   font-family:var(--font-data,monospace);font-size:12px;transition:border-color .1s ease;}
-.pgn-jump:focus{outline:none;border-color:var(--accent,#C56343);}
+.pgn-jump:focus{outline:none;border-color:var(--interaction-focus, #2D6FB3);}
 `;
 
 export interface PaginationProps {

@@ -59,14 +59,14 @@ Use the simplified symbol for favicons and thumbnails:
 
 ### Colors
 - **Primary Neutral**: `hsl(var(--foreground))`
-- **Accent Cyan**: `var(--cyan-primary)`
+- **Brand signal**: terracotta `var(--brand-signal)`; focus/selection use interaction blue
 - **Data Green**: `var(--state-healthy-fg)`
 - **Dark Background**: `hsl(var(--background))`
 
 ### Typography
-- **Display font**: Space Grotesk, with IBM Plex Sans fallback
-- **UI font**: Inter, with IBM Plex Sans fallback
-- **Monospace**: JetBrains Mono, with IBM Plex Mono fallback
+- **Display font**: self-hosted IBM Plex Sans
+- **UI font**: self-hosted IBM Plex Sans
+- **Monospace**: self-hosted IBM Plex Mono
 - **Weight**: Bold (700) for headings, Regular (400) for body
 
 ### Minimum Sizes

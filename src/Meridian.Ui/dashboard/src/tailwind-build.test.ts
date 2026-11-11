@@ -56,9 +56,9 @@ describe("workstation stylesheet compilation", () => {
   });
 
   it("keeps workstation font stacks and responsive source utilities", () => {
-    expect(valuesFor(".font-sans", "font-family").join()).toContain("Segoe UI Variable Text");
-    expect(valuesFor(".font-display", "font-family").join()).toContain("Segoe UI Variable Display");
-    expect(valuesFor(".font-mono", "font-family").join()).toContain("Cascadia Mono");
+    expect(valuesFor(".font-sans", "font-family").join()).toContain("IBM Plex Sans");
+    expect(valuesFor(".font-display", "font-family").join()).toContain("IBM Plex Sans");
+    expect(valuesFor(".font-mono", "font-family").join()).toContain("IBM Plex Mono");
     const responsiveRule = rulesFor(".md\\:grid-cols-2")[0];
     expect(responsiveRule.parent?.type).toBe("atrule");
     expect(responsiveRule.parent?.toString()).toContain("(width >= 48rem)");

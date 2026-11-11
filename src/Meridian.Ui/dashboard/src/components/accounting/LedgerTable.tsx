@@ -68,7 +68,7 @@ function inject(): void {
 .ldg td.ldg--r{text-align:right;}
 .ldg tbody tr:hover{background:var(--bg-hover,#EDEFF0);}
 .ldg__date{color:var(--text-secondary,#535C65);}
-.ldg__ref{color:var(--accent,#C56343);}
+.ldg__ref{color:var(--interaction-link,#2A5F96);}
 .ldg__memo{font-family:var(--font-body,inherit);color:var(--text-secondary,#535C65);
   white-space:normal;min-width:160px;}
 .ldg__acct{color:var(--text-primary,#20252B);}
@@ -80,7 +80,7 @@ function inject(): void {
 .ldg__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;
   font-size:11px;color:var(--text-secondary,#535C65);}
 .ldg__sort{cursor:pointer;user-select:none;}
-.ldg__sort:focus-visible{outline:2px solid var(--accent,#C56343);outline-offset:-2px;}
+.ldg__sort:focus-visible{outline:2px solid var(--interaction-focus, #2D6FB3);outline-offset:-2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "ledger");

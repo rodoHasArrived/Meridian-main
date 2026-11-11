@@ -320,7 +320,7 @@ function CompareChartView({ viewModel: vm }: { viewModel: CompareChartViewModel 
           x={vm.highLabel.x}
           y={vm.highLabel.y}
           textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+          fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
           fontSize="10"
           fill="currentColor"
           fillOpacity="0.55"
@@ -331,7 +331,7 @@ function CompareChartView({ viewModel: vm }: { viewModel: CompareChartViewModel 
           x={vm.lowLabel.x}
           y={vm.lowLabel.y}
           textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+          fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
           fontSize="10"
           fill="currentColor"
           fillOpacity="0.55"
@@ -487,7 +487,7 @@ function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineV
         x={viewModel.highLabel.x}
         y={viewModel.highLabel.y}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
@@ -498,7 +498,7 @@ function BarChartSparkline({ viewModel }: { viewModel: HistoricalChartSparklineV
         x={viewModel.lowLabel.x}
         y={viewModel.lowLabel.y}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
         fontSize="10"
         fill="currentColor"
         fillOpacity="0.55"
@@ -693,7 +693,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
           x={vm.highLabel.x}
           y={vm.highLabel.y}
           textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+          fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
           fontSize="10"
           fill="currentColor"
           fillOpacity="0.55"
@@ -705,7 +705,7 @@ function CandlestickChartView({ viewModel: vm }: { viewModel: CandlestickChartVi
           x={vm.lowLabel.x}
           y={vm.lowLabel.y}
           textAnchor="end"
-          fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+          fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
           fontSize="10"
           fill="currentColor"
           fillOpacity="0.55"
@@ -897,7 +897,7 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
         x={panel.overboughtLabel.x}
         y={panel.overboughtLabel.y}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
         fontSize="9"
         fill="currentColor"
         fillOpacity="0.55"
@@ -908,7 +908,7 @@ function RsiPanelView({ panel }: { panel: CandlestickRsiPanel }) {
         x={panel.oversoldLabel.x}
         y={panel.oversoldLabel.y}
         textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, Consolas, ui-monospace, monospace"
+        fontFamily="IBM Plex Mono, ui-monospace, Consolas, monospace"
         fontSize="9"
         fill="currentColor"
         fillOpacity="0.55"

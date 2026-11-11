@@ -15,7 +15,7 @@
 .workspace-task-health { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .5rem .75rem; border: 1px solid var(--ws-border); background: var(--ws-surface); font-size: .75rem; }
 .workspace-task-disclosure { border: 1px solid var(--ws-border); border-radius: var(--radius-card, 2px); }
 .workspace-task-disclosure > summary { cursor: pointer; padding: .625rem .75rem; font-size: .8125rem; font-weight: 600; }
-.workspace-task-disclosure > summary:focus-visible { outline: 2px solid var(--ws-accent); outline-offset: 2px; }
+.workspace-task-disclosure > summary:focus-visible { outline: 2px solid var(--interaction-focus, #2D6FB3); outline-offset: 2px; }
 .workspace-task-disclosure[open] > summary { border-bottom: 1px solid var(--ws-border); margin-bottom: .75rem; }
 .workspace-task-disclosure > .workspace-workbench-shell { padding: 0 .75rem .75rem; }
 .workspace-task-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .75rem; font-size: .75rem; }

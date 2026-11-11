@@ -13,9 +13,9 @@ export default {
         // Every stack must end in a CSS generic family. Chromium does not resolve
         // ui-monospace / ui-sans-serif, so without the generic tail a machine
         // missing the named faces (Linux, macOS Chrome) falls back to Times.
-        sans: ["Segoe UI Variable Text", "Segoe UI", "system-ui", "ui-sans-serif", "sans-serif"],
-        mono: ["Cascadia Mono", "JetBrains Mono", "Consolas", "ui-monospace", "SFMono-Regular", "monospace"],
-        display: ["Segoe UI Variable Display", "Segoe UI Semibold", "Segoe UI", "system-ui", "ui-sans-serif", "sans-serif"]
+        sans: ["IBM Plex Sans", "system-ui", "ui-sans-serif", "sans-serif"],
+        mono: ["IBM Plex Mono", "ui-monospace", "Consolas", "monospace"],
+        display: ["IBM Plex Sans", "system-ui", "ui-sans-serif", "sans-serif"]
       },
       colors: {
         border: "hsl(var(--border) / <alpha-value>)",

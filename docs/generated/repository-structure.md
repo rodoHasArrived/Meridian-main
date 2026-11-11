@@ -3899,6 +3899,9 @@ Meridian-main
 │   │   │   ├── TimeAndSalesTape.prompt.md
 │   │   │   └── trading.card.html
 │   │   └── README.md
+│   ├── dist
+│   │   ├── meridian-design-system-4.3.0.zip
+│   │   └── meridian-design-system-4.3.0.zip.sha256
 │   ├── docs
 │   │   ├── changelog
 │   │   │   ├── README.md
@@ -7896,6 +7899,19 @@ Meridian-main
 │   │   │   │   │   │   ├── meridian-wordmark-stacked.svg
 │   │   │   │   │   │   ├── meridian-wordmark.svg
 │   │   │   │   │   │   └── README.md
+│   │   │   │   │   ├── fonts
+│   │   │   │   │   │   ├── IBMPlexMono-Bold.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-Italic.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-Medium.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-Regular.ttf
+│   │   │   │   │   │   ├── IBMPlexMono-SemiBold.ttf
+│   │   │   │   │   │   ├── IBMPlexSans-Bold.ttf
+│   │   │   │   │   │   ├── IBMPlexSans-Italic.ttf
+│   │   │   │   │   │   ├── IBMPlexSans-Medium.ttf
+│   │   │   │   │   │   ├── IBMPlexSans-Regular.ttf
+│   │   │   │   │   │   ├── IBMPlexSans-SemiBold.ttf
+│   │   │   │   │   │   ├── OFL-IBMPlexMono.txt
+│   │   │   │   │   │   └── OFL-IBMPlexSans.txt
 │   │   │   │   │   ├── icons
 │   │   │   │   │   │   ├── account-portfolio.svg
 │   │   │   │   │   │   ├── admin-maintenance.svg
@@ -9126,6 +9142,7 @@ Meridian-main
 │   │   │   │   ├── app.tsx
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
+│   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
 │   │   │   │   ├── vite-config.scenarios.test.ts
@@ -9829,6 +9846,19 @@ Meridian-main
 │   │   │   │   ├── meridian-tile-256.png
 │   │   │   │   ├── meridian-tile.svg
 │   │   │   │   └── meridian-wordmark.svg
+│   │   │   ├── Fonts
+│   │   │   │   ├── IBMPlexMono-Bold.ttf
+│   │   │   │   ├── IBMPlexMono-Italic.ttf
+│   │   │   │   ├── IBMPlexMono-Medium.ttf
+│   │   │   │   ├── IBMPlexMono-Regular.ttf
+│   │   │   │   ├── IBMPlexMono-SemiBold.ttf
+│   │   │   │   ├── IBMPlexSans-Bold.ttf
+│   │   │   │   ├── IBMPlexSans-Italic.ttf
+│   │   │   │   ├── IBMPlexSans-Medium.ttf
+│   │   │   │   ├── IBMPlexSans-Regular.ttf
+│   │   │   │   ├── IBMPlexSans-SemiBold.ttf
+│   │   │   │   ├── OFL-IBMPlexMono.txt
+│   │   │   │   └── OFL-IBMPlexSans.txt
 │   │   │   ├── Icons
 │   │   │   │   ├── account-portfolio.svg
 │   │   │   │   ├── admin-maintenance.svg
@@ -13122,6 +13152,7 @@ Meridian-main
 │   │   │   ├── BatchExportSchedulerServiceTests.cs
 │   │   │   ├── ChartingServiceTests.cs
 │   │   │   ├── CollectionSessionServiceTests.cs
+│   │   │   ├── ColorPaletteTests.cs
 │   │   │   ├── CommandPaletteServiceTests.cs
 │   │   │   ├── ConfigServiceBaseTests.cs
 │   │   │   ├── ConfigServiceTests.cs
@@ -13413,6 +13444,7 @@ Meridian-main
 │   │   │   ├── DashboardPageSmokeTests.cs
 │   │   │   ├── DataQualityPageSmokeTests.cs
 │   │   │   ├── DataWorkspaceShellSmokeTests.cs
+│   │   │   ├── DesignSystemResourceTests.cs
 │   │   │   ├── DesktopWorkflowScriptTests.cs
 │   │   │   ├── FullNavigationSweepTests.cs
 │   │   │   ├── FundProfileSelectionPageSmokeTests.cs

@@ -35,8 +35,8 @@ function inject(): void {
 .agt__ref{color:var(--text-secondary,#535C65);}
 .agt__row--click{cursor:pointer;}
 .agt__row--click:hover{background:var(--bg-hover,#EDEFF0);}
-.agt__row--click:focus-visible{outline:2px solid var(--accent,#C56343);outline-offset:-2px;}
-.agt__row--on td{background:color-mix(in srgb,var(--accent,#C56343) 8%,transparent);}
+.agt__row--click:focus-visible{outline:2px solid var(--interaction-focus, #2D6FB3);outline-offset:-2px;}
+.agt__row--on td{background:var(--interaction-selected-surface,#E7EDF2);}
 .agt--warn{background:color-mix(in srgb,var(--orange,#986717) 8%,transparent);}
 .agt--late{background:color-mix(in srgb,var(--red,#B54B42) 8%,transparent);}
 .agt tfoot td{padding:10px 12px;background:var(--bg-medium,#EBE8E1);font-weight:700;border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}

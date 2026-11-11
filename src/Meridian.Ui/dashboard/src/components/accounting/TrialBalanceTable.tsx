@@ -33,8 +33,8 @@ function inject(): void {
 .tbl__code{color:var(--text-secondary,#535C65);}
 .tbl__row--click{cursor:pointer;}
 .tbl__row--click:hover{background:var(--bg-hover,#EDEFF0);}
-.tbl__row--click:focus-visible{outline:2px solid var(--accent,#C56343);outline-offset:-2px;}
-.tbl__row--on td{background:color-mix(in srgb,var(--accent,#C56343) 8%,transparent);}
+.tbl__row--click:focus-visible{outline:2px solid var(--interaction-focus, #2D6FB3);outline-offset:-2px;}
+.tbl__row--on td{background:var(--interaction-selected-surface,#E7EDF2);}
 .tbl__sub td{background:var(--bg-subtle,#FCFBF8);font-weight:600;color:var(--text-secondary,#535C65);}
 .tbl tfoot td{padding:10px 12px;background:var(--bg-medium,#EBE8E1);font-weight:700;border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .tbl__foot-label{font-family:var(--font-body,inherit);font-variant:all-small-caps;letter-spacing:.03em;font-size:11px;color:var(--text-secondary,#535C65);}

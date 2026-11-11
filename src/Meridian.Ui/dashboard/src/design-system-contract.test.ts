@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import postcss, { type AnyNode } from "postcss";
 import { describe, expect, it } from "vitest";
 
 function readDashboardStyles() {
@@ -353,10 +354,22 @@ describe("dashboard design-system contract", () => {
     expect(tailwindConfig).toContain("positive: \"hsl(var(--success) / <alpha-value>)\"");
   });
 
+
+  it("uses accessible slate for the Paper badge on dark chrome in both appearances", () => {
+    const styles = readDashboardStyles();
+    const paper = styles.match(/--chrome-paper:\s*(#[0-9A-F]{6})/i)?.[1];
+    expect(paper).toBe("#7F9DB8");
+    const shell = readRepositoryFile("src/Meridian.Ui/dashboard/src/styles/app-shell.css");
+    expect(shell).toMatch(/\.workstation-trust-summary \.mds-badge--paper\s*\{\s*color: var\(--chrome-paper, #7F9DB8\)/);
+    for (const background of ["#29323A", "#0D1217"]) {
+      expect(contrastRatio(paper!, background)).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("uses the high-contrast focus token for translucent primary focus rings", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("--cyan-focus: var(--ws-accent)");
+    expect(styles).toContain("--cyan-focus: var(--interaction-focus)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
   });
@@ -410,15 +423,15 @@ describe("dashboard design-system contract", () => {
     const navStyles = readWorkspaceNavStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
+    // Warm-paper rail with blue interaction selection and focus.
     expect(styles).toContain("--sidebar: 42 20% 90%");
-    expect(styles).toContain("--sidebar-foreground: 216 6% 33%");
-    expect(styles).toContain("--sidebar-primary: 16 51% 44%");
-    expect(styles).toContain("--sidebar-border: 50 10% 88%");
-    expect(styles).toContain("--sidebar-ring: 16 51% 44%");
+    expect(styles).toContain("--sidebar-foreground: 210 10% 36%");
+    expect(styles).toContain("--sidebar-primary: 210 32% 42%");
+    expect(styles).toContain("--sidebar-border: 40 14% 79%");
+    expect(styles).toContain("--sidebar-ring: 210 60% 44%");
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
-    expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
+    expect(navStyles).toContain("--mds-nav-rail-accent: var(--interaction-selected)");
     // The fallback mirrors --ws-rail-active (#E7EDF2); it previously quoted --accent-ghost
     // (#F4E7E0), a different token.
     expect(navStyles).toContain("background: var(--mds-nav-rail-active, var(--ws-rail-active, #E7EDF2))");
@@ -433,12 +446,12 @@ describe("dashboard design-system contract", () => {
     const styles = readDashboardStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // terracotta #C56343 · forest #2E7655 · brick #B54B42 · ochre #986717 · slate #8C918F
-    expect(styles).toContain("--chart-1: 16 51% 44%");
-    expect(styles).toContain("--chart-2: 146 36% 35%");
-    expect(styles).toContain("--chart-3: 4 47% 45%");
-    expect(styles).toContain("--chart-4: 37 77% 31%");
-    expect(styles).toContain("--chart-5: 40 5% 47%");
+    // Actual graphite · positive green · negative red · warning ochre · neutral.
+    expect(styles).toContain("--chart-1: 208 17% 19%");
+    expect(styles).toContain("--chart-2: 152 44% 32%");
+    expect(styles).toContain("--chart-3: 5 47% 48%");
+    expect(styles).toContain("--chart-4: 37 74% 34%");
+    expect(styles).toContain("--chart-5: 210 7% 46%");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("chart: {");
@@ -469,7 +482,7 @@ describe("dashboard design-system contract", () => {
 
     // Environment modes derive from the semantic palette (Live·Paper·Fixture).
     expect(styles).toContain("--mode-live: var(--red)");
-    expect(styles).toContain("--mode-paper: var(--ws-accent)");
+    expect(styles).toContain("--mode-paper: var(--brand-field)");
     expect(styles).toContain("--mode-fixture: var(--orange)");
   });
 
@@ -481,7 +494,7 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--severity-review-fg: var(--brand-signal-text)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
@@ -490,9 +503,9 @@ describe("dashboard design-system contract", () => {
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
     expect(styles).toContain("--state-live-fg: var(--red-dim)");
-    expect(styles).toContain("--state-paper-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--state-paper-fg: var(--brand-field-text)");
     expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
-    expect(styles).toContain("--state-pending-fg: var(--purple-dim)");
+    expect(styles).toContain("--state-pending-fg: var(--pending-dim)");
     expect(styles).toContain(
       "--state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent)"
     );
@@ -515,13 +528,11 @@ describe("dashboard design-system contract", () => {
     expect(styles.match(/--ws-page-bg: #F2F0EB/g)).toHaveLength(2);
   });
 
-  it("uses Segoe UI as the primary sans font and Cascadia Mono with JetBrains fallback for mono", () => {
+  it("uses the self-hosted IBM Plex interface and data families", () => {
     const tailwindConfig = readTailwindConfig();
 
-    expect(tailwindConfig).toContain("\"Segoe UI Variable Text\"");
-    expect(tailwindConfig).toContain("\"Segoe UI Variable Display\"");
-    expect(tailwindConfig).toContain("\"Cascadia Mono\"");
-    expect(tailwindConfig).toContain("\"JetBrains Mono\"");
+    expect(tailwindConfig).toContain("\"IBM Plex Sans\"");
+    expect(tailwindConfig).toContain("\"IBM Plex Mono\"");
   });
 
   it("ends every Tailwind font stack in a generic family so missing faces never fall back to serif", () => {
@@ -541,17 +552,97 @@ describe("dashboard design-system contract", () => {
     expect(entryStyles.match(/@config\s+"/g)).toHaveLength(1);
   });
 
-  it("declares local Segoe/Cascadia faces and fetches no external fonts", () => {
+  it("declares self-hosted IBM Plex faces and fetches no external fonts", () => {
     const styles = readDashboardStyles();
 
-    // Operator workstation must render offline / under strict CSP: no external
-    // font fetch. Monospace resolves via the local Cascadia @font-face plus the
-    // system ui-monospace stack (JetBrains Mono only if locally installed).
+    // Licensed font files are bundled for offline deployments and strict CSP.
     expect(styles).not.toContain("googleapis.com");
     expect(styles).not.toMatch(/@import\s+url\(\s*["']?https?:/i);
-    expect(styles).toContain("font-family: \"Segoe UI Variable Display\"");
-    expect(styles).toContain("font-family: \"Segoe UI Variable Text\"");
-    expect(styles).toContain("font-family: \"Cascadia Mono\"");
+    expect(styles).toContain("font-family: \"IBM Plex Sans\"");
+    expect(styles).toContain("font-family: \"IBM Plex Mono\"");
+  });
+
+  it("keeps interaction, action and status role primitives equal to the 4.3.0 export in every theme", () => {
+    function declarations(css: string, selector: string, automaticDark = false) {
+      const values = new Map<string, string>();
+      postcss.parse(css).walkRules((rule) => {
+        if (!rule.selectors.includes(selector)) return;
+        let parent: AnyNode | undefined = rule.parent;
+        let inDarkMedia = false;
+        while (parent) {
+          if (parent.type === "atrule" && parent.name === "media" && parent.params.includes("prefers-color-scheme: dark")) inDarkMedia = true;
+          parent = parent.parent;
+        }
+        if (inDarkMedia !== automaticDark) return;
+        rule.walkDecls((decl) => { values.set(decl.prop, decl.value); });
+      });
+      return values;
+    }
+    const base = readDesignSystemPackageFile("tokens/colors.css");
+    const themes = readDesignSystemPackageFile("tokens/colors-dark.css");
+    const styles = readDashboardStyles();
+    const roleNames = ["focus", "selected", "selected-surface", "interaction-hover", "link", "link-hover", "brand-field", "brand-axis", "ink-inverse", "navy", "pending", "neutral", "missing"];
+    for (const [selector, automaticDark, source] of [
+      [":root", false, base],
+      [":root", true, themes],
+      [':root[data-theme="dark"]', false, themes],
+      [':root[data-theme="light"]', false, themes],
+      ['[data-appearance="light"]', false, base]
+    ] as const) {
+      const actual = declarations(styles, selector, automaticDark);
+      const expected = declarations(source, selector === '[data-appearance="light"]' ? ":root" : selector, automaticDark);
+      if (selector === '[data-appearance="light"]') {
+        const pageDefaults = declarations(styles, ":root");
+        for (const alias of ["--interaction-focus", "--cyan-focus", "--ws-primary-hover", "--state-paper-fg"]) {
+          // Nested light must own these aliases: inheriting a computed root-dark
+          // alias would retain the parent's dark value despite light primitives.
+          expect(actual.get(alias), `local light ${alias}`).toBe(pageDefaults.get(alias));
+          expect(actual.has(alias)).toBe(true);
+        }
+      }
+      for (const name of roleNames) {
+        expect(actual.get(`--${name}`), `${selector}: --${name}`).toBe(expected.get(`--${name}`));
+      }
+    }
+    expect(styles).toContain("--ws-primary-hover: color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface))");
+    expect(styles).toContain("--ws-primary-pressed: color-mix(in srgb, var(--brand-axis) 78%, var(--ws-surface))");
+    expect(styles).toContain("--chart-primary: var(--brand-axis)");
+    expect(styles).toContain("--chart-scenario: var(--scenario-signal)");
+  });
+
+  it("bundles every licensed font face and live brand asset from the canonical export", () => {
+    const styles = readDashboardStyles();
+    const faces: Array<{ family: string; source: string; weight: string; style: string }> = [];
+    postcss.parse(styles).walkAtRules("font-face", (face) => {
+      const values = new Map<string, string>();
+      face.walkDecls((decl) => { values.set(decl.prop, decl.value); });
+      faces.push({ family: values.get("font-family")!, source: values.get("src")!, weight: values.get("font-weight")!, style: values.get("font-style")! });
+    });
+    expect(faces).toHaveLength(10);
+    for (const family of ["IBM Plex Sans", "IBM Plex Mono"]) {
+      expect(faces.filter((face) => face.family === `"${family}"`).map((face) => `${face.weight}/${face.style}`).sort())
+        .toEqual(["400/italic", "400/normal", "500/normal", "600/normal", "700/normal"]);
+    }
+    for (const face of faces) {
+      const filename = face.source.match(/assets\/fonts\/([^"')]+)/)?.[1];
+      expect(filename).toBeTruthy();
+      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
+        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename!)));
+    }
+    for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
+      expect(readFileSync(resolveDashboardAsset(`fonts/${filename}`)))
+        .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));
+    }
+    const canonicalBrand = resolve(process.cwd(), "../../../Meridian Design System/assets/brand");
+    for (const filename of readdirSync(resolveDashboardAsset("brand")).filter((name) => /\.(svg|png)$/.test(name))) {
+      expect(readFileSync(resolveDashboardAsset(`brand/${filename}`))).toEqual(readFileSync(resolve(canonicalBrand, filename)));
+    }
+    const startup = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
+    expect(startup).toContain('"IBM Plex Sans"');
+    expect(startup).toContain("--startup-bg: #F2F0EB");
+    expect(startup).toContain("--startup-bg: #11171D");
+    expect(startup).not.toMatch(/Segoe|Cascadia/);
+    expect(readRepositoryFile("src/Meridian.Ui/dashboard/src/design-system/assets.ts")).toContain("symbol: meridianMarkUrl");
   });
 
   it("keeps the reference workbench preview aligned with the schedule evidence pattern", () => {
