@@ -732,6 +732,45 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     }
 
     [Fact]
+    public void RetainedEconomicTerms_DoNotResurrectAClearedTrancheKind()
+    {
+        // Codex review on #3475: the tranche kind's flattening also has a flag fallback for
+        // documents that predate the creditTranche module. The fallback must not exempt the kind
+        // from the flat row's authority: an amendment that clears structuredCreditKind on a row
+        // that kept its retained document must leave it cleared.
+        const string assetClass = "StructuredCredit";
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass, SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+        original.GetProperty("structuredCreditKind").ValueKind.Should().Be(JsonValueKind.String, "precondition: the twin declares a kind");
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, original));
+        var document = JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        document["esg"] = JsonNode.Parse("""{"esgRating":"AA"}""");
+
+        var replayed = SecurityEconomicDefinitionAdapter.ToProjection(
+            economic with { EconomicTerms = ToElement(document), LegacyAssetSpecificTerms = null });
+        SecurityTermsEnvelope.TryGetRetainedEconomicTerms(replayed.AssetSpecificTerms, out _).Should().BeTrue();
+        replayed.AssetSpecificTerms.GetProperty("structuredCreditKind").GetString()
+            .Should().Be(original.GetProperty("structuredCreditKind").GetString());
+
+        var amendedTerms = JsonNode.Parse(original.GetRawText())!.AsObject();
+        amendedTerms["structuredCreditKind"] = null;
+        var amended = SecurityEconomicDefinitionAdapter.CarryRetainedEconomicTerms(
+            replayed,
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, ToElement(amendedTerms)));
+
+        var next = SecurityEconomicDefinitionAdapter.ToEconomicRecord(amended);
+
+        next.EconomicTerms.GetProperty("creditTranche").GetProperty("kind").ValueKind.Should().Be(JsonValueKind.Null,
+            "the flat revision cleared the kind");
+        next.EconomicTerms.GetProperty("creditTranche").GetProperty("seniority").ValueKind.Should().NotBe(JsonValueKind.Null,
+            "the tranche terms the amendment kept are still there");
+        var replayedAgain = SecurityEconomicDefinitionAdapter.ToProjection(next with { LegacyAssetSpecificTerms = null });
+        (replayedAgain.AssetSpecificTerms.TryGetProperty("structuredCreditKind", out var kind) && kind.ValueKind == JsonValueKind.String)
+            .Should().BeFalse("the cleared kind must not come back on the next replay");
+    }
+
+    [Fact]
     public void RetainedEconomicTerms_KeepASinkingFundFlagTheBondRowCannotExpress()
     {
         // Codex review on #3475: a bond's principal schedule is recovered from the sinkingFund
@@ -828,6 +867,10 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("Cfd")
             .Should().NotContain(pair => pair.Module == "tradingParameters",
                 "a scaled mapping is not an exact carrier");
+        // A flag fallback for documents that predate the module does not make the verbatim source
+        // any less the flat row's own value (Codex review on #3475).
+        SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("StructuredCredit")
+            .Should().Contain([("creditTranche", "kind"), ("creditTranche", "seniority"), ("creditTranche", "attachmentPoint")]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields("NotAClass").Should().BeEmpty();
 
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatInexpressibleDefaults("Bond")

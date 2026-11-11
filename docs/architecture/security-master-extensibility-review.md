@@ -979,6 +979,13 @@ the flag was silently replaced on replay. The fold now also takes the class's
 express them, declared on the flattening that homes the value — and lets the retained value
 replace those. One field is declared: `sinkingFund.isProRata` on Bond.
 
+A third pass caught one home the authority list had missed. A structured-credit tranche's kind
+is copied verbatim from `creditTranche.kind`, but its flattening also carries a flag fallback
+for documents that predate the module, and the list excluded every mapping with a fallback. A
+fallback is consulted only when the source is absent, so it does not make the source any less
+the flat row's own value; the exclusion is removed. An audit of all 193 flattening expressions
+found no other stage-3 home behind a transform or a second source.
+
 What stays codec-only after this: Swap (the legs). What the economic document still does not
 carry for a bond is its floating-rate terms (index, spread, cap and floor), its seniority and
 its alternative maturity dates; no validation rule depends on a home for them.

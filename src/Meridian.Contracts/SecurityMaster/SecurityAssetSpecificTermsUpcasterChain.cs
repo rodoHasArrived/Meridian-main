@@ -1159,8 +1159,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// (<see cref="SecurityTermsEnvelope.FoldRetainedEconomicTerms"/>).
     /// <para>
     /// These are the homes ADR-027 stage 3 (S3-E) gave to values the economic document had never
-    /// carried: every field a flattening copies, one field to one flat key with no label, flag or
-    /// scale transform, from a module added after the identity gate
+    /// carried: every field a flattening copies verbatim, one field to one flat key with no
+    /// label-equality or scale transform, from a module added after the identity gate
     /// (<see cref="ModulesAddedAfterIdentityGate"/>), and the fields of older modules the stage
     /// first fed (a bond's principal schedule and inflation index terms, the loan covenants). A
     /// document carries one of them only because the current serializer wrote it from the same
@@ -1169,13 +1169,18 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// hand-shaped documents hold values there that the flat decode does not reproduce, and the
     /// fold goes on restoring those.
     /// </para>
+    /// <para>
+    /// A flag fallback does not disqualify a mapping: a structured-credit tranche's kind is copied
+    /// verbatim from <c>creditTranche.kind</c>, and the structured-product flags are consulted
+    /// only for a document that predates the module, so the module field is still exactly what
+    /// the flat key holds.
+    /// </para>
     /// </summary>
     public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)
         => TryGetClassFlattening(assetClass, out var mappings)
             ? mappings
                 .Where(static mapping => mapping.Sources.Length == 1
                                          && mapping.EqualsLabel is null
-                                         && mapping.LabelFromFlags is null
                                          && mapping.Scale is null
                                          && (mapping.FlatAuthoritative
                                              || ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal)))
