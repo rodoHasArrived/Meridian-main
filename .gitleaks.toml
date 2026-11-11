@@ -13,7 +13,7 @@ useDefault = true
 # ---------------------------------------------------------------------------
 [[allowlists]]
 id          = "design-system-key-value-grid-source-hash"
-description = "Verified SHA-256 of components/data/KeyValueGrid.jsx recorded in design-system build provenance"
+description = "Verified SHA-256 digests of components/data/KeyValueGrid.jsx recorded in design-system build provenance (one per revision of that file)"
 condition   = "AND"
 paths       = [
     '''^Meridian Design System/(release-build\.json|_ds_bundle\.js)$''',
@@ -21,6 +21,7 @@ paths       = [
 regexTarget = "secret"
 regexes     = [
     '''^869b90a742954586f725e346e596aab4930239f0c4411acfd2e32448460f6632$''',
+    '''^94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7$''',
 ]
 
 [[allowlists]]
