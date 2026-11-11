@@ -139,11 +139,18 @@ public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore?
                 .Where(record => record.SecurityId == securityId).ToArray();
         }
 
-        return records
+        var held = records
             .Where(record => record.OpenQuantity > 0m && record.AcquiredDate <= asOf)
             // Only face-value lots (quantity in units of 100 par, unit cost as a price per 100)
             // carry a premium or discount; other lots are ignored rather than misread as bonds.
             .Where(record => record.HasFaceValueTerms)
+            .ToArray();
+        // A lot booked or paid down at a pool factor below one holds more original par than its
+        // face shows, so its share of a factor-adjusted coupon cannot be read from quantity alone.
+        if (held.FirstOrDefault(static record => record.BookedFactor != 1m || (record.CurrentFactor ?? 1m) != 1m) is { } factored)
+            throw new InvalidOperationException(
+                $"Lot '{factored.LotId}' is carried at a pool factor other than 1 (booked {factored.BookedFactor}, current {factored.CurrentFactor ?? factored.BookedFactor}); accruals for factored lots are not supported.");
+        return held
             .Select(record => new LedgerTaxLot(record.LotId, record.AcquiredDate, record.OpenQuantity, record.UnitCost,
                 record.SecurityId == Guid.Empty ? null : record.SecurityId)
             { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = LedgerTaxLotFaceValueTerms.LedgerLotParBasis })
@@ -519,7 +526,8 @@ public sealed class FxRevaluationCalculation(
             // currency, so its balance cannot be compared with its foreign cost legs.
             .Where(line => line.Currency is { IsFunctionalCurrency: false } currency &&
                 (string.IsNullOrWhiteSpace(line.Account.Symbol) ||
-                 string.Equals(line.Account.Symbol.Trim(), currency.TransactionCurrency, StringComparison.OrdinalIgnoreCase)) &&
+                 (string.Equals(line.Account.Symbol.Trim(), currency.TransactionCurrency, StringComparison.OrdinalIgnoreCase) &&
+                  !LedgerAccounts.UsesInstrumentSymbol(line.Account))) &&
                 line.Account.AccountType is LedgerAccountType.Asset or LedgerAccountType.Liability)
             .GroupBy(line => line.Account)
             .ToArray();

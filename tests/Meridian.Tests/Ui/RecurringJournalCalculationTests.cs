@@ -397,6 +397,40 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task FxRevaluation_SecurityWhoseTickerIsItsCurrency_IsNotTreatedAsCash()
+    {
+        // A security with the ticker "EUR" and EUR legs is still an instrument, not EUR cash.
+        var security = LedgerAccounts.Securities("EUR");
+        _ledger.PostLines(At(new(2026, 1, 10)), "Buy EUR-ticker security",
+        [
+            (security, 108_000m, 0m, null, new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
+            (LedgerAccounts.InvestorCapitalFor("lp-1"), 0m, 108_000m, null, null)
+        ]);
+        await SeedAsync(FxRevaluationCalculation.CalculationKind, new() { ["maxRateAgeDays"] = 0m }, endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(Rates([new("EUR", "USD", 1.10m, JanuaryEnd)]));
+
+        (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle()
+            .Which.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FixedIncome_LotAtAPoolFactorBelowOne_IsRefused()
+    {
+        var position = Guid.NewGuid();
+        var store = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
+        store.Setup(value => value.ListOpenTaxLotsByAssetScopeAsync(Book, SecurityId, position, JanuaryEnd, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new LedgerTaxLotRecord(Guid.NewGuid(), Book, LedgerAccounts.Securities(Ticker), "lot-factored",
+                new DateOnly(2025, 12, 31), 8m, 8m, 100m, "USD", Registered, Registered,
+                SecurityId: SecurityId, BookPositionId: position, OriginalFace: 800m, BookedFactor: 0.8m, ParBasis: 100m)]);
+        var inputs = new LedgerRecurringJournalCalculationInputs(store.Object);
+
+        var read = () => inputs.ListOpenLotsAsync(Scope, LedgerAccounts.Securities(Ticker), SecurityId, position, JanuaryEnd, default);
+
+        (await read.Should().ThrowAsync<InvalidOperationException>()).WithMessage("*pool factor other than 1*");
+    }
+
+    [Fact]
     public async Task FxRevaluation_FunctionalCashInSameAccount_DoesNotDraftAtAnUnchangedRate()
     {
         _ledger.PostLines(At(new(2026, 1, 10)), "Mixed-currency contribution",

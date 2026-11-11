@@ -397,7 +397,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
              existing.AccountingBasis != normalizedDraft.AccountingBasis || existing.PeriodId != normalizedDraft.PeriodId ||
              existing.EntityId != normalizedDraft.EntityId || existing.FundNodeId != normalizedDraft.FundNodeId ||
              existing.Currency != normalizedDraft.Currency || existing.TreasuryContext != normalizedDraft.TreasuryContext ||
-             existing.Dimensions != normalizedDraft.Dimensions || !existing.Lines.SequenceEqual(normalizedDraft.Lines)))
+             !SamePostingDimensions(existing.Dimensions, normalizedDraft.Dimensions) ||
+             !SamePostingLines(existing.Lines, normalizedDraft.Lines)))
         {
             throw new InvalidOperationException("The posting terms of a retained distribution draft are fixed. Reject the draft and use a new declaration to change them.");
         }
@@ -1555,4 +1556,23 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             request.Actor, request.CorrelationId, request.ReportGroupPrincipalIds, result, ct).ConfigureAwait(false);
         return result;
     }
+
+    // Record equality compares the external GL dictionary by reference, and normalization
+    // allocates a new one on every save, so posting terms are compared by value.
+    private static bool SamePostingDimensions(LedgerDimensionSetDto? left, LedgerDimensionSetDto? right)
+    {
+        if (left is null || right is null)
+            return left is null && right is null;
+        var shared = left.ExternalGlDimensions;
+        return left == right with { ExternalGlDimensions = shared } &&
+               left.ExternalGlDimensions.Count == right.ExternalGlDimensions.Count &&
+               left.ExternalGlDimensions.All(item => right.ExternalGlDimensions.TryGetValue(item.Key, out var value) &&
+                   string.Equals(item.Value, value, StringComparison.Ordinal));
+    }
+
+    private static bool SamePostingLines(IReadOnlyList<ManualJournalEntryLineDto> left, IReadOnlyList<ManualJournalEntryLineDto> right)
+        => left.Count == right.Count &&
+           left.Zip(right).All(static pair =>
+               pair.First with { Dimensions = null } == pair.Second with { Dimensions = null } &&
+               SamePostingDimensions(pair.First.Dimensions, pair.Second.Dimensions));
 }

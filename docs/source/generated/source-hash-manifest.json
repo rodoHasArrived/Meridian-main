@@ -206,7 +206,7 @@
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
       "readme_hash": "601f312fad5a859dcbe43b5fbed550e5cb69e75b3642f0811736480100892895",
-      "source_hash": "11719af0f9e3bfef4f7e8c7fcab201d54ae84761f29ad66457b2b155b4005c1d"
+      "source_hash": "30d77d8d37b2b6fd1b579f55d41b2ea252f3de756ec02a772ffb9068536bcaae"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",
@@ -283,7 +283,7 @@
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
       "readme_hash": "15fb744393bb83540a639c1d9e4f58f56f9bffb10cf9600138e7f99dcc1e8c98",
-      "source_hash": "ee22eb5d1f2b0936509c6f7ba08e68dc7ce30a7cdac5dfa6827ac1e1e7af9b50"
+      "source_hash": "0cc521c4078208666693aba5f109d83462ce97862dee1d3c1028656a832f885a"
     },
     {
       "id": "SRC-WPF",

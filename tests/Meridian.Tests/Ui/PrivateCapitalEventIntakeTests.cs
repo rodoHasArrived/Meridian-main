@@ -310,6 +310,11 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         };
         var edit = () => first.Workbench.SaveDraftAsync(new(edited, "ops-user", LedgerBookId: BookId, TenantId: Tenant, CompanyId: Company));
         await edit.Should().ThrowAsync<InvalidOperationException>().WithMessage("*posting terms*fixed*");
+        // A memo-only save leaves the posting terms alone and must go through.
+        var memoOnly = await first.Workbench.SaveDraftAsync(new(originalDraft with { Memo = originalDraft.Memo + " (reviewed)" },
+            "ops-user", LedgerBookId: BookId, TenantId: Tenant, CompanyId: Company));
+        memoOnly.Memo.Should().EndWith("(reviewed)");
+        originalDraft = memoOnly;
         await first.Drafts.SaveAsync(originalDraft with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
         // Simulate the interruption: the draft exists and is posted, its register record does not.
         File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
