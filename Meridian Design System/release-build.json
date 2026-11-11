@@ -129,7 +129,7 @@
       "components/core/LinearGauge.jsx": "dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604",
       "components/core/LocalDate.jsx": "39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3",
       "components/core/MaterialityAssessment.jsx": "25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a",
-      "components/core/Modal.jsx": "fba0050a68c79d57ae92d54088266339ecf34ad090818514b8a60bb7efcaf741",
+      "components/core/Modal.jsx": "dc1b85dcc15cf51d7e2604dfd8c2fc3f238f434fe25a7799bcb211a211867d93",
       "components/core/MultiSelect.jsx": "be0fdfdd91c829441673dff3fb0e3d69cfc6a68969a22915a5309eaf9f05cfbe",
       "components/core/NotificationCenter.jsx": "2c69a93ca1d8c389e9ba8db6ed78b82bd6cfda4e0384db94a85ea12dc87a7d8f",
       "components/core/NumberInput.jsx": "ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b",
@@ -255,7 +255,7 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "a8619e2ebb10194fe3e558a2e14e81ffd857dbd1fe847877ffbd5688f986d68c",
+      "sha256": "7dde542d360bf33657141c097dd17e2ded87553f2589674f0c6b6af60b76a6d5",
       "bytes": 1677339
     },
     "_preview_runtime.js": {

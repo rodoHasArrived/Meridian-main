@@ -72,11 +72,15 @@ def check_components():
             if "!important" in code[i - 1] and not IMPORTANT_PRAGMA.search(line):
                 fail("no-important", f"{jsx.relative_to(ROOT)}:{i} undeclared !important — "
                                      "state why with /* important: <reason> */ or win by order")
-            for m in re.finditer(r"#[0-9A-Fa-f]{3,8}\b", line):
-                before = line[: m.start()]
+            # Scan the comment-blanked line, as the !important check does: a palette value
+            # quoted in a `//` header comment is prose, not a style, and three shell
+            # components failed this gate on their own descriptions.
+            scanned = code[i - 1]
+            for m in re.finditer(r"#[0-9A-Fa-f]{3,8}\b", scanned):
+                before = scanned[: m.start()]
                 if "var(--" in before and before.rstrip().endswith(","):
                     continue  # var(--token, #hex) fallback — allowed
-                if re.search(r"var\(--[\w-]+\s*,\s*$", before) or "var(--" in line[max(0, m.start() - 48): m.start()]:
+                if re.search(r"var\(--[\w-]+\s*,\s*$", before) or "var(--" in scanned[max(0, m.start() - 48): m.start()]:
                     continue
                 if "svg+xml" in line or "url(" in line:
                     continue
