@@ -924,12 +924,18 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             tags[ReconciliationExternalTransactionIdTag] = evt.FillId.ToString("D");
         }
 
+        if (NormalizeOptional(evt.RunId) is { } runId)
+        {
+            tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] = runId;
+        }
+
         return new JournalEntryMetadata(
             ActivityType: activityType,
             Symbol: evt.Symbol,
             SecurityId: securityId,
             OrderId: orderId,
             FillId: evt.FillId,
+            StrategyId: NormalizeOptional(evt.StrategyId),
             LedgerBook: _postingContext.LedgerBookId.ToString("D"),
             FinancialAccountId: NormalizeOptional(evt.FinancialAccountId),
             EffectiveDate: DateOnly.FromDateTime(evt.OccurredAt.UtcDateTime),

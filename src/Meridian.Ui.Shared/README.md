@@ -1944,6 +1944,25 @@ evidence, approvals, document attachments, export manifests, and report-pack/res
 Browser and WPF command surfaces should consume that shared workflow instead of creating separate
 accounting-record launch lists.
 
+`/api/ledger/periods/{periodId}/accounts/running-balance?account=...` returns one account's
+postings in the period with a running balance, optionally narrowed by `symbol`,
+`financialAccountId` and `dimensions` (the JSON dimension set of one trial-balance row, matched
+exactly after the book's fund is defaulted as the period trial balance does), under the same ledger read permission as the other period routes.
+
+`DirectLendingOperationsReadService` adds a subledger-to-GL tie-out when a ledger journal store is
+registered: servicing principal, accrued interest and accrued PIK are compared with the net
+balance of the loan's `LoanPrincipal`, `AccruedInterestReceivable` and `PikInterestReceivable`
+control accounts, and a difference above 0.01 is a `SubledgerTieOut` warning close blocker.
+
+`BrokeragePortfolioSyncService` retains a per-account activity history
+(`activity-history/{fundAccountId}.json`): each sync's fills and cash transactions are merged by
+provider id, so rows later snapshots no longer return are kept without duplicates. The current
+projection is unchanged and remains the latest provider snapshot. The history and the projection it
+falls back to are used only for the external account the fund account is currently linked to, and cash amounts keep the broker's
+sign so a reversal nets against its receipt. `BrokerageSyncActualCashActivitySource`
+reads interest/coupon and principal/paydown cash for held symbols from that history (or from a
+fresh projection) and supplies it to expected-income reconciliation.
+
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
 copy boundary buffers smaller digest reads so a source that fills the window does not incur extra

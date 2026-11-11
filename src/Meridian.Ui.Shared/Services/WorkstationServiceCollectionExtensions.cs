@@ -958,7 +958,11 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterAccountingEventSourceAdapter>(sp =>
             new SecurityMasterAccountingEventSourceAdapter(
                 sp.GetService<ContractSecurityMasterQueryService>(),
-                sp.GetService<IAssetOperationsQueryService>()));
+                sp.GetService<IAssetOperationsQueryService>(),
+                sp.GetService<ISecurityActualCashActivitySource>()
+                    ?? (sp.GetService<BrokeragePortfolioSyncService>() is { } brokerageSync
+                        ? new BrokerageSyncActualCashActivitySource(brokerageSync.GetActivityForActiveLinkAsync, brokerageSync.GetCashTransactionHistoryAsync)
+                        : null)));
         services.TryAddSingleton<FileAccountingConfigurationStore>(sp =>
             new FileAccountingConfigurationStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "accounting-configuration.json")));

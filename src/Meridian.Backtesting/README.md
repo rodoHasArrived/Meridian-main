@@ -48,6 +48,16 @@ identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
 
+`AddMeridianBacktesting` builds that service itself when a host registers the Security Master
+(corporate-action query plus resolver) but no `ICorporateActionAdjustmentService`, so
+`AdjustForCorporateActions` behaves the same on the browser/CLI host as on WPF; without a Security
+Master the engine still reports that corporate actions were not applied.
+`SecurityMasterAssetEventSource` (`IBacktestAssetEventSource`) maps confirmed cash distributions
+and share splits to `AssetEvent`s for raw-price runs. The engine uses it only when
+`BacktestRequest.PopulateAssetEventsFromSecurityMaster` is set and the request supplies no events,
+and rejects it together with `AdjustForCorporateActions`, because back-adjusted prices already
+contain those actions. Mergers, spin-offs and other position transformations are not mapped.
+
 ## Key folders and files
 
 - `Meridian.Backtesting.csproj` - backtesting runtime project boundary.

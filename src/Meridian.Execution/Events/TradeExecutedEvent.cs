@@ -57,7 +57,9 @@ public sealed record TradeExecutedEvent(
     string? FinancialAccountId = null,
     bool UsesFaceValuePercentageOfPar = false,
     decimal ContractMultiplier = 1m,
-    bool SettlesVariationMargin = false)
+    bool SettlesVariationMargin = false,
+    string? StrategyId = null,
+    string? RunId = null)
 {
     /// <summary>
     /// Gross trade value, always positive. For a face-value fill the clean price is a

@@ -2,11 +2,26 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 362. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 364. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto["LedgerBookRequiredScopeDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +string? DisplayName
+        +Guid FundStructureNodeId
+        +FundStructureNodeKindDto FundStructureNodeKind
+    }
+    class Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto["LedgerBookRolloutAssessmentDto"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +IReadOnlyList~LedgerBookRolloutBookStatusDto~ Books
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +FundStructureNodeKindDto? FundStructureNodeKind
+        +DateTimeOffset GeneratedAtUtc
+        +IReadOnlyList~LedgerBookRolloutIssueDto~ Issues
+    }
     class Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest["LedgerBookRolloutAssessmentRequest"] {
         +AccountingBasisKindDto? AccountingBasis
         +string? FundProfileId
@@ -744,22 +759,9 @@ classDiagram
         +bool IsPosted
         +Guid JournalEntryId
     }
-    class Meridian_Contracts_Ledger_PrivateCapitalCommitmentApprovalStatus["PrivateCapitalCommitmentApprovalStatus"] {
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto["PrivateCapitalCommitmentDto"] {
-        +PrivateCapitalCommitmentApprovalStatus ApprovalStatus
-        +DateTimeOffset? ApprovedAtUtc
-        +string? ApprovedBy
-        +decimal CalledAmount
-        +string CapitalAccountId
-        +DateOnly CommitmentDate
-        +string CommitmentId
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +DateOnly EffectiveFrom
-        +IReadOnlyList~string~ EvidenceLinks
-        +decimal FundedAmount
-    }
+    Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
+    Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto
+    Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentRequest --> Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto
     Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueSeverityDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodPnlReportDto --> Meridian_Contracts_Ledger_LedgerPeriodPnlSummaryDto
     Meridian_Contracts_Ledger_LedgerCrossPeriodTrialBalanceLineDto --> Meridian_Contracts_Ledger_LedgerDimensionSetDto
@@ -825,5 +827,4 @@ classDiagram
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerDto --> Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryStatusDto
     Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountSubledgerEntryDto --> Meridian_Contracts_Ledger_ManualJournalEntryTypeDto
-    Meridian_Contracts_Ledger_PrivateCapitalCommitmentDto --> Meridian_Contracts_Ledger_PrivateCapitalCommitmentApprovalStatus
 ```
