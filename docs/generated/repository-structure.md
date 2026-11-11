@@ -12291,6 +12291,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
+│   │   │   ├── LedgerAccountRunningBalanceScopeTests.cs
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs
