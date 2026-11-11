@@ -30,8 +30,8 @@ public sealed class SecurityMasterTermBlockEndpointsTests
 
     [Theory]
     [InlineData("Bond", 3)]
-    [InlineData("CertificateOfDeposit", 3)]
-    [InlineData("StructuredCredit", 4)]
+    [InlineData("CertificateOfDeposit", 5)]
+    [InlineData("StructuredCredit", 6)]
     public async Task PutScheduleConventions_OnAWritableClass_DelegatesValidationWithTheSessionActor(
         string assetClass, int writes)
     {
@@ -65,10 +65,10 @@ public sealed class SecurityMasterTermBlockEndpointsTests
     [InlineData("Bond", "callSchedule", 3, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
     [InlineData("Bond", "callSchedule", 3, "[]")]
     [InlineData("Bond", "putSchedule", 3, """[{"putDate":"2029-06-15","exerciseStyle":"European"}]""")]
-    [InlineData("CertificateOfDeposit", "callSchedule", 3, """[{"callDate":"2026-09-30","exerciseStyle":"European"}]""")]
-    [InlineData("CertificateOfDeposit", "putSchedule", 3, """[{"putDate":"2026-09-30","exerciseStyle":"European"}]""")]
-    [InlineData("StructuredCredit", "callSchedule", 4, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
-    [InlineData("StructuredCredit", "putSchedule", 4, "[]")]
+    [InlineData("CertificateOfDeposit", "callSchedule", 5, """[{"callDate":"2026-09-30","exerciseStyle":"European"}]""")]
+    [InlineData("CertificateOfDeposit", "putSchedule", 5, """[{"putDate":"2026-09-30","exerciseStyle":"European"}]""")]
+    [InlineData("StructuredCredit", "callSchedule", 6, """[{"callDate":"2030-06-15","callPrice":101,"exerciseStyle":"European"}]""")]
+    [InlineData("StructuredCredit", "putSchedule", 6, "[]")]
     public async Task PutCallOrPutSchedule_OnAWritableClass_DelegatesTheUnchangedArrayWithTheSessionActor(
         string assetClass, string blockKey, int writes, string block)
     {

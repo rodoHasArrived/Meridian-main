@@ -194,9 +194,9 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [InlineData("Bond", 3, 4)]
-    [InlineData("CertificateOfDeposit", 3, 4)]
-    [InlineData("Swap", 1, 3)]
-    [InlineData("StructuredCredit", 4, 5)]
+    [InlineData("CertificateOfDeposit", 5, 5)]
+    [InlineData("Swap", 4, 4)]
+    [InlineData("StructuredCredit", 6, 6)]
     [InlineData("Equity", 1, 1)]
     [InlineData("Option", 1, 1)]
     public void EnsureReadable_AcceptsEveryStampThroughWhatTheClassReads_AndRefusesTheNext(string assetClass, int writes, int reads)
@@ -245,8 +245,8 @@ public sealed class SecurityTermsVersioningTests
 
     [Theory]
     [InlineData("Bond", 5, 3, 4)]
-    [InlineData("StructuredCredit", 1, 4, 5)]
-    [InlineData("StructuredCredit", 6, 4, 5)]
+    [InlineData("StructuredCredit", 1, 6, 6)]
+    [InlineData("StructuredCredit", 7, 6, 6)]
     [InlineData("Equity", 2, 1, 1)]
     public void StampFlat_OutsideTheStampFloorToReadRange_IsRefused(string assetClass, int version, int writes, int reads)
     {
@@ -490,15 +490,21 @@ public sealed class SecurityTermsVersioningTests
         // These historical fixtures cover conventions/call/put containers: the contract step
         // enabled them for Bond/CD/StructuredCredit, while Swap conventions remain read-only.
         // A later companion read ceiling must not change their existing write authority.
-        var stillReadOnly = assetClass == "Swap";
+        var stillReadOnly = assetClass == "Swap" && payload.EnumerateObject().Any(property =>
+            property.Value.ValueKind == JsonValueKind.Array && property.Value.EnumerateArray().Any(leg =>
+                leg.ValueKind == JsonValueKind.Object && leg.EnumerateObject().Any(member =>
+                    member.Name.Equals("scheduleConventions", StringComparison.OrdinalIgnoreCase)
+                    && SecurityAssetTermsSchema.IsPopulatedTermValue(member.Value))));
         SecurityTermsEnvelope.TryGetWriteRefusal(assetClass, payload, out var reason).Should().Be(stillReadOnly);
         var read = () => SecurityTermsEnvelope.EnsureReadableAsAssetSpecificTerms(assetClass, payload);
         read.Should().NotThrow();
         var write = () => SecurityTermsEnvelope.EnsureWritableAsAssetSpecificTerms(assetClass, payload);
         if (stillReadOnly)
         {
-            reason.Should().Be(expected);
-            write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(expected);
+            var path = expected.Split("'")[1];
+            var disabled = $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
+            reason.Should().Be(disabled);
+            write.Should().Throw<InvalidOperationException>().Which.Message.Should().Be(disabled);
         }
         else
         {
@@ -583,9 +589,9 @@ public sealed class SecurityTermsVersioningTests
         { "Bond", Terms(5, Maturity).GetRawText() },
         { "Bond", Terms(5, Maturity + """ ,"scheduleConventions":{"stubPolicy":"Long"} """).GetRawText() },
         { "Bond", Terms(5, Maturity + """ ,"callSchedule":[{"callDate":"2030-06-15"}] """).GetRawText() },
-        { "Swap", Terms(4, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
-        { "StructuredCredit", Terms(6, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
-        { "StructuredCredit", Terms(6, ProfileCallAndPutSchedules).GetRawText() },
+        { "Swap", Terms(5, SwapDates + """ ,"legs":[{"legType":"Fixed","scheduleConventions":{"stubPolicy":"Long"}}] """).GetRawText() },
+        { "StructuredCredit", Terms(7, """ "customProfileId":"structured-credit-profile","profileFields":{"tranche":"A-1"} """).GetRawText() },
+        { "StructuredCredit", Terms(7, ProfileCallAndPutSchedules).GetRawText() },
     };
 
     [Theory]
@@ -918,10 +924,42 @@ public sealed class SecurityTermsVersioningTests
         SecurityMasterEventPayloads.Resolve(Envelope(projectionShape, Json("""{"payloadType":"SecurityEconomicDefinition","schemaVersion":2}""")))
             .Should().Be(new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.EconomicDefinition, 2));
         SecurityMasterEventPayloads.Resolve(Envelope(economicShape, Json("""{"sourceSystem":"x"}""")))
-            .Should().Be(new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.EconomicDefinition, SecurityMasterEventPayloads.EconomicDefinitionVersion));
+            .Should().Be(new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.EconomicDefinition, 2),
+                "historical shape-only inference must not follow the current event writer version");
         SecurityMasterEventPayloads.Resolve(Envelope(projectionShape, Json("""{"schemaVersion":9}""")))
             .Should().Be(new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.LegacyProjection, 1),
                 "a metadata version without its metadata type does not describe the inferred family");
+    }
+
+    [Fact]
+    public void Resolve_MissingEconomicVersionAlwaysUsesTheHistoricalVersion()
+    {
+        var economicShape = Json("""{"classification":{},"economicTerms":{}}""");
+        var expected = new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.EconomicDefinition, 2);
+
+        SecurityMasterEventPayloads.Resolve(Envelope(economicShape, Json("{}"), SecurityMasterEventPayloads.EconomicDefinition))
+            .Should().Be(expected, "a type-only envelope is historical rather than a current write");
+        SecurityMasterEventPayloads.Resolve(Envelope(economicShape, Json("""{"payloadType":"SecurityEconomicDefinition"}""")))
+            .Should().Be(expected, "type-only historical metadata has the same frozen inference");
+        SecurityMasterEventPayloads.Resolve(Envelope(economicShape, Json("{}")))
+            .Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(2)]
+    [InlineData(3)]
+    public void Resolve_PreservesEveryExplicitEconomicEventVersion(int version)
+    {
+        var economicShape = Json("""{"classification":{},"economicTerms":{}}""");
+        var metadata = Json($$"""{"payloadType":"SecurityEconomicDefinition","schemaVersion":{{version}}}""");
+        var expected = new SecurityMasterEventPayloadDescriptor(SecurityMasterEventPayloads.EconomicDefinition, version);
+
+        SecurityMasterEventPayloads.Resolve(Envelope(economicShape, metadata)).Should().Be(expected);
+        SecurityMasterEventPayloads.Resolve(Envelope(economicShape, Json("{}"), SecurityMasterEventPayloads.EconomicDefinition, version))
+            .Should().Be(expected);
+        var replay = () => SecurityMasterEventPayloads.EnsureReplayable(expected, Guid.NewGuid(), 1);
+        replay.Should().NotThrow();
     }
 
     [Fact]
@@ -952,16 +990,23 @@ public sealed class SecurityTermsVersioningTests
     public void ToEventEnvelope_DeclaresTheEconomicDefinitionFamilyAndVersion()
     {
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
-            "Bond",
-            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Bond"]);
+            "Equity",
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads["Equity"]);
         var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
-            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Bond", original));
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("Equity", original));
 
         var envelope = SecurityMasterMapping.ToEventEnvelope(economic, "SecurityCreated", "tests", "tests", null, 1);
 
         envelope.PayloadType.Should().Be(SecurityMasterEventPayloads.EconomicDefinition);
-        envelope.PayloadVersion.Should().Be(SecurityMasterEventPayloads.EconomicDefinitionVersion);
-        SecurityMasterEventPayloads.Resolve(envelope).PayloadVersion.Should().Be(EconomicTermsSchema.Current);
+        envelope.PayloadVersion.Should().Be(3, "older event readers must refuse the richer module payload");
+        envelope.Metadata.GetProperty(SecurityMasterEventPayloads.SchemaVersionMetadataKey).GetInt32().Should().Be(3);
+        SecurityMasterEventPayloads.Resolve(envelope).PayloadVersion.Should().Be(3);
+        economic.EconomicTerms.GetProperty("schemaVersion").GetInt32().Should().Be(2,
+            "the event family version is independent of the frozen economic codec number");
+        economic.EconomicTerms.GetProperty("equityCapital").ValueKind.Should().Be(JsonValueKind.Object);
+        var replayed = SecurityMasterMapping.FromEventEnvelope(envelope);
+        replayed.EconomicTerms.GetRawText().Should().Be(economic.EconomicTerms.GetRawText());
+        SecurityEconomicDefinitionAdapter.ToProjection(replayed).AssetSpecificTerms.GetRawText().Should().Be(original.GetRawText());
     }
 
     // ── Stored terms_format column (migration 042, ADR-024) ─────────────────────────────────────

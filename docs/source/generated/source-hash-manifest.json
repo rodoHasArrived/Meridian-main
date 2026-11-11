@@ -9,15 +9,15 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "c6c13dcbef7b5b1cd90ec77fef2c41f70fe8e0e292cf59b0c7adb8912f0886b8",
-      "source_hash": "39ef96b6d5544e506574b8c647019aa5601da69f5f066c45b91fb358f6570255"
+      "readme_hash": "6a94007fb0d79e1f2cd2242e0b164ec53e22b3d746838cafdc34d1e1a36cd3bc",
+      "source_hash": "d2e587a7006c9d6f39cfb073625acec0f71c70e1b24062a573c4b8d32a4023e7"
     },
     {
       "id": "SRC-BACKTESTING",
       "path": "src/Meridian.Backtesting",
       "readme": "src/Meridian.Backtesting/README.md",
-      "readme_hash": "d72f52150cf829e1b610d724879b1a40dadf7ecf6eeab794ab55a4d527faa934",
-      "source_hash": "81ac429510decf5d9b4de29f9010a8639cd22e141c8753ad0ce16261fe951a11"
+      "readme_hash": "17d8f85c5870f116f8bae8dcd23c2906fd820e23cca0f0a1b81bc05508e4909c",
+      "source_hash": "e6f2054e74bbb69357c12fc24961d860c4f6b541f6ae1074c2bb1d827730478b"
     },
     {
       "id": "SRC-BACKTESTING-SDK",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "c8fd85ac17bef2a486a240ef1cff6bf8e65b93a5c92c12e20a4756ebc26b3080",
-      "source_hash": "90be1b2a97f3b7586aed09ec2349d9c34a356a5853ccf3333de60ef23de7cd3a"
+      "readme_hash": "9679aaf318fd737627da8ffa3a4df8e0c8c8a27c38a847aa721764eff95bfd24",
+      "source_hash": "c035717515c8bbcca5e053b535bc2780df52f562765dbffc02b24bf3814c67e9"
     },
     {
       "id": "SRC-STRATEGIES",
@@ -289,8 +289,8 @@
       "id": "SRC-WPF",
       "path": "src/Meridian.Wpf",
       "readme": "src/Meridian.Wpf/README.md",
-      "readme_hash": "73cc98844001bc609ca9134cf6ded711246410d2fa9e9fd90a7cccb9d636ce2e",
-      "source_hash": "69ae769ec1f5bb43d4c3480b2f46c1399394647ebb675a816088585d1d698834"
+      "readme_hash": "f11fe0a96147a6cd814dde9433364869ff4372182783c9909cd052fc5462af66",
+      "source_hash": "3612bdd5071e250cb046ea908358614d9588f51ce3baf1601b177ae86d70d4b4"
     }
   ],
   "schema": {

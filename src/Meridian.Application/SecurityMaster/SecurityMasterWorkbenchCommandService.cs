@@ -1176,7 +1176,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             : declaredType is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
                 ? System.Text.Json.Nodes.JsonNode.Parse(trimmed)
                 : TryParseJsonNode(trimmed) ?? System.Text.Json.Nodes.JsonValue.Create(overrideValue);
-        if (declaredType is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
+        if (declaredType is SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array
+            || key == SecurityRecordRateUnit.FieldKey)
         {
             var replacement = JsonSerializer.SerializeToElement(new Dictionary<string, System.Text.Json.Nodes.JsonNode?> { [key] = envelope[key]?.DeepClone() });
             var since = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, replacement, 1)
