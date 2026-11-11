@@ -188,6 +188,49 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task Depreciation_DraftsEachRegisteredAssetsMonthlyChargeOnce_AndStopsAtRetirement()
+    {
+        var register = new FileFixedAssetRegister(Path.Combine(_root, "registers"));
+        var server = Guid.Parse("aaaaaaaa-0000-4000-8000-000000000001");
+        var fitOut = Guid.Parse("aaaaaaaa-0000-4000-8000-000000000002");
+        // 36,000 over 36 months = 1,000 a month; 12,000 over 24 months = 500 a month, retired mid-February.
+        await register.UpsertAsync(Asset(server, "Server", 36_000m, 36, new(2026, 1, 1)));
+        await register.UpsertAsync(Asset(fitOut, "Office fit-out", 12_000m, 24, new(2026, 1, 1)) with { RetiredOn = new DateOnly(2026, 2, 15) });
+        await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new());
+        var fixture = await CreateFixtureAsync(assets: register);
+
+        await fixture.Runner.RunDueAsync(At(FebruaryEnd));
+        await (await CreateFixtureAsync(assets: register)).Runner.RunDueAsync(At(FebruaryEnd).AddHours(1));
+
+        var drafts = await fixture.Drafts.ListAsync(Fund, Book);
+        drafts.Should().HaveCount(2);
+        var january = drafts.Single(draft => draft.AccountingDate == JanuaryEnd);
+        var february = drafts.Single(draft => draft.AccountingDate == FebruaryEnd);
+        january.TotalDebits.Should().Be(1_500m);
+        january.Lines.Should().HaveCount(4);
+        january.Lines.Where(line => line.Side == AccountingTemplateLineSideDto.Debit)
+            .Should().OnlyContain(line => line.AccountPath == "Expenses:Depreciation Expense");
+        january.Lines.Where(line => line.Side == AccountingTemplateLineSideDto.Credit)
+            .Should().OnlyContain(line => line.AccountPath == "Assets:Accumulated Depreciation");
+        february.TotalDebits.Should().Be(1_000m, "the fit-out was retired before its February period end");
+        february.Memo.Should().Contain("1 of 2 registered asset(s)");
+    }
+
+    [Fact]
+    public async Task Depreciation_AssetRegisteredToAnotherBook_IsNotDepreciatedHere()
+    {
+        var register = new FileFixedAssetRegister(Path.Combine(_root, "registers"));
+        await register.UpsertAsync(Asset(Guid.NewGuid(), "Other book asset", 36_000m, 36, new(2026, 1, 1)) with { LedgerBookId = Guid.NewGuid() });
+        await SeedAsync(FixedAssetDepreciationCalculation.CalculationKind, new(), endsOn: JanuaryEnd);
+        var fixture = await CreateFixtureAsync(assets: register);
+
+        var result = (await fixture.Runner.RunDueAsync(At(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.NoDraftRequired);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task FxRevaluation_DraftsOnlyTheChangeInCarryingValue_AndBlocksWithoutARate()
     {
         Capitalize(10_000_000m);
@@ -349,8 +392,13 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             Scope, [Source()], "controller", 0, Registered);
     }
 
+    private static FixedAssetRegisterEntry Asset(Guid id, string name, decimal cost, int months, DateOnly inService)
+        => new(new FixedAssetRecord(id, name, "USD", cost, 0m, inService, months, DepreciationMethod.StraightLine),
+            Tenant, Company, Fund, Book, "controller", Registered, "evidence://fixed-asset-invoice");
+
     private async Task<Fixture> CreateFixtureAsync(IReconciliationFxRateProvider? rates = null,
-        IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null)
+        IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null,
+        IFixedAssetRegister? assets = null)
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -366,7 +414,9 @@ public sealed class RecurringJournalCalculationTests : IDisposable
              new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
              new("bond", "Assets:Securities UST30", LedgerAccounts.Securities(Ticker).Name, "Asset", Symbol: Ticker),
              new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable(Ticker).Name, "Asset", Symbol: Ticker),
-             new("coupon", "Revenue:Coupon Income", LedgerAccounts.CouponIncome.Name, "Revenue")],
+             new("coupon", "Revenue:Coupon Income", LedgerAccounts.CouponIncome.Name, "Revenue"),
+             new("depreciation", "Expenses:Depreciation Expense", "Depreciation Expense", "Expense"),
+             new("accumulated-depreciation", "Assets:Accumulated Depreciation", "Accumulated Depreciation", "Asset")],
             [], [], [], [], TenantId: Tenant, CompanyId: Company));
         var audit = new FileAccountingConfigurationStore(Path.Combine(_root, "audit.json"));
         var configurationService = new AccountingConfigurationService(configuration, audit);
@@ -385,6 +435,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new ManagementFeeAccrualCalculation(inputs),
             new PerformanceFeeAccrualCalculation(inputs),
             new FundExpenseAccrualCalculation(),
+            new FixedAssetDepreciationCalculation(assets),
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
                 cashFlowService),

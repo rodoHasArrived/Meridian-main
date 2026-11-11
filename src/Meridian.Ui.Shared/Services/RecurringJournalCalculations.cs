@@ -245,6 +245,57 @@ public sealed class FundExpenseAccrualCalculation : IRecurringJournalCalculation
 }
 
 /// <summary>
+/// Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled
+/// charges whose period end falls inside the accrual window, in one draft. Each scheduled period
+/// belongs to exactly one window, so an asset's life is depreciated once. Units-of-production
+/// assets need period output that the register does not hold, so they block the occurrence.
+/// </summary>
+public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? register = null) : IRecurringJournalCalculation
+{
+    public const string CalculationKind = "fixed-asset-depreciation";
+    private static readonly DepreciationScheduleCalculator Schedules = new();
+
+    public string Kind => CalculationKind;
+
+    public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
+    {
+        if (register is null)
+            throw new InvalidOperationException("The fixed-asset register is unavailable; depreciation is blocked.");
+        var scope = context.Scope;
+        var windowStart = context.RequireWindowStart();
+        var entries = await register.ListAsync(scope.TenantId, scope.CompanyId, scope.FundProfileId, scope.LedgerBookId, ct).ConfigureAwait(false);
+        if (entries.Count == 0)
+            return RecurringJournalCalculationResult.NothingDue("The fixed-asset register holds no assets for this fund book.");
+
+        var charges = new List<DepreciationInput>();
+        foreach (var entry in entries)
+        {
+            var asset = entry.Asset;
+            if (!string.Equals(asset.Currency?.Trim(), scope.Currency, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Fixed asset '{asset.DisplayName}' is carried in {asset.Currency}, not the book currency {scope.Currency}.");
+            if (asset.Method == DepreciationMethod.UnitsOfProduction)
+                throw new InvalidOperationException($"Fixed asset '{asset.DisplayName}' depreciates by units of production, which needs period output the register does not hold.");
+            // An asset stops depreciating the day it is retired.
+            var through = entry.RetiredOn is { } retired && retired < context.EffectiveDate ? retired : context.EffectiveDate;
+            var charge = Schedules.BuildSchedule(asset)
+                .Where(period => period.PeriodEnd >= windowStart && period.PeriodEnd <= through)
+                .Sum(period => period.DepreciationAmount);
+            if (charge > 0m)
+                charges.Add(new DepreciationInput(asset.AssetId, LedgerAccounts.FixedAssetCostFor(asset.AssetId.ToString("D")), charge,
+                    asset.FinancialAccountId, $"Depreciation for {asset.DisplayName}"));
+        }
+
+        var draft = FixedAssetDepreciationDraftBuilder.BuildDraft(context.EffectiveDate, context.OccurredAtUtc, charges, scope.FundProfileId);
+        if (draft is null)
+            return RecurringJournalCalculationResult.NothingDue(
+                $"No registered asset has a depreciation period ending between {windowStart:yyyy-MM-dd} and {context.EffectiveDate:yyyy-MM-dd}.");
+        var description = FormattableString.Invariant(
+            $"{draft.Description}; {charges.Count} of {entries.Count} registered asset(s), {RecurringJournalCalculationMath.Money(draft.TotalDebits)} for {windowStart:yyyy-MM-dd} to {context.EffectiveDate:yyyy-MM-dd}");
+        return new(draft with { Description = description }, description);
+    }
+}
+
+/// <summary>
 /// Coupon accrual and premium/discount amortization for one bond position, from the Security Master
 /// cash-flow projection and the position's open lots. Each occurrence drafts the day-count share
 /// of every coupon period that falls inside its accrual window, and the premium or discount

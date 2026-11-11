@@ -1134,6 +1134,14 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, ManagementFeeAccrualCalculation>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, PerformanceFeeAccrualCalculation>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FundExpenseAccrualCalculation>());
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileFixedAssetRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddSingleton<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>(sp =>
+            new Meridian.FinancialOperations.FundAdministration.FileDistributionRegister(
+                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "registers")));
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedAssetDepreciationCalculation>(sp =>
+            new FixedAssetDepreciationCalculation(sp.GetService<Meridian.FinancialOperations.FundAdministration.IFixedAssetRegister>())));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FixedIncomeAccrualCalculation>(sp =>
             new FixedIncomeAccrualCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
