@@ -479,6 +479,35 @@ public sealed class CompositeSinkTests
     }
 
     [Fact]
+    public async Task FailOnAnyFailure_OpenCircuit_StillRefusesInsteadOfSkippingTheSink()
+    {
+        var failingSink = CreateFailingSink();
+        var healthySink = new Mock<IStorageSink>();
+
+        var composite = new CompositeSink(
+            new[] { failingSink.Object, healthySink.Object },
+            maxConsecutiveFailures: 1,
+            failurePolicy: FailurePolicy.FailOnAnyFailure,
+            timeProvider: new ControllableTimeProvider());
+
+        // The first failure throws and opens the failing sink's circuit.
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            composite.AppendAsync(CreateTestEvent()).AsTask());
+        composite.FailedSinkCount.Should().Be(1);
+
+        // An open circuit must not turn FailOnAnyFailure into "write to the healthy sink only".
+        var refused = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            composite.AppendAsync(CreateTestEvent()).AsTask());
+        refused.Message.Should().Contain("open circuit breaker");
+        refused.Message.Should().Contain("FailOnAnyFailure");
+
+        // The refusal comes from the open circuit, not from hammering the failed sink again.
+        failingSink.Verify(
+            s => s.AppendAsync(It.IsAny<MarketEvent>(), It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
     public async Task ContinueOnPartialFailure_DoesNotThrow()
     {
         var failingSink = CreateFailingSink();
