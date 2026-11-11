@@ -402,3 +402,24 @@ and optimistic-observer Chromium regressions, source/build freshness, and export
 integrity. These fixes close the earlier selector and synchronous observer gaps;
 the remaining chart disclosure and legacy governance limitations above remain
 explicit.
+
+## Governance follow-up (issue #3505)
+
+Observed on the tree based on `3db8aa92f0`. The governance gate now reports
+**56 failures and 25 warnings**, down from 67. No rule, baseline or threshold was
+changed; the checker source is untouched.
+
+| Group | Before | After | Treatment |
+| --- | --- | --- | --- |
+| Components (`Modal`, `NavRail`, `StatusBar`, `WorkstationTopbar`) | 4 | 0 | `Modal` gives each dialog its own title id through context instead of the shared `mdl-title`; three header comments name the token instead of a literal colour |
+| `books-loop` (published) | 4 | 0 | Declares `$preview`, density, theme and data state; applies theme/density/environment on mount and update; the data-state tweak drives the existing `DataStateSwitch` |
+| `position-detail` (published) | 3 | 0 | Declares environment and data state; shows the session environment in its header; body is wrapped in `DataStateSwitch` |
+| `strategy-runs`, `strategy-formation` (published routers) | 2 | 2 | Each entry is a view router that passes `data-state` to sub-entries which all use `DataStateSwitch`. The gate scans only the folder entry. Left open rather than satisfied cosmetically |
+| Ten unpublished compatibility folders | 54 | 54 | `amx-governance`, `backtest-builder`, `backtest-compare`, `covered-call-lab`, `family-office`, `journaling-workstation`, `reconciliation-workstation`, `split-pane-reconciliation`, `strategy-builder`, `strategy-onboarding`. None is in the 30 published templates. Eight are listed as retired in `docs/UPGRADING.md` with a surviving template. Retire-or-migrate is a maintainer decision |
+
+`tests/modal-title-id-regression.mjs` (in `npm run test:components`) fails on the
+previous `Modal` and passes now. Both edited templates were loaded over loopback
+HTTP in Chromium in ready, loading and error states, light and dark, with no page
+errors or failed requests. Build freshness, the release check, 12 release tests,
+component and agency regressions pass. The whole-release validator still fails
+on governance alone.

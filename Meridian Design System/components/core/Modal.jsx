@@ -46,9 +46,13 @@ function inject() {
   document.head.appendChild(el);
 }
 
+// Each open dialog owns its title id, so two modals on one page never share a label target.
+const ModalTitleContext = React.createContext(null);
+
 export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, children }) {
   inject();
   const ref = React.useRef(null);
+  const titleId = React.useId();
   // Shared overlay focus contract (initial focus, Tab trap, restore) — same hook as Dialog/Drawer.
   useOverlayFocus(ref, open, ".mdl-wrap");
   // Escape-to-close, matching Dialog/Drawer. Bound only while open.
@@ -66,18 +70,20 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="mdl-title"
+        aria-labelledby={titleId}
       >
-        {children}
+        <ModalTitleContext.Provider value={titleId}>{children}</ModalTitleContext.Provider>
       </div>
     </div>
   );
 }
 
 export function ModalHeader({ title, onClose }) {
+  const ownId = React.useId();
+  const titleId = React.useContext(ModalTitleContext) || ownId;
   return (
     <div className="mdl-hd">
-      <h2 className="mdl-title" id="mdl-title">{title}</h2>
+      <h2 className="mdl-title" id={titleId}>{title}</h2>
       <button className="mdl-close" onClick={onClose} aria-label="Close">×</button>
     </div>
   );

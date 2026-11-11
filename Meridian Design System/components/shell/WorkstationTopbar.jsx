@@ -1,4 +1,4 @@
-// Meridian masthead — near-black brand bar (#29323A) capping the light workstation.
+// Meridian masthead — near-black brand bar (--topbar-bg) capping the light workstation.
 // Brand mark + module breadcrumb · command search · UTC clock · environment mode badge.
 //
 // The clock drives itself (4.4 · docs/SUITE_COHESION_4_4.md › C-1). The suite used to ship six

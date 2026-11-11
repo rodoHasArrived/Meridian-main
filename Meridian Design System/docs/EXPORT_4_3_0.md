@@ -44,7 +44,7 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
-The retained whole-package governance gate currently reports 67 legacy/template
+The retained whole-package governance gate currently reports 56 legacy/template
 findings and 25 warnings, so `validate_release.py` returns a failure while its
 other six gates pass. That result remains visible in the audit. The separate
 build/export integrity checks validate the curated artifact; they do not turn

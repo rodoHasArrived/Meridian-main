@@ -129,7 +129,7 @@
       "components/core/LinearGauge.jsx": "dd33e65ab2d6ed553b1ce751f64d0cd2775ce52c6503246208de74fa51ee5604",
       "components/core/LocalDate.jsx": "39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3",
       "components/core/MaterialityAssessment.jsx": "25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a",
-      "components/core/Modal.jsx": "fba0050a68c79d57ae92d54088266339ecf34ad090818514b8a60bb7efcaf741",
+      "components/core/Modal.jsx": "dca000abf47d38c9e04052a9f082ddebdb4a4d6c6d2b52c1ae2270b122b32511",
       "components/core/MultiSelect.jsx": "be0fdfdd91c829441673dff3fb0e3d69cfc6a68969a22915a5309eaf9f05cfbe",
       "components/core/NotificationCenter.jsx": "2c69a93ca1d8c389e9ba8db6ed78b82bd6cfda4e0384db94a85ea12dc87a7d8f",
       "components/core/NumberInput.jsx": "ff65266c334f1947993a672fcf58a6e24173b95db2505b5b0f1d68dcbd5eb40b",
@@ -234,15 +234,15 @@
       "components/operations/conditions.js": "eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf",
       "components/operations/status.js": "3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8",
       "components/shell/GlobalSearch.jsx": "c38abc70df96a7e2ab28c3077a5e22ac2d93568a94880282da96c5cce83029ed",
-      "components/shell/NavRail.jsx": "623d14018e2948f4e6b9b2d73124c1e7fa7adec1bd1ad1edc4967b2d26ba5ab3",
+      "components/shell/NavRail.jsx": "f3d74b14eeeb00985991b521c449b0fb4e4065397c7dd9942e98962c5d840096",
       "components/shell/ReturnPath.jsx": "387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74",
       "components/shell/ScreenComposition.jsx": "34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892",
       "components/shell/SessionControls.jsx": "7dce6e37c88d6f60c386f83266b3d8a5f6f26c7ae4b1c78fc82a6803f7faee5a",
-      "components/shell/StatusBar.jsx": "295017b232ecd8386cbdf5115ed76fd834aeb788d1454011465fed59ffd65589",
+      "components/shell/StatusBar.jsx": "8bb3fa130af477df7466ac9b0f345232d03064d72a0b57eaa30c7932af58c81a",
       "components/shell/WorkspaceContextBar.jsx": "b6cc2026c888971acead846619b4e13d031c47e82b4517b5b43b8f52efe86a43",
       "components/shell/WorkspaceLayout.jsx": "436b772f0f3b6e5e45ce2296ab8221f5e24a9c49590e7ac4a14168e33d7629c5",
       "components/shell/WorkstationShell.jsx": "cdcc7b628fa0bdea92479d7b470651eb584bc8bc3de8becadeec9d4aef2a2863",
-      "components/shell/WorkstationTopbar.jsx": "067992e1916a7734ff302bfb68459e77f41a453ae86f8847b5beba7ea77fe337",
+      "components/shell/WorkstationTopbar.jsx": "8bc03705cf53e150049e3455fc7e56c991d37474ffe70daa83bfc62c72f65502",
       "components/trading/Blotter.jsx": "9a8a721922ea8cc1e54568d679deb518ae60e93b756baf65fc7641dbd06f6bd8",
       "components/trading/DepthLadder.jsx": "2479760273c2f27a07f59fa06c62a9c10413c6f6c1c9018cc363ff28f395a3af",
       "components/trading/FillsFeed.jsx": "6367363b03bf400e5b199441a3efdf7f183ea8894038f334e8f8ea60d90449a0",
@@ -255,7 +255,7 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "a8619e2ebb10194fe3e558a2e14e81ffd857dbd1fe847877ffbd5688f986d68c",
+      "sha256": "a6dc91e7d6dbe6654cb9f2ad650b1b5c00c481ac8027d6b8d365493760605644",
       "bytes": 1677339
     },
     "_preview_runtime.js": {
