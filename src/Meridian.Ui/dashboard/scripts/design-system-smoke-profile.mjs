@@ -94,6 +94,26 @@ async function allFontFaces(page) {
   return faces;
 }
 
+async function paperIndicator(page) {
+  const indicator = page.locator('.workstation-trust-summary [data-environment="paper"]');
+  assert.equal(await indicator.count(), 1, "The fixture exercises the masthead Paper indicator");
+  const appearance = await indicator.evaluate(element => {
+    const backgrounds = [];
+    for (let current = element; current; current = current.parentElement) backgrounds.unshift(getComputedStyle(current).backgroundColor);
+    return {
+      label: getComputedStyle(element).color,
+      dot: getComputedStyle(element.querySelector(".mds-badge__dot")).backgroundColor,
+      backgrounds
+    };
+  });
+  assert.equal(appearance.label, expectedPaper(true), "Paper uses readable slate on the dark masthead");
+  assert.equal(appearance.dot, appearance.label, "Paper dot matches its slate label");
+  const background = appearance.backgrounds.reduce((color, next) => compositeColor(parseCssColor(next), color), [255, 255, 255, 1]);
+  appearance.contrast = contrastRatio(parseCssColor(appearance.label), background);
+  assert(appearance.contrast >= 4.5, "Masthead Paper label contrast is at least4.5:1");
+  return appearance;
+}
+
 async function selectedContrast(page) {
   const pairs = await page.locator('tr[aria-selected="true"], tr[data-selected="true"]').evaluateAll(rows =>
     rows.flatMap(row => [...row.querySelectorAll(".text-muted-foreground, [class*=text-xs], [class*=text-]")].filter(element =>
@@ -124,7 +144,25 @@ async function blueSelection(page, colors) {
   return rails;
 }
 
+async function settleTransitions(page) {
+  await page.evaluate(async () => {
+    const deadline = performance.now() + 2000;
+    let quietFrames = 0;
+    while (performance.now() < deadline) {
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      // Inherited colors can start a descendant transition one frame after its
+      // parent, even with reduced motion. Ignore infinite CSS spinner animations.
+      const active = document.getAnimations().some(animation =>
+        animation instanceof CSSTransition && animation.playState === "running");
+      quietFrames = active ? 0 : quietFrames + 1;
+      if (quietFrames === 2) return;
+    }
+    throw new Error("UI color transitions did not settle within two seconds");
+  });
+}
+
 async function contrastAudit(page, scene, axeSource, report) {
+  await settleTransitions(page);
   await page.addScriptTag({ content: axeSource });
   const result = await page.evaluate(async () => {
     const audit = await window.axe.run(document, { runOnly: { type: "rule", values: ["color-contrast"] } });
@@ -138,14 +176,23 @@ async function contrastAudit(page, scene, axeSource, report) {
   assert.deepEqual(result.violations, [], scene.name + ": readable text on the actual surfaces");
 }
 
-async function reconciliationInteractions(page, scene) {
+export async function reconciliationInteractions(page, scene) {
   const search = page.getByRole("textbox", { name: "Search breaks", exact: true });
   await search.fill("Smoke-no-matching-record");
   await page.waitForURL(url => url.searchParams.get("reconciliationSearch") === "Smoke-no-matching-record");
-  await search.fill("");
+  // The search writes through the existing debounced URL state. Let the
+  // navigation commit before clearing it through the operator's reset control.
+  await page.getByRole("button", { name: "Clear filters", exact: true }).click();
+  await page.waitForURL(url => !url.searchParams.has("reconciliationSearch"));
+  await page.waitForFunction(element => element.value === "", await search.elementHandle());
   await search.focus(); await page.keyboard.press("Tab");
-  const outline = await page.evaluate(() => getComputedStyle(document.activeElement).outline);
-  assert(outline.includes(expectedFocus(scene.appearance.dark)), "Keyboard control outline is interaction blue");
+  await settleTransitions(page);
+  const focus = await page.evaluate(() => {
+    const element = document.activeElement, style = getComputedStyle(element);
+    return { visible: element.matches(":focus-visible"), outline: style.outline, shadow: style.boxShadow };
+  });
+  assert(focus.visible && [focus.outline, focus.shadow].some(value => value.includes(expectedFocus(scene.appearance.dark))),
+    "Keyboard control outline or ring is interaction blue: " + JSON.stringify(focus));
   await page.getByRole("button", { name: /^Keyboard shortcuts/ }).click();
   const shortcuts = page.getByRole("dialog", { name: "Break queue shortcuts" });
   await shortcuts.waitFor(); await page.keyboard.press("Escape"); await shortcuts.waitFor({ state: "hidden" });
@@ -155,7 +202,9 @@ async function reconciliationInteractions(page, scene) {
   const primary = page.locator('button[aria-label^="Confirm resolve for reconciliation break"]');
   assert(await primary.isDisabled(), "A consequential confirmation requires a rationale");
   await rationale.fill("Synthetic smoke proof; no instruction will be submitted.");
+  await page.waitForFunction(element => !element.disabled, await primary.elementHandle());
   assert(await primary.isEnabled(), "A local valid rationale enables confirmation");
+  await page.mouse.move(0, 0);
   await page.waitForTimeout(200);
   const normal = await primary.evaluate(element => ({ background: getComputedStyle(element).backgroundColor, foreground: getComputedStyle(element).color }));
   await primary.hover(); await page.waitForTimeout(200);
@@ -195,12 +244,15 @@ async function reconciliationInteractions(page, scene) {
     scene.nestedLight = nested;
     await page.locator("summary").filter({ hasText: "Readiness, source comparison, and run evidence" }).click();
   }
-  await page.getByRole("button", { name: "Open workstation command palette (Ctrl K)", exact: true }).click();
-  await page.getByRole("dialog").waitFor(); await page.keyboard.press("Escape");
-  scene.interactions = { search: true, shortcuts: true, rationale: true, primary: { normal, hover, pressed }, commandPalette: true };
+  await page.keyboard.press("Control+k");
+  const commandSearch = page.getByRole("searchbox", { name: "Search command palette", exact: true });
+  await commandSearch.waitFor();
+  assert(await commandSearch.evaluate(element => element === document.activeElement), "Palette focuses its native search field");
+  await page.keyboard.press("Escape"); await commandSearch.waitFor({ state: "hidden" });
+  scene.interactions = { search: true, focus, shortcuts: true, rationale: true, primary: { normal, hover, pressed }, commandPalette: true };
 }
 
-async function startupPreference(browser, base, registry, fixtures, helper, scenes) {
+export async function startupPreference(browser, base, registry, fixtures, helper, scenes) {
   for (const [stored, os] of [["dark", "light"], ["light", "dark"]]) {
     const scene = { name: "startup-" + stored + "-on-" + os };
     scenes.push(scene);
@@ -340,6 +392,7 @@ export async function workbenchProof(browser, base, report, output, axeSource) {
     assert.deepEqual(api, [], "Workbench makes zero API requests");
     assert.deepEqual(await page.evaluate(() => window.__workbenchStorageOperations), [], "Reset and restored URL use no operator storage");
     await page.setViewportSize({ width: 1366, height: 768 });
+    await settleTransitions(page);
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), "Workbench has no root overflow");
     await allFontFaces(page); assertHealthyScene(scene);
     scene.screenshot = "workbench.png"; await page.screenshot({ path: path.join(output, scene.screenshot) });
@@ -398,6 +451,7 @@ export async function runExpandedDesignSystemSmoke({ browser, base, backendBase,
         assert.equal(colors["--interaction-focus"], expectedFocus(config.appearance.dark));
         assert.equal(colors["--cyan-focus"], expectedFocus(config.appearance.dark));
         assert.equal(colors["--mode-paper"], expectedPaper(config.appearance.dark));
+        scene.paper = await paperIndicator(page);
         scene.fonts = await allFontFaces(page); scene.colors = colors;
         const masks = await page.locator(".operator-nav-item__asset").evaluateAll(elements => elements.map(element => {
           const style = getComputedStyle(element);
