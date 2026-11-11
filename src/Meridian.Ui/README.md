@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui
@@ -177,6 +177,9 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
+
+The host-served bundle includes Trading's governed approvals panel showing each parked order's
+economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
 
 ## Diagrams
 

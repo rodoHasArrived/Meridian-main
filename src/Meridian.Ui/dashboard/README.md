@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui/dashboard
@@ -221,6 +221,12 @@ Portfolio expiry uses the server's observation window and blocks locally even wh
 repeated delivery of the same snapshot cannot extend its lifetime. Recovery never resubmits orders
 or resumes runs. Focused coverage lives in
 `trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
+
+Trading's governed approvals panel shows each parked order's economic terms from the shared
+escalation contract: routed notional (in place of the quantity for a dollar-sized order), stop and
+trail terms, time in force, position intent, option contract, legs, and strategy. A term the server
+sends as null gets no row; the fund account ID sits under Technical details. Coverage lives in
+`governed-approvals-panel.test.tsx`.
 
 Reporting run status and governed run detail expose an investment-income comparison over two
 explicit retained run identities. Baseline options distinguish originally published and restated
