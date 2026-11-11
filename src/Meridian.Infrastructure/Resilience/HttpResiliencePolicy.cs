@@ -44,6 +44,7 @@ public static class HttpResiliencePolicy
                 MaxDelay = maxDelay.Value,
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .Handle<HttpRequestException>()
+                    .Handle<TimeoutRejectedException>()
                     .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
                     .HandleResult(r => IsTransientHttpError(r)),
                 OnRetry = args =>
@@ -57,6 +58,7 @@ public static class HttpResiliencePolicy
                         (int?)statusCode,
                         args.RetryDelay.TotalMilliseconds,
                         args.Outcome.Exception?.Message ?? "Transient HTTP error");
+                    args.Outcome.Result?.Dispose();
                     return ValueTask.CompletedTask;
                 }
             })
@@ -84,7 +86,8 @@ public static class HttpResiliencePolicy
                 BreakDuration = breakDuration.Value,
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>()
+                    .Handle<TimeoutRejectedException>()
+                    .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
                     .HandleResult(r => IsTransientHttpError(r)),
                 OnOpened = args =>
                 {
@@ -149,10 +152,36 @@ public static class HttpResiliencePolicy
         TimeSpan? circuitBreakerDuration = null,
         TimeSpan? requestTimeout = null)
     {
-        retryBaseDelay ??= TimeSpan.FromSeconds(1);
-        circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
         requestTimeout ??= TimeSpan.FromSeconds(30);
 
+        return CreateRetryAndCircuitBreakerBuilder(maxRetries, retryBaseDelay, circuitBreakerFailureThreshold, circuitBreakerDuration, retryRateLimits: true)
+            // Each retry gets its own request timeout, inside the retry strategy.
+            .AddTimeout(requestTimeout.Value)
+            .Build();
+    }
+
+    /// <summary>
+    /// Keeps the total-operation bound and retry policies, while allowing a rate-limited
+    /// caller to apply its per-send timeout only after admission has completed.
+    /// HTTP 429 is returned directly so the provider can publish its Retry-After diagnostics.
+    /// </summary>
+    internal static ResiliencePipeline<HttpResponseMessage> CreateRetryAndCircuitBreakerPipeline(
+        int maxRetries = 3,
+        TimeSpan? retryBaseDelay = null,
+        int circuitBreakerFailureThreshold = 5,
+        TimeSpan? circuitBreakerDuration = null)
+        => CreateRetryAndCircuitBreakerBuilder(maxRetries, retryBaseDelay, circuitBreakerFailureThreshold, circuitBreakerDuration, retryRateLimits: false)
+            .Build();
+
+    private static ResiliencePipelineBuilder<HttpResponseMessage> CreateRetryAndCircuitBreakerBuilder(
+        int maxRetries,
+        TimeSpan? retryBaseDelay,
+        int circuitBreakerFailureThreshold,
+        TimeSpan? circuitBreakerDuration,
+        bool retryRateLimits)
+    {
+        retryBaseDelay ??= TimeSpan.FromSeconds(1);
+        circuitBreakerDuration ??= TimeSpan.FromSeconds(30);
         var logger = LoggingSetup.ForContext("HttpResilience");
 
         return new ResiliencePipelineBuilder<HttpResponseMessage>()
@@ -174,10 +203,11 @@ public static class HttpResiliencePolicy
                 BreakDuration = circuitBreakerDuration.Value,
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .Handle<HttpRequestException>()
-                    .Handle<TaskCanceledException>()
+                    .Handle<TimeoutRejectedException>()
+                    .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
                     .HandleResult(r => IsTransientHttpError(r))
             })
-            // Innermost: Retry with exponential backoff
+            // Retry wraps admission plus the individually timed send.
             .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
             {
                 MaxRetryAttempts = maxRetries,
@@ -187,10 +217,21 @@ public static class HttpResiliencePolicy
                 MaxDelay = TimeSpan.FromSeconds(30),
                 ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
                     .Handle<HttpRequestException>()
+                    .Handle<TimeoutRejectedException>()
                     .Handle<TaskCanceledException>(ex => ex.InnerException is TimeoutException)
-                    .HandleResult(r => IsRetryableHttpError(r))
-            })
-            .Build();
+                    .HandleResult(r => IsRetryableHttpError(r) &&
+                        (retryRateLimits || r.StatusCode != System.Net.HttpStatusCode.TooManyRequests)),
+                DelayGenerator = args => ValueTask.FromResult(
+                    args.Outcome.Result?.StatusCode == System.Net.HttpStatusCode.TooManyRequests
+                        ? ExtractRetryAfter(args.Outcome.Result)
+                        : null),
+                OnRetry = args =>
+                {
+                    // The caller only owns the final response; release each discarded attempt.
+                    args.Outcome.Result?.Dispose();
+                    return ValueTask.CompletedTask;
+                }
+            });
     }
 
     /// <summary>
@@ -233,6 +274,7 @@ public static class HttpResiliencePolicy
                         args.AttemptNumber,
                         maxRetries + 1,
                         args.RetryDelay.TotalSeconds);
+                    args.Outcome.Result?.Dispose();
                     return ValueTask.CompletedTask;
                 }
             })

@@ -47,6 +47,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected readonly RateLimiter RateLimiter;
     protected readonly ILogger Log;
     protected readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
+    private readonly ResiliencePipeline<HttpResponseMessage> _requestTimeoutPipeline;
     private readonly HttpResponseHandler _responseHandler;
     private readonly object _rateLimitSync = new();
     private readonly TimeProvider _timeProvider;
@@ -189,12 +190,16 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         // Initialize resilience pipeline for transient fault handling
         ResiliencePipeline = enableResilience
-            ? HttpResiliencePolicy.CreateComprehensivePipeline(
+            ? HttpResiliencePolicy.CreateRetryAndCircuitBreakerPipeline(
                 maxRetries: 3,
                 retryBaseDelay: TimeSpan.FromSeconds(1),
                 circuitBreakerFailureThreshold: 5,
-                circuitBreakerDuration: TimeSpan.FromSeconds(30),
-                requestTimeout: TimeSpan.FromSeconds(30))
+                circuitBreakerDuration: TimeSpan.FromSeconds(30))
+            : ResiliencePipeline<HttpResponseMessage>.Empty;
+        // Rate admission may legitimately wait longer than a request timeout. Only
+        // the physical send is timed, while the outer pipeline bounds the whole operation.
+        _requestTimeoutPipeline = enableResilience
+            ? HttpResiliencePolicy.CreateTimeoutPipeline(TimeSpan.FromSeconds(30))
             : ResiliencePipeline<HttpResponseMessage>.Empty;
 
         // Initialize centralized HTTP response handler (Name property must be available).
@@ -329,13 +334,19 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task<HttpResponseMessage> ExecuteGetAsync(string url, string symbol, string dataType, CancellationToken ct)
     {
         ThrowIfDisposed();
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
         // Execute with resilience pipeline (retry, circuit breaker)
         var response = await ResiliencePipeline.ExecuteAsync(
-            async token => await Http.GetAsync(url, token).ConfigureAwait(false),
+            async token =>
+            {
+                // Every physical attempt spends quota, including retries. Admission
+                // remains cancellable but is outside the per-send timeout.
+                await WaitForRateLimitSlotAsync(token).ConfigureAwait(false);
+                return await _requestTimeoutPipeline.ExecuteAsync(
+                    async requestToken => await Http.GetAsync(url, requestToken).ConfigureAwait(false),
+                    token).ConfigureAwait(false);
+            },
             ct).ConfigureAwait(false);
 
         return response;

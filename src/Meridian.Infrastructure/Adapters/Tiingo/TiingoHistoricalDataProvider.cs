@@ -89,10 +89,10 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         {
             // Quick health check with metadata endpoint
             var url = $"{BaseUrl}/AAPL?token={_apiToken}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch when (!ct.IsCancellationRequested)
         {
             return false;
         }
@@ -120,8 +120,6 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrEmpty(_apiToken))
             throw new InvalidOperationException("Tiingo API token is required. Set TIINGO_API_TOKEN environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSymbol = NormalizeSymbol(symbol);
 
         // Build URL with date range
@@ -134,7 +132,7 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
             {

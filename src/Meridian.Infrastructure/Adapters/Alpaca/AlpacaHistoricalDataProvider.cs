@@ -159,14 +159,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Quick health check with a known symbol
             var url = $"{BaseUrl}/AAPL/bars?timeframe=1Day&start=2024-01-02&end=2024-01-03&limit=1&feed={_feed}";
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, "AAPL", "availability", ct).ConfigureAwait(false);
             return response.IsSuccessStatusCode;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (!ct.IsCancellationRequested)
         {
             Log.Debug(ex, "Alpaca availability check failed");
             return false;
@@ -193,14 +191,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             var url = BuildUrl(normalizedSymbol, from, to, nextPageToken);
             Log.Information("Requesting Alpaca history for {Symbol} ({Url})", symbol, url);
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, symbol, "historical data", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbol, "bars", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -305,8 +301,6 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
             var url = BuildQuotesUrl(symbolList, start, end, RemainingLimit(allQuotes.Count, limit), nextPageToken);
@@ -314,7 +308,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, string.Join(",", symbolList), "quotes", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "quotes", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -424,8 +418,6 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             // Each page asks only for what the limit still allows, so nothing fetched is discarded
             // and the page token returned to the caller continues exactly where the result ends.
             var url = BuildTradesUrl(symbolList, start, end, RemainingLimit(allTrades.Count, limit), nextPageToken);
@@ -433,7 +425,7 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, string.Join(",", symbolList), "trades", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "trades", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
@@ -543,14 +535,12 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
         do
         {
-            await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
             var url = BuildAuctionsUrl(symbolList, start, end, nextPageToken);
             Log.Information("Requesting Alpaca auctions for {Symbols} ({Url})", string.Join(",", symbolList), url);
 
             try
             {
-                using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+                using var response = await ExecuteGetAsync(url, string.Join(",", symbolList), "auctions", ct).ConfigureAwait(false);
                 await HandleHttpResponseOrThrowAsync(response, symbolList.First(), "auctions", ct).ConfigureAwait(false);
 
                 var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);
