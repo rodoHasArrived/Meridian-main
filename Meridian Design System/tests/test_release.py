@@ -3,6 +3,7 @@ import copy
 import importlib.util
 import io
 import json
+import re
 import tempfile
 import unittest
 import zipfile
@@ -32,6 +33,25 @@ class ReleaseTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Source changed after build"):
             EXPORT.validate(data)
 
+    def test_token_value_change_requires_metadata_refresh(self):
+        data = dict(self.data)
+        data["tokens/theme.css"] = data["tokens/theme.css"].replace(b"#F2F0EB", b"#F3F1EC", 1)
+        self.assertNotEqual(data["tokens/theme.css"], self.data["tokens/theme.css"])
+        with self.assertRaisesRegex(ValueError, "Manifest token/card metadata is stale"):
+            EXPORT.validate(data)
+
+    def test_card_marker_change_requires_metadata_refresh(self):
+        data = dict(self.data)
+        card = json.loads(data["_ds_manifest.json"])["cards"][0]
+        path = card["path"]
+        marker = re.search(rb"<!--\s*@dsCard\b[\s\S]*?-->", data[path])
+        self.assertIsNotNone(marker)
+        changed_marker = re.sub(rb"\bname=([\"'])(.*?)\1", b'name="Changed specimen title"', marker[0], count=1)
+        data[path] = data[path][:marker.start()] + changed_marker + data[path][marker.end():]
+        self.assertNotEqual(data[path], self.data[path])
+        with self.assertRaisesRegex(ValueError, "Manifest token/card metadata is stale"):
+            EXPORT.validate(data)
+
     def test_asset_tampering_is_rejected(self):
         data = dict(self.data)
         data["_preview_runtime.js"] += b"\n// tampered\n"
@@ -42,6 +62,15 @@ class ReleaseTests(unittest.TestCase):
         data = dict(self.data)
         data["components/core/Unbuilt.jsx"] = b"export const Unbuilt = () => null;"
         with self.assertRaisesRegex(ValueError, "source inventory changed after build"):
+            EXPORT.validate(data)
+
+    def test_public_module_cannot_be_omitted_from_bundled_source_inventory(self):
+        data = dict(self.data)
+        release = json.loads(data["release-build.json"])
+        public_path = json.loads(data["_ds_manifest.json"])["components"][0]["sourcePath"]
+        release["build"]["bundledSources"].remove(public_path)
+        data["release-build.json"] = json.dumps(release).encode()
+        with self.assertRaisesRegex(ValueError, "Bundled source inventory"):
             EXPORT.validate(data)
 
     def test_preview_script_styles_and_license_are_required(self):

@@ -2,6 +2,10 @@
 
 **Reviewed:** 2026-11-11 · **Source:** PR #3501, initial head `7e580e1729`
 
+This document preserves checkpoint-specific evidence. The
+[continuation status](#continuation-status) distinguishes later repairs and
+merged-tree verification from the earlier audit results.
+
 The branch advanced to `a81d7afb45` with an existing dashboard palette migration;
 that work is preserved. The initial review covered the package export. The user
 then expanded scope to integrate the package into the production browser
@@ -28,6 +32,11 @@ The initial manifest contains **351 public exports across 210 source modules,
 Its namespace is `MeridianDesignSystem_205d17`. These figures were read directly
 from `_ds_manifest.json`; the generated README and metrics still described the
 earlier 334-export release when this audit began.
+
+The latest metadata refresh after `1f01910387a2` records **743 tokens**, adding
+39 brand-scoped/default records to the immediately preceding 704-record manifest.
+The census remains 351 public exports, 210 source modules, 135 cards, 30 templates
+and 11 themes. The initial 680-token count above remains the starting census.
 
 `docs/QA_REPORT_4.3.0.md` records the upstream September release run: 49 unit
 checks, a Chromium keyboard/ARIA/responsive matrix, and declared assistive-
@@ -63,9 +72,10 @@ No baseline or test expectation should be widened to make these findings disappe
 The final command record belongs with the delivered archive, after the export's
 source and generated output are complete.
 
-## Current verification record
+## Initial expanded-tree verification record (historical)
 
-The following checks were exercised during this export task on the expanded tree:
+The following checks were exercised during the initial export follow-up. They
+remain evidence for that checkpoint, not results reassigned to later merges:
 
 | Check | Observed result and scope |
 | --- | --- |
@@ -83,10 +93,12 @@ The following checks were exercised during this export task on the expanded tree
 | Automated accessibility on the reference | Zero reported violations in the tested condition/theme combinations; color-contrast checks marked incomplete still require manual review |
 | Landing page | Chromium at 1366 × 768: canonical identity, 351/30/680/135 census, README/preview/audit/export links, no script errors, no horizontal overflow |
 
-The final current-tree run is recorded above separately from upstream history.
+That initial expanded-tree run is recorded separately from upstream history.
 The full specimen-card iframe matrix, NVDA/VoiceOver and Firefox/WebKit journeys
-remain unrun. Direct `file://` navigation was blocked by this session’s Chromium administrator policy; browser evidence uses loopback HTTP with no external requests. Full monorepo `bash scripts/ci.sh` was not run for this standalone
-package follow-up; hosted integration checks remain authoritative for the PR.
+were not run at that checkpoint. Direct `file://` navigation was blocked by the
+session's Chromium administrator policy; this evidence used loopback HTTP with
+no external requests. Full monorepo `bash scripts/ci.sh` was not run for the
+standalone package follow-up; hosted integration checks remain authoritative.
 
 ## Operational coverage
 
@@ -137,20 +149,25 @@ removed table APIs and template remaps in `docs/UPGRADING.md` before integrating
 older consumers. Preserve the current namespace and exact public manifest.
 
 **Observer fault boundary — resolved.** The initial review found that a throwing
-settlement observer could reclassify a successful transport result. The incoming
-component-adoption fix isolates synchronous
-`onSettle` and ledger-subscriber errors from transport outcomes. Confirmed edits
-stay confirmed; successful newest-first compensations stay reverted; remaining
-notifications continue. Observer errors are logged. Asynchronous consumer work
-still owns its promise failures; no live write transport is certified here.
+settlement observer could reclassify a successful transport result. Settlement
+and ledger-subscriber callbacks now have a separate fault boundary, including
+rejected promises they return. Confirmed edits stay confirmed; successful
+newest-first compensations stay reverted; later observers still run. Completed
+operations do not reject merely because an observer failed, avoiding a false
+signal to retry a confirmed write. Faults go to `globalThis.reportError`, with a
+console fallback. The host still owns recovery of its failed observer work; no
+live write transport is certified here.
 
-**Chart interaction.** `ScenarioSelector` now uses native button radios with
+**Chart interaction — repaired within the tested scope.** `ScenarioSelector` uses native button radios with
 Space/Enter activation, arrow/Home/End focus and selection, and a reachable
 fallback for a missing saved selection without silently changing the model.
-Read-only options remain disabled. `ChartAnnotations` still supplies no
-independent keyboard controls, and peer marks in `PeerComparisonStrip` rely on
-native titles. Include consequential annotation/peer values in an accessible
-adjacent table or inspector before production use.
+Read-only options remain disabled. Noninteractive `ChartAnnotations` expose
+band, event and callout descriptions through a named SVG group.
+`PeerComparisonStrip` provides a text table of subject, median, peer values and
+rank when its accessible label is supplied; consumers must provide that label
+for the alternative to render. These descriptions do not add editing commands
+to passive marks. DOM/keyboard regressions cover the implemented contracts;
+NVDA/VoiceOver and Firefox/WebKit journeys remain separate, unrun validation.
 
 **Verification scope.** A passing Python release gate covers its static checks.
 It does not prove every template, screen-reader journey, Windows Edge behavior,
@@ -229,7 +246,13 @@ states the button paints. The bundle-parity check skips sources the manifest no
 longer exports, and test files are not scanned as call sites. No threshold was
 lowered.
 
-**White-label presets.** The six `data-brand` presets state a dark accent trio
+**Historical diagnostics at this integration checkpoint.** The contrast check
+reported 12 findings about six white-label presets, and governance still
+reported 67 findings and 25 warnings. These are retained checkpoint results;
+the continuation repairs and checkpoint-specific reruns below supersede their
+use as current status. No consumer in this repository set `data-brand` at that review.
+
+**Incoming white-label preset fix.** The six `data-brand` presets state a dark accent trio
 and a ghost fill again, as the previous package version did, and three rules
 in `tokens/theme.css` carry a brand's accent family into auto dark, manual dark
 and forced light. Before this a brand lost its accent under `data-theme="dark"`
@@ -245,8 +268,9 @@ focus token, because the focus ring is the interaction blue for every brand;
 it passes with zero findings. No consumer in this repository sets
 `data-brand`.
 
-**Still failing.** The governance gate is unchanged at 67 findings and 25
-warnings.
+**Historical governance result for that white-label checkpoint.** The gate
+remained at 67 findings and 25 warnings; the continuation repairs below supersede
+that earlier result.
 
 ## Production browser integration follow-up
 
@@ -310,8 +334,9 @@ with synthetic data/component fixtures. Seventeen unhandled fixture API paths
 remain explicit in the harness report; this is not posted-backend validation.
 These Chromium checks do not claim
 Windows/Edge rendering, browser zoom coverage, screen-reader conformance, or
-whole-product production certification. They do not change the package's
-retained governance and Python-suite failures recorded above.
+whole-product production certification. Those browser checks did not, by
+themselves, repair the package governance and Python-suite failures present at
+that checkpoint; the later package work is recorded below.
 
 ## PR review repairs
 
@@ -331,8 +356,8 @@ their source behavior was preserved. The CI secret finding was an independently
 verified SHA-256 of `components/data/KeyValueGrid.jsx` in the two build-provenance
 files. Its scanner exception matches only that complete digest in those exact
 paths. Negative controls confirm that other content in those files and the same
-digest elsewhere remain detectable. Remaining release/governance limitations
-above still apply.
+digest elsewhere remain detectable. That review retained the then-open package
+gaps; the continuation status below records their later treatment.
 
 The merge retained incoming generated diagrams and documentation, font notices,
 and mask/currentColor workspace icons alongside the expanded browser integration.
@@ -359,11 +384,12 @@ into production. Shared names alone are not a compatibility guarantee.
 | Package ScenarioSelector / OptimisticProvider | Source-level Chromium regressions cover keyboard behavior and synchronous observer fault isolation; the generated export is rebuilt. |
 
 The package's standalone release/browser and agency checks remain scoped to
-synthetic examples, not every template or live financial workflow. The release
-governance check still reports **67 failures and 25 warnings**. Comparing its
-findings with an extracted copy of the original `ec33af6168` PR tree confirms
-that the finding set is unchanged; the six other static release gates pass.
-No governance rule or baseline was weakened.
+synthetic examples, not every template or live financial workflow. At this
+component-adoption checkpoint, governance reported **67 failures and 25
+warnings**. Comparison with an extracted copy of `ec33af6168` confirmed the same
+finding set then, while the six other release gates passed. This historical
+comparison is not the result of the later validation repairs. No governance
+rule or baseline was weakened to obtain it.
 
 `npm run test:components` runs the two new source-level browser regressions;
 set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium. Dashboard integration
@@ -412,12 +438,16 @@ assistive-technology, zoom, or live-backend certification.
 
 Independent checks of the incoming package passed the ScenarioSelector keyboard
 and optimistic-observer Chromium regressions, source/build freshness, and export
-integrity. These fixes close the earlier selector and synchronous observer gaps;
-the remaining chart disclosure and legacy governance limitations above remain
-explicit.
+integrity. Those incoming checks closed the selector and synchronous observer
+gaps at that checkpoint. The continuation expands observer isolation and chart
+data alternatives and records the remaining verification separately.
 
+## Incoming developer integration and accessibility evidence
 
-## Developer integration and accessibility completion
+This incoming checkpoint records gallery/workbench and integration verification
+before the continuation and merge of `0c10785dfc03`. Its counts and outstanding
+findings below belong to that checkpoint; the continuation status records later
+repairs and reruns.
 
 The follow-up retains concurrent integration and token-reconciliation commits
 through `27ab256c10`, without rewriting the shared PR history. It preserves the
@@ -468,16 +498,16 @@ rule suppressed to obtain a passing focused result. The full monorepo CI script
 was not run locally. Real Windows builds/tests and required hosted checks remain
 the merge authority; Linux stub builds are not WPF evidence.
 
-After the concurrent reconciliation, the full contrast checker reports 18
+At that incoming checkpoint, the full contrast checker reported 18
 retained brand-theme findings (custom focus/dark identity/required branded pairs).
-The whole-package governance result remains 67 failures and 25 warnings. The
-unfiltered Python suite runs 45 tests with one legacy contrast failure and 14
+The whole-package governance result was 67 failures and 25 warnings. The
+unfiltered Python suite ran 45 tests with one legacy contrast failure and 14
 obsolete governance-API errors; the 17 focused contrast and 13 integrity tests
-pass separately. These broader findings are visible and do not change the
-focused command's scope.
+passed separately. These historical broader findings did not change the
+focused command's scope; their later repairs are recorded below.
 
 
-The final dashboard sweep covers all **430 current test files and 4,947 passing
+The incoming dashboard sweep covered **430 test files and 4,947 passing
 assertions**, taking the latest passing result per file. Earlier attempts remain
 in the local evidence: two Trading class assertions were aligned with the
 contrast-corrected destructive variant, and one Reporting accessibility timeout
@@ -506,3 +536,97 @@ composite each badge wash over the selected surface; the global semantic hue and
 fill contracts remain. The masthead Paper label/dot use the canonical dark-surface
 slate tone regardless of the workspace appearance. The maintained browser profile
 checks their actual composed contrast instead of accepting a root token alone.
+
+
+## Continuation status
+
+The continuation repairs governance-checker API drift, retained template
+preview/state behavior, metadata validation, semantic text roles and color
+fallbacks, observer fault isolation, and chart keyboard/data alternatives.
+These changes preserve the initial findings above as history instead of
+rewriting that earlier run as green.
+
+Verified package checkpoint after integrating the incoming commits through
+`0c10785dfc03`, before the subsequent brand runtime-alias update through
+`1f01910387a2`:
+
+- All seven release gates and the complete **127-test Python suite** passed.
+  The initial 30-test, incoming 45-test and intermediate 99-test results
+  retain their checkpoint-specific scope.
+- The full contrast check passed across 8,115 color fallbacks, 10,944 bare
+  variables, 1,882 bundled rules and 29 assets. Token parity passed for 227 shared
+  names with zero divergences. Forced-light inputs now resolve to their light
+  identities under an OS-dark preference without alias cycles; cycle checking
+  includes dependencies inside `var()` fallbacks.
+- Metadata synchronization gives unconditional defaults precedence over
+  conditional dark declarations, including when the old manifest points to the
+  conditional source. Conditional-only tokens remain represented. All 13 focused
+  metadata tests passed as part of the complete suite.
+- The strict full specimen matrix passed **135/135 cards** with zero recorded
+  conformance, runtime, console, asset or unexpected remote-request errors. The
+  generated bundle remained byte-identical through the run. Earlier partial
+  runs and font failures remain historical evidence, not waived assertions.
+- The brand/appearance browser matrix passed 28 states and 1,932 required AA
+  contrast pairs. The latest gallery verification passed five model tests and
+  the 135-card browser journey with zero reported axe violations.
+- The package build/source freshness check passed. Release integrity passed for
+  1,346 curated files. The archive checksum must be associated with the delivered
+  source and final documentation content when the artifact is regenerated.
+
+At that checkpoint, managed dashboard `npm run check:design-system` passed end
+to end:
+126 focused tests across 13 files, plus assets, ratchets, typography, gallery,
+parity, contrast, build freshness, release and export checks. A separate native
+raw-color/contract matrix passed 45 tests across ten files. Production browser
+verification passed nine scenes and 200%-equivalent reflow; font checks verified
+ten WOFF2 assets and two license files. The latest managed browser coverage
+passed 64 cases and 15 axe scans with zero reported violations.
+
+The earlier standalone browser run passed 22 theme/condition accessibility
+states with zero recorded axe, remote-request or runtime errors. The focused
+dashboard matrix passed 196 tests and the workstation smoke passed 22 cases at
+their respective checkpoints. The incoming 4,947-assertion full-dashboard run
+above retains its own source and scope; these results are not combined into a
+new unrun full-suite count.
+
+Final verification after the brand runtime-alias update, 743-token metadata
+refresh and integration through `7952be63ba` passed the complete **135-test Python
+suite** and full contrast check. All seven release gates passed after the
+runtime-alias update. The parity suite passed 12 tests, and the complete parity
+check passed with 502 declared names, 227 shared names and zero findings. The
+fresh brand browser matrix passed 28 states and 1,932 AA pairs; all 60 actual
+dark-role mappings matched their intended identities. The final native browser
+coverage passed 64 cases and 15 axe scans with zero reported violations.
+
+The incoming Modal/comment-governance fixes retained the already-correct
+button type and standalone identity. The final retired-export declaration
+requires each retained unpublished API to name its source and public replacement;
+all 29 governance tests passed, with zero package failures and warnings. The
+component bundle and public runtime are byte-identical to those exercised by
+the strict 135-card run, so that component proof remains applicable. Source-hash
+and README checks reported zero errors. The initial and intermediate Python
+counts above remain historical; 135 is the final complete-suite result.
+Release integrity covers 1,347 curated files. The CI-equivalent Gitleaks 8.25.1
+first-parent scan passed with no findings; exact source-digest exceptions remain
+limited to the verified provenance values and paths.
+
+The documentation generators were attempted and each generation step exited
+successfully, but the aggregate `verify-docs` check did not converge against the
+uncommitted worktree; it is not recorded as a passing documentation gate. The
+`dotnet` CLI is absent from this execution environment, so full aggregate .NET
+validation could not run locally.
+
+The specimen collector uses an explicit local cache of the exact React 18.3.1,
+React DOM 18.3.1 and Babel 7.29.0 peer bytes and verifies their SHA-384 pins.
+**84 source peer-script references lack declared SRI** in the inspected cards.
+They remain recorded as missing source integrity; cached-byte verification
+does not add an integrity attribute or establish live CDN availability. Unknown
+remote requests remain blocked and fail the run. See
+[`tests/SPECIMEN_MATRIX.md`](../tests/SPECIMEN_MATRIX.md) for the runner's scope,
+raw findings and preparation instructions.
+
+NVDA/VoiceOver, Firefox/WebKit, native Windows/Edge rendering and full monorepo
+`bash scripts/ci.sh` remain unrun for this continuation. Automated Chromium
+checks and passing static gates do not establish those results, every template
+host workflow, real provider integration or live financial execution. Hosted
+checks remain the integration authority; the PR is not merged by this audit.

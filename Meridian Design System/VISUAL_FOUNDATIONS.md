@@ -60,8 +60,9 @@ render as small-caps rather than ALL-CAPS.
 
 ## Elevation, radii, spacing (`ThemeSurfaces.xaml`)
 
-- Radii: **2 / 4 / 6** — 2px chips, 4px controls and panels (`--radius-card`), 6px large sheets;
-  never above 8. Structure comes from rules, not rounding.
+- Radii: **2 / 4 / 6 / 8** — 2px chips and analytical plates, 4px controls and cards
+  (`--radius-card: 4px`), 6px detached overlays, and 8px dialogs (the ceiling). Structure
+  comes from borders, not rounding.
 - Accent bars: 3px metric-card left border; 4px tone-inspector / queue-card left border
 - Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
   hard-edged **menu** shadow `0 2px 8px rgba(17,23,29,.16)` on detached overlays that genuinely

@@ -4,12 +4,14 @@
 import React from "react";
 import { useOverlayFocus } from "./useOverlayFocus";
 
+const ModalTitleIdContext = React.createContext(null);
+
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5)); z-index: 50;
+.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5)); z-index: 50;
   display: flex; align-items: center; justify-content: center;
   animation: mdl-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out); }
 @keyframes mdl-fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -46,10 +48,6 @@ function inject() {
   document.head.appendChild(el);
 }
 
-// The dialog's name comes from its header. A fixed id="mdl-title" collided as soon as two
-// modals were mounted, so the dialog generates the id and hands it to ModalHeader.
-const ModalTitleId = React.createContext(null);
-
 export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, children }) {
   inject();
   const ref = React.useRef(null);
@@ -65,6 +63,7 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
   }, [open, closeOnEsc, onClose]);
   if (!open) return null;
   return (
+    <ModalTitleIdContext.Provider value={titleId}>
     <div className="mdl-overlay" onClick={onClose} ref={ref}>
       <div
         className="mdl-wrap"
@@ -73,18 +72,20 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <ModalTitleId.Provider value={titleId}>{children}</ModalTitleId.Provider>
+        {children}
       </div>
     </div>
+    </ModalTitleIdContext.Provider>
   );
 }
 
 export function ModalHeader({ title, onClose }) {
-  const titleId = React.useContext(ModalTitleId);
+  const modalTitleId = React.useContext(ModalTitleIdContext);
+  const standaloneTitleId = React.useId();
   return (
     <div className="mdl-hd">
-      <h2 className="mdl-title" id={titleId || undefined}>{title}</h2>
-      <button className="mdl-close" onClick={onClose} aria-label="Close">×</button>
+      <h2 className="mdl-title" id={modalTitleId ?? standaloneTitleId}>{title}</h2>
+      <button type="button" className="mdl-close" onClick={onClose} aria-label="Close">×</button>
     </div>
   );
 }

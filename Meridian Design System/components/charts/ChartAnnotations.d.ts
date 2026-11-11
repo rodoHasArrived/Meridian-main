@@ -15,6 +15,8 @@ export interface ChartAnnotationEvent {
   /** Defaults to the event's one-based position. */
   badge?: string | number;
   kind?: ChartAnnotationKind;
+  /** Explanation exposed with the event label and in its SVG title. */
+  detail?: string;
 }
 export interface ChartAnnotationCallout {
   index: number;

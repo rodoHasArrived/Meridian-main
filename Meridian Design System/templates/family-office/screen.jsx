@@ -3,11 +3,9 @@
 // FamilyOwnershipGraphDto (nodes/edges), FamilyAccountSummaryDto (with the provenance
 // tuple), CapitalCommitmentDto / CapitalActivityDto, FamilyOfficeReadinessDto.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout,
-  DenseDataTable, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink,
-  OwnershipGraph, CommitmentBar, ProvenanceChip
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip;
 const { useState } = React;
 
 const NAV = [
@@ -76,14 +74,15 @@ const ACTIVITY = [
   { activityId: "ACT-0912", vehicle: "Growth Fund III LP", activityType: "Distribution", amount: "$180,000", noticeDate: "2026-05-28", dueDate: "2026-06-15", status: "Settled" },
 ];
 
-function FamilyOfficeScreen() {
+function FamilyOfficeScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip } = window.MeridianDesignSystem_205d17);
   const [sel, setSel] = useState("tr1");
   const facts = ENTITY_FACTS[sel] || {};
   const selNode = NODES.find((n) => n.id === sel);
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="Family Office" environment="OPS" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="Family Office" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="overview" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -93,9 +92,10 @@ function FamilyOfficeScreen() {
             <Badge variant="neutral">USD · as-of 2026-06-30</Badge>
             <SeverityBadge status="ReviewRequired" label="Review required" />
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm">Evidence binder</Button>
-            <Button variant="primary" size="sm">Record review</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Evidence binder</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm">Record review</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Family office records">
 
           {/* FamilyOfficeReadinessDto.Blockers */}
           <Callout tone="warning" title="2 blockers before this workspace can be trusted for decisions">
@@ -139,14 +139,14 @@ function FamilyOfficeScreen() {
               {/* FamilyAccountSummaryDto */}
               <PanelSurface style={{ padding: 0 }}>
                 <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}><Eyebrow>Accounts</Eyebrow></div>
-                <DenseDataTable
+                <DataGrid
                   columns={[
                     { key: "accountId", label: "Account" },
                     { key: "entity", label: "Entity" },
                     { key: "marketValue", label: "Market value", align: "right" },
                     { key: "cash", label: "Cash", align: "right" },
-                    { key: "recon", label: "Recon", render: (r) => <SeverityBadge status={r.recon} /> },
-                    { key: "prov", label: "Provenance", render: (r) => <ProvenanceChip {...r.prov} /> },
+                    { key: "recon", label: "Recon", cell: (r) => <SeverityBadge status={r.recon} /> },
+                    { key: "prov", label: "Provenance", cell: (r) => <ProvenanceChip {...r.prov} /> },
                   ]}
                   rows={ACCOUNTS} />
               </PanelSurface>
@@ -162,19 +162,20 @@ function FamilyOfficeScreen() {
           {/* CapitalActivityDto */}
           <PanelSurface style={{ padding: 0 }}>
             <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}><Eyebrow>Recent capital activity</Eyebrow></div>
-            <DenseDataTable
+            <DataGrid
               columns={[
                 { key: "activityId", label: "Activity" },
                 { key: "vehicle", label: "Vehicle" },
-                { key: "activityType", label: "Type", render: (r) => <Badge variant={r.activityType === "Distribution" ? "success" : "warning"}>{r.activityType}</Badge> },
+                { key: "activityType", label: "Type", cell: (r) => <Badge variant={r.activityType === "Distribution" ? "success" : "warning"}>{r.activityType}</Badge> },
                 { key: "amount", label: "Amount", align: "right" },
                 { key: "noticeDate", label: "Notice" },
                 { key: "dueDate", label: "Due" },
-                { key: "status", label: "Status", render: (r) => <SeverityBadge status={r.status} /> },
+                { key: "status", label: "Status", cell: (r) => <SeverityBadge status={r.status} /> },
               ]}
               rows={ACTIVITY} />
           </PanelSurface>
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

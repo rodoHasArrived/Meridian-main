@@ -142,8 +142,8 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
             <tr>
               <th scope="col" aria-label="Matched" style={{ width: 28, textAlign: "center" }}>
                 <Checkbox
+                  aria-label={`Matched status for all ${side.title} items`}
                   checked={allMatched}
-                  aria-label={`Match all ${side.title} items`}
                   onChange={(checked) => onToggleAll && onToggleAll(side, checked)}
                 />
               </th>
@@ -158,8 +158,8 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
               <tr key={it.id ?? i} className={it.matched ? "matched" : "open"}>
                 <td style={{ textAlign: "center", paddingLeft: 6, paddingRight: 6 }}>
                   <Checkbox
+                    aria-label={`Matched: ${side.title} ${it.ref ?? it.id}`}
                     checked={it.matched || false}
-                    aria-label={`Match ${side.title} item ${it.ref ?? i + 1}`}
                     onChange={(checked) => onToggleItem && onToggleItem(it.id, checked)}
                   />
                 </td>
@@ -247,8 +247,8 @@ export function ReconciliationPanel({
           {searchable && (
             <div className="rec__searchwrap">
               <Input
+                aria-label="Filter reconciliation items by memo or reference"
                 placeholder="Filter memo, ref…"
-                aria-label="Filter reconciliation items"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
               />

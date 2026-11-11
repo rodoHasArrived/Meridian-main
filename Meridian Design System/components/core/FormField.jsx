@@ -1,3 +1,5 @@
+import React from "react";
+
 /**
  * Meridian FormField — Wrapper combining label, input, error, and hint.
  * Reduces boilerplate in forms by bundling all field furniture.
@@ -16,7 +18,14 @@ export function FormField({
   className = '',
   style = {},
 }) {
-  const fieldId = Math.random().toString(36).slice(2);
+  const generatedId = React.useId();
+  const control = React.isValidElement(children) ? children : null;
+  const fieldId = control?.props.id || generatedId;
+  const helpId = `${fieldId}-help`;
+  const describedBy = [...new Set([
+    ...(control?.props["aria-describedby"] || "").split(/\s+/).filter(Boolean),
+    ...((hint || error) ? [helpId] : []),
+  ])].join(" ");
 
   return (
     <div
@@ -42,26 +51,22 @@ export function FormField({
         >
           {label}
           {required && (
-            <span style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
+            <span aria-hidden="true" style={{ color: 'var(--red)', marginLeft: '4px' }}>*</span>
           )}
         </label>
       )}
 
-      {/* Input (cloned with id and aria attrs) */}
-      {children && typeof children === 'object' && children.type
-        ? (() => {
-            const cloned = children;
-            return cloned.props ? (
-              children
-            ) : (
-              children
-            );
-          })()
-        : children}
+      {/* Keep the visible label and supporting message attached to the control. */}
+      {control ? React.cloneElement(control, {
+        id: fieldId,
+        ...(describedBy ? { "aria-describedby": describedBy } : {}),
+        ...(error ? { "aria-invalid": true } : {}),
+        ...(required ? { "aria-required": true } : {}),
+      }) : children}
 
       {/* Hint or error message */}
       {(hint || error) && (
-        <div
+        <div id={helpId}
           style={{
             fontSize: 'var(--type-caption)',
             color: error ? 'var(--red)' : 'var(--text-muted)',

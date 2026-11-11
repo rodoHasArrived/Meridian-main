@@ -42,7 +42,7 @@ function inject() {
 .mds-ms-btn:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .mds-ms-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);max-height:260px;
-  overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  overflow-y:auto;box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-ms-menu--above{top:auto;bottom:calc(100% + 4px);}
 .mds-ms-bulk{display:flex;gap:8px;padding:6px 10px;border-bottom:1px solid var(--border-divider,#E2DED5);
   position:sticky;top:0;background:var(--bg-light,#F8F7F3);z-index:1;}

@@ -21,6 +21,7 @@ paths       = [
 regexTarget = "secret"
 regexes     = [
     '''^869b90a742954586f725e346e596aab4930239f0c4411acfd2e32448460f6632$''',
+    '''^94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7$''',
 ]
 
 [[allowlists]]

@@ -20,7 +20,7 @@ function inject() {
   letter-spacing:.03em;color:var(--text-muted,#606870);
   border-bottom:1px solid var(--border,#D2CDC3);}
 .edt th.edt--r{text-align:right;}
-.edt th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--brand-signal-text,#8E4730);}
+.edt th:focus-visible{outline:var(--focus-ring);outline-offset:-2px;color:var(--brand-signal-ink,#944A32);}
 .edt th.edt--expand{width:34px;padding:9px 10px;text-align:center;}
 .edt th.edt--checkbox{padding:9px 10px;width:34px;text-align:center;}
 .edt td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#20252B);
@@ -50,7 +50,7 @@ function inject() {
   background-size:12px;background-position:center;background-repeat:no-repeat;}
 .edt__sort{margin-left:6px;font-size:9px;opacity:.4;}
 .edt th.edt--sorted{color:var(--text-secondary,#535C65);}
-.edt th.edt--sorted .edt__sort{opacity:1;color:var(--brand-signal-text,#8E4730);}
+.edt th.edt--sorted .edt__sort{opacity:1;color:var(--brand-signal-ink,#944A32);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "edt");

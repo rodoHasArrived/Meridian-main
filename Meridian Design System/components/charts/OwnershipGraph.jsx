@@ -20,7 +20,7 @@ function inject() {
 .mds-own__row + .mds-own__row{margin-top:56px;}
 .mds-own__node{position:relative;z-index:1;display:flex;flex-direction:column;gap:3px;min-width:132px;max-width:200px;
   padding:8px 11px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-card,6px);
-  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-raised,0 1px 2px rgba(26,32,39,.06));
+  background:var(--bg-light,#F8F7F3);box-shadow:var(--shadow-card,none);
   text-align:left;cursor:default;font-family:var(--font-body,"IBM Plex Sans",sans-serif);}
 .mds-own__node--click{cursor:pointer;}
 .mds-own__node--click:hover{border-color:var(--border-strong,#AAA49A);background:var(--bg-hover,#EDEFF0);}

@@ -9,6 +9,8 @@ function inject() {
   const el = document.createElement("style");
   el.setAttribute("data-mds", "datum");
   el.textContent = `
+@property --datum-color{syntax:"*";inherits:true;}
+@property --datum-lane{syntax:"*";inherits:true;}
 .mds-datum{position:absolute;z-index:3;pointer-events:none;color:var(--text-muted,#606870);font-family:var(--font-data,monospace);font-size:10px;line-height:1;}
 .mds-datum--v{top:0;bottom:0;width:0;border-left:var(--stroke-hairline,1px) solid var(--datum-color,var(--border-strong,#AAA49A));}
 .mds-datum--h{left:0;right:0;height:0;border-top:var(--stroke-hairline,1px) solid var(--datum-color,var(--border-strong,#AAA49A));}
@@ -130,7 +132,7 @@ export function Datum({
       <DatumSvg
         role={role} orientation={orientation} position={position} to={to} label={label} value={value}
         marker={marker} labelPlacement={labelPlacement} interactive={interactive} onActivate={onActivate}
-        labelLane={labelLane} className={className} {...rest}
+        labelLane={labelLane} className={className} style={style} {...rest}
       />
     );
   }

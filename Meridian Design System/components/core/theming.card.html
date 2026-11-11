@@ -63,7 +63,7 @@
             {options.map((o) => {
               const on = o.id === value;
               return (
-                <button
+                <button type="button"
                   key={o.id || "default"}
                   onClick={() => onChange(o.id)}
                   aria-pressed={on}

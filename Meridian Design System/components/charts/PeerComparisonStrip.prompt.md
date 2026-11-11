@@ -23,6 +23,7 @@ caller must explain missingness rather than presenting a computed rank as useful
 Empty peers yield no median or rank. The strip owns no loading, stale-data,
 filtering, or drilldown workflow.
 
-Supply `ariaLabel` to emit the subject/median/rank table. Peer marks use native
-titles and are not keyboard controls; put consequential individual peer values
-and evidence in an accessible adjacent table or inspector.
+Supply `ariaLabel` to emit the subject, median, individual peer values, and rank
+table. Peer marks use native titles and are not keyboard controls; the table
+exposes the same formatted individual values without requiring hover. Put source
+evidence and any supported drilldown in an accessible adjacent inspector.
