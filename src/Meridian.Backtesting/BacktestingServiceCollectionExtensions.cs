@@ -49,13 +49,27 @@ public static class BacktestingServiceCollectionExtensions
                     sp.GetService<ICorporateActionAdjustmentService>() ?? CreateSecurityMasterAdjustment(sp),
                     sp.GetService<IBacktestPreflightService>(),
                     sp.GetService<ISecurityIdentityQueryService>()
-                        ?? sp.GetService<ISecurityMasterQueryService>());
+                        ?? sp.GetService<ISecurityMasterQueryService>(),
+                    sp.GetService<IBacktestAssetEventSource>() ?? CreateSecurityMasterAssetEventSource(sp));
             }
 
             return CreateEngine;
         });
 
         return services;
+    }
+
+    internal static IBacktestAssetEventSource? CreateSecurityMasterAssetEventSource(IServiceProvider sp)
+    {
+        var corporateActions = sp.GetService<ISecurityCorporateActionsQueryService>()
+            ?? sp.GetService<ISecurityMasterQueryService>();
+        var resolver = sp.GetService<ISecurityResolver>();
+        return corporateActions is null || resolver is null
+            ? null
+            : new SecurityMasterAssetEventSource(
+                corporateActions,
+                resolver,
+                sp.GetRequiredService<ILogger<SecurityMasterAssetEventSource>>());
     }
 
     /// <summary>
