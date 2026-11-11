@@ -213,8 +213,8 @@ async function nativeAccounting(page) {
       const style = getComputedStyle(element); return { width: style.borderTopWidth, style: style.borderTopStyle, color: style.borderTopColor };
     }));
     assert.deepEqual(borders, [{ width: "1px", style: "solid", color: expected }, { width: "1px", style: "solid", color: expected }], `${theme}: native accounting hairlines resolve raw color tokens`);
-    await page.waitForFunction(expected => getComputedStyle(document.querySelector("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true']")).backgroundColor === expected, theme === "light" ? "rgb(231, 237, 242)" : "rgb(44, 64, 84)");
-    const selected = await page.locator("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true']").evaluate(element => getComputedStyle(element).backgroundColor);
+    await page.waitForFunction(expected => getComputedStyle(document.querySelector("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true'] td")).backgroundColor === expected, theme === "light" ? "rgb(231, 237, 242)" : "rgb(44, 64, 84)");
+    const selected = await page.locator("#design-system-accounting-fixture .tbl-wrap tr[aria-selected='true'] td").first().evaluate(element => getComputedStyle(element).backgroundColor);
     assert.equal(selected, theme === "light" ? "rgb(231, 237, 242)" : "rgb(44, 64, 84)", `${theme}: selection uses blue, independently of signal`);
     report.nativeAccounting.themes.push({ theme, borders, selected, screenshot: await screenshot(page, `after-native-accounting-${theme}`) });
   }

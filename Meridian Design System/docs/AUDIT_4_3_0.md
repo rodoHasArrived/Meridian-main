@@ -197,18 +197,28 @@ auxiliary CSS consumers.
 
 ### Production integration verification
 
+The merged production source checkpoint is `5e9f5b6801`. Application checks below
+are separate from the standalone package and upstream release checks above.
+
 | Check | Observed scope |
 | --- | --- |
 | Full dashboard suite before the incoming merge | 4,843 tests passed, zero failed, across 424 files in 53 batches |
 | Focused regression matrix after the merge | 327 tests passed across 67 files; separate passport checks passed 23 tests and masthead/app checks passed five tests |
 | Production build after the merge | `npm run build` passed TypeScript checking and Vite production output; the existing chunk-size warning remained nonfatal |
-| Strict TypeScript check | Passed |
+| Strict TypeScript check | Passed on the merged source; normal TypeScript checking also passed in the production build |
 | Dashboard lint | Zero errors; 97 warnings retained |
 | Canonical asset verification | 77 synchronized files passed the byte check |
 | Generated routes/catalog and evidence-reader regression | Two focused tests passed |
+| Rendered browser workstation | 22 Chromium checks passed: Trading/Accounting across light/dark at 1920 × 1080, 1440 × 900, and 1366 × 768; seven workspace routes; Portfolio MSFT proof Enter/Escape and focus return; four OS/manual appearance cases; Compact/Default/Spacious density settings with 28/36/44px rows; Ctrl+K palette keyboard operation |
+| Browser accessibility | Three fresh scenes reported zero automated violations: Portfolio MSFT proof in light appearance, Settings explicit Light under a dark OS preference, and Settings explicit Dark |
+| Native surface paint | Trial Balance/Ledger source-component borders were solid 1px with canonical light/dark `#D2CDC3` / `#2C3640`; selected cells used blue `#E7EDF2` / `#2C4054`; no uncaught exceptions, failed assets, or unexpected console errors |
 
-The full-suite count identifies the pre-merge source checkpoint. Final merged
-build, targeted regression, and rendered-workstation evidence must retain their
-own scope rather than inheriting that count. These application checks do not
-change the package's retained governance and Python-suite failures recorded
-above.
+The full-suite count identifies the pre-merge source checkpoint; merged build,
+targeted regression, and rendered checks have their own scope above. The final
+`smoke:design-system` report passed and records the actual workstation source
+with synthetic data/component fixtures. Seventeen unhandled fixture API paths
+remain explicit in the harness report; this is not posted-backend validation.
+These Chromium checks do not claim
+Windows/Edge rendering, browser zoom coverage, screen-reader conformance, or
+whole-product production certification. They do not change the package's
+retained governance and Python-suite failures recorded above.
