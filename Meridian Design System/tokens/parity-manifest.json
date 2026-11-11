@@ -54,14 +54,7 @@
     "chart": ["--chart-grid", "--chart-grid-major", "--chart-up", "--chart-dn", "--chart-ma20", "--chart-ma50", "--chart-bench", "--chart-band", "--chart-crosshair", "--chart-dd"],
     "effects": ["--shadow-workstation", "--shadow-panel", "--shadow-menu", "--shadow-float", "--shadow-soft", "--radius-chip", "--radius-button", "--radius-card", "--radius-checkbox", "--space-panel"]
   },
-  "upstreamValueDivergences": [
-    {
-      "names": ["--severity-review-fg", "--severity-review-bd", "--severity-review-bg"],
-      "upstream": "ochre (--orange), the same hue as Action",
-      "here": "terracotta signal (--accent) with the --brand-signal-text ink",
-      "why": "An open product decision, not drift. The workstation moved Review off the signal so terracotta stays brand-only; that leaves Review and Action on one hue, told apart by label alone. The package keeps the distinct hue until the owner picks one rule for both."
-    }
-  ],
+  "upstreamValueDivergences": [],
   "tokens": {
     "--accent": {
       "light": "#C56343",

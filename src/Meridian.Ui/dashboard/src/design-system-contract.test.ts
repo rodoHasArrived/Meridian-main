@@ -599,7 +599,9 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--orange-dim)");
+    // Review is the terracotta signal, distinct from Action's ochre; its text is the signal ink.
+    expect(styles).toContain("--severity-review-fg: var(--brand-signal-text)");
+    expect(styles).toContain("--severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(

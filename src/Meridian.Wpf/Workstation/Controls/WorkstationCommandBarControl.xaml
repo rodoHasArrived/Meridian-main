@@ -32,9 +32,11 @@
                                     <Setter Property="Padding" Value="14,10" />
                                     <Setter Property="FontWeight" Value="SemiBold" />
                                     <Style.Triggers>
+                                        <!-- Primary commands use the graphite primary action (Design System 4.3.0). -->
                                         <DataTrigger Binding="{Binding Tone}" Value="Primary">
-                                            <Setter Property="Background" Value="{StaticResource InfoColorBrush}" />
-                                            <Setter Property="Foreground" Value="White" />
+                                            <Setter Property="Template" Value="{StaticResource PrimaryButtonTemplate}" />
+                                            <Setter Property="BorderBrush" Value="{StaticResource ConsoleActionPrimaryBrush}" />
+                                            <Setter Property="Foreground" Value="{StaticResource ConsoleActionPrimaryTextBrush}" />
                                         </DataTrigger>
                                         <DataTrigger Binding="{Binding Tone}" Value="Danger">
                                             <Setter Property="BorderBrush" Value="{StaticResource ErrorColorBrush}" />
