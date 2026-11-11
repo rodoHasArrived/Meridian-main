@@ -457,26 +457,47 @@ describe("TradingScreen", () => {
       ]
     }, "/trading/orders");
 
+    // Orders and fills control one shared pane; it opens on the first open order.
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
-    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-order-detail");
+    expect(queuedOrder).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getAllByRole("region", { name: /detail for/i })).toHaveLength(1);
+    expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveAttribute("id", "trading-execution-detail");
 
     await user.click(queuedOrder);
 
     await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
     expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /order detail for po-2/i })).toHaveAttribute("id", "trading-order-detail");
+    const orderPane = screen.getByRole("region", { name: /order detail for po-2/i });
+    expect(orderPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(orderPane).getByRole("heading", { name: "Order PO-2" })).toBeInTheDocument();
+    // The pane offers the next action and does not repeat the row's always-visible columns.
+    expect(within(orderPane).getByRole("button", { name: "Cancel order PO-2" })).toBeInTheDocument();
+    expect(within(orderPane).getByLabelText("Order details")).toHaveTextContent("Quantity10");
+    expect(within(orderPane).getByLabelText("Order details")).not.toHaveTextContent("Submitted");
 
     const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
-    expect(secondFill).toHaveAttribute("aria-controls", "trading-fill-detail");
+    expect(secondFill).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(secondFill).toHaveAttribute("aria-expanded", "false");
 
     secondFill.focus();
     await user.keyboard(" ");
 
+    // Selecting a fill switches the same pane to the fill; the order row is no longer expanded.
     await waitFor(() => expect(secondFill).toHaveAttribute("aria-selected", "true"));
     expect(secondFill).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("region", { name: /fill detail for fl-2/i })).toHaveAttribute("id", "trading-fill-detail");
+    expect(queuedOrder).toHaveAttribute("aria-selected", "true");
+    expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    const fillPane = screen.getByRole("region", { name: /fill detail for fl-2/i });
+    expect(fillPane).toHaveAttribute("id", "trading-execution-detail");
+    expect(within(fillPane).getByRole("heading", { name: "Fill FL-2" })).toBeInTheDocument();
+    expect(within(fillPane).queryByRole("button", { name: /cancel order/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /order detail for/i })).not.toBeInTheDocument();
+
+    // Escape from the shared pane returns to the row it is showing, not the other table's.
+    fillPane.focus();
+    await user.keyboard("{Escape}");
+    expect(secondFill).toHaveFocus();
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {
@@ -1147,7 +1168,12 @@ describe("TradingScreen", () => {
   it("marks financially destructive blotter actions before confirmation", async () => {
     await renderTradingScreen(data, "/trading/orders");
 
-    expect(screen.getByRole("button", { name: /cancel order po-1/i })).toHaveClass("text-danger");
+    // The row and the detail pane both offer the cancel; each is marked destructive.
+    const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
+    expect(cancelButtons).toHaveLength(2);
+    for (const button of cancelButtons) {
+      expect(button).toHaveClass("text-danger");
+    }
     await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
     const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
     expect(cancelAll).toHaveClass("text-danger");

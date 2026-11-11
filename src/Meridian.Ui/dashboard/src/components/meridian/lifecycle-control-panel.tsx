@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, Power, RefreshCcw, RotateCcw } from "lucide-react";
 import {
@@ -253,7 +254,7 @@ function LifecycleCheckRow({ check }: { check: RuntimeLifecycleCheck }) {
 }
 
 function ReceiptFact({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium text-foreground">{value}</dd></div>;
+  return <DetailFieldItem label={label} value={value} />;
 }
 
 function lifecycleTone(readiness?: string) {

@@ -437,10 +437,15 @@ describe("trading blotter view model", () => {
     expect(state.fillRows[0]).toMatchObject({
       id: "FL-1",
       isSelected: true,
-      detailPanelId: "trading-fill-detail",
-      ariaExpanded: true,
+      detailPanelId: "trading-execution-detail",
+      // Orders and fills share one pane; it shows the open order until a fill is selected.
+      ariaExpanded: false,
       selectAriaLabel: "Inspect fill FL-1"
     });
+    expect(state.orderRows[0]).toMatchObject({ detailPanelId: "trading-execution-detail", ariaExpanded: true });
+    expect(state.selectedExecutionKind).toBe("order");
+    expect(state.selectedExecution).toBe(state.selectedOrder);
+    expect(state.executionDetailId).toBe("trading-execution-detail");
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
       statusLabel: "Review required",
@@ -461,7 +466,30 @@ describe("trading blotter view model", () => {
       ariaLabel: "Fill detail for FL-1"
     }));
     expect(state.selectedFill?.fields).toContainEqual({ label: "Provider", value: "Interactive Brokers", tone: "muted" });
+    expect(state.selectedPosition).toMatchObject({ objectType: "Position", shownInRow: ["Side", "Mark readiness"] });
+    expect(state.selectedOrder).toMatchObject({ objectType: "Order", shownInRow: ["Symbol", "Side", "Type", "Status", "Submitted"] });
+    expect(state.selectedFill).toMatchObject({ objectType: "Fill" });
     expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
+  });
+
+  it("keys the shared order and fill pane to the table selected last", () => {
+    const fillSelected = buildTradingBlotterViewModel({ data: tradingWorkspace, lastExecutionKind: "fill" });
+
+    expect(fillSelected.selectedExecutionKind).toBe("fill");
+    expect(fillSelected.selectedExecution).toBe(fillSelected.selectedFill);
+    expect(fillSelected.fillRows[0]?.ariaExpanded).toBe(true);
+    expect(fillSelected.orderRows[0]?.ariaExpanded).toBe(false);
+
+    // With no open orders the pane falls back to the latest fill, and the reverse.
+    const fillsOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [] }, lastExecutionKind: "order" });
+    expect(fillsOnly.selectedExecutionKind).toBe("fill");
+    expect(fillsOnly.selectedExecution?.objectType).toBe("Fill");
+    const ordersOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, fills: [] }, lastExecutionKind: "fill" });
+    expect(ordersOnly.selectedExecutionKind).toBe("order");
+
+    const empty = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [], fills: [] } });
+    expect(empty.selectedExecution).toBeNull();
+    expect(empty.executionEmptyText).toBe("No open orders or recent fills in this session.");
   });
 
   it("keeps unavailable and empty states in the view model", () => {

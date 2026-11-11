@@ -1,4 +1,5 @@
-import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { presentMarkFreshness, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
+import { buildFillDetail, buildOrderDetail, buildPositionDetail } from "@/screens/trading-screen.blotter-details";
 import {
   buildOrderRequirementText,
   buildOrderTicketAcknowledgementState,
@@ -404,8 +405,13 @@ export interface TradingFillRow {
   ariaLabel: string;
 }
 
+/** Which execution table the shared order/fill detail pane is showing. */
+export type TradingExecutionDetailKind = "order" | "fill";
+
 export interface TradingBlotterDetail {
   id: string;
+  /** What kind of thing is selected, shown first in the pane heading. */
+  objectType: "Position" | "Order" | "Fill";
   title: string;
   subtitle: string;
   statusLabel: string;
@@ -413,6 +419,8 @@ export interface TradingBlotterDetail {
   ariaLabel: string;
   detail: string;
   fields: TradingBlotterField[];
+  /** Field labels the selected table row always shows; the pane does not repeat them. */
+  shownInRow: string[];
 }
 
 export interface TradingBlotterViewModel {
@@ -422,6 +430,14 @@ export interface TradingBlotterViewModel {
   selectedPosition: TradingBlotterDetail | null;
   selectedOrder: TradingBlotterDetail | null;
   selectedFill: TradingBlotterDetail | null;
+  /**
+   * Orders and fills share one detail pane keyed to the table selected last; this is the detail
+   * it shows and which table it came from.
+   */
+  selectedExecution: TradingBlotterDetail | null;
+  selectedExecutionKind: TradingExecutionDetailKind;
+  executionDetailId: string;
+  executionEmptyText: string;
   selectedPositionRowId: string | null;
   selectedOrderRowId: string | null;
   selectedFillRowId: string | null;
@@ -556,13 +572,24 @@ const idleExecutionEvidenceStatus: RequestLifecycleStatus = {
 const visibleWorkItemLimit = 4;
 const visibleWarningLimit = 3;
 const tradingPositionDetailId = "trading-position-detail";
-const tradingOrderDetailId = "trading-order-detail";
-const tradingFillDetailId = "trading-fill-detail";
+// Orders and fills share one pane, so both tables control the same element.
+const tradingExecutionDetailId = "trading-execution-detail";
+const tradingOrderDetailId = tradingExecutionDetailId;
+const tradingFillDetailId = tradingExecutionDetailId;
 
 export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null): TradingBlotterViewModel {
   const [selectedPositionId, setSelectedPositionId] = useState<string | null>(null);
   const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
   const [selectedFillId, setSelectedFillId] = useState<string | null>(null);
+  const [lastExecutionKind, setLastExecutionKind] = useState<TradingExecutionDetailKind | null>(null);
+  const selectOrder = useCallback((id: string) => {
+    setSelectedOrderId(id);
+    setLastExecutionKind("order");
+  }, []);
+  const selectFill = useCallback((id: string) => {
+    setSelectedFillId(id);
+    setLastExecutionKind("fill");
+  }, []);
 
   return useMemo(
     () => buildTradingBlotterViewModel({
@@ -570,11 +597,12 @@ export function useTradingBlotterViewModel(data: TradingWorkspaceResponse | null
       selectedPositionId,
       selectedOrderId,
       selectedFillId,
+      lastExecutionKind,
       selectPosition: setSelectedPositionId,
-      selectOrder: setSelectedOrderId,
-      selectFill: setSelectedFillId
+      selectOrder,
+      selectFill
     }),
-    [data, selectedFillId, selectedOrderId, selectedPositionId]
+    [data, lastExecutionKind, selectFill, selectOrder, selectedFillId, selectedOrderId, selectedPositionId]
   );
 }
 
@@ -583,6 +611,7 @@ export function buildTradingBlotterViewModel({
   selectedPositionId = null,
   selectedOrderId = null,
   selectedFillId = null,
+  lastExecutionKind = null,
   selectPosition = () => {},
   selectOrder = () => {},
   selectFill = () => {}
@@ -591,6 +620,8 @@ export function buildTradingBlotterViewModel({
   selectedPositionId?: string | null;
   selectedOrderId?: string | null;
   selectedFillId?: string | null;
+  /** The execution table selected last; defaults to orders when there are any, else fills. */
+  lastExecutionKind?: TradingExecutionDetailKind | null;
   selectPosition?: (id: string) => void;
   selectOrder?: (id: string) => void;
   selectFill?: (id: string) => void;
@@ -602,20 +633,42 @@ export function buildTradingBlotterViewModel({
   const effectiveOrderId = resolveSelectedId(orders, selectedOrderId, orderRowId);
   const effectiveFillId = resolveSelectedId(fills, selectedFillId, fillRowId);
 
+  // The shared pane shows the table selected last; with no selection yet it shows an open order
+  // when there is one (orders are what an operator acts on), otherwise the latest fill.
+  const selectedExecutionKind: TradingExecutionDetailKind =
+    lastExecutionKind === "fill" && fills.length > 0
+      ? "fill"
+      : lastExecutionKind === "order" && orders.length > 0
+        ? "order"
+        : orders.length > 0 || fills.length === 0 ? "order" : "fill";
+
   const positionRows = positions.map((position, index) => buildPositionRow(position, index, effectivePositionId));
-  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId));
-  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId));
+  const orderRows = orders.map((order, index) => buildOrderRow(order, index, effectiveOrderId, selectedExecutionKind === "order"));
+  const fillRows = fills.map((fill, index) => buildFillRow(fill, index, effectiveFillId, selectedExecutionKind === "fill"));
   const selectedPositionRow = positionRows.find((row) => row.id === effectivePositionId) ?? null;
   const selectedOrderRow = orderRows.find((row) => row.id === effectiveOrderId) ?? null;
   const selectedFillRow = fillRows.find((row) => row.id === effectiveFillId) ?? null;
+
+  const selectedOrder = selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null;
+  const selectedFill = selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null;
+  const orderEmptyText = data ? "No open orders require operator action." : "Trading workspace data unavailable.";
+  const fillEmptyText = data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.";
 
   return {
     positionRows,
     orderRows,
     fillRows,
     selectedPosition: selectedPositionRow ? buildPositionDetail(selectedPositionRow, data?.risk ?? null) : null,
-    selectedOrder: selectedOrderRow ? buildOrderDetail(selectedOrderRow, data?.brokerage.provider ?? null) : null,
-    selectedFill: selectedFillRow ? buildFillDetail(selectedFillRow, data?.brokerage.provider ?? null) : null,
+    selectedOrder,
+    selectedFill,
+    selectedExecution: selectedExecutionKind === "fill" ? selectedFill : selectedOrder,
+    selectedExecutionKind,
+    executionDetailId: tradingExecutionDetailId,
+    executionEmptyText: !data
+      ? "Trading workspace data unavailable."
+      : orders.length === 0 && fills.length === 0
+        ? "No open orders or recent fills in this session."
+        : selectedExecutionKind === "fill" ? fillEmptyText : orderEmptyText,
     selectedPositionRowId: effectivePositionId,
     selectedOrderRowId: effectiveOrderId,
     selectedFillRowId: effectiveFillId,
@@ -629,8 +682,8 @@ export function buildTradingBlotterViewModel({
     orderDetailId: tradingOrderDetailId,
     fillDetailId: tradingFillDetailId,
     positionEmptyText: data ? "No live positions in the active paper session." : "Trading workspace data unavailable.",
-    orderEmptyText: data ? "No open orders require operator action." : "Trading workspace data unavailable.",
-    fillEmptyText: data ? "No recent fills have been reported for this session." : "Trading workspace data unavailable.",
+    orderEmptyText,
+    fillEmptyText,
     cancelAllDisabled: orderRows.length === 0,
     cancelAllDisabledReason: orderRows.length === 0 ? "No open orders require cancellation." : null,
     cancelAllAriaLabel: orderRows.length === 0 ? "No open orders to cancel" : `Cancel all ${pluralizeCount(orderRows.length, "open order")}`,
@@ -997,7 +1050,8 @@ function buildPositionRow(
 function buildOrderRow(
   order: TradingOrder,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsOrders = true
 ): TradingOrderRow {
   const id = orderRowId(order, index);
 
@@ -1014,7 +1068,8 @@ function buildOrderRow(
     statusTone: orderStatusTone(order.status),
     isSelected: id === selectedId,
     detailPanelId: tradingOrderDetailId,
-    ariaExpanded: id === selectedId,
+    // Expanded only while the shared pane is showing this table's selection.
+    ariaExpanded: id === selectedId && paneShowsOrders,
     selectAriaLabel: `Inspect order ${order.orderId}`,
     cancelActionLabel: "Cancel",
     cancelTitleLabel: "Cancel order",
@@ -1026,7 +1081,8 @@ function buildOrderRow(
 function buildFillRow(
   fill: TradingFill,
   index: number,
-  selectedId: string | null
+  selectedId: string | null,
+  paneShowsFills = true
 ): TradingFillRow {
   const id = fillRowId(fill, index);
   const isSelected = id === selectedId;
@@ -1053,83 +1109,9 @@ function buildFillRow(
     ],
     isSelected,
     detailPanelId: tradingFillDetailId,
-    ariaExpanded: isSelected,
+    ariaExpanded: isSelected && paneShowsFills,
     selectAriaLabel: `Inspect fill ${fill.fillId}`,
     ariaLabel: `${fill.fillId}, ${fill.side} ${fill.quantity} ${fill.symbol} at ${fill.price} on ${fill.venue}, ${fill.timestamp}`
-  };
-}
-
-function buildPositionDetail(
-  row: TradingPositionRow,
-  risk: TradingRiskState | null
-): TradingBlotterDetail {
-  const guardrailCount = risk?.activeGuardrails.length ?? 0;
-  const riskText = risk ? `${risk.state}: ${risk.summary}` : "Risk context unavailable.";
-
-  return {
-    id: "selected-position",
-    title: row.symbol,
-    subtitle: `${row.side} · ${row.quantity} shares`,
-    statusLabel: row.markFreshness.reviewRequired ? "Review required" : risk?.state ?? "Position",
-    statusTone: row.markFreshness.reviewRequired ? "warning" : riskStateTone(risk?.state, row.unrealizedPnlTone),
-    ariaLabel: `Position detail for ${row.symbol}`,
-    detail: `${row.markFreshness.reason} Recorded exposure ${row.exposure}, unrealized P&L ${row.unrealizedPnl}. ${riskText}`,
-    fields: [
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Average price", value: row.averagePrice, tone: "muted" },
-      { label: "Recorded mark price", value: row.markPrice, tone: "muted" },
-      ...markFreshnessFields(row.markFreshness),
-      { label: "Day P&L", value: row.dayPnl, tone: row.dayPnlTone },
-      { label: "Unrealized P&L", value: row.unrealizedPnl, tone: row.unrealizedPnlTone },
-      { label: "Exposure", value: row.exposure, tone: "default" },
-      { label: "Risk", value: risk?.state ?? "Unavailable", tone: riskFieldTone(risk?.state) },
-      { label: "Guardrails", value: guardrailCount > 0 ? `${guardrailCount} active` : "None active", tone: guardrailCount > 0 ? "warning" : "success" }
-    ]
-  };
-}
-
-function buildOrderDetail(row: TradingOrderRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-order",
-    title: row.orderId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: row.status,
-    statusTone: row.statusTone,
-    ariaLabel: `Order detail for ${row.orderId}`,
-    detail: `${row.type} order submitted ${row.submittedAt}. ${provider ? `${provider} is the active execution adapter.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: "default" },
-      { label: "Type", value: row.type, tone: "default" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Limit", value: row.limitPrice || "Market", tone: "muted" },
-      { label: "Status", value: row.status, tone: row.statusTone },
-      { label: "Submitted", value: row.submittedAt, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
-  };
-}
-
-function buildFillDetail(row: TradingFillRow, provider: string | null): TradingBlotterDetail {
-  return {
-    id: "selected-fill",
-    title: row.fillId,
-    subtitle: `${row.side} ${row.quantity} ${row.symbol}`,
-    statusLabel: "Fill evidence",
-    statusTone: "success",
-    ariaLabel: `Fill detail for ${row.fillId}`,
-    detail: `${row.symbol} fill posted at ${row.price} on ${row.venue}. ${provider ? `${provider} supplied the execution adapter context.` : "Execution adapter context unavailable."}`,
-    fields: [
-      { label: "Order", value: row.orderId, tone: "muted" },
-      { label: "Symbol", value: row.symbol, tone: "default" },
-      { label: "Side", value: row.side, tone: row.side === "Buy" ? "success" : "warning" },
-      { label: "Quantity", value: row.quantity, tone: "default" },
-      { label: "Price", value: row.price, tone: "default" },
-      { label: "Venue", value: row.venue, tone: "muted" },
-      { label: "Timestamp", value: row.timestamp, tone: "muted" },
-      { label: "Provider", value: provider ?? "Unavailable", tone: "muted" }
-    ]
   };
 }
 
@@ -1155,23 +1137,6 @@ function orderStatusTone(status: TradingOrder["status"]): TradingDataTone {
   if (status === "Working") return "success";
   if (status === "Partially Filled") return "warning";
   return "muted";
-}
-
-function riskFieldTone(state: TradingRiskState["state"] | undefined): TradingDataTone {
-  if (state === "Healthy") return "success";
-  if (state === "Observe") return "warning";
-  if (state === "Constrained") return "danger";
-  return "muted";
-}
-
-function riskStateTone(
-  state: TradingRiskState["state"] | undefined,
-  fallback: TradingDataTone
-): TradingDataTone {
-  if (state === "Constrained") return "danger";
-  if (state === "Observe") return "warning";
-  if (state === "Healthy") return "success";
-  return fallback;
 }
 
 export type ExecutionEvidenceTone = "success" | "warning" | "danger";
