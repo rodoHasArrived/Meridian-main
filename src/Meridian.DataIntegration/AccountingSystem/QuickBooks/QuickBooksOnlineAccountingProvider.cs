@@ -19,20 +19,29 @@ public sealed class QuickBooksOnlineAccountingProvider :
 
     private readonly IQuickBooksOnlineConnectionStore _connectionStore;
     private readonly IQuickBooksOnlineClient _client;
-    private readonly SemaphoreSlim _verificationGate = new(1, 1);
+    private readonly SemaphoreSlim _connectionGate;
 
     public QuickBooksOnlineAccountingProvider(
         IQuickBooksOnlineConnectionStore connectionStore,
         IQuickBooksOnlineClient client)
+        : this(connectionStore, client, new SemaphoreSlim(1, 1))
+    {
+    }
+
+    private QuickBooksOnlineAccountingProvider(
+        IQuickBooksOnlineConnectionStore connectionStore,
+        IQuickBooksOnlineClient client,
+        SemaphoreSlim connectionGate)
     {
         _connectionStore = connectionStore ?? throw new ArgumentNullException(nameof(connectionStore));
         _client = client ?? throw new ArgumentNullException(nameof(client));
+        _connectionGate = connectionGate;
     }
 
     public string ProviderId => Id;
 
     public IAccountingSystemConnectionVerifier BindCredentials(IProviderCredentialStore credentialStore)
-        => new QuickBooksOnlineAccountingProvider(new QuickBooksOnlineProviderCredentialConnectionStore(credentialStore), _client);
+        => new QuickBooksOnlineAccountingProvider(new QuickBooksOnlineProviderCredentialConnectionStore(credentialStore), _client, _connectionGate);
 
     public string DisplayName => "QuickBooks Online";
 
@@ -54,10 +63,10 @@ public sealed class QuickBooksOnlineAccountingProvider :
 
     public async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionAsync(CancellationToken ct = default)
     {
-        await _verificationGate.WaitAsync(ct).ConfigureAwait(false);
+        await _connectionGate.WaitAsync(ct).ConfigureAwait(false);
         try
         { return await VerifyConnectionCoreAsync(ct).ConfigureAwait(false); }
-        finally { _verificationGate.Release(); }
+        finally { _connectionGate.Release(); }
     }
 
     private async Task<AccountingSystemConnectionVerificationResult> VerifyConnectionCoreAsync(CancellationToken ct)
@@ -102,15 +111,23 @@ public sealed class QuickBooksOnlineAccountingProvider :
     {
         ct.ThrowIfCancellationRequested();
         request ??= new AccountingSystemImportRequestDto();
+        await _connectionGate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        { return await ImportCoreAsync(request, ct).ConfigureAwait(false); }
+        finally { _connectionGate.Release(); }
+    }
+
+    private async Task<AccountingSystemImportDetailDto> ImportCoreAsync(AccountingSystemImportRequestDto request, CancellationToken ct)
+    {
         var connection = await RequireConnectionAsync(ct).ConfigureAwait(false);
+        var generation = connection.CredentialSnapshot?.CredentialGeneration;
 
         try
         {
             var token = await _client.RefreshAccessTokenAsync(connection, ct).ConfigureAwait(false);
-            if (!string.IsNullOrWhiteSpace(token.RefreshToken))
-            {
-                await _connectionStore.SaveRefreshTokenAsync(token.RefreshToken, ct).ConfigureAwait(false);
-            }
+            // Persist the complete rotated connection even if the caller cancelled after exchange.
+            // The expected snapshot prevents replacing a newer operator-owned generation.
+            generation = await _connectionStore.SaveRefreshTokenAsync(token.RefreshToken, connection, CancellationToken.None).ConfigureAwait(false);
 
             var evidence = await _client.ReadCompanyEvidenceAsync(connection, token.AccessToken, request, ct)
                 .ConfigureAwait(false);
@@ -119,6 +136,7 @@ public sealed class QuickBooksOnlineAccountingProvider :
                 success: true,
                 externalCompanyId: connection.RealmId,
                 error: null,
+                expectedCredentialGeneration: generation,
                 occurredAtUtc: now,
                 ct).ConfigureAwait(false);
 
@@ -154,16 +172,24 @@ public sealed class QuickBooksOnlineAccountingProvider :
                 evidence.JournalEntries,
                 evidence.TrialBalance);
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             var occurredAt = DateTimeOffset.UtcNow;
             var message = $"QuickBooks Online read-only import failed: {ex.Message}";
-            await _connectionStore.RecordConnectionAsync(
-                success: false,
-                externalCompanyId: connection.RealmId,
-                error: message,
-                occurredAtUtc: occurredAt,
-                ct).ConfigureAwait(false);
+            try
+            {
+                await _connectionStore.RecordConnectionAsync(
+                    success: false,
+                    externalCompanyId: connection.RealmId,
+                    error: message,
+                    expectedCredentialGeneration: generation,
+                    occurredAtUtc: occurredAt,
+                    ct).ConfigureAwait(false);
+            }
+            catch (ProviderCredentialConflictException)
+            {
+                // A stale import cannot invalidate the operator's replacement connection.
+            }
             throw new InvalidOperationException(message, ex);
         }
     }
@@ -224,6 +250,15 @@ public interface IQuickBooksOnlineConnectionStore
         string? error,
         DateTimeOffset? occurredAtUtc = null,
         CancellationToken ct = default);
+
+    Task RecordConnectionAsync(
+        bool success,
+        string? externalCompanyId,
+        string? error,
+        string? expectedCredentialGeneration,
+        DateTimeOffset? occurredAtUtc = null,
+        CancellationToken ct = default)
+        => throw new NotSupportedException("This QuickBooks connection store cannot conditionally record verification.");
 }
 
 public sealed record QuickBooksOnlineConnection(
