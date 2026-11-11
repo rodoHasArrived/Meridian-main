@@ -190,7 +190,10 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
   const [open, setOpen] = React.useState(false);
   const [adding, setAdding] = React.useState(false);
   const root = React.useRef(null);
-  const mine = layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref);
+  // A list host renders placeholder rows before its data arrives, and those carry no anchor.
+  // Reading anchor.label then threw and took the whole template down with it.
+  const anchored = !!(anchor && anchor.ref != null);
+  const mine = anchored ? layer.notes.filter((n) => n.anchor && n.anchor.ref === anchor.ref) : [];
   const stale = mine.some((n) => n.stale);
   React.useEffect(() => {
     if (!open) return;
@@ -198,6 +201,7 @@ export function AnnotationAnchor({ anchor, block = false, popover = "right", rea
     document.addEventListener("pointerdown", off);
     return () => document.removeEventListener("pointerdown", off);
   }, [open]);
+  if (!anchored) return <span className={`mds-ann ${block ? "mds-ann--block" : ""} ${className}`}><span className="mds-ann__body">{children}</span></span>;
   const label = mine.length ? `${mine.length} annotation${mine.length === 1 ? "" : "s"}${stale ? ", some stale" : ""} on ${anchor.label || anchor.ref}` : `Annotate ${anchor.label || anchor.ref}`;
   return (
     <span ref={root} className={`mds-ann ${block ? "mds-ann--block" : ""} ${className}`} onKeyDown={(e) => { if (e.key === "Escape" && open) { e.stopPropagation(); setOpen(false); setAdding(false); } }} {...rest}>

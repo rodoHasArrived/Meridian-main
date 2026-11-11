@@ -39,6 +39,12 @@ export interface ClaimHeaderProps extends React.HTMLAttributes<HTMLElement> {
   states?: ClaimHeaderState[];
   /** Let the claim run full width instead of the 34ch measure. */
   wide?: boolean;
+  /**
+   * Heading level the claim renders at. Leave at 1 when the claim is the page title; pass 2 when
+   * the screen already has its own `<h1>`, so the page keeps exactly one.
+   * @default 1
+   */
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   /** Drop the bottom rule (when the parent panel already draws one). */
   flush?: boolean;
   /** View controls, right-aligned — keep them adjacent to the evidence. */

@@ -202,11 +202,11 @@
       "components/operations/ActionGuard.jsx": "62ef30669836300c866148cb20bb1db527821583eeb1ef5b71ed0f7076784213",
       "components/operations/ActionQueue.jsx": "fd07aa8b3b1185cbe9cf9bffb1a65f03dba99e20d5269e7ff56cc912d0fe6a08",
       "components/operations/AdapterDiagnostics.jsx": "57878946145ca5a1e8e30fa6e7bfc3ea0beff8089dfccb4191161dd260c2d3b9",
-      "components/operations/AnnotationLayer.jsx": "873e99b15f608213789b75fa255f7de7fe7f70ee549c626b21e5421047d8b0ed",
+      "components/operations/AnnotationLayer.jsx": "1085e0b28c3d9519faaf1c2ebe91b185bbe0ac0eb45fca97ef358378fb1a0139",
       "components/operations/AttestationPanel.jsx": "701411dfc5702b6be7d0a2b87f4a5b7d59ddd9b74998a8628273d4f3200923ff",
       "components/operations/CaseQueue.jsx": "fd8a777ee49845a2f74bbc6c4cc34803d98c2c9fcb61c98f1c430217ca9db82b",
       "components/operations/ChangeSetReview.jsx": "0131a0ffe378e9304ec360a7f9cac662bc7cc33afb8ca8de5441a0758d29e30a",
-      "components/operations/ClaimHeader.jsx": "76739e03c27e5e7ecc43013cb969454fd60676203ed770480f5d6a2f24adf378",
+      "components/operations/ClaimHeader.jsx": "d4437a934250ca9b0527606ade99d9925e006e64858669908d7a820bd114599d",
       "components/operations/ConnectionState.jsx": "7ecc32060102e42a6d4ce7022203feb76dcc1d82731d8e0825ddbb2863611147",
       "components/operations/DataCondition.jsx": "f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed",
       "components/operations/DecisionFlow.jsx": "9cff50d120674df556c8d6eddfb8362f4ab125790884c65e65e6f98d7db67898",
@@ -234,7 +234,7 @@
       "components/operations/conditions.js": "eafb0436c6328f60d2d604aa561afb6cf9a783084aab9dc325ab854160fd9cdf",
       "components/operations/status.js": "3653187e0b7fedc3ad1f22065e1cecbff432cd06a353ea4dd3a5881fe2c5dae8",
       "components/shell/GlobalSearch.jsx": "4c209bde06b08eaafa232460e858944595b91ed8ad0752278c9a0bcfa67f755d",
-      "components/shell/NavRail.jsx": "623d14018e2948f4e6b9b2d73124c1e7fa7adec1bd1ad1edc4967b2d26ba5ab3",
+      "components/shell/NavRail.jsx": "07c53acb08e5e64f2536f16a749b60340088c2b30a20484e9117dce828e529c6",
       "components/shell/ReturnPath.jsx": "387b79052b3e009dd22c201814e772b9ad804c0a726444e5c5b3b9ef9214ea74",
       "components/shell/ScreenComposition.jsx": "34acc0c403c1adde4f430a9160acf9f030e4a37b9108890550b0cca095815892",
       "components/shell/SessionControls.jsx": "0f0e8a312f6c5b9d602d5f1b39a48fc6dd25906bf36d761dedfb8a31448018a2",
@@ -489,8 +489,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "b2e0ea9686559820b433a7d882e8efbfabe11254b5849ab946eccb0e0a21e2d1",
-      "bytes": 1688139
+      "sha256": "2293d20199dd2a45226fc0b6ecf43ae3f8478dd0b252e72bc101289074c7b197",
+      "bytes": 1688583
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
