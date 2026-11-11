@@ -1,5 +1,5 @@
 import type { WorkspaceSummary } from "@/types";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, resolveWorkstationRouteBreadcrumbLabel } from "@/lib/workspace";
 import { VIEW_STATE_QUERY_KEY } from "@/lib/view-state-envelope";
 import { REPORTING_WORK_SELECTION_PARAM } from "@/components/meridian/reporting-hub.selection";
 
@@ -17,19 +17,28 @@ export function buildRouteFocusState(
   hash: string,
   activeWorkspace: WorkspaceSummary
 ): AppShellRouteFocusState {
-  const workspaceTitle = pathname === "/" ? "Daily Control Tower" : `${activeWorkspace.label} Workstation`;
+  // Name the page the way the header breadcrumb does ("Trading", "Orders - Trading"), page first so
+  // browser tabs stay distinguishable; the product name already ends the document title.
+  const pageParts = pathname === "/" ? ["Daily Control Tower"] : routePageParts(pathname, activeWorkspace);
+  const workspaceTitle = pageParts.join(" - ");
+  const announcedTitle = pageParts.join(", ");
   const targetElementId = normalizeHashTarget(hash);
   const targetLabel = targetElementId ? formatHashTargetLabel(targetElementId) : null;
 
   return {
     routeKey: `${pathname}${routeFocusSearch(pathname, search)}${hash}`,
     announcement: targetLabel
-      ? `${workspaceTitle} loaded. Jumping to ${targetLabel}.`
-      : `${workspaceTitle} loaded.`,
+      ? `${announcedTitle} loaded. Jumping to ${targetLabel}.`
+      : `${announcedTitle} loaded.`,
     documentTitle: `${workspaceTitle} - Meridian`,
     targetElementId,
     fallbackElementId: "workbench-content"
   };
+}
+
+function routePageParts(pathname: string, activeWorkspace: WorkspaceSummary): string[] {
+  const pageLabel = resolveWorkstationRouteBreadcrumbLabel(pathname, activeWorkspace);
+  return pageLabel === activeWorkspace.label ? [activeWorkspace.label] : [pageLabel, activeWorkspace.label];
 }
 
 function routeFocusSearch(pathname: string, search: string): string {
