@@ -501,6 +501,113 @@ type ProfileEnvelopeTerms = {
     TermsJson: string
 }
 
+// ---------------------------------------------------------------------------
+// ADR-027 stage 3 (S3-E6): homes for the residual scalar complement
+// ---------------------------------------------------------------------------
+
+/// Listing detail of an exchange-traded contract: what identifies the contract series and the
+/// dates the venue sets for it.
+type ListingTerms = {
+    /// Root symbol of a futures contract series (e.g. "ES").
+    RootSymbol: string option
+    /// Contract month as the venue labels it (e.g. "2030-03").
+    ContractMonth: string option
+    /// The option chain or series a listed option belongs to.
+    OptionChainId: string option
+    LastTradingDate: DateOnly option
+    FirstNoticeDate: DateOnly option
+    DeliveryMonthDate: DateOnly option
+    /// Delivery point code for a physically settled contract.
+    DeliveryLocationCode: string option
+}
+
+/// What an instrument references when that is not a security-master record of its own: a
+/// described asset, an asset class, a physical commodity, or an underlying swap. (A listed
+/// option's or warrant's underlying security is ExerciseTerms.UnderlyingSecurityId.)
+type UnderlyingReferenceTerms = {
+    /// Free-text description of the reference asset, index or basket (CFD, structured note).
+    Description: string option
+    /// Asset class of the reference asset (CFD).
+    AssetClass: string option
+    /// The physical commodity a commodity instrument represents (e.g. "Gold").
+    Commodity: string option
+    /// Last day of the underlying swap's term (swaption): its maturity. Its effective date is
+    /// MaturityTerms.EffectiveDate.
+    EndDate: DateOnly option
+}
+
+/// Credit protection and commitment terms: who or what is protected, on which side, and the
+/// contractual assumptions around it (credit default swap), plus the running fee and collateral
+/// of a commitment or guarantee.
+type CreditProtectionTerms = {
+    ReferenceEntity: string option
+    ReferenceObligation: string option
+    /// "Buy" when the holder buys protection, "Sell" when it sells protection.
+    ProtectionSide: string option
+    /// Seniority of the reference obligation (e.g. "SeniorUnsecured").
+    Seniority: string option
+    /// ISDA restructuring clause (e.g. "ModR", "XR").
+    RestructuringClause: string option
+    /// Upfront payment as points of notional.
+    UpfrontPoints: decimal option
+    /// Assumed recovery rate as a fraction (0 to 1).
+    RecoveryRateAssumption: decimal option
+    /// Index name and series for an index CDS; None for single-name.
+    IndexName: string option
+    /// Running fee of a commitment or guarantee, as a rate.
+    FeeRate: decimal option
+    /// Collateral supporting a commitment or guarantee, as described.
+    Collateral: string option
+}
+
+/// Payoff terms of a structured note: how much principal is protected and how the holder
+/// participates in the underlying's return.
+type StructuredPayoffTerms = {
+    /// Share of principal repaid at maturity regardless of the underlying, as a fraction.
+    PrincipalProtectionPct: decimal option
+    /// Share of the underlying's return the holder receives, as a fraction.
+    ParticipationRate: decimal option
+    /// Maximum return paid, as a fraction of face.
+    ReturnCap: decimal option
+    /// Knock-in or knock-out barrier as a fraction of the underlying's initial level.
+    BarrierLevel: decimal option
+}
+
+/// Position of a structured-credit tranche in its deal's capital structure, with the CLO period
+/// dates. (Pool-level analytics stay on StructuredProductTerms.)
+type CreditTrancheTerms = {
+    /// Securitisation family label (e.g. "Clo", "AgencyMbs"), as StructuredCreditKind names it.
+    Kind: string option
+    /// Position in the capital structure as the deal labels it (e.g. "Senior", "Mezzanine").
+    Seniority: string option
+    /// Loss attachment point as a fraction of the deal balance (0 to 1).
+    AttachmentPoint: decimal option
+    /// Loss detachment point as a fraction of the deal balance (0 to 1).
+    DetachmentPoint: decimal option
+    /// CLO: last day of the reinvestment period.
+    ReinvestmentPeriodEnd: DateOnly option
+    /// CLO: last day of the non-call period.
+    NonCallPeriodEnd: DateOnly option
+}
+
+/// Holding-level terms of a private asset: the stake held and how it is valued.
+type PrivateHoldingTerms = {
+    /// Vintage year of a private fund interest.
+    Vintage: int option
+    /// Share of the asset held, as a percentage.
+    OwnershipPercent: decimal option
+    /// Cost basis of the holding (private company equity).
+    CostBasis: decimal option
+    /// Most recent valuation of the holding (private company equity).
+    LatestValuation: decimal option
+    /// Appraised value of the property (real estate holding).
+    AppraisalValue: decimal option
+    /// Date of the valuation or net asset value the holding is carried at.
+    ValuationDate: DateOnly option
+    /// Address or market of the property (real estate holding).
+    MarketOrAddress: string option
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -542,6 +649,13 @@ type SecurityTermModules = {
     Notional: NotionalTerms option
     /// Profile pin and governed terms document of a profile-backed custom asset.
     ProfileEnvelope: ProfileEnvelopeTerms option
+    // --- ADR-027 stage 3 (S3-E6) homes for the residual scalar complement ---
+    Listing: ListingTerms option
+    Underlying: UnderlyingReferenceTerms option
+    CreditProtection: CreditProtectionTerms option
+    StructuredPayoff: StructuredPayoffTerms option
+    CreditTranche: CreditTrancheTerms option
+    PrivateHolding: PrivateHoldingTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -675,4 +789,10 @@ module SecurityTermModules =
         CurrencyPair = None
         Notional = None
         ProfileEnvelope = None
+        Listing = None
+        Underlying = None
+        CreditProtection = None
+        StructuredPayoff = None
+        CreditTranche = None
+        PrivateHolding = None
     }

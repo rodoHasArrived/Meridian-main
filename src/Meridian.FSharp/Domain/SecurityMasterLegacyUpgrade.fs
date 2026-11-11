@@ -187,6 +187,64 @@ module SecurityMasterLegacyUpgrade =
             CircuitBreakerThresholdPct = None
         }
 
+    let private noListing : ListingTerms =
+        {
+            RootSymbol = None
+            ContractMonth = None
+            OptionChainId = None
+            LastTradingDate = None
+            FirstNoticeDate = None
+            DeliveryMonthDate = None
+            DeliveryLocationCode = None
+        }
+
+    let private noUnderlying : UnderlyingReferenceTerms =
+        { Description = None; AssetClass = None; Commodity = None; EndDate = None }
+
+    let private noCreditProtection : CreditProtectionTerms =
+        {
+            ReferenceEntity = None
+            ReferenceObligation = None
+            ProtectionSide = None
+            Seniority = None
+            RestructuringClause = None
+            UpfrontPoints = None
+            RecoveryRateAssumption = None
+            IndexName = None
+            FeeRate = None
+            Collateral = None
+        }
+
+    let private noStructuredPayoff : StructuredPayoffTerms =
+        { PrincipalProtectionPct = None; ParticipationRate = None; ReturnCap = None; BarrierLevel = None }
+
+    let private noCreditTranche : CreditTrancheTerms =
+        {
+            Kind = None
+            Seniority = None
+            AttachmentPoint = None
+            DetachmentPoint = None
+            ReinvestmentPeriodEnd = None
+            NonCallPeriodEnd = None
+        }
+
+    /// A residual-complement module none of whose members is set is carried as absent, so a
+    /// record that declares nothing for it writes the same null that a document from before the
+    /// module existed implies — and the identity gate keeps treating the two as one.
+    let private unlessUnset (unset: 'T) (value: 'T) : 'T option when 'T : equality =
+        if value = unset then None else Some value
+
+    let private noPrivateHolding : PrivateHoldingTerms =
+        {
+            Vintage = None
+            OwnershipPercent = None
+            CostBasis = None
+            LatestValuation = None
+            AppraisalValue = None
+            ValuationDate = None
+            MarketOrAddress = None
+        }
+
     let private termsFromKind (kind: SecurityKind) =
         match kind with
         | SecurityKind.Equity terms ->
@@ -235,6 +293,7 @@ module SecurityMasterLegacyUpgrade =
                         }
                     TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
                     Exercise = Some terms.Exercise
+                    Listing = unlessUnset noListing { noListing with OptionChainId = terms.OptChainId; LastTradingDate = terms.LastTradingDt }
             }
         | SecurityKind.Future terms ->
             {
@@ -246,6 +305,16 @@ module SecurityMasterLegacyUpgrade =
                             MaturityDate = Some terms.Expiry
                         }
                     TradingParameters = Some (contractMultiplierOnly (Some terms.Multiplier))
+                    Listing =
+                        Some {
+                            RootSymbol = Some terms.RootSymbol
+                            ContractMonth = Some terms.ContractMonth
+                            OptionChainId = None
+                            LastTradingDate = terms.LastTradingDt
+                            FirstNoticeDate = terms.FirstNoticeDt
+                            DeliveryMonthDate = terms.DeliveryMonthDt
+                            DeliveryLocationCode = terms.DeliveryLocationCode
+                        }
             }
         | SecurityKind.Bond terms ->
             let isStructured =
@@ -631,6 +700,15 @@ module SecurityMasterLegacyUpgrade =
                             FactorScheduleEntries = terms.FactorScheduleEntries |> List.map (fun entry ->
                                 { EconomicFactorScheduleEntry.AsOfDate = entry.AsOfDate; Factor = entry.Factor })
                         }
+                    CreditTranche =
+                        unlessUnset noCreditTranche {
+                            Kind = terms.Kind |> Option.map StructuredCreditKind.asString
+                            Seniority = terms.Seniority
+                            AttachmentPoint = terms.AttachmentPoint
+                            DetachmentPoint = terms.DetachmentPoint
+                            ReinvestmentPeriodEnd = terms.ReinvestmentPeriodEnd
+                            NonCallPeriodEnd = terms.NonCallPeriodEnd
+                        }
             }
         | SecurityKind.PrivateFundInterest terms ->
             {
@@ -653,6 +731,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerCountry = None
                         }
                     Notional = Some terms.Notional
+                    PrivateHolding = Some { noPrivateHolding with Vintage = Some terms.Vintage; ValuationDate = Some terms.NavDate }
             }
         | SecurityKind.PrivateCompanyEquity terms ->
             {
@@ -673,6 +752,13 @@ module SecurityMasterLegacyUpgrade =
                             IssuerSector = None
                             IssuerCountry = None
                         }
+                    PrivateHolding =
+                        Some {
+                            noPrivateHolding with
+                                OwnershipPercent = terms.OwnershipPercent
+                                CostBasis = Some terms.CostBasis
+                                LatestValuation = terms.LatestValuation
+                        }
             }
         | SecurityKind.RealEstateHolding terms ->
             {
@@ -686,6 +772,14 @@ module SecurityMasterLegacyUpgrade =
                             UltimateParentName = None
                             IssuerSector = Some "RealEstate"
                             IssuerCountry = None
+                        }
+                    PrivateHolding =
+                        Some {
+                            noPrivateHolding with
+                                OwnershipPercent = Some terms.OwnershipPercent
+                                AppraisalValue = Some terms.AppraisalValue
+                                ValuationDate = Some terms.ValuationDate
+                                MarketOrAddress = Some terms.AddressOrMarket
                         }
             }
         | SecurityKind.CommitmentGuarantee terms ->
@@ -708,6 +802,7 @@ module SecurityMasterLegacyUpgrade =
                             IssuerCountry = None
                         }
                     Notional = Some terms.Notional
+                    CreditProtection = unlessUnset noCreditProtection { noCreditProtection with FeeRate = terms.FeeRate; Collateral = terms.Collateral }
             }
         | SecurityKind.Commodity terms ->
             {
@@ -721,6 +816,7 @@ module SecurityMasterLegacyUpgrade =
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
+                    Underlying = Some { noUnderlying with Commodity = Some terms.CommodityType }
             }
         | SecurityKind.CryptoCurrency terms ->
             {
@@ -742,6 +838,7 @@ module SecurityMasterLegacyUpgrade =
                             TradingHoursUtc = None
                             CircuitBreakerThresholdPct = None
                         }
+                    Underlying = Some { noUnderlying with AssetClass = Some terms.UnderlyingAssetClass; Description = terms.UnderlyingDescription }
             }
         | SecurityKind.Warrant terms ->
             {
@@ -805,6 +902,18 @@ module SecurityMasterLegacyUpgrade =
                             DayCount = terms.DayCount
                         }
                     Notional = Some terms.Notional
+                    CreditProtection =
+                        Some {
+                            noCreditProtection with
+                                ReferenceEntity = Some terms.ReferenceEntity
+                                ReferenceObligation = terms.ReferenceObligation
+                                ProtectionSide = Some terms.ProtectionSide
+                                Seniority = terms.Seniority
+                                RestructuringClause = terms.RestructuringClause
+                                UpfrontPoints = terms.UpfrontPoints
+                                RecoveryRateAssumption = terms.RecoveryRateAssumption
+                                IndexName = terms.IndexName
+                        }
             }
         | SecurityKind.Swaption terms ->
             {
@@ -817,6 +926,7 @@ module SecurityMasterLegacyUpgrade =
                         }
                     Exercise = Some terms.Exercise
                     Notional = Some terms.Notional
+                    Underlying = Some { noUnderlying with EndDate = Some terms.UnderlyingMaturityDate }
             }
         | SecurityKind.CapFloor terms ->
             {
@@ -870,6 +980,14 @@ module SecurityMasterLegacyUpgrade =
                             IssuerCountry = None
                         }
                     Notional = Some terms.Notional
+                    Underlying = Some { noUnderlying with Description = Some terms.UnderlyingDescription }
+                    StructuredPayoff =
+                        unlessUnset noStructuredPayoff {
+                            PrincipalProtectionPct = terms.PrincipalProtectionPct
+                            ParticipationRate = terms.ParticipationRate
+                            ReturnCap = terms.ReturnCap
+                            BarrierLevel = terms.BarrierLevel
+                        }
             }
         | SecurityKind.InvestmentFund terms ->
             {

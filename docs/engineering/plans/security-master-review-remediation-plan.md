@@ -494,3 +494,12 @@ and S2-B4 (codec single-purpose) land. Planned increments:
     valid"). Contract multipliers and the cap/floor strikes stay scalar: their homes are on
     wider modules that predate S3-E, and embedding a six-field module to carry one value would
     widen the record rather than shrink it.
+  - **S3-E6 — residual scalar homes (implemented 2026-11-11).** Six term modules home the
+    scalar remainder: `listing` (futures root symbol and contract month, option chain, listing
+    dates), `underlying` (described reference asset, its asset class, the physical commodity,
+    a swaption's underlying swap end date), `creditProtection` (CDS reference terms; a
+    commitment's fee rate and collateral), `structuredPayoff` (structured-note protection,
+    participation, cap and barrier), `creditTranche` (kind, seniority, attachment and
+    detachment, CLO period ends) and `privateHolding` (vintage, ownership, cost basis,
+    valuations, market). Twenty-six rules moved to the definition surface; eleven more classes
+    keep no codec-only rule. A new module none of whose members is set is carried as absent.

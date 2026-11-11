@@ -123,7 +123,7 @@ internal static class SecurityEconomicDefinitionAdapter
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
         // still lossy for what the economic document never held — a swap's legs, a bond's
-        // subclass, an option's listing detail (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // subclass and coupon structure, covenant entries (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
@@ -552,6 +552,63 @@ internal static class SecurityEconomicDefinitionAdapter
                 customProfileId = definition.Terms.ProfileEnvelope.Value.CustomProfileId,
                 profileVersion = definition.Terms.ProfileEnvelope.Value.ProfileVersion,
                 terms = EmbedProfileDocument(definition.Terms.ProfileEnvelope.Value.TermsJson)
+            },
+            // ADR-027 stage 3 (S3-E6): homes for the residual scalar complement.
+            listing = definition.Terms.Listing is null ? null : new
+            {
+                rootSymbol = definition.Terms.Listing.Value.RootSymbol is null ? null : definition.Terms.Listing.Value.RootSymbol.Value,
+                contractMonth = definition.Terms.Listing.Value.ContractMonth is null ? null : definition.Terms.Listing.Value.ContractMonth.Value,
+                optionChainId = definition.Terms.Listing.Value.OptionChainId is null ? null : definition.Terms.Listing.Value.OptionChainId.Value,
+                lastTradingDate = definition.Terms.Listing.Value.LastTradingDate,
+                firstNoticeDate = definition.Terms.Listing.Value.FirstNoticeDate,
+                deliveryMonthDate = definition.Terms.Listing.Value.DeliveryMonthDate,
+                deliveryLocationCode = definition.Terms.Listing.Value.DeliveryLocationCode is null ? null : definition.Terms.Listing.Value.DeliveryLocationCode.Value
+            },
+            underlying = definition.Terms.Underlying is null ? null : new
+            {
+                description = definition.Terms.Underlying.Value.Description is null ? null : definition.Terms.Underlying.Value.Description.Value,
+                assetClass = definition.Terms.Underlying.Value.AssetClass is null ? null : definition.Terms.Underlying.Value.AssetClass.Value,
+                commodity = definition.Terms.Underlying.Value.Commodity is null ? null : definition.Terms.Underlying.Value.Commodity.Value,
+                endDate = definition.Terms.Underlying.Value.EndDate
+            },
+            creditProtection = definition.Terms.CreditProtection is null ? null : new
+            {
+                referenceEntity = definition.Terms.CreditProtection.Value.ReferenceEntity is null ? null : definition.Terms.CreditProtection.Value.ReferenceEntity.Value,
+                referenceObligation = definition.Terms.CreditProtection.Value.ReferenceObligation is null ? null : definition.Terms.CreditProtection.Value.ReferenceObligation.Value,
+                protectionSide = definition.Terms.CreditProtection.Value.ProtectionSide is null ? null : definition.Terms.CreditProtection.Value.ProtectionSide.Value,
+                seniority = definition.Terms.CreditProtection.Value.Seniority is null ? null : definition.Terms.CreditProtection.Value.Seniority.Value,
+                restructuringClause = definition.Terms.CreditProtection.Value.RestructuringClause is null ? null : definition.Terms.CreditProtection.Value.RestructuringClause.Value,
+                upfrontPoints = definition.Terms.CreditProtection.Value.UpfrontPoints,
+                recoveryRateAssumption = definition.Terms.CreditProtection.Value.RecoveryRateAssumption,
+                indexName = definition.Terms.CreditProtection.Value.IndexName is null ? null : definition.Terms.CreditProtection.Value.IndexName.Value,
+                feeRate = definition.Terms.CreditProtection.Value.FeeRate,
+                collateral = definition.Terms.CreditProtection.Value.Collateral is null ? null : definition.Terms.CreditProtection.Value.Collateral.Value
+            },
+            structuredPayoff = definition.Terms.StructuredPayoff is null ? null : new
+            {
+                principalProtectionPct = definition.Terms.StructuredPayoff.Value.PrincipalProtectionPct,
+                participationRate = definition.Terms.StructuredPayoff.Value.ParticipationRate,
+                returnCap = definition.Terms.StructuredPayoff.Value.ReturnCap,
+                barrierLevel = definition.Terms.StructuredPayoff.Value.BarrierLevel
+            },
+            creditTranche = definition.Terms.CreditTranche is null ? null : new
+            {
+                kind = definition.Terms.CreditTranche.Value.Kind is null ? null : definition.Terms.CreditTranche.Value.Kind.Value,
+                seniority = definition.Terms.CreditTranche.Value.Seniority is null ? null : definition.Terms.CreditTranche.Value.Seniority.Value,
+                attachmentPoint = definition.Terms.CreditTranche.Value.AttachmentPoint,
+                detachmentPoint = definition.Terms.CreditTranche.Value.DetachmentPoint,
+                reinvestmentPeriodEnd = definition.Terms.CreditTranche.Value.ReinvestmentPeriodEnd,
+                nonCallPeriodEnd = definition.Terms.CreditTranche.Value.NonCallPeriodEnd
+            },
+            privateHolding = definition.Terms.PrivateHolding is null ? null : new
+            {
+                vintage = definition.Terms.PrivateHolding.Value.Vintage,
+                ownershipPercent = definition.Terms.PrivateHolding.Value.OwnershipPercent,
+                costBasis = definition.Terms.PrivateHolding.Value.CostBasis,
+                latestValuation = definition.Terms.PrivateHolding.Value.LatestValuation,
+                appraisalValue = definition.Terms.PrivateHolding.Value.AppraisalValue,
+                valuationDate = definition.Terms.PrivateHolding.Value.ValuationDate,
+                marketOrAddress = definition.Terms.PrivateHolding.Value.MarketOrAddress is null ? null : definition.Terms.PrivateHolding.Value.MarketOrAddress.Value
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field

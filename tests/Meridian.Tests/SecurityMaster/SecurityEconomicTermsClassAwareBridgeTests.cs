@@ -163,12 +163,12 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
     [Theory]
     [InlineData("InterestOnly", "InterestOnly")]
     [InlineData("PrincipalOnly", "PrincipalOnly")]
-    [InlineData("Clo", null)]
-    public void ReplayWithoutLegacyTerms_StructuredCreditRecoversStripKindsFromTheEconomicFlags(string kind, string? expectedRebuiltKind)
+    [InlineData("Clo", "Clo")]
+    public void ReplayWithoutLegacyTerms_StructuredCreditRecoversItsKind(string kind, string? expectedRebuiltKind)
     {
-        // The economic document carries the typed kind only as the IO/PO flags, so replay can give
-        // an IO or PO strip its kind back; any other family is not recoverable and stays absent
-        // rather than being guessed.
+        // Since S3-E6 the creditTranche module carries the kind label outright, so replay gives
+        // every family its kind back. (A document that predates the module still recovers only an
+        // IO or PO strip, from the structured-product flags — the test below.)
         var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
             "StructuredCredit",
             new
@@ -188,6 +188,47 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         if (expectedRebuiltKind is null)
         {
             rebuilt.TryGetProperty("structuredCreditKind", out _).Should().BeFalse("the economic document does not carry this family");
+        }
+        else
+        {
+            rebuilt.GetProperty("structuredCreditKind").GetString().Should().Be(expectedRebuiltKind);
+        }
+    }
+
+    [Theory]
+    [InlineData("InterestOnly", "InterestOnly")]
+    [InlineData("PrincipalOnly", "PrincipalOnly")]
+    [InlineData("Clo", null)]
+    public void ReplayWithoutLegacyTerms_DocumentThatPredatesTheTrancheModule_RecoversOnlyStripKinds(string kind, string? expectedRebuiltKind)
+    {
+        // Before the creditTranche module the economic document carried the typed kind only as the
+        // IO/PO flags: replay can give an IO or PO strip its kind back, and any other family is
+        // not recoverable and stays absent rather than being guessed.
+        var original = SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            "StructuredCredit",
+            new
+            {
+                tranche = "X-1",
+                collateralType = "AgencyPool",
+                originalFace = 1_000_000m,
+                couponOrIndex = "5.5",
+                maturity = "2036-01-15",
+                structuredCreditKind = kind
+            });
+        var economic = SecurityEconomicDefinitionAdapter.ToEconomicRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection("StructuredCredit", original));
+        var predating = System.Text.Json.Nodes.JsonNode.Parse(economic.EconomicTerms.GetRawText())!.AsObject();
+        predating.Remove("creditTranche").Should().BeTrue();
+
+        var rebuilt = SecurityEconomicDefinitionAdapter.ToProjection(economic with
+        {
+            EconomicTerms = JsonSerializer.SerializeToElement(predating),
+            LegacyAssetSpecificTerms = null
+        }).AssetSpecificTerms;
+
+        if (expectedRebuiltKind is null)
+        {
+            rebuilt.TryGetProperty("structuredCreditKind", out _).Should().BeFalse("the document does not carry this family");
         }
         else
         {
@@ -307,9 +348,9 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         // S3-E gave the option's strike, right and underlying a module home (exercise); what the
         // economic document still never carries is the listing detail.
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Option")
-            .Should().Contain(["optChainId", "settlementType", "lastTradingDt"]);
+            .Should().BeEquivalentTo(["settlementType", "isAdjusted"]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.RecoverableKeys("Option")
-            .Should().Contain(["strike", "putCall", "underlyingId", "multiplier", "exerciseStyle"]);
+            .Should().Contain(["strike", "putCall", "underlyingId", "multiplier", "exerciseStyle", "optChainId", "lastTradingDt"]);
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Swap").Should().Contain("legs");
         SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys("Bond").Should().Contain("subclass");
     }
@@ -325,14 +366,21 @@ public sealed class SecurityEconomicTermsClassAwareBridgeTests
         """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2027-09-30"},"coupon":{"couponType":"Fixed","couponRate":4.4,"paymentFrequency":null,"dayCount":"ACT/365"},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":{"isCallable":true,"firstCallDate":"2026-09-30","callPrice":null,"callSchedule":[],"makeWholeSpreadBps":null,"isPuttable":false,"putSchedule":[]},"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"First Meridian Bank","institutionName":null,"issuerProgram":null,"leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
 
     private const string StructuredCreditEconomicTerms =
-        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07","factorScheduleEntries":[{"asOfDate":"2026-06-01","factor":0.8412},{"asOfDate":"2026-07-01","factor":0.8235}]},"floatingRate":{"referenceIndex":"SOFR\u002B250","spreadBps":null,"resetFrequency":null,"floorRate":null,"capRate":null},"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
+        """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":null,"issueDate":null,"maturityDate":"2031-06-15"},"coupon":{"couponType":"SOFR\u002B250","couponRate":null,"paymentFrequency":null,"dayCount":null},"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":{"issuerName":"MRDN-2026-1","institutionName":null,"issuerProgram":"CLO","leiCode":null,"ultimateParentName":null,"issuerSector":null,"issuerCountry":null},"equityBehavior":null,"fund":null,"structuredProduct":{"factor":0.8235,"factorDate":null,"weightedAvgCoupon":7.85,"weightedAvgMaturityMonths":58,"weightedAvgLoanAgeMos":14,"collateralType":"CLO","poolIdentifier":"MRDN-2026-1","trancheClass":"B","prepaymentAssumption":null,"averageLifeYears":null,"isInterestOnly":false,"isPrincipalOnly":false,"notionalBalance":10000000,"originator":null,"creditEnhancementPct":null,"factorScheduleReference":"See trustee report 2026-07","factorScheduleEntries":[{"asOfDate":"2026-06-01","factor":0.8412},{"asOfDate":"2026-07-01","factor":0.8235}]},"floatingRate":{"referenceIndex":"SOFR\u002B250","spreadBps":null,"resetFrequency":null,"floorRate":null,"capRate":null},"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3EStructuredCreditModules + "}";
 
     private const string SwapEconomicTerms =
         """{"schemaVersion":2,"termsFormat":"economic","maturity":{"effectiveDate":"2026-01-15","issueDate":"2026-01-15","maturityDate":"2031-01-15"},"coupon":null,"discount":null,"accrual":null,"payment":null,"redemption":null,"call":null,"auction":null,"sweep":null,"financing":null,"issuer":null,"equityBehavior":null,"fund":null,"structuredProduct":null,"floatingRate":null,"tradingParameters":null,"creditRating":null,"depositaryReceipt":null,"dividendSchedule":null,"covenants":null,"esg":null,"venue":null,"multiCalendar":null,"inflationLinked":null,"sinkingFund":null""" + S3ENullModules + "}";
 
     // The S3-E module keys the serializer appends after sinkingFund; null for every class these
     // fixtures cover. One constant, so a new module home extends every fixture in one place.
-    private const string S3ENullModules = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null,\"profileEnvelope\":null";
+    private const string S3ENullModulesBeforeTranche = ",\"exercise\":null,\"currencyPair\":null,\"notional\":null,\"profileEnvelope\":null"
+        + ",\"listing\":null,\"underlying\":null,\"creditProtection\":null,\"structuredPayoff\":null";
+
+    private const string S3ENullModules = S3ENullModulesBeforeTranche + ",\"creditTranche\":null,\"privateHolding\":null";
+
+    // The structured-credit twin declares its tranche terms, which the creditTranche module carries.
+    private const string S3EStructuredCreditModules = S3ENullModulesBeforeTranche
+        + ""","creditTranche":{"kind":"Clo","seniority":"Mezzanine","attachmentPoint":0.12,"detachmentPoint":0.20,"reinvestmentPeriodEnd":"2028-06-15","nonCallPeriodEnd":"2027-06-15"},"privateHolding":null""";
 
     private const string NullAccrual = "\"accrual\":null";
 

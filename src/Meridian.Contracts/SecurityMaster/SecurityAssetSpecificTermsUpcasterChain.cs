@@ -73,7 +73,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// fails closed. A module added to the serializer from here on joins this list.
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
-        ["exercise", "currencyPair", "notional", ProfileEnvelopeModule];
+        ["exercise", "currencyPair", "notional", ProfileEnvelopeModule,
+         "listing", "underlying", "creditProtection", "structuredPayoff", "creditTranche", "privateHolding"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -245,8 +246,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
     /// an original v1 write for that class.
     /// <para>
     /// What remains lost is what the economic-terms document never carried: a swap's legs, a
-    /// bond's subclass, an option's listing detail (the S3-E module homes carry strikes, currency
-    /// pairs, notionals and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
+    /// bond's subclass and coupon structure, covenant entries (the S3-E module homes carry the
+    /// scalar complement and the custom-asset profile document). Since ADR-027 stage 1 increments 1 and 2,
     /// the Call module's call and put lists land in the flat callSchedule and putSchedule arrays,
     /// and the Accrual module's business-day convention and joint payment calendar land in the
     /// scheduleConventions block, for a class that declares those homes — stamped at the held
@@ -380,6 +381,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             {
                 if (mapping.LabelFromFlags is { } flags)
                 {
+                    // A label the document carries outright wins over one inferred from flags.
+                    if (TryWriteFirstSource(writer, economicTerms, mapping))
+                    {
+                        continue;
+                    }
+
                     foreach (var (module, field, label) in flags)
                     {
                         if (GetObject(economicTerms, module) is JsonElement flagSource
@@ -439,6 +446,23 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
 
         using var flattened = JsonDocument.Parse(buffer.ToArray());
         return new SecurityAssetSpecificTerms(flattened.RootElement.Clone(), AssetSpecificTermsSchema.Legacy);
+    }
+
+    private static bool TryWriteFirstSource(Utf8JsonWriter writer, JsonElement economicTerms, FlatTermMapping mapping)
+    {
+        foreach (var (module, field) in mapping.Sources)
+        {
+            if (GetObject(economicTerms, module) is JsonElement source
+                && source.TryGetProperty(field, out var value)
+                && value.ValueKind is not (JsonValueKind.Null or JsonValueKind.Undefined))
+            {
+                writer.WritePropertyName(mapping.FlatKey);
+                value.WriteTo(writer);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private static bool TryRecoverProfileDocument(JsonElement economicTerms, string? assetClass, out JsonElement document)
@@ -1086,9 +1110,23 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("strike", ("exercise", "strikePrice")),
             Map("expiry", MaturityDate),
             Map("multiplier", ("tradingParameters", "contractMultiplier")),
-            Map("exerciseStyle", ("exercise", "exerciseStyle"))
+            Map("exerciseStyle", ("exercise", "exerciseStyle")),
+            Map("optChainId", ("listing", "optionChainId")),
+            Map("lastTradingDt", ("listing", "lastTradingDate"))
         ]),
-        ("Future", [Map("expiry", MaturityDate), Map("multiplier", ("tradingParameters", "contractMultiplier"))]),
+        ("Future",
+        [
+            Map("rootSymbol", ("listing", "rootSymbol")),
+            Map("contractMonth", ("listing", "contractMonth")),
+            Map("expiry", MaturityDate),
+            Map("multiplier", ("tradingParameters", "contractMultiplier")),
+            Map("lastTradingDt", ("listing", "lastTradingDate")),
+            Map("firstNoticeDt", ("listing", "firstNoticeDate")),
+            Map("deliveryMonthDt", ("listing", "deliveryMonthDate")),
+            Map("deliveryLocationCode", ("listing", "deliveryLocationCode"))
+        ]),
+        ("Commodity", [Map("commodityType", ("underlying", "commodity")), Map("contractSize", ("tradingParameters", "contractMultiplier"))]),
+        ("Cfd", [Map("underlyingAssetClass", ("underlying", "assetClass")), Map("underlyingDescription", ("underlying", "description"))]),
         ("FxSpot", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
         ("CryptoCurrency", [Map("baseCurrency", ("currencyPair", "baseCurrency")), Map("quoteCurrency", ("currencyPair", "quoteCurrency"))]),
         ("Bond",
@@ -1182,10 +1220,21 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("weightedAverageCoupon", ("structuredProduct", "weightedAvgCoupon")),
             Map("weightedAverageMaturityMonths", ("structuredProduct", "weightedAvgMaturityMonths")),
             Map("weightedAverageLoanAgeMonths", ("structuredProduct", "weightedAvgLoanAgeMos")),
-            LabelFromFlags(
+            // The tranche module carries the kind label outright (S3-E6); a document that
+            // predates it still infers a strip kind from the structured-product flags.
+            new FlatTermMapping(
                 "structuredCreditKind",
-                ("structuredProduct", "isInterestOnly", "InterestOnly"),
-                ("structuredProduct", "isPrincipalOnly", "PrincipalOnly"))
+                [("creditTranche", "kind")],
+                LabelFromFlags:
+                [
+                    ("structuredProduct", "isInterestOnly", "InterestOnly"),
+                    ("structuredProduct", "isPrincipalOnly", "PrincipalOnly")
+                ]),
+            Map("seniority", ("creditTranche", "seniority")),
+            Map("attachmentPoint", ("creditTranche", "attachmentPoint")),
+            Map("detachmentPoint", ("creditTranche", "detachmentPoint")),
+            Map("reinvestmentPeriodEnd", ("creditTranche", "reinvestmentPeriodEnd")),
+            Map("nonCallPeriodEnd", ("creditTranche", "nonCallPeriodEnd"))
         ]),
         ("PrivateFundInterest",
         [
@@ -1193,15 +1242,28 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("strategy", ("issuer", "issuerProgram")),
             Map("commitment", ("notional", "committedAmount")),
             Map("fundedAmount", ("notional", "fundedAmount")),
-            Map("unfundedAmount", ("notional", "unfundedAmount"))
+            Map("unfundedAmount", ("notional", "unfundedAmount")),
+            Map("vintage", ("privateHolding", "vintage")),
+            Map("navDate", ("privateHolding", "valuationDate"))
         ]),
         ("PrivateCompanyEquity",
         [
             Map("issuer", ("issuer", "issuerName")),
             Map("shareClass", ("equityBehavior", "shareClass")),
-            Map("round", ("issuer", "issuerProgram"))
+            Map("round", ("issuer", "issuerProgram")),
+            Map("ownershipPercent", ("privateHolding", "ownershipPercent")),
+            Map("costBasis", ("privateHolding", "costBasis")),
+            Map("latestValuation", ("privateHolding", "latestValuation"))
         ]),
-        ("RealEstateHolding", [Map("propertyType", ("issuer", "issuerProgram")), Map("sponsor", ("issuer", "issuerName"))]),
+        ("RealEstateHolding",
+        [
+            Map("propertyType", ("issuer", "issuerProgram")),
+            Map("sponsor", ("issuer", "issuerName")),
+            Map("addressOrMarket", ("privateHolding", "marketOrAddress")),
+            Map("ownershipPercent", ("privateHolding", "ownershipPercent")),
+            Map("appraisalValue", ("privateHolding", "appraisalValue")),
+            Map("valuationDate", ("privateHolding", "valuationDate"))
+        ]),
         ("CommitmentGuarantee",
         [
             Map("counterparty", ("issuer", "issuerName")),
@@ -1209,7 +1271,9 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("effectiveDate", ("maturity", "effectiveDate")),
             Map("expiryDate", MaturityDate),
             Map("committedAmount", ("notional", "committedAmount")),
-            Map("unfundedAmount", ("notional", "unfundedAmount"))
+            Map("unfundedAmount", ("notional", "unfundedAmount")),
+            Map("feeRate", ("creditProtection", "feeRate")),
+            Map("collateral", ("creditProtection", "collateral"))
         ]),
         ("Warrant",
         [
@@ -1246,7 +1310,15 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("dayCount", ("coupon", "dayCount")),
             // The upgrade stores FixedCouponBps / 10000 as coupon.couponRate.
             new FlatTermMapping("fixedCouponBps", [("coupon", "couponRate")], Scale: 10000m),
-            Map("notional", ("notional", "notional"))
+            Map("notional", ("notional", "notional")),
+            Map("referenceEntity", ("creditProtection", "referenceEntity")),
+            Map("referenceObligation", ("creditProtection", "referenceObligation")),
+            Map("protectionSide", ("creditProtection", "protectionSide")),
+            Map("seniority", ("creditProtection", "seniority")),
+            Map("restructuringClause", ("creditProtection", "restructuringClause")),
+            Map("upfrontPoints", ("creditProtection", "upfrontPoints")),
+            Map("recoveryRateAssumption", ("creditProtection", "recoveryRateAssumption")),
+            Map("indexName", ("creditProtection", "indexName"))
         ]),
         ("Swaption",
         [
@@ -1255,7 +1327,8 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("strikeRate", ("exercise", "strikeRate")),
             Map("expiry", MaturityDate),
             Map("underlyingEffectiveDate", ("maturity", "effectiveDate")),
-            Map("notional", ("notional", "notional"))
+            Map("notional", ("notional", "notional")),
+            Map("underlyingMaturityDate", ("underlying", "endDate"))
         ]),
         ("CapFloor",
         [
@@ -1278,7 +1351,12 @@ public sealed class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster : ISchem
             Map("issuerName", ("issuer", "issuerName")),
             Map("couponRate", ("coupon", "couponRate")),
             Map("paymentFrequency", ("coupon", "paymentFrequency")),
-            Map("denomination", ("notional", "denomination"))
+            Map("denomination", ("notional", "denomination")),
+            Map("underlyingDescription", ("underlying", "description")),
+            Map("principalProtectionPct", ("structuredPayoff", "principalProtectionPct")),
+            Map("participationRate", ("structuredPayoff", "participationRate")),
+            Map("returnCap", ("structuredPayoff", "returnCap")),
+            Map("barrierLevel", ("structuredPayoff", "barrierLevel"))
         ]),
         ("InvestmentFund", [Map("fundFamily", ("fund", "fundFamily"))])
     ];

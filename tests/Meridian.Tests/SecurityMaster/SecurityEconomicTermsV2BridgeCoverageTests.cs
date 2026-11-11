@@ -110,6 +110,25 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
         "profileEnvelope": {
             "customProfileId": "co-invest-spv", "profileVersion": 2,
             "terms": { "schemaVersion": 3, "customProfileId": "co-invest-spv", "profileVersion": 2, "profileFields": { "vehicle": "SPV I" } }
+        },
+        "listing": {
+            "rootSymbol": "ES", "contractMonth": "2030-03", "optionChainId": "SPY-20261218", "lastTradingDate": "2030-03-15",
+            "firstNoticeDate": "2030-02-28", "deliveryMonthDate": "2030-03-01", "deliveryLocationCode": "CUSH"
+        },
+        "underlying": { "description": "S&P 500 Index", "assetClass": "Equity", "commodity": "Gold", "endDate": "2037-03-17" },
+        "creditProtection": {
+            "referenceEntity": "Meridian Industries Inc", "referenceObligation": "5.25% 2031", "protectionSide": "Buy",
+            "seniority": "SeniorUnsecured", "restructuringClause": "XR", "upfrontPoints": 1.25, "recoveryRateAssumption": 0.4,
+            "indexName": "CDX.NA.IG.42", "feeRate": 0.0075, "collateral": "First lien"
+        },
+        "structuredPayoff": { "principalProtectionPct": 1.0, "participationRate": 0.8, "returnCap": 0.35, "barrierLevel": 0.6 },
+        "creditTranche": {
+            "kind": "Clo", "seniority": "Mezzanine", "attachmentPoint": 0.12, "detachmentPoint": 0.18,
+            "reinvestmentPeriodEnd": "2028-07-15", "nonCallPeriodEnd": "2027-07-15"
+        },
+        "privateHolding": {
+            "vintage": 2021, "ownershipPercent": 12.5, "costBasis": 2500000, "latestValuation": 3100000,
+            "appraisalValue": 8400000, "valuationDate": "2026-06-30", "marketOrAddress": "Austin, TX"
         }
     }
     """);
@@ -263,6 +282,12 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("currencyPair")]
     [InlineData("notional")]
     [InlineData("profileEnvelope")]
+    [InlineData("listing")]
+    [InlineData("underlying")]
+    [InlineData("creditProtection")]
+    [InlineData("structuredPayoff")]
+    [InlineData("creditTranche")]
+    [InlineData("privateHolding")]
     public void Convert_DroppedModule_LeavesNoTraceInTheFlatPayload(string module)
     {
         // This asserts the documented flat-key loss for an ordinary document. Declared schedule
@@ -310,6 +335,12 @@ public sealed class SecurityEconomicTermsV2BridgeCoverageTests
     [InlineData("currencyPair")]
     [InlineData("notional")]
     [InlineData("profileEnvelope")]
+    [InlineData("listing")]
+    [InlineData("underlying")]
+    [InlineData("creditProtection")]
+    [InlineData("structuredPayoff")]
+    [InlineData("creditTranche")]
+    [InlineData("privateHolding")]
     public void Convert_DroppedModule_IsRetainedVerbatimBesideTheFlatKeys(string module)
     {
         // An ordinary document keeps its source module beside the lossy flat keys. Populated

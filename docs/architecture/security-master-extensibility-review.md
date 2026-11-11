@@ -839,6 +839,61 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 S3-E6 — the residual scalar complement gains module homes — 2026-11-11
+
+Six term modules home the scalar remainder that S3-E1 to E4 left codec-only, so the rules over
+it move to the definition surface:
+
+| Module | Members | Fed by |
+| --- | --- | --- |
+| `listing` | root symbol, contract month, option chain id, last trading / first notice / delivery-month dates, delivery location code | Future, Option |
+| `underlying` | description, asset class, commodity, end date (the underlying swap's maturity) | Cfd, StructuredNote, Commodity, Swaption |
+| `creditProtection` | reference entity and obligation, protection side, seniority, restructuring clause, upfront points, recovery-rate assumption, index name; fee rate and collateral | CreditDefaultSwap; CommitmentGuarantee |
+| `structuredPayoff` | principal protection, participation rate, return cap, barrier level | StructuredNote |
+| `creditTranche` | kind, seniority, attachment and detachment points, reinvestment and non-call period ends | StructuredCredit |
+| `privateHolding` | vintage, ownership percent, cost basis, latest valuation, appraisal value, valuation date, market or address | PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding |
+
+Twenty-six codes moved from `validateCodecOnlyKindTerms` to `validateDefinitionTerms` and the
+ledger, each proven on both surfaces by a mutation-table row: two Future, one Commodity, one
+Cfd, five StructuredNote, two Swaption, three CreditDefaultSwap, one CommitmentGuarantee, four
+StructuredCredit, one PrivateFundInterest, three PrivateCompanyEquity and three
+RealEstateHolding. Values the flat codec requires are required on the definition surface
+("present and valid"), as S3-E5 established. Future, StructuredCredit, PrivateFundInterest,
+PrivateCompanyEquity, RealEstateHolding, Commodity, Cfd, CreditDefaultSwap, Swaption and
+StructuredNote now keep no codec-only rule.
+
+Three choices worth recording:
+
+- **New modules, not wider old ones.** The tranche terms could have joined
+  `structuredProduct`, but adding members to a module that existing images already populate
+  would change that module's serialized shape and re-age those images at the identity gate,
+  whose tolerance covers a whole module key an image predates and nothing finer.
+- **An unset module is absent.** A record that declares nothing for one of these modules — a
+  structured-credit tranche with no tranche terms, a note with no payoff terms — carries the
+  module as null rather than as an object of nulls, so it writes exactly what a document from
+  before the module existed implies. The structured-credit corpus case pins it.
+- **`underlying.endDate`, not `maturityDate`.** The underlying swap's maturity is named for
+  what it is on that module; a `maturityDate` member there would have shadowed the bridged
+  flat key of the same name in the class-independent flattening.
+
+`ClassFlattenings` inverts each home, and Commodity and Cfd gain class-aware entries (they
+previously fell back to the class-independent bridge). Two replay improvements follow: a
+structured-credit tranche's kind is recovered for every family, where it had been recoverable
+only for IO and PO strips through the structured-product flags (a document that predates the
+module still recovers only those); and an economic-only commodity recovers its contract size at
+the flat key.
+
+What stays codec-only after this: Bond (subclass canonicality, principal schedule, step and
+inflation coupon structure), OtherSecurity (category), Swap (the legs), and the covenant
+entries of DirectLoan and CommitmentGuarantee.
+
+The replay corpus changed by the six appended null keys and the commodity case's recovered
+contract size; the write golden by those keys plus thirteen classes' module content.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,381 passed, 1 skipped; `Meridian.FSharp.Tests` — 627 passed. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 S3-E5 — per-class records contract onto their modules — 2026-11-11
 
 With the four S3-E modules in place, the per-class records stop redefining the fields those
