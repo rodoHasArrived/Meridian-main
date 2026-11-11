@@ -17,7 +17,7 @@ public sealed class LedgerReportCsvFormulaGuardTests
     [InlineData("+cmd", "'+cmd")]
     [InlineData("@SUM(A1)", "'@SUM(A1)")]
     [InlineData("-cmd", "'-cmd")]
-    [InlineData("  =1+1", "'  =1+1")]
+    [InlineData("  =1+1", "'=1+1")] // the request trims the actor before export
     public void ReportPackCsv_NeutralizesFormulaLookingText(string generatedBy, string expectedCell)
     {
         var pack = BuildPack(generatedBy);
