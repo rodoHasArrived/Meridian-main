@@ -13,7 +13,8 @@ export interface EntitySummaryItem {
 }
 
 export interface EntitySummaryProps {
-  items: EntitySummaryItem[];
+  /** A missing list renders an empty grid. */
+  items?: EntitySummaryItem[];
   /** @default 3 */
   columns?: number;
 }
@@ -47,7 +48,7 @@ export function EntitySummary({ items, columns = 3 }: EntitySummaryProps) {
         gap: "14px 20px",
       }}
     >
-      {items.map((it, i) => (
+      {(items ?? []).map((it, i) => (
         <div key={i} style={{ minWidth: 0 }}>
           <div style={labelStyle}>{it.label}</div>
           <div

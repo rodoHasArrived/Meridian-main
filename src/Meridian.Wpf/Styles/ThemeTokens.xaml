@@ -360,8 +360,8 @@
     <Color x:Key="BadgeDarkTextColor">#333333</Color>
     <SolidColorBrush x:Key="BadgeDarkTextBrush" Color="{StaticResource BadgeDarkTextColor}" />
 
-    <!-- On-accent text (white text over solid accent fills) -->
-    <Color x:Key="OnAccentTextColor">#FFFFFF</Color>
+    <!-- On-accent text: dark ink over the terracotta signal fill (4.7:1; white is 4.0:1) -->
+    <Color x:Key="OnAccentTextColor">#0D1217</Color>
     <SolidColorBrush x:Key="OnAccentTextBrush" Color="{StaticResource OnAccentTextColor}" />
 
     <!-- Muted text on dark chrome surfaces (float windows, metric tiles) -->

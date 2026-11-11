@@ -2052,6 +2052,13 @@ Asset drift is checked before dev/build and by Vite's build hook. Run
 Keep the package, synchronized assets, token bridge, and contract tests in the
 same reviewable change.
 
+Token values are checked from the package directory. `python3 scripts/check_token_parity.py`
+fails when a token name that `src/styles/index.css` and the package both declare resolves to a
+different value in light, auto-dark, manual-dark, or forced-light scope; a deliberate difference
+has to be listed in `tokens/parity-manifest.json` (currently only the Review severity hue).
+`python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
+brand art in all three tracks, and the WPF runtime palette.
+
 Auxiliary route and primitive styles consume the same roles: `--font-body` /
 `--font-display` for interface text, `--font-data` for values and identifiers,
 `--interaction-focus` for keyboard focus, `--interaction-selected` and

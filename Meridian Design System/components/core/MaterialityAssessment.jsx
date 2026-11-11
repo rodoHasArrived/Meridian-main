@@ -23,7 +23,7 @@ function inject() {
 .mds-mat{display:inline-flex;align-items:baseline;gap:5px;font:11px/1.35 var(--font-body);color:var(--text-primary,#20252B);border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);padding:1px 6px;white-space:nowrap}
 .mds-mat__g{font:10px var(--font-data,monospace);color:var(--text-secondary,#535C65)}
 .mds-mat__q{font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-mat[data-rank="2"],.mds-mat[data-rank="3"]{border-color:var(--border-strong,#B2BAC3);font-weight:600}
+.mds-mat[data-rank="2"],.mds-mat[data-rank="3"]{border-color:var(--border-strong,#AAA49A);font-weight:600}
 button.mds-mat{cursor:pointer}
 button.mds-mat:hover{background:var(--bg-hover,#EDEFF0)}
 button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--focus,#2D6FB3));outline-offset:1px}
@@ -39,12 +39,12 @@ button.mds-mat:focus-visible{outline:2px solid var(--interaction-focus,var(--foc
 .mds-matp__grid dt{color:var(--text-muted,#606870)}
 .mds-matp__grid dd{margin:0;font-family:var(--font-data,monospace);font-variant-numeric:tabular-nums}
 .mds-matp__f{display:grid;gap:0;margin:0;padding:0;list-style:none}
-.mds-matp__fi{display:grid;grid-template-columns:14px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid var(--border-divider,#E6E2DA);font:11px/1.5 var(--font-body)}
+.mds-matp__fi{display:grid;grid-template-columns:14px 1fr;gap:8px;padding:4px 0;border-bottom:1px solid var(--border-divider,#E2DED5);font:11px/1.5 var(--font-body)}
 .mds-matp__fi:last-child{border-bottom:0}
 .mds-matp__fi[data-present="false"]{color:var(--text-muted,#606870)}
 .mds-matp__fm{font:11px var(--font-data,monospace);text-align:center}
 .mds-matp__fr{display:block;font:10px/1.45 var(--font-body);color:var(--text-muted,#606870);text-wrap:pretty}
-.mds-matp__pol{font:10px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870);border-top:1px solid var(--border-divider,#E6E2DA);padding-top:6px}
+.mds-matp__pol{font:10px/1.5 var(--font-data,monospace);color:var(--text-muted,#606870);border-top:1px solid var(--border-divider,#E2DED5);padding-top:6px}
 `;
   document.head.appendChild(el);
 }

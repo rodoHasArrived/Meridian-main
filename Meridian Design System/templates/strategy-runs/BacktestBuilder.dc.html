@@ -184,7 +184,7 @@ class Component extends DCLogic {
       mTurnDelta: (m.avgHoldingDays != null ? "avg hold " + Math.round(m.avgHoldingDays) + "d" : "—") + (m.fees != null ? " · fees " + K.usd0(m.fees) : " · fees null"),
       eqSubtitle: art ? "Strategy vs " + (d.mandate.benchmark || "benchmark") + " · indexed to 100" : "No run selected",
       eqReadout: art ? [{ label: "run", value: art.id }, { label: "window", value: K.isoD(art.request.window.start) + " → " + K.isoD(art.request.window.end) }] : [],
-      eqSeries: sEq.values.length ? [{ label: "Strategy", color: "var(--series-actual, #29323A)", points: sEq.values }].concat(sBm.values.length ? [{ label: "Benchmark", color: "var(--series-benchmark, #6D757D)", points: sBm.values, dashed: true, area: false }] : []) : [],
+      eqSeries: sEq.values.length ? [{ label: "Strategy", color: "var(--series-actual, #29323A)", points: sEq.values }].concat(sBm.values.length ? [{ label: "Benchmark", color: "var(--series-benchmark, #8C918F)", points: sBm.values, dashed: true, area: false }] : []) : [],
       monthLabels: sEq.labels,
       ddSeries: sEq.values.length ? K.ddPct(sEq.values) : [],
       ddThreshold: d.riskGovernance.maxDrawdownPct != null ? -d.riskGovernance.maxDrawdownPct : -10,

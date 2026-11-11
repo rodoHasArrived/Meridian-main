@@ -17,7 +17,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__ranks{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden}
 .mds-dc__ranks button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-dc__ranks button:first-child{border-left:0}
-.mds-dc__ranks button[aria-pressed="true"]{background:var(--surface-selected,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-dc__ranks button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-dc__ranks button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-dc__unit{flex-basis:100%;font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-dc__colhead,.mds-dc__row{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:center}
@@ -27,7 +27,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__row{min-height:32px;width:100%;border:0;border-bottom:1px solid var(--border-divider,#E2DED5);border-left:2px solid transparent;background:none;padding:0;text-align:left;font:inherit;color:inherit;cursor:pointer}
 .mds-dc__row:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-dc__row:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-dc__row[aria-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
 .mds-dc__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mds-dc__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-dc__num{text-align:right;font:11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
@@ -35,14 +35,14 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-dc__track{position:relative;height:16px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
 .mds-dc__zero{position:absolute;top:-2px;bottom:-2px;border-left:1px solid var(--border-strong,#AAA49A)}
 .mds-dc__bar{position:absolute;top:3px;height:6px;min-width:1px;background:var(--series-actual,var(--brand-axis,#29323A))}
-.mds-dc__bar[data-negative="true"]{background:var(--series-prior,var(--brand-field,#5D7286))}
+.mds-dc__bar[data-negative="true"]{background:var(--series-prior,#7890A4)}
 .mds-dc__cmp{position:absolute;bottom:2px;height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
 .mds-dc__row[aria-selected="true"] .mds-dc__bar{background:var(--selected,#496C8F)}
 .mds-dc__mark{display:inline-block;width:9px;text-align:center;margin-right:3px;color:var(--text-muted,#606870)}
 .mds-dc__totals{display:grid;grid-template-columns:minmax(118px,1.3fr) 64px 64px 1.5fr 76px 76px;gap:10px;align-items:baseline;padding-top:5px;border-top:2px solid var(--border-strong,#AAA49A);font:600 11px var(--font-data,monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B)}
 .mds-dc__totals span:nth-child(n+2){text-align:right}
 .mds-dc__tie{margin:5px 0 0;font:9px/14px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-dc__tie[data-ok="false"]{color:var(--orange-dim,#725012)}
+.mds-dc__tie[data-ok="false"]{color:var(--orange-dim,#724D11)}
 .mds-dc__table{width:100%;border-collapse:collapse;margin-top:10px}
 .mds-dc__table caption{text-align:left;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870);padding-bottom:3px}
 .mds-dc__table th,.mds-dc__table td{border-bottom:1px solid var(--border-divider,#E2DED5);padding:4px 8px;font:10px var(--font-data,monospace);font-variant-numeric:tabular-nums;text-align:right}

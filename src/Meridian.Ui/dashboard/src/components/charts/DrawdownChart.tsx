@@ -21,7 +21,7 @@ export interface DrawdownChartProps {
 }
 
 const PLOT = "var(--chart-plot, #F8F7F3)";
-const GRID = "var(--chart-grid, #D2CDC3)";
+const GRID = "var(--chart-grid, #E2DED5)";
 const AXIS = "var(--chart-axis, #606870)";
 const BORDER = "var(--chart-border, #AAA49A)";
 const DRAWDOWN = "var(--chart-drawdown, #B54B42)";

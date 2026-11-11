@@ -6,10 +6,10 @@ import React from "react";
 
 export function StatusBanner({ tone = "success", title, detail, announce, ...rest }) {
   const c = {
-    success: { bg: "var(--green-a10, rgba(74,124,94,.10))",  bd: "var(--green, #2E7655)",  fg: "var(--green-dim, #375D46)" },
-    warning: { bg: "var(--orange-a10, rgba(183,121,31,.10))", bd: "var(--orange, #986717)", fg: "var(--orange-dim, #735414)" },
-    danger:  { bg: "var(--red-a10, rgba(166,67,63,.10))",     bd: "var(--red, #B54B42)",    fg: "var(--red-dim, #7D322F)" },
-    info:    { bg: "var(--blue-a10, rgba(47,111,143,.10))",   bd: "var(--semantic-info,#2F648A)", fg: "var(--semantic-info,#2F648A)" },
+    success: { bg: "var(--green-a10, rgba(46,118,85,.10))",  bd: "var(--green, #2E7655)",  fg: "var(--green-dim, #225840)" },
+    warning: { bg: "var(--orange-a10, rgba(152,103,23,.10))", bd: "var(--orange, #986717)", fg: "var(--orange-dim, #724D11)" },
+    danger:  { bg: "var(--red-a10, rgba(181,75,66,.10))",     bd: "var(--red, #B54B42)",    fg: "var(--red-dim, #883832)" },
+    info:    { bg: "var(--blue-a10, rgba(47,100,138,.10))",   bd: "var(--semantic-info,#2F648A)", fg: "var(--semantic-info,#2F648A)" },
   }[tone];
   const mode = announce || (tone === "danger" ? "assertive" : "polite");
   const live = mode === "off" ? {} : mode === "assertive" ? { role: "alert" } : { role: "status" };

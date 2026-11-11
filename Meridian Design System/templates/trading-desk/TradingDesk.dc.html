@@ -50,7 +50,7 @@
 <span style="font:11px var(--font-data);color:var(--text-muted)">{{ spreadLabel }}</span>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.DepthLadder" bids="{{ bids }}" asks="{{ asks }}" last-price="{{ lastPrice }}" price-decimals="{{ priceDecimals }}" levels="{{ ladderLevels }}" on-price-click="{{ onPriceClick }}" hint-size="300px,420px"></x-import>
-<div style="display:flex;align-items:center;gap:8px;padding-top:2px;border-top:1px solid var(--border-divider,#E4E0D8)">
+<div style="display:flex;align-items:center;gap:8px;padding-top:2px;border-top:1px solid var(--border-divider,#E2DED5)">
 <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Clip</span>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ clip }}" on-change="{{ onClip }}" options="{{ clipOptions }}" hint-size="180px,26px"></x-import>
 </div>
@@ -86,9 +86,9 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeAndSalesTape" prints="{{ prints }}" show-symbol="{{ true }}" show-venue="{{ true }}" block-size="{{ 5000 }}" max-height="{{ 300 }}" hint-size="100%,300px"></x-import>
 </sc-if>
 <sc-if value="{{ tapeWithheldShow }}" hint-placeholder-val="{{ false }}">
-<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-top:6px;border-top:1px solid var(--border-divider,#E4E0D8);font-size:11px;color:var(--text-muted)">
+<div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding-top:6px;border-top:1px solid var(--border-divider,#E2DED5);font-size:11px;color:var(--text-muted)">
 <span>{{ tapeWithheldLabel }}</span>
-<button type="button" onClick="{{ onDetailFull }}" style="padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2D6FB3);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show full detail</button>
+<button type="button" onClick="{{ onDetailFull }}" style="padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show full detail</button>
 </div>
 </sc-if>
 </div>

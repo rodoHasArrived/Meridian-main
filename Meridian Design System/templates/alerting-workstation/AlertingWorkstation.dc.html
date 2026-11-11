@@ -11,7 +11,7 @@
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="alerting-workstation">
-<style>button[aria-pressed="true"][data-sev]{color:var(--text-primary);border-color:var(--border-strong)}button[aria-pressed="true"][data-sev="Critical"]{background:var(--red-a10,rgba(166,67,63,.10))}button[aria-pressed="true"][data-sev="Warning"]{background:var(--amber-a10,rgba(180,133,45,.12))}button[aria-pressed="true"][data-sev="Info"]{background:var(--card-surface-raised,#FCFBF8)}</style>
+<style>button[aria-pressed="true"][data-sev]{color:var(--text-primary);border-color:var(--border-strong)}button[aria-pressed="true"][data-sev="Critical"]{background:var(--red-a10,rgba(181,75,66,.10))}button[aria-pressed="true"][data-sev="Warning"]{background:var(--amber-a10,rgba(180,133,45,.12))}button[aria-pressed="true"][data-sev="Info"]{background:var(--card-surface-raised,#FCFBF8)}</style>
 </helmet>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0,0"></x-import>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeys }}" hint-size="0,0"></x-import>
@@ -71,9 +71,9 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ reopenOff }}" on-click="{{ onReopen }}" hint-size="80px,28px">Reopen</x-import>
 </div>
 <sc-if value="{{ outOfFilter }}" hint-placeholder-val="{{ false }}">
-<div style="display:flex;align-items:baseline;gap:10px;padding:7px 9px;border:1px solid var(--border-divider,#E4E0D8);background:var(--bg-well,#F1EEE7);font-size:11px;line-height:1.45;color:var(--text-muted)">
+<div style="display:flex;align-items:baseline;gap:10px;padding:7px 9px;border:1px solid var(--border-divider,#E2DED5);background:var(--surface-well,#FCFBF8);font-size:11px;line-height:1.45;color:var(--text-muted)">
 <span>{{ outOfFilterNote }}</span>
-<button type="button" onClick="{{ onFollowSel }}" style="margin-left:auto;flex:none;padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2D6FB3);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show in queue</button>
+<button type="button" onClick="{{ onFollowSel }}" style="margin-left:auto;flex:none;padding:0;background:transparent;border:0;font:inherit;font-weight:500;color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px">Show in queue</button>
 </div>
 </sc-if>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" tabs="{{ tabs }}" value="{{ tab }}" on-change="{{ onTab }}" hint-size="100%,36px"></x-import>

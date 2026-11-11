@@ -14,7 +14,7 @@ function inject() {
   color:var(--text-secondary,#535C65);background:var(--bg-medium,#EBE8E1);
   border:1px solid var(--border,#D2CDC3);border-bottom-width:2px;
   border-radius:var(--radius-chip,3px);white-space:nowrap;}
-.mds-kbd__plus{font-size:10px;color:var(--text-muted,#6B737B);font-weight:500;padding:0 1px;}
+.mds-kbd__plus{font-size:10px;color:var(--text-muted,#606870);font-weight:500;padding:0 1px;}
 .mds-kbd--solid .mds-kbd__key{color:var(--text-primary,#20252B);background:var(--bg-light,#F8F7F3);}
 `;
   const el = document.createElement("style");

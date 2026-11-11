@@ -14,7 +14,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cfl__legend{display:flex;gap:12px;font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-cfl__legend span{display:inline-flex;align-items:center;gap:5px}
 .mds-cfl__legend i{width:12px;height:3px;display:inline-block;background:var(--series-actual,var(--brand-axis,#29323A))}
-.mds-cfl__legend i[data-role="liability"]{background:var(--series-prior,var(--brand-field,#5D7286))}
+.mds-cfl__legend i[data-role="liability"]{background:var(--series-prior,#7890A4)}
 .mds-cfl__legend i[data-role="scenario"]{background:var(--series-scenario,var(--scenario-signal,#C56343));height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
 .mds-cfl__unit{margin-left:auto;font:9px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-cfl__colhead,.mds-cfl__row{display:grid;grid-template-columns:minmax(78px,108px) 1fr 96px 96px;gap:10px;align-items:center}
@@ -24,14 +24,14 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-cfl__row--action{cursor:pointer}
 .mds-cfl__row--action:hover{background:var(--bg-hover,#EDEFF0)}
 .mds-cfl__row--action:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
-.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--surface-selected,#E7EDF2)}
+.mds-cfl__row[data-selected="true"]{border-left-color:var(--selected,#496C8F);background:var(--selected-surface,#E7EDF2)}
 .mds-cfl__label{font-size:11px;font-weight:600;color:var(--text-primary,#20252B)}
 .mds-cfl__label small{display:block;font:9px var(--font-data,monospace);font-weight:400;color:var(--text-muted,#606870)}
 .mds-cfl__track{position:relative;height:22px;background:var(--surface-recessed,var(--bg-medium,#EBE8E1))}
 .mds-cfl__zero{position:absolute;left:50%;top:-2px;bottom:-2px;border-left:1px solid var(--border-strong,#AAA49A)}
 .mds-cfl__asset,.mds-cfl__liab{position:absolute;left:50%;height:7px;min-width:1px}
 .mds-cfl__asset{top:3px;background:var(--series-actual,var(--brand-axis,#29323A))}
-.mds-cfl__liab{bottom:3px;background:var(--series-prior,var(--brand-field,#5D7286));transform:translateX(-100%)}
+.mds-cfl__liab{bottom:3px;background:var(--series-prior,#7890A4);transform:translateX(-100%)}
 .mds-cfl__scen{position:absolute;left:50%;height:0;border-top:2px dashed var(--series-scenario,var(--scenario-signal,#C56343))}
 .mds-cfl__scen[data-side="liability"]{transform:translateX(-100%)}
 .mds-cfl__scen[data-band="asset"]{top:2px}

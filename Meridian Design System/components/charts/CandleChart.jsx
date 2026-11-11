@@ -17,7 +17,7 @@ export function CandleChart({ ariaLabel, ariaDescription, accessibleData,
   rail = 64,
 }) {
   const domain = domainOf([bars.map((b) => b.h), bars.map((b) => b.l)], 0.08);
-  const maxVol = Math.max(...bars.map((b) => b.v || 0)) || 1;
+  const maxVol = Math.max(...bars.map((b) => b.v || 0), 0) || 1;
   const ma = (win) => bars.map((_, i) => {
     if (i < win - 1) return null;
     const s = bars.slice(i - win + 1, i + 1);
@@ -33,7 +33,7 @@ export function CandleChart({ ariaLabel, ariaDescription, accessibleData,
       rail={rail} panes={panes} crosshairIndex={crosshairIndex}>
       {(g) => {
         const P = g.pane("price"), V = showVolume ? g.pane("vol") : null;
-        const bw = Math.max(2.2, ((g.plotR - g.plotL) / bars.length) * 0.68);
+        const bw = Math.max(2.2, ((g.plotR - g.plotL) / (bars.length || 1)) * 0.68);
         const maPath = (win) => {
           let d = "", started = false;
           ma(win).forEach((v, i) => { if (v == null) return; d += `${started ? "L" : "M"}${g.x(i).toFixed(1)},${P.y(v).toFixed(1)} `; started = true; });

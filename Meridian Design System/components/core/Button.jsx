@@ -31,8 +31,8 @@ function inject() {
 .mds-btn--ghost:active{background:var(--bg-active,#E7EDF2);border-color:var(--border-strong,#AAA49A);}
 /* danger — red text, ghost styling */
 .mds-btn--danger{background:var(--bg-light,#F8F7F3);border-color:var(--border,#D2CDC3);color:var(--red,#B54B42);font-weight:600;}
-.mds-btn--danger:hover{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);}
-.mds-btn--danger:active{background:var(--red-a20,rgba(166,67,63,.20));border-color:var(--red-dim,#7D322F);}
+.mds-btn--danger:hover{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);}
+.mds-btn--danger:active{background:var(--red-a20,rgba(181,75,66,.20));border-color:var(--red-dim,#883832);}
 /* link — text-only */
 .mds-btn--link{background:transparent;border:none;padding:0;color:var(--border-focus,#2D6FB3);font-weight:600;font-size:12px;}
 .mds-btn--link:hover{text-decoration:underline;}

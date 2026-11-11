@@ -35,15 +35,20 @@ PAIRS = [
     ("muted text on card",         "--text-muted",     "--bg-light",     4.5),
     ("muted text on header band",  "--text-muted",     "--bg-medium",    4.5),
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
-    ("accent text on card",        "--accent",         "--bg-light",     4.5),
-    ("accent-dim text on card",    "--accent-dim",     "--bg-light",     4.5),
+    # 4.3.0 retoned the accent to the terracotta signal (#C56343, 3.74:1 on the card) and made
+    # --accent-dim the pressed FILL, lighter than the signal. Neither is a text ink any more:
+    # the signal is held to the 3:1 non-text threshold and signal-coloured TEXT is --brand-signal-text.
+    # These rows used to hold --accent and --accent-dim to 4.5:1 as text and failed from the
+    # retone onward while the components still used both as text.
+    ("accent on card (non-text)",  "--accent",         "--bg-light",     3.0),
+    ("brand-signal-text text on card",    "--brand-signal-text",     "--bg-light",     4.5),
     # The header band is a third surface, and the accent is only 4.39:1 on it — which is why
-    # DenseDataTable's sort arrow and rank, which sit there, now take the dim variant. The
+    # DenseDataTable's sort arrow and rank, which sit there, now take the ink variant. The
     # accent keeps a non-text row on the band (borders, icons, the 3:1 threshold); text on the
-    # band is --accent-dim. Checking the accent only against the card and the canvas missed a
+    # band is --brand-signal-text. Checking the accent only against the card and the canvas missed a
     # pair that ships on every sorted table.
     ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
-    ("accent-dim text on header band",   "--accent-dim", "--bg-medium",  4.5),
+    ("brand-signal-text text on header band",   "--brand-signal-text", "--bg-medium",  4.5),
     ("primary button label",       "--text-on-accent", "--accent",       4.5),
     # The hover state was omitted here until 2026-09, so a hover fill that failed AA
     # shipped behind a green gate. All three button states are checked now.
@@ -79,11 +84,11 @@ WASH_PAIRS = [
     # An accent wash lifts the surface toward the accent, so the accent itself loses contrast on
     # it — 4.41:1 on a card, 4.07 on canvas, 3.87 on the header band, where the steel pair
     # cleared AA. Same shape as the header-band rows above: the accent is a borders-and-icons
-    # colour on its own wash, and wash *text* is --accent-dim.
+    # colour on its own wash, and wash *text* is --brand-signal-text.
     ("accent on accent wash (non-text)", "--accent",     "--accent", 0.10, "--bg-light",  3.0),
-    ("accent-dim text on accent wash",   "--accent-dim", "--accent", 0.10, "--bg-light",  4.5),
-    ("accent-dim on accent wash, canvas","--accent-dim", "--accent", 0.10, "--bg",        4.5),
-    ("accent-dim on accent wash, band",  "--accent-dim", "--accent", 0.10, "--bg-medium", 4.5),
+    ("brand-signal-text text on accent wash",   "--brand-signal-text", "--accent", 0.10, "--bg-light",  4.5),
+    ("brand-signal-text on accent wash, canvas","--brand-signal-text", "--accent", 0.10, "--bg",        4.5),
+    ("brand-signal-text on accent wash, band",  "--brand-signal-text", "--accent", 0.10, "--bg-medium", 4.5),
     ("red-dim on red-a20 wash",       "--red-dim",    "--red",    0.20, "--bg-light", 4.5),
     # The actual status chips, foreground token against its own wash, on each surface a chip
     # sits on. Checking only the -dim tokens in the abstract missed that the *-fg tokens were
@@ -95,10 +100,12 @@ WASH_PAIRS = [
     ("severity-action chip",   "--severity-action-fg",  "--orange", 0.11, "--bg-light",  4.5),
     ("state-healthy chip",     "--state-healthy-fg",    "--green",  0.10, "--bg-light",  4.5),
     ("state-danger chip",      "--state-danger-fg",     "--red",    0.10, "--bg-light",  4.5),
-    ("state-paper chip",       "--state-paper-fg",      "--accent", 0.10, "--bg-light",  4.5),
+    # Paper and pending are measured on their OWN wash: since 4.3.0 paper is the Field slate
+    # and pending is the warm taupe, not the accent and the information blue.
+    ("state-paper chip",       "--state-paper-fg",      "--brand-field", 0.10, "--bg-light",  4.5),
     ("state-strategy chip",    "--state-strategy-fg",   "--purple", 0.10, "--bg-light",  4.5),
     ("state-live chip",        "--state-live-fg",       "--red",    0.12, "--bg-light",  4.5),
-    ("state-pending chip",     "--state-pending-fg",    "--purple", 0.10, "--bg-light",  4.5),
+    ("state-pending chip",     "--state-pending-fg",    "--pending", 0.10, "--bg-light",  4.5),
 ]
 
 
@@ -724,6 +731,10 @@ def check_var_chains(root: Path) -> list[str]:
         for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
             if path != base and path.suffix not in CALL_SITE_SUFFIXES:
                 continue
+            # A test file quotes var() calls as strings it asserts on (Tailwind's own
+            # --tw-* and --text-* internals among them); it renders nothing.
+            if ".test." in path.name:
+                continue
             text = path.read_text(encoding="utf-8", errors="replace")
             if path.suffix == ".css":
                 text = blank_comments(text)
@@ -733,6 +744,10 @@ def check_var_chains(root: Path) -> list[str]:
                 for ref in BARE_REF.findall(line):
                     checked += 1
                     if ref in declared or ref in local or ref in KNOWN_UNDECLARED:
+                        continue
+                    # `var(--x)` is the placeholder the conformance normaliser substitutes for
+                    # any var() call before comparing rules; it is a string, never a style.
+                    if ref == "--x" and ".replace(" in line:
                         continue
                     failures.append(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) with "
                                     "no fallback names a token this track never declares — it "
@@ -1021,7 +1036,19 @@ def check_bundle_parity(root: Path) -> list[str]:
     bundle = bundle_path.read_text(encoding="utf-8", errors="replace")
     failures: list[str] = []
     checked = 0
+    # The bundle is built from the manifest's export list, so a source the manifest no longer
+    # exports (the table renderers DataGrid replaced in 4.0, the pre-Dialog Modal) is retained
+    # for migration and deliberately absent from the bundle. Holding those to bundle parity
+    # reported 35 "shipped component differs" findings for components that do not ship.
+    shipped: set[str] | None = None
+    manifest_path = root / "_ds_manifest.json"
+    if manifest_path.exists():
+        import json
+        shipped = {c.get("sourcePath", "") for c in
+                   json.loads(manifest_path.read_text(encoding="utf-8")).get("components", [])}
     for path in sorted((root / "components").rglob("*.jsx")):
+        if shipped is not None and path.relative_to(root).as_posix() not in shipped:
+            continue
         for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
             rule = line.strip()
             if not SOURCE_RULE.match(rule):
@@ -1163,7 +1190,9 @@ BRAND_RETIRED = frozenset({
     "#07101C", "#0F1B28", "#111C28", "#152838", "#1B334B", "#21405D", "#29425C",
     "#1A6BB5", "#0EA5E9", "#16A34A", "#3B82F6", "#60A5FA", "#67E8F9", "#86EFAC", "#84F3B6",
 })
-BRAND_FONTS = ("Space Grotesk", "IBM Plex", "JetBrains Mono", "Inter")
+# Faces the package does NOT load. IBM Plex left this list in 4.3.0: tokens/fonts.css ships it,
+# and it is the face the identity art now names for its few live <text> runs.
+BRAND_FONTS = ("Space Grotesk", "JetBrains Mono", "Inter")
 
 
 def check_brand_assets(root: Path) -> list[str]:
@@ -1233,7 +1262,7 @@ def check_accent_on_wash(root: Path) -> list[str]:
                     failures.append(
                         f"[accent-wash] {_rel(path, root)}:{text.count(chr(10), 0, m.start()) + 1}: "
                         f"{selector[:44]} puts --accent text on an accent-tinted surface "
-                        "(3.87–4.41:1) — wash text is --accent-dim")
+                        "(3.33:1) — wash text is --brand-signal-text")
     for f in failures[:10]:
         print(f)
     if not failures:

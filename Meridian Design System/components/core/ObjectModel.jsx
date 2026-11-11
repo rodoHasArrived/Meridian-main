@@ -102,7 +102,7 @@ button.mds-objh__fact:hover .mds-objh__v{text-decoration:underline;text-underlin
 .mds-objh__l{font:11px var(--font-body);color:var(--text-muted,#606870);white-space:nowrap}
 .mds-objh__v{font:600 13px var(--font-data,monospace);color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;white-space:nowrap}
 .mds-objh__fact[data-material="on"] .mds-objh__v{font-size:16px}
-.mds-objh__fact[data-flagged="on"] .mds-objh__v{color:var(--red-dim,#B54B42)}
+.mds-objh__fact[data-flagged="on"] .mds-objh__v{color:var(--red-dim,#883832)}
 .mds-objh__cond{display:inline-flex;align-items:center;gap:6px}
 .mds-objh__dot{width:7px;height:7px;border-radius:50%;background:var(--text-disabled,#A4ABB2);flex:none}
 .mds-objh__sub{font:11px var(--font-data,monospace);color:var(--text-muted,#606870)}

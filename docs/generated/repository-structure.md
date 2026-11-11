@@ -8516,6 +8516,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── positive-decimal.test.ts
+│   │   │   │   │   ├── positive-decimal.ts
 │   │   │   │   │   ├── private-capital-notice-intent.test.ts
 │   │   │   │   │   ├── private-capital-notice-intent.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts

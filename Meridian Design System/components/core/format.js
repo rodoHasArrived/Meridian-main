@@ -61,7 +61,8 @@ export function toNumber(value) {
   if (typeof value === "number") return value;
   const s = String(value).trim();
   const neg = /^\(.*\)$/.test(s); // accounting parentheses = negative
-  const n = parseFloat(s.replace(/[(),\s]/g, "").replace(/[^0-9.\-]/g, ""));
+  // U+2212 is the minus sign formatMoney emits — read it back as a hyphen-minus before stripping.
+  const n = parseFloat(s.replace(/\u2212/g, "-").replace(/[(),\s]/g, "").replace(/[^0-9.\-]/g, ""));
   return neg ? -Math.abs(n) : n;
 }
 

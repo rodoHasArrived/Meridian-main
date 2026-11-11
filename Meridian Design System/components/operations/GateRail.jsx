@@ -18,15 +18,15 @@ function inject() {
   width:calc(100% - 28px);height:2px;background:var(--mds-gate-line,var(--border,#D2CDC3));z-index:0;}
 .mds-gate__node{position:relative;z-index:1;display:inline-flex;align-items:center;justify-content:center;
   width:28px;height:28px;border-radius:50%;border:1.5px solid var(--severity-info-bd,#D2CDC3);
-  background:var(--bg-light,#F8F7F3);color:var(--severity-info-fg,#6B737B);
+  background:var(--bg-light,#F8F7F3);color:var(--severity-info-fg,#606870);
   font-family:var(--font-data,monospace);font-size:11px;font-weight:700;}
-.mds-gate--ready .mds-gate__node{border-color:var(--severity-ready-fg,#2E7655);background:var(--severity-ready-bg,rgba(74,124,94,.10));color:var(--severity-ready-fg,#2E7655);}
-.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#C56343);background:var(--severity-review-bg,rgba(47,111,143,.10));color:var(--severity-review-fg,#C56343);}
-.mds-gate--action .mds-gate__node{border-color:var(--severity-action-fg,#986717);background:var(--severity-action-bg,rgba(154,113,19,.11));color:var(--severity-action-fg,#986717);}
-.mds-gate--blocked .mds-gate__node{border-color:var(--severity-blocked-fg,#B54B42);background:var(--severity-blocked-bg,rgba(166,67,63,.10));color:var(--severity-blocked-fg,#B54B42);}
+.mds-gate--ready .mds-gate__node{border-color:var(--severity-ready-fg,#225840);background:var(--severity-ready-bg,rgba(46,118,85,.10));color:var(--severity-ready-fg,#225840);}
+.mds-gate--review .mds-gate__node{border-color:var(--severity-review-fg,#8E4730);background:var(--severity-review-bg,rgba(197,99,67,.10));color:var(--severity-review-fg,#8E4730);}
+.mds-gate--action .mds-gate__node{border-color:var(--severity-action-fg,#724D11);background:var(--severity-action-bg,rgba(152,103,23,.11));color:var(--severity-action-fg,#724D11);}
+.mds-gate--blocked .mds-gate__node{border-color:var(--severity-blocked-fg,#883832);background:var(--severity-blocked-bg,rgba(181,75,66,.10));color:var(--severity-blocked-fg,#883832);}
 .mds-gate__label{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--text-primary,#20252B);line-height:1.2;}
 .mds-gate__status{font-family:var(--font-data,monospace);font-size:9px;font-weight:700;letter-spacing:.04em;
-  text-transform:uppercase;color:var(--text-muted,#6B737B);}
+  text-transform:uppercase;color:var(--text-muted,#606870);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "gate-rail");
@@ -43,7 +43,7 @@ export function GateRail({ gates = [], className = "" }) {
       {gates.map((g, i) => {
         const sev = normalizeSeverity(g.status);
         const prevReady = i > 0 && normalizeSeverity(gates[i - 1].status) === "ready";
-        const line = prevReady ? "var(--severity-ready-fg,#2E7655)" : "var(--border,#D2CDC3)";
+        const line = prevReady ? "var(--severity-ready-fg,#225840)" : "var(--border,#D2CDC3)";
         return (
           <li
             key={g.key || g.label || i}

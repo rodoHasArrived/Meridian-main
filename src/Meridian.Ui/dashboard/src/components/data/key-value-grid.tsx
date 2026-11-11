@@ -8,7 +8,8 @@ export interface KeyValueGridItem {
 }
 
 export interface KeyValueGridProps {
-  items: KeyValueGridItem[];
+  /** A missing list renders an empty grid. */
+  items?: KeyValueGridItem[];
   /** @default 2 */
   columns?: number;
 }
@@ -44,7 +45,7 @@ export function KeyValueGrid({ items, columns = 2 }: KeyValueGridProps) {
         gap: "12px 24px",
       }}
     >
-      {items.map((it, i) => (
+      {(items ?? []).map((it, i) => (
         <div key={i} style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
           <div style={labelStyle}>{it.label}</div>
           <div style={valueStyle}>{it.value}</div>

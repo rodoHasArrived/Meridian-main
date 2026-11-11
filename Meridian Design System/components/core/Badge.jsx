@@ -13,13 +13,13 @@ function inject() {
   font-variant:all-small-caps;letter-spacing:.03em;white-space:nowrap;line-height:1.3;border-radius:var(--radius-chip,2px);}
 .mds-badge__dot{height:6px;width:6px;background:currentColor;flex:0 0 auto;}
 .mds-badge--neutral{background:var(--bg-hover,#EDEFF0);border-color:var(--border,#D2CDC3);color:var(--text-secondary,#535C65);}
-.mds-badge--info{background:var(--blue-a10,rgba(47,111,143,.10));border-color:var(--semantic-info,#2F648A);color:var(--semantic-info,#2F648A);}
-.mds-badge--success{background:var(--green-a10,rgba(74,124,94,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.mds-badge--warning{background:var(--orange-a10,rgba(183,121,31,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#735414);}
-.mds-badge--danger{background:var(--red-a10,rgba(166,67,63,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.mds-badge--info{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--semantic-info,#2F648A);color:var(--semantic-info,#2F648A);}
+.mds-badge--success{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.mds-badge--warning{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
+.mds-badge--danger{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 /* environment modes — SOLID filled chips (you-are-here), a different register from washed status */
 .mds-badge--live{background:var(--mode-live,#B54B42);border-color:var(--mode-live,#B54B42);color:var(--text-on-fill,#fff);font-weight:700;}
-.mds-badge--paper{background:var(--mode-paper,#C56343);border-color:var(--mode-paper,#C56343);color:var(--text-on-fill,#fff);font-weight:700;}
+.mds-badge--paper{background:var(--mode-paper,#5D7286);border-color:var(--mode-paper,#5D7286);color:var(--text-on-fill,#fff);font-weight:700;}
 .mds-badge--fixture{background:var(--mode-fixture,#986717);border-color:var(--mode-fixture,#986717);color:var(--text-on-fill,#fff);font-weight:700;}
 `;
   const el = document.createElement("style");

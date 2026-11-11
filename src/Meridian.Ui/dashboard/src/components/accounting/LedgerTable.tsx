@@ -49,6 +49,8 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.ldg-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--focus,#2D6FB3));outline-offset:-2px;}
+.ldg__empty{padding:16px 12px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .ldg-wrap{overflow-x:auto;border:1px solid var(--border-color,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .ldg{width:100%;min-width:100%;border-collapse:separate;border-spacing:0;
@@ -57,11 +59,11 @@ function inject(): void {
   background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);
-  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#DAD8D3);}
+  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .ldg thead th:last-child{border-right:none;}
 .ldg th.ldg--r{text-align:right;}
 .ldg td{padding:11px 12px;white-space:nowrap;color:var(--text-primary,#20252B);
-  border-top:1px solid var(--border-color,#D2CDC3);border-right:1px solid var(--border-divider,#DAD8D3);
+  border-top:1px solid var(--border-color,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);
   vertical-align:baseline;height:40px;}
 .ldg td:last-child{border-right:none;}
 .ldg tbody tr:first-child td{border-top:none;}
@@ -157,7 +159,7 @@ export function LedgerTable({
       : { scope: "col" };
 
   return (
-    <div className="ldg-wrap" role="region" aria-label={caption || "General ledger"}>
+    <div className="ldg-wrap" tabIndex={0} role="region" aria-label={caption || "General ledger"}>
       <table className="ldg">
         <thead>
           <tr>
@@ -200,6 +202,11 @@ export function LedgerTable({
               </td>
             </tr>
           )}
+          {computed.length === 0 && (
+            <tr>
+              <td className="ldg__empty" colSpan={showAccount ? 7 : 6}>No journal entries</td>
+            </tr>
+          )}
           {computed.map((r, i) => (
             <tr key={i}>
               <td className="ldg__date">{r.date}</td>
@@ -220,7 +227,7 @@ export function LedgerTable({
                 {r._hasBal ? (
                   <AmountCell value={r._bal} currency={currency} parens />
                 ) : (
-                  <span style={{ color: "var(--text-disabled, #94999F)" }}>—</span>
+                  <span style={{ color: "var(--text-disabled, #A4ABB2)" }}>—</span>
                 )}
               </td>
             </tr>

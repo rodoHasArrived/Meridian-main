@@ -16,7 +16,7 @@ function inject() {
   border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);min-width:264px;}
 .mds-ladder__head{display:grid;grid-template-columns:1fr 88px 1fr;border-bottom:1px solid var(--border,#D2CDC3);
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--text-muted,#6B737B);}
+  letter-spacing:.05em;color:var(--text-muted,#606870);}
 .mds-ladder__head>span{padding:4px 8px;}
 .mds-ladder__head>span:first-child{text-align:right;}
 .mds-ladder__head>span:nth-child(2){text-align:center;border-left:1px solid var(--border,#D2CDC3);
@@ -28,8 +28,8 @@ function inject() {
 .mds-ladder__size--bid{justify-content:flex-end;}
 .mds-ladder__size--ask{justify-content:flex-start;}
 .mds-ladder__bar{position:absolute;top:2px;bottom:2px;}
-.mds-ladder__bar--bid{right:0;background:var(--green-a20,rgba(74,124,94,.2));}
-.mds-ladder__bar--ask{left:0;background:var(--red-a20,rgba(166,67,63,.2));}
+.mds-ladder__bar--bid{right:0;background:var(--green-a20,rgba(46,118,85,.2));}
+.mds-ladder__bar--ask{left:0;background:var(--red-a20,rgba(181,75,66,.2));}
 .mds-ladder__num{position:relative;padding:0 8px;color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;}
 .mds-ladder__price{display:flex;align-items:center;justify-content:center;gap:5px;
   border-left:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border,#D2CDC3);
@@ -44,10 +44,10 @@ button.mds-ladder__price:focus-visible{outline:var(--focus-ring);outline-offset:
   border-color:transparent transparent transparent var(--text-primary,#20252B);}
 .mds-ladder__spread{display:grid;grid-template-columns:1fr 88px 1fr;height:20px;align-items:center;
   border-top:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border,#D2CDC3);
-  background:var(--card-surface-raised,#F4F6F9);}
+  background:var(--card-surface-raised,#FCFBF8);}
 .mds-ladder__spreadlab{grid-column:2;display:flex;align-items:center;justify-content:center;gap:6px;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.05em;color:var(--text-muted,#6B737B);border-left:1px solid var(--border,#D2CDC3);
+  letter-spacing:.05em;color:var(--text-muted,#606870);border-left:1px solid var(--border,#D2CDC3);
   border-right:1px solid var(--border,#D2CDC3);height:100%;white-space:nowrap;}
 .mds-ladder__spreadval{font-family:var(--font-data);font-variant-numeric:tabular-nums;
   color:var(--text-secondary,#535C65);font-weight:400;}

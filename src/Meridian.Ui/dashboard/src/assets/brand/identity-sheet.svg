@@ -9,11 +9,11 @@
 </defs>
 
 
-<text x="72" y="72" font-family="Inter, Arial, sans-serif" font-size="13" letter-spacing="4" fill="#7A828A">MERIDIAN IDENTITY SYSTEM · ASSET SHEET 01</text>
+<text x="72" y="72" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="13" letter-spacing="4" fill="#7A828A">MERIDIAN IDENTITY SYSTEM · ASSET SHEET 01</text>
 <line x1="72" y1="96" x2="1728" y2="96" stroke="#D2CDC3" stroke-width="1"></line>
 
 
-<text x="72" y="142" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">01 · PRIMARY LOCKUP</text>
+<text x="72" y="142" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">01 · PRIMARY LOCKUP</text>
 <path d="M 134.50 286.67 A 62.50 62.50 0 0 1 259.50 286.67" fill="none" stroke="#B8B3A8" stroke-width="1.41" stroke-linecap="round"></path>
 <path d="M 111.58 286.67 A 85.42 85.42 0 0 1 282.42 286.67" fill="none" stroke="#B8B3A8" stroke-width="1.41" stroke-linecap="round"></path>
 <path d="M 88.67 286.67 A 108.33 108.33 0 0 1 305.33 286.67" fill="none" stroke="#B8B3A8" stroke-width="1.41" stroke-linecap="round"></path>
@@ -65,10 +65,10 @@
       <circle cx="765.16" cy="267.28" r="2.59" fill="#29323A"></circle>
     <path d="M20 0H208L358 418H980L1126 0H1318L774 1490H570ZM415 578 530 898C568 1003 608 1123 672 1321C736 1123 776 1003 813 898L925 578Z" fill="#29323A" transform="translate(788.196 250.000) scale(0.0468750 -0.0468750)"></path>
 <path d="M148 0H328V864C328 930 326 1058 319 1243C426 1064 510 926 551 862L1097 0H1306V1490H1126V528C1126 478 1129 349 1132 245C1072 351 1004 464 969 520L355 1490H148Z" fill="#29323A" transform="translate(870.115 250.000) scale(0.0468750 -0.0468750)"></path>
-<text x="384" y="306" font-family="Inter, Arial, sans-serif" font-size="14" letter-spacing="3.6" fill="#7A828A">EVIDENCE · BOOKS · RECONCILE · REPORT</text>
+<text x="384" y="306" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="14" letter-spacing="3.6" fill="#7A828A">EVIDENCE · BOOKS · RECONCILE · REPORT</text>
 
 
-<text x="1360" y="142" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">02 · SYMBOL / APP TILE</text>
+<text x="1360" y="142" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">02 · SYMBOL / APP TILE</text>
 <rect x="1378" y="180" width="230" height="230" rx="46" fill="#F8F7F3" stroke="#D2CDC3"></rect>
 <path d="M 1448.00 272.00 A 45.00 45.00 0 0 1 1538.00 272.00" fill="none" stroke="#B8B3A8" stroke-width="1.01" stroke-linecap="round"></path>
 <path d="M 1431.50 272.00 A 61.50 61.50 0 0 1 1554.50 272.00" fill="none" stroke="#B8B3A8" stroke-width="1.01" stroke-linecap="round"></path>
@@ -115,7 +115,7 @@
 <line x1="72" y1="470" x2="1728" y2="470" stroke="#D2CDC3" stroke-width="1"></line>
 
 
-<text x="72" y="522" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">03 · MONOCHROME</text>
+<text x="72" y="522" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">03 · MONOCHROME</text>
 <path d="M 103.50 606.80 A 31.50 31.50 0 0 1 166.50 606.80" fill="none" stroke="#20252B" stroke-width="0.80" stroke-linecap="round"></path>
 <path d="M 91.95 606.80 A 43.05 43.05 0 0 1 178.05 606.80" fill="none" stroke="#20252B" stroke-width="0.80" stroke-linecap="round"></path>
 <path d="M 80.40 606.80 A 54.60 54.60 0 0 1 189.60 606.80" fill="none" stroke="#20252B" stroke-width="0.80" stroke-linecap="round"></path>
@@ -170,7 +170,7 @@
 
 
 <rect x="960" y="512" width="768" height="214" rx="6" fill="#11171D"></rect>
-<text x="1008" y="548" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#BEC4CA">04 · DARK SURFACE</text>
+<text x="1008" y="548" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#BEC4CA">04 · DARK SURFACE</text>
 <path d="M 1039.50 624.80 A 31.50 31.50 0 0 1 1102.50 624.80" fill="none" stroke="#3D4853" stroke-width="0.80" stroke-linecap="round"></path>
 <path d="M 1027.95 624.80 A 43.05 43.05 0 0 1 1114.05 624.80" fill="none" stroke="#3D4853" stroke-width="0.80" stroke-linecap="round"></path>
 <path d="M 1016.40 624.80 A 54.60 54.60 0 0 1 1125.60 624.80" fill="none" stroke="#3D4853" stroke-width="0.80" stroke-linecap="round"></path>
@@ -225,7 +225,7 @@
 
 
 <line x1="72" y1="776" x2="1728" y2="776" stroke="#D2CDC3" stroke-width="1"></line>
-<text x="72" y="828" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">05 · CONSTRUCTION / CLEAR SPACE</text>
+<text x="72" y="828" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">05 · CONSTRUCTION / CLEAR SPACE</text>
 <rect x="72" y="858" width="700" height="252" fill="url(#fineGrid)" stroke="#D2CDC3"></rect>
 <rect x="118" y="888" width="608" height="192" fill="#F2F0EB" stroke="#C56343" stroke-dasharray="5 5"></rect>
 <path d="M 185.50 979.73 A 39.50 39.50 0 0 1 264.50 979.73" fill="none" stroke="#B8B3A8" stroke-width="0.89" stroke-linecap="round"></path>
@@ -279,36 +279,36 @@
       <circle cx="611.42" cy="1029.88" r="2.00" fill="#29323A"></circle>
     <path d="M20 0H208L358 418H980L1126 0H1318L774 1490H570ZM415 578 530 898C568 1003 608 1123 672 1321C736 1123 776 1003 813 898L925 578Z" fill="#29323A" transform="translate(627.260 1018.000) scale(0.0322266 -0.0322266)"></path>
 <path d="M148 0H328V864C328 930 326 1058 319 1243C426 1064 510 926 551 862L1097 0H1306V1490H1126V528C1126 478 1129 349 1132 245C1072 351 1004 464 969 520L355 1490H148Z" fill="#29323A" transform="translate(683.579 1018.000) scale(0.0322266 -0.0322266)"></path>
-<text x="118" y="1097" font-family="Inter, Arial, sans-serif" font-size="11" fill="#7A828A">
+<text x="118" y="1097" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" fill="#7A828A">
   Maintain clear space equal to one field-dot interval around every lockup.
 </text>
 
 
-<text x="870" y="828" font-family="Inter, Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">06 · CORE PALETTE</text>
+<text x="870" y="828" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="12" letter-spacing="3.2" fill="#7A828A">06 · CORE PALETTE</text>
 
 <circle cx="924" cy="920" r="46" fill="#F2F0EB" stroke="#D2CDC3"></circle>
-<text x="924" y="995" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">PAPER</text>
-<text x="924" y="1018" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" fill="#7A828A">#F2F0EB</text>
+<text x="924" y="995" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">PAPER</text>
+<text x="924" y="1018" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="10" fill="#7A828A">#F2F0EB</text>
 
 <circle cx="1088" cy="920" r="46" fill="#F8F7F3" stroke="#D2CDC3"></circle>
-<text x="1088" y="995" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">PLATE</text>
-<text x="1088" y="1018" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" fill="#7A828A">#F8F7F3</text>
+<text x="1088" y="995" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">PLATE</text>
+<text x="1088" y="1018" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="10" fill="#7A828A">#F8F7F3</text>
 
 <circle cx="1252" cy="920" r="46" fill="#20252B" stroke="#20252B"></circle>
-<text x="1252" y="995" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">GRAPHITE</text>
-<text x="1252" y="1018" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" fill="#7A828A">#20252B</text>
+<text x="1252" y="995" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">GRAPHITE</text>
+<text x="1252" y="1018" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="10" fill="#7A828A">#20252B</text>
 
 <circle cx="1416" cy="920" r="46" fill="#5D7286" stroke="#5D7286"></circle>
-<text x="1416" y="995" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">SLATE</text>
-<text x="1416" y="1018" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" fill="#7A828A">#5D7286</text>
+<text x="1416" y="995" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">SLATE</text>
+<text x="1416" y="1018" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="10" fill="#7A828A">#5D7286</text>
 
 <circle cx="1580" cy="920" r="46" fill="#C56343" stroke="#C56343"></circle>
-<text x="1580" y="995" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">TERRACOTTA</text>
-<text x="1580" y="1018" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" fill="#7A828A">#C56343</text>
+<text x="1580" y="995" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2" fill="#7A828A">TERRACOTTA</text>
+<text x="1580" y="1018" text-anchor="middle" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="10" fill="#7A828A">#C56343</text>
 
 
 <line x1="72" y1="1150" x2="1728" y2="1150" stroke="#D2CDC3" stroke-width="1"></line>
-<text x="72" y="1182" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2.4" fill="#7A828A">MERIDIAN SYSTEMS · FINANCIAL RESEARCH &amp; ANALYTICS PLATFORM</text>
-<text x="1728" y="1182" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="11" letter-spacing="2.4" fill="#7A828A">IDENTITY ASSETS v1.0 · 2026</text>
+<text x="72" y="1182" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2.4" fill="#7A828A">MERIDIAN SYSTEMS · FINANCIAL RESEARCH &amp; ANALYTICS PLATFORM</text>
+<text x="1728" y="1182" text-anchor="end" font-family="'IBM Plex Sans', Arial, sans-serif" font-size="11" letter-spacing="2.4" fill="#7A828A">IDENTITY ASSETS v1.0 · 2026</text>
 
     </svg>

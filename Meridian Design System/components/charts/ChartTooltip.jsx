@@ -14,7 +14,7 @@ function inject() {
   min-width:120px;background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
   box-shadow:var(--shadow-menu);font-family:var(--font-data);font-size:11px;padding:7px 9px;}
 .mds-ctip__hd{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);
   margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid var(--border-divider,#E2DED5);}
 .mds-ctip__row{display:flex;justify-content:space-between;gap:14px;line-height:1.7;}
 .mds-ctip__k{color:var(--text-secondary,#535C65);}
