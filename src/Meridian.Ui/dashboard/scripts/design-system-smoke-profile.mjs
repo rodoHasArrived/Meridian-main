@@ -39,6 +39,10 @@ async function installFixtures(page, registry, fixtures, scene, helper) {
     if (!url.pathname.startsWith("/api/")) return route.continue();
     try {
       const response = supportingSmokeResponse(url.href, request.method()) || resolver.resolve(url.href, request.method());
+      if (response.smokeFixture) {
+        scene.syntheticReadOnlyFixtures ??= [];
+        scene.syntheticReadOnlyFixtures.push(response.smokeFixture);
+      }
       if (response.delayMs) await new Promise(resolve => setTimeout(resolve, response.delayMs));
       await route.fulfill({ status: response.status, contentType: "application/json", body: JSON.stringify(response.body), headers: response.headers });
     } catch (error) {
@@ -446,6 +450,12 @@ export async function runExpandedDesignSystemSmoke({ browser, base, backendBase,
       try {
         await page.goto(base + "/" + config.route.path + "?scenario=accounting.normal");
         await page.locator(".workstation-frame").waitFor();
+        if (config.route.path === "portfolio") {
+          assert.equal(new URL(page.url()).pathname, new URL(base + "/portfolio").pathname, "Canonical Portfolio route");
+          await page.getByRole("heading", { name: "Portfolio", level: 1, exact: true }).waitFor();
+          await page.getByRole("region", { name: "Portfolio workbench context", exact: true })
+            .getByRole("heading", { name: "Execution-linked holdings", exact: true }).waitFor();
+        }
         await page.getByText(config.route.ready, { exact: true }).first().waitFor();
         await page.waitForLoadState("networkidle");
         assert.equal(await page.locator("vite-error-overlay").count(), 0, "No framework overlay");

@@ -33,6 +33,13 @@ with the licenses alongside (`assets/fonts/OFL-IBMPlexSans.txt`, `assets/fonts/O
 declared with a `local()` short-circuit. Copyright IBM Corp. Licensed under the SIL OFL 1.1:
 https://github.com/IBM/plex/blob/master/LICENSE.txt
 
+## React and ReactDOM 18.3.1 for the template host — MIT License
+`templates/_scaffold/vendor/react-18.3.1.production.min.js` and
+`react-dom-18.3.1.production.min.js` are the unmodified production builds the Design Component
+host (`support.js`) is pinned to by integrity hash. Template entries load them from static tags so
+a template opens with no network; `scripts/build_package.mjs` fails if their bytes stop matching
+the host's hashes. Copyright (c) Facebook, Inc. and its affiliates. MIT License, text above.
+
 ## Babel standalone — MIT License
 `_preview_jsx.js` redistributes `@babel/standalone` 7.29.0 unmodified, behind a one-line banner.
 Standalone specimen pages (component cards, UI kits, test pages) load it after

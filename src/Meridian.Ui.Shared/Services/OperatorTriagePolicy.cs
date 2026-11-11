@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 
 namespace Meridian.Ui.Shared.Services;
@@ -38,7 +37,8 @@ public static class OperatorTriagePolicy
     {
         if (string.IsNullOrWhiteSpace(actorId) || string.IsNullOrWhiteSpace(command.CommandId) || command.CommandId.Length > 128)
             throw new OperatorTriageException("Rejected", "A valid actor and command identity are required.");
-        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(command))));
+        // Retained receipts store uppercase hex and are compared by string equality below.
+        var fingerprint = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(command)).ToUpperInvariant();
         var receipt = state.Receipts.FirstOrDefault(r => r.ActorId == actorId && r.CommandId == command.CommandId);
         replayed = receipt is not null;
         if (receipt is not null)

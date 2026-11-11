@@ -268,8 +268,36 @@ class Audit:
             on_disk = {p.name for p in (self.root / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")}
             for name in sorted(on_disk - classified): self.add("eligibility", self.root / "api/template-eligibility.json", f"Unclassified template {name}")
             for name in sorted(classified - on_disk): self.add("eligibility", self.root / "api/template-eligibility.json", f"Classified template {name} no longer exists")
+    def runtime_reference_checks(self):
+        """No page may read a retired component namespace or fetch its runtime from a remote host.
+
+        Neither fault shows in source structure: a page on the previous build's namespace throws
+        on load and renders blank, and a page that loads React or the JSX compiler from a CDN
+        needs a network the package otherwise never uses. The standalone reconciliation page is
+        a self-contained archive that embeds its own bundle on purpose; the preview regression
+        names the retired namespace only to assert it is gone.
+        """
+        manifest = self.read_json("_ds_manifest.json", required=False) or {}
+        namespace = manifest.get("namespace", "")
+        exempt = {"Accounting Reconciliation (standalone).html", "tests/template-preview-regression.mjs"}
+        generated = {"_ds_bundle.js", "_preview_jsx.js", "_preview_runtime.js"}
+        stale = re.compile(r"MeridianDesignSystem_[0-9a-f]{6}\b")
+        remote = re.compile(r"<script\b[^>]*\bsrc\s*=\s*[\"']https?://", re.I)
+        for path in sorted(self.root.rglob("*")):
+            rel = path.relative_to(self.root)
+            if not path.is_file() or path.suffix not in (".html", ".jsx", ".js", ".mjs", ".sh"): continue
+            if any(part in ("node_modules", ".git", "dist") for part in rel.parts): continue
+            if rel.parts[:2] == ("docs", "reviews") or path.name in generated: continue
+            text = self.text(path)
+            if namespace and rel.as_posix() not in exempt:
+                for name in sorted(set(stale.findall(text)) - {namespace}):
+                    self.add("namespace", path, f"Reads {name}; the bundle publishes {namespace}")
+            if path.suffix == ".html" and remote.search(text):
+                self.add("offline", path, "Loads a script from a remote host; use _preview_runtime.js and "
+                         "_preview_jsx.js (pages) or templates/_scaffold/vendor (template entries)")
     def run(self):
         self.component_checks()
+        self.runtime_reference_checks()
         for folder in ("components", "templates"):
             for path in sorted((self.root / folder).rglob("*")):
                 if path.is_file() and path.suffix in (".jsx", ".html") and not path.name.endswith((".card.html", ".stories.html")):

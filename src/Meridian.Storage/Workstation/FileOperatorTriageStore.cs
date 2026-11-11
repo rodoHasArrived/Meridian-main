@@ -1,6 +1,5 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Storage.Archival;
 
@@ -36,7 +35,8 @@ public sealed class FileOperatorTriageStore(string root) : IOperatorTriageStore
         ArgumentException.ThrowIfNullOrWhiteSpace(scope.CompanyId);
         ArgumentException.ThrowIfNullOrWhiteSpace(workItemId);
         var identity = JsonSerializer.Serialize(new[] { scope.TenantId, scope.CompanyId, workItemId });
-        var hash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(identity)));
+        // The digest names the retained file, so its uppercase spelling is part of the stored layout.
+        var hash = Sha256Digest.ComputeUtf8(identity).ToUpperInvariant();
         var directory = Path.Combine(root, "operator-triage");
         Directory.CreateDirectory(directory);
         return Path.Combine(directory, hash + ".json");

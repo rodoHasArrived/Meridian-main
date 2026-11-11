@@ -262,7 +262,7 @@ export function FinancialRecordExplorerShell({
               </a>
             </Button>
           ) : null}
-          {dtoMode && selectedRow && inspectorWorkspaceRoutes[dtoMode.explorerId] && !dtoMode.isBlocked ? <EntityLink ariaLabel="Inspect selected record" record={{
+          {dtoMode && selectedRow && inspectorWorkspaceRoutes[dtoMode.explorerId] && !dtoMode.isBlocked ? <EntityLink ariaLabel="Inspect record — selected record" record={{
             kind: "record", id: selectedRow.recordId, label: selectedRow.label,
             workspaceHref: `${inspectorWorkspaceRoutes[dtoMode.explorerId]}${new URL(shareHref, "http://localhost").search}`,
             summary: [{ label: "Record type", value: selectedRow.recordType }, { label: "Source", value: selectedRow.source }, { label: "Status", value: selectedRow.status }],

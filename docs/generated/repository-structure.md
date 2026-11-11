@@ -4142,6 +4142,9 @@ Meridian-main
 │   │                   └── index.css
 │   ├── templates
 │   │   ├── _scaffold
+│   │   │   ├── vendor
+│   │   │   │   ├── react-18.3.1.production.min.js
+│   │   │   │   └── react-dom-18.3.1.production.min.js
 │   │   │   ├── action-bridge.jsx
 │   │   │   ├── app-map.js
 │   │   │   ├── books.js
