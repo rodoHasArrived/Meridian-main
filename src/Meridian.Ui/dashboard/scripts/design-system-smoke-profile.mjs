@@ -367,10 +367,11 @@ export async function workbenchProof(browser, base, report, output, axeSource) {
     for (const density of ["Compact", "Default", "Spacious"]) {
       await page.getByRole("radiogroup", { name: "Display density", exact: true }).getByRole("radio", { name: density, exact: true }).click();
       await page.waitForFunction(value => (document.body.getAttribute("data-theme-density") || "default") === value, density.toLowerCase());
+      await settleTransitions(page);
       rowHeights.push(await zeroRow.evaluate(element => element.getBoundingClientRect().height));
     }
-    assert(rowHeights[0] < rowHeights[1] && rowHeights[1] < rowHeights[2], "Native table density visibly changes row height");
     scene.rowHeights = rowHeights;
+    assert(rowHeights[0] < rowHeights[1] && rowHeights[1] < rowHeights[2], "Native table density visibly changes row height: " + JSON.stringify(rowHeights));
     await page.getByRole("radiogroup", { name: "Appearance", exact: true }).getByRole("radio", { name: "System", exact: true }).click();
     await page.locator("html:not([data-theme])").waitFor();
     await page.emulateMedia({ colorScheme: "dark" });

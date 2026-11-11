@@ -406,7 +406,7 @@ explicit.
 ## Developer integration and accessibility completion
 
 The follow-up retains concurrent integration and token-reconciliation commits
-through `2b3822d20a`, without rewriting the shared PR history. It preserves the
+through `27ab256c10`, without rewriting the shared PR history. It preserves the
 4.3.0 identity, component APIs, native adapters, seven root workspaces, operator
 preferences, financial statuses, and production workflows.
 
@@ -425,7 +425,8 @@ preferences, financial statuses, and production workflows.
   semantic text roles. Existing darker semantic shades keep text readable on
   selected/tinted surfaces without changing status hues or fills. Destructive
   button text uses the existing red text shade. Actual-cascade probes measured
-  minimum selected semantic contrast 4.77:1 and destructive label contrast 6.02:1.
+  minimum selected semantic contrast 4.63:1 (including badge washes) and
+  destructive label contrast 6.02:1. Ready text on a selected dark row is 4.80:1.
 - `ratchets:update` validates the existing baseline, rejects new offenders and
   per-file growth even when another file improves, treats equality as a no-op,
   and writes valid reductions atomically. Rejected updates preserve baseline bytes.
@@ -483,3 +484,11 @@ A separate redacted scan of all 29 PR-history commits reports two findings in
 `c77ced17b0` build-provenance files. Both are the independently recomputed public
 `KeyValueGrid.jsx` SHA-256, not a credential. Existing scanner configuration and
 baselines were preserved; hosted Secret Scan passes on the reconciled baseline.
+
+
+The final selected-badge correction strengthens text ten percent toward the
+existing theme ink direction only inside selected rows. Tests and browser probes
+composite each badge wash over the selected surface; the global semantic hue and
+fill contracts remain. The masthead Paper label/dot use the canonical dark-surface
+slate tone regardless of the workspace appearance. The maintained browser profile
+checks their actual composed contrast instead of accepting a root token alone.
