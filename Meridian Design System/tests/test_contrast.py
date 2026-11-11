@@ -288,6 +288,9 @@ class SourceRoleContrastTest(unittest.TestCase):
                 text = (ROOT / relative).read_text(encoding="utf-8")
                 if relative == "tokens/theme.css":
                     text = text.replace("--theme-text-on-accent: #FFFFFF", "--text-on-accent: #FFFFFF")
+                    # Recreate the historical cascade before the stronger brand
+                    # mappings were added; those mappings now prevent this defect.
+                    text = text.split("/* ── A brand's accent family in dark and forced-light", 1)[0]
                 if relative == "tokens/colors-dark.css":
                     # Reproduce the old weaker cascade, rather than weakening the
                     # current selector that intentionally excludes forced light.
@@ -295,6 +298,35 @@ class SourceRoleContrastTest(unittest.TestCase):
                 target.write_text(text, encoding="utf-8")
             self.assertTrue(any("auto dark · brand indigo" in failure and "signal label" in failure
                                 for failure in mod.check_brands(root)))
+
+    def test_declared_brand_dark_and_ghost_identities_reach_component_roles(self):
+        theme = (ROOT / "tokens/theme.css").read_text(encoding="utf-8")
+        sheets = "\n".join((ROOT / "tokens" / name).read_text(encoding="utf-8")
+                           for name in ("colors.css", "theme.css", "colors-dark.css"))
+        for brand, _ in mod.BRAND_BLOCK.findall(theme):
+            for mode, tokens in mod.mode_tokens(sheets, brand=brand).items():
+                prefix = "--theme-dark-" if mode in ("auto-dark", "manual-dark") else "--theme-"
+                for suffix in ("accent", "accent-dim", "accent-hover", "accent-ghost", "text-on-accent"):
+                    with self.subTest(brand=brand, mode=mode, role=suffix):
+                        self.assertEqual(mod.resolve(f"var(--{suffix})", tokens),
+                                         mod.resolve(f"var({prefix}{suffix})", tokens))
+
+    def test_brand_identity_roles_cannot_silently_inherit_the_default(self):
+        for role in ("--theme-accent-ghost", "--theme-dark-accent", "--theme-dark-accent-ghost"):
+            with self.subTest(role=role), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                for relative in ("tokens/colors.css", "tokens/colors-dark.css", "tokens/theme.css", "components/core/Button.jsx"):
+                    target = root / relative
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    text = (ROOT / relative).read_text(encoding="utf-8")
+                    if relative == "tokens/theme.css":
+                        block = mod.BRAND_BLOCK.search(text)
+                        self.assertEqual(block.group(1), "indigo")
+                        body = re.sub(re.escape(role) + r"\s*:[^;]+;", "", block.group(2))
+                        text = text[:block.start(2)] + body + text[block.end(2):]
+                    target.write_text(text, encoding="utf-8")
+                self.assertTrue(any(f"brand indigo] missing declared identity role {role}" in failure
+                                    for failure in mod.check_brands(root)))
 
     def test_primary_button_checks_the_hover_fill(self):
         with tempfile.TemporaryDirectory() as temporary:

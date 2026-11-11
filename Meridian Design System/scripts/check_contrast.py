@@ -503,33 +503,24 @@ def check_primary_buttons(root: Path, mode: str, tokens: dict[str, str]) -> list
 
 
 def check_brands(root: Path) -> list[str]:
-    """Measure effective brand roles in every supported appearance, including inheritance.
-
-    Brands customize the signal, not the independent blue focus family or structural
-    primary action. An omitted dark identity uses the declared default dark palette;
-    it still has to pass the same text thresholds rather than disappearing from QA.
-    """
-    text = (root / "tokens/theme.css").read_text(encoding="utf-8")
-    base = {**parse_tokens((root / "tokens/colors.css").read_text(encoding="utf-8")),
-            **parse_tokens(BRAND_BLOCK.sub("", text))}
-    dark_css = (root / "tokens/colors-dark.css").read_text(encoding="utf-8")
-    auto_uses_plain_root = bool(re.search(
-        r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*:root\s*\{",
-        strip_comments(dark_css)))
+    """Measure every declared light/dark identity in its actual CSS cascade."""
+    theme = (root / "tokens/theme.css").read_text(encoding="utf-8")
+    sheets = [(root / "tokens" / name).read_text(encoding="utf-8")
+              for name in ("colors.css", "theme.css", "colors-dark.css")]
+    defaults = parse_tokens(BRAND_BLOCK.sub("", theme))
     merged: dict[str, dict[str, str]] = {}
-    for brand, body in BRAND_BLOCK.findall(text):
+    for brand, body in BRAND_BLOCK.findall(theme):
         merged.setdefault(brand, {}).update(parse_tokens(body))
     failures = []
     for brand, declared in merged.items():
-        for mode, tokens in appearance_scopes({**base, **declared}, dark_css).items():
-            if mode == "auto dark" and auto_uses_plain_root:
-                # html[data-brand] is more specific than a plain media :root;
-                # :root:not([data-theme="light"]) has two pseudo-class/attribute
-                # selectors and wins against that brand selector instead.
-                # Keep direct brand outputs here so a white-label ink override cannot
-                # be incorrectly hidden by a lower-specificity dark declaration.
-                tokens = {**tokens, **declared}
-            scope = f"{mode} · brand {brand}"
+        # Each shipped preset now declares both accent identities and ghost fills.
+        # Focus remains the system's independent interaction blue.
+        for prefix in ("--theme-accent", "--theme-dark-accent"):
+            for name in sorted(name for name in defaults if name.startswith(prefix)):
+                if name not in declared:
+                    failures.append(f"[brand {brand}] missing declared identity role {name}")
+        for mode, tokens in mode_tokens("\n".join(sheets), brand=brand).items():
+            scope = f"{mode.replace('-', ' ')} · brand {brand}"
             label = resolve("var(--text-on-accent)", tokens)
             for state, suffix in BRAND_PAIRS:
                 fill = resolve(f"var(--{suffix})", tokens)
@@ -608,35 +599,57 @@ def css_leaf_rules(text: str):
             segment = index + 1
 
 
-def mode_tokens(text: str) -> dict[str, dict[str, str]]:
-    """Resolve the authored light/auto-dark/manual-dark/forced-light scopes."""
-    scopes = {name: {} for name in ("base", "auto-dark", "auto-forced-light", "manual-dark", "forced-light")}
+def root_selector_specificity(selector: str, brand: str | None, appearance: str | None):
+    """Match the authored root/brand/theme selectors and retain their cascade priority."""
+    root = re.match(r"(:root|html)", selector)
+    if root is None:
+        return None
+    rest = selector[root.end():]
+    classes, elements = (1, 0) if root.group() == ":root" else (0, 1)
+    attributes = {"brand": brand, "theme": appearance}
+    while rest:
+        negative = rest.startswith(":not(")
+        candidate = rest[5:] if negative else rest
+        attribute = re.match(r'''\[data-(brand|theme)(?:=["']?([a-z0-9-]+)["']?)?\]''', candidate)
+        if attribute is None:
+            return None
+        rest = candidate[attribute.end():]
+        if negative:
+            if not rest.startswith(")"):
+                return None
+            rest = rest[1:]
+        actual, expected = attributes[attribute.group(1)], attribute.group(2)
+        matches = actual is not None if expected is None else actual == expected
+        if matches == negative:
+            return None
+        classes += 1  # :not() contributes its attribute argument's specificity.
+    return classes, elements
+
+
+def mode_tokens(text: str, brand: str | None = None) -> dict[str, dict[str, str]]:
+    """Resolve actual root/brand/theme rules by specificity and source order."""
+    modes = {"light": (False, None), "auto-dark": (True, None),
+             "manual-dark": (False, "dark"), "forced-light": (True, "light")}
+    contexts = {name: {} for name in modes}
+    priorities = {name: {} for name in modes}
     for selector_list, body, ancestors in css_leaf_rules(text):
         media = [ancestor for ancestor in ancestors if ancestor.startswith("@media")]
-        # Print/high-contrast modes are separate user choices, not the default
-        # color-scheme contexts measured here.
+        # Print/high-contrast modes remain separate user choices.
         if any(not re.search(r"prefers-color-scheme\s*:\s*dark", ancestor) for ancestor in media):
             continue
-        for selector in split_arguments(selector_list):
-            excluded_light = bool(re.fullmatch(r'''(?::root|html):not\(\[data-theme=["']?light["']?\]\)''', selector))
-            if selector in (":root", "html") or (media and excluded_light):
-                scope = "auto-dark" if media else "base"
-            else:
-                match = re.fullmatch(r''':root\[data-theme=["']?(dark|light)["']?\]''', selector)
-                if match is None:
+        values = {name: value.strip() for name, value in TOKEN_PATTERN.findall(body)}
+        for mode, (os_dark, appearance) in modes.items():
+            if media and not os_dark:
+                continue
+            for selector in split_arguments(selector_list):
+                specificity = root_selector_specificity(selector, brand, appearance)
+                if specificity is None:
                     continue
-                scope = "manual-dark" if match.group(1) == "dark" else "forced-light"
-            values = {name: value.strip() for name, value in TOKEN_PATTERN.findall(body)}
-            scopes[scope].update(values)
-            if scope == "auto-dark" and not excluded_light:
-                scopes["auto-forced-light"].update(values)
-    base = scopes["base"]
-    return {
-        "light": dict(base),
-        "auto-dark": {**base, **scopes["auto-dark"]},
-        "manual-dark": {**base, **scopes["manual-dark"]},
-        "forced-light": {**base, **scopes["auto-forced-light"], **scopes["forced-light"]},
-    }
+                for name, value in values.items():
+                    if specificity >= priorities[mode].get(name, (-1, -1)):
+                        contexts[mode][name] = value
+                        priorities[mode][name] = specificity
+    return contexts
 
 
 def declarations(body: str) -> dict[str, str]:

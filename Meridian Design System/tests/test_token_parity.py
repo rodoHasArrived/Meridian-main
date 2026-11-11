@@ -23,7 +23,7 @@ class TokenParityGraphTests(unittest.TestCase):
         files = self.files()
         guarded = ':root:not([data-theme="light"])'
         self.assertIn(guarded, files["colors-dark.css"])
-        files["colors-dark.css"] = files["colors-dark.css"].replace(guarded, ":root", 1)
+        files["colors-dark.css"] = files["colors-dark.css"].replace(guarded, ":root")
         envs = parity.mode_envs([files[name] for name in parity.CLOSURE])
         self.assertIsNone(parity.resolve_token("--accent", envs["forced-light"]))
         self.assertIsNone(parity.resolve_token("--theme-accent", envs["forced-light"]))
@@ -39,6 +39,28 @@ class TokenParityGraphTests(unittest.TestCase):
         ])
         self.assertEqual("#c56343", parity.resolve_token("--accent", envs["forced-light"]))
         self.assertEqual("#d88466", parity.resolve_token("--accent", envs["auto"]))
+
+    def test_split_automatic_rules_aggregate_mirrors_without_affecting_forced_light(self):
+        css = """
+            @media (prefers-color-scheme:dark) {
+                :root { --accent:#D88466; }
+                :root:not([data-theme="light"]) { --theme-accent:var(--accent); }
+            }
+            :root[data-theme="dark"] { --accent:#D88466; --theme-accent:var(--accent); }
+            :root[data-theme="light"] { --accent:var(--theme-accent); }
+        """
+        envs = parity.mode_envs([':root {--theme-accent:#C56343; --accent:var(--theme-accent);}', css])
+        self.assertEqual("var(--accent)", parity.dark_blocks(css)["auto"]["--theme-accent"])
+        self.assertEqual("#c56343", parity.resolve_token("--accent", envs["forced-light"]))
+        self.assertEqual("#d88466", parity.resolve_token("--accent", envs["auto"]))
+
+    def test_bare_automatic_root_theme_mirror_is_rejected_even_if_current_value_is_safe(self):
+        files = self.files()
+        files["colors-dark.css"] += """
+            @media (prefers-color-scheme:dark) { :root { --theme-bg-canvas:var(--bg); } }
+        """
+        findings = parity.theme_findings(files)
+        self.assertTrue(any("--theme-bg-canvas is re-pointed under a bare :root" in finding for finding in findings))
 
     def test_os_dark_still_applies_to_forced_light_without_an_exclusion(self):
         envs = parity.mode_envs([

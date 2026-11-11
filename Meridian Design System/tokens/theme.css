@@ -8,9 +8,23 @@
   --theme-accent: #C56343;
   --theme-accent-dim: #CB6E4E;
   --theme-accent-hover: #D2795A;
-  /* A light-identity input, rather than a direct output override: OS dark can
-     then supply readable dark ink without losing a specificity contest. */
-  --theme-text-on-accent: #0D1217;
+  --theme-accent-ghost: #F6E6DF;        /* ghost button fill — a wash of the accent */
+  --theme-text-on-accent: #0D1217;      /* label ink on a solid accent fill */
+
+  /* Dark identity of the accent family. colors-dark.css states the same five values for the
+     unbranded cascade; they are repeated here as inputs so a data-brand can restate them and
+     an unknown brand name falls back to the default instead of to nothing. */
+  --theme-dark-accent: #D88466;
+  --theme-dark-accent-dim: #E19479;
+  --theme-dark-accent-hover: #E5A088;
+  --theme-dark-accent-ghost: #35251F;
+  --theme-dark-text-on-accent: #14100E;
+  /* The dark surfaces a brand's dark identity sits on. colors-dark.css owns these values; they
+     are named here so a brand's ghost fill can mix toward the dark panel and so
+     check_contrast.py can measure a brand's dark ghost and the focus ring against them. */
+  --theme-dark-bg-light: #171E25;
+  --theme-dark-primary-text: #F1EFEA;
+  --theme-dark-border-focus: #5C9FE5;
 
   --theme-primary-text: #20252B;
   --theme-secondary-text: #535C65;
@@ -128,6 +142,16 @@ html[data-brand="indigo"] {
   --theme-accent-hover: #5F62EE;
   --theme-brand-color: #4F46E5;
   --theme-text-on-accent: #FFFFFF;
+  /* The ghost fill follows this brand's accent; left alone it stayed the default's warm wash.
+     Focus is not restated: since 4.3.0 the focus ring is the interaction blue for every brand. */
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  /* Dark identity: this brand's accent lifted and desaturated the way the default trio is,
+     under the dark label ink. Without it a branded build fell back to the default terracotta
+     the moment the OS asked for dark. */
+  --theme-dark-accent: #9893F0;
+  --theme-dark-accent-dim: #A7A2F8;
+  --theme-dark-accent-hover: #B0ABFB;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="emerald"] {
@@ -136,6 +160,11 @@ html[data-brand="emerald"] {
   --theme-accent-hover: #0E875F;
   --theme-brand-color: #0B7A55;
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  --theme-dark-accent: #10B37D;
+  --theme-dark-accent-dim: #1CC28B;
+  --theme-dark-accent-hover: #16CC8F;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="rose"] {
@@ -144,6 +173,11 @@ html[data-brand="rose"] {
   --theme-accent-hover: #D8274E;
   --theme-brand-color: #E11D48;
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  --theme-dark-accent: #FF6C8C;
+  --theme-dark-accent-dim: #F68BA3;
+  --theme-dark-accent-hover: #FF94AB;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="slate"] {
@@ -152,6 +186,11 @@ html[data-brand="slate"] {
   --theme-accent-hover: #59687B;
   --theme-brand-color: #64748B;
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  --theme-dark-accent: #899FBE;
+  --theme-dark-accent-dim: #95ADCF;
+  --theme-dark-accent-hover: #A3B5D0;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="cyan"] {
@@ -160,6 +199,11 @@ html[data-brand="cyan"] {
   --theme-accent-hover: #0E7490;
   --theme-brand-color: #0C6A85;
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  --theme-dark-accent: #13AAD6;
+  --theme-dark-accent-dim: #15B9E8;
+  --theme-dark-accent-hover: #37C2EA;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="amber"] {
@@ -168,6 +212,11 @@ html[data-brand="amber"] {
   --theme-accent-hover: #B45309;
   --theme-brand-color: #A34A08;
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  --theme-dark-accent: #FF740D;
+  --theme-dark-accent-dim: #FB9041;
+  --theme-dark-accent-hover: #FD9C55;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 /* ── Map theme tokens to component tokens ── */
@@ -178,6 +227,7 @@ html[data-brand="amber"] {
   --accent: var(--theme-accent);
   --accent-dim: var(--theme-accent-dim);
   --accent-hover: var(--theme-accent-hover);
+  --accent-ghost: var(--theme-accent-ghost);
   --text-on-accent: var(--theme-text-on-accent);
   --text-primary: var(--theme-primary-text);
   --text-secondary: var(--theme-secondary-text);
@@ -199,4 +249,37 @@ html[data-brand="amber"] {
   --topbar-text: var(--theme-topbar-text);
   --statusbar-bg: var(--theme-statusbar-bg);
   --statusbar-text: var(--theme-statusbar-text);
+}
+
+/* ── A brand's accent family in dark and forced-light ─────────────────────────
+   colors-dark.css sets the accent family as literals in its dark blocks and again in its
+   forced-light block, at a specificity a `html[data-brand]` rule cannot beat (and, for the
+   auto-dark media block, cannot be beaten by where the label ink is concerned). So a brand
+   lost its accent under data-theme="dark" and under data-theme="light", and under an OS-dark
+   preference kept its LIGHT accent beneath a white label. These three rules carry one more
+   attribute than the blocks they answer, so they win whatever the import order, and they
+   match any [data-brand] so a new preset needs no rule of its own. Only the accent family
+   is brand-owned; surfaces, text, semantics and the focus blue stay the system's. */
+@media (prefers-color-scheme: dark) {
+  :root[data-brand]:not([data-theme="light"]) {
+    --accent:         var(--theme-dark-accent);
+    --accent-dim:     var(--theme-dark-accent-dim);
+    --accent-hover:   var(--theme-dark-accent-hover);
+    --accent-ghost:   var(--theme-dark-accent-ghost);
+    --text-on-accent: var(--theme-dark-text-on-accent);
+  }
+}
+:root[data-brand][data-theme="dark"] {
+  --accent:         var(--theme-dark-accent);
+  --accent-dim:     var(--theme-dark-accent-dim);
+  --accent-hover:   var(--theme-dark-accent-hover);
+  --accent-ghost:   var(--theme-dark-accent-ghost);
+  --text-on-accent: var(--theme-dark-text-on-accent);
+}
+:root[data-brand][data-theme="light"] {
+  --accent:         var(--theme-accent);
+  --accent-dim:     var(--theme-accent-dim);
+  --accent-hover:   var(--theme-accent-hover);
+  --accent-ghost:   var(--theme-accent-ghost);
+  --text-on-accent: var(--theme-text-on-accent);
 }

@@ -33,6 +33,11 @@ Its namespace is `MeridianDesignSystem_205d17`. These figures were read directly
 from `_ds_manifest.json`; the generated README and metrics still described the
 earlier 334-export release when this audit began.
 
+The latest metadata refresh after `1f01910387a2` records **743 tokens**, adding
+39 brand-scoped/default records to the immediately preceding 704-record manifest.
+The census remains 351 public exports, 210 source modules, 135 cards, 30 templates
+and 11 themes. The initial 680-token count above remains the starting census.
+
 `docs/QA_REPORT_4.3.0.md` records the upstream September release run: 49 unit
 checks, a Chromium keyboard/ARIA/responsive matrix, and declared assistive-
 technology and Firefox/WebKit deferrals. That report remains historical evidence
@@ -244,8 +249,28 @@ lowered.
 **Historical diagnostics at this integration checkpoint.** The contrast check
 reported 12 findings about six white-label presets, and governance still
 reported 67 findings and 25 warnings. These are retained checkpoint results;
-the continuation repairs and pending final reruns below supersede their use as
-current status. No consumer in this repository set `data-brand` at that review.
+the continuation repairs and checkpoint-specific reruns below supersede their
+use as current status. No consumer in this repository set `data-brand` at that review.
+
+**Incoming white-label preset fix.** The six `data-brand` presets state a dark accent trio
+and a ghost fill again, as the previous package version did, and three rules
+in `tokens/theme.css` carry a brand's accent family into auto dark, manual dark
+and forced light. Before this a brand lost its accent under `data-theme="dark"`
+and `data-theme="light"`, and under an OS-dark preference kept its light accent
+beneath a white label. The auto-dark `--theme-*` re-points moved under
+`:root:not([data-theme="light"])`: left on a bare `:root` they stayed active
+under forced light and made `--accent: var(--theme-accent)` a cycle for a brand
+that states no accent. Computed in Chromium for 24 combinations (OS light/dark,
+no theme / dark / light, no brand / indigo / amber / an unknown brand): every
+accent, label, ghost and focus value is the intended one and every label
+clears 4.5:1. `check_contrast.py` no longer requires a brand to restate the
+focus token, because the focus ring is the interaction blue for every brand;
+it passes with zero findings. No consumer in this repository sets
+`data-brand`.
+
+**Historical governance result for that white-label checkpoint.** The gate
+remained at 67 findings and 25 warnings; the continuation repairs below supersede
+that earlier result.
 
 ## Production browser integration follow-up
 
@@ -521,8 +546,9 @@ fallbacks, observer fault isolation, and chart keyboard/data alternatives.
 These changes preserve the initial findings above as history instead of
 rewriting that earlier run as green.
 
-Latest package verification after integrating the incoming commits through
-`0c10785dfc03`:
+Verified package checkpoint after integrating the incoming commits through
+`0c10785dfc03`, before the subsequent brand runtime-alias update through
+`1f01910387a2`:
 
 - All seven release gates and the complete **127-test Python suite** passed.
   The initial 30-test, incoming 45-test and intermediate 99-test results
@@ -547,13 +573,14 @@ Latest package verification after integrating the incoming commits through
   1,346 curated files. The archive checksum must be associated with the delivered
   source and final documentation content when the artifact is regenerated.
 
-The latest managed dashboard `npm run check:design-system` passed end to end:
+At that checkpoint, managed dashboard `npm run check:design-system` passed end
+to end:
 126 focused tests across 13 files, plus assets, ratchets, typography, gallery,
 parity, contrast, build freshness, release and export checks. A separate native
 raw-color/contract matrix passed 45 tests across ten files. Production browser
 verification passed nine scenes and 200%-equivalent reflow; font checks verified
-ten WOFF2 assets and two license files. The expanded managed 36-scene browser
-matrix remains pending.
+ten WOFF2 assets and two license files. The latest managed browser coverage
+passed 64 cases and 15 axe scans with zero reported violations.
 
 The earlier standalone browser run passed 22 theme/condition accessibility
 states with zero recorded axe, remote-request or runtime errors. The focused
@@ -562,10 +589,19 @@ their respective checkpoints. The incoming 4,947-assertion full-dashboard run
 above retains its own source and scope; these results are not combined into a
 new unrun full-suite count.
 
+After the brand runtime-alias update and metadata refresh through
+`1f01910387a2`, all seven release gates passed again. The parity suite passed
+12 tests, and the complete parity check passed with 502 declared names,
+227 shared names and zero findings. The component bundle is byte-identical to
+the one exercised by the strict 135-card run, so that component proof remains
+applicable. The affected 28-state brand browser matrix and complete Python suite
+are being rerun; their earlier counts above are not asserted as fresh results.
+
 The documentation generators were attempted and each generation step exited
 successfully, but the aggregate `verify-docs` check did not converge against the
-uncommitted worktree; it is not recorded as a passing documentation gate. The full
-aggregate .NET validation was not available locally.
+uncommitted worktree; it is not recorded as a passing documentation gate. The
+`dotnet` CLI is absent from this execution environment, so full aggregate .NET
+validation could not run locally.
 
 The specimen collector uses an explicit local cache of the exact React 18.3.1,
 React DOM 18.3.1 and Babel 7.29.0 peer bytes and verifies their SHA-384 pins.

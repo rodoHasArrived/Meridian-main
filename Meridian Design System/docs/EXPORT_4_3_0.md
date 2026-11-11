@@ -55,7 +55,12 @@ change that source-integrity limitation or prove live CDN access.
 
 The initial expanded export recorded 67 governance findings and 25 warnings.
 After integration through `0c10785dfc03`, all seven release gates, the complete
-127-test package Python suite and the strict 135/135-card matrix passed. The
+127-test package Python suite and the strict 135/135-card matrix passed. Those
+results precede the subsequent brand runtime-alias update. After that update,
+all seven gates and parity checks passed again; the byte-identical component
+bundle retains the strict matrix proof. The metadata refresh records 743 tokens
+(39 new brand-scoped/default records), with other catalogue counts unchanged.
+The full Python and affected brand-browser reruns are pending. The earlier
 contrast and parity checks passed, including the forced-light cycle correction;
 the 13-test metadata suite includes unconditional-default precedence. Build/source
 freshness and release integrity passed for 1,346 curated files. Regenerate the

@@ -88,20 +88,27 @@ def light_graph(files):
 
 
 def dark_blocks(text):
-    """The three declared blocks of colors-dark.css, by selector shape."""
+    """Aggregate root declarations for automatic dark, manual dark and forced light.
+
+    Automatic component flips and guarded theme aliases may occupy separate rules.
+    Walking nested rules avoids attributing the later manual block to the media rule.
+    """
     found = {"auto": {}, "manual": {}, "forced-light": {}}
-    for sel, body in flat_blocks(text):
-        s = sel.replace(" ", "")
-        leaf = s.split(">>")[-1]
-        if "prefers-color-scheme:dark" in s and leaf in (":root", ':root:not([data-theme="light"])'):
+    for path, body in flat_blocks(text):
+        parts = path.split(" >> ")
+        leaves = parts[-1].replace(" ", "").split(",")
+        dark_media = "prefers-color-scheme:dark" in path.replace(" ", "")
+        if dark_media and any(leaf in (":root", AUTO_NOT_LIGHT) for leaf in leaves):
             found["auto"].update(declared(body))
-        elif leaf == ':root[data-theme="dark"]':
+        elif ':root[data-theme="dark"]' in leaves:
             found["manual"].update(declared(body))
-        elif leaf == ':root[data-theme="light"]':
+        elif ':root[data-theme="light"]' in leaves:
             found["forced-light"].update(declared(body))
     return found
 
 
+# Auto-dark declarations that must NOT survive a forced light theme sit under this selector.
+AUTO_NOT_LIGHT = ':root:not([data-theme="light"])'
 UPSTREAM_INDEX = pathlib.Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 THEME_MIRRORS = {
     "--theme-bg-canvas": "--bg", "--theme-bg-light": "--bg-light",
@@ -172,7 +179,7 @@ def mode_envs(sheets):
                 for part in parts:
                     if part in (":root", ".meridian-root"):
                         specificity.append(1)
-                    elif part == ':root:not([data-theme="light"])' and mode != "forced-light":
+                    elif part == AUTO_NOT_LIGHT and mode != "forced-light":
                         specificity.append(2)
                     elif part == ':root[data-theme="dark"]' and mode == "manual":
                         specificity.append(2)
@@ -305,6 +312,16 @@ def theme_findings(files):
             if expected is None or forced is None or not same_value(canonical(forced), canonical(expected)):
                 out.append(f"THEME    forced-light {name} must resolve to the light {mirror} "
                            "under an OS-dark preference; check aliases and cycles")
+    # Even an alias whose forced-light component is currently literal must stay guarded:
+    # a future component alias or white-label input would otherwise reintroduce a cycle.
+    for selector, body in flat_blocks(files["colors-dark.css"]):
+        parts = selector.split(" >> ")
+        leaves = parts[-1].replace(" ", "").split(",")
+        if (len(parts) > 1 and "prefers-color-scheme:dark" in selector.replace(" ", "")
+                and ":root" in leaves):
+            for theme in sorted(set(THEME_MIRRORS) & set(declared(body))):
+                out.append(f"THEME    {theme} is re-pointed under a bare :root in the auto-dark "
+                           f"block; move it under {AUTO_NOT_LIGHT} so forced light keeps the literal")
     return out
 
 

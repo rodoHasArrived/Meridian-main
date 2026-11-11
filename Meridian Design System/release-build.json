@@ -7,7 +7,7 @@
     "exports": 351,
     "cards": 135,
     "templates": 30,
-    "tokenRecords": 704
+    "tokenRecords": 743
   },
   "build": {
     "esbuild": "0.28.2",
@@ -497,8 +497,8 @@
       "bytes": 222579
     },
     "_ds_manifest.json": {
-      "sha256": "3749fac9ac1f471f470305da087ee135cdcfe7c41d9794172534c39a91e2e337",
-      "bytes": 152863
+      "sha256": "0f4669994ad01b982dee7885041026b6805600c1680b0914f4db08ac833c961f",
+      "bytes": 158592
     },
     "release.json": {
       "sha256": "1b7d36ec5fe817382c067dbb06c0eff5f2852cabc1194d613a67e3c7dd7da064",
