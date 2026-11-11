@@ -218,6 +218,7 @@ classDiagram
         +string? SourceEntityId
     }
     class Meridian_Contracts_AssetOperations_AssetCashFlowProjectionRunDto["AssetCashFlowProjectionRunDto"] {
+        +Meridian_Contracts_SecurityMaster_SecurityCashFlowBlockerDto? Blocker
         +string EngineVersion
         +JsonElement? ExtensionPayload
         +DateTimeOffset GeneratedAt

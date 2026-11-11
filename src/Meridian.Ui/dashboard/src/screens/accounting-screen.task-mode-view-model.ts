@@ -29,6 +29,8 @@ export type AccountingTaskModeId =
 export interface AccountingTaskModeViewModel {
   id: AccountingTaskModeId;
   label: string;
+  /** Task title for the route body heading; the breadcrumb already shows the page name. */
+  title: string;
   description: string;
   routeLabel: string;
   href: string;
@@ -60,6 +62,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "close-cockpit": {
     id: "close-cockpit",
     label: "Close Cockpit",
+    title: "Close Cockpit",
     description: "Daily close posture, blockers, owners, affected outputs, next actions, and retained proof stay first for Accounting operators.",
     routeLabel: "Close Cockpit",
     href: WORKSTATION_ROUTE_CATALOG.accounting
@@ -67,6 +70,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "reconciliation-casework": {
     id: "reconciliation-casework",
     label: "Reconciliation Casework",
+    title: "Reconciliation Casework",
     description: "Statement runs, open breaks, owners, evidence, comments, and resolution actions stay grouped for case handling.",
     routeLabel: "Reconciliation Casework",
     href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
@@ -74,6 +78,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "external-gl-reconciliation": {
     id: "external-gl-reconciliation",
     label: "External GL Reconciliation",
+    title: "External GL Reconciliation",
     description: "Provider imports, account mappings, tie-out evidence, and guarded export packages stay in one focused external-ledger workflow.",
     routeLabel: "External GL Reconciliation",
     href: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
@@ -81,6 +86,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "ledger-explorer": {
     id: "ledger-explorer",
     label: "Ledger Explorer",
+    title: "Ledger Explorer",
     description: "Posted-journal trial balance and P&L for the governed book of record, with strategy-run ledger drill-through kept alongside as an explicitly labelled simulation artifact.",
     routeLabel: "Ledger Explorer",
     href: WORKSTATION_ROUTE_CATALOG.accountingLedger
@@ -88,6 +94,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "journal-entry": {
     id: "journal-entry",
     label: "Journal Entry",
+    title: "Journal Entry",
     description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
     routeLabel: "Journal Entry",
     href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
@@ -95,6 +102,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "capital-accounts": {
     id: "capital-accounts",
     label: "Capital Accounts",
+    title: "Investor capital activity",
     description: "Investor capital activity, allocation proof, statement lineage, and report-output readiness stay connected.",
     routeLabel: "Capital Accounts",
     href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
@@ -102,6 +110,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   exceptions: {
     id: "exceptions",
     label: "Exceptions",
+    title: "Exception review queue",
     description: "Material accounting exceptions, ownership, evidence, and resolution actions stay in one focused review queue.",
     routeLabel: "Exceptions",
     href: WORKSTATION_ROUTE_CATALOG.accountingExceptions
@@ -109,6 +118,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "security-master": {
     id: "security-master",
     label: "Security Master",
+    title: "Security record search",
     description: "Search governed instrument identity, inspect conflicts, and review the evidence supporting each security record.",
     routeLabel: "Security Master",
     href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
@@ -116,6 +126,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   approvals: {
     id: "approvals",
     label: "Approvals",
+    title: "Pending close approvals",
     description: "Review exactly what is awaiting approval, why it is ready, its retained evidence, and the effect of each decision.",
     routeLabel: "Approvals",
     href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
@@ -123,6 +134,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   configure: {
     id: "configure",
     label: "Configure",
+    title: "Ledger book setup",
     description: "Set up ledger books and posting controls, verify readiness, and activate only configurations that pass governed checks.",
     routeLabel: "Configure",
     href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
@@ -130,6 +142,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "delivery-evidence": {
     id: "delivery-evidence",
     label: "Delivery Evidence",
+    title: "Delivery Evidence",
     description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
     routeLabel: "Delivery Evidence",
     href: WORKSTATION_ROUTE_CATALOG.reportingEvidence

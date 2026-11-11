@@ -15,6 +15,23 @@ last_reviewed: 2026-10-02
 
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
 
+`PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
+governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
+partial receipt while retaining the originating installment and fund-event identity. Historical
+factory calls without a receipt identity retain their previous idempotency keys. Bank evidence
+must identify a positive, unvoided `CapitalCallFunding` transaction matching entity, currency,
+amount and effective date; source snapshots are hashed and rechecked before posting.
+
+`IPrivateCapitalStore` exposes durable commitment revisions, frozen call plans, and immutable posting
+receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validates explicit scope
+and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
+posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
+requires source-backed opening authority instead of inferring commitments from assignments.
+Call allocation uses called capital as of its notice date. The shared authority rule also walks
+all posted issuance dates and approved effective-date checkpoints, so backdated calls cannot break
+a future reduction and later increases cannot authorize an earlier overcall. At one effective date,
+the highest approved revision owns the cap; superseded and draft terms do not constrain the timeline.
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
@@ -143,9 +160,16 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+Text cells in both builders' CSV artifacts pass through `LedgerCsvCell`, which prefixes
+formula-looking text (leading `=`, `+`, `@`, tab, or a non-numeric `-`) with an apostrophe so
+spreadsheets open it as text; ordinary values and negative amounts keep their existing bytes.
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.
+When a chart row aggregates multiple investor, financial-account, or symbol identities under one
+account path, its provenance resolves the actual posted accounts of that type and path. The
+as-of, financial-account, and line-dimension filters still apply, so an aggregate retains every
+contributing journal without widening the selected scope.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and

@@ -46,6 +46,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.InteractiveBrokers;
 using Meridian.Infrastructure.Adapters.Plaid;
 using Meridian.Instruments.AssetOperations;
+using Meridian.Ledger;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.ProviderSdk.AccountingSystem;
@@ -1046,6 +1047,43 @@ public static class WorkstationServiceCollectionExtensions
             new PositionSnapshotAutomatedJournalDividendPositionResolver(
                 sp.GetService<IPositionSnapshotStore>()));
         services.TryAddSingleton<TimeProvider>(TimeProvider.System);
+        services.TryAddSingleton<PrivateCapitalLifecycleService>(sp =>
+            sp.GetService<IPrivateCapitalStore>() is { } store
+                ? new PrivateCapitalLifecycleService(store, sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddSingleton<PrivateCapitalBankObservationService>(sp =>
+        {
+            var ledger = sp.GetService<LedgerJournalStoreOptions>();
+            var banking = sp.GetService<Meridian.Storage.Banking.BankingStoreOptions>();
+            var vault = sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>();
+            if (ledger is null || banking is null || vault is null
+                || sp.GetService<Meridian.Storage.Banking.IBankingStore>() is not Meridian.Storage.Banking.PostgresBankingStore store)
+                return null!;
+            // A different banking database cannot participate in the final journal/source lock.
+            var ledgerConnection = new Npgsql.NpgsqlConnectionStringBuilder(ledger.ConnectionString);
+            var bankConnection = new Npgsql.NpgsqlConnectionStringBuilder(banking.ConnectionString);
+            if (!string.Equals(ledgerConnection.Host, bankConnection.Host, StringComparison.OrdinalIgnoreCase)
+                || ledgerConnection.Port != bankConnection.Port
+                || !string.Equals(ledgerConnection.Database, bankConnection.Database, StringComparison.Ordinal)
+                || !string.Equals(ledger.PrivateCapitalBankingSchema, banking.Schema, StringComparison.Ordinal))
+                return null!;
+            return new PrivateCapitalBankObservationService(vault, store, sp.GetRequiredService<TimeProvider>());
+        });
+        services.TryAddSingleton<CapitalCallNoticeSourceValidator>(sp =>
+            sp.GetService<IPrivateCapitalStore>() is { } store
+                ? new CapitalCallNoticeSourceValidator(store,
+                    sp.GetService<Microsoft.Extensions.Configuration.IConfiguration>()?
+                        .GetSection("PrivateCapital:NoticeRecipients")
+                        .Get<CapitalCallNoticeRecipientBinding[]>()) : null!);
+        services.TryAddSingleton<CapitalCallNoticeReportingService>(sp =>
+            sp.GetService<CapitalCallNoticeSourceValidator>() is { } source &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<ReportingRunCommandService>() is { } reporting
+                ? new CapitalCallNoticeReportingService(source, journals, reporting,
+                    sp.GetService<Meridian.Reporting.IReportingRunStore>(),
+                    sp.GetService<Meridian.Reporting.IReportingGovernanceRepository>(),
+                    sp.GetService<Meridian.Reporting.IReportingDeliveryStore>(),
+                    sp.GetService<IReportingAuthoritativeSource>(),
+                    sp.GetService<Meridian.Reporting.IReportingReconciliationEvidenceRetentionStore>()) : null!);
         services.TryAddSingleton<ConsolidationService>(sp =>
             sp.GetService<IFundStructureService>() is PostgresFundStructureService structure &&
             sp.GetService<ILedgerJournalStore>() is PostgresLedgerJournalStore ledger &&
@@ -1080,7 +1118,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IConsolidationDraftGuard>(),
                 sp.GetService<Meridian.Ui.Shared.Evidence.IEvidenceArtifactStore>(),
                 assetCandidatePostingFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService>(),
-                assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>()));
+                assetAccountingSourceFactory: () => sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
+                privateCapitalStore: sp.GetService<IPrivateCapitalStore>()));
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
@@ -1110,7 +1149,9 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<AutomatedJournalEvidencePolicy>(),
                 sp.GetService<IAutomatedJournalCapitalAccountReconciliationResolver>(),
                 sp.GetRequiredService<TimeProvider>(),
-                sp.GetService<IManualJournalEntryWorkbenchService>());
+                sp.GetService<IManualJournalEntryWorkbenchService>(),
+                sp.GetService<IPrivateCapitalStore>(),
+                sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>());
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when
@@ -1578,6 +1619,7 @@ internal sealed class ServiceProviderReportingAuthoritativeSource :
             tenancyRegistry,
             fundStructure,
             _services.GetService<TimeProvider>(),
-            journalStore);
+            journalStore,
+            capitalCallNotices: _services.GetService<CapitalCallNoticeSourceValidator>());
     }
 }

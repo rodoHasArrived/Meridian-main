@@ -15,9 +15,9 @@ internal static partial class SecurityEconomicDefinitionAdapter
                 && CallPutSchedulesModule.IsEmpty(declared.Value.Exercises)))
             return document;
         var assetClass = definition.Classification.TypeName;
-        var block = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions")
+        var block = SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.ScheduleConventionsKey)
             ?? throw new InvalidOperationException($"{assetClass} has no declared schedule home.");
-        var calls = SecurityAssetTermsSchema.Field(assetClass, "callSchedule")!;
+        var calls = SecurityAssetTermsSchema.Field(assetClass, SecurityVersionedTerms.CallScheduleKey)!;
         var version = SecurityAssetClassCatalog.GetStampFloor(assetClass);
         if (!ScheduleConventionsModule.IsEmpty(declared.Value.Conventions))
             version = Math.Max(version, block.SinceTermsVersion);

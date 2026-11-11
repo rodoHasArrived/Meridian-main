@@ -14,7 +14,7 @@ describe("reporting queue route focus", () => {
     expect(first.routeKey).toBe(initial.routeKey);
     expect(second.routeKey).toBe(initial.routeKey);
     expect(second.fallbackElementId).toBe("workbench-content");
-    expect(second.announcement).toBe("Reporting Workstation loaded.");
+    expect(second.announcement).toBe("Reporting loaded.");
   });
 
   it("preserves financial scope and unrelated query values in the route focus key", () => {

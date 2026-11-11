@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-07T01:52:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-11T11:02:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 39 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 20 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/README.md` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 10 |
-| `src/Meridian.Contracts/DirectLending/DirectLendingDtos.cs` | Host and Composition | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
-| `src/Meridian.FSharp.DirectLending.Aggregates/ServicingAggregate.fs` | Domain, Ledger, and F# | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
-| `src/Meridian.Storage/DirectLending/PostgresDirectLendingStateStore.cs` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 9 |
-| `src/Meridian.Storage/DirectLending/Migrations/010_direct_lending_excess_payment_balances.sql` | Providers and Storage | 2026-11-06T21:21:21+00:00 | `a970ac12` | PRD-115 increment 2: prepaid-interest and unapplied-cash balances | 1 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-06T19:11:01+00:00 | `4e6151df` | fix(wpf): keep SecurityMasterViewModel within its file-size cap | 14 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-06T18:32:01+00:00 | `8b0e25ea` | docs(source): document conflict categories and refresh reviewed hashes | 19 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 17 |
-| `src/Meridian.Execution/Services/SessionTcaReporter.cs` | Execution, Risk, and Strategies | 2026-11-06T18:25:31+00:00 | `4cf61eca` | Compute session TCA commission rates on the multiplied principal | 7 |
-| `src/Meridian.Execution/PaperTradingGateway.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 8 |
-| `src/Meridian.Execution/Adapters/PaperTradingGateway.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 7 |
-| `src/Meridian.Execution/PaperMatching/PaperTradingCostModel.cs` | Execution, Risk, and Strategies | 2026-11-06T18:11:29+00:00 | `cd0070f4` | Scale paper notional-based costs by the resolved contract multiplier | 7 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 9 |
-| `src/Meridian.Strategies/Live/LiveRunMetricsTracker.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
-| `src/Meridian.Strategies/Live/LiveStrategyRunSession.cs` | Execution, Risk, and Strategies | 2026-11-06T17:56:13+00:00 | `dcece77e` | Scale strategy-run cash flows by the booked contract multiplier | 7 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityMasterConflictFieldCategories.cs` | Host and Composition | 2026-11-06T17:56:07+00:00 | `6400667a` | fix(wpf): route Security Master conflicts by declared field names | 1 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 28 |
-| `src/Meridian.Ui.Shared/Endpoints/BankingEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 9 |
-| `src/Meridian.Execution/Margin/PortfolioMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |
-| `src/Meridian.Execution/Margin/RegTMarginModel.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 8 |
-| `src/Meridian.Execution/Margin/MarginPricing.cs` | Execution, Risk, and Strategies | 2026-11-06T17:45:03+00:00 | `2025b3f5` | Derive banking action origin from the principal; multiply margin notionals | 2 |
-| `src/Meridian.Execution/OrderManagement/OrderFillProcessor.cs` | Execution, Risk, and Strategies | 2026-11-06T17:28:43+00:00 | `057d0ef4` | Stamp the OMS-resolved contract multiplier on the replayable fill report | 8 |
-| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 11 |
-| `src/Meridian.Ui.Shared/Endpoints/IngestionJobEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 8 |
-| `src/Meridian.Ui.Shared/Endpoints/MoneyMarketFundEndpoints.cs` | Desktop and UI Workflows | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 8 |
-| `src/Meridian.Execution/Events/TradeExecutedEvent.cs` | Execution, Risk, and Strategies | 2026-11-06T17:11:01+00:00 | `dfc72366` | Address review: multiplier handoff, sub-1 multipliers, MMF search, ingestion transitions | 7 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 27 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 19 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 12 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 12 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.test.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 9 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.view-model.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 8 |
-| `src/Meridian.Ui/dashboard/src/lib/cross-screen-counts.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 4 |
-| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 4 |
-| `src/Meridian.Ui/dashboard/src/lib/since-last-visit.test.ts` | Desktop and UI Workflows | 2026-11-06T16:27:46+00:00 | `2f930f77` | Address review: record queue visits only from the queue; Settings keeps fresh provider counts | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.reconciliation-workbench.test.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 7 |
-| `src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx` | Desktop and UI Workflows | 2026-11-06T16:08:02+00:00 | `3b276d86` | Address review: one bulk action at a time, from the keyboard too | 4 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | 2026-11-06T16:00:29+00:00 | `180e9667` | Address review: scope-bound bulk updates and late default scopes | 16 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 60 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 55 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs` | Host and Composition | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 7 |
+| `src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs` | Host and Composition | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 2 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs` | Desktop and UI Workflows | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 2 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | Host and Composition | 2026-11-11T10:00:22Z | `b80fa4ee03` | Keep capability reads passive and version complete economic events | 1 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 59 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 50 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 27 |
+| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 25 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 15 |
+| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 15 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 13 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 13 |
+| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 12 |
+| `src/Meridian.Instruments/README.md` | Unmapped | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 12 |
+| `src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 11 |
+| `src/Meridian.FSharp/Domain/SecurityMasterCommands.fs` | Domain, Ledger, and F# | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 11 |
+| `src/Meridian.Instruments/FixedIncome/BondAnalyticsService.cs` | Unmapped | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 11 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 10 |
+| `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs` | Domain, Ledger, and F# | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 10 |
+| `src/Meridian.FSharp/README.md` | Domain, Ledger, and F# | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 10 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 10 |
+| `src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 9 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 9 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 9 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 8 |
+| `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | Domain, Ledger, and F# | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 8 |
+| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 8 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 6 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.FSharp/Interop.SecurityMaster.fs` | Domain, Ledger, and F# | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.Ui/dashboard/src/types/workstation-7.ts` | Desktop and UI Workflows | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 5 |
+| `src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 4 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 4 |
+| `src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs` | Host and Composition | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 4 |
+| `src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.DeclaredBonds.cs` | Unmapped | 2026-11-11T09:39:07Z | `d9f2c6983b` | Consolidate Security Master term storage and govern rate semantics | 4 |
 

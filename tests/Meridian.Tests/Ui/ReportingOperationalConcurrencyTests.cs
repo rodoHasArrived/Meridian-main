@@ -1631,7 +1631,9 @@ public sealed class ReportingOperationalConcurrencyTests
         string companyId,
         string fundId,
         string periodId,
-        string policyHash)
+        string policyHash,
+        IReadOnlyDictionary<string, string>? templateParameters = null,
+        ReportingGovernanceAccessMode accessMode = ReportingGovernanceAccessMode.CompanyWide)
     {
         var scope = new ReportingOperationalScope(
             tenantId,
@@ -1643,7 +1645,7 @@ public sealed class ReportingOperationalConcurrencyTests
         var access = new ReportingAccessScope(
             $"policy-{tenantId}",
             "1",
-            ReportingGovernanceAccessMode.CompanyWide,
+            accessMode,
             "operator",
             AllowOwnerAccess: true,
             Principals: ImmutableArray.Create(
@@ -1666,7 +1668,8 @@ public sealed class ReportingOperationalConcurrencyTests
             ReportingOutputFormatDto.Pdf,
             ReportingFinalityDto.Draft,
             IncludeSupportingSchedules: true,
-            IncludeEvidenceAppendix: true);
+            IncludeEvidenceAppendix: true,
+            TemplateParameters: templateParameters);
         var parametersCanonicalJson = JsonSerializer.Serialize(new
         {
             scope = new
@@ -1689,7 +1692,7 @@ public sealed class ReportingOperationalConcurrencyTests
             finality = parameters.Finality.ToString(),
             includeSupportingSchedules = parameters.IncludeSupportingSchedules,
             includeEvidenceAppendix = parameters.IncludeEvidenceAppendix,
-            templateParameters = new Dictionary<string, string>()
+            templateParameters = parameters.TemplateParameters
         });
         var parametersHash = ComputeSha256(parametersCanonicalJson);
         const string sourceCheckpointId = "checkpoint-reporting-concurrency";
@@ -1795,7 +1798,9 @@ public sealed class ReportingOperationalConcurrencyTests
         return new ReportingRunSnapshot(manifest, [], FixedNow);
     }
 
-    private static ReportingJobContract BuildCertifiedContract(string jobId)
+    internal static ReportingJobContract BuildCertifiedContract(string jobId,
+        IReadOnlyDictionary<string, string>? templateParameters = null,
+        ReportingGovernanceAccessMode accessMode = ReportingGovernanceAccessMode.CompanyWide)
     {
         var certified = BuildCertifiedSnapshot(
             runId: $"{jobId}-seed",
@@ -1803,7 +1808,7 @@ public sealed class ReportingOperationalConcurrencyTests
             companyId: "company-a",
             fundId: "fund-a",
             periodId: CertifiedAccountingPeriodId,
-            policyHash: new string('a', 64)).Manifest;
+            policyHash: new string('a', 64), templateParameters: templateParameters, accessMode: accessMode).Manifest;
         return new ReportingJobContract(
             jobId,
             certified.TemplateId,

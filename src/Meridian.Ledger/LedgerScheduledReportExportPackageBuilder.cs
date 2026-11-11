@@ -252,10 +252,5 @@ public static class LedgerScheduledReportExportPackageBuilder
     }
 
     private static string EscapeCsv(string value)
-    {
-        if (!value.Contains(',') && !value.Contains('"') && !value.Contains('\n') && !value.Contains('\r'))
-            return value;
-
-        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
-    }
+        => LedgerCsvCell.Escape(value);
 }

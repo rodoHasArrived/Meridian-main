@@ -223,7 +223,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
             createClaim = await TryClaimCreateAsync(
                     contract.OperationalScope?.TenantId,
                     runId,
-                    cancellationToken)
+                    cancellationToken,
+                    requireDurableOperation: contract.DurableOperationId is not null)
                 .ConfigureAwait(false);
             if (createClaim?.ExistingManifest is { } existingManifest)
             {
@@ -340,11 +341,25 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                 }
                 catch (Exception ex) when (attempt <= contract.MaxRetries)
                 {
+                    if (contract.DurableOperationId is not null
+                        && LoadStoredRun(contract.OperationalScope?.TenantId, runId) is { } committed)
+                    {
+                        EnsureSameRunRequest(contract, version, committed.Manifest);
+                        return committed.Manifest;
+                    }
                     lastError = ex;
                     pendingRetryAudits.Add($"attempt={attempt}; runSeries={version.RunSeriesId}; runAttempt={version.RunAttemptOrdinal}; retryReason={NormalizeOptional(contract.RetryReason) ?? "none"}; error={ex.Message}");
                 }
                 catch (Exception ex)
                 {
+                    if (contract.DurableOperationId is not null
+                        && LoadStoredRun(contract.OperationalScope?.TenantId, runId) is { } committed)
+                    {
+                        // A successful store commit can lose its acknowledgement. Recover its
+                        // original immutable outcome rather than overwrite it with Failed.
+                        EnsureSameRunRequest(contract, version, committed.Manifest);
+                        return committed.Manifest;
+                    }
                     lastError = ex;
                     var failed = new ReportingOutputManifest(
                         runId,
@@ -622,6 +637,15 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private static void ValidateCertifiedContract(ReportingJobContract contract)
     {
+        if (contract.DurableOperationId is { } operationId)
+        {
+            ReportingOperationIdentity.Validate(operationId, contract.OperationRequestHash ?? string.Empty);
+            if (contract.AllowRestatement || contract.GovernedRunSeriesId is not null
+                || contract.OperationalScope is null || contract.ResolvedParameters is null
+                || contract.ResolvedParameters.TemplateParameters.GetValueOrDefault(ReportingOperationIdentity.OperationIdParameter) != operationId
+                || contract.ResolvedParameters.TemplateParameters.GetValueOrDefault(ReportingOperationIdentity.RequestHashParameter) != contract.OperationRequestHash)
+                throw new ReportingGovernanceException("A stable reporting operation requires its exact server-bound certified request.");
+        }
         var hasAnyCertifiedState = contract.OperationalScope is not null
             || contract.ImmutableAccessScope is not null
             || contract.CertifiedSnapshot is not null
@@ -723,6 +747,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         ReportingRunVersionPlan version,
         ReportingOutputManifest retained)
     {
+        if (contract.DurableOperationId is { } operationId)
+        {
+            ReportingOperationIdentity.RequireMatches(retained, operationId, contract.OperationRequestHash!,
+                contract.TemplateId, contract.OperationalScope!.TenantId, contract.OperationalScope.CompanyId);
+            return;
+        }
         if (string.IsNullOrWhiteSpace(contract.OperationalScope?.TenantId))
         {
             throw new ReportingRunCreateClaimException(
@@ -1010,8 +1040,12 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
     private async Task<ActiveRunCreateClaim?> TryClaimCreateAsync(
         string? tenantId,
         string runId,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool requireDurableOperation = false)
     {
+        if (requireDurableOperation && runStore?.SupportsDurableCreateClaims != true)
+            throw new ReportingRunCreateClaimException(tenantId ?? string.Empty, runId,
+                "Stable reporting operations require a run store with cross-process durable create claims.");
         if (runStore is null || string.IsNullOrWhiteSpace(tenantId))
         {
             return null;
@@ -1020,15 +1054,22 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
         var normalizedTenantId = tenantId.Trim();
         var leaseOwner =
             $"reporting-orchestration:{Environment.ProcessId}:{Guid.NewGuid():N}";
-        var result = await runStore
-            .TryClaimCreateAsync(
+        ReportingRunCreateClaimResult result;
+        var waits = 0;
+        do
+        {
+            result = await runStore.TryClaimCreateAsync(
                 normalizedTenantId,
                 runId,
                 leaseOwner,
                 utcNow().ToUniversalTime(),
                 RunCreateLeaseDuration,
                 cancellationToken)
-            .ConfigureAwait(false);
+                .ConfigureAwait(false);
+            if (!requireDurableOperation || result.Status != ReportingRunCreateClaimStatus.LeasedByAnotherOwner || waits++ >= 100)
+                break;
+            await Task.Delay(100, cancellationToken).ConfigureAwait(false);
+        } while (true);
         return result.Status switch
         {
             ReportingRunCreateClaimStatus.Acquired when result.LeaseVersion > 0 =>
@@ -1052,7 +1093,7 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
                     normalizedTenantId,
                     runId,
                     "The reporting run is already being created by another durable owner."),
-            ReportingRunCreateClaimStatus.Unsupported => null,
+            ReportingRunCreateClaimStatus.Unsupported when !requireDurableOperation => null,
             _ => throw new ReportingRunCreateClaimException(
                 normalizedTenantId,
                 runId,
@@ -1124,6 +1165,8 @@ public sealed class ReportingOrchestrationService : IReportingOrchestrationServi
 
     private ReportingRunVersionPlan AllocateRunVersion(ReportingJobContract contract)
     {
+        if (contract.DurableOperationId is { } operationId)
+            return new ReportingRunVersionPlan(operationId, 1, operationId, null, null);
         var runSeriesId = BuildRunSeriesId(contract);
         var priorRuns = ResolveSeriesManifests(runSeriesId, contract.OperationalScope?.TenantId)
             .OrderByDescending(ResolveRunAttemptOrdinal)

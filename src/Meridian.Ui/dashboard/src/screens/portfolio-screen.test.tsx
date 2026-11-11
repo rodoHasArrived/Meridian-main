@@ -391,7 +391,7 @@ describe("PortfolioScreen", () => {
 
   it.each([
     ["/portfolio", "Execution-linked holdings"],
-    ["/portfolio/attribution", "Attribution"]
+    ["/portfolio/attribution", "Run attribution evidence"]
   ])("opens %s on its own view with the sidebar as the only sub-route navigation", async (route, heading) => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: [route]

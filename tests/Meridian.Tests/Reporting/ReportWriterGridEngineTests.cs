@@ -539,6 +539,231 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_ReadsHyphenBetweenKnownFieldsAsSubtraction()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"), ("net-pnl", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "hyphen-grid",
+                "Hyphen Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    new ReportWriterMetricDefinitionDto("net-pnl", "net-pnl")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("afterFees", "pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("afterFeesLessOne", "pnl-fees-1"),
+                    // A real hyphenated field still wins over subtraction, bare or braced.
+                    new ReportWriterFormulaDefinitionDto("hyphenField", "net-pnl + 1"),
+                    new ReportWriterFormulaDefinitionDto("hyphenFieldLessFees", "net-pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("missing", "pnl-costs"),
+                    new ReportWriterFormulaDefinitionDto("unknownWhole", "gross-costs")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        var row = rendered.Rows.Single();
+        row.Values["afterFees"].Should().Be("11");
+        row.Values["afterFeesLessOne"].Should().Be("10");
+        row.Values["hyphenField"].Should().Be("101");
+        row.Values["hyphenFieldLessFees"].Should().Be("96");
+        row.Values["missing"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w => w.Contains("'missing'") && w.Contains("field 'costs' was not found"));
+        rendered.Warnings.Should().Contain(w => w.Contains("'unknownWhole'") && w.Contains("field 'gross-costs' was not found"));
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "afterFees").SourceFields
+            .Should().Equal("fees", "pnl");
+        rendered.Lineage.Formulas.Single(formula => formula.Name == "hyphenFieldLessFees").SourceFields
+            .Should().Equal("fees", "net-pnl");
+    }
+
+    [Fact]
+    public void RenderGrids_FormulaLineageSplitsLikeTheEvaluatorWhenOnlyASourceFieldIsHyphenated()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"), ("pnl-fees", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "source-hyphen-grid",
+                "Source Hyphen Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    // The output name is 'raw'; only its source field is hyphenated.
+                    new ReportWriterMetricDefinitionDto("raw", "pnl-fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("afterFees", "pnl-fees")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["afterFees"].Should().Be("11");
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "afterFees").SourceFields
+            .Should().Equal("fees", "pnl");
+    }
+
+    [Fact]
+    public void RenderGrids_DoesNotSplitAForwardReferenceToAHyphenatedFormula()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("pnl", "15"), ("fees", "4"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "forward-grid",
+                "Forward Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("result", "pnl-fees"),
+                    new ReportWriterFormulaDefinitionDto("pnl-fees", "100")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["result"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w =>
+            w.Contains("'result'") && w.Contains("field 'pnl-fees' was not found or was not numeric"));
+    }
+
+    [Fact]
+    public void RenderGrids_ContributionFormulaLineageKnowsGeneratedContributionFields()
+    {
+        var rows = new[]
+        {
+            Row(("strategy", "Core"), ("marketValue", "100")),
+            Row(("strategy", "Hedge"), ("marketValue", "300"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "contribution-grid",
+                "Contribution Grid",
+                ReportWriterGridKindDto.Contribution,
+                RowFields: ["strategy"],
+                Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")],
+                Formulas: [new ReportWriterFormulaDefinitionDto("lessOne", "contributionPercent-1")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("'lessOne'"));
+        rendered.Rows.Should().OnlyContain(row => row.Values["lessOne"] != string.Empty);
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "lessOne").SourceFields
+            .Should().Equal("contributionPercent");
+    }
+
+    [Fact]
+    public void RenderGrids_UntrimmedHyphenatedMetricNameDoesNotCreateAFalseCycle()
+    {
+        var rows = new[]
+        {
+            Row(("sector", "Technology"), ("net", "100"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "whitespace-grid",
+                "Whitespace Grid",
+                ReportWriterGridKindDto.Pivot,
+                RowFields: ["sector"],
+                // The configured name carries trailing whitespace; normalization trims it.
+                Metrics: [new ReportWriterMetricDefinitionDto("pnl-fees ", "net")],
+                Formulas: [new ReportWriterFormulaDefinitionDto("pnl", "pnl-fees")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Rows.Single().Values["pnl"].Should().Be("100");
+    }
+
+    [Fact]
+    public void RenderGrids_HyphenatedRowFieldDoesNotCreateAFalseCycle()
+    {
+        var rows = new[]
+        {
+            Row(("net-pnl", "15"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "detail-dimension-grid",
+                "Detail Dimension Grid",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["net-pnl"],
+                Formulas: [new ReportWriterFormulaDefinitionDto("net", "net-pnl")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Rows.Single().Values["net"].Should().Be("15");
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "net").SourceFields
+            .Should().Equal("net-pnl");
+    }
+
+    [Fact]
+    public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
+    {
+        var rows = new[]
+        {
+            Row(("security", "AAPL"), ("pnl", "15"), ("fees", "4"), ("pnl-fees", ""))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "detail-grid",
+                "Detail Grid",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["security"],
+                Metrics:
+                [
+                    new ReportWriterMetricDefinitionDto("pnl", "pnl"),
+                    new ReportWriterMetricDefinitionDto("fees", "fees"),
+                    new ReportWriterMetricDefinitionDto("pnl-fees", "pnl-fees")
+                ],
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("usesHyphenField", "pnl-fees + 0")
+                ])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Rows.Single().Values["usesHyphenField"].Should().BeEmpty();
+        rendered.Warnings.Should().Contain(w =>
+            w.Contains("'usesHyphenField'") && w.Contains("field 'pnl-fees' was not found or was not numeric"));
+    }
+
+    [Fact]
     public void RenderGrids_IfFormula_SelectsBranchAndSkipsTheBranchNotTaken()
     {
         var rows = new[]
