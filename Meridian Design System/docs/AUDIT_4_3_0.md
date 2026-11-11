@@ -201,3 +201,26 @@ coverage includes Cash Ladder and provider screen behavior, tab identity/focus,
 route focus, table keyboard access, design contracts and the production build.
 The Cash Ladder API is absent from the fixture server, so browser control QA
 uses an explicit synthetic response; that is not backend-integration evidence.
+
+Final local evidence for this follow-up:
+
+- Dashboard: 4,851 tests across 425 files in the two full shards; final focused
+  reruns include the added font-publication case and latest keyboard regressions.
+  Taking the latest passing result per file yields **4,853 unique tests in 426
+  files**, with no failed or skipped assertions. Production build/type check,
+  lint (zero errors, 97 existing hook warnings), typography floor and
+  design-system ratchets pass. Full monorepo `bash scripts/ci.sh` was not run.
+- Package: build/source freshness, 12 release tests, release integrity, new
+  component regressions, existing agency regressions and standalone browser
+  checks pass. The standalone run covers 22 condition/theme accessibility states,
+  four desktop widths and its 200% zoom check, with no external requests.
+- Production dashboard assets: system Chromium (Browser plugin unavailable),
+  light/dark at 1920×1080, 1440×900 and 1366×768. Scenario/threshold and failure
+  recovery, provider draft editing and tab/panel focus are exercised with
+  synthetic data. Cash Ladder and provider Settings each report zero automated
+  WCAG A/AA violations in the tested states, zero page exceptions and zero failed
+  requests. This does not certify other routes, native Windows/Edge, assistive
+  technology or backend writes. Screenshots remain local review evidence.
+- Concurrent PR updates through `324b439b9f` are retained. Generated browser
+  assets are rebuilt, and source hashes and the repository tree are refreshed.
+  Hosted checks remain authoritative; the PR stays unmerged and shared history is not rewritten.

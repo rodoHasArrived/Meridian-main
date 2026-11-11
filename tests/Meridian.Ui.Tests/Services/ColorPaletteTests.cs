@@ -51,7 +51,7 @@ public sealed class ColorPaletteTests
         ColorPalette.GetNotificationColor(NotificationType.Success).Should().Be(ColorPalette.Success);
         ColorPalette.GetNotificationColor(NotificationType.Warning).Should().Be(ColorPalette.Warning);
         ColorPalette.GetNotificationColor(NotificationType.Error).Should().Be(ColorPalette.Error);
-        ColorPalette.GetNotificationColor((NotificationType)int.MaxValue).Should().Be(ColorPalette.Info);
+        ColorPalette.GetNotificationColor((NotificationType)byte.MaxValue).Should().Be(ColorPalette.Info);
         ColorPalette.GetSeverityColor(IntegritySeverity.Critical).Should().Be(ColorPalette.Error);
         ColorPalette.GetSeverityColor(IntegritySeverity.Warning).Should().Be(ColorPalette.Warning);
         ColorPalette.GetStreamStatusColor(true, true, false).Should().Be(ColorPalette.Success);
