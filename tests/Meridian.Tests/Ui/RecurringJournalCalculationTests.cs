@@ -258,7 +258,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         Amortized(january).Should().Be(1_019.18m);
         Amortized(february).Should().Be(920.55m);
         january.TotalDebits.Should().Be(january.TotalCredits);
-        february.Memo.Should().Contain("amortization after 2026-01-31");
+        february.Memo.Should().Contain("2026-02-01 to 2026-02-28");
     }
 
     [Fact]

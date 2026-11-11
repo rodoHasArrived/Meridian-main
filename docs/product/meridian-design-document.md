@@ -2938,7 +2938,7 @@ storage. It composes `W10-BOND-001`, `W10-LOT-002`, `W10-MARK-001`, `W9-PAPER-00
 The 2026-11-01 review found the remaining seams to be mostly activation work: paper settlement cash
 excludes purchased accrued interest (`PaperTradingGateway`); the coupon-accrual posting bridge had
 no production caller (`SecurityMasterAmortizationLedgerBridge` is now called by the
-`fixed-income-accrual` recurring-journal calculation, recognizing coupons on their period date;
+`fixed-income-accrual` recurring-journal calculation, accruing each period's share of a coupon;
 `SecurityMasterCashFlowService.BuildLedgerPostingsAsync` still has none); bond analytics declare amortization and
 posting unsupported (`BondAnalyticsService`); the bond asset class has no basic create workflow;
 and no custodian fixture carries bond accrued interest. Bond backtesting is out of scope because

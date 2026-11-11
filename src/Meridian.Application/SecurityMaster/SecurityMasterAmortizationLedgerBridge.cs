@@ -54,13 +54,37 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// to and including this date is excluded from the first posted period, so a caller posting
 /// period by period never books the same amortization twice. Null amortizes from acquisition.
 /// </param>
+/// <param name="AccrualWindow">
+/// When set, posts one accrual entry dated the window's end instead of one entry per coupon
+/// period: each coupon period contributes the day-count share of its interest that falls inside
+/// the window, and premium/discount amortizes through the window's end. A coupon period with no
+/// accrual dates is recognized whole when its period date falls in the window. Consecutive
+/// windows therefore accrue every coupon exactly once, a little each period.
+/// </param>
 public sealed record AmortizationLedgerPostingContext(
     IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
     StructuredCashFlowScenario Scenario = StructuredCashFlowScenario.Base,
     int? MaxPeriods = null,
     DateTimeOffset? ProjectionAsOf = null,
-    DateOnly? AmortizedThrough = null);
+    DateOnly? AmortizedThrough = null,
+    AmortizationAccrualWindow? AccrualWindow = null);
+
+/// <summary>An inclusive range of accounting dates whose accrual is posted as one entry.</summary>
+public sealed record AmortizationAccrualWindow
+{
+    public AmortizationAccrualWindow(DateOnly start, DateOnly end)
+    {
+        if (end < start)
+            throw new ArgumentException("An accrual window cannot end before it starts.", nameof(end));
+        Start = start;
+        End = end;
+    }
+
+    public DateOnly Start { get; }
+
+    public DateOnly End { get; }
+}
 
 /// <inheritdoc />
 public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
@@ -137,6 +161,37 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             : 0m;
         var posted = 0;
 
+        if (postingContext.AccrualWindow is { } window)
+        {
+            // Without an explicit boundary, amortization before the window belongs to earlier windows.
+            if (postingContext.AmortizedThrough is null)
+                allocatedPremiumDiscount = RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, window.Start.AddDays(-1))));
+            var windowTarget = RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, window.End)));
+            var windowShare = windowTarget - allocatedPremiumDiscount;
+            var windowCoupon = schedule.Sum(entry => CouponAccruedInWindow(entry, convention, window));
+            if ((windowCoupon > 0m || windowShare != 0m) &&
+                PostAmortizationEntry(ledger, existingIds, securityId, normalizedTicker, carrying, financialAccountId,
+                    window.End, ToUtcStartOfDay(window.End), windowCoupon,
+                    windowShare < 0m ? -windowShare : 0m, windowShare > 0m ? windowShare : 0m))
+            {
+                posted++;
+            }
+
+            foreach (var entry in schedule)
+            {
+                var paydownDate = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
+                var paydown = Math.Max(0m, RoundCash(entry.PrincipalAmount));
+                if (paydown > 0m && paydownDate >= window.Start && paydownDate <= window.End &&
+                    PostPrincipalPaydown(ledger, existingIds, securityId, normalizedTicker, carrying, financialAccountId,
+                        paydownDate, ToUtcStartOfDay(paydownDate), paydown))
+                {
+                    posted++;
+                }
+            }
+
+            return posted;
+        }
+
         for (var i = 0; i < schedule.Count; i++)
         {
             var entry = schedule[i];
@@ -183,6 +238,40 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         return posted;
+    }
+
+    /// <summary>
+    /// The part of one coupon period's interest that accrues inside <paramref name="window"/>: the
+    /// rounded amount accrued through the window's end less the rounded amount accrued through
+    /// the day before it starts, so the shares of consecutive windows sum to the coupon exactly.
+    /// </summary>
+    private static decimal CouponAccruedInWindow(
+        StructuredCashFlowScheduleEntry entry, DayCountConvention convention, AmortizationAccrualWindow window)
+    {
+        var interest = Math.Max(0m, RoundCash(entry.InterestAmount));
+        if (interest == 0m)
+            return 0m;
+
+        if (entry.AccrualStart is not { } accrualStart || entry.AccrualEnd is not { } accrualEnd || accrualEnd <= accrualStart)
+        {
+            var periodDate = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
+            return periodDate >= window.Start && periodDate <= window.End ? interest : 0m;
+        }
+
+        var period = DayCountConventions.Fraction(convention, accrualStart, accrualEnd);
+        if (period <= 0m)
+            return 0m;
+
+        decimal AccruedThrough(DateOnly date)
+        {
+            if (date <= accrualStart)
+                return 0m;
+            return date >= accrualEnd
+                ? interest
+                : RoundCash(interest * DayCountConventions.Fraction(convention, accrualStart, date) / period);
+        }
+
+        return AccruedThrough(window.End) - AccruedThrough(window.Start.AddDays(-1));
     }
 
     private static bool PostAmortizationEntry(

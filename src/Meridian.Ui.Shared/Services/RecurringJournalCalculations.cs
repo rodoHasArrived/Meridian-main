@@ -246,9 +246,9 @@ public sealed class FundExpenseAccrualCalculation : IRecurringJournalCalculation
 
 /// <summary>
 /// Coupon accrual and premium/discount amortization for one bond position, from the Security Master
-/// cash-flow projection and the position's open lots. Each coupon period is drafted by the single
-/// occurrence whose accrual window contains its period date, and amortization covers that coupon
-/// period only. Projected principal paydowns are not drafted here: they are cash movements and
+/// cash-flow projection and the position's open lots. Each occurrence drafts the day-count share
+/// of every coupon period that falls inside its accrual window, and the premium or discount
+/// amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and
 /// arrive through cash activity. Inputs: <c>securityId</c>, <c>ticker</c>, optional
 /// <c>financialAccountId</c>.
 /// </summary>
@@ -278,17 +278,7 @@ public sealed class FixedIncomeAccrualCalculation(
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blocked)
             throw new InvalidOperationException($"The cash-flow projection for {ticker} cannot be posted: {blocked}");
 
-        var due = projection.Schedule
-            .Where(entry => InWindow(DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime), windowStart, context.EffectiveDate))
-            .ToArray();
-        if (due.Length == 0)
-            return RecurringJournalCalculationResult.NothingDue(
-                $"No coupon period of {ticker} ends between {windowStart:yyyy-MM-dd} and {context.EffectiveDate:yyyy-MM-dd}.");
-
-        // Amortization recognized before the first coupon period drafted here belongs to earlier
-        // occurrences. Without an accrual start, the day before this window is the boundary.
-        var accrualStarts = due.Where(entry => entry.AccrualStart is not null).Select(entry => entry.AccrualStart!.Value).ToArray();
-        var amortizedThrough = accrualStarts.Length == due.Length ? accrualStarts.Min() : windowStart.AddDays(-1);
+        var amortizedThrough = windowStart.AddDays(-1);
         var lots = (await inputs.ListOpenLotsAsync(context.Scope, LedgerAccounts.Securities(ticker, financialAccountId),
                 context.EffectiveDate, ct).ConfigureAwait(false))
             .Where(lot => lot.SecurityId == securityId)
@@ -299,7 +289,8 @@ public sealed class FixedIncomeAccrualCalculation(
         var scratch = new DomainLedger();
         await bridge.PostProjectedCashFlowsAsync(securityId, ticker, scratch, new AmortizationLedgerPostingContext(
             lots, financialAccountId, StructuredCashFlowScenario.Base, ProjectionAsOf: projectionAsOf,
-            AmortizedThrough: amortizedThrough), ct).ConfigureAwait(false);
+            AmortizedThrough: amortizedThrough,
+            AccrualWindow: new AmortizationAccrualWindow(windowStart, context.EffectiveDate)), ct).ConfigureAwait(false);
         var journals = scratch.Journal
             .Where(journal => journal.Metadata.ActivityType == AmortizationActivity &&
                 journal.Metadata.EffectiveDate is { } date && InWindow(date, windowStart, context.EffectiveDate))
@@ -315,11 +306,11 @@ public sealed class FixedIncomeAccrualCalculation(
             .ToArray();
         if (lines.Length == 0)
             return RecurringJournalCalculationResult.NothingDue(
-                $"The coupon period of {ticker} ending in this window has no interest or amortization to recognize.");
+                $"{ticker} accrues no interest or amortization between {windowStart:yyyy-MM-dd} and {context.EffectiveDate:yyyy-MM-dd}.");
 
         var total = lines.Sum(line => line.debit);
         var description = FormattableString.Invariant(
-            $"Fixed-income accrual and amortization {ticker} for coupon period(s) ending {string.Join(", ", due.Select(entry => entry.PeriodDate.UtcDateTime.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)))} ({RecurringJournalCalculationMath.Money(total)} from {lots.Length} open lot(s), amortization after {amortizedThrough:yyyy-MM-dd})");
+            $"Fixed-income accrual and amortization {ticker} for {windowStart:yyyy-MM-dd} to {context.EffectiveDate:yyyy-MM-dd} ({RecurringJournalCalculationMath.Money(total)} from {lots.Length} open lot(s))");
         var journalEvent = new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate, ticker, total,
             context.OccurredAtUtc, financialAccountId, description, securityId, EffectiveDate: context.EffectiveDate);
         var metadata = new JournalEntryMetadata(ActivityType: AmortizationActivity, Symbol: ticker, SecurityId: securityId,

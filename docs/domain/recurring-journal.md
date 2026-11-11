@@ -77,14 +77,16 @@ Rules that keep an amount from being drafted twice:
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
 - **FX revaluation is incremental.** An account's carrying value is its book-currency balance,
   which includes earlier posted revaluations, so each occurrence drafts only the change.
-- **A coupon period belongs to one window.** The bond calculation drafts the coupon periods whose
-  period date falls in the window and amortizes premium or discount for those periods only.
+- **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
+  each coupon period that falls inside the window and the premium or discount amortized over the
+  same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
+  coupon period sum to the coupon exactly. A period without accrual dates is recognized whole in
+  the window containing its period date.
 
 Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
 non-postable cash-flow projection, or a missing FX rate blocks the occurrence with its reason.
 
-Current limits. Coupon income is recognized on the projection's coupon period date, not accrued
-daily between coupon dates, and projected principal paydowns are not drafted. The FX rate comes
+Current limits. Projected principal paydowns are not drafted. The FX rate comes
 from the reconciliation rate table (`reconciliation/fx-rates.json`); the rate evidence
 `W12-BOOK-001` requires (source revision, direction, staleness) is not yet retained. Revaluation
 needs journal legs that record a transaction currency. The high-water mark and hurdle are schedule
