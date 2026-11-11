@@ -273,6 +273,10 @@ raise a division-by-zero warning. The same function list is mirrored by hand in
 `isReportWriterFormulaFunction`; update all three together. Custom formula grids
 therefore retain the same source evidence that was used for evaluation, and formula data-dictionary
 rows retain those source-field pointers while still marking the column as generated.
+Bare references that contain hyphens follow one rule, shared through `ReportWriterFormulaReferences`:
+the whole identifier is the field when a field of that name exists (`net-pnl`); otherwise the longest
+known hyphen-delimited prefix is the field and the rest is read as subtraction (`pnl-fees`). Braced
+references such as `{net-pnl}` are never split.
 Generated Reporting run manifests also retain the report-writer grid
 artifact metadata generated from approved template definitions, including grid title, kind,
 artifact URI, dimension count, metric count, and formula count, while shared UI projections derive

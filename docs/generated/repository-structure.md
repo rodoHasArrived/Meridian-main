@@ -6246,6 +6246,7 @@ Meridian-main
 │   │   ├── LedgerCashFlowAttribution.cs
 │   │   ├── LedgerCashFlowStatement.cs
 │   │   ├── LedgerChartBalance.cs
+│   │   ├── LedgerCsvCell.cs
 │   │   ├── LedgerCurrencyExposure.cs
 │   │   ├── LedgerCurrencyTranslation.cs
 │   │   ├── LedgerEntry.cs
@@ -6604,6 +6605,7 @@ Meridian-main
 │   │   ├── ReportingSchedulePeriodPlanner.cs
 │   │   ├── ReportingStarterKitCatalog.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
+│   │   ├── ReportWriterFormulaReferences.cs
 │   │   ├── ReportWriterGridEngine.cs
 │   │   ├── SecurityMasterReportingLookup.cs
 │   │   └── StatementReconciliationReportAuthorityContracts.cs
@@ -8284,12 +8286,14 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.exports-runner.request.test.ts
 │   │   │   │   │   ├── reporting-screen.exports-runner.tsx
 │   │   │   │   │   ├── reporting-screen.linked-context.ts
+│   │   │   │   │   ├── reporting-screen.new-custom-report.tsx
 │   │   │   │   │   ├── reporting-screen.operator-focus.ts
 │   │   │   │   │   ├── reporting-screen.presenters.ts
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.production-surface.test.ts
 │   │   │   │   │   ├── reporting-screen.production-surface.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-filters.tsx
+│   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.ts
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
@@ -10877,6 +10881,7 @@ Meridian-main
 │   │   │   ├── Monitoring
 │   │   │   │   ├── DataQuality
 │   │   │   │   │   ├── DataFreshnessSlaMonitorTests.cs
+│   │   │   │   │   ├── DataQualityReportExportTests.cs
 │   │   │   │   │   ├── DataQualityTests.cs
 │   │   │   │   │   └── LiquidityProfileTests.cs
 │   │   │   │   ├── BadTickFilterTests.cs
@@ -11424,6 +11429,7 @@ Meridian-main
 │   │   │   ├── LedgerPartnersCapitalReconciliationTests.cs
 │   │   │   ├── LedgerPeriodStatementsTests.cs
 │   │   │   ├── LedgerReportAccountScopeProvenanceTests.cs
+│   │   │   ├── LedgerReportCsvFormulaGuardTests.cs
 │   │   │   ├── LedgerReportDeterministicExportTests.cs
 │   │   │   ├── LedgerReportPackTestData.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
