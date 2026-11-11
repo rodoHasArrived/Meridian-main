@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
@@ -20,6 +21,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public const string DefaultAccountId = "default";
 
     private readonly Meridian.Ledger.Ledger? _ledger;
+    private readonly bool _scopeLedgerAccounts;
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
     private readonly PositionLotSelectionMethod _lotSelectionMethod;
     private readonly Lock _lock = new();
@@ -51,6 +53,22 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         Meridian.Ledger.Ledger? ledger,
         ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
         PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo)
+        : this(initialCash, ledger, corporateActionAdjuster, lotSelectionMethod, DateTimeOffset.UtcNow)
+    {
+    }
+
+    /// <summary>Rebuilds a retained session without moving its opening capital to replay time.</summary>
+    internal PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger, DateTimeOffset openingTimestamp)
+        : this(initialCash, ledger, null, PositionLotSelectionMethod.Fifo, openingTimestamp)
+    {
+    }
+
+    private PaperTradingPortfolio(
+        decimal initialCash,
+        Meridian.Ledger.Ledger? ledger,
+        ILivePositionCorporateActionAdjuster? corporateActionAdjuster,
+        PositionLotSelectionMethod lotSelectionMethod,
+        DateTimeOffset openingTimestamp)
     {
         if (initialCash < 0)
             throw new ArgumentOutOfRangeException(nameof(initialCash), "Initial cash must be non-negative.");
@@ -66,7 +84,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (ledger is not null && initialCash > 0)
         {
             ledger.PostLines(
-                DateTimeOffset.UtcNow,
+                openingTimestamp,
                 "Initial capital — paper trading session",
                 [
                     (LedgerAccounts.Cash, initialCash, 0m),
@@ -106,15 +124,25 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (accounts.Count == 0)
             throw new ArgumentException("At least one account must be supplied.", nameof(accounts));
 
+        // Validate the entire definition before posting opening balances.
+        var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var definition in accounts)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(definition.AccountId);
+            if (definition.AccountId != definition.AccountId.Trim())
+                throw new ArgumentException("Paper account identities cannot contain surrounding whitespace.", nameof(accounts));
+            if (!ids.Add(definition.AccountId))
+                throw new ArgumentException($"Duplicate paper account '{definition.AccountId}'.", nameof(accounts));
+            if (definition.InitialCash < 0m)
+                throw new ArgumentOutOfRangeException(nameof(accounts), "Initial cash must be non-negative.");
+        }
         _ledger = ledger;
+        _scopeLedgerAccounts = true;
         _corporateActionAdjuster = corporateActionAdjuster;
         _lotSelectionMethod = lotSelectionMethod;
 
         foreach (var def in accounts)
         {
-            if (def.InitialCash < 0)
-                throw new ArgumentOutOfRangeException(nameof(accounts), $"Account '{def.AccountId}' initial cash must be non-negative.");
-
             _accounts[def.AccountId] = new AccountState(
                 def.AccountId, def.DisplayName, def.Kind, def.InitialCash,
                 def.MarginType, def.MarginModel, syncRoot: _lock);
@@ -125,8 +153,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                     DateTimeOffset.UtcNow,
                     $"Initial capital — {def.DisplayName}",
                     [
-                        (LedgerAccounts.Cash, def.InitialCash, 0m),
-                        (LedgerAccounts.CapitalAccount, 0m, def.InitialCash),
+                        (LedgerAccounts.CashAccount(def.AccountId), def.InitialCash, 0m),
+                        (LedgerAccounts.CapitalAccountFor(def.AccountId), 0m, def.InitialCash),
                     ]);
             }
         }
@@ -388,8 +416,8 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// </summary>
     /// <remarks>
     /// Call this once per interest period (e.g. daily).  The charge is deducted from the
-    /// account's <c>Cash</c> balance and added to <c>MarginBorrowed</c> on each affected
-    /// position so that equity (and therefore buying power) is reduced accordingly.
+    /// account's <c>Cash</c> balance and posted as an interest expense. Paid interest
+    /// does not also increase outstanding loan principal.
     /// </remarks>
     /// <param name="annualRate">Annual interest rate expressed as a decimal (e.g. 0.065 = 6.5 %).</param>
     /// <param name="days">Number of days to accrue interest for. Defaults to 1 (daily).</param>
@@ -422,8 +450,13 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                         continue;
 
                     var interest = pos.MarginBorrowed * periodRate;
-                    pos.MarginBorrowed += interest; // outstanding loan grows
-                    account.Cash -= interest;       // deducted from cash / equity
+                    // Paid interest is an expense; it cannot also increase principal.
+                    account.Cash -= interest;
+                    _ledger?.PostLines(DateTimeOffset.UtcNow, $"Margin interest — {pos.Symbol}",
+                    [
+                        (Scoped(account, LedgerAccounts.MarginInterestExpense), interest, 0m),
+                        (Scoped(account, LedgerAccounts.Cash), 0m, interest),
+                    ]);
                 }
             }
         }
@@ -562,6 +595,70 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     /// </summary>
     public IReadOnlyLedger? Ledger => _ledger;
 
+    private static readonly LedgerAccount ShortCollateralAccount =
+        new("Short Margin Collateral", LedgerAccountType.Asset);
+
+    private LedgerAccount Scoped(AccountState account, LedgerAccount ledgerAccount) =>
+        _scopeLedgerAccounts ? ledgerAccount with { FinancialAccountId = account.AccountId } : ledgerAccount;
+
+    /// <summary>Compares the current journal against cash, exact lot basis and financing balances.</summary>
+    public IReadOnlyList<PaperLedgerIntegrityBreak> CheckLedgerIntegrity(decimal tolerance = LedgerToleranceConstants.Balance)
+    {
+        if (tolerance < 0m)
+            throw new ArgumentOutOfRangeException(nameof(tolerance));
+        lock (_lock)
+        {
+            if (_ledger is null)
+                return [];
+            var breaks = new List<PaperLedgerIntegrityBreak>();
+            void Compare(string accountId, string check, decimal expected, decimal actual)
+            {
+                if (Math.Abs(expected - actual) > tolerance)
+                    breaks.Add(new(accountId, check, expected, actual));
+            }
+            Compare("*", "TrialBalance", 0m,
+                _ledger.Journal.Sum(entry => entry.Lines.Sum(line => line.Debit - line.Credit)));
+            foreach (var postedAccount in _ledger.Accounts)
+            {
+                var balance = _ledger.GetBalance(postedAccount);
+                var owned = _scopeLedgerAccounts
+                    ? postedAccount.FinancialAccountId is { } id && _accounts.ContainsKey(id)
+                    : postedAccount.FinancialAccountId is null;
+                if (!owned)
+                    Compare(postedAccount.FinancialAccountId ?? "unscoped", $"OrphanAccount:{postedAccount.Name}", 0m, balance);
+                if (postedAccount.Name == "Allocation Control"
+                    || postedAccount.Name.Contains("Clearing", StringComparison.OrdinalIgnoreCase)
+                    || postedAccount.Name.Contains("Transfer", StringComparison.OrdinalIgnoreCase))
+                    Compare(postedAccount.FinancialAccountId ?? "unscoped", $"TransferClearing:{postedAccount.Name}", 0m, balance);
+            }
+            foreach (var account in _accounts.Values)
+            {
+                Compare(account.AccountId, "Cash", account.Cash,
+                    _ledger.GetBalance(Scoped(account, LedgerAccounts.Cash)));
+                Compare(account.AccountId, "MarginLoan", account.MarginBalance,
+                    _ledger.GetBalance(Scoped(account, LedgerAccounts.MarginLoanPayable)));
+                Compare(account.AccountId, "ShortCollateral", account.ShortMarginCollateral,
+                    _ledger.GetBalance(Scoped(account, ShortCollateralAccount)));
+                // Include ledger-only symbols so a closed holding cannot leave stranded basis.
+                var symbols = account.Positions.Keys.Concat(_ledger.Accounts
+                    .Where(a => a.Symbol is not null && (a.Name is "Securities" or "Short Securities Payable")
+                        && (!_scopeLedgerAccounts || string.Equals(a.FinancialAccountId, account.AccountId, StringComparison.OrdinalIgnoreCase)))
+                    .Select(a => a.Symbol!)).Distinct(StringComparer.OrdinalIgnoreCase);
+                foreach (var symbol in symbols)
+                {
+                    account.Positions.TryGetValue(symbol, out var position);
+                    Compare(account.AccountId, $"Securities:{symbol}",
+                        position is { Quantity: > 0m } ? position.OpenCostBasis : 0m,
+                        _ledger.GetBalance(Scoped(account, LedgerAccounts.Securities(symbol))));
+                    Compare(account.AccountId, $"ShortSecurities:{symbol}",
+                        position is { Quantity: < 0m } ? position.OpenCostBasis : 0m,
+                        _ledger.GetBalance(Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol))));
+                }
+            }
+            return breaks;
+        }
+    }
+
     // ─── Corporate-action adjustment ────────────────────────────────────────
 
     /// <summary>
@@ -626,6 +723,12 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             if (ReferenceEquals(pos, originalPosition) && pos.LotVersion == originalLotVersion
                 && pos.Quantity == originalQuantity && pos.CostBasis == originalCostBasis)
             {
+                var adjustedTotalBasis = adjustment.AdjustedTotalCostBasis
+                    ?? Math.Abs(adjustment.AdjustedQuantity * adjustment.AdjustedCostBasis);
+                if (_ledger is not null && Math.Abs(adjustedTotalBasis - originalTotalCostBasis) > LedgerToleranceConstants.Balance)
+                    throw new InvalidOperationException(
+                        "A basis-changing paper corporate action requires explicit cash and journal economics. "
+                        + "The quote-only position adjuster cannot authorize a ledger posting.");
                 // Rescale the lot book by the same factors so lots stay consistent with the
                 // aggregate; otherwise the next lot-consuming fill falls into the shortfall
                 // fallback and mis-states realized P&L (e.g. selling through a post-split
@@ -717,7 +820,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         if (commission > 0)
-            PostCommissionEntry(symbol, commission, ts);
+            PostCommissionEntry(account, symbol, commission, ts);
 
         pos.MarketPrice = price;
 
@@ -767,23 +870,20 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         {
             if (account.MarginModel is RegTMarginModel regtForLedger)
             {
-                var cashRequired = notional * regtForLedger.LongInitialRate;
-                var borrowed = notional - cashRequired;
-                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-                [
-                    (LedgerAccounts.Securities(symbol), notional, 0m),
-                    (LedgerAccounts.Cash, 0m, cashRequired),
-                    (LedgerAccounts.MarginLoanPayable, 0m, borrowed),
-                ]);
+                var borrowed = notional * (1m - regtForLedger.LongInitialRate);
+                if (borrowed > 0m)
+                    _ledger.PostLines(ts, $"Margin borrowing — {symbol}",
+                    [
+                        (Scoped(account, LedgerAccounts.Cash), borrowed, 0m),
+                        (Scoped(account, LedgerAccounts.MarginLoanPayable), 0m, borrowed),
+                    ]);
             }
-            else
-            {
-                _ledger.PostLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-                [
-                    (LedgerAccounts.Securities(symbol), notional, 0m),
-                    (LedgerAccounts.Cash, 0m, notional),
-                ]);
-            }
+            // Keep gross acquisition and financing economics independently balanced.
+            PostInvestingLedgerLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
+            [
+                (Scoped(account, LedgerAccounts.Securities(symbol)), notional, 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, notional),
+            ]);
         }
     }
 
@@ -811,8 +911,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity += coverQty;
-        if (pos.Quantity == 0m)
-            pos.CostBasis = 0m;
+        pos.CostBasis = pos.Quantity == 0m ? 0m : pos.OpenCostBasis / Math.Abs(pos.Quantity);
 
         // Cash: buy-to-cover cost minus the extra margin collateral released.
         account.Cash -= coverCost + commission;
@@ -820,7 +919,15 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostCoverShortEntry(symbol, coverQty, price, proceedsRemoved, realised, ts);
+        {
+            PostCoverShortEntry(account, symbol, coverQty, price, proceedsRemoved, realised, ts);
+            if (marginReleased > 0m)
+                _ledger.PostLines(ts, $"Release short collateral — {symbol}",
+                [
+                    (Scoped(account, LedgerAccounts.Cash), marginReleased, 0m),
+                    (Scoped(account, ShortCollateralAccount), 0m, marginReleased),
+                ]);
+        }
     }
 
     private void ApplySellLong(
@@ -847,15 +954,14 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         }
 
         pos.Quantity -= closeQty;
-        if (pos.Quantity == 0m)
-            pos.CostBasis = 0m;
+        pos.CostBasis = pos.Quantity == 0m ? 0m : pos.OpenCostBasis / Math.Abs(pos.Quantity);
 
         // The trader receives proceeds minus the loan repayment.
         account.Cash += proceeds - loanRepaid - commission;
         account.RealisedPnl += realised;
 
         if (_ledger is not null)
-            PostSellLongEntry(symbol, closeQty, price, costBasisRemoved, realised, loanRepaid, ts);
+            PostSellLongEntry(account, symbol, closeQty, price, costBasisRemoved, realised, loanRepaid, ts);
     }
 
     private void ApplyShortSell(
@@ -892,39 +998,64 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
             account.Cash += proceeds - commission;
         }
 
-        _ledger?.PostLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
+        if (account.MarginModel is RegTMarginModel shortMargin)
+        {
+            var collateral = proceeds * shortMargin.ShortInitialRate;
+            _ledger?.PostLines(ts, $"Retain short collateral — {symbol}",
+            [
+                (Scoped(account, ShortCollateralAccount), collateral, 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, collateral),
+            ]);
+        }
+
+        PostInvestingLedgerLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
         [
-            (LedgerAccounts.Cash, proceeds, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable(symbol), 0m, proceeds),
+            (Scoped(account, LedgerAccounts.Cash), proceeds, 0m),
+            (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), 0m, proceeds),
         ]);
     }
 
-    private void PostSellLongEntry(string symbol, decimal closeQty, decimal price,
+    private void PostSellLongEntry(AccountState account, string symbol, decimal closeQty, decimal price,
         decimal costBasisRemoved, decimal realised, decimal loanRepaid, DateTimeOffset ts)
     {
         var proceeds = closeQty * price;
-        var cashProceeds = proceeds - loanRepaid;
         var description = $"Sell {closeQty} {symbol} @ {price:F4}";
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
-        AddNonZeroLine(lines, LedgerAccounts.Cash, cashProceeds, 0m);
-        AddNonZeroLine(lines, LedgerAccounts.MarginLoanPayable, loanRepaid, 0m);
+        AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Cash), proceeds, 0m);
 
         if (realised > 0)
         {
-            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
-            AddNonZeroLine(lines, LedgerAccounts.RealizedGain, 0m, realised);
+            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
+            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.RealizedGain), 0m, realised);
         }
         else if (realised < 0)
         {
-            AddNonZeroLine(lines, LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m);
-            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
+            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.RealizedLoss), Math.Abs(realised), 0m);
+            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
         }
         else
         {
-            AddNonZeroLine(lines, LedgerAccounts.Securities(symbol), 0m, costBasisRemoved);
+            AddNonZeroLine(lines, Scoped(account, LedgerAccounts.Securities(symbol)), 0m, costBasisRemoved);
         }
 
-        _ledger!.PostLines(ts, description, lines);
+        PostInvestingLedgerLines(ts, description, lines);
+        if (loanRepaid > 0m)
+            _ledger!.PostLines(ts, $"Margin repayment — {symbol}",
+            [
+                (Scoped(account, LedgerAccounts.MarginLoanPayable), loanRepaid, 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, loanRepaid),
+            ]);
+    }
+
+    private void PostInvestingLedgerLines(DateTimeOffset timestamp, string description,
+        IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines)
+    {
+        if (_ledger is null)
+            return;
+        var journalId = Guid.NewGuid();
+        var draft = new JournalEntry(journalId, timestamp, description, lines.Select(line =>
+            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.Account, line.Debit, line.Credit, description)).ToArray());
+        _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 
     private static void AddNonZeroLine(
@@ -933,43 +1064,46 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
         decimal debit,
         decimal credit)
     {
-        if (debit != 0m || credit != 0m)
-            lines.Add((account, debit, credit));
+        var netDebit = debit - credit;
+        if (netDebit > 0m)
+            lines.Add((account, netDebit, 0m));
+        else if (netDebit < 0m)
+            lines.Add((account, 0m, -netDebit));
     }
 
-    private void PostCoverShortEntry(string symbol, decimal coverQty, decimal price,
+    private void PostCoverShortEntry(AccountState account, string symbol, decimal coverQty, decimal price,
         decimal proceedsRemoved, decimal realised, DateTimeOffset ts)
     {
         var coverCost = coverQty * price;
         var description = $"Cover {coverQty} {symbol} @ {price:F4}";
         if (realised > 0m)
-            _ledger!.PostLines(ts, description,
+            PostInvestingLedgerLines(ts, description,
             [
-                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
-                (LedgerAccounts.Cash, 0m, coverCost),
-                (LedgerAccounts.RealizedGain, 0m, realised),
+                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
+                (Scoped(account, LedgerAccounts.RealizedGain), 0m, realised),
             ]);
         else if (realised < 0m)
-            _ledger!.PostLines(ts, description,
+            PostInvestingLedgerLines(ts, description,
             [
-                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
-                (LedgerAccounts.RealizedLoss, Math.Abs(realised), 0m),
-                (LedgerAccounts.Cash, 0m, coverCost),
+                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
+                (Scoped(account, LedgerAccounts.RealizedLoss), Math.Abs(realised), 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
             ]);
         else
-            _ledger!.PostLines(ts, description,
+            PostInvestingLedgerLines(ts, description,
             [
-                (LedgerAccounts.ShortSecuritiesPayable(symbol), proceedsRemoved, 0m),
-                (LedgerAccounts.Cash, 0m, coverCost),
+                (Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol)), proceedsRemoved, 0m),
+                (Scoped(account, LedgerAccounts.Cash), 0m, coverCost),
             ]);
     }
 
-    private void PostCommissionEntry(string symbol, decimal commission, DateTimeOffset ts)
+    private void PostCommissionEntry(AccountState account, string symbol, decimal commission, DateTimeOffset ts)
     {
         _ledger?.PostLines(ts, $"Commission — {symbol}",
         [
-            (LedgerAccounts.CommissionExpense, commission, 0m),
-            (LedgerAccounts.Cash, 0m, commission),
+            (Scoped(account, LedgerAccounts.CommissionExpense), commission, 0m),
+            (Scoped(account, LedgerAccounts.Cash), 0m, commission),
         ]);
     }
 }

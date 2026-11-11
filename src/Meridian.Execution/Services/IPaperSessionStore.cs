@@ -61,7 +61,14 @@ public sealed record PersistedJournalEntryDto(
     Guid? SecurityId = null,
     Guid? OrderId = null,
     string? LedgerView = null,
-    string? StrategyId = null);
+    string? StrategyId = null)
+{
+    /// <summary>
+    /// Complete posting provenance, including cash-flow groups bound to the original persisted
+    /// line identities. Legacy records omit this property and retain their scalar metadata.
+    /// </summary>
+    public Meridian.Ledger.JournalEntryMetadata? Metadata { get; init; }
+}
 
 /// <summary>
 /// Versioned durable envelope for one paper-session fill.  <see cref="FillId"/> is the

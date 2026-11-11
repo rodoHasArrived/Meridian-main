@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+Explicitly classified investing activities recognize either an asset carrying leg or a
+liability carrying leg (short securities payable). A short cover with retained investing
+classification reports its actual cash cost while preserving the booked realized result.
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
@@ -20,6 +24,9 @@ opening proceeds against cash execution cost and recognizes the difference as bo
 It does not infer short-sale tax character or manufacture corporate-action payments.
 
 Cash-flow reversal remaps accepted retained attribution tags case-insensitively, matching the attribution reader after serialization and line reordering. Unsupported or incomplete attribution still blocks reporting.
+`LedgerJournalReversal` also reverses each retained transaction-currency debit/credit while
+preserving both currency codes and the recorded FX rate. Corrections therefore reverse the
+functional and transaction amounts together; original entries remain immutable.
 
 
 `OpenLotReliefService` treats explicit long/short direction as part of the pool scope. It never

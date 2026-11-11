@@ -11,6 +11,9 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+The retained run ledger page offers an inclusive UTC date filter through the shared strategy-run read service. Clearing the picker restores the complete retained run. Delayed reads from an earlier run or date cannot overwrite the current selection. Journal, trial balance and posting counts use one economic-time cut.
+
+
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
 The Security Master passport editor offers the browser's bond analytics and convention-migration

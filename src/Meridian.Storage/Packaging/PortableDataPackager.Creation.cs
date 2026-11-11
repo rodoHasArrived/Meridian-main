@@ -395,6 +395,7 @@ public sealed partial class PortableDataPackager
         List<SourceFileInfo> sourceFiles,
         PackageManifest manifest,
         PackageOptions options,
+        string? ledgerContent,
         CancellationToken ct)
     {
         var compressionLevel = options.CompressionLevel switch
@@ -433,6 +434,11 @@ public sealed partial class PortableDataPackager
 
             // Add supplementary files
             await AddSupplementaryFilesAsync(archive, manifest, options, compressionLevel, ct);
+            if (ledgerContent is not null)
+            {
+                await using var ledgerStream = archive.CreateEntry(manifest.LedgerSnapshotPath!, compressionLevel).Open();
+                await ledgerStream.WriteAsync(Encoding.UTF8.GetBytes(ledgerContent), ct);
+            }
         }
         else
         {

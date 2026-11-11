@@ -26,8 +26,15 @@ namespace Meridian.Strategies.Services;
 /// </remarks>
 public sealed class StrategyRunResearchRecorder(
     IStrategyRepository store,
-    ILogger<StrategyRunResearchRecorder> logger) : IResearchRunRecorder
+    ILogger<StrategyRunResearchRecorder> logger,
+    IStrategyRunLedgerArchive? ledgerArchive) : IResearchRunRecorder
 {
+    /// <summary>Retains the existing in-memory/isolated recorder constructor.</summary>
+    public StrategyRunResearchRecorder(IStrategyRepository store, ILogger<StrategyRunResearchRecorder> logger)
+        : this(store, logger, null)
+    {
+    }
+
     /// <inheritdoc />
     /// <remarks>
     /// Fail-open for research: a store outage returns <see langword="null"/> rather than throwing,
@@ -74,7 +81,7 @@ public sealed class StrategyRunResearchRecorder(
             // The engine has already finished by the time the host records it, so Start/Complete
             // would otherwise stamp a multi-minute backtest as near-zero duration and sort it by
             // persistence time. Derive the real start from the run's own elapsed time.
-            var completed = entry.Complete(BoundResultForRetention(result));
+            var completed = entry.Complete(BoundResultForRetention(result, ledgerArchive is not null));
             var startedAt = completed.EndedAt is { } endedAt && result.ElapsedTime > TimeSpan.Zero
                 ? endedAt - result.ElapsedTime
                 : completed.StartedAt;
@@ -119,8 +126,10 @@ public sealed class StrategyRunResearchRecorder(
     /// so the runs most worth tracking were exactly the ones whose recording failed and was
     /// swallowed. Metrics, universe, and bias disclosure are what lineage and run comparison read,
     /// so they are kept; the bulk collections are dropped and their sizes recorded instead.
+    /// With the production archive configured, the journal and final lot snapshot travel to the
+    /// store for separate immutable retention before the bounded lifecycle snapshot is written.
     /// </summary>
-    private static BacktestResult BoundResultForRetention(BacktestResult result)
+    private static BacktestResult BoundResultForRetention(BacktestResult result, bool preserveLedger)
     {
         if (result.Snapshots.Count == 0 &&
             result.CashFlows.Count == 0 &&
@@ -132,15 +141,16 @@ public sealed class StrategyRunResearchRecorder(
 
         return result with
         {
-            Snapshots = [],
+            Snapshots = preserveLedger && result.Snapshots.Count > 0
+                ? [result.Snapshots.MaxBy(static snapshot => snapshot.Timestamp)!] : [],
             CashFlows = [],
             Fills = [],
             TradeTickets = null,
             // The ledger is the other unbounded collection: its JSON converter writes the complete
             // journal, so a fill-dense run that posts entries could still blow past the store's
-            // snapshot cap after the lists above were cleared — losing lineage for exactly the
-            // runs this bounding exists to keep.
-            Ledger = new Meridian.Ledger.Ledger()
+            // snapshot cap after the lists above were cleared. Production passes it to the store's
+            // separate archive; compatibility callers without an archive retain the old bound.
+            Ledger = preserveLedger ? result.Ledger : new Meridian.Ledger.Ledger()
         };
     }
 

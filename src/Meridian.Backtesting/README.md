@@ -11,6 +11,11 @@ last_reviewed: 2026-10-30
 
 # src/Meridian.Backtesting
 
+Simulated security buys, disposals, short sales/covers, return of capital and fractional
+corporate-action settlements retain producer-supplied investing cash-flow attribution when
+their journals are first posted. Reported cash flows therefore use the actual cash movement;
+carrying-basis relief and realized gain/loss do not become separate operating cash flows.
+
 ## Purpose
 
 Multi-symbol replay compares full UTC ticks and preserves requested-symbol order for equal instants,
@@ -134,6 +139,29 @@ tracked by `PRD-106`; the scope decision does not close these implementation or 
 See the [expanded objectives](../../docs/product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives).
 
 ## Execution realism and result trustworthiness
+
+- `SecurityMasterBacktestAssetEventSource` connects the existing provider ingest/proposal pipeline
+  to native portfolio replay. `ApplyStoredCorporateActions` defaults to true when the host has
+  Security Master query services. Only confirmed, effective, non-cancelled revisions become
+  automatic events; identical economics are deduplicated and conflicting instructions fail before
+  replay. Stored splits, USD dividends, return of capital, mergers and ticker changes are supported.
+  Successor securities are followed after mergers, and later actions use the successor ticker.
+  Unsupported action types, missing successor terms, non-USD cash and ambiguous same-day successor
+  ordering require reviewed manual events with automatic loading disabled.
+- Portfolio action accounting uses unadjusted prices, including when explicit `AssetEvents` are
+  supplied. Already-adjusted bars are refused for an event-bearing replay so splits and cash cannot
+  be counted twice. Stored dividends credit ex-date holders on the ex-date; payable-date settlement
+  is not modeled. This economic replay uses currently retained confirmed Security Master revisions
+  and makes no historical transaction-visibility claim. Provider proposals still require the
+  existing ingest acceptance workflow; backtests never approve provider observations.
+
+Every native day-end snapshot reconciles as-of trial balance, per-account cash, long lot basis,
+short proceeds, and transfer clearing balances. Differences remain on
+`BacktestResult.LedgerIntegrityBreaks`; `BacktestRequest.FailOnLedgerIntegrityBreak` aborts with
+inspectable `LedgerIntegrityException.Breaks`. Comparisons use the shared ledger balance tolerance
+and include residual accounts for closed positions. Return-of-capital distributions reduce each
+long lot/component's exact basis to zero before recognizing excess gain. `BasisReturned` stays
+separate from income in cash-flow evidence and symbol attribution; short payments remain expenses.
 
 - `BacktestRequest.FillTiming` defaults to `NextBar`: an order can only fill against events
   strictly later than the event that generated it, eliminating same-bar look-ahead. Under

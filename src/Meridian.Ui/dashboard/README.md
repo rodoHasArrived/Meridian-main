@@ -11,6 +11,9 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+The Strategy Run Ledger Explorer supports an inclusive UTC as-of date, retained in its URL and applied to both trial balance and journal. Clearing the date restores the complete run. Historical mode omits the final-run generic proof explorer so final balances and links cannot appear under a historical scope. Accounting package downloads preserve run, date and selected CSV/Excel/Parquet/Arrow format; packages declare missing lot snapshot evidence explicitly.
+
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,

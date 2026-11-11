@@ -461,8 +461,10 @@ public sealed class PaperTradingPortfolioRegTMarginTests
         portfolio.ApplyFill("margin-1", BuildFill("AAPL", OrderSide.Buy, qty: 100, price: 200m));
 
         var buyEntry = ledger.Journal.Last(e => e.Description.Contains("Buy"));
-        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 10_000m);
-        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayable && l.Credit == 10_000m);
+        buyEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Credit == 20_000m);
+        var financingEntry = ledger.Journal.Single(e => e.Description.Contains("Margin borrowing"));
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.CashAccount("margin-1") && l.Debit == 10_000m);
+        financingEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.MarginLoanPayableFor("margin-1") && l.Credit == 10_000m);
     }
 
     [Fact]
@@ -881,7 +883,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
     }
 
     [Fact]
-    public void AccrueMarginInterest_OneDay_DeductsInterestFromCashAndAddsToLoan()
+    public void AccrueMarginInterest_OneDay_PaysExpenseWithoutIncreasingPrincipal()
     {
         // $100 000 cash, buy $20 000 notional on 50 % margin → $10 000 borrowed.
         // Annual rate 7.3 % → daily = 7.3 / 365 = 0.02 %.
@@ -894,7 +896,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
 
         var expectedInterest = 10_000m * (0.073m / 365m);
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.0001m);
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.0001m);
+        portfolio.MarginBalance.Should().Be(10_000m, because: "paid interest must not also be charged as loan principal");
     }
 
     [Fact]
@@ -906,7 +908,7 @@ public sealed class PaperTradingPortfolioMarginRulesTests
         portfolio.AccrueMarginInterest(annualRate: 0.073m, days: 30);
 
         var expectedInterest = 10_000m * (0.073m / 365m) * 30m;
-        portfolio.MarginBalance.Should().BeApproximately(10_000m + expectedInterest, precision: 0.001m);
+        portfolio.MarginBalance.Should().Be(10_000m, because: "paid interest must not also be charged as loan principal");
         portfolio.Cash.Should().BeApproximately(90_000m - expectedInterest, precision: 0.001m);
     }
 

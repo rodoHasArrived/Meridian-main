@@ -4445,13 +4445,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2857",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2855",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2998",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2996",
       "documented": false
     }
   ],

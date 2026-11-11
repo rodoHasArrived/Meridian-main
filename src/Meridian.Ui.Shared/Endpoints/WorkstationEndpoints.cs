@@ -2268,7 +2268,7 @@ public static partial class WorkstationEndpoints
         .Produces(404)
         .Produces(501);
 
-        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedger), async (string runId, HttpContext context) =>
+        group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedger), async (string runId, DateTimeOffset? asOf, HttpContext context) =>
         {
             var readService = context.RequestServices.GetService<StrategyRunReadService>();
             if (readService is null)
@@ -2276,11 +2276,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             return summary is null
                 ? Results.NotFound()
                 : Results.Json(summary, jsonOptions);
@@ -2289,6 +2287,8 @@ public static partial class WorkstationEndpoints
         .Produces<LedgerSummary>(200)
         .Produces(404)
         .AddEndpointFilter(RequireStrategyRunReadAccessAsync);
+
+        MapRunLedgerExportEndpoint(group);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsContinuity), async (string runId, HttpContext context) =>
         {
@@ -2431,6 +2431,7 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerTrialBalance), async (
             string runId,
+            DateTimeOffset? asOf,
             string? accountType,
             string? fundId,
             string? entityId,
@@ -2458,11 +2459,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();
@@ -2505,6 +2504,7 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.RunsLedgerJournal), async (
             string runId,
+            DateTimeOffset? asOf,
             DateTimeOffset? from,
             DateTimeOffset? to,
             string? fundId,
@@ -2533,11 +2533,9 @@ public static partial class WorkstationEndpoints
                 return Results.Problem("Strategy run service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             }
 
-            var summary = await readService.GetLedgerSummaryAsync(
-                    runId,
-                    ResolveStrategyRunReadScope(context),
-                    context.RequestAborted)
-                .ConfigureAwait(false);
+            var summary = asOf.HasValue
+                ? await readService.GetLedgerSummaryAsync(runId, asOf.Value, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false)
+                : await readService.GetLedgerSummaryAsync(runId, ResolveStrategyRunReadScope(context), context.RequestAborted).ConfigureAwait(false);
             if (summary is null)
             {
                 return Results.NotFound();

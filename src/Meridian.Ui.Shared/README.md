@@ -11,6 +11,9 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Run ledger summary, journal and trial-balance endpoints accept an inclusive `asOf` economic timestamp after the existing tenant/company run-access guard. The accounting-package download endpoint exports the authorized retained journal in CSV, Excel, Parquet or Arrow; lot reports require an exact retained valuation cut. Its availability table distinguishes absent lot evidence from measured empty schedules. Temporary export files are removed after ZIP construction. The paper-accounting reconciliation host is registered after the shared portfolio registry.
+
+
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -3004,3 +3007,10 @@ readiness; mini and adjusted options retain their contractual multiplier. Each c
 its multiplier map so concurrent synchronization cannot mix observations. Raw snapshots and cash
 remain readable when a legacy position cannot safely be valued. Current implementation performs
 individual retained-history lookups; large-portfolio batching remains a performance follow-up.
+
+Brokerage activity sync accepts provider records into the shared durable activity inbox before
+publishing its workstation projection. Retained complete cursor watermarks resume with an inclusive
+timestamp reread; immutable activity-ID evidence prevents duplicates across retries and restart.
+Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
+retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
+rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.

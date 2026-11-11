@@ -142,7 +142,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
 
             var fillRecords = await _store.LoadFillRecordsAsync(record.SessionId, ct).ConfigureAwait(false);
             var replayLedger = new Meridian.Ledger.Ledger();
-            var portfolio = new PaperTradingPortfolio(record.InitialCash, replayLedger);
+            var portfolio = new PaperTradingPortfolio(record.InitialCash, replayLedger, record.CreatedAt);
             var appliedFillHashes = new Dictionary<Guid, string>();
             var fillHistory = new List<ExecutionReport>(fillRecords.Count);
             var hasUnappliedFill = false;
@@ -254,7 +254,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
             }
 
-            var sessionId = $"PAPER-{DateTimeOffset.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            var createdAt = DateTimeOffset.UtcNow;
+            var sessionId = $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
             var ledger = new Meridian.Ledger.Ledger();
             var session = new PaperSession
             {
@@ -262,9 +263,9 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 StrategyId = request.StrategyId,
                 StrategyName = request.StrategyName,
                 InitialCash = request.InitialCash,
-                CreatedAt = DateTimeOffset.UtcNow,
+                CreatedAt = createdAt,
                 Symbols = request.Symbols?.ToList() ?? [],
-                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger),
+                Portfolio = new PaperTradingPortfolio(request.InitialCash, ledger, createdAt),
                 // New sessions record the matching and cost policies in effect so promotion
                 // evidence can cite exactly which paper execution model produced them.
                 MatchingModelVersion = PaperMatching.PaperOrderMatchingPolicy.MatchingModelVersion,
@@ -394,6 +395,16 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 if (!session.IsActive)
                     return true;
 
+                var integrityBreaks = session.Portfolio?.CheckLedgerIntegrity() ?? [];
+                if (integrityBreaks.Count > 0)
+                {
+                    // A final journal must agree with the portfolio before it becomes the
+                    // authoritative closed-session snapshot. Leave the session active on failure.
+                    throw new InvalidOperationException(
+                        $"Paper session '{sessionId}' has ledger integrity breaks: "
+                        + string.Join("; ", integrityBreaks.Select(b =>
+                            $"{b.AccountId}/{b.Check}: expected {b.Expected}, actual {b.Actual}")));
+                }
                 closedAt = DateTimeOffset.UtcNow;
                 closeCandidate = ToPersistedRecord(session, isActive: false, closedAt);
             }
@@ -815,7 +826,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 return null;
 
             var fills = await _store.LoadFillRecordsAsync(sessionId, ct).ConfigureAwait(false);
-            var portfolio = new PaperTradingPortfolio(session.InitialCash);
+            var portfolio = new PaperTradingPortfolio(session.InitialCash, null, session.CreatedAt);
             foreach (var fill in fills)
                 portfolio.ApplyFill(CloneExecutionReport(fill.Fill));
 
@@ -867,6 +878,8 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
             : await _store.LoadLedgerJournalAsync(sessionId, ct).ConfigureAwait(false);
 
         var mismatchReasons = ComparePortfolios(detail.Portfolio, replayPortfolio);
+        foreach (var ledgerBreak in session.Portfolio?.CheckLedgerIntegrity() ?? [])
+            mismatchReasons.Add($"Ledger integrity {ledgerBreak.AccountId}/{ledgerBreak.Check}: expected {ledgerBreak.Expected}, actual {ledgerBreak.Actual}.");
         var currentLedger = GetLedger(sessionId);
         var currentLedgerEntryCount = currentLedger?.JournalEntryCount ?? 0;
         var currentLedgerLineCount = currentLedger?.TotalLedgerEntryCount ?? 0;
@@ -1022,7 +1035,10 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 SecurityId: entry.Metadata.SecurityId,
                 OrderId: entry.Metadata.OrderId,
                 LedgerView: entry.Metadata.LedgerView?.ToString(),
-                StrategyId: strategyId));
+                StrategyId: strategyId)
+            {
+                Metadata = entry.Metadata
+            });
         }
 
         return dtos;
@@ -1100,7 +1116,14 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                     dto.JournalEntryId,
                     dto.Timestamp,
                     dto.Description,
-                    lines);
+                    lines,
+                    dto.Metadata ?? new JournalEntryMetadata(
+                        ActivityType: dto.ActivityType,
+                        Symbol: dto.Symbol,
+                        SecurityId: dto.SecurityId,
+                        OrderId: dto.OrderId,
+                        LedgerView: Enum.TryParse<LedgerViewKind>(dto.LedgerView, out var view) ? view : null,
+                        StrategyId: dto.StrategyId));
 
                 ledger.Post(entry);
             }
@@ -1185,7 +1208,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
         }
 
         var ledger = new Meridian.Ledger.Ledger();
-        var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger);
+        var portfolio = new PaperTradingPortfolio(session.InitialCash, ledger, session.CreatedAt);
         foreach (var fill in fills)
             portfolio.ApplyFill(fill);
         return portfolio;
@@ -1245,7 +1268,7 @@ public sealed class PaperSessionPersistenceService : IAsyncDisposable
                 record.StrategyName,
                 record.InitialCash,
                 record.Symbols));
-            _ = new PaperTradingPortfolio(record.InitialCash);
+            _ = new PaperTradingPortfolio(record.InitialCash, null, record.CreatedAt);
         }
         catch (ArgumentException ex)
         {

@@ -1663,6 +1663,11 @@ public sealed partial class AlpacaBrokerageGatewayTests
             untilExclusive);
 
         activity.CashTransactions.Should().HaveCount(101);
+        activity.Cursor.Should().NotBeNull();
+        activity.Cursor!.IsComplete.Should().BeTrue();
+        activity.Cursor.PageCount.Should().Be(2);
+        activity.Cursor.SourceRecordCount.Should().Be(101);
+        activity.Cursor.LastEventId.Should().NotBeNullOrWhiteSpace();
         activityPaths.Should().HaveCount(2);
         activityPaths[1].Should().Contain(
             $"page_token={Uri.EscapeDataString("activity-099")}");

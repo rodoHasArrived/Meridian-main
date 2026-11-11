@@ -5,6 +5,7 @@ using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Workstation;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Services;
 using Meridian.Storage.Archival;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -269,7 +270,8 @@ public sealed class BrokeragePortfolioSyncService
         {
             try
             {
-                activity = await activityAdapter.GetActivitySnapshotAsync(link.ExternalAccountId, request.Since, ct).ConfigureAwait(false);
+                activity = await new BrokerActivityImportService(Path.Combine(_options.RootDirectory, "activity-inbox"))
+                    .ImportAsync(activityAdapter, link.ExternalAccountId, request.Since, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

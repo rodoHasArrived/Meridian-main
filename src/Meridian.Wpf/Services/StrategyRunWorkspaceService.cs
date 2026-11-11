@@ -139,6 +139,9 @@ public sealed class StrategyRunWorkspaceService
         return detail?.Ledger;
     }
 
+    public Task<LedgerSummary?> GetLedgerAsync(string runId, DateTimeOffset asOf, CancellationToken ct = default) =>
+        _readService.GetLedgerSummaryAsync(runId, asOf, ct);
+
     public Task<IReadOnlyList<RunComparisonDto>> CompareRunsAsync(
         IEnumerable<string> runIds,
         CancellationToken ct = default) =>

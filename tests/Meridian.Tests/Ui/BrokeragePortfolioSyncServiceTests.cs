@@ -1523,6 +1523,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
 
     private sealed class FixedActivityAdapter(string providerId) : IBrokerageActivitySync
     {
+        private readonly DateTimeOffset _sourceTime = DateTimeOffset.UtcNow;
         public string ProviderId { get; } = providerId;
 
         public Task<BrokerageActivitySnapshotDto> GetActivitySnapshotAsync(
@@ -1534,7 +1535,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
             return Task.FromResult(new BrokerageActivitySnapshotDto(
                 ProviderId,
                 externalAccountId,
-                DateTimeOffset.UtcNow,
+                _sourceTime,
                 [
                     new BrokerageOrderSnapshotDto(
                         "ord-open-1",
@@ -1547,7 +1548,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         0m,
                         185m,
                         null,
-                        DateTimeOffset.UtcNow.AddMinutes(-8))
+                        _sourceTime.AddMinutes(-8))
                 ],
                 [
                     new BrokerageFillSnapshotDto(
@@ -1557,7 +1558,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         OrderSide.Buy,
                         10m,
                         184.25m,
-                        DateTimeOffset.UtcNow.AddMinutes(-12),
+                        _sourceTime.AddMinutes(-12),
                         "XNAS",
                         0m,
                         125m)
@@ -1568,7 +1569,7 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "DIV",
                         42.50m,
                         "USD",
-                        DateTimeOffset.UtcNow.AddDays(-1),
+                        _sourceTime.AddDays(-1),
                         "AAPL",
                         "Dividend")
                 ],
@@ -1578,8 +1579,8 @@ public sealed class BrokeragePortfolioSyncServiceTests
                         "corp-div-aapl",
                         "Dividend",
                         "AAPL",
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date),
-                        DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(-2)),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date),
+                        DateOnly.FromDateTime(_sourceTime.UtcDateTime.Date.AddDays(-2)),
                         Amount: 0.24m,
                         Currency: "USD",
                         Description: "AAPL dividend")

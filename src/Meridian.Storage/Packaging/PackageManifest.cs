@@ -9,6 +9,15 @@ namespace Meridian.Storage.Packaging;
 /// </summary>
 public sealed class PackageManifest
 {
+    [JsonPropertyName("ledgerSnapshotPath")]
+    public string? LedgerSnapshotPath { get; set; }
+
+    [JsonPropertyName("ledgerSnapshotSha256")]
+    public string? LedgerSnapshotSha256 { get; set; }
+
+    [JsonPropertyName("ledgerBalanceChecksumSha256")]
+    public string? LedgerBalanceChecksumSha256 { get; set; }
+
     /// <summary>
     /// Package manifest version.
     /// </summary>

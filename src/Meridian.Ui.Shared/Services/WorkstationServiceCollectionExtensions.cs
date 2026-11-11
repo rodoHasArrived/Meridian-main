@@ -235,10 +235,13 @@ public static class WorkstationServiceCollectionExtensions
 
         services.TryAddSingleton<IOperationalCaseHistoryStore>(sp =>
             new FileOperationalCaseHistoryStore(ResolveConfigDataRoot(sp)));
+        services.TryAddSingleton<IStrategyRunLedgerArchive>(sp =>
+            new JsonlStrategyRunLedgerArchive(ResolveConfigDataRoot(sp), sp.GetRequiredService<IAtomicFileWriter>()));
         // The concrete store is the single instance: StrategyRunStore holds in-memory state, so
         // registering it separately per interface would split that state between consumers.
         services.TryAddSingleton(sp =>
-            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>()));
+            new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>(),
+                sp.GetRequiredService<IStrategyRunLedgerArchive>()));
         services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
         services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
@@ -465,6 +468,7 @@ public static class WorkstationServiceCollectionExtensions
 
             return registry;
         });
+        services.AddPortfolioAccountingReconciliation();
         services.TryAddSingleton<IAggregatePortfolioService, AggregatePortfolioService>();
         // Exposure feed for the portfolio-aware rules: sourced from the same aggregation
         // service the Portfolio workspace reports, so enforcement and display agree.

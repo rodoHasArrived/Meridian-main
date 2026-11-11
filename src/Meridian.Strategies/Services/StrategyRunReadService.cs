@@ -606,8 +606,16 @@ public sealed class StrategyRunReadService
         return await GetRunsAsync(query, ct).ConfigureAwait(false);
     }
 
+    /// <summary>Returns retained source evidence only after the same tenant/company visibility check as other run reads.</summary>
+    public async Task<BacktestResult?> GetRetainedResultAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
+        return run?.Metrics;
+    }
+
     public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, CancellationToken ct = default) =>
-        GetLedgerSummaryCoreAsync(runId, scope: null, ct);
+        GetLedgerSummaryCoreAsync(runId, scope: null, asOf: null, ct);
 
     public Task<LedgerSummary?> GetLedgerSummaryAsync(
         string runId,
@@ -615,18 +623,35 @@ public sealed class StrategyRunReadService
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(scope);
-        return GetLedgerSummaryCoreAsync(runId, scope, ct);
+        return GetLedgerSummaryCoreAsync(runId, scope, asOf: null, ct);
+    }
+
+    /// <summary>Reads retained postings on or before the inclusive economic timestamp.</summary>
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(string runId, DateTimeOffset asOf, CancellationToken ct = default) =>
+        GetLedgerSummaryCoreAsync(runId, scope: null, asOf, ct);
+
+    public Task<LedgerSummary?> GetLedgerSummaryAsync(
+        string runId,
+        DateTimeOffset asOf,
+        StrategyRunReadScope scope,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(scope);
+        return GetLedgerSummaryCoreAsync(runId, scope, asOf, ct);
     }
 
     private async Task<LedgerSummary?> GetLedgerSummaryCoreAsync(
         string runId,
         StrategyRunReadScope? scope,
+        DateTimeOffset? asOf,
         CancellationToken ct)
     {
         var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         return run is null
             ? null
-            : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
+            : asOf.HasValue
+                ? await _ledgerReadService.BuildSummaryAsync(run, asOf.Value, ct).ConfigureAwait(false)
+                : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(

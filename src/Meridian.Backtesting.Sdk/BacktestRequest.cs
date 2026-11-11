@@ -141,6 +141,15 @@ public sealed record BacktestRequest(
     decimal DelistingHaircutPercent = 0m,
     int DelistingGraceDays = 5)
 {
+    /// <summary>Abort at day-end when ledger cash, lot basis, or clearing balances fail reconciliation.</summary>
+    public bool FailOnLedgerIntegrityBreak { get; init; }
+
+    /// <summary>
+    /// Apply confirmed Security Master actions to positions and cash using raw historical prices
+    /// when a source is configured. Disable for reviewed manual AssetEvents or legacy adjusted-price research.
+    /// </summary>
+    public bool ApplyStoredCorporateActions { get; init; } = true;
+
     /// <summary>
     /// Captures every setting on this request that changes what numbers the run produces, so run
     /// identity can account for execution realism rather than strategy inputs alone.
@@ -166,7 +175,10 @@ public sealed record BacktestRequest(
         AnnualShortRebateRate,
         CanonicalAccountFinancing(),
         CanonicalRiskFreeRateSeries(),
-        DefaultBrokerageAccountId);
+        DefaultBrokerageAccountId)
+    {
+        ApplyStoredCorporateActions = ApplyStoredCorporateActions
+    };
 
     /// <summary>
     /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>

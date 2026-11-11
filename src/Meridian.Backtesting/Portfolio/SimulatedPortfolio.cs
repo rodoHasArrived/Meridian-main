@@ -18,6 +18,10 @@ internal sealed class SimulatedPortfolio
     private readonly Dictionary<string, decimal> _lastPrices = new(StringComparer.OrdinalIgnoreCase);
     private readonly List<CashFlowEntry> _cashFlows = [];
     private decimal _prevEquity;
+    private readonly List<LedgerIntegrityBreak> _ledgerIntegrityBreaks = [];
+
+    public bool FailOnLedgerIntegrityBreak { get; init; }
+    public IReadOnlyList<LedgerIntegrityBreak> LedgerIntegrityBreaks => _ledgerIntegrityBreaks.AsReadOnly();
 
     // Rebuilding the aggregate views walks every account, every position, and every lot. The
     // engine reads them through IBacktestContext.PortfolioValue / .Positions, so a strategy that
@@ -245,6 +249,11 @@ internal sealed class SimulatedPortfolio
     {
         ArgumentNullException.ThrowIfNull(assetEvent);
 
+        if (assetEvent.EventType == AssetEventType.ReturnOfCapital && assetEvent.HasPositionTransformation)
+            throw new InvalidOperationException("Return of capital must be applied separately from a position transformation.");
+        if (assetEvent.EventType == AssetEventType.ReturnOfCapital && assetEvent.CashPerShare < 0m)
+            throw new InvalidOperationException("A return-of-capital reversal requires the original basis and excess-gain allocation; negative distributions cannot infer those facts.");
+
         var symbol = assetEvent.Symbol;
         var targetSymbol = assetEvent.DestinationSymbol;
         if (assetEvent.HasPositionTransformation && assetEvent.PositionFactor <= 0m)
@@ -306,6 +315,7 @@ internal sealed class SimulatedPortfolio
             var existingQty = impacted.ExistingQuantity;
 
             decimal totalCashImpact = 0m;
+            decimal basisReturned = 0m;
             PositionTransformationResult transformation = default;
             if (assetEvent.HasPositionTransformation)
             {
@@ -319,7 +329,7 @@ internal sealed class SimulatedPortfolio
             }
 
             if (assetEvent.CashPerShare != 0m)
-                totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty);
+                totalCashImpact += ApplyPerShareCashAdjustment(account, assetEvent, existingQty, out basisReturned);
 
             account.MarginBalance = account.Cash < 0m ? account.Cash : 0m;
             _cashFlows.Add(new AssetEventCashFlow(
@@ -334,6 +344,7 @@ internal sealed class SimulatedPortfolio
                 assetEvent.Description)
             {
                 AccountId = account.Account.AccountId,
+                BasisReturned = basisReturned,
                 FractionalUnits = transformation.FractionalUnits,
                 BasisDisposed = transformation.BasisDisposed,
                 RealizedPnl = transformation.RealizedPnl,
@@ -445,7 +456,15 @@ internal sealed class SimulatedPortfolio
         var dayCashFlows = _cashFlows.ToList();
         _cashFlows.Clear();
 
-        return new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows);
+        var snapshot = new PortfolioSnapshot(timestamp, date, Cash, MarginBalance, longMv, shortMv, equity, dailyReturn, positions, accountSnapshots, dayCashFlows);
+        if (_ledger is not null)
+        {
+            var breaks = BacktestLedgerIntegrityValidator.Validate(_ledger, snapshot);
+            _ledgerIntegrityBreaks.AddRange(breaks);
+            if (FailOnLedgerIntegrityBreak && breaks.Count > 0)
+                throw new LedgerIntegrityException(breaks);
+        }
+        return snapshot;
     }
 
     public decimal ComputeCurrentEquity() => BuildAccountSnapshots().Values.Sum(snapshot => snapshot.Equity);
@@ -495,11 +514,63 @@ internal sealed class SimulatedPortfolio
 
     // ── Private helpers ──────────────────────────────────────────────────────
 
-    private decimal ApplyPerShareCashAdjustment(AccountState account, AssetEvent assetEvent, long quantity)
+    private decimal ApplyPerShareCashAdjustment(AccountState account, AssetEvent assetEvent, long quantity, out decimal basisReturned)
     {
+        basisReturned = 0m;
+        if (assetEvent.EventType == AssetEventType.ReturnOfCapital && quantity > 0)
+            return ApplyReturnOfCapital(account, assetEvent, quantity, out basisReturned);
+
         var amount = quantity * assetEvent.CashPerShare;
         account.Cash += amount;
         PostAssetCashLedgerEntry(account, assetEvent, amount, quantity, assetEvent.Symbol, assetEvent.TargetSymbol);
+        return amount;
+    }
+
+    private decimal ApplyReturnOfCapital(AccountState account, AssetEvent assetEvent, long quantity, out decimal basisRelieved)
+    {
+        var amount = quantity * assetEvent.CashPerShare;
+        basisRelieved = 0m;
+        if (account.Lots.TryGetValue(assetEvent.Symbol, out var lots))
+        {
+            for (var node = lots.First; node is not null; node = node.Next)
+            {
+                var lot = node.Value;
+                var components = lot.BasisComponents.Count > 0
+                    ? lot.BasisComponents
+                    : new[] { new OpenLotBasisComponent(lot.LotId, lot.OpenFillId, lot.OpenedAt, lot.Quantity, lot.CostBasis())
+                        { EntryCommission = lot.EntryCommission } };
+                var adjusted = components.Select(component => component with
+                {
+                    AllocatedBasis = Math.Max(0m, component.AllocatedBasis - component.SuccessorQuantity * assetEvent.CashPerShare)
+                }).ToArray();
+                var remainingBasis = adjusted.Sum(static component => component.AllocatedBasis);
+                basisRelieved += lot.CostBasis() - remainingBasis;
+                node.Value = lot with { EntryPrice = remainingBasis / lot.Quantity, BasisComponents = adjusted };
+            }
+        }
+
+        account.Cash += amount;
+        account.AvgCost[assetEvent.Symbol] = ComputeAvgCost(account, assetEvent.Symbol);
+        var gain = amount - basisRelieved;
+        account.RealizedPnl[assetEvent.Symbol] = account.RealizedPnl.GetValueOrDefault(assetEvent.Symbol) + gain;
+        if (_ledger is not null && amount != 0m)
+        {
+            var accountId = account.Account.AccountId;
+            var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>();
+            if (amount > 0m)
+                lines.Add((LedgerAccounts.CashAccount(accountId), amount, 0m));
+            else
+                lines.Add((LedgerAccounts.CashAccount(accountId), 0m, -amount));
+            if (basisRelieved > 0m)
+                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), 0m, basisRelieved));
+            else if (basisRelieved < 0m)
+                lines.Add((LedgerAccounts.Securities(assetEvent.Symbol, accountId), -basisRelieved, 0m));
+            if (gain > 0m)
+                lines.Add((LedgerAccounts.RealizedGainFor(accountId), 0m, gain));
+            PostInvestingLedgerLines(assetEvent.EffectiveAt, string.IsNullOrWhiteSpace(assetEvent.Description)
+                    ? $"Return of capital – {assetEvent.Symbol}" : assetEvent.Description,
+                lines, BuildAssetEventMetadata(account, assetEvent, assetEvent.Symbol, null, quantity, amount, null));
+        }
         return amount;
     }
 
@@ -1127,7 +1198,7 @@ internal sealed class SimulatedPortfolio
         else if (fractionalRealized < 0m)
             lines.Add((LedgerAccounts.RealizedLossFor(accountId), Math.Abs(fractionalRealized), 0m));
 
-        _ledger.PostLines(
+        PostInvestingLedgerLines(
             assetEvent.EffectiveAt,
             $"Cash in lieu {sourceSymbol} -> {targetSymbol} – {account.Account.DisplayName}",
             lines,
@@ -1206,7 +1277,7 @@ internal sealed class SimulatedPortfolio
         if (longBuyQty > 0)
         {
             var cost = longBuyQty * price;
-            _ledger.PostLines(
+            PostInvestingLedgerLines(
                 ts,
                 $"Buy {longBuyQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 [
@@ -1250,13 +1321,13 @@ internal sealed class SimulatedPortfolio
                 ];
             }
 
-            _ledger.PostLines(ts, $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "sell" });
+            PostInvestingLedgerLines(ts, $"Sell {closeQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "sell" });
         }
 
         if (shortOpenQty > 0)
         {
             var shortProceeds = shortOpenQty * price;
-            _ledger.PostLines(
+            PostInvestingLedgerLines(
                 ts,
                 $"Short sell {shortOpenQty} {symbol} @ {price:F4} – {account.Account.DisplayName}",
                 [
@@ -1301,7 +1372,7 @@ internal sealed class SimulatedPortfolio
                 ];
             }
 
-            _ledger.PostLines(ts, $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "cover_short" });
+            PostInvestingLedgerLines(ts, $"Cover short {coverQty} {symbol} @ {price:F4} – {account.Account.DisplayName}", lines, fillMetadata with { ActivityType = "cover_short" });
         }
 
         if (commission > 0)
@@ -1315,6 +1386,17 @@ internal sealed class SimulatedPortfolio
                 ],
                 fillMetadata with { ActivityType = "commission" });
         }
+    }
+
+    private void PostInvestingLedgerLines(DateTimeOffset timestamp, string description,
+        IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> lines, JournalEntryMetadata metadata)
+    {
+        if (_ledger is null)
+            return;
+        var journalId = Guid.NewGuid();
+        var draft = new JournalEntry(journalId, timestamp, description, lines.Select(line =>
+            new LedgerEntry(Guid.NewGuid(), journalId, timestamp, line.account, line.debit, line.credit, description)).ToArray(), metadata);
+        _ledger.Post(LedgerCashFlowAttribution.WithClassifiedActivity(draft, LedgerCashFlowCategory.Investing, description));
     }
 
     private JournalEntryMetadata BuildAccountMetadata(

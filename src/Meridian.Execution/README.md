@@ -462,3 +462,53 @@ Keep live actions explicitly gated and paper-first unless roadmap acceptance evi
 
 Both paper gateway implementations retain their aggregate-query constructor signatures and optional
 arguments alongside the separate identity/trading-query overloads for compiled-client compatibility.
+
+## Paper ledger and broker accounting checks
+
+Multi-account paper books post cash, lot basis, gains, expenses and financing with the canonical
+`LedgerAccounts` financial-account dimension. The legacy single-account constructor retains its
+unscoped journal format for replay compatibility. Short margin collateral is retained as an asset
+and released on cover; paid margin interest is expensed once without also increasing loan principal.
+`PaperTradingPortfolio.CheckLedgerIntegrity` compares cash, exact remaining lot basis, financing,
+collateral, orphan accounts and transfer/allocation residuals. Paper-session close refuses a
+mismatched final journal and replay verification includes the individual differences. The quote-only
+corporate-action adjuster may rescale split lots; a basis-changing result with an attached ledger is
+refused before mutation because that contract does not carry cash or event posting evidence.
+
+`AddPortfolioAccountingReconciliation` composes a read-only hosted check over `PortfolioRegistry`
+and registered `IBrokeragePortfolioSync`/`IBrokerageActivitySync` adapters. It runs at the configured
+`PositionSyncOptions.SyncInterval` (at least daily), uses a single broker portfolio snapshot, compares
+exact fractional quantities, cash, loans and carrying prices, and exposes missing, amount-mismatch
+and unknown-activity evidence. `CoverageIssues` explicitly identifies unavailable realized P&L or
+position-only provider evidence; a clean position report is not proof of complete accounting.
+No reconciliation check submits broker orders or automatic correcting entries.
+
+Alpaca activity intake continues through the existing `alpaca-activity` statement connector and
+governed durable statement import/recovery pipeline. Activity IDs remain external transaction IDs;
+the provider cursor now retains the newest activity ID, timestamp watermark, page count and
+completeness after all pages have been retrieved. Synthetic fixtures exercise paging, interrupted
+statement recovery, duplicate IDs and unsupported activities; live-provider compatibility remains
+live-untested.
+
+`BrokerActivityImportService` is the shared read-side inbox used by brokerage workstation sync.
+It atomically retains source-generated per-ID records before publishing a checksummed checkpoint.
+Restart resumes at the last complete timestamp watermark minus one tick and deduplicates broker IDs,
+including distinct events sharing a timestamp. A failure after record acceptance but before the
+checkpoint causes a safe reread and exact-content verification. Missing completeness evidence
+forces a rescan; incomplete fetches cannot move the checkpoint. Corrections require a distinct
+provider activity ID/lineage; changed evidence under the same ID is refused. Explicit `Since`
+rescans discover late arrivals earlier than the watermark. The inbox retains evidence for the
+existing governed statement importer and does not authorize journal entries.
+
+Paper trade producers retain investing cash-flow attribution for gross acquisitions, disposals,
+short proceeds and covers; realized gain/loss and basis relief are not additional cash movements.
+Margin borrowing and repayment are independent balanced financing journals, so cash-flow exports
+preserve gross investing and financing activity rather than attributing a net margin trade by guess.
+
+Paper-session journal snapshots retain complete `JournalEntryMetadata` as an optional additive DTO
+property, including cash-flow tags and their original line IDs. Closed-session restart restores
+that evidence before statement generation; legacy snapshots retain their available scalar metadata.
+
+Session creation, fill-time rebuilds and restart replay use retained `CreatedAt` as the opening
+capital journal timestamp. Rebuilding a projection cannot move capital into a later reporting
+period or change the historical opening cash balance. Public portfolio constructors remain intact.

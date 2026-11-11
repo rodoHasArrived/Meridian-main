@@ -4555,7 +4555,8 @@ Meridian-main
 │   │   ├── ICorporateActionAdjustmentService.cs
 │   │   ├── Meridian.Backtesting.csproj
 │   │   ├── MeridianNativeBacktestStudioEngine.cs
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── SecurityMasterBacktestAssetEventSource.cs
 │   ├── Meridian.Backtesting.Sdk
 │   │   ├── Strategies
 │   │   │   ├── AdvancedCarry
@@ -4593,6 +4594,7 @@ Meridian-main
 │   │   ├── IBacktestStrategy.cs
 │   │   ├── IntermediateMetrics.cs
 │   │   ├── IResearchRunRecorder.cs
+│   │   ├── LedgerIntegrity.cs
 │   │   ├── LotSelectionMethod.cs
 │   │   ├── Meridian.Backtesting.Sdk.csproj
 │   │   ├── OpenLot.cs
@@ -5431,6 +5433,8 @@ Meridian-main
 │   │   ├── Serialization
 │   │   │   └── ExecutionJsonContext.cs
 │   │   ├── Services
+│   │   │   ├── BrokerAccountingBreak.cs
+│   │   │   ├── BrokerActivityImportService.cs
 │   │   │   ├── BrokerageExecutionReconciliationService.cs
 │   │   │   ├── ExecutionAuditTrailService.cs
 │   │   │   ├── ExecutionOperatorControlService.cs
@@ -5440,9 +5444,11 @@ Meridian-main
 │   │   │   ├── JsonlFilePaperSessionStore.cs
 │   │   │   ├── OrderLifecycleManager.cs
 │   │   │   ├── OrderManagementHostedService.cs
+│   │   │   ├── PaperLedgerIntegrityBreak.cs
 │   │   │   ├── PaperSessionOptions.cs
 │   │   │   ├── PaperSessionPersistenceService.cs
 │   │   │   ├── PaperTradingPortfolio.cs
+│   │   │   ├── PortfolioAccountingReconciliationRegistration.cs
 │   │   │   ├── PortfolioRegistry.cs
 │   │   │   ├── PortfolioStatePositionTracker.cs
 │   │   │   ├── PositionLotSelector.cs
@@ -6324,6 +6330,7 @@ Meridian-main
 │   │   │   ├── AuditTools.cs
 │   │   │   ├── ConventionTools.cs
 │   │   │   ├── KnownErrorTools.cs
+│   │   │   ├── LedgerTools.cs
 │   │   │   ├── ProviderTools.cs
 │   │   │   ├── RepoEditTools.cs
 │   │   │   ├── ToolProcessExecution.cs
@@ -6675,6 +6682,7 @@ Meridian-main
 │   │   │   ├── AnalysisExportService.Formats.Parquet.cs
 │   │   │   ├── AnalysisExportService.Formats.Xlsx.cs
 │   │   │   ├── AnalysisExportService.IO.cs
+│   │   │   ├── AnalysisExportService.Ledger.cs
 │   │   │   ├── AnalysisQualityReport.cs
 │   │   │   ├── ExportPreflightRules.cs
 │   │   │   ├── ExportProfile.cs
@@ -6682,6 +6690,7 @@ Meridian-main
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   ├── ExportVerificationReport.cs
+│   │   │   ├── LedgerExportRequest.cs
 │   │   │   ├── PreflightRule.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   └── XlsxWorkbookWriter.cs
@@ -6859,10 +6868,12 @@ Meridian-main
 │   │   │   ├── PackageResult.cs
 │   │   │   ├── PortableDataPackager.Creation.cs
 │   │   │   ├── PortableDataPackager.cs
+│   │   │   ├── PortableDataPackager.Ledger.cs
 │   │   │   ├── PortableDataPackager.Scripts.cs
 │   │   │   ├── PortableDataPackager.Scripts.Import.cs
 │   │   │   ├── PortableDataPackager.Scripts.Sql.cs
-│   │   │   └── PortableDataPackager.Validation.cs
+│   │   │   ├── PortableDataPackager.Validation.cs
+│   │   │   └── PortableLedgerSnapshot.cs
 │   │   ├── Policies
 │   │   │   ├── JsonlStoragePolicy.cs
 │   │   │   └── StoragePathSegmentCodec.cs
@@ -7105,7 +7116,8 @@ Meridian-main
 │   │   │   ├── IPromotionTrustEvidenceProvider.cs
 │   │   │   ├── IStrategyDesignRepository.cs
 │   │   │   ├── IStrategyLifecycle.cs
-│   │   │   └── IStrategyRepository.cs
+│   │   │   ├── IStrategyRepository.cs
+│   │   │   └── IStrategyRunLedgerArchive.cs
 │   │   ├── Live
 │   │   │   ├── Designer
 │   │   │   │   ├── DesignerDocumentLiveSource.cs
@@ -7145,6 +7157,7 @@ Meridian-main
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   ├── PromotionRecordJsonContext.cs
 │   │   │   ├── StrategyDesignJsonContext.cs
+│   │   │   ├── StrategyRunLedgerJsonContext.cs
 │   │   │   └── StrategyRunPersistenceJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
@@ -7189,6 +7202,7 @@ Meridian-main
 │   │   ├── Storage
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   ├── JsonlStrategyDesignRepository.cs
+│   │   │   ├── JsonlStrategyRunLedgerArchive.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -7743,6 +7757,7 @@ Meridian-main
 │   │   │   │   │   ├── fund-account-scope.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
+│   │   │   │   │   ├── ledger-query-options.ts
 │   │   │   │   │   ├── ledger-reports-api.ts
 │   │   │   │   │   ├── ledger-tax-results-api.test.ts
 │   │   │   │   │   ├── ledger-tax-results-api.ts
@@ -8667,6 +8682,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.FeatureCapabilities.cs
 │   │   │   ├── WorkstationEndpoints.FinancialRecordExplorers.cs
 │   │   │   ├── WorkstationEndpoints.IBResults.cs
+│   │   │   ├── WorkstationEndpoints.LedgerExport.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
 │   │   │   ├── WorkstationEndpoints.PlotTool.cs
 │   │   │   ├── WorkstationEndpoints.PortfolioAggregation.cs
@@ -8777,6 +8793,7 @@ Meridian-main
 │   │   │   ├── AutomatedJournalScheduleStore.cs
 │   │   │   ├── BackfillCoordinator.cs
 │   │   │   ├── BackfillExecutionContractProjection.cs
+│   │   │   ├── BacktestLedgerExportMapper.cs
 │   │   │   ├── BankFeedTransportService.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
@@ -9952,6 +9969,7 @@ Meridian-main
 │   │   ├── FillModelExpansionTests.cs
 │   │   ├── FillModelTests.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── LedgerIntegrityTests.cs
 │   │   ├── LedgerQueryTests.cs
 │   │   ├── LotLevelTrackingTests.cs
 │   │   ├── MarketImpactFillModelTests.cs
@@ -9960,6 +9978,7 @@ Meridian-main
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── PortfolioCorporateActionSnapshotTests.cs
+│   │   ├── SecurityMasterBacktestAssetEventSourceTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
@@ -11149,6 +11168,8 @@ Meridian-main
 │   │   │   │   └── InMemoryFxRateProviderTests.cs
 │   │   │   ├── AccountingHandoffCoordinatorTests.cs
 │   │   │   ├── AlpacaStreamedFillLoopTests.cs
+│   │   │   ├── BrokerAccountingReconciliationTests.cs
+│   │   │   ├── BrokerActivityImportServiceTests.cs
 │   │   │   ├── BrokerageExecutionAdmissionLimitTests.cs
 │   │   │   ├── BrokerageExecutionReconciliationServiceTests.cs
 │   │   │   ├── BrokerageExecutionRegistrationRecoveryTests.cs
@@ -11197,6 +11218,7 @@ Meridian-main
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
+│   │   │   ├── PaperLedgerIntegrityTests.cs
 │   │   │   ├── PaperLotConventionTests.cs
 │   │   │   ├── PaperOrderMatchingPolicyTests.cs
 │   │   │   ├── PaperPositionUnitizedLotTests.cs
@@ -11605,6 +11627,7 @@ Meridian-main
 │   │   │   ├── ShareClassUnitRegisterTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
+│   │   │   ├── LedgerToolsTests.cs
 │   │   │   └── ToolProcessRunnerTests.cs
 │   │   ├── MoneyMarketFunds
 │   │   │   └── MoneyMarketFundProjectionServiceTests.cs
@@ -12090,6 +12113,7 @@ Meridian-main
 │   │   │   ├── JsonlMarketDataStoreCorruptionTests.cs
 │   │   │   ├── JsonlMarketDataStoreSymbolPathTests.cs
 │   │   │   ├── JsonlReplayerTests.cs
+│   │   │   ├── LedgerAnalysisExportTests.cs
 │   │   │   ├── LedgerBookServiceTests.cs
 │   │   │   ├── LedgerCurrencyBackfillTests.cs
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
@@ -12191,6 +12215,7 @@ Meridian-main
 │   │   │   ├── StrategyLifecycleRecoveryTests.cs
 │   │   │   ├── StrategyRunContinuityServiceTests.cs
 │   │   │   ├── StrategyRunDrillInTests.cs
+│   │   │   ├── StrategyRunLedgerArchiveTests.cs
 │   │   │   ├── StrategyRunMetricSerializationTests.cs
 │   │   │   ├── StrategyRunReadServiceTests.cs
 │   │   │   ├── StrategyRunRealismHashTests.cs
@@ -12516,6 +12541,7 @@ Meridian-main
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPortfolioAggregationScopeTests.cs
+│   │   │   ├── WorkstationRunLedgerExportTests.cs
 │   │   │   ├── WorkstationServiceCollectionExtensionsTests.cs
 │   │   │   ├── WorkstationStatementCaseworkAuthorityEndpointTests.cs
 │   │   │   ├── WorkstationStatementReconciliationEndpointTests.cs

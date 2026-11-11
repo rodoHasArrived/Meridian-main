@@ -937,6 +937,29 @@ lookup paths, and evidence trails those layers rely on.
   process cache only after durable append succeeds; evaluation or retention failures return a
   validated Failed/Blocked receipt and retain the fallback receipt under `quality/outcomes/`.
 
+## Accounting exports and portable evidence
+
+`AnalysisExportService.ExportLedgerAsync` exports an immutable journal generation, as-of trial
+balance and reconciled cash-flow statement as CSV, XLSX, Parquet or Arrow. Every amount and quantity
+uses invariant decimal text to preserve booked precision; consumers must parse it with a decimal
+type. Empty reports retain their accounting columns. Output lives in a unique directory and failed
+exports remove their partial artifacts.
+
+Authorized callers may supply exact open-lot valuation and closed-parcel evidence. The browser run
+export maps retained account snapshots through `BacktestLedgerExportMapper`; missing historical
+snapshots produce explicit availability rows and warnings rather than fabricated zero balances.
+Fill disposals include exact basis, fees and direction; corporate-action cash-in-lieu and return of
+capital are separately exported from their authoritative journals. Fractional corporate-action
+acquisition parcel dates are not retained by the simulator, so that aggregate schedule explicitly
+reports the evidence gap and is not represented as a complete tax filing.
+
+`PackageOptions.Ledger` includes a source-generated portable journal snapshot and canonical account
+balance checksum. `ReadLedgerAsync`, package validation and import replay the ledger invariants and
+verify both file and balance checksums before publishing any imported file. This validation remains
+mandatory when optional market-data checksum checking is disabled. A portable journal is evidence;
+import does not automatically post it into an existing governed book. ZIP remains the supported
+archive format.
+
 ## Important workflows
 
 Security Master PostgreSQL searches break equal display names and full-text ranks with the unique

@@ -40,6 +40,9 @@ public sealed class BacktestEngine(
     private readonly ISecurityIdentityQueryService? _securityIdentity =
         securityIdentityQueryService ?? securityMasterQueryService as ISecurityIdentityQueryService;
 
+    /// <summary>Optional authoritative action source; aggregate-query callers also receive the built-in bridge.</summary>
+    public IBacktestAssetEventSource? AssetEventSource { get; init; }
+
     /// <summary>
     /// Runs a complete backtest, replaying all events in the requested date/symbol range.
     /// </summary>
@@ -107,6 +110,32 @@ public sealed class BacktestEngine(
         logger.LogInformation("Universe contains {Count} symbols: {Symbols}",
             universe.Count, universe.Count == 0 ? "(asset-event-only run)" : string.Join(", ", universe.Take(10)) + (universe.Count > 10 ? "…" : string.Empty));
 
+        var storedActionSource = request.ApplyStoredCorporateActions
+            ? AssetEventSource ?? (_securityIdentity is not null && securityMasterQueryService is ISecurityCorporateActionsQueryService actions
+                ? new SecurityMasterBacktestAssetEventSource(_securityIdentity, actions,
+                    securityMasterQueryService as ISecurityMasterQueryService)
+                : null)
+            : null;
+        if (storedActionSource is not null)
+        {
+            var storedEvents = await storedActionSource.LoadAsync(universe.ToArray(), request.From, request.To, ct).ConfigureAwait(false);
+            request = request with
+            {
+                AssetEvents = SecurityMasterBacktestAssetEventSource.Merge(storedEvents, request.AssetEvents ?? [])
+            };
+            var successorSymbols = request.AssetEvents.Where(static item => item.TargetSymbol is not null)
+                .Select(static item => item.DestinationSymbol).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+            if (successorSymbols.Length > 0)
+            {
+                var successors = await UniverseDiscovery.DiscoverAsync(
+                    catalogService, request.DataRoot, successorSymbols, request.From, request.To, ct).ConfigureAwait(false);
+                var missing = successorSymbols.Where(symbol => !successors.Contains(symbol)).ToArray();
+                if (missing.Length > 0)
+                    throw new InvalidOperationException($"Corporate-action successors require historical replay data: {string.Join(", ", missing)}.");
+                universe = universe.Concat(successors).ToHashSet(StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
         // 1b. Pre-flight Security Master validation — resolve all universe symbols before the
         //     event loop begins so bad symbol lists surface immediately. Missing and inactive
         //     symbols feed the bias-disclosure report attached to the result.
@@ -122,7 +151,10 @@ public sealed class BacktestEngine(
         var ledger = new BacktestLedger();
         var startTimestamp = new DateTimeOffset(request.From.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var accounts = request.ResolveAccounts();
-        var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions);
+        var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions)
+        {
+            FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak
+        };
         var ctx = new BacktestContext(portfolio, universe, ledger, request.DefaultBrokerageAccountId);
         var orderBookFillModel = new OrderBookFillModel(
             commissionModel,
@@ -154,7 +186,11 @@ public sealed class BacktestEngine(
         var replaySymbols = ResolveReplaySymbolOrder(universe, request.Symbols);
         var symbolOrder = replaySymbols.Select((symbol, rank) => (symbol, rank))
             .ToDictionary(static pair => pair.symbol, static pair => pair.rank, StringComparer.OrdinalIgnoreCase);
-        var streams = await BuildSymbolStreamsAsync(replaySymbols, request, ct).ConfigureAwait(false);
+        // Position/cash economics and backwards-adjusted bars cannot both account for the same
+        // action. Retain the original request and the captured events as run provenance.
+        var portfolioActionAccounting = storedActionSource is not null || request.AssetEvents is { Count: > 0 };
+        var streams = await BuildSymbolStreamsAsync(replaySymbols,
+            portfolioActionAccounting ? request with { AdjustForCorporateActions = false } : request, ct).ConfigureAwait(false);
 
         // 5. Replay loop — multi-symbol chronological merge
         stageTimer.Transition(BacktestStage.Replaying);
@@ -167,6 +203,13 @@ public sealed class BacktestEngine(
         await foreach (var evt in MultiSymbolMergeEnumerator.MergeAsync(streams, ct, symbolOrder))
         {
             ct.ThrowIfCancellationRequested();
+
+            if (portfolioActionAccounting && request.AssetEvents is { Count: > 0 } &&
+                evt.Payload is HistoricalBar { IsAdjusted: true })
+                throw new InvalidOperationException("Stored corporate-action portfolio accounting requires unadjusted historical bars; adjusted prices would count the same action twice.");
+            if (storedActionSource is not null && request.AssetEvents is { Count: > 0 } &&
+                evt.Payload is HistoricalBar { IsAdjusted: null })
+                throw new InvalidOperationException("Automatic corporate-action accounting requires bars explicitly marked IsAdjusted=false; the stored data's adjustment regime is unknown.");
 
             var evtDate = DateOnly.FromDateTime(evt.Timestamp.UtcDateTime);
 
@@ -240,8 +283,12 @@ public sealed class BacktestEngine(
             corporateActionsApplied: request.AdjustForCorporateActions && corporateActionAdjustment is not null,
             missingSecurityMasterSymbols,
             inactiveSecurityMasterSymbols,
-            delistingMonitor);
-        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure);
+            delistingMonitor,
+            storedCorporateActionsApplied: portfolioActionAccounting);
+        return new BacktestResult(request, universe, allSnapshots, allCashFlows, allFills, metrics, ledger, sw.Elapsed, eventsProcessed, tradeTickets, tcaReport, BiasDisclosure: biasDisclosure)
+        {
+            LedgerIntegrityBreaks = portfolio.LedgerIntegrityBreaks
+        };
     }
 
     // ── Private helpers ──────────────────────────────────────────────────────
@@ -255,6 +302,7 @@ public sealed class BacktestEngine(
             return requestedSymbols
                 .Where(symbol => !string.IsNullOrWhiteSpace(symbol) && universe.Contains(symbol))
                 .Select(static symbol => symbol.Trim().ToUpperInvariant())
+                .Concat(universe.Order(StringComparer.OrdinalIgnoreCase))
                 .Distinct(StringComparer.OrdinalIgnoreCase)
                 .ToArray();
         }
@@ -802,7 +850,8 @@ public sealed class BacktestEngine(
         bool corporateActionsApplied,
         IReadOnlyList<string> missingSecurityMasterSymbols,
         IReadOnlyList<string> inactiveSecurityMasterSymbols,
-        DelistingMonitor? delistingMonitor)
+        DelistingMonitor? delistingMonitor,
+        bool storedCorporateActionsApplied = false)
     {
         var items = new List<BiasDisclosureItem>();
         var universeIsExplicit = request.Symbols is { Count: > 0 };
@@ -832,7 +881,13 @@ public sealed class BacktestEngine(
                 "universe", BiasSeverity.Warning, "Universe discovered from local data",
                 "The tradeable universe is whatever has data on disk for the period. Unless the dataset includes delisted and acquired names, losers are silently excluded and the run has survivorship bias."));
 
-        if (!request.AdjustForCorporateActions)
+        if (storedCorporateActionsApplied)
+        {
+            items.Add(new BiasDisclosureItem(
+                "corporate-actions", BiasSeverity.Info, "Corporate-action portfolio accounting",
+                "Captured Security Master or supplied actions were applied to positions and cash; prices replayed unadjusted to avoid counting splits and distributions twice. Stored cash distributions use ex-date holdings and are credited on the ex-date; payable-date settlement is not modeled. Security Master revisions are current knowledge, not historical transaction visibility."));
+        }
+        else if (!request.AdjustForCorporateActions)
         {
             items.Add(new BiasDisclosureItem(
                 "corporate-actions", BiasSeverity.Warning, "Corporate-action adjustment disabled",
