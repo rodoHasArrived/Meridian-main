@@ -80,6 +80,12 @@ instead of a Providers item, and the provenance banner is a stripe whenever the 
 provenance. Declared demo data on a Paper session is no longer raised as a warning. No shared
 contract changed; the WPF shell keeps its own indicators until it consumes the same rule.
 
+The host-served bundle carries the shared detail pane: a selected row's pane has one heading
+line (object type, name, one status badge) with no separate "Selected from …" pill or "Detail"
+chip; field values are left-aligned and never broken mid-word, with figures and dates on one
+line; opaque identifiers sit behind a copyable "Technical details" disclosure; and Trading
+orders and fills share one pane keyed to the table selected last. No shared contract changed.
+
 The host-served bundle carries the headline-figure trust rules: every workspace stat strip
 states its source and as-of time (and scope where the page has one); a change is shown only with
 the baseline it is measured against, so the placeholder deltas the workspace read models still
@@ -88,6 +94,17 @@ and marked; Portfolio explains a header strip and explorer that disagree; and pr
 reads "P&L" in every label. `WorkstationMetricCard` is unchanged: the browser carries the
 baseline, provenance and freshness fields on its own `MetricSnapshot` until a read model supplies
 real comparison data.
+
+It also carries the first Phase 3 increment of the
+[UX review plan](../../docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md): a failed
+request shows a plain sentence with the request path collapsed under "Technical details"; when a
+page's status row says its freshness needs review, the status bar says "Sync connected" and
+repeats the row's words instead of "up to date"; disabled buttons share one readable style and
+carry their reason; and "Cancel all" sits in an overflow menu. The screenshot harness additionally
+fails a route that renders a request path, "lane", "payload", "mutation", "caller-visible", a
+slug-shaped identifier, an unexplained disabled primary button, or a status bar that contradicts
+the page. No shared contract changed; routes whose read models name records only by key are listed
+with reasons in `scripts/dev/web-screenshot-routes.json`.
 
 The host-served bundle carries the browser presentation correctness fixes: font stacks that end
 in a generic family (no serif fallback for data text), Ledger Explorer amounts at currency

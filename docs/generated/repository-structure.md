@@ -4522,6 +4522,7 @@ Meridian-main
 │   │   ├── Metrics
 │   │   │   ├── BacktestMetricsEngine.cs
 │   │   │   ├── PostSimulationTcaReporter.cs
+│   │   │   ├── ReportedReturn.cs
 │   │   │   └── XirrCalculator.cs
 │   │   ├── Plugins
 │   │   │   ├── PluginBacktestStrategyLiveSource.cs
@@ -5858,6 +5859,7 @@ Meridian-main
 │   │   ├── Adapters
 │   │   │   ├── Alpaca
 │   │   │   │   ├── AlpacaAssetStreamAdapters.cs
+│   │   │   │   ├── AlpacaBrokerageGateway.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Cancellation.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Modifications.cs
@@ -7407,6 +7409,10 @@ Meridian-main
 │   │   │   │   │   │   ├── degraded-mode-banner.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
+│   │   │   │   │   │   ├── detail-pane.test.tsx
+│   │   │   │   │   │   ├── detail-pane.tsx
+│   │   │   │   │   │   ├── detail-pane.view-model.test.ts
+│   │   │   │   │   │   ├── detail-pane.view-model.ts
 │   │   │   │   │   │   ├── figure-difference-note.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
@@ -7557,6 +7563,8 @@ Meridian-main
 │   │   │   │   │       ├── drawer.tsx
 │   │   │   │   │       ├── error-boundary.test.tsx
 │   │   │   │   │       ├── error-boundary.tsx
+│   │   │   │   │       ├── error-notice.test.tsx
+│   │   │   │   │       ├── error-notice.tsx
 │   │   │   │   │       ├── eyebrow.tsx
 │   │   │   │   │       ├── feedback-primitives.test.tsx
 │   │   │   │   │       ├── field-support.test.tsx
@@ -7582,6 +7590,8 @@ Meridian-main
 │   │   │   │   │       ├── number-input.test.tsx
 │   │   │   │   │       ├── number-input.tsx
 │   │   │   │   │       ├── order-status-banner.tsx
+│   │   │   │   │       ├── overflow-menu.test.tsx
+│   │   │   │   │       ├── overflow-menu.tsx
 │   │   │   │   │       ├── panel-surface.tsx
 │   │   │   │   │       ├── popover.test.tsx
 │   │   │   │   │       ├── popover.tsx
@@ -7819,6 +7829,8 @@ Meridian-main
 │   │   │   │   │   ├── metric-trust.test.ts
 │   │   │   │   │   ├── metric-trust.ts
 │   │   │   │   │   ├── onboarding.ts
+│   │   │   │   │   ├── page-trust-context.test.tsx
+│   │   │   │   │   ├── page-trust-context.tsx
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
@@ -8295,6 +8307,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.audit-trail.tsx
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.ts
+│   │   │   │   │   ├── trading-screen.blotter-details.ts
 │   │   │   │   │   ├── trading-screen.brokerage-recovery-state.ts
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.test.tsx
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.tsx
@@ -10382,6 +10395,7 @@ Meridian-main
 │   │   │   │   ├── BackfillCoordinatorStorageOptionsTests.cs
 │   │   │   │   ├── BackfillCostEstimatorTests.cs
 │   │   │   │   ├── BackfillExecutionHistoryTests.cs
+│   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
@@ -11077,6 +11091,7 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
+│   │   │   │   ├── AlpacaBrokerageGatewayTests.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.PortfolioRecovery.cs
@@ -12853,6 +12868,7 @@ Meridian-main
 │   │   ├── test_targeted_test_workflow.py
 │   │   ├── test_task_brief.py
 │   │   ├── test_task_context.py
+│   │   ├── test_temporary_directory_cleanup_tolerance.py
 │   │   ├── test_throughput_metrics.py
 │   │   ├── test_validate_agent_definitions.py
 │   │   ├── test_validate_design_document_adaptation.py

@@ -95,7 +95,7 @@ export function QuantLabScreen() {
           Quant Lab
         </span>
       }
-      scope="Strategy Lane"
+      scope="Strategy"
       description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
     >
       <Tabs

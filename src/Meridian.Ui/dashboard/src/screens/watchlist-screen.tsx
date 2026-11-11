@@ -121,7 +121,7 @@ export function WatchlistScreen() {
           Symbol watchlist
         </span>
       }
-      scope="Data Lane"
+      scope="Data"
       description="Add, remove, and monitor symbols subscribed to the live data pipeline. Open a symbol to view live quotes."
       actions={inCompanionPane ? undefined : <PopOutPaneButton paneId="watchlist" />}
     >

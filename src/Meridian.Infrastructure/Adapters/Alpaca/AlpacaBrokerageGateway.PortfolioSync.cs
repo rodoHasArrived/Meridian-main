@@ -7,7 +7,15 @@ public sealed partial class AlpacaBrokerageGateway
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerageExternalAccountDto>> GetAccountsAsync(CancellationToken ct = default)
     {
-        var account = await GetAccountInfoAsync(ct).ConfigureAwait(false);
+        var (account, providerAccountId) = await ReadAccountAsync(null, ct).ConfigureAwait(false);
+        var metadata = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["environment"] = CurrentCredentials.Environment,
+            ["broker"] = BrokerDisplayName
+        };
+        // Lets authorized discovery keep showing an account whose link was retained under the UUID.
+        if (providerAccountId is not null)
+            metadata[BrokerageExternalAccountMetadata.AccountIdAliases] = providerAccountId;
         return
         [
             new BrokerageExternalAccountDto(
@@ -17,11 +25,7 @@ public sealed partial class AlpacaBrokerageGateway
                 Status: account.Status,
                 Currency: account.Currency,
                 RetrievedAt: account.RetrievedAt,
-                Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["environment"] = CurrentCredentials.Environment,
-                    ["broker"] = BrokerDisplayName
-                })
+                Metadata: metadata)
         ];
     }
 

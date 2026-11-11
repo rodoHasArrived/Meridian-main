@@ -1,7 +1,7 @@
 import { useId } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailPane } from "@/components/meridian/detail-pane";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import { Button } from "@/components/ui/button";
@@ -66,19 +66,30 @@ export function WorkspaceTaskWorkbench({
       inspectorRole="region"
       inspectorLabel={`${title} inspector`}
       inspector={(
-        <DenseRowDetailPanel id={detailId} ariaLabel={selected ? `${selected.title} detail` : "Selection unavailable"} className="workspace-task-inspector">
-          <p className="eyebrow-label">Selected work</p>
-          {selected ? <>
-            <h3>{selected.title}</h3>
-            <TaskLink item={selected} />
-            <p>{selected.description}</p>
-            {outsideResults ? <div role="status"><p>Selected item is outside the current results.</p><Button type="button" size="sm" variant="outline" onClick={() => update(`${stateKey}Search`, "", true)}>Clear search</Button></div> : null}
-            <dl>
-              {selected.status ? <div><dt>Context</dt><dd>{selected.status}</dd></div> : null}
-              {selected.facts?.map((fact) => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}
-            </dl>
-          </> : <div role="status"><h3>{selectedId === null ? "No selection" : "Selection unavailable"}</h3><p>{selectedId === null ? emptyText : "This item is no longer in the loaded results. Select another item to continue."}</p></div>}
-        </DenseRowDetailPanel>
+        <DetailPane
+          id={detailId}
+          ariaLabel={selected ? `${selected.title} detail` : "Selection unavailable"}
+          objectType="Work item"
+          title={selected?.title}
+          summary={selected?.description}
+          actions={selected ? <TaskLink item={selected} /> : null}
+          fields={selected
+            ? [
+                ...(selected.status ? [{ label: "Context", value: selected.status }] : []),
+                ...(selected.facts ?? [])
+              ]
+            : undefined}
+          notice={selected && outsideResults ? (
+            <div role="status" className="space-y-2">
+              <p className="text-sm text-muted-foreground">Selected item is outside the current results.</p>
+              <Button type="button" size="sm" variant="outline" onClick={() => update(`${stateKey}Search`, "", true)}>Clear search</Button>
+            </div>
+          ) : null}
+          empty={{
+            title: selectedId === null ? "No selection" : "Selection unavailable",
+            text: selectedId === null ? emptyText : "This item is no longer in the loaded results. Select another item to continue."
+          }}
+        />
       )}
     >
       <section className="workspace-task-list" aria-label={`${title} list`}>

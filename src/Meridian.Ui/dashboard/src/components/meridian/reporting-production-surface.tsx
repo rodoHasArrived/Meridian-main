@@ -100,7 +100,7 @@ export function ReportingProductionSurface({ model, period, className }: Reporti
 
       {period ? <ReportingPeriodStrip period={period} /> : null}
 
-      <nav aria-label="Reporting pipeline lanes" className="mt-4">
+      <nav aria-label="Reporting pipeline stages" className="mt-4">
         <ol className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
           {model.lanes.map((lane) => (
             <li key={lane.key}>
