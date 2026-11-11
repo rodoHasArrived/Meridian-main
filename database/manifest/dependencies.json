@@ -8482,6 +8482,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
     },
     {
@@ -23680,6 +23692,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.LedgerAdjustmentApprovalMetadataDto"
     },
     {
@@ -36521,6 +36545,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.LateAdjustmentRequestDto",
       "target": "contract:Meridian.Contracts.Ledger.MaterialityPolicyDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto",
+      "target": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto"
     },
     {
       "kind": "contract-reference",
@@ -57773,7 +57803,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "bcd7bd5037f091f591d60298f126985792db444473e72948a32a117f2418545f",
+  "fingerprint": "9f6204bde1e23fb9eaedf7f21a5113d60a91e73273ddc385428c954e191add76",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -66303,6 +66333,18 @@
       "id": "contract:Meridian.Contracts.Ledger.LateAdjustmentRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.LateAdjustmentRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerAccountRunningBalanceDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.LedgerAccountRunningBalancePointDto"
     },
     {
       "classification": "dto",
@@ -84643,11 +84685,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3663,
-    "contract_set_memberships": 4607,
-    "edges": 9599,
+    "contract_references": 3664,
+    "contract_set_memberships": 4611,
+    "edges": 9604,
     "foreign_keys": 162,
     "logical_references": 6,
-    "nodes": 4663
+    "nodes": 4665
   }
 }

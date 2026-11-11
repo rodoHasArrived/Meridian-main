@@ -10,6 +10,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+@property --stepper-height{syntax:"*";inherits:true;}
 .mds-stepper{display:flex;gap:1px;background:var(--border);list-style:none;margin:0;padding:0;}
 .mds-stepper--h{border-bottom:1px solid var(--border);}
 .mds-stepper--v{flex-direction:column;border-right:1px solid var(--border);}
@@ -41,7 +42,7 @@ button.mds-stepper-step--disabled:hover{background:var(--bg-light);color:var(--t
 .mds-stepper-step--error .mds-stepper-step__label{color:var(--red-dim,#883832);}
 .mds-stepper-step__badge{flex:0 0 auto;margin-left:auto;font-size:10px;font-variant-numeric:tabular-nums;
   background:var(--bg-medium);color:var(--text-muted);padding:2px 6px;border-radius:var(--radius-chip,2px);}
-.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-surface,#F5E5E2);color:var(--red-dim,#883832);}
+.mds-stepper-step--error .mds-stepper-step__badge{background:var(--red-a10,rgba(181, 75, 66, 0.1));color:var(--red-dim,#883832);}
 .mds-stepper-step__sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 @media print{.mds-stepper{background:none;}.mds-stepper-step{background:none;}}
 `;

@@ -8,17 +8,23 @@
   --theme-accent: #C56343;
   --theme-accent-dim: #CB6E4E;
   --theme-accent-hover: #D2795A;
-  --theme-accent-ghost: #F6E6DF;
-  --theme-text-on-accent: #0D1217;
+  --theme-accent-ghost: #F6E6DF;        /* ghost button fill — a wash of the accent */
+  --theme-text-on-accent: #0D1217;      /* label ink on a solid accent fill */
 
-  /* Dark identity of the signal. colors-dark.css states the default dark signal as literals;
-     these mirror it so the brand rules at the foot of this file have a default to fall back
-     on. A brand restates them; anything it leaves out stays the default, never half a palette. */
+  /* Dark identity of the accent family. colors-dark.css states the same five values for the
+     unbranded cascade; they are repeated here as inputs so a data-brand can restate them and
+     an unknown brand name falls back to the default instead of to nothing. */
   --theme-dark-accent: #D88466;
   --theme-dark-accent-dim: #E19479;
   --theme-dark-accent-hover: #E5A088;
   --theme-dark-accent-ghost: #35251F;
   --theme-dark-text-on-accent: #14100E;
+  /* The dark surfaces a brand's dark identity sits on. colors-dark.css owns these values; they
+     are named here so a brand's ghost fill can mix toward the dark panel and so
+     check_contrast.py can measure a brand's dark ghost and the focus ring against them. */
+  --theme-dark-bg-light: #171E25;
+  --theme-dark-primary-text: #F1EFEA;
+  --theme-dark-border-focus: #5C9FE5;
 
   --theme-primary-text: #20252B;
   --theme-secondary-text: #535C65;
@@ -129,25 +135,23 @@ body[data-theme-density="spacious"] {
   --gap-panel: 16px;
 }
 
-/* ── Brand Color Variants (white-label: data-brand="name") ──
-   A brand replaces the signal, so it states the whole signal family in both modes: the
-   light trio, its ghost wash and label ink, and the dark trio and ghost. The rules at the
-   foot of this file carry them into dark and forced-light. --theme-brand-color must equal
-   --theme-accent: forced light reads the brand through it (see those rules for why).
-   A brand does NOT restate --theme-border-focus. Focus is the interaction blue for every
-   brand (the focus law: the signal is never a focus colour); check_contrast.py fails a
-   brand whose focus differs from the default's. */
+/* ── Brand Color Variants (white-label: data-brand="name") ── */
 html[data-brand="indigo"] {
   --theme-accent: #4F46E5;
   --theme-accent-dim: #4338CA;
   --theme-accent-hover: #5F62EE;
   --theme-brand-color: #4F46E5;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  /* The ghost fill follows this brand's accent; left alone it stayed the default's warm wash.
+     Focus is not restated: since 4.3.0 the focus ring is the interaction blue for every brand. */
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
+  /* Dark identity: this brand's accent lifted and desaturated the way the default trio is,
+     under the dark label ink. Without it a branded build fell back to the default terracotta
+     the moment the OS asked for dark. */
   --theme-dark-accent: #9893F0;
   --theme-dark-accent-dim: #A7A2F8;
   --theme-dark-accent-hover: #B0ABFB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="emerald"] {
@@ -155,12 +159,12 @@ html[data-brand="emerald"] {
   --theme-accent-dim: #0A6748;
   --theme-accent-hover: #0E875F;
   --theme-brand-color: #0B7A55;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-dark-accent: #10B37D;
   --theme-dark-accent-dim: #1CC28B;
   --theme-dark-accent-hover: #16CC8F;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="rose"] {
@@ -168,12 +172,12 @@ html[data-brand="rose"] {
   --theme-accent-dim: #BE123C;
   --theme-accent-hover: #D8274E;
   --theme-brand-color: #E11D48;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-dark-accent: #FF6C8C;
   --theme-dark-accent-dim: #F68BA3;
   --theme-dark-accent-hover: #FF94AB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="slate"] {
@@ -181,12 +185,12 @@ html[data-brand="slate"] {
   --theme-accent-dim: #475569;
   --theme-accent-hover: #59687B;
   --theme-brand-color: #64748B;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-dark-accent: #899FBE;
   --theme-dark-accent-dim: #95ADCF;
   --theme-dark-accent-hover: #A3B5D0;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="cyan"] {
@@ -194,12 +198,12 @@ html[data-brand="cyan"] {
   --theme-accent-dim: #0B5E76;
   --theme-accent-hover: #0E7490;
   --theme-brand-color: #0C6A85;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-dark-accent: #13AAD6;
   --theme-dark-accent-dim: #15B9E8;
   --theme-dark-accent-hover: #37C2EA;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 html[data-brand="amber"] {
@@ -207,12 +211,12 @@ html[data-brand="amber"] {
   --theme-accent-dim: #8F4108;
   --theme-accent-hover: #B45309;
   --theme-brand-color: #A34A08;
-  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-text-on-accent: #FFFFFF;
+  --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
   --theme-dark-accent: #FF740D;
   --theme-dark-accent-dim: #FB9041;
   --theme-dark-accent-hover: #FD9C55;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 
 /* ── Map theme tokens to component tokens ── */
@@ -223,6 +227,8 @@ html[data-brand="amber"] {
   --accent: var(--theme-accent);
   --accent-dim: var(--theme-accent-dim);
   --accent-hover: var(--theme-accent-hover);
+  --accent-ghost: var(--theme-accent-ghost);
+  --text-on-accent: var(--theme-text-on-accent);
   --text-primary: var(--theme-primary-text);
   --text-secondary: var(--theme-secondary-text);
   --text-muted: var(--theme-muted-text);
@@ -245,60 +251,35 @@ html[data-brand="amber"] {
   --statusbar-text: var(--theme-statusbar-text);
 }
 
-/* ── Brand identity outside plain OS-light ───────────────────────────────────
-   colors-dark.css is imported after this file and states the signal family as
-   literals in all three of its blocks. A brand selector is (0,1,1): it loses to
-   both data-theme blocks (0,2,0), so without the rules below a brand reverted to
-   the default terracotta in manual dark and in forced light, and in auto dark
-   kept its light-mode label ink over the default dark signal.
-
-   These rules re-assert the signal family at (0,3,0), above every block there
-   whatever the import order, and match [data-brand] rather than one name so a
-   new preset needs no rule of its own. Only the signal family is touched:
-   surfaces, ink, semantics and the blue focus/selection family are not a
-   brand's to change. Nothing sets data-brand by default, so the unbranded
-   cascade is exactly what colors.css and colors-dark.css declare.
-   ────────────────────────────────────────────────────────────────────────── */
-
-/* Light. The accent trio already arrives through the map above; the ghost wash and
-   the label ink are literals in colors.css, so they are mapped here. */
-:root[data-brand] {
-  --accent-ghost: var(--theme-accent-ghost);
-  --text-on-accent: var(--theme-text-on-accent);
-}
-
-/* Forced light. The base reads --theme-brand-color, not --theme-accent: under an OS-dark
-   preference the auto-dark block re-points --theme-accent at var(--accent), so a
-   data-brand value with no preset behind it would make the two reference each other and
-   leave the signal invalid. --theme-brand-color is never re-pointed and falls back to
-   the default signal. */
-:root[data-brand][data-theme="light"] {
-  --accent: var(--theme-brand-color);
-  --accent-dim: var(--theme-accent-dim);
-  --accent-hover: var(--theme-accent-hover);
-  --accent-ghost: var(--theme-accent-ghost);
-  --text-on-accent: var(--theme-text-on-accent);
-}
-
-/* Dark, auto and manual. --theme-accent is re-pointed again because a preset's own
-   light literal (0,1,1) outranks the auto-dark block's re-point (0,1,0): without this
-   the contract name would stay light on a dark screen for a branded build only. */
+/* ── A brand's accent family in dark and forced-light ─────────────────────────
+   colors-dark.css sets the accent family as literals in its dark blocks and again in its
+   forced-light block, at a specificity a `html[data-brand]` rule cannot beat (and, for the
+   auto-dark media block, cannot be beaten by where the label ink is concerned). So a brand
+   lost its accent under data-theme="dark" and under data-theme="light", and under an OS-dark
+   preference kept its LIGHT accent beneath a white label. These three rules carry one more
+   attribute than the blocks they answer, so they win whatever the import order, and they
+   match any [data-brand] so a new preset needs no rule of its own. Only the accent family
+   is brand-owned; surfaces, text, semantics and the focus blue stay the system's. */
 @media (prefers-color-scheme: dark) {
   :root[data-brand]:not([data-theme="light"]) {
-    --accent: var(--theme-dark-accent);
-    --accent-dim: var(--theme-dark-accent-dim);
-    --accent-hover: var(--theme-dark-accent-hover);
-    --accent-ghost: var(--theme-dark-accent-ghost);
+    --accent:         var(--theme-dark-accent);
+    --accent-dim:     var(--theme-dark-accent-dim);
+    --accent-hover:   var(--theme-dark-accent-hover);
+    --accent-ghost:   var(--theme-dark-accent-ghost);
     --text-on-accent: var(--theme-dark-text-on-accent);
-    --theme-accent: var(--accent);
   }
 }
-
 :root[data-brand][data-theme="dark"] {
-  --accent: var(--theme-dark-accent);
-  --accent-dim: var(--theme-dark-accent-dim);
-  --accent-hover: var(--theme-dark-accent-hover);
-  --accent-ghost: var(--theme-dark-accent-ghost);
+  --accent:         var(--theme-dark-accent);
+  --accent-dim:     var(--theme-dark-accent-dim);
+  --accent-hover:   var(--theme-dark-accent-hover);
+  --accent-ghost:   var(--theme-dark-accent-ghost);
   --text-on-accent: var(--theme-dark-text-on-accent);
-  --theme-accent: var(--accent);
+}
+:root[data-brand][data-theme="light"] {
+  --accent:         var(--theme-accent);
+  --accent-dim:     var(--theme-accent-dim);
+  --accent-hover:   var(--theme-accent-hover);
+  --accent-ghost:   var(--theme-accent-ghost);
+  --text-on-accent: var(--theme-text-on-accent);
 }

@@ -1,4 +1,4 @@
-// Meridian status bar — graphite footer (--statusbar-bg) mirroring the WPF StatusBar palette.
+// Meridian status bar — near-black footer (#29323A) mirroring the WPF StatusBar palette.
 // A row of mono fields: connection, sync state, record counts, latency. Always-on telemetry.
 import React from "react";
 

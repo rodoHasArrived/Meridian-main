@@ -1,12 +1,11 @@
 // Split Pane Reconciliation — template screen. Mounted by the DC via <x-import>.
-// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_4f61be)
+// Reads design-system components from the compiled bundle (window.MeridianDesignSystem_205d17)
 // and the single global React. Functional: two synchronized panes show custodian statement vs.
 // internal ledger; clicking a row cross-highlights its match on the other side; unmatched rows
 // open a break resolution drawer.
-const {
-  WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge,
-  MetricCard, AmountCell, Select
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select;
 const { useState, useMemo, useCallback, useRef, useEffect } = React;
 
 /* ── screen-level CSS ── */
@@ -25,7 +24,7 @@ const { useState, useMemo, useCallback, useRef, useEffect } = React;
   padding:6px 12px;border-right:1px solid var(--border);transition:all .12s;}
 .spr-seg button:last-child{border-right:none;}
 .spr-seg button:hover{background:var(--bg-hover);color:var(--text-primary);}
-.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#E7EDF2);color:var(--brand-signal-text,#8E4730);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
+.spr-seg button[aria-pressed="true"]{background:var(--bg-active,#E7EDF2);color:var(--brand-signal-ink);font-weight:600;box-shadow:inset 0 -2px 0 var(--accent);}
 .spr-metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
 .spr-split{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--border);
   border-radius:var(--radius-card,8px);overflow:hidden;background:var(--bg-light);
@@ -360,7 +359,8 @@ function BreakDrawer({ item, counterItem, side, onClose, onResolve }) {
 }
 
 /* ── main screen ── */
-function SplitPaneReconciliationScreen() {
+function SplitPaneReconciliationScreen({ environment = "PAPER", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard, AmountCell, Select } = window.MeridianDesignSystem_205d17);
   const [period,  setPeriod]  = useState(PERIODS[0]);
   const [account, setAccount] = useState(ACCOUNTS[0]);
   const [filter,  setFilter]  = useState("all");
@@ -481,7 +481,7 @@ function SplitPaneReconciliationScreen() {
     <div style={{ height:"100vh", display:"flex", flexDirection:"column", background:"var(--bg)", fontFamily:"var(--font-body)", color:"var(--text-secondary)", fontSize:13 }}>
       <WorkstationTopbar
         moduleLabel="Accounting"
-        environment="PAPER"
+        environment={environment}
         clock="14:32:08 UTC"
         brandSrc="../../assets/brand/meridian-mark-light.svg"
       />
@@ -496,14 +496,14 @@ function SplitPaneReconciliationScreen() {
             <h1 style={{ font:"600 22px var(--font-display)", margin:0, color:"var(--text-primary)" }}>
               Reconciliation
             </h1>
-            <Badge variant="paper" dot>PAPER</Badge>
+            <Badge variant={environment.toLowerCase()} dot>{environment}</Badge>
             <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-muted)", marginLeft:2 }}>
               Statement vs. Ledger · {period}
             </span>
             <div style={{ flex:1 }} />
-            <Button variant="ghost" size="sm">Export</Button>
-            <Button variant="ghost" size="sm">Print report</Button>
-            <Button
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Export</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Print report</Button>
+            <Button disabled={dataState !== "ready"}
               variant={totalBreaks > 0 ? "primary" : "ghost"}
               size="sm"
               onClick={() => {
@@ -514,6 +514,7 @@ function SplitPaneReconciliationScreen() {
               Auto-match{totalBreaks > 0 ? ` (${stmtTiming + ldgrTiming} timing)` : ""}
             </Button>
           </div>
+          <DataStateSwitch state={dataState} label="Statement and ledger records">
 
           {/* Controls */}
           <div className="spr-controls">
@@ -622,6 +623,7 @@ function SplitPaneReconciliationScreen() {
             </div>
           </div>
 
+                  </DataStateSwitch>
         </main>
       </div>
 

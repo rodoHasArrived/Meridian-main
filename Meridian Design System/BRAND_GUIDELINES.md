@@ -42,7 +42,7 @@ in `tokens/colors-dark.css`.
 - Chrome bars and primary actions: graphite `#29323A`
 - Signal: terracotta `#C56343` — brand, active identity markers, scenario series and report
   covers. Never a primary action, loss, error or focus colour. Signal-coloured text uses
-  `--brand-signal-text`, not the raw signal.
+  `--brand-signal-text` or `--brand-signal-ink`, not the raw signal.
 - Interaction: focus `#2D6FB3`, selection `#496C8F` on `#E7EDF2`, links `#2A5F96`. Focus and
   selection are blue for every brand.
 - Status colors: success `#2E7655`, danger `#B54B42`, warning `#986717`,

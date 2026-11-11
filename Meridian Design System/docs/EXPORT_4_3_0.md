@@ -44,14 +44,37 @@ contracts and `npm run test:browser` exercises the standalone reference. Set
 have their own synthetic-data scope; they do not replace workstation integration
 or live-backend validation.
 
-The whole-package governance gate reports no findings and 35 warnings, so
-`validate_release.py` passes all seven gates. Ten of the warnings are the
-unpublished compatibility screens marked `retained` in
-`api/template-eligibility.json`: their entry-contract gaps are reported, not
-enforced, and the screens were not migrated. At import the gate reported 67
-findings; the audit records that result and its resolution. A passing validator
-is a static result; browser and assistive-technology validation remain
-deferred as stated there.
+The additional `tests/optimistic-settlement-regression.mjs` and
+`tests/chart-accessibility-regression.mjs` cover observer reporting and the chart
+keyboard/data-alternative contracts. Run the full specimen matrix after the
+central build using [`tests/SPECIMEN_MATRIX.md`](../tests/SPECIMEN_MATRIX.md).
+It requires a separately prepared, pinned peer cache and preserves the original
+conformance assertions and raw findings. The inspected cards contain 84 peer
+script references without declared SRI; local byte-pin verification does not
+change that source-integrity limitation or prove live CDN access.
+
+The initial expanded export recorded 67 governance findings and 25 warnings.
+The final merged source through `7952be63ba` passed the complete 135-test Python
+suite and full contrast check. All seven release gates passed after the runtime
+alias update; parity passed 12 tests and the full 502-declared/227-shared-name
+check with zero findings. The 743-token metadata refresh adds 39 brand-scoped/
+default records, with other catalogue counts unchanged. The brand browser matrix
+passed 28 states, 1,932 AA pairs and 60 actual dark-role mapping checks. Native
+browser coverage passed 64 cases and 15 axe scans with zero reported violations.
+The byte-identical component bundle and public runtime retain the strict
+135/135-card proof. Source-hash and README checks reported zero errors.
+
+The 13-test metadata suite includes unconditional-default precedence.
+Build/source freshness and release integrity passed for 1,347 curated files.
+The retired-export declaration is enforced by 29 governance tests; the actual
+package reports zero governance failures and warnings.
+Regenerate the artifact after final documentation edits and associate its
+checksum with the delivered source. Use the audit's continuation status for the
+precise scope, historical dashboard evidence and documentation gate that did not
+converge.
+Build/export integrity validates the curated artifact; it cannot turn a failed
+or unrun gate into release certification. Keep NVDA/VoiceOver, Firefox/WebKit,
+native Windows/Edge and full-monorepo checks explicit when they were not run.
 
 ## Archive and verification
 
@@ -100,8 +123,8 @@ publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
   deliberately. `tokens/parity-manifest.json` records the names and, since the
   4.3.0 migration, the values the package shares with the Meridian browser
   workstation; `scripts/check_token_parity.py` checks both when the package
-  sits in that repository and skips the comparison when it does not. The one
-  recorded divergence is the Review severity hue, an open product decision. The production browser integration in this PR is
+  sits in that repository and skips the comparison when it does not. No
+  divergence is recorded. The production browser integration in this PR is
   delivered through the monorepo's native source and built workstation assets;
   this standalone archive contains the design-system package. Concurrent WPF
   integration uses its platform resources and requires Windows validation

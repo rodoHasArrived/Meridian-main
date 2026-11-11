@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import io
 import json
 import posixpath
@@ -16,6 +17,12 @@ import re
 import sys
 import zipfile
 from pathlib import Path, PurePosixPath
+
+_metadata_spec = importlib.util.spec_from_file_location(
+    "meridian_manifest_metadata", Path(__file__).with_name("sync_manifest_metadata.py")
+)
+_metadata = importlib.util.module_from_spec(_metadata_spec)
+_metadata_spec.loader.exec_module(_metadata)
 
 ROOT_FILES = {
     "package.json", "package-lock.json", "release.json", "release-build.json", "_ds_manifest.json", "LICENSE",
@@ -88,6 +95,8 @@ def validate(data: dict[str, bytes]) -> dict:
     if identity["version"] != version:
         raise ValueError("release.json authoritative version mismatch")
     manifest = json.loads(require_file(data, "_ds_manifest.json"))
+    require_file(data, "scripts/sync_manifest_metadata.py")
+    _metadata.require_current_manifest(manifest, data)
     bundle = require_file(data, "_ds_bundle.js")
     header_match = re.match(rb"/\* @ds-bundle: (.+?) \*/", bundle)
     if not header_match:
@@ -106,6 +115,11 @@ def validate(data: dict[str, bytes]) -> dict:
     actual_sources.update({"tests/conformance-rules.js", "tests/mock-transport.js"})
     if actual_sources != set(header["sourceHashes"]):
         raise ValueError("Component/API source inventory changed after build; rebuild required")
+    bundled_sources = release["build"].get("bundledSources")
+    public_sources = {component["sourcePath"] for component in manifest["components"]}
+    if (not isinstance(bundled_sources, list) or len(bundled_sources) != len(set(bundled_sources))
+            or not public_sources <= set(bundled_sources) <= actual_sources):
+        raise ValueError("Bundled source inventory must include public modules and only retained sources")
     for path, expected in header["sourceHashes"].items():
         if sha256(require_file(data, path)) != expected:
             raise ValueError(f"Source changed after build: {path}")
@@ -141,7 +155,7 @@ def validate(data: dict[str, bytes]) -> dict:
             require_file(data, path)
     for path in ["assets/fonts/OFL-IBMPlexSans.txt", "assets/fonts/OFL-IBMPlexMono.txt"]:
         require_file(data, path)
-    for path in ["preview/release-readiness.html", "preview/release-readiness.js", "preview/release-readiness.css", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
+    for path in ["preview/release-readiness.html", "preview/release-readiness.js", "preview/release-readiness.css", "tests/gallery.html", "tests/gallery.mjs", "tests/gallery.css", "THIRD_PARTY_NOTICES.md", "LICENSE"]:
         require_file(data, path)
     preview = data["preview/release-readiness.html"]
     for reference in re.findall(rb'(?:src|href)=["\']([^"\']+)["\']', preview):

@@ -586,5 +586,9 @@ are fixed. The retained-document fold no longer refills a value the flat row car
 and an amendment cleared (`FlatAuthoritativeFields`). And an option's exercise style must be
 one of the three spellings the flat decode reads back (`option_exercise_style_invalid`).
 
-One known limitation is recorded, not fixed: a directly built per-class record can set a
-module member its class's flat row does not persist. See the review record.
+One limitation was recorded at merge and closed the same day: a directly built per-class record
+could set a module member its class's flat row does not persist. `SecurityKindPersistence` now
+lists, per class and embedded module, the members the row carries, and `validateKind` refuses
+the rest (`term_member_not_persisted`) and a conflicting value in a member the row derives
+(`term_member_value_not_persisted`). The list was derived from the flat codec's own round trip
+and is held to it by `SecurityKindPersistenceTests`. See the review record.

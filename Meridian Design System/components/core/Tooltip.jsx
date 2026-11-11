@@ -13,7 +13,7 @@ function inject() {
 .mds-tip-box{position:absolute;z-index:var(--z-tooltip,500);pointer-events:none;
   background:var(--text-primary,#20252B);color:var(--bg-light,#F8F7F3);
   padding:8px 12px;font-family:var(--font-body);font-size:11px;line-height:1.4;
-  width:max-content;max-width:280px;border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));}
+  width:max-content;max-width:280px;border:1px solid var(--border-strong,#AAA49A);box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));}
 .mds-tip-box--above{bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--below{top:calc(100% + 6px);left:50%;transform:translateX(-50%);}
 .mds-tip-box--left{right:calc(100% + 6px);top:50%;transform:translateY(-50%);}

@@ -69,16 +69,6 @@ version, and the decision blockers; then expose **one analytical plane at a time
 Impact — as sibling states. Consequential mobile actions use the review-density target, not the
 minimum.
 
-## Retained compatibility screens
-
-A template folder marked `retained` in `api/template-eligibility.json` is an unpublished
-compatibility screen kept from before this contract: a `screen.jsx` wrapper that is absent from
-the manifest's template list, so the picker never offers it. `check_design_system_governance.py`
-reports its entry-contract gaps (preview size, standard tweaks, `DataStateSwitch`, entry name) as a
-warning instead of failing on them. The marker is not a way to ship a screen outside the contract:
-a retained folder that appears in the manifest's template list fails the gate, and broken routes
-fail regardless. Retained screens still count in the eligibility denominator as unmigrated.
-
 ## Migration sequence
 
 1. ~~Classify every template by archetype and primitive eligibility; record the eligible set.~~ Done — `api/template-eligibility.json`.

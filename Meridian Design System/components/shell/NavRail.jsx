@@ -1,5 +1,5 @@
 // Meridian operator rail — mirrors the light sidebar in ThemeTokens/ThemeControls:
-// 14rem recessed rail (--bg-medium), small-caps section labels, nav items with a 3px terracotta
+// 14rem paper rail (#EBE8E1), small-caps section labels, nav items with a 3px terracotta
 // left indicator on the active item.
 import React from "react";
 

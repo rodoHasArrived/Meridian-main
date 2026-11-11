@@ -6,20 +6,10 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 
 ## [Unreleased] — increment A · semantic safety
 
-### Fixed — white-label brand presets
-- **`tokens/theme.css`** — the six `data-brand` presets state the whole signal family again. The 4.3.0 export had reduced each to an accent trio and a direct `--text-on-accent`, so a brand reverted to the default terracotta in manual dark and forced light, kept the terracotta ghost wash everywhere, and in auto dark put its white label on the default dark signal. Each preset now declares `--theme-accent-ghost`, `--theme-text-on-accent` and a dark identity (`--theme-dark-accent`, `-dim`, `-hover`, `-ghost`); new defaults mirror the default signal under the same names, and `:root[data-brand]` rules carry a brand into all four theme states. The unbranded cascade is unchanged.
-- **`scripts/check_contrast.py`** — the brand check no longer requires a per-brand `--theme-border-focus`. Focus is the interaction blue for every brand, so the rule is inverted: a brand fails if it states a focus colour other than the default's. The check also measures body text on each brand's ghost in both modes, names a partly stated dark identity, and requires `--theme-brand-color` to equal `--theme-accent`. No threshold changed.
+### Fixed — signal wash token and stale identity guidance
 - **`tokens/colors.css`** — `--brand-signal-a10` was a terracotta `rgba()` literal, so it followed neither a brand nor dark mode; it now aliases `--accent-a10` like the rest of the `--brand-signal-*` names.
 - **`BRAND_GUIDELINES.md`** — no longer says `data-brand="steel"` is selectable (4.3.0 has no such preset), and its colour, type and usage guidance state the 4.3.0 values instead of the v2.0 copper palette.
 - **`VISUAL_FOUNDATIONS.md`** · **`guidelines/VISUAL_FOUNDATIONS.md`** — one text in both copies, matching the 4.3.0 tokens. The root copy still described the v2.0 copper identity; the guidelines copy had the palette but named the wrong pending colour, primary-button states, chart ink and type ramp.
-
-### Fixed — governance gate findings
-- **`Modal`** — the dialog was named through a fixed `id="mdl-title"`, so two mounted modals named each other. The title id is generated per instance and shared with `ModalHeader` through context.
-- **`BooksLoop`** template — gains the `$preview` size and the `density`, `theme` and `dataState` tweaks; theme and density are applied to the document and `dataState` drives the existing `DataStateSwitch`.
-- **`PositionDetail`** template — gains the `environment` and `dataState` tweaks; the environment drives the document badge and the work plane sits in a `DataStateSwitch`.
-- **`NavRail`** · **`StatusBar`** · **`WorkstationTopbar`** — header comments name the token instead of quoting its hex.
-- **`scripts/check_design_system_governance.py`** — an entry that only switches between sibling views satisfies the data-state rule when it hands `dataState` to every view it imports and each of those views uses `DataStateSwitch`. `StrategyRuns` and `StrategyFormation` were reported although all six of their views carry the switch.
-- **`api/template-eligibility.json`** — the ten unpublished compatibility screens (`amx-governance`, `backtest-builder`, `backtest-compare`, `covered-call-lab`, `family-office`, `journaling-workstation`, `reconciliation-workstation`, `split-pane-reconciliation`, `strategy-builder`, `strategy-onboarding`) carry a `retained` marker. The gate reports their entry-contract gaps as one warning each instead of 54 failures, and fails if a retained screen is published in the manifest. The screens themselves are unchanged. The gate now passes: 0 findings, 35 warnings.
 
 ### Fixed — consuming-workstation component review
 - **`ScenarioSelector`** — native button radios support Space/Enter; arrows and Home/End move focus with selection. A missing saved selection leaves a reachable first option without changing the caller's value; read-only choices remain disabled.

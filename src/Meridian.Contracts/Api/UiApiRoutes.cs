@@ -907,6 +907,7 @@ public static class UiApiRoutes
     public const string LedgerPeriods = "/api/ledger/periods";
     public const string LedgerPeriodClose = "/api/ledger/periods/{periodId:guid}/close";
     public const string LedgerPeriodJournalEntries = "/api/ledger/periods/{periodId:guid}/journal-entries";
+    public const string LedgerPeriodAccountRunningBalance = "/api/ledger/periods/{periodId:guid}/accounts/running-balance";
     public const string LedgerJournalEntryTaxResults = "/api/ledger/periods/{periodId:guid}/journal-entries/{journalEntryId:guid}/tax-results";
     public const string LedgerPeriodTrialBalance = "/api/ledger/periods/{periodId:guid}/trial-balance";
     public const string LedgerPeriodTrialBalanceReport = "/api/ledger/periods/{periodId:guid}/trial-balance-report";

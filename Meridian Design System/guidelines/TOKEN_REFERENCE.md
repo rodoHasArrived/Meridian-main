@@ -70,6 +70,15 @@ is the controlled signal variant. Primary actions do not use this family. In dar
 roles use `#E5A088` and `#E19479` so signal labels remain legible without turning into focus or
 semantic state. Do not create intermediate shades.
 
+### `--brand-signal-ink` vs signal fills
+Use `--brand-signal-ink` for normal-sized text that retains the signal hue: labels, inline
+references, highlighted matches and retained table ranks. It derives 75% of the signal toward
+`--dim-mix`, producing `#944A32` in the default light theme and `#E2A38C` in dark. Its text
+contrast is checked against workstation surfaces and signal washes in every appearance.
+`--brand-signal`, `--accent-hover` and `--accent-dim` remain fill, border and graphical roles;
+their lighter variants are not text inks. Keep text fully opaque on hover; emphasize it with
+an underline instead of fading an otherwise readable label.
+
 ### `--bg-hover` vs `--bg-active`
 `--bg-hover` (#EDEFF0) is a flat neutral shift for transient hover. `--bg-active` (#E7EDF2) is a
 cool blue wash for *selected/engaged* state (selected row, active nav). Active is a state that
@@ -203,9 +212,8 @@ To re-skin Meridian for a consumer, you touch **only Tier 1**:
    re-verify white-on-accent and accent-on-panel clear AA (the script in `ACCESSIBILITY.md` §1).
 
 Because Tier 2 aliases Tier 1 and Tier 3 derives from Tier 2, a single `data-brand` attribute
-recolors the signal family (accent fills, ghost washes, active identity markers, scenario series
-and the review chip) — automatically, in light, auto dark, manual dark and forced light. Focus
-rings and selection stay interaction blue for every brand. **Never** fork a component to
+recolors accents, chart primaries, focus rings, active nav indicators, selected-row washes, and
+every severity/state chip — automatically, in both light and dark. **Never** fork a component to
 change its color; if you can't re-skin it from Tier 1, that's a token bug to fix at the source.
 
 ---

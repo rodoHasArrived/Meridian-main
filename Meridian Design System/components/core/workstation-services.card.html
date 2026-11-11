@@ -22,7 +22,7 @@ function Crasher() {
   return (
     <div style={{ padding: 12, fontSize: 12, color: "var(--text-secondary)", display: "flex", gap: 10, alignItems: "center" }}>
       A healthy panel.
-      <button onClick={() => setBroken(true)} style={{ font: "12px var(--font-body)", padding: "4px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", cursor: "pointer" }}>Crash it</button>
+      <button type="button" onClick={() => setBroken(true)} style={{ font: "12px var(--font-body)", padding: "4px 10px", border: "1px solid var(--border)", background: "var(--bg-light)", cursor: "pointer" }}>Crash it</button>
     </div>
   );
 }

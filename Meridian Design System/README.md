@@ -6,12 +6,19 @@
 > `release.json` declares this package **4.3.0 · stable**. Identity is rendered by `scripts/release_identity.py`. Upstream release evidence: `docs/QA_REPORT_4.3.0.md`; 2 deferred item(s): NVDA + VoiceOver announcement/verbosity journeys (tests/BROWSER_TEST_PLAN.md — every row marked announced/read); Firefox / WebKit half of the browser matrix (Chromium keyboard + ARIA + responsive run: tests/A11Y_RUN_4.3.0.md). These deferrals remain explicit in the declared channel.
 > The declared channel and upstream QA describe that release; they do not certify later working-tree additions or a consuming application. Validate the current export separately.
 
-> **Census** (generated from `_ds_manifest.json`): **351 exports across 210 modules** in 8 domains · 135 specimen cards · 30 templates · 721 tokens · 11 themes · 28 export(s) at release-candidate maturity (`api/families.json`).
+> **Census** (generated from `_ds_manifest.json`): **351 exports across 210 modules** in 8 domains · 135 specimen cards · 30 templates · 743 tokens · 11 themes · 28 export(s) at release-candidate maturity (`api/families.json`).
 <!-- release:generated:end -->
 
 Current-branch evidence and a reproducible distribution handoff:
 [4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md).
 These describe this working tree separately from the historical upstream release reports.
+
+The [specimen card gallery](tests/gallery.html) reads the supported cards from `_ds_manifest.json`.
+Serve the package over local HTTP, then search or filter its groups and open one preview at its
+intended viewport. Some specimens retain CDN or Design Component host dependencies; document
+loading is distinct from component verification. `npm run test:gallery` checks catalogue metadata
+and filtering; `npm run test:gallery:browser` checks loading, recovery, focus, and desktop layouts.
+
 
 An operator-workstation design system for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.
 

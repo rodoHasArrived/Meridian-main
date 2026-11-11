@@ -59,24 +59,23 @@ html[data-brand="oxblood"] {
   --theme-accent: #7A2E2E;
   --theme-accent-dim: #5E2323;
   --theme-accent-hover: #8F4040;
-  --theme-brand-color: #7A2E2E;            /* must equal --theme-accent */
+  --theme-text-on-accent: #FFFFFF;   /* label ink on the solid accent */
   --theme-accent-ghost: color-mix(in srgb, var(--theme-accent) 11%, var(--theme-bg-light));
-  --theme-text-on-accent: #FFFFFF;         /* label ink on the three fills above */
-  /* dark identity: lifted so the default dark ink (--theme-dark-text-on-accent) clears AA */
-  --theme-dark-accent: #D08A8A;
-  --theme-dark-accent-dim: #DA9C9C;
-  --theme-dark-accent-hover: #E2ABAB;
-  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--bg));
+  /* dark identity: the accent lifted until the dark label ink clears 4.5:1 on all three */
+  --theme-dark-accent: #D98C8C;
+  --theme-dark-accent-dim: #E29C9C;
+  --theme-dark-accent-hover: #E8ABAB;
+  --theme-dark-accent-ghost: color-mix(in srgb, var(--theme-dark-accent) 12%, var(--theme-dark-bg-light));
 }
 ```
 
-A brand states the whole signal family in both modes; the `:root[data-brand]` rules at the foot of
-`tokens/theme.css` carry it into auto dark, manual dark and forced light, so the block above is the
-only one a preset needs. Anything left out renders the default terracotta value. Do **not** restate
-`--theme-border-focus`: focus and selection remain interaction blue for every brand. Keep the
-accent desaturated and AA-contrasting on `#F8F7F3`; verify with `python3 scripts/check_contrast.py`,
-which prints each brand's base / hover / pressed label ratio in both modes and fails a brand that
-omits a family token or re-points focus.
+A brand owns the accent family only. State both identities: a preset with no `--theme-dark-accent*`
+falls back to the default terracotta in dark mode, and `scripts/check_contrast.py` fails it. Do not
+restate `--theme-border-focus`, and do not set `--text-on-accent` directly; the dark and forced-light
+blocks would override it.
+
+Brand/scenario signal treatments and active identity markers re-point automatically; focus and selection remain interaction blue. Keep the
+accent desaturated and AA-contrasting on `#F8F7F3`; verify with `tests/test_contrast.py`.
 
 ## Add a density
 

@@ -27,13 +27,13 @@
   padding: 0.5rem 0.75rem;
   font-size: 0.8125rem;
   font-weight: 600;
-  box-shadow: var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
+  box-shadow: var(--shadow-menu, 0 2px 6px rgba(17, 23, 29, 0.18));
 }
 
 .skip-link:focus {
   left: 0.75rem;
   outline: none;
-  box-shadow: 0 0 0 2px var(--interaction-focus), var(--shadow-menu, 0 2px 6px rgba(0, 0, 0, 0.18));
+  box-shadow: 0 0 0 2px var(--interaction-focus), var(--shadow-menu, 0 2px 6px rgba(17, 23, 29, 0.18));
 }
 
 /* ── Masthead / topbar (48px near-black brand bar) ──────────────────────────── */
@@ -469,9 +469,9 @@ a.workstation-trust-item:focus-visible {
 }
 
 /* The environment badge sits on the dark masthead even when the workspace uses a light
-   theme. Light-surface status and muted text colours do not have enough contrast. */
+   theme. Use the canonical dark-surface slate field tone in every appearance. */
 .workstation-trust-summary .mds-badge--paper {
-  color: #E9A983;
+  color: #7F9DB8;
 }
 
 .workstation-session-card .workstation-session-role {
@@ -567,8 +567,8 @@ a.workstation-trust-item:focus-visible {
 }
 
 .shell-status-strip-loading {
-  border-color: var(--severity-review-bd, color-mix(in srgb, var(--ws-accent) 36%, transparent));
-  background: var(--severity-review-bg, color-mix(in srgb, var(--ws-accent) 10%, transparent));
+  border-color: var(--severity-review-bd, color-mix(in srgb, var(--orange) 36%, transparent));
+  background: var(--severity-review-bg, color-mix(in srgb, var(--orange) 10%, transparent));
 }
 
 /* ── Status bar (28px near-black telemetry footer) ──────────────────────────── */
@@ -749,7 +749,7 @@ button.operating-scope-chip:focus-visible { outline: 2px solid var(--interaction
   position: absolute; z-index: 30; top: 100%; margin: 0.25rem 0 0;
   width: min(20rem, 70vw); padding: 0.75rem; border: 1px solid var(--ws-border);
   background: var(--ws-surface); color: var(--ws-text); border-radius: var(--radius-sm);
-  box-shadow: var(--shadow-menu, 0 2px 6px rgb(0 0 0 / 0.18));
+  box-shadow: var(--shadow-menu, 0 2px 6px rgb(17 23 29 / 0.18));
 }
 .workstation-views-panel { right: 0; width: 15rem; }
 .workstation-views-panel > button { display: flex; width: 100%; justify-content: start; }

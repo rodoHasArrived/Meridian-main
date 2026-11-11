@@ -123,6 +123,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -142,6 +144,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -191,6 +198,9 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -259,9 +269,9 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--orange-dim);
-    --severity-review-bd: color-mix(in srgb, var(--orange) 36%, transparent);
-    --severity-review-bg: color-mix(in srgb, var(--orange) 10%, transparent);
+    --severity-review-fg: var(--brand-signal-ink);
+    --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
+    --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
@@ -499,6 +509,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -518,6 +530,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -567,6 +584,9 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --bg: var(--ws-page-bg);
@@ -635,9 +655,9 @@
     --severity-action-fg: var(--orange-dim);
     --severity-action-bd: color-mix(in srgb, var(--orange) 42%, transparent);
     --severity-action-bg: color-mix(in srgb, var(--orange) 11%, transparent);
-    --severity-review-fg: var(--orange-dim);
-    --severity-review-bd: color-mix(in srgb, var(--orange) 36%, transparent);
-    --severity-review-bg: color-mix(in srgb, var(--orange) 10%, transparent);
+    --severity-review-fg: var(--brand-signal-ink);
+    --severity-review-bd: color-mix(in srgb, var(--ws-accent) 36%, transparent);
+    --severity-review-bg: color-mix(in srgb, var(--ws-accent) 10%, transparent);
     --severity-ready-fg: var(--green-dim);
     --severity-ready-bd: color-mix(in srgb, var(--green) 36%, transparent);
     --severity-ready-bg: color-mix(in srgb, var(--green) 10%, transparent);
@@ -833,6 +853,8 @@
       --ws-text: #F1EFEA;
       --ws-text-muted: #929CA6;
       --ws-text-secondary: #BEC4CA;
+      --ws-header-text-secondary: var(--ws-text-secondary);
+      --ws-tinted-text-secondary: var(--ws-text-secondary);
       --ws-masthead-bg: #0D1217;
       --ws-masthead-fg: #F1EFEA;
       /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -852,6 +874,11 @@
       --ws-rail-active: #2C4054;
       --ws-row-hover: #25303A;
       --ws-row-selected: #2C4054;
+      --ws-row-selected-text-secondary: var(--ws-text-secondary);
+      --ws-row-selected-muted-foreground: 210 10.169% 76.863%;
+      --ws-row-selected-danger-text: var(--red-dim);
+      --ws-row-selected-warning-text: var(--orange-dim);
+      --ws-row-selected-success-text: var(--green-dim);
       --ws-row-border: #26313B;
       --ws-inspector-bg: #171E25;
       --ws-canvas-bg: #1F2831;
@@ -872,6 +899,9 @@
       --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
       --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
       --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+      /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+      --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+      --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
       --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
       --border-hover: var(--ws-border-hover);
@@ -1041,6 +1071,8 @@
     --ws-text: #F1EFEA;
     --ws-text-muted: #929CA6;
     --ws-text-secondary: #BEC4CA;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #0D1217;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -1060,6 +1092,11 @@
     --ws-rail-active: #2C4054;
     --ws-row-hover: #25303A;
     --ws-row-selected: #2C4054;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 10.169% 76.863%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #26313B;
     --ws-inspector-bg: #171E25;
     --ws-canvas-bg: #1F2831;
@@ -1080,6 +1117,9 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
@@ -1251,6 +1291,8 @@
     --ws-text: #20252B;
     --ws-text-muted: #606870;
     --ws-text-secondary: #535C65;
+    --ws-header-text-secondary: var(--ws-text-secondary);
+    --ws-tinted-text-secondary: var(--ws-text-secondary);
     --ws-masthead-bg: #29323A;
     --ws-masthead-fg: #F1EFEA;
     /* Chrome status colours. The bars are near-black in every scope, so these are the
@@ -1270,6 +1312,11 @@
     --ws-rail-active: #E7EDF2;
     --ws-row-hover: #EDEFF0;
     --ws-row-selected: #E7EDF2;
+    --ws-row-selected-text-secondary: var(--ws-text-secondary);
+    --ws-row-selected-muted-foreground: 210 9.783% 36.078%;
+    --ws-row-selected-danger-text: var(--red-dim);
+    --ws-row-selected-warning-text: var(--orange-dim);
+    --ws-row-selected-success-text: var(--green-dim);
     --ws-row-border: #E2DED5;
     --ws-inspector-bg: #F8F7F3;
     --ws-canvas-bg: #FCFBF8;
@@ -1290,6 +1337,9 @@
     --green-dim:  color-mix(in srgb, var(--green)  75%, var(--dim-mix));
     --red-dim:    color-mix(in srgb, var(--red)    75%, var(--dim-mix));
     --orange-dim: color-mix(in srgb, var(--orange) 75%, var(--dim-mix));
+    /* Signal-coloured TEXT. The raw signal is 3.7:1 on a panel; this is the package's ink. */
+    --brand-signal-text: color-mix(in srgb, var(--ws-accent) 72%, var(--dim-mix));
+    --brand-signal-ink: color-mix(in srgb, var(--ws-accent) 75%, var(--dim-mix));
     --purple-dim: color-mix(in srgb, var(--purple) 75%, var(--dim-mix));
 
     --border-hover: var(--ws-border-hover);
@@ -2075,7 +2125,7 @@
   }
 
   [aria-selected="true"] {
-    box-shadow: inset 3px 0 0 var(--cyan-primary);
+    box-shadow: inset 3px 0 0 var(--interaction-selected);
   }
 
 }

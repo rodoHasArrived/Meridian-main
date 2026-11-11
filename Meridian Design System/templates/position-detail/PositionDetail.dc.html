@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./positions-data.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -10,7 +11,6 @@
 <!-- @template name="Investigate · Position Detail" description="One holding of one instrument, on its own accounting basis — identity header, work plane, instrument context rail, and a two-holding comparison." -->
 <helmet>
 <script src="./ds-base.js"></script>
-<script src="./positions-data.js"></script>
 <meta name="dc-template" content="position-detail">
 <style>html,body{margin:0;padding:0;height:100%}[data-pd-show="off"]{display:none!important}</style>
 </helmet>
@@ -18,19 +18,20 @@
 <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:44px;padding:0 16px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--border-strong);flex-shrink:0">
 <img src="../../assets/brand/meridian-mark-light.svg" alt="Meridian" style="height:18px;width:auto">
 <span style="width:1px;height:18px;background:rgba(255,255,255,.18)"></span>
-<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:#fff"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
+<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:var(--topbar-text)"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
 <span style="color:rgba(255,255,255,.3)">/</span>
-<span style="font:600 13px var(--font-display);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ secShort }}</span>
+<span style="font:600 13px var(--font-display);color:var(--topbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ secShort }}</span>
 <div style="flex:1"></div>
 <span style="font-family:var(--font-data);font-size:11px;color:rgba(255,255,255,.55)">{{ headStamp }}</span>
-<button onClick="{{ onCopyLink }}" title="Copy a link to this holding" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:#fff">{{ copyLinkLabel }}</button>
+<button onClick="{{ onCopyLink }}" title="Copy a link to this holding" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:var(--topbar-text)">{{ copyLinkLabel }}</button>
 </header>
 <main style="flex:1;min-width:0;padding:18px 24px 26px">
+<h1 style="margin:0 0 14px;font:600 20px var(--font-display);color:var(--text-primary)">{{ pageTitle }}</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Position detail" hint-size="100%,900px">
 <div data-pd-show="{{ emptyShow }}" style="max-width:560px;margin:8vh auto">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="table" title="No position fixture loaded" detail="This template reads positions-data.js from its own folder. Copy the whole templates/position-detail folder and the holdings appear." hint-size="100%,160px"></x-import>
 </div>
 <div data-screen-label="Position Detail" data-pd-show="{{ bodyShow }}" style="display:flex;flex-direction:column;gap:14px">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Position" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,700px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectScopeProvider" scope="{{ scopeId }}" object="{{ posCode }}" label="{{ posLabel }}" hint-size="100%,700px">
 <div style="display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
@@ -470,11 +471,11 @@
 <sc-for list="{{ relObjects }}" as="o" hint-placeholder-count="5">
 <div style="display:flex;align-items:baseline;gap:8px;min-width:0">
 <span style="flex:0 0 74px;font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)">{{ o.type }}</span>
-<button data-pd-show="{{ o.actionShow }}" onClick="{{ o.onOpen }}" title="{{ o.title }}" style="flex:1;min-width:0;text-align:left;border:none;background:transparent;padding:0;cursor:pointer;font:12px var(--font-body);color:var(--brand-signal,#C56343);text-decoration:underline;text-underline-offset:2px" style-hover="color:var(--text-primary)">{{ o.label }}</button>
+<button data-pd-show="{{ o.actionShow }}" onClick="{{ o.onOpen }}" title="{{ o.title }}" style="flex:1;min-width:0;text-align:left;border:none;background:transparent;padding:0;cursor:pointer;font:12px var(--font-body);color:var(--brand-signal-ink,#944A32);text-decoration:underline;text-underline-offset:2px" style-hover="color:var(--text-primary)">{{ o.label }}</button>
 <span data-pd-show="{{ o.plainShow }}" style="flex:1;min-width:0;font-size:12px;color:var(--text-secondary)">{{ o.label }}</span>
 </div>
 </sc-for>
-<a href="{{ registryHref }}" style="font:11.5px var(--font-body);color:var(--brand-signal,#C56343);text-decoration:none;margin-top:2px" style-hover="text-decoration:underline">Open Security Master →</a>
+<a href="{{ registryHref }}" style="font:11.5px var(--font-body);color:var(--brand-signal-ink,#944A32);text-decoration:none;margin-top:2px" style-hover="text-decoration:underline">Open Security Master →</a>
 </div>
 </aside>
 </div>
@@ -527,8 +528,8 @@
 </div>
 </div>
 </x-import>
-</x-import>
 </div>
+</x-import>
 </main>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
@@ -542,9 +543,8 @@ class Component extends DCLogic {
   applyChrome() {
     const html = document.documentElement;
     html.setAttribute("data-theme", (window.MeridianPrefs ? window.MeridianPrefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light")));
+    html.setAttribute("data-environment", window.MeridianPrefs ? window.MeridianPrefs.environment(this.props.environment ?? "FIXTURE") : (this.props.environment ?? "FIXTURE"));
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs ? window.MeridianPrefs.density(this.props.density ?? "compact") : (this.props.density ?? "compact")));
-    const env = String(this.props.environment ?? "FIXTURE").toUpperCase();
-    html.setAttribute("data-environment", (window.MeridianPrefs ? window.MeridianPrefs.environment(env) : env));
   }
   componentDidMount() { this.applyChrome(); }
   componentDidUpdate() { this.applyChrome(); }
@@ -564,7 +564,7 @@ class Component extends DCLogic {
   renderVals() {
     this.applyChrome();
     const api = this.api();
-    if (!api) return { emptyShow: "on", bodyShow: "off", posShow: "off", cmpShow: "off", backHref: this.backHref(), backLabel: this.backLabel(), copyLinkLabel: "Copy link", onCopyLink: () => {} };
+    if (!api) return { pageTitle: "Position detail", dataState: "empty", emptyShow: "on", bodyShow: "off", posShow: "off", cmpShow: "off", backHref: this.backHref(), backLabel: this.backLabel(), copyLinkLabel: "Copy link", onCopyLink: () => {} };
     const sec = api.security;
     const p = api.byId(this.posId());
     const view = this.view();
@@ -572,8 +572,9 @@ class Component extends DCLogic {
     const A = api.positions[0], B = api.positions[1];
     const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
     return {
+      pageTitle: compare ? sec.name + " · holding comparison" : p.code + " · " + sec.name,
+      dataState: this.props.dataState ?? "ready",
       emptyShow: "off", bodyShow: "on",
-      dataState: this.props.dataState ?? "ready", onRetry: () => window.location.reload(),
       posShow: compare ? "off" : "on", cmpShow: compare ? "on" : "off",
       backHref: this.backHref(), backLabel: this.backLabel(),
       registryHref: this.backHref(),

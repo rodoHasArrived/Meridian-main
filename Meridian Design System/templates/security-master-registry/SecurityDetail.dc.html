@@ -19,12 +19,12 @@
 <header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:44px;padding:0 16px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--border-strong);flex-shrink:0">
 <img src="../../assets/brand/meridian-mark-light.svg" alt="Meridian" style="height:18px;width:auto">
 <span style="width:1px;height:18px;background:rgba(255,255,255,.18)"></span>
-<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:#fff"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
+<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:var(--topbar-text)"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
 <span style="color:rgba(255,255,255,.3)">/</span>
-<span style="font:600 13px var(--font-display);color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detName }}</span>
+<span style="font:600 13px var(--font-display);color:var(--topbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detName }}</span>
 <div style="flex:1"></div>
 <span style="font-family:var(--font-data);font-size:11px;color:rgba(255,255,255,.55)">{{ detSub }}</span>
-<button onClick="{{ onCopyLink }}" title="Copy a link to this record" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:#fff">{{ copyLinkLabel }}</button>
+<button onClick="{{ onCopyLink }}" title="Copy a link to this record" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:var(--topbar-text)">{{ copyLinkLabel }}</button>
 </header>
 <main style="flex:1;min-width:0;padding:20px 24px">
 <div data-screen-label="Security Detail" data-smr-show="{{ detailShow }}" style="display:flex;flex-direction:column;gap:14px">

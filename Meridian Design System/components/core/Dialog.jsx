@@ -17,7 +17,7 @@ function inject() {
   injected = true;
   const css = `
 .mds-dialog-overlay {
-  position: fixed; inset: 0; background: var(--scrim, rgba(30,28,26,.5));
+  position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5));
   z-index: var(--z-modal, 200); display: flex; align-items: center; justify-content: center;
   animation: mds-dialog-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out);
 }

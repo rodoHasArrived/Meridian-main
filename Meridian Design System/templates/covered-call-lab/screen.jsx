@@ -3,11 +3,9 @@
 // (the 19-param request), CoveredCallMetricsDto, CoveredCallTradeDto, CoveredCallChainRow
 // (MeetsAllFilters / RejectReason), CoveredCallRunSummary.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  Tabs, TabPanel, DenseDataTable, SeverityBadge, KeyValueGrid, MetricCard,
-  SegmentedControl, Slider, Input, FormField, EquityCurve
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Tabs, TabPanel, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, SegmentedControl, Slider, Input, FormField, EquityCurve;
 const { useState } = React;
 
 const NAV = [
@@ -111,11 +109,12 @@ function ParamsPanel() {
   );
 }
 
-function CoveredCallLabScreen() {
+function CoveredCallLabScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Tabs, TabPanel, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, SegmentedControl, Slider, Input, FormField, EquityCurve } = window.MeridianDesignSystem_205d17);
   const pnlCell = (v) => <span style={{ color: v.startsWith("−") || v.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)", fontFamily: "var(--font-data)" }}>{v}</span>;
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="Covered-Call Lab" environment="FIXTURE" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="Covered-Call Lab" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="cclab" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -123,10 +122,11 @@ function CoveredCallLabScreen() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Covered-Call Lab</h1>
             <Badge variant="neutral">MSFT · 2026 H1</Badge>
-            <Badge variant="fixture" dot>FIXTURE</Badge>
+            <Badge variant={environment.toLowerCase()} dot>{environment}</Badge>
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm">Compare runs</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Compare runs</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Covered-call analysis">
 
           <div style={{ display: "grid", gridTemplateColumns: "320px 1fr", gap: 12, alignItems: "start" }}>
             <ParamsPanel />
@@ -157,15 +157,15 @@ function CoveredCallLabScreen() {
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 12, alignItems: "start" }}>
                     <PanelSurface style={{ padding: 0 }}>
                       <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}><Eyebrow>Closed trades</Eyebrow></div>
-                      <DenseDataTable
+                      <DataGrid
                         columns={[
                           { key: "strike", label: "Strike", align: "right" },
                           { key: "expiration", label: "Expiration" },
                           { key: "contracts", label: "Qty", align: "right" },
                           { key: "entryCredit", label: "Credit", align: "right" },
                           { key: "exitDebit", label: "Debit", align: "right" },
-                          { key: "exitReason", label: "Exit", render: (r) => <Badge variant={r.wasAssigned ? "warning" : r.isWin ? "success" : "neutral"}>{r.exitReason}</Badge> },
-                          { key: "netPnl", label: "Net P&L", align: "right", render: (r) => pnlCell(r.netPnl) },
+                          { key: "exitReason", label: "Exit", cell: (r) => <Badge variant={r.wasAssigned ? "warning" : r.isWin ? "success" : "neutral"}>{r.exitReason}</Badge> },
+                          { key: "netPnl", label: "Net P&L", align: "right", cell: (r) => pnlCell(r.netPnl) },
                           { key: "holdingDays", label: "Days", align: "right" },
                         ]}
                         rows={TRADES} />
@@ -196,7 +196,7 @@ function CoveredCallLabScreen() {
                     <Badge variant="neutral">412 contracts scanned · 3 pass</Badge>
                   </div>
                   <PanelSurface style={{ padding: 0 }}>
-                    <DenseDataTable
+                    <DataGrid
                       columns={[
                         { key: "strike", label: "Strike", align: "right" },
                         { key: "expiration", label: "Expiration" },
@@ -205,9 +205,9 @@ function CoveredCallLabScreen() {
                         { key: "ask", label: "Ask", align: "right" },
                         { key: "delta", label: "Delta", align: "right" },
                         { key: "iv", label: "IV", align: "right" },
-                        { key: "oi", label: "OI", align: "right", render: (r) => r.oi.toLocaleString() },
-                        { key: "vol", label: "Vol", align: "right", render: (r) => r.vol.toLocaleString() },
-                        { key: "meets", label: "Filters", render: (r) => r.meets
+                        { key: "oi", label: "OI", align: "right", cell: (r) => r.oi.toLocaleString() },
+                        { key: "vol", label: "Vol", align: "right", cell: (r) => r.vol.toLocaleString() },
+                        { key: "meets", label: "Filters", cell: (r) => r.meets
                           ? <SeverityBadge status="Passed" label="Pass" />
                           : <SeverityBadge status="Blocked" label={r.reject} /> },
                       ]}
@@ -219,13 +219,13 @@ function CoveredCallLabScreen() {
               <TabPanel>
                 <div style={{ paddingTop: 10 }}>
                   <PanelSurface style={{ padding: 0 }}>
-                    <DenseDataTable
+                    <DataGrid
                       columns={[
                         { key: "runId", label: "Run" },
                         { key: "underlying", label: "Underlying" },
                         { key: "period", label: "Period" },
-                        { key: "label", label: "Label", render: (r) => r.label || <span style={{ color: "var(--text-muted)" }}>—</span> },
-                        { key: "status", label: "Status", render: (r) => <SeverityBadge status={r.status} /> },
+                        { key: "label", label: "Label", cell: (r) => r.label || <span style={{ color: "var(--text-muted)" }}>—</span> },
+                        { key: "status", label: "Status", cell: (r) => <SeverityBadge status={r.status} /> },
                         { key: "cagr", label: "CAGR", align: "right" },
                         { key: "sharpe", label: "Sharpe", align: "right" },
                         { key: "winRate", label: "Win rate", align: "right" },
@@ -237,6 +237,7 @@ function CoveredCallLabScreen() {
             </Tabs>
           </div>
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

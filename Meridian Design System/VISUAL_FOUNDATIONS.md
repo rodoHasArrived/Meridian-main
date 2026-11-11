@@ -25,7 +25,7 @@ desktop client (`src/Meridian.Wpf/Styles/*.xaml`) carries the same palette.
 report covers). Controlled variant `#CB6E4E`, pointer-emphasized variant `#D2795A`, ghost wash
 `#F6E6DF`. Use one purposeful signal occurrence per composition. Terracotta is never a primary
 action, loss, error, or focus color. At 3.74:1 on the plate it is a borders-and-icons color, not
-a text ink: signal-colored text uses `--brand-signal-text`.
+a text ink: signal-colored text uses `--brand-signal-text` or `--brand-signal-ink`.
 
 **Primary action** — graphite `#29323A` (`--brand-axis`) under paper ink `#F5F3EE`. One primary
 action per screen.
@@ -61,8 +61,9 @@ data value 16 (mono, semibold) · caption 12 · label 11 · micro-label 10 (smal
 
 ## Elevation, radii, spacing (`tokens/elevation.css`)
 
-- Radii: **2 / 4 / 6** — 2px chips and data plates, 4px controls and panels (`--radius-card`),
-  6px overlays; dialogs 8px, the ceiling. Structure comes from rules, not rounding.
+- Radii: **2 / 4 / 6 / 8** — 2px chips and analytical plates, 4px controls and cards
+  (`--radius-card: 4px`), 6px detached overlays, and 8px dialogs (the ceiling). Structure
+  comes from rules, not rounding.
 - Shadows: surfaces are **flat — `--shadow-card: none`**. The only elevation is a tight,
   hard-edged **menu** shadow `0 2px 8px rgba(17,23,29,.16)` on detached overlays that genuinely
   float above the plane. Everything else is borders.

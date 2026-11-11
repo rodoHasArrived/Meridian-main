@@ -50,13 +50,11 @@ const MULTI = [
   { time: t("2:39.502"), symbol: "NVDA", price: 118.41, size: 18000 },
 ];
 
-ReactDOM.render(
-  <TimeAndSalesTape prints={SINGLE} showVenue sizeBuckets={[1000, 5000]} maxHeight={280} />,
-  document.getElementById("single")
+ReactDOM.createRoot(document.getElementById("single")).render(
+  <TimeAndSalesTape prints={SINGLE} showVenue sizeBuckets={[1000, 5000]} maxHeight={280} />
 );
-ReactDOM.render(
-  <TimeAndSalesTape prints={MULTI} showSymbol blockSize={10000} sizeBuckets={[1000, 5000]} maxHeight={280} />,
-  document.getElementById("multi")
+ReactDOM.createRoot(document.getElementById("multi")).render(
+  <TimeAndSalesTape prints={MULTI} showSymbol blockSize={10000} sizeBuckets={[1000, 5000]} maxHeight={280} />
 );
 </script>
 </body>

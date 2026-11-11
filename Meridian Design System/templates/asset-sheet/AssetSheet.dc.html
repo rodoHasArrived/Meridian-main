@@ -24,7 +24,7 @@
 <sc-for list="{{ navItems }}" as="nv" hint-placeholder-count="3">
 <sc-if value="{{ nv.active }}">
 <div role="button" tabindex="0" aria-current="page" onClick="{{ nv.select }}" onKeyDown="{{ nv.key }}" style="display:flex;align-items:baseline;gap:12px;padding:9px 22px 9px 19px;cursor:pointer;border-left:3px solid var(--interaction-selected,#496C8F);background:var(--bg)" style-hover="background:var(--bg-hover)">
-<span style="font-family:var(--font-data);font-size:10px;color:var(--brand-signal,#C56343)">{{ nv.num }}</span>
+<span style="font-family:var(--font-data);font-size:10px;color:var(--brand-signal-ink,#944A32)">{{ nv.num }}</span>
 <span style="font-family:var(--font-data);font-size:10px;letter-spacing:.16em;color:var(--text-primary)">{{ nv.label }}</span>
 </div>
 </sc-if>
@@ -55,7 +55,7 @@
 <header style="display:flex;align-items:center;gap:22px;padding-bottom:16px">
 <div style="flex:none">
 <h1 style="font-size:25px;font-weight:600;letter-spacing:.38em;margin:0;color:var(--text-primary)">MERIDIAN</h1>
-<div style="font-size:13px;font-weight:600;letter-spacing:.3em;color:var(--brand-signal,#C56343);margin-top:4px">{{ sheetTitle }}</div>
+<div style="font-size:13px;font-weight:600;letter-spacing:.3em;color:var(--brand-signal-ink,#944A32);margin-top:4px">{{ sheetTitle }}</div>
 </div>
 <div style="width:1px;align-self:stretch;background:var(--border-strong);flex:none"></div>
 <p style="margin:0;max-width:420px;font-size:12.5px;line-height:1.55;color:var(--text-secondary);flex:1;text-wrap:pretty">{{ description }}</p>

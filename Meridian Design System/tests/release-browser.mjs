@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
+import { verifyGallery } from './gallery-browser.mjs';
 
 const base = process.env.MERIDIAN_PREVIEW_URL || 'http://127.0.0.1:8766';
 const evidence = process.env.MERIDIAN_QA_OUTPUT || '/tmp/meridian-pr3501-qa';
@@ -99,6 +100,7 @@ try {
   await page.screenshot({ path: `${evidence}/light-1366-zoom200.png`, fullPage: true });
   assert.deepEqual(remote, [], 'Remote dependencies requested');
   assert.deepEqual(errors, [], 'Browser errors');
+  await verifyGallery({ browser, base, evidence });
   await writeFile(`${evidence}/axe.json`, JSON.stringify(accessibility, null, 2));
   assert.deepEqual(accessibility.filter(item => item.violations.length), [], 'Automated accessibility violations');
   console.log(JSON.stringify({ result: 'PASS', namespace: 'MeridianDesignSystem_205d17', conditions: options.length, themes: 2, viewports: 4, zoom: '200%', remoteRequests: remote.length, runtimeErrors: errors.length, accessibilityStates: accessibility.length, screenshots: evidence }));

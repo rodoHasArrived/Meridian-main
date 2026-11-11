@@ -63,7 +63,7 @@ button.run:disabled{background:var(--bg-light,#F8F7F3);border-color:var(--border
 <h2><span>Dynamic gate — specimen cards</span><em id="cards-idx">not run</em></h2>
 <div class="bar">
   <button class="run" id="runCards" type="button">Run card assertions</button>
-  <p>Loads each <code>@dsCard</code> in an iframe and asserts: it mounts, no component threw, no duplicate DOM id, every control has an accessible name, every <code>&lt;button&gt;</code> has a type, no positive tabindex, nothing transitions <code>all</code>, dialogs are named, the first control takes visible focus, and a card that publishes an adoption figure recomputes it from its own rows. Three at a time; the run takes a few minutes. Append <code>?cards=all</code> to the URL to start it automatically, <code>?cards=Operations</code> for one group.</p>
+  <p>Loads each <code>@dsCard</code> in an iframe, waits for its used fonts, and asserts: it mounts, no component threw, no duplicate DOM id, every control has an accessible name, every <code>&lt;button&gt;</code> has a type, no positive tabindex, nothing transitions <code>all</code>, dialogs are named, the first control takes visible focus, and a card that publishes an adoption figure recomputes it from its own rows. Three at a time; the run takes a few minutes. Append <code>?cards=all</code> to the URL to start it automatically, <code>?cards=Operations</code> for one group.</p>
 </div>
 <table id="cards"><thead><tr><th style="width:34%">Card</th><th style="width:110px">Group</th><th style="width:70px">Result</th><th>Findings</th></tr></thead><tbody></tbody></table>
 
@@ -323,28 +323,38 @@ function assertCard(card) {
     let settled = false;
     const finish = (findings) => {
       if (settled) return; settled = true;
+      clearTimeout(timer);
       frame.remove();
       resolve({ path: card.path, ok: findings.length === 0, findings });
     };
     const timer = setTimeout(() => finish([{ id: "load", note: "did not settle within 14 s" }]), 14000);
     frame.addEventListener("load", () => {
       // Cards mount React after load; give the specimen a beat to render before asserting.
-      setTimeout(() => {
-        clearTimeout(timer);
+      setTimeout(async () => {
         let findings = [];
         try {
           const doc = frame.contentDocument, win = frame.contentWindow;
+          // Font layout must settle before measurement and iframe disposal. The
+          // 14 s timer stays active while a slow or failed face is being loaded.
+          if (doc.fonts) await doc.fonts.ready;
+          if (settled) return;
           for (const a of CARD_ASSERTIONS) {
             let note = null;
             try { note = a.run(doc, win); } catch (e) { note = "assertion threw: " + (e.message || e); }
             if (note) findings.push({ id: a.id, note });
           }
+          // Inspecting hidden typography or moving focus can start a lazy face
+          // load. Keep that request alive until it settles before disposal too.
+          if (doc.fonts) await doc.fonts.ready;
+          if (settled) return;
+          const failedFonts = doc.fonts ? [...doc.fonts].filter((face) => face.status === "error") : [];
+          if (failedFonts.length) findings.push({ id: "fonts", note: `${failedFonts.length} failed font face(s): ${failedFonts.slice(0, 3).map((face) => face.family).join(", ")}` });
         } catch (e) { findings = [{ id: "access", note: String(e.message || e) }]; }
         finish(findings);
       }, 1200);
     });
-    document.getElementById("stage").appendChild(frame);
     frame.src = "../" + card.path;
+    document.getElementById("stage").appendChild(frame);
   });
 }
 

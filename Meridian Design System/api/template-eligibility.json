@@ -1,7 +1,7 @@
 {
   "$schema": "meridian/template-eligibility/1",
   "authored": true,
-  "note": "Hand-authored judgment, machine-checked. Eligibility is a design decision per screen and cannot be generated; scripts/check_template_eligibility.py validates completeness, reason codes and the reference scan, and regenerates the adoption block in docs/METRICS.md. A template carrying `retained` is an unpublished compatibility screen: check_design_system_governance.py reports its entry-contract gaps as warnings and fails if it appears in the manifest's template list.",
+  "note": "Hand-authored judgment, machine-checked. Eligibility is a design decision per screen and cannot be generated; scripts/check_template_eligibility.py validates completeness, reason codes and the reference scan, and regenerates the adoption block in docs/METRICS.md.",
   "contract": "guidelines/TEMPLATE_CONTRACT.md",
   "release": "4.3.0",
   "classifiedOn": "2026-11-11",
@@ -1032,8 +1032,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-governance; references are scanned from this entry. Retained compatibility screens are included without claiming migration.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-governance; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
     },
     "backtest-builder": {
       "archetype": "Compose",
@@ -1068,8 +1067,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "Source review: screen.jsx renders strategy/benchmark EquityCurve, DrawdownChart with a -6% threshold, and return Histogram; these require figure and reference contracts. Existing form/draft/data prerequisites retain the strategy-formation eligibility. Fixed panels are not configurable. Adoption scans only the .dc.html entry, so imported JSX names are not counted as conformance.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "Source review: screen.jsx renders strategy/benchmark EquityCurve, DrawdownChart with a -6% threshold, and return Histogram; these require figure and reference contracts. Existing form/draft/data prerequisites retain the strategy-formation eligibility. Fixed panels are not configurable. Adoption scans only the .dc.html entry, so imported JSX names are not counted as conformance."
     },
     "backtest-compare": {
       "archetype": "Investigate",
@@ -1102,8 +1100,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "Source review: screen.jsx compares two selected immutable runs, KPI deltas, overlaid equity paths, drawdown and return distributions. Context, linked selection, clocks, object, continuity, figure and datum contracts apply; the permanent fixed panels have no working move/resize/replace controls, so Capsule is exempt. Adoption scans only the .dc.html entry.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "Source review: screen.jsx compares two selected immutable runs, KPI deltas, overlaid equity paths, drawdown and return distributions. Context, linked selection, clocks, object, continuity, figure and datum contracts apply; the permanent fixed panels have no working move/resize/replace controls, so Capsule is exempt. Adoption scans only the .dc.html entry."
     },
     "books-loop": {
       "archetype": "Investigate",
@@ -1175,8 +1172,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "Source review: screen.jsx compares strategy and underlying EquityCurve, with overwrite/model parameters and time-bounded option-chain evidence. Figure and comparator/reference contracts apply. Fixed request/result panels do not qualify as configurable Capsules. Adoption scans only the .dc.html entry.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "Source review: screen.jsx compares strategy and underlying EquityCurve, with overwrite/model parameters and time-bounded option-chain evidence. Figure and comparator/reference contracts apply. Fixed request/result panels do not qualify as configurable Capsules. Adoption scans only the .dc.html entry."
     },
     "family-office": {
       "archetype": "Investigate",
@@ -1209,8 +1205,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "4.3.0 import audit: workflow eligibility follows ownership-graph; references are scanned from this entry. Retained compatibility screens are included without claiming migration.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows ownership-graph; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
     },
     "journaling-workstation": {
       "archetype": "Investigate",
@@ -1244,8 +1239,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "Source review: screen.jsx joins journal entry, posting history and statement reconciliation; balanced debit/credit arithmetic and reconciliation parity are meaningful references, so Datum is eligible. No plotted figure or configurable module is present. Imported JSX names are not counted as entry conformance.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "Source review: screen.jsx joins journal entry, posting history and statement reconciliation; balanced debit/credit arithmetic and reconciliation parity are meaningful references, so Datum is eligible. No plotted figure or configurable module is present. Imported JSX names are not counted as entry conformance."
     },
     "position-detail": {
       "archetype": "Investigate",
@@ -1314,8 +1308,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
     },
     "split-pane-reconciliation": {
       "archetype": "Investigate",
@@ -1349,8 +1342,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
     },
     "strategy-builder": {
       "archetype": "Compose",
@@ -1383,8 +1375,7 @@
         "tim"
       ],
       "stray": [],
-      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-formation; references are scanned from this entry. Retained compatibility screens are included without claiming migration.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-formation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
     },
     "strategy-onboarding": {
       "archetype": "Compose",
@@ -1415,8 +1406,7 @@
         "sel"
       ],
       "stray": [],
-      "classificationNote": "Source review: screen.jsx is a local four-step strategy setup form with selected universe/fields/template and review-before-run prerequisites. Those support context, linked selection, object, decision and guards. It has no competing timestamp roles, retained remote evidence, analytical plot/reference, or configurable module; those remain exempt. Imported JSX names are not counted as entry conformance.",
-      "retained": "Unpublished compatibility screen: a screen.jsx wrapper kept from before the template contract and absent from the manifest's template list. The entry contract is reported, not enforced."
+      "classificationNote": "Source review: screen.jsx is a local four-step strategy setup form with selected universe/fields/template and review-before-run prerequisites. Those support context, linked selection, object, decision and guards. It has no competing timestamp roles, retained remote evidence, analytical plot/reference, or configurable module; those remain exempt. Imported JSX names are not counted as entry conformance."
     }
   }
 }

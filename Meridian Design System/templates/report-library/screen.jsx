@@ -33,7 +33,7 @@ const { useState, useMemo } = React;
 .rl-rail-row:last-child{border-bottom:none;}
 .rl-rail-link{background:none;border:none;padding:0;text-align:left;cursor:pointer;
   font-family:var(--font-body);font-size:12px;color:var(--text-primary,#20252B);}
-.rl-rail-link:hover{color:var(--brand-signal-text,#8E4730);text-decoration:underline;}
+.rl-rail-link:hover{color:var(--brand-signal-ink,#944A32);text-decoration:underline;}
 .rl-rail-time{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted,#606870);white-space:nowrap;}
 `;
   document.head.appendChild(el);
