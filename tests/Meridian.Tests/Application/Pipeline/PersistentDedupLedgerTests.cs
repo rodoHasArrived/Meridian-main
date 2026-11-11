@@ -286,6 +286,37 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
         lines.Take(existing.Length).Should().Equal(existing);
     }
 
+    [Fact]
+    public async Task FlushAsync_WhileAppendsCompactTheLedger_DoesNotThrow()
+    {
+        // Compaction closes the writer while it holds the write lock. A flush that saw the writer
+        // open and then waited for that lock must not dereference the closed writer.
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory, compactionMinLines: 2);
+        await _firstLedger.InitializeAsync();
+        var ledger = _firstLedger;
+        var appendsDone = 0;
+
+        var flusher = Task.Run(async () =>
+        {
+            while (Volatile.Read(ref appendsDone) == 0)
+                await ledger.FlushAsync();
+        });
+
+        try
+        {
+            // With one line per identity the file doubles between compactions: about eleven here.
+            for (var sequence = 1; sequence <= 2_000; sequence++)
+                (await ledger.IsDuplicateAsync(CreateTradeEvent("QQQ", sequence))).Should().BeFalse();
+        }
+        finally
+        {
+            Volatile.Write(ref appendsDone, 1);
+        }
+
+        // Awaiting the flusher rethrows anything a flush threw.
+        await flusher.WaitAsync(TimeSpan.FromSeconds(30));
+    }
+
     private string LedgerPath => Path.Combine(_ledgerDirectory, "dedup_ledger.jsonl");
 
     private async Task<string[]> ReadLedgerLinesAsync()

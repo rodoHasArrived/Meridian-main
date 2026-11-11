@@ -926,7 +926,10 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         await _writeLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            await _writer.FlushAsync(ct).ConfigureAwait(false);
+            // Read the writer again under the lock: a compaction that ran while this call waited
+            // has already flushed and closed it, and the next append reopens it.
+            if (_writer is { } writer)
+                await writer.FlushAsync(ct).ConfigureAwait(false);
         }
         finally
         {
