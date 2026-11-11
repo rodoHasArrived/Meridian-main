@@ -99,7 +99,8 @@ Every component above is existing evidence. Stage 1 is in progress as remediatio
 started.
 
 *Status at 2026-11-11:* stages 1 and 2 are complete. Both codec arms are asserted from the
-schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). S3-E now replaces every
+schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). For 20 of the 32
+classes both arms are generated from one binding table; the other 12 are still hand-written. S3-E now replaces every
 per-class scalar field with one of the 52 shared module homes, including the residual complement
 and complete declared schedules. Each field group has replay checks; a global reflection ratchet
 requires every stored field on all 32 payloads to use a registered module type. The permanent

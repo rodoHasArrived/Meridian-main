@@ -592,3 +592,13 @@ lists, per class and embedded module, the members the row carries, and `validate
 the rest (`term_member_not_persisted`) and a conflicting value in a member the row derives
 (`term_member_value_not_persisted`). The list was derived from the flat codec's own round trip
 and is held to it by `SecurityKindPersistenceTests`. See the review record.
+
+### Codec generation, cohort 1 — 2026-11-11
+
+Stage 3's codec arms were asserted, not generated. Twenty classes now have both arms generated
+from one binding table (`SecurityAssetTermsCodecBindings`): the decode arm in
+`SecurityMasterMapping.GeneratedDecode.cs` and the writer arm in
+`Interop.SecurityMaster.GeneratedWriter.fs`, both committed and held to the table by
+`SecurityFlatCodecGenerationTests`. Behaviour is unchanged. Twelve classes remain hand-written:
+four need a module-level row kind, five need the structural codecs named in the table, and
+three have bespoke decodes. See the review record for the split.

@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "7e4a816f037eb531c37156e6d5b84c38500916d9382949c83eac1fff3aa9de35",
+      "fingerprint": "412354d4f8eafe39be72d393e9bc49e25a3c0eaa73cc15e8f4546ff4d90e343f",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -2031,6 +2031,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFormModel",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermRole",
+        "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint",
@@ -2041,6 +2042,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
@@ -2143,9 +2145,11 @@
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
         "Meridian.Contracts.SecurityMaster.SecurityStatusDto",
         "Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
+        "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
         "Meridian.Contracts.SecurityMaster.SecurityTermBlocks",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventionKind",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
+        "Meridian.Contracts.SecurityMaster.SecurityTermRead",
         "Meridian.Contracts.SecurityMaster.SecurityTermReader",
         "Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope",
         "Meridian.Contracts.SecurityMaster.SecurityTermsFormats",
@@ -4251,7 +4255,7 @@
       "directories": [
         "src/Meridian.Contracts/SecurityMaster"
       ],
-      "fingerprint": "9d8ba2b3de5e50f2d9e1d5003405a6a52a5c9cb75b92d2a934989dd61743f01f",
+      "fingerprint": "7d62c772f35046edf5d14cf61f21ae7ab31b3e1dbf3350c36c768584ad9bc558",
       "id": "security-master-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts.SecurityMaster"
@@ -4588,6 +4592,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFormModel",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermRole",
+        "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint",
@@ -4598,6 +4603,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
@@ -4700,9 +4706,11 @@
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
         "Meridian.Contracts.SecurityMaster.SecurityStatusDto",
         "Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
+        "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
         "Meridian.Contracts.SecurityMaster.SecurityTermBlocks",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventionKind",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
+        "Meridian.Contracts.SecurityMaster.SecurityTermRead",
         "Meridian.Contracts.SecurityMaster.SecurityTermReader",
         "Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope",
         "Meridian.Contracts.SecurityMaster.SecurityTermsFormats",
@@ -4773,7 +4781,7 @@
       ]
     }
   ],
-  "fingerprint": "3938b2ac28f8d71262163717a4f4c7ffa4a343d78ae507fafb9be27deeb5f2c0",
+  "fingerprint": "993c76cef1290d3ddbeaaae98d68bd847486d4156100ccdcee2012337d0c3493",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -6989,7 +6997,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "d38904afb0a97382744e5eac3bc422448bfc6374a785fe86823fcd66889f0b83",
+      "fingerprint": "ea18fb6df9312f914f9fd27b8ba9f437d541da47f42fc3c0bd0a5a1f8314ade4",
       "mapped_schemas": [
         "security_master"
       ],
@@ -7306,6 +7314,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFieldType",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermFormModel",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermRole",
+        "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermsSchema",
         "Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint",
@@ -7316,6 +7325,7 @@
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
         "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
+        "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceApprovalDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceBlockerDto",
         "Meridian.Contracts.SecurityMaster.SecurityClosePriceEvidence",
@@ -7418,9 +7428,11 @@
         "Meridian.Contracts.SecurityMaster.SecuritySnapshotRecord",
         "Meridian.Contracts.SecurityMaster.SecurityStatusDto",
         "Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
+        "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
         "Meridian.Contracts.SecurityMaster.SecurityTermBlocks",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventionKind",
         "Meridian.Contracts.SecurityMaster.SecurityTermConventions",
+        "Meridian.Contracts.SecurityMaster.SecurityTermRead",
         "Meridian.Contracts.SecurityMaster.SecurityTermReader",
         "Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope",
         "Meridian.Contracts.SecurityMaster.SecurityTermsFormats",
@@ -272179,6 +272191,75 @@
         "security-master-contracts"
       ],
       "enum_members": [],
+      "fingerprint": "525144e79886757ab16edc68cc2e7409f50d57d7e607bd638f2a5a8ab0506852",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
+      "kind": "class",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": true,
+          "collection_kind": "map",
+          "element_type": "SecurityClassCodecBinding",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": "string",
+          "name": "ByAssetClass",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>",
+          "source_line": 264,
+          "type": "IReadOnlyDictionary<string, SecurityClassCodecBinding>"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityClassCodecBinding",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Classes",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<SecurityClassCodecBinding>",
+          "source_line": 95,
+          "type": "IReadOnlyList<SecurityClassCodecBinding>"
+        }
+      ],
+      "name": "SecurityAssetTermsCodecBindings",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
+      ],
+      "source": {
+        "line": 75,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+      },
+      "sources": [
+        {
+          "line": 75,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
       "fingerprint": "77e1896bbfd581d14c8038d5053a8faef17b1ba1a9d8c01cbf8e1b8aae859998",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
@@ -273029,6 +273110,89 @@
         {
           "line": 79,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "cac020286d3e14801d26d90ceb0697e222ff1d398771975afdcd982cbd7fd3fc",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AssetClass",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 57,
+          "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "SecurityTermBinding",
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Members",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "IReadOnlyList<SecurityTermBinding>",
+          "source_line": 59,
+          "type": "IReadOnlyList<SecurityTermBinding>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReadsResolvedTerms",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 58,
+          "type": "bool"
+        }
+      ],
+      "name": "SecurityClassCodecBinding",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityTermBinding"
+      ],
+      "source": {
+        "line": 56,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+      },
+      "sources": [
+        {
+          "line": 56,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
         }
       ],
       "type_parameters": []
@@ -282857,6 +283021,134 @@
     },
     {
       "base_types": [],
+      "classification": "record",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [],
+      "fingerprint": "f43fc826dfa6bd09c0e0701215105034a5d9f1802cfdd8bc3afe879b23853fd4",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "kind": "record",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecodeExpression",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 48,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "false",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "DecodeOnly",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "bool",
+          "source_line": 50,
+          "type": "bool"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Key",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 46,
+          "type": "string?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Path",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 45,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Read",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "SecurityTermRead?",
+          "source_line": 47,
+          "type": "SecurityTermRead?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "default": "null",
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "WriteVia",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "string?",
+          "source_line": 49,
+          "type": "string?"
+        }
+      ],
+      "name": "SecurityTermBinding",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "references": [
+        "Meridian.Contracts.SecurityMaster.SecurityTermRead"
+      ],
+      "source": {
+        "line": 44,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+      },
+      "sources": [
+        {
+          "line": 44,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
       "classification": "class",
       "containing_type": null,
       "contract_sets": [
@@ -283014,6 +283306,141 @@
         {
           "line": 157,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "enum",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts",
+        "security-master-contracts"
+      ],
+      "diagram": true,
+      "diagram_contract_sets": [
+        "security-master-contracts"
+      ],
+      "enum_members": [
+        {
+          "explicit_value": false,
+          "name": "RequiredString",
+          "source_line": 6,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "OptionalString",
+          "source_line": 7,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "ConventionString",
+          "source_line": 9,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RequiredDecimal",
+          "source_line": 10,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "OptionalDecimal",
+          "source_line": 11,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "StrictDecimal",
+          "source_line": 13,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RequiredInt",
+          "source_line": 14,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "OptionalInt",
+          "source_line": 15,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "StrictInt",
+          "source_line": 16,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RequiredDate",
+          "source_line": 17,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "OptionalDate",
+          "source_line": 18,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "StrictDate",
+          "source_line": 19,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "RequiredSecurityId",
+          "source_line": 21,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "OptionalBoolean",
+          "source_line": 22,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "BooleanDefaultFalse",
+          "source_line": 24,
+          "value": null
+        },
+        {
+          "explicit_value": false,
+          "name": "DayCount",
+          "source_line": 26,
+          "value": null
+        }
+      ],
+      "fingerprint": "22d8912a3e124f9d41491426fbec2427b81db17662341694a74ef8cdd1047323",
+      "full_name": "Meridian.Contracts.SecurityMaster.SecurityTermRead",
+      "id": "Meridian.Contracts.SecurityMaster.SecurityTermRead",
+      "kind": "enum",
+      "mapped_schemas": [
+        "security_master"
+      ],
+      "members": [],
+      "name": "SecurityTermRead",
+      "namespace": "Meridian.Contracts.SecurityMaster",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityTermRead",
+      "references": [],
+      "source": {
+        "line": 4,
+        "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
+      },
+      "sources": [
+        {
+          "line": 4,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs"
         }
       ],
       "type_parameters": []

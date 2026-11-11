@@ -852,6 +852,68 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11
+
+Stage 3 allowed the codec arms to be generated or fully asserted, and until now they were
+asserted: the 32-class decode switch in `SecurityMasterMapping.ToSecurityKind` and the per-kind
+F# writer in `SecurityMasterSnapshotWrapper` were hand-written, with schema-driven sweeps
+holding them to the schema. A new class still cost one arm in each. For 20 of the 32 classes
+both arms are now generated.
+
+**The table.** `SecurityAssetTermsCodecBindings` (Contracts) states, per class, which flat key
+carries which member of the class's record, as `Field.Member`. Key types and requiredness stay
+in `SecurityAssetTermsSchema`, and record shapes are read from the F# types, so a row names only
+what neither says: the member, the reader's tolerance (plain, strict or convention-aware), and
+the few values a class fixes or derives. Three kinds of row cover the cohort:
+
+| Row | Meaning | Count in cohort 1 |
+| --- | --- | --- |
+| Plain | Key read into the member and written from it | 138 |
+| Written through a record property | The writer reads the record's own computed property, which supplies the written form a missing required value takes | 24 of the plain rows |
+| Fixed or derived | The decode sets the member without reading a key of its own (a treasury bill's issuer, a CDS issue date read from the effective date), or reads it through its own vocabulary (the option exercise style) | 5 |
+
+A member with no row decodes as absent, which is what `SecurityKindPersistence` refuses on a
+directly built record.
+
+**The output.** `SecurityFlatCodecGenerator` (tests) emits two committed source files:
+`SecurityMasterMapping.GeneratedDecode.cs` (one `DecodeGenerated<Class>` method per class) and
+`Interop.SecurityMaster.GeneratedWriter.fs` (one `GeneratedFlatWriter.write<Class>` function per
+class). They are ordinary code, compiled with the rest, with no reflection at run time; the
+hand-written arms for these classes are deleted and call the generated ones.
+`SecurityFlatCodecGenerationTests` regenerates both and fails when the committed text differs,
+requires every generated class to be a catalog class, and requires each class's rows to write
+exactly the keys the schema declares. The generator itself refuses a row that names a member the
+record lacks, binds a member twice, reads an optional key as required, or leaves a non-optional
+member unbound.
+
+**Behaviour.** Unchanged. The generated arms read the same keys through the same readers in
+the same order and write the same anonymous-record shapes, so no golden, corpus or fixture
+moved and no existing test changed apart from the asset-class literal ratchet, which lists the
+two new class-naming files.
+
+**Cohort 1 (20 classes).** Option, Future, FxSpot, MoneyMarketFund, TreasuryBill, Repo,
+OtherSecurity, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, Commodity,
+CryptoCurrency, Cfd, Warrant, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption,
+CapFloor, StructuredNote.
+
+**Still hand-written (12 classes), and why.**
+
+| Classes | What the generator lacks |
+| --- | --- |
+| Deposit, CertificateOfDeposit, CommercialPaper, CashSweep | A module built by a helper or a vocabulary conversion (the scalar call module, the coupon-kind constant, the asset-backed flag, the sweep vehicle and frequency) |
+| Bond, Swap, DirectLoan, StructuredCredit, CommitmentGuarantee | Structural members: coupon structures, schedules, legs, covenants, the declared-schedule containers and their version gating |
+| Equity, InvestmentFund, CustomAsset | A bespoke classification decode, a pinned historical read order, and the verbatim profile document |
+
+The first group needs only a module-level row kind. The second needs the structural codecs
+named in the table. Neither is started.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23); adjacent suites —
+5,142 passed, 134 skipped; `Meridian.FSharp.Tests` — 642 passed; `Meridian.FundStructure.Tests` —
+231 passed; `Meridian.Contracts.UnitTests` — 384 passed. `dotnet format whitespace
+--verify-no-changes` and schema-control verification pass. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
 
 The follow-through contraction (pull request #3496) put every per-class field on a shared term
