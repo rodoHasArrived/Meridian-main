@@ -7,7 +7,7 @@
     "name": "scripts/generate-diagrams.mjs --tracker-only",
     "version": "1.0.0"
   },
-  "sourceFingerprint": "748b838ab73b",
+  "sourceFingerprint": "ec263a9228fb",
   "baselineDate": "2026-06-17",
   "summary": {
     "screenCount": 98,
@@ -3545,7 +3545,8 @@
       "fixtureMode": "Fixture mode (desktop-workflows.json default fixtureMode: true)",
       "screenshotGap": "-",
       "testReferences": [
-        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs"
+        "tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs",
+        "tests/Meridian.Wpf.Tests/Views/DesignSystemResourceTests.cs"
       ],
       "status": "evidence-current",
       "tasks": [
@@ -3559,7 +3560,7 @@
         },
         {
           "done": true,
-          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs."
+          "text": "WPF route/view-model test reference found in tests/Meridian.Wpf.Tests/Features/Settings/SettingsFeatureModuleTests.cs, tests/Meridian.Wpf.Tests/Views/DesignSystemResourceTests.cs."
         }
       ],
       "openTaskCount": 0

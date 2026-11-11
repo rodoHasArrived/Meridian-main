@@ -2,46 +2,57 @@
 // Assets / Liabilities / Equity / Revenue / Expenses sections with subtotals and a grand-total
 // footer proving Σdebit = Σcredit. Pairs with Money.buildTrialBalance for raw postings.
 import React from "react";
-import { AmountCell } from "./AmountCell";
-import { toNumber, accountNormalSide } from "./money";
+import { AmountCell, splitEnvelopeValue } from "./AmountCell";
+import { toNumber } from "../core/format.js";
+import { accountNormalSide } from "./money";
+
+// A side may arrive as a bare number or an envelope-shaped object — the proof arithmetic reads
+// the figure, AmountCell renders the facets (guidelines/VALUE_ENVELOPE.md).
+const fig = (v) => splitEnvelopeValue(v).value;
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.tbl-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
+.tbl-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tbl{width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#EDEAE4);z-index:1;
+  background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tbl thead th:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
-.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
+.tbl td{padding:9px 12px;white-space:nowrap;color:var(--text-primary,#20252B);
+  border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);
   vertical-align:baseline;}
 .tbl td:last-child{border-right:none;}
-.tbl tbody tr:hover td{background:var(--bg-hover,#F0EEE9);}
-.tbl tbody tr.tbl__sec:hover td,.tbl tbody tr.tbl__sub:hover td{background:inherit;}
+.tbl tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .tbl tbody tr.tbl__row--click{cursor:pointer;}
-.tbl tbody tr.tbl__row--on td{background:var(--bg-active,#F2E3DB);}
-.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
-.tbl__sec td{background:var(--bg-medium,#EDEAE4)!important;font-family:var(--font-body);
+.tbl tbody tr.tbl__row--on td{background:var(--bg-active,#E7EDF2);}
+.tbl tbody tr.tbl__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
+.tbl tbody tr.tbl__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.tbl__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
+/* section + subtotal rows are structure, not data: state modifiers come after the hover rule
+   and match its specificity, so they win by order — no !important needed. */
+.tbl tbody tr.tbl__sec td,.tbl tbody tr.tbl__sec:hover td{background:var(--bg-medium,#EBE8E1);
+  font-family:var(--font-body);
   font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;
-  color:var(--text-secondary,#4E5258);padding:6px 12px;}
-.tbl__sub td{background:var(--bg-light,#FBFAF8)!important;font-family:var(--font-body);
-  font-size:11px;color:var(--text-muted,#5E666F);border-top:1px solid var(--border-divider,#DAD8D3);}
-.tbl__code{color:var(--text-muted,#5E666F);}
-.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#22252A);}
-.tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
-  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);}
+  color:var(--text-secondary,#535C65);padding:6px 12px;}
+.tbl tbody tr.tbl__sub td,.tbl tbody tr.tbl__sub:hover td{background:var(--bg-light,#F8F7F3);
+  font-family:var(--font-body);
+  font-size:11px;color:var(--text-muted,#606870);border-top:1px solid var(--border-divider,#E2DED5);}
+.tbl__code{color:var(--text-muted,#606870);}
+.tbl__acct{font-family:var(--font-body);color:var(--text-primary,#20252B);}
+.tbl tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
+  border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);}
 .tbl__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4E5258);}
-.tbl__foot-note{font-weight:400;color:var(--text-muted,#5E666F);margin-left:8px;font-family:var(--font-body);font-size:11px;}
+  font-size:11px;color:var(--text-secondary,#535C65);}
+.tbl__foot-note{font-weight:400;color:var(--text-muted,#606870);margin-left:8px;font-family:var(--font-body);font-size:11px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "trialbalance");
@@ -63,10 +74,10 @@ function sectionOf(type) {
 }
 
 function sides(row) {
-  const d = toNumber(row.debit);
-  const c = toNumber(row.credit);
+  const d = toNumber(fig(row.debit));
+  const c = toNumber(fig(row.credit));
   if (isFinite(d) || isFinite(c)) return { debit: isFinite(d) ? d : 0, credit: isFinite(c) ? c : 0 };
-  const b = toNumber(row.balance);
+  const b = toNumber(fig(row.balance));
   if (!isFinite(b)) return { debit: 0, credit: 0 };
   const normal = accountNormalSide(row.type);
   const onNormal = b >= 0;
@@ -75,16 +86,18 @@ function sides(row) {
 }
 
 export function TrialBalance({
-  rows,
+  rows = [],
   currency = "USD",
   grouped = true,
   caption,
   onRowClick,
   selectedIndex,
+  trailing,
+  trailingLabel = "Assurance",
 }) {
   inject();
   const showCode = rows.some((r) => r.code != null && r.code !== "");
-  const cols = showCode ? 4 : 3;
+  const cols = (showCode ? 4 : 3) + (trailing ? 1 : 0);
 
   const computed = rows.map((r, i) => ({ ...r, ...sides(r), _i: i, _sec: sectionOf(r.type) }));
   const totalD = computed.reduce((a, r) => a + r.debit, 0);
@@ -96,33 +109,42 @@ export function TrialBalance({
     : [[null, computed]];
 
   const Row = (r) => {
+    const env = r.envelope
+      ? { ...r.envelope, label: r.envelope.label || r.account }
+      : undefined;
     const cls = [
       onRowClick ? "tbl__row--click" : "",
       selectedIndex === r._i ? "tbl__row--on" : "",
     ].filter(Boolean).join(" ") || undefined;
     return (
-      <tr key={r._i} className={cls}
-        onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
+      <tr key={r._i} className={cls} tabIndex={onRowClick ? 0 : undefined}
+                onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(rows[r._i], r._i); } } : undefined}
+                onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
         {showCode && <td className="tbl__code">{r.code}</td>}
         <td className="tbl__acct">{r.account}</td>
-        <td className="tbl--r"><AmountCell value={r.debit} currency={currency} zeroDash /></td>
-        <td className="tbl--r"><AmountCell value={r.credit} currency={currency} zeroDash /></td>
+        <td className="tbl--r"><AmountCell value={r.debit} currency={currency} zeroDash envelope={r.debit ? env : undefined} /></td>
+        <td className="tbl--r"><AmountCell value={r.credit} currency={currency} zeroDash envelope={r.credit ? env : undefined} /></td>
+        {trailing && <td className="tbl__trail">{trailing(rows[r._i], r._i)}</td>}
       </tr>
     );
   };
 
   return (
-    <div className="tbl-wrap" role="region" aria-label={caption || "Trial balance"}>
+    <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
         <thead>
           <tr>
-            {showCode && <th>Code</th>}
-            <th>Account</th>
-            <th className="tbl--r">Debit</th>
-            <th className="tbl--r">Credit</th>
+            {showCode && <th scope="col">Code</th>}
+            <th scope="col">Account</th>
+            <th className="tbl--r" scope="col">Debit</th>
+            <th className="tbl--r" scope="col">Credit</th>
+            {trailing && <th scope="col">{trailingLabel}</th>}
           </tr>
         </thead>
         <tbody>
+          {computed.length === 0 && (
+            <tr><td className="tbl__empty" colSpan={cols}>No accounts</td></tr>
+          )}
           {groups.map(([sec, rs]) => (
             <React.Fragment key={sec || "all"}>
               {sec && (
@@ -131,13 +153,14 @@ export function TrialBalance({
               {rs.map(Row)}
               {sec && rs.length > 1 && (
                 <tr className="tbl__sub">
-                  <td colSpan={cols - 2}>{sec} subtotal</td>
+                  <td colSpan={cols - 2 - (trailing ? 1 : 0)}>{sec} subtotal</td>
                   <td className="tbl--r">
                     <AmountCell value={rs.reduce((a, r) => a + r.debit, 0)} currency={currency} zeroDash mode="muted" />
                   </td>
                   <td className="tbl--r">
                     <AmountCell value={rs.reduce((a, r) => a + r.credit, 0)} currency={currency} zeroDash mode="muted" />
                   </td>
+                  {trailing && <td />}
                 </tr>
               )}
             </React.Fragment>
@@ -145,10 +168,10 @@ export function TrialBalance({
         </tbody>
         <tfoot>
           <tr>
-            <td className="tbl__foot-label" colSpan={cols - 2}>
+            <td className="tbl__foot-label" colSpan={cols - 2 - (trailing ? 1 : 0)}>
               Totals
               {!balanced && (
-                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#7E332D)" }}>
+                <span className="tbl__foot-note" style={{ color: "var(--red-dim,#883832)" }}>
                   out of balance by {""}
                 </span>
               )}
@@ -158,6 +181,7 @@ export function TrialBalance({
             </td>
             <td className="tbl--r"><AmountCell value={totalD} currency={currency} strong /></td>
             <td className="tbl--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            {trailing && <td />}
           </tr>
         </tfoot>
       </table>

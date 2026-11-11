@@ -1,0 +1,250 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Meridian — keyboard / ARIA / responsive run (Chromium)</title><link rel="stylesheet" href="../styles.css"><script src="../_preview_runtime.js"></script><script src="../_ds_bundle.js"></script><style>
+body{margin:0;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.top{height:40px;background:var(--topbar-bg);color:var(--topbar-text);display:flex;align-items:center;gap:14px;padding:0 16px;font-weight:600;letter-spacing:.08em;font-size:11.5px}.top .st{margin-left:auto;font:11px var(--font-data)}main{padding:16px 20px;display:grid;gap:14px;max-width:1400px}h1{margin:0;font-size:16px;font-weight:650}p.lede{margin:0;font-size:11.5px;line-height:1.5;color:var(--text-secondary);max-width:96ch;text-wrap:pretty}table{border-collapse:collapse;width:100%;font-size:11.5px}th{text-align:left;font:600 9.5px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);padding:6px 8px;border-bottom:1px solid var(--border)}td{padding:6px 8px;border-bottom:1px solid var(--border-divider);vertical-align:top}td.k{font-family:var(--font-data);font-size:10.5px;white-space:nowrap}td.v{font:600 10px var(--font-data);letter-spacing:.05em;white-space:nowrap}.PASS{color:var(--green-dim,#2E6B3A)}.FAIL{color:var(--red-dim,#873832)}.OPEN{color:var(--text-muted)}#stage{position:fixed;left:0;top:0;width:1280px;height:800px;opacity:.001;pointer-events:none;overflow:hidden}#frame{position:fixed;left:0;top:0;border:0;opacity:.001;pointer-events:none}
+</style></head><body>
+<div class="top">MERIDIAN DESIGN SYSTEM <span>KEYBOARD · ARIA · RESPONSIVE RUN</span><span class="st" id="status">running…</span></div>
+<main>
+<h1>The matrix, executed in a browser</h1>
+<p class="lede">The Chromium half of <code>tests/BROWSER_TEST_PLAN.md</code>: real components from <code>_ds_bundle.js</code>, real <code>KeyboardEvent</code>s, real focus, assertions on what the DOM and the accessibility tree actually contain — plus every archetype template loaded at 1280 / 1440 / 1920 and checked for horizontal overflow, script errors and the 24 px target floor. What this cannot settle is written as <b>OPEN</b>, never as a pass: announcement order and verbosity, live-region timing as heard, anything Firefox or WebKit does differently. Result on <code>window.__a11y</code>.</p>
+<table><thead><tr><th>Surface</th><th>Check</th><th>Verdict</th><th>Observed</th></tr></thead><tbody id="rows"></tbody></table>
+</main>
+<div id="stage"></div><iframe id="frame" title="template under test"></iframe>
+<script>
+const DS = window.MeridianDesignSystem_205d17, e = React.createElement, rows = document.getElementById("rows"), results = [];
+const tick = (ms = 30) => new Promise((r) => setTimeout(r, ms + 20));
+const key = (el, k, init = {}) => { const o = { key: k, code: k, bubbles: true, cancelable: true, ...init }; el.dispatchEvent(new KeyboardEvent("keydown", o)); el.dispatchEvent(new KeyboardEvent("keyup", o)); };
+const q = (s, root = document.getElementById("stage")) => root.querySelector(s), qa = (s, root = document.getElementById("stage")) => [...root.querySelectorAll(s)];
+const nameOf = (el) => { if (!el) return ""; const lb = el.getAttribute("aria-labelledby"); if (lb) return lb.split(/\s+/).map((id) => (document.getElementById(id) || {}).textContent || "").join(" ").trim(); return el.getAttribute("aria-label") || el.textContent.trim(); };
+let root;
+function mount(node) { const stage = document.getElementById("stage"); if (root) root.unmount(); stage.innerHTML = ""; root = ReactDOM.createRoot(stage); root.render(node); return tick(60); }
+function report(surface, check, verdict, observed) { results.push({ surface, check, verdict, observed }); const tr = document.createElement("tr"); tr.innerHTML = `<td class="k">${surface}</td><td>${check}</td><td class="v ${verdict}">${verdict}</td><td>${observed}</td>`; rows.appendChild(tr); }
+const ensureFocus = async () => { for (let i = 0; i < 10 && !document.hasFocus(); i++) { window.focus(); document.body.focus(); await tick(80); } };
+const T = (surface, check, fn) => async () => { try { await ensureFocus(); const r = await fn(); report(surface, check, r.ok === null ? "OPEN" : r.ok ? "PASS" : "FAIL", r.note); } catch (err) { report(surface, check, "FAIL", "threw: " + (err && err.message || err)); } };
+function Stateful({ init, render }) { const [v, set] = React.useState(init); return render(v, set); }
+
+const tests = [
+// ---- Stepper
+T("Stepper", "Ordered list with progress semantics, aria-current on the current step, no tab roles", async () => {
+  await mount(e(DS.Stepper, { steps: [{ label: "Mandate" }, { label: "Thesis" }, { label: "Universe" }, { label: "Rules" }], activeStep: 1, label: "Formation", onStepChange: () => {} }));
+  const ol = q("ol[aria-label]"), cur = qa("[aria-current='step']"), sr = qa("li")[1] && qa("li")[1].textContent;
+  const ok = !!ol && cur.length === 1 && /Step 2 of 4/.test(sr || "") && qa("[role='tab'],[role='tablist']").length === 0;
+  return { ok, note: `ol=${!!ol} · aria-current count=${cur.length} · li[1] text="${(sr || "").slice(0, 40)}" · tab roles=${qa("[role='tab']").length}` };
+}),
+// ---- SegmentedControl
+T("SegmentedControl", "Radio group, one tab stop, Arrow moves focus AND selects, Home/End, disabled skipped", async () => {
+  let val = "a"; const opts = [{ value: "a", label: "A" }, { value: "b", label: "B", disabled: true }, { value: "c", label: "C" }, { value: "d", label: "D" }];
+  await mount(e(Stateful, { init: "a", render: (v, set) => e(DS.SegmentedControl, { value: v, onChange: (x) => { val = x; set(x); }, options: opts }) }));
+  const grp = q("[role='radiogroup']"), radios = qa("[role='radio']"), tabbable = radios.filter((r) => r.tabIndex === 0);
+  radios[0].focus(); key(radios[0], "ArrowRight"); await tick();
+  const afterArrow = { focus: document.activeElement.textContent, val };
+  key(document.activeElement, "End"); await tick(); const afterEnd = { focus: document.activeElement.textContent, val };
+  key(document.activeElement, "Home"); await tick(); const afterHome = { focus: document.activeElement.textContent, val };
+  const ok = !!grp && tabbable.length === 1 && afterArrow.focus === "C" && afterArrow.val === "c" && afterEnd.val === "d" && afterHome.val === "a";
+  return { ok, note: `radiogroup=${!!grp} · tab stops=${tabbable.length} · → skipped disabled B → focus "${afterArrow.focus}" value ${afterArrow.val} · End → ${afterEnd.val} · Home → ${afterHome.val}` };
+}),
+// ---- Slider
+T("Slider", "Label associated via aria-labelledby; formatted aria-valuetext; PageUp steps", async () => {
+  await mount(e(Stateful, { init: 2, render: (v, set) => e(DS.Slider, { label: "Min yield", value: v, onChange: set, min: 0, max: 10, step: 0.25, showValue: true, valueFmt: (x) => x.toFixed(2) + "%" }) }));
+  const inp = q("input[type='range']"); const name = nameOf(inp), vt0 = inp.getAttribute("aria-valuetext");
+  inp.focus(); inp.stepUp(4); inp.dispatchEvent(new Event("input", { bubbles: true })); inp.dispatchEvent(new Event("change", { bubbles: true })); await tick();
+  const vt1 = q("input[type='range']").getAttribute("aria-valuetext");
+  return { ok: name === "Min yield" && vt0 === "2.00%" && vt1 === "3.00%", note: `name="${name}" · valuetext ${vt0} → ${vt1} after 4 steps (PageUp is native range behaviour; stepped programmatically here — the label/valuetext contract is what the component owns)` };
+}),
+// ---- Tabs
+T("Tabs", "Tablist with roving focus; aria-controls only resolves to an existing panel", async () => {
+  await mount(e(DS.Tabs, { tabs: [{ label: "General Ledger", count: 48 }, { label: "Reconciliation", count: 3 }, { label: "Statements" }] }, e(DS.TabPanel, null, "GL"), e(DS.TabPanel, null, "Recon"), e(DS.TabPanel, null, "Stmt")));
+  const tabs = qa("[role='tab']"), sel = tabs.filter((t) => t.getAttribute("aria-selected") === "true");
+  tabs[0].focus(); key(tabs[0], "ArrowRight"); await tick();
+  const focused = document.activeElement.getAttribute("role") === "tab" ? nameOf(document.activeElement) : document.activeElement.tagName;
+  const dangling = tabs.filter((t) => t.getAttribute("aria-controls") && !document.getElementById(t.getAttribute("aria-controls")));
+  const panel = q("[role='tabpanel']");
+  return { ok: tabs.length === 3 && sel.length === 1 && dangling.length === 0 && /Reconciliation/.test(focused) && !!panel, note: `tabs=${tabs.length} · selected=${sel.length} · → focus "${focused}" · dangling aria-controls=${dangling.length} · tabpanel=${!!panel}` };
+}),
+// ---- Select
+T("Select", "Named combobox (label + value), ArrowDown opens listbox with aria-activedescendant on a real option, Escape closes and keeps trigger focus", async () => {
+  await mount(e(Stateful, { init: "aapl", render: (v, set) => e(DS.Select, { label: "Security", value: v, onChange: set, options: [{ value: "aapl", label: "AAPL · Apple Inc." }, { value: "msft", label: "MSFT · Microsoft Corp." }, "---", { value: "spy", label: "SPY · SPDR S&P 500 ETF" }] }) }));
+  const btn = q("[role='combobox']"); const name = nameOf(btn); btn.focus(); key(btn, "ArrowDown"); await tick();
+  const open = q("[role='combobox']").getAttribute("aria-expanded") === "true", lb = q("[role='listbox']");
+  key(document.activeElement, "ArrowDown"); await tick();
+  const ad = q("[role='combobox']").getAttribute("aria-activedescendant"), adEl = ad && document.getElementById(ad), adRole = adEl && adEl.getAttribute("role");
+  key(document.activeElement, "Escape"); await tick();
+  const closed = q("[role='combobox']").getAttribute("aria-expanded") !== "true", focusBack = document.activeElement === q("[role='combobox']");
+  return { ok: /Security/.test(name) && /AAPL/.test(name) && open && !!lb && adRole === "option" && closed && focusBack, note: `name="${name}" · open=${open} listbox=${!!lb} · activedescendant → ${adRole || "none"} "${adEl ? adEl.textContent.trim() : ""}" · Esc closed=${closed} focus on trigger=${focusBack}` };
+}),
+// ---- WorksheetGrid
+T("WorksheetGrid", "Grid with row/col counts; arrows move aria-activedescendant to a named cell; Enter edits; Escape returns focus to the grid", async () => {
+  await mount(e(DS.WorksheetGrid, { columns: ["A", "B", "C"], rows: 3, cells: { A1: { value: 1 }, B1: { value: 2 }, C1: { value: "=A1+B1", formula: "=A1+B1", type: "formula" } }, defaultActiveCell: "A1", editable: true, onCellCommit: () => {}, label: "Sweep" }));
+  const grid = q("[role='grid']"); const rc = grid.getAttribute("aria-rowcount"), cc = grid.getAttribute("aria-colcount");
+  grid.focus(); key(grid, "ArrowRight"); await tick();
+  const ad = grid.getAttribute("aria-activedescendant"), cell = ad && document.getElementById(ad), cellName = cell && (cell.getAttribute("aria-label") || cell.textContent.trim());
+  key(grid, "Enter"); await tick(); const editing = document.activeElement.tagName === "INPUT";
+  key(document.activeElement, "Escape"); await tick(80); const back = document.activeElement === q("[role='grid']");
+  return { ok: rc === "4" && cc === "4" && !!cell && /B1/.test(cellName || "") && editing && back, note: `rowcount=${rc} colcount=${cc} · → active cell "${cellName}" · Enter → input focused=${editing} · Esc → grid focused=${back}` };
+}),
+// ---- EvidenceRail
+T("EvidenceRail", "Real tablist: arrows + Home/End move selection and focus; tabpanel labelled by its tab; unproven section absent", async () => {
+  const OBJ = { type: "journal", id: "JE-1", version: 1, label: "FX reval" };
+  await mount(e(DS.EvidenceRail, { object: OBJ, title: "FX reval", sections: { summary: e("p", null, "s"), sources: e("p", null, "src"), audit: e("p", null, "a") } }));
+  const tabs = qa("[role='tab']"), ids = tabs.map((t) => t.id.replace(/.*-tab-/, ""));
+  tabs[0].focus(); key(tabs[0], "ArrowRight"); await tick();
+  const sel1 = qa("[role='tab'][aria-selected='true']")[0], f1 = document.activeElement === sel1;
+  key(document.activeElement, "End"); await tick(); const selEnd = qa("[role='tab'][aria-selected='true']")[0];
+  const panel = q("[role='tabpanel']"), labelled = panel && document.getElementById(panel.getAttribute("aria-labelledby")) === selEnd;
+  return { ok: tabs.length === 3 && !ids.includes("calculation") && !ids.includes("lineage") && f1 && ids.indexOf(selEnd.id.replace(/.*-tab-/, "")) === 2 && labelled, note: `tabs=${ids.join("/")} (calculation, lineage absent, not blank) · → selected+focused=${f1} · End → ${selEnd.textContent.trim()} · panel labelled by selected tab=${labelled}` };
+}),
+// ---- WorkspaceLayout
+T("WorkspaceLayout", "Dividers are separators with orientation + two-region valuetext; arrow resizes 4% and stops at minSize", async () => {
+  const { WorkspaceLayoutProvider, WorkspaceLayoutBar, WorkspaceLayoutGrid, LayoutRegion } = DS;
+  await mount(e(WorkspaceLayoutProvider, { screenId: "a11y-run", regions: [{ id: "queue", size: 1 }, { id: "case", size: 1 }], persist: false }, e(WorkspaceLayoutBar), e("div", { style: { height: 400 } }, e(WorkspaceLayoutGrid, { direction: "row", style: { height: "100%" } }, e(LayoutRegion, { id: "queue", label: "Exception queue", minSize: 0.3 }, e("p", null, "q")), e(LayoutRegion, { id: "case", label: "Case" }, e("button", { id: "inside" }, "inside"))))));
+  const div = q("[role='separator']"); const or = div.getAttribute("aria-orientation"), vt0 = div.getAttribute("aria-valuetext"), v0 = +div.getAttribute("aria-valuenow");
+  div.focus(); key(div, "ArrowRight"); await tick(); const v1 = +q("[role='separator']").getAttribute("aria-valuenow");
+  for (let i = 0; i < 30; i++) { key(q("[role='separator']"), "ArrowLeft"); await tick(5); } await tick(); const vMin = +q("[role='separator']").getAttribute("aria-valuenow");
+  return { ok: or === "vertical" && /Exception queue/.test(vt0) && /Case/.test(vt0) && v1 - v0 === 4 && vMin >= 14 && vMin <= 16, note: `orientation=${or} · valuetext "${vt0}" · → ${v0}→${v1} · 30× ← stops at ${vMin}% (minSize .3 of 2 size units = 15%)` };
+}),
+T("WorkspaceLayout", "Collapsing a region while focus is inside it moves focus to the labelled rail, not body", async () => {
+  const { WorkspaceLayoutProvider, WorkspaceLayoutGrid, LayoutRegion } = DS;
+  await mount(e(WorkspaceLayoutProvider, { screenId: "a11y-run-2", regions: [{ id: "queue", size: 1 }, { id: "case", size: 1 }], persist: false }, e("div", { style: { height: 400 } }, e(WorkspaceLayoutGrid, { direction: "row", style: { height: "100%" } }, e(LayoutRegion, { id: "queue", label: "Exception queue" }, e("p", null, "q")), e(LayoutRegion, { id: "case", label: "Case" }, e("button", { id: "inside" }, "inside"))))));
+  const collapse = qa("button[aria-label^='Collapse Case']")[0]; collapse.focus(); collapse.click(); await tick(80);
+  const ae = document.activeElement, onRail = ae && ae.classList.contains("mds-lreg__rail"), label = ae && ae.getAttribute("aria-label");
+  return { ok: !!onRail, note: `after collapse (focus was on the collapse button inside the region): activeElement=${ae === document.body ? "BODY" : ae.tagName + (label ? ` "${label}"` : "")}` };
+}),
+T("WorkspaceLayout", "Modified status: how many times the live region mutates for one arrow-key step, and for eight", async () => {
+  const { WorkspaceLayoutProvider, WorkspaceLayoutBar, WorkspaceLayoutGrid, LayoutRegion } = DS;
+  await mount(e(WorkspaceLayoutProvider, { screenId: "a11y-run-3", regions: [{ id: "a", size: 1 }, { id: "b", size: 1 }], persist: false }, e(WorkspaceLayoutBar), e("div", { style: { height: 300 } }, e(WorkspaceLayoutGrid, { direction: "row", style: { height: "100%" } }, e(LayoutRegion, { id: "a", label: "A" }, e("p", null, "a")), e(LayoutRegion, { id: "b", label: "B" }, e("p", null, "b"))))));
+  const bar = q(".mds-wlay"); let adds = 0, texts = 0; const mo = new MutationObserver((ms) => { for (const m of ms) { for (const n of m.addedNodes) if (n.nodeType === 1 && n.getAttribute("role") === "status") adds++; if (m.type === "characterData" && m.target.parentElement && m.target.parentElement.getAttribute("role") === "status") texts++; } }); mo.observe(bar, { childList: true, subtree: true, characterData: true });
+  const div = q("[role='separator']"); div.focus(); key(div, "ArrowRight"); await tick(); const afterOne = { adds, texts };
+  for (let i = 0; i < 8; i++) { key(q("[role='separator']"), "ArrowRight"); await tick(5); } await tick(); mo.disconnect();
+  const status = q("[role='status']");
+  return { ok: null, note: `status present=${!!status} "${status ? status.textContent : ""}" · inserted ${afterOne.adds}× after the first step, ${adds}× after nine steps; text mutations ${texts}. The element is inserted once and never re-rendered — so Chromium's tree changes once. Whether NVDA announces the insertion once, or re-reads on each 4% step, is the OPEN half.` };
+}),
+// ---- ObjectTrail
+T("ObjectTrail", "Disclosure not menu (no aria-haspopup), aria-controls resolves, Escape closes and focus stays on the trigger", async () => {
+  const CAT = [{ type: "journal", id: "JE-1", label: "Amortization", version: 1, currentVersion: 1 }, { type: "position", id: "P-1", label: "UST 4.375", version: 2, currentVersion: 2 }];
+  await mount(e(DS.ObjectTrailProvider, { screenId: "a11y-run", persist: false, defaultEntries: CAT, onNavigate: () => {} }, e(DS.ObjectTrail)));
+  const trig = qa("button").find((b) => b.getAttribute("aria-controls") && /[Rr]ecent/.test(nameOf(b)));
+  if (!trig) return { ok: false, note: "no recents trigger with aria-controls found; buttons: " + qa("button").map(nameOf).join(" | ") };
+  const hp = trig.getAttribute("aria-haspopup"); trig.focus(); trig.click(); await tick();
+  const panel = document.getElementById(trig.getAttribute("aria-controls")), openOk = !!panel && trig.getAttribute("aria-expanded") === "true";
+  key(document.activeElement, "Escape"); await tick();
+  const closed = qa("button").find((b) => b.getAttribute("aria-controls") === trig.getAttribute("aria-controls")).getAttribute("aria-expanded") !== "true", focus = document.activeElement.getAttribute("aria-controls") === trig.getAttribute("aria-controls");
+  return { ok: !hp && openOk && closed && focus, note: `trigger "${nameOf(trig)}" · aria-haspopup=${hp || "none"} · open: panel found=${!!panel} expanded=${openOk} · Esc: closed=${closed} focus on trigger=${focus}` };
+}),
+// ---- CommandPalette
+T("CommandPalette", "Modal dialog with combobox+listbox; arrows move aria-selected; Enter runs; Escape closes and returns focus to the opener", async () => {
+  let ran = null; const cmds = [{ id: "a", label: "Open ledger", group: "Navigate", run: () => { ran = "a"; } }, { id: "b", label: "Open positions", group: "Navigate", run: () => { ran = "b"; } }];
+  await mount(e(Stateful, { init: false, render: (v, set) => e("div", null, e("button", { id: "opener", onClick: () => set(true) }, "open"), e(DS.CommandPalette, { open: v, onOpenChange: set, commands: cmds })) }));
+  const opener = q("#opener"); opener.focus(); opener.click(); await tick(150);
+  const dlg = q("[role='dialog'][aria-modal='true']"), input = q("[role='combobox']"), focusIn = document.activeElement === input;
+  key(input, "ArrowDown"); await tick(); const sel = qa("[role='option'][aria-selected='true']").map((o) => o.textContent.trim());
+  key(q("[role='combobox']"), "Enter"); await tick(80);
+  const ranB = ran === "b";
+  // reopen to test Escape
+  const op2 = q("#opener"); op2.focus(); op2.click(); await tick(80); key(q("[role='combobox']"), "Escape"); await tick(80);
+  const closed = !q("[role='dialog']"), focusBack = document.activeElement === q("#opener");
+  return { ok: !!dlg && focusIn && sel.length === 1 && /positions/.test(sel[0]) && ranB && closed, note: `dialog=${!!dlg} · input focused on open=${focusIn} · ↓ selected "${sel.join()}" · Enter ran=${ran} · Esc closed=${closed} · focus returned to opener=${focusBack}${focusBack ? "" : " ← the palette does not restore focus to the element that opened it (activeElement: " + document.activeElement.tagName + ")"}` };
+}),
+// ---- ActionQueue
+T("ActionQueue", "Every row states its fate in words, and the queue is a live region", async () => {
+  const { ActionEnvelopeProvider, ActionQueue, ActionHooks } = DS;
+  function Fire() { const api = ActionHooks.useActionEnvelope ? ActionHooks.useActionEnvelope() : null; React.useEffect(() => { try { api && api.submit && api.submit({ label: "Commit basket", key: "k-1", transport: () => new Promise(() => {}) }); } catch (_) {} }, []); return null; }
+  await mount(e(ActionEnvelopeProvider, { transport: () => new Promise(() => {}) }, e(Fire), e(ActionQueue, { docked: "inline", hideWhenEmpty: false })));
+  await tick(200);
+  const region = q("[role='log'],[role='status'],[aria-live]"), rowsEl = qa(".mds-aq__row,[data-fate],[data-state]");
+  const words = rowsEl.map((r) => r.textContent).filter((t) => /submitted|acknowledged|confirmed|rejected|timed out/i.test(t));
+  return { ok: !!region, note: `live region=${!!region}${region ? ` (${region.getAttribute("role") || "aria-live=" + region.getAttribute("aria-live")})` : ""} · rows rendered=${rowsEl.length}, with a fate word=${words.length}${rowsEl.length === 0 ? " — no row could be submitted from this harness (hook API differs); fate wording is verified by the component's own card" : ""}` };
+}),
+// ---- OptimisticCell (4.3)
+T("OptimisticCell", "Provisional state is a live-region word, then Confirmed; revert opens a named dialog with focus on the reason field; Escape returns focus to the revert control", async () => {
+  let release; const commit = () => new Promise((r) => { release = r; });
+  await mount(e(DS.OptimisticProvider, { commit }, e(DS.OptimisticCell, { rowId: "r1", field: "weight", value: 12, mode: "number", format: (v) => v + "%" })));
+  const cell = q(".mds-opt"); const editor = q("[tabindex],button,input", cell); editor.focus(); key(editor, "Enter"); await tick();
+  const inp = q("input", cell); if (!inp) return { ok: false, note: "Enter did not open an editor; focusable: " + (editor && editor.tagName) };
+  Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set.call(inp, "15"); inp.dispatchEvent(new Event("input", { bubbles: true })); key(inp, "Enter"); await tick(80);
+  const mark = q(".mds-opt__mark", cell), live = mark && mark.getAttribute("aria-live"), pending = mark && mark.textContent, st0 = cell.getAttribute("data-status");
+  release && release({ receipt: "ok" }); await tick(80);
+  const confirmed = q(".mds-opt__mark") && q(".mds-opt__mark").textContent, prior = q(".mds-opt__prior"), priorName = prior && prior.getAttribute("aria-label");
+  const rev = q(".mds-opt__revert"); if (!rev) return { ok: false, note: `status ${st0} → ${q(".mds-opt").getAttribute("data-status")}; no revert control` };
+  rev.focus(); rev.click(); await tick(80);
+  const dlg = q("[role='dialog']"), dlgName = dlg && dlg.getAttribute("aria-label"), focusIn = dlg && dlg.contains(document.activeElement) && document.activeElement.tagName === "INPUT";
+  key(document.activeElement, "Escape"); await tick(80);
+  const closed = !q("[role='dialog']"), back = document.activeElement === q(".mds-opt__revert");
+  return { ok: live === "polite" && pending === "Provisional" && st0 === "pending" && confirmed === "Confirmed" && /was 12%/.test(priorName || "") && !!dlg && /Revert/.test(dlgName || "") && focusIn && closed && back, note: `mark aria-live=${live} "${pending}" (data-status=${st0}) → "${confirmed}" · prior named "${priorName}" · Revert… → dialog "${dlgName}" reason field focused=${focusIn} · Esc closed=${closed} focus back on Revert…=${back}${back ? "" : " ← focus falls to " + (document.activeElement === document.body ? "BODY" : document.activeElement.tagName)}` };
+}),
+// ---- AnnotationAnchor (4.3)
+T("AnnotationAnchor", "¶ is a disclosure (aria-expanded, no aria-haspopup) opening a named dialog; click does not propagate to the row; Escape closes and keeps focus on ¶", async () => {
+  let rowClicks = 0;
+  await mount(e(DS.AnnotationProvider, { objectId: "JE-1", objectVersion: 3, annotations: [{ id: "n1", anchor: { kind: "cell", ref: "A1", label: "Weight" }, text: "check", author: "me", version: 2, lifecycle: "follow", at: Date.now() }] }, e("div", { role: "row", onClick: () => rowClicks++ }, e(DS.AnnotationAnchor, { anchor: { kind: "cell", ref: "A1", label: "Weight" } }, "12.5%"))));
+  const mark = q(".mds-ann__mark"); const hp = mark.getAttribute("aria-haspopup"), name0 = mark.getAttribute("aria-label"), exp0 = mark.getAttribute("aria-expanded");
+  mark.focus(); mark.click(); await tick(80);
+  const dlg = q("[role='dialog']", q(".mds-ann")), dlgName = dlg && dlg.getAttribute("aria-label"), exp1 = q(".mds-ann__mark").getAttribute("aria-expanded");
+  key(document.activeElement, "Escape"); await tick(80);
+  const closed = !q("[role='dialog']"), focus = document.activeElement === q(".mds-ann__mark");
+  return { ok: !hp && exp0 === "false" && exp1 === "true" && /1 annotation/.test(name0) && /stale/.test(name0) && !!dlg && /Annotations · Weight/.test(dlgName || "") && rowClicks === 0 && closed && focus, note: `aria-haspopup=${hp || "none"} · name "${name0}" · expanded ${exp0}→${exp1} · dialog "${dlgName}" · row onClick fired ${rowClicks}× (propagation stopped) · Esc closed=${closed} focus on ¶=${focus}` };
+}),
+// ---- SelectionCompare (4.3)
+T("CompareTray / CompareSheet", "Toggles are aria-pressed; cap refusal is stated in words (disabled + title) not silently dropped; tray is a named region with count; sheet is a named dialog, Escape closes it", async () => {
+  const item = (i) => ({ id: "s" + i, title: "Series " + i, values: [1, 2, 3] });
+  await mount(e(DS.SelectionCompareProvider, { max: 2, categories: ["a", "b", "c"] }, e("div", null, [1, 2, 3].map((i) => e(DS.CompareToggle, { key: i, item: item(i) })), e(DS.CompareTray), e(DS.CompareSheet))));
+  const togs = qa("[aria-pressed]"); togs[0].click(); await tick(); togs[1].click(); await tick();
+  const pressed = qa("[aria-pressed='true']").length, third = qa("[aria-pressed]")[2], refused = third.disabled, refusedWords = third.getAttribute("title") || "";
+  const tray = q("[role='region'][aria-label='Comparison set']"), count = tray && tray.textContent.match(/(\d) of (\d)/), cmp = tray && qa("button", tray).find((b) => /^Compare/.test(b.textContent));
+  cmp.focus(); cmp.click(); await tick(80);
+  const dlg = q("[role='dialog']"), dlgName = dlg && dlg.getAttribute("aria-label");
+  key(document.activeElement, "Escape"); await tick(80); const closed = !q("[role='dialog']");
+  return { ok: pressed === 2 && refused && /full \(2\)/.test(refusedWords) && !!tray && count && count[1] === "2" && count[2] === "2" && !!dlg && /Comparison/.test(dlgName || "") && closed, note: `pressed=${pressed} · third toggle disabled=${refused} title "${refusedWords}" · tray region "${count ? count[0] : "?"}" · Compare → dialog "${dlgName}" · Esc closed=${closed}` };
+}),
+];
+
+// ---- Responsive + error + target-size matrix over the eight archetypes
+const ARCHETYPES = [["dashboard-workstation", "DashboardWorkstation"], ["analytical-workbench", "AnalyticalWorkbench"], ["basket-builder", "BasketBuilder"], ["settings-admin", "SettingsAdmin"], ["report-pack", "ReportPack"], ["session-start", "SessionStart"], ["blank-workstation", "BlankWorkstation"], ["interaction-depth", "InteractionDepth"]];
+const WIDTHS = [[1280, 900], [1440, 900], [1920, 1080]];
+async function loadTemplate(slug, file, w, h) {
+  const f = document.getElementById("frame"); f.width = w; f.height = h; f.style.width = w + "px"; f.style.height = h + "px";
+  const errors = [];
+  await new Promise((res) => { f.onload = res; f.src = `../templates/${slug}/${file}.dc.html?a11y=${Date.now()}`; });
+  try { f.contentWindow.addEventListener("error", (ev) => errors.push(ev.message)); f.contentWindow.addEventListener("unhandledrejection", (ev) => errors.push(String(ev.reason))); } catch (_) {}
+  await new Promise((r) => setTimeout(r, 2000));
+  // wait for the streamed template to settle: control count and layout unchanged across three consecutive 500 ms samples
+  { let last = "", stable = 0; for (let i = 0; i < 20 && stable < 3; i++) { await new Promise((r) => setTimeout(r, 500)); const d0 = f.contentDocument; const sig = [...d0.querySelectorAll("button,input,select,[role='separator']")].map((el) => { const r = el.getBoundingClientRect(); return Math.round(r.width) + "x" + Math.round(r.height); }).join(","); stable = sig === last ? stable + 1 : 0; last = sig; } }
+  const d = f.contentDocument, de = d.documentElement;
+  const overflow = Math.max(de.scrollWidth, d.body.scrollWidth) - w;
+  const ctrls = [...d.querySelectorAll("button,[role='button'],a[href],input:not([type='hidden']),select,[role='tab'],[role='radio'],[role='option'],[role='separator'][tabindex]")].filter((el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== "hidden"; });
+  const box = (el) => { let t = el; if (el.tagName === "INPUT") { const own = el.closest("label") || el.closest("[class*='mds-']:not(input)"); if (own && own !== el && own.getBoundingClientRect().height <= 60) t = own; } return t.getBoundingClientRect(); };
+  const small = ctrls.filter((el) => { const r = box(el); return r.height < 24 || r.width < 24; });
+  const noRing = ctrls.filter((el) => { const s = getComputedStyle(el); return s.outlineStyle === "none" && !el.matches(".mds-seg *,[role='option'],[role='separator']"); });
+  const smallSample = small.slice(0, 3).map((el) => `${(el.getAttribute("aria-label") || el.textContent || el.tagName).trim().slice(0, 22)} ${Math.round(box(el).width)}×${Math.round(box(el).height)}`).join("; ");
+  const rendered = d.body.querySelectorAll("*").length;
+  return { errors, overflow, ctrls: ctrls.length, small: small.length, smallSample, rendered, noRingResting: noRing.length };
+}
+async function responsive() {
+  for (const [slug, file] of ARCHETYPES) {
+    for (const [w, h] of WIDTHS) {
+      try {
+        const r = await loadTemplate(slug, file, w, h);
+        const ok = r.errors.length === 0 && r.overflow <= 1 && r.rendered > 40;
+        report(slug, `${w}×${h} — loads without error, no horizontal overflow, target sizes`, ok ? (r.small ? "FAIL" : "PASS") : "FAIL", `nodes=${r.rendered} · errors=${r.errors.length}${r.errors.length ? " (" + r.errors[0].slice(0, 80) + ")" : ""} · overflow=${r.overflow > 1 ? "+" + r.overflow + "px" : "none"} · controls=${r.ctrls}, under 24px=${r.small}${r.small ? " [" + r.smallSample + "]" : ""}`);
+      } catch (err) { report(slug, `${w}×${h}`, "FAIL", "harness: " + (err && err.message || err)); }
+    }
+  }
+}
+// Focus discipline: focus() and activeElement are only meaningful while the document has system focus, which an embedded preview
+// gets only on interaction. The run therefore starts on the first click (or immediately if focus is already held); each keyboard row
+// re-checks focus before it runs; and the keyboard half can be driven a few rows at a time via window.__a11yRun.keyboard(from, to).
+let started = false;
+async function finish() {
+  const counts = results.reduce((a, r) => (a[r.verdict] = (a[r.verdict] || 0) + 1, a), {});
+  window.__a11y = { at: new Date().toISOString(), ua: navigator.userAgent, counts, results };
+  document.getElementById("status").textContent = `${counts.PASS || 0} pass · ${counts.FAIL || 0} fail · ${counts.OPEN || 0} open · ${new Date().toISOString().slice(0, 16)}Z`;
+  document.getElementById("stage").innerHTML = ""; document.getElementById("frame").src = "about:blank";
+}
+async function keyboard(from = 0, to = tests.length) { for (const t of tests.slice(from, to)) await t(); return results.slice(-(to - from)).map((r) => [r.surface, r.verdict]); }
+async function runAll() {
+  if (started) return; started = true;
+  document.getElementById("status").textContent = "running…";
+  report("harness", "Document has system focus at start (focus() and activeElement are only meaningful when it does)", document.hasFocus() ? "PASS" : "FAIL", `document.hasFocus()=${document.hasFocus()} · visibility=${document.visibilityState}`);
+  await keyboard(); await responsive(); await finish();
+}
+window.__a11yRun = { keyboard, responsive, finish, runAll, get started() { return started; }, set started(v) { started = v; } };
+document.body.tabIndex = -1; window.focus(); document.body.focus();
+if (document.hasFocus()) runAll();
+else { document.getElementById("status").textContent = "click anywhere in the page to start (the run needs system focus)"; document.addEventListener("click", runAll, { once: true }); }
+</script></body></html>

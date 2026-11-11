@@ -1,0 +1,65 @@
+<!-- @dsCard group="Decision" viewport="1360x1000" name="Evidence → consequence → proof" subtitle="EvidenceRail · ConsequenceRail · DecisionSnapshot — why the value is what it is, what a commit would change, and exactly what was reviewed" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Decision — evidence, consequence, proof</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}.wrap{display:grid;gap:14px;max-width:1320px}.lede{display:grid;gap:3px}.lede h1{margin:0;font-size:16px;font-weight:600;color:var(--text-primary)}.lede p{margin:0;font-size:11px;line-height:17px;color:var(--text-muted);max-width:78ch;text-wrap:pretty}.rails{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}.body-panel{display:grid;gap:8px;font-size:11px;line-height:17px;color:var(--text-secondary)}.kv{display:grid;grid-template-columns:max-content 1fr;gap:2px 10px;margin:0;font:11px var(--font-data);font-variant-numeric:tabular-nums}.kv dt{color:var(--text-muted)}.kv dd{margin:0;color:var(--text-primary)}.docs{margin:0;padding:0;list-style:none;display:grid;gap:5px}.docs li{display:grid;gap:1px;padding:5px 7px;border:1px solid var(--border);background:var(--card-surface-raised)}.docs b{font:600 11px var(--font-data);color:var(--text-primary)}.docs span{font:9px var(--font-body);color:var(--text-muted)}.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:9px 11px;border:1px solid var(--border);background:var(--bg-light)}.bar p{margin:0;font:10px var(--font-data);color:var(--text-muted)}.bar .spacer{flex:1}button.act{appearance:none;min-height:32px;padding:0 12px;border:1px solid var(--border-strong);border-radius:var(--radius-button,4px);background:var(--card-surface-raised);color:var(--text-primary);font:600 11px var(--font-body);cursor:pointer}button.act:hover{border-color:var(--border-hover)}button.act:focus-visible{outline:var(--focus-ring);outline-offset:1px}button.act[data-primary="true"]{background:var(--brand-axis,#29323A);border-color:var(--brand-axis,#29323A);color:var(--ink-inverse,#F5F3EE)}button.act:disabled{opacity:.45;cursor:default}@media(max-width:980px){.rails{grid-template-columns:1fr}}
+</style></head><body><div id="root"></div><script type="text/babel">
+const {EvidenceRail,ConsequenceRail,DecisionSnapshot,DecisionSnapshotPanel,SourceCoverageSummary,DataCondition}=window.MeridianDesignSystem_205d17;
+
+const OBJECT={type:"journal",id:"JE-20418",version:3,label:"FX revaluation — July"};
+const CONTEXT={entity:"General Account",book:"STAT",basis:"Statutory",period:"2026-07",currency:"USD"};
+const TIME={asOf:"2026-07-31T23:59:00Z",evidenceAt:"2026-08-01T06:14:00Z",calculatedAt:"2026-08-01T06:17:00Z",reportingPeriod:"2026-07"};
+const EVIDENCE=[{id:"DOC-8841",version:"2",hash:"9f2c",condition:"confirmed",note:"Custodian FX statement · 31 Jul"},{id:"DOC-8847",version:"1",hash:"41ab",condition:"confirmed",note:"Rate source attestation · WM/Reuters 16:00 London"},{id:"DOC-8902",version:"1",hash:"7c30",condition:"provisional",note:"Broker confirmation · awaiting countersignature"}];
+const CALCS=[{id:"CALC-7",version:"3",inputHash:"aa71"}];
+const GUARDS=[{id:"G-1",label:"Period open",status:"satisfied",detail:"July 2026 · soft-close"},{id:"G-2",label:"Ledger balanced",status:"satisfied",detail:"Σdebit = Σcredit"},{id:"G-3",label:"Evidence complete",status:"warning",detail:"1 of 3 sources provisional"},{id:"G-4",label:"Controller acknowledgement",status:"pending",detail:"R. Chen"}];
+const CONSEQUENCES={financial:[{id:"i-1",label:"STAT net income",delta:17256.38,currency:"USD",formatted:"+17,256.38",effect:"Increases"},{id:"i-2",label:"Unrealized FX reserve",delta:-17256.38,currency:"USD",formatted:"−17,256.38",effect:"Decreases"}],accounting:[{id:"a-1",label:"Journal JE-20418",effect:"Posts to July 2026"}],controls:[{id:"C-204",label:"FX rate approval",effect:"Re-runs"},{id:"C-418",label:"Reserve tie-out",effect:"Reopens"}],reports:[{id:"R-11",label:"July STAT statement pack",effect:"Regenerates"}],approvals:[{id:"AP-7",label:"July close attestation",effect:"Superseded"}],reversibility:"compensatable"};
+
+function EvidenceSummary(){return <div className="body-panel">
+  <p>The July FX revaluation restates three custodian positions at the 31 July WM/Reuters close. Two of the three source documents are confirmed; the broker confirmation is provisional pending countersignature.</p>
+  <dl className="kv"><dt>Difference</dt><dd>$17,256.38</dd><dt>Tolerance</dt><dd>$25,000.00 · within</dd><dt>Materiality</dt><dd>Immaterial</dd><dt>Control consequence</dt><dd>Review still required</dd></dl>
+  <p>Tolerance and materiality are independent axes: within tolerance does not mean the control can be skipped.</p>
+</div>}
+function Sources(){return <ul className="docs">{EVIDENCE.map(e=><li key={e.id}><b>{e.id} v{e.version}</b><span>{e.note} · hash {e.hash} · {e.condition}</span></li>)}</ul>}
+function Calculation(){return <div className="body-panel">
+  <dl className="kv"><dt>Formula</dt><dd>(rate_close − rate_book) × position_ccy</dd><dt>Version</dt><dd>CALC-7 v3 · input hash aa71</dd><dt>Rate close</dt><dd>1.0847</dd><dt>Rate book</dt><dd>1.0792</dd><dt>Position</dt><dd>EUR 3,137,524.00</dd><dt>Output</dt><dd>USD 17,256.38</dd><dt>Rounding</dt><dd>Half-up, 2dp, at output only</dd></dl>
+  <p>One provisional input rolls up to the output condition — the figure is only as confirmed as its weakest source.</p>
+</div>}
+function Lineage(){return <div className="body-panel"><dl className="kv"><dt>Custody</dt><dd>DOC-8841 → position ledger → CALC-7</dd><dt>Rates</dt><dd>DOC-8847 → rate master → CALC-7</dd><dt>Broker</dt><dd>DOC-8902 → position ledger (provisional)</dd></dl></div>}
+function Audit(){return <div className="body-panel"><dl className="kv"><dt>06:14Z</dt><dd>Evidence set assembled · system</dd><dt>06:17Z</dt><dd>CALC-7 v3 run · system</dd><dt>07:20Z</dt><dd>Prepared · M. Okafor</dd><dt>09:02Z</dt><dd>Reviewed · A. Rivera</dd></dl></div>}
+
+function Demo(){
+  const [section,setSection]=React.useState("summary");
+  const [selected,setSelected]=React.useState(null);
+  const [snapshot,setSnapshot]=React.useState(null);
+  const [moved,setMoved]=React.useState(false);
+  const current={object:moved?{...OBJECT,version:4}:OBJECT,evidence:EVIDENCE,calculations:CALCS,context:CONTEXT};
+  const findings=DecisionSnapshot.verify(snapshot,current);
+  const blocking=GUARDS.filter(g=>g.status==="blocking").length;
+
+  return <div className="wrap">
+    <div className="lede">
+      <h1>Evidence → consequence → proof</h1>
+      <p>Three contracts that turn an approval into evidence. The evidence rail explains why the figure is what it is; the consequence rail states what a commit would change and what would block it; the snapshot freezes exactly what was reviewed — and voids itself when the object moves on.</p>
+    </div>
+
+    <div className="rails">
+      <EvidenceRail object={OBJECT} title="FX revaluation — July"
+        coverage={{attached:2,required:3,label:"sources"}} continuity="live" freshness="15m" asOf="2026-07-31"
+        counts={{sources:3,calculation:1,audit:4}}
+        activeSection={section} onSectionChange={setSection}
+        sections={{summary:<EvidenceSummary/>,sources:<Sources/>,calculation:<Calculation/>,lineage:<Lineage/>,audit:<Audit/>}}/>
+      <ConsequenceRail object={current.object} proposal={{id:"CS-1042",changes:CONSEQUENCES.financial}}
+        consequences={CONSEQUENCES} guards={GUARDS} selectedId={selected}
+        onInspect={(kind,item)=>setSelected(item.id)}/>
+    </div>
+
+    <div className="bar">
+      <p>Version {current.object.version} · {blocking} blocking guards · reversibility compensatable{selected?` · inspecting ${selected}`:""}</p>
+      <span className="spacer"></span>
+      <button type="button" className="act" onClick={()=>setMoved(m=>!m)}>{moved?"Restore version 3":"Simulate upstream change"}</button>
+      <button type="button" className="act" data-primary="true" onClick={()=>setSnapshot(DecisionSnapshot.capture({object:OBJECT,context:CONTEXT,time:TIME,evidence:EVIDENCE,calculations:CALCS,materiality:{label:"Immaterial",note:"Within the $25,000 STAT tolerance"},guards:GUARDS,consequences:CONSEQUENCES,decision:{type:"approved",actorId:"apatel",actorName:"A. Patel",authority:"Controller"}}))}>Capture snapshot &amp; approve</button>
+    </div>
+
+    <DecisionSnapshotPanel snapshot={snapshot} current={current} findings={findings}/>
+  </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

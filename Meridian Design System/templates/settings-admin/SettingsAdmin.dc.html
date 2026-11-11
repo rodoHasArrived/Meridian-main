@@ -3,16 +3,264 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Settings / Admin" description="Forms-heavy admin surface — validation stack, TagInput recipients, danger zone with typed confirm" -->
+<!-- @template name="Admin · Settings and Admin" description="Forms-heavy admin — validation stack, recipients, danger zone with typed confirm. Sections, labels and copy are editable markup." -->
 <helmet>
 <script src="./ds-base.js"></script>
+<script src="../_scaffold/operator-layer.js"></script>
 <meta name="dc-template" content="settings-admin">
+<style>html,body{margin:0;padding:0;height:100%}</style>
 </helmet>
-<x-import component-from-global-scope="SettingsAdminScreen" from="./screen.jsx" hint-size="100%,780px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelopeProvider" actions="{{ actionDecls }}" transport="{{ actionTransport }}" timeout-ms="{{ 4000 }}" on-settled="{{ onActionSettled }}" hint-size="100%,780px">
+<x-import component="ActionBridge" from="../_scaffold/action-bridge.jsx" on-api="{{ onActionApi }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Settings" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Settings" style="display:flex;min-height:100%">
+<nav aria-label="Settings sections" style="width:200px;flex:none;background:var(--sidebar-bg,#EBE8E1);border-right:1px solid var(--sidebar-border,#D2CDC3);padding:14px 0;display:flex;flex-direction:column;gap:2px;align-self:stretch">
+<a href="#sect-0" onClick="{{ jump0 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid var(--sidebar-active-ind,#C56343);background:var(--sidebar-active,#E7EDF2)">Organization<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 1</span></a>
+<a href="#sect-1" onClick="{{ jump1 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Data providers<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 2</span></a>
+<a href="#sect-2" onClick="{{ jump2 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--nav-item,#535C65);border-left:2px solid transparent" style-hover="color:var(--text-primary)">Notifications<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 3</span></a>
+<a href="#sect-3" onClick="{{ jump3 }}" style="display:flex;justify-content:space-between;align-items:center;padding:7px 16px;font-size:13px;text-decoration:none;color:var(--red-dim,#883832);border-left:2px solid transparent" style-hover="color:var(--red,#B54B42)">Danger zone<span style="font:600 10px var(--font-data);color:var(--text-muted)">G 4</span></a>
+</nav>
+<div style="flex:1;min-width:0;padding:18px">
+<div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Settings</h1>
+<sc-if value="{{ dirty }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="warning" hint-size="110px,18px">Unsaved changes</x-import>
+</sc-if>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ notDirty }}" on-click="{{ onDiscard }}" hint-size="70px,28px">Discard</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ saveDisabled }}" on-click="{{ onSave }}" hint-size="110px,28px">{{ saveLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Kbd" hint-size="44px,18px">Ctrl S</x-import>
+</div>
+<sc-if value="{{ saveRejected }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelope" action="settings.save" show-declaration="{{ false }}" hint-size="100%,120px"></x-import>
+</sc-if>
+<sc-if value="{{ hasIssues }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ValidationIssueList" issues="{{ issues }}" dense="{{ true }}" hint-size="100%,60px"></x-import>
+</sc-if>
+<div id="sect-0" style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:14px">
+<h2 style="font:600 15px var(--font-display);margin:0;color:var(--text-primary)">Organization</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Organization name" required="{{ true }}" error="{{ orgError }}" hint-size="100%,60px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ orgName }}" on-change="{{ onOrgName }}" hint-size="100%,32px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Display timezone" hint="All Meridian surfaces render UTC; this affects exports only." hint-size="100%,60px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" value="{{ tz }}" options="{{ tzOptions }}" on-change="{{ onTz }}" hint-size="100%,32px"></x-import>
+</x-import>
+</div>
+</div>
+<div id="sect-1" style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:14px">
+<h2 style="font:600 15px var(--font-display);margin:0;color:var(--text-primary)">Data providers</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="API rate limit" hint="Requests per minute across all provider connections." hint-size="100%,60px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" value="{{ rateLimit }}" min="{{ 10 }}" max="{{ 600 }}" step="{{ 10 }}" on-change="{{ onRateLimit }}" hint-size="120px,32px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Collection behavior" hint-size="100%,80px">
+<div style="display:flex;flex-direction:column;gap:8px;padding-top:4px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Checkbox" checked="{{ autoBackfill }}" on-change="{{ onAutoBackfill }}" label="Auto-backfill detected gaps" hint="Runs nightly against the primary provider." hint-size="100%,36px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Toggle" checked="{{ validateBars }}" on-change="{{ onValidateBars }}" label="Validate bars on ingest" hint-size="100%,24px"></x-import>
+</div>
+</x-import>
+</div>
+</div>
+<div id="sect-2" style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:14px">
+<h2 style="font:600 15px var(--font-display);margin:0;color:var(--text-primary)">Notifications</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Recipients" hint="Enter to add. Critical alerts page the first recipient." error="{{ recipientsError }}" hint-size="100%,80px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TagInput" value="{{ recipients }}" on-change="{{ onRecipients }}" placeholder="Add email…" aria-label="Notification recipients" hint-size="100%,60px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Email policy" hint-size="100%,110px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.RadioGroup" value="{{ alertPolicy }}" on-change="{{ onAlertPolicy }}" options="{{ policyOptions }}" hint-size="100%,100px"></x-import>
+</x-import>
+</div>
+</div>
+<div id="sect-3" style="background:var(--bg-light);border:1px solid var(--red,#B54B42);border-radius:4px;padding:18px;display:flex;flex-direction:column;gap:14px">
+<h2 style="font:600 15px var(--font-display);margin:0;color:var(--red-dim,#883832)">Danger zone</h2>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="danger" title="Destructive actions" hint-size="100%,60px">These operate on the shared archive. They cannot be undone from the workstation.</x-import>
+<div style="display:flex;gap:10px;align-items:center">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" on-click="{{ onOpenWipe }}" hint-size="140px,28px">Purge fixture data…</x-import>
+<span style="font-size:12px;color:var(--text-muted)">Removes all fixture-environment bars, orders, and runs.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Dialog" open="{{ wipeOpen }}" on-close="{{ onWipeClose }}" title="Purge fixture data" hint-size="0px,0px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DialogBody" hint-size="0px,0px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="margin:0;font-size:13px;color:var(--text-secondary);line-height:1.5">This deletes <strong>all fixture-environment data</strong> — 1.2M bars, 4,882 orders, 312 runs. Live and paper data are not affected.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormField" label="Type &quot;purge fixtures&quot; to confirm" hint-size="100%,60px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" value="{{ wipeText }}" on-change="{{ onWipeText }}" placeholder="purge fixtures" hint-size="100%,32px"></x-import>
+</x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DialogFooter" hint-size="0px,0px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" on-click="{{ onWipeClose }}" hint-size="60px,28px">Cancel</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" disabled="{{ purgeDisabled }}" on-click="{{ onPurge }}" hint-size="140px,28px">Purge fixture data</x-import>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionQueue" label="Configuration actions in flight" hint-size="0px,0px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" group-order="{{ paletteGroups }}" resolve="{{ paletteResolve }}" scope="settings-admin" placeholder="{{ palettePlaceholder }}" hint-size="0px,0px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" sheet-title="Settings · keyboard shortcuts" hint-size="0px,0px"></x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); }
+  componentDidUpdate() { this.applyChrome(); }
+
+  state = {
+    orgName: "Meridian Capital Research", tz: "UTC",
+    recipients: ["ops@meridian.example", "r.alvarez@meridian.example"],
+    rateLimit: 120, autoBackfill: true, validateBars: true, alertPolicy: "critical",
+    dirty: false, wipeOpen: false, wipeText: "",
+  };
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  set(patch) { this.setState({ ...patch, dirty: true }); }
+  toast(k, a, b) { const T = window.MeridianToast; if (T && T[k]) T[k](a, b); }
+
+  // ── Write path (B-1) ───────────────────────────────────────────────────────────────────────
+  // Save and purge are instructions with declared keys; the ActionQueue keeps their fate on screen.
+  // Fixture transport: save answers in ~1.2 s and lands; a save with zero recipients is REJECTED
+  // by the config service (policy), the purge takes ~2.6 s (acknowledged, then confirmed).
+  actionTransport = async (inst) => {
+    await new Promise((r) => setTimeout(r, inst.action === "fixtures.purge" ? 2600 : 1200));
+    if (inst.action === "settings.save" && inst.payload && inst.payload.recipients === 0) return { ok: false, reason: "Policy NOTIF-011: a configuration with no notification recipients cannot be published. Add a recipient and save again." };
+    return { ok: true, id: (inst.action === "fixtures.purge" ? "PURGE-" : "CFG-") + (2215 + Math.floor(Math.random() * 40)) };
+  };
+  save() {
+    const s = this.state;
+    if (!this._actions || !s.dirty || this.issues().some((i) => i.severity === "Critical")) return;
+    const payload = { orgName: s.orgName, tz: s.tz, rateLimit: s.rateLimit, autoBackfill: s.autoBackfill, validateBars: s.validateBars, alertPolicy: s.alertPolicy, recipients: s.recipients.length };
+    this._actions.submit("settings.save", { label: "Save settings · cfg-2214 → next", idempotencyKey: "CFG-" + [...JSON.stringify(payload)].reduce((h, ch) => Math.imul(h ^ ch.codePointAt(0), 16777619) >>> 0, 2166136261).toString(36), payload });
+  }
+  purge() {
+    this.setState({ wipeOpen: false, wipeText: "" });
+    if (this._actions) this._actions.submit("fixtures.purge", { label: "Purge fixture data · 1.2M bars · 4,882 orders · 312 runs", idempotencyKey: "PURGE-FIXTURE-2026-07-05", payload: { env: "FIXTURE" } });
+  }
+  // Jump to a section: scroll the nearest scrolling ancestor, then focus the first control in it.
+  jump(id) {
+    const el = document.getElementById(id); if (!el) return;
+    let c = el.parentElement; while (c && c !== document.body && getComputedStyle(c).overflowY !== "auto" && getComputedStyle(c).overflowY !== "scroll") c = c.parentElement;
+    const top = el.getBoundingClientRect().top;
+    if (c && c !== document.body) c.scrollTo({ top: c.scrollTop + top - c.getBoundingClientRect().top - 16, behavior: "smooth" });
+    else window.scrollTo({ top: top + window.scrollY - 16, behavior: "smooth" });
+    const f = el.querySelector("input,select,button,textarea"); if (f) f.focus({ preventScroll: true });
+  }
+  operatorLayer() {
+    const L = window.MeridianOperatorLayer;
+    if (!L) return { commands: [], bindings: [], groupOrder: null };
+    const sections = [["sect-0", "Organization"], ["sect-1", "Data providers"], ["sect-2", "Notifications"], ["sect-3", "Danger zone"]];
+    return L.build({
+      screenId: "settings-admin", sections: [], activeId: null,
+      actions: [
+        { id: "save", label: "Save changes", keys: "ctrl+s", keywords: ["publish", "apply"], run: () => this.save() },
+        { id: "discard", label: "Discard changes", keys: "ctrl+shift+z", run: () => this.setState({ dirty: false }) },
+        ...sections.map(([id, label], i) => ({ id: "sect-" + i, label: "Jump to " + label, group: "Sections", keys: "g " + String(i + 1), run: () => this.jump(id) })),
+        { id: "purge", label: "Purge fixture data…", danger: true, group: "Danger zone", run: () => this.setState({ wipeOpen: true }) },
+      ],
+      objects: [
+        { type: "setting", typeLabel: "Setting", id: "orgName", label: "Organization name", keywords: ["org", "tenant"], open: () => this.jump("sect-0") },
+        { type: "setting", typeLabel: "Setting", id: "tz", label: "Display timezone", keywords: ["utc", "export"], open: () => this.jump("sect-0") },
+        { type: "setting", typeLabel: "Setting", id: "rateLimit", label: "API rate limit", keywords: ["provider", "requests", "throttle"], open: () => this.jump("sect-1") },
+        { type: "setting", typeLabel: "Setting", id: "autoBackfill", label: "Auto-backfill detected gaps", keywords: ["gap", "nightly"], open: () => this.jump("sect-1") },
+        { type: "setting", typeLabel: "Setting", id: "validateBars", label: "Validate bars on ingest", keywords: ["ingest", "quality"], open: () => this.jump("sect-1") },
+        { type: "setting", typeLabel: "Setting", id: "recipients", label: "Notification recipients", keywords: ["email", "page", "alerts"], open: () => this.jump("sect-2") },
+        { type: "setting", typeLabel: "Setting", id: "alertPolicy", label: "Email policy", keywords: ["critical", "alerts"], open: () => this.jump("sect-2") },
+        { type: "setting", typeLabel: "Setting", id: "purge", label: "Purge fixture data", keywords: ["danger", "delete", "wipe"], open: () => this.jump("sect-3") },
+      ],
+      verbs: [{ id: "open", label: "Open", run: (o) => o.open(o) }],
+    });
+  }
+
+  issues() {
+    const s = this.state, out = [];
+    if (!s.orgName.trim()) out.push({ code: "ORG-001", severity: "Critical", message: "Organization name is required.", gate: "Organization" });
+    if (s.recipients.length === 0) out.push({ code: "NOTIF-011", severity: "Warning", message: "No notification recipients — critical alerts will only reach the status bar.", gate: "Notifications" });
+    return out;
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const { WorkstationTopbar, StatusBar } = this.ds();
+    const el = React.createElement;
+    const issues = this.issues();
+    const layer = this.operatorLayer();
+    const saveIns = this._actions ? this._actions.instructionFor("settings.save") : null;
+    const saving = saveIns && saveIns.state === "inflight";
+    return {
+      dataState: this.props.dataState ?? "ready",
+      onRetry: () => {},
+      paletteCommands: layer.commands, paletteGroups: layer.groupOrder, paletteResolve: layer.resolve, palettePlaceholder: layer.placeholder, hotkeyBindings: layer.bindings,
+      actionDecls: {
+        "settings.save": { label: "Save settings", endpoint: "PUT /v1/config", permission: { required: "admin.config", held: true, actor: "r.alvarez" }, posture: "confirmed", failureSurface: "Action queue · header · status bar" },
+        "fixtures.purge": { label: "Purge fixture data", endpoint: "DELETE /v1/fixtures", permission: { required: "admin.fixtures", held: true, actor: "r.alvarez" }, posture: "confirmed", failureSurface: "Action queue · status bar" },
+      },
+      actionTransport: this.actionTransport,
+      onActionApi: this._onActionApi || (this._onActionApi = (api) => { this._actions = api; this.forceUpdate(); }),
+      onActionSettled: (r) => {
+        if (r.action === "settings.save" && r.state === "landed") { this.setState({ dirty: false }); this.toast("success", "Settings saved", r.receipt.id + " · applied to all workstations"); }
+        else if (r.action === "fixtures.purge" && r.state === "landed") this.toast("success", "Fixture data purged", r.receipt.id);
+        this.forceUpdate();
+      },
+      jump0: (e) => { e.preventDefault(); this.jump("sect-0"); }, jump1: (e) => { e.preventDefault(); this.jump("sect-1"); }, jump2: (e) => { e.preventDefault(); this.jump("sect-2"); }, jump3: (e) => { e.preventDefault(); this.jump("sect-3"); },
+      saveLabel: saving ? "Saving…" : "Save changes",
+      saveRejected: !!(saveIns && saveIns.state === "rejected" && s.dirty),
+      nav: this.ds().NavRail && el(this.ds().NavRail, { activeId: "settings", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("settings") : []) }),
+      topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Settings & Admin", environment: String(this.props.environment ?? "PAPER").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: saveIns && saveIns.state === "unlanded" ? "error" : saving ? "warn" : "ok", label: "Config", value: saving ? "saving…" : saveIns && saveIns.state === "unlanded" ? "fate unknown" : s.dirty ? "draft" : "synced" },
+        { label: "Version", value: "cfg-2214" },
+        { status: "ok", label: "Providers", value: "3 connected", push: true },
+      ] }),
+      dirty: s.dirty, notDirty: !s.dirty,
+      saveDisabled: !s.dirty || saving || issues.some((i) => i.severity === "Critical"),
+      onDiscard: () => this.setState({ dirty: false }),
+      onSave: () => this.save(),
+      hasIssues: issues.length > 0, issues,
+      orgName: s.orgName, onOrgName: (e) => this.set({ orgName: e.target.value }),
+      orgError: !s.orgName.trim() ? "Required" : undefined,
+      tz: s.tz, tzOptions: ["UTC", "America/New_York", "Europe/London"], onTz: (v) => this.set({ tz: v }),
+      rateLimit: s.rateLimit, onRateLimit: (v) => this.set({ rateLimit: v }),
+      autoBackfill: s.autoBackfill, onAutoBackfill: (v) => this.set({ autoBackfill: v }),
+      validateBars: s.validateBars, onValidateBars: (v) => this.set({ validateBars: v }),
+      recipients: s.recipients, onRecipients: (v) => this.set({ recipients: v }),
+      recipientsError: s.recipients.length === 0 ? "At least one recipient recommended" : undefined,
+      alertPolicy: s.alertPolicy, onAlertPolicy: (v) => this.set({ alertPolicy: v }),
+      policyOptions: [
+        { value: "all", label: "All alerts", hint: "Every severity, every rule." },
+        { value: "critical", label: "Critical only", hint: "Warnings stay in the workstation." },
+        { value: "none", label: "None", hint: "In-app surfaces only." },
+      ],
+      wipeOpen: s.wipeOpen,
+      onOpenWipe: () => this.setState({ wipeOpen: true }),
+      onWipeClose: () => this.setState({ wipeOpen: false, wipeText: "" }),
+      wipeText: s.wipeText, onWipeText: (e) => this.setState({ wipeText: e.target.value }),
+      purgeDisabled: s.wipeText !== "purge fixtures",
+      onPurge: () => this.purge(),
+    };
+  }
+}
+</script>
 </body>
 </html>

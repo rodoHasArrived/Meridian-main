@@ -10,3 +10,5 @@ Two-sided statement-vs-ledger comparison with its own filter/search toolbar and 
 ```
 
 Matched rows carry a green rail, unmatched an amber wash — the same trio pattern as `SeverityBadge`, just applied per-row.
+
+Pass `onToggleItem(id, matched)` and `onToggleAll(side, matched)` to make the match checkboxes editable; the panel is controlled, so update `items[].matched` in the handler.

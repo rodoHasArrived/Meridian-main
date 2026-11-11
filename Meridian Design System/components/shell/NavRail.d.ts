@@ -1,4 +1,4 @@
-/** Left operator rail — light paper sidebar with small-caps section labels and a 3px teal-blue active indicator. */
+/** Left operator rail — light paper sidebar with small-caps section labels and a 3px terracotta active indicator. */
 export interface NavRailItem {
   id: string;
   label: string;

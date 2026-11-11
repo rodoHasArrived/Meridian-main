@@ -123,6 +123,10 @@ public static partial class WorkstationEndpoints
         MapExtensibilityEndpoints(group, jsonOptions);
         MapCloseReadinessEndpoints(group, jsonOptions);
         MapFinancialRecordExplorerEndpoints(group, jsonOptions);
+        MapOperatorTriageEndpoints(group, jsonOptions);
+        MapCloseChecklistHistoryEndpoints(group, jsonOptions);
+        MapApprovalCollaborationEndpoints(group, jsonOptions);
+        MapWorkstationChartEvidenceEndpoints(group, jsonOptions);
         MapFamilyOfficeEndpoints(group);
         MapDataUploadEndpoints(group, jsonOptions);
         MapDataOperationsAssuranceEndpoints(group);
@@ -471,7 +475,7 @@ public static partial class WorkstationEndpoints
 
             // Guard violations and SQL errors are part of the result payload (Success=false)
             // so the workbench can render them inline without parsing problem responses.
-            var result = await queryService.ExecuteAsync(request.Sql, options, context.RequestAborted)
+            var result = await ExecuteRetainedWorkstationQueryAsync(queryService, request.Sql, options, context)
                 .ConfigureAwait(false);
             return Results.Ok(result);
         })
@@ -3312,7 +3316,10 @@ public static partial class WorkstationEndpoints
             backfills =
             [
                 new WorkstationDataBackfillRecord(
-                    JobId: $"BF-{Math.Abs(lastBackfill.GetHashCode()) % 10000:D4}",
+                    JobId: "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
+                    {
+                        lastBackfill.Provider, lastBackfill.CompletedUtc, lastBackfill.From, lastBackfill.To, lastBackfill.Symbols
+                    }))[..16],
                     Scope: $"{symbolSummary} / {days}",
                     Provider: lastBackfill.Provider,
                     Status: lastBackfill.Success ? "Completed" : "Failed",

@@ -82,7 +82,8 @@ describe("ActivationHeaderProgress", () => {
     await waitFor(() => expect(screen.queryByText("Next step")).not.toBeInTheDocument());
   });
 
-  it("leaves the sample-workspace label to the masthead environment badge", () => {
+  it("keeps sample-workspace safety context in the checklist disclosure", async () => {
+    const user = userEvent.setup();
     renderWithRouter(<ActivationHeaderProgress status={status({
       workspace: {
         id: "sample",
@@ -94,9 +95,10 @@ describe("ActivationHeaderProgress", () => {
       }
     })} />);
 
-    // One place says the data is sample data: the environment badge. No second chip here.
-    expect(screen.queryByText("SAMPLE · PAPER")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Getting started/ })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Workspace safety context" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Getting started/ }));
+    expect(screen.getByRole("region", { name: "Workspace safety context" })).toHaveTextContent("SAMPLE · PAPER");
+    expect(screen.getByRole("region", { name: "Workspace safety context" })).toHaveTextContent("Sample data only. No live trading or production accounting.");
   });
 
   it("hides the trigger once every step is done but keeps the desktop launch", () => {

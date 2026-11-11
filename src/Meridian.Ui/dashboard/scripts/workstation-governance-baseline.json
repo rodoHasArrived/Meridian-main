@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "statementModules": [
+    "src/screens/reporting-income-comparison.tsx",
+    "src/screens/reporting-retained-amounts.tsx",
+    "src/screens/reporting-screen.report-writer.tsx",
+    "src/screens/accounting-screen.factor-paydown-panel.tsx",
+    "src/screens/accounting-screen.consolidation-results.tsx",
+    "src/screens/accounting-screen.onboarding-panel.tsx",
+    "src/screens/statement-import-preview.tsx"
+  ],
+  "statementOwners": {
+    "src/screens/data-screen.corporate-action-inbox.tsx": {
+      "BasisComparison": "Financial basis treatment matrix; its columns retain accounting meaning.",
+      "JournalPreview": "Balanced debit/credit posting preview; retains its financial statement layout."
+    },
+    "src/screens/accounting-screen.prepare-next-period-calendar.tsx": {
+      "ClosePreparationCalendarForm": "Editable deadline-rule worksheet, not a record browse table."
+    }
+  },
+  "statementTables": [
+    {
+      "file": "src/screens/accounting-screen.tsx",
+      "attribute": "className",
+      "value": "accounting-journal-table",
+      "reason": "Editable journal source lines and financial balance-impact preview preserve debit/credit layout."
+    },
+    {
+      "file": "src/screens/accounting-screen.close-cockpit-panels.tsx",
+      "attribute": "aria-label",
+      "value": "Scoped temporary-account balances",
+      "reason": "Financial closing-entry balance statement bound to the exact close preview."
+    }
+  ],
+  "legacyViolationIds": []
+}

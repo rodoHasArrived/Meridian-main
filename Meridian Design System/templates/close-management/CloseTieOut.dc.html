@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="close-tie-out">
+<style>html,body{margin:0;padding:0;height:100%;background:var(--bg)}</style>
+</helmet>
+<div data-screen-label="Close tie-out" style="min-height:100%;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ScreenComposition" screen="{{ screen }}" show-roles="{{ showRoles }}" hint-size="100%,900px">
+<div data-region="context" style="display:flex;flex-wrap:wrap;gap:18px;align-items:baseline">
+<span style="font-size:13px;color:var(--text-primary);font-weight:600">Meridian Core Fund</span>
+<span style="font-family:var(--font-data);font-size:12px">Period June 2026</span>
+<span style="font-family:var(--font-data);font-size:12px">Close deadline 10 Jul 2026</span>
+<span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">Preparer M. Osei · Reviewer you</span>
+</div>
+<div data-region="claim">
+<p style="margin:0;font:15px/22px var(--font-body);color:var(--text-primary);max-width:92ch;text-wrap:pretty">The June trial balance ties to the custodian statement within tolerance. Two figures do not yet support that claim: the accrual posts <b style="font-weight:600">outside its reporting period</b> and the muni mark is a <b style="font-weight:600">desk override</b> above the materiality threshold.</p>
+<p style="margin:8px 0 0;font-size:12px;color:var(--text-muted)">Regions, spans and validation come from the <b style="font-weight:600">Investigate</b> archetype — this screen declares, it does not lay out.</p>
+</div>
+<div data-region="primary">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" columns="{{ tbColumns }}" rows="{{ trialBalance }}" proof="{{ tbProof }}" row-key="code" density="{{ density }}" hint-size="100%,320px"></x-import>
+<p style="margin:8px 0 0;font-size:11px;color:var(--text-muted)">One grid, one column schema, one proof contract. The strip below the totals is the arithmetic — no operator adds the column up to find out whether it ties.</p>
+</div>
+<div data-region="evidence" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EnvelopePanel" envelope="{{ custodian }}" title="Custodian NAV" hint-size="100%,190px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EnvelopeCoherence" envelopes="{{ envelopes }}" hint-size="100%,120px"></x-import>
+</div>
+<div data-region="action" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ signOffBlocked }}" hint-size="120px,32px">Sign off</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" hint-size="130px,32px">Escalate</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="tertiary" hint-size="180px,32px">Return to preparer</x-import>
+<span style="font-size:12px;color:var(--text-muted)">{{ dispositionNote }}</span>
+</div>
+</x-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;archetype&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;investigate&quot;,&quot;monitor&quot;,&quot;compose&quot;,&quot;report&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;investigate&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;showRoles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;forceOutOfBalance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Proof&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;terminal&quot;,&quot;dense&quot;,&quot;standard&quot;,&quot;review&quot;],&quot;default&quot;:&quot;dense&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Proof&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;PROD&quot;,&quot;UAT&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;UAT&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Shell&quot;}}">
+class Component extends DCLogic {
+  get ns() { return window.MeridianDesignSystem_205d17 || {}; }
+
+  // ds-base.js loads the bundle asynchronously, so the first render can happen
+  // before the design system exists. Re-render once it does.
+  componentDidMount() {
+    if (this.ns.ScreenComposition) return;
+    let tries = 0;
+    this._t = setInterval(() => {
+      if (this.ns.ScreenComposition || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); }
+    }, 60);
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); }
+
+  screenManifest() {
+    const SC = this.ns.ScreenComposition;
+    const define = (SC && SC.define) || this.ns.defineScreen;
+    const spec = {
+      name: "Close tie-out",
+      archetype: this.props.archetype || "investigate",
+      regions: [
+        { id: "context", title: "Period and entity", span: 12 },
+        { id: "claim", title: "The claim under review", span: 12 },
+        { id: "primary", title: "Trial balance · June 2026", span: 8 },
+        { id: "evidence", title: "Evidence and coherence", span: 4 },
+        { id: "action", title: "Disposition", span: 12 },
+      ],
+    };
+    return define ? define(spec) : spec;
+  }
+
+  rows() {
+    const out = this.props.forceOutOfBalance;
+    return [
+      { code: "1000", account: "Cash and equivalents", debit: 4820115.22, credit: 0, condition: "confirmed", authority: "source" },
+      { code: "1200", account: "Investments at fair value", debit: 186402881.10, credit: 0, condition: "overridden", authority: "desk", detail: "muni desk mark" },
+      { code: "1400", account: "Accrued income receivable", debit: 1182400.00, credit: 0, condition: "provisional", authority: "derived" },
+      { code: "2100", account: "Payables to brokers", debit: 0, credit: 2904118.44, condition: "confirmed", authority: "source" },
+      { code: "3000", account: "Contributed capital", debit: 0, credit: 171000000.00, condition: "reconciled", authority: "source" },
+      { code: "3900", account: "Retained earnings", debit: 0, credit: 18501277.88 - (out ? 12.4 : 0), condition: "confirmed", authority: "derived" },
+    ];
+  }
+
+  envelopeList() {
+    return [
+      { label: "Custodian NAV", value: "189,318,396.32", condition: "confirmed", authority: "source",
+        evidence: [{ label: "Custodian statement", ref: "CS-0626" }],
+        clocks: { asOf: "2026-07-01 06:00:00Z", evidenceAt: "2026-07-01 05:58:00Z" } },
+      { label: "Investments at fair value", value: "186,402,881.10", condition: "overridden", detail: "desk mark", authority: "desk",
+        evidence: [{ label: "Desk note", ref: "MK-2211" }, { label: "Comparable prints", ref: "3 obs" }],
+        clocks: { valuation: "2026-06-30", evidenceAt: "2026-06-30 19:41:00Z", calculatedAt: "2026-06-30 19:55:00Z" },
+        materiality: { material: true, threshold: "5bp of NAV" } },
+      { label: "Accrued income receivable", value: "1,182,400.00", condition: "provisional", authority: "derived",
+        evidence: [{ label: "Accrual run", ref: "AC-5512" }],
+        clocks: { posting: "2026-07-02", reportingPeriod: { start: "2026-06-01", end: "2026-06-30" }, closeDeadline: "2026-07-10" },
+        materiality: { material: true, threshold: "0.5bp" } },
+    ];
+  }
+
+  renderVals() {
+    const { ValueEnvelope, GRID_SCHEMAS, DataGrid } = this.ns;
+    const envelopeCheck = (ValueEnvelope && ValueEnvelope.check) || this.ns.envelopeCheck;
+    const rows = this.rows();
+    const envelopes = this.envelopeList();
+    const schemas = GRID_SCHEMAS || (DataGrid && DataGrid.schemas) || {};
+    const base = schemas.trialBalance || { columns: [], proof: null };
+    const money = (n) => (n === 0 ? "—" : window.MeridianDesignSystem_205d17.Format.number(Math.abs(n), { decimals: 2 }));
+    const columns = base.columns.map((c) =>
+      (c.key === "debit" || c.key === "credit") && ValueEnvelope
+        ? { ...c, cell: (r) => (r[c.key] === 0
+            ? "—"
+            : React.createElement(ValueEnvelope, {
+                value: money(r[c.key]), condition: r.condition, detail: r.detail, authority: r.authority, align: "right",
+                label: r.account, clocks: { asOf: "2026-07-01 06:00:00Z" },
+                evidence: [{ label: "Account ledger", ref: r.code }],
+              })) }
+        : c);
+    const blocked = envelopes.some((e) => (envelopeCheck ? envelopeCheck(e).length : 0) > 0);
+    return {
+      screen: this.screenManifest(),
+      showRoles: this.props.showRoles !== false,
+      environment: this.props.environment || "UAT",
+      density: this.props.density || "dense",
+      trialBalance: rows,
+      tbColumns: columns,
+      tbProof: base.proof,
+      custodian: envelopes[0],
+      envelopes,
+      signOffBlocked: blocked,
+      dispositionNote: blocked
+        ? "Sign-off is held until every figure on this screen is coherent."
+        : "All figures coherent — sign-off available.",
+    };
+  }
+}
+</script>
+</body>
+</html>

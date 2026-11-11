@@ -1,7 +1,7 @@
 The period-end proof — one row per account, net on its normal side, grouped into type sections with subtotals; the footer proves Σdebit = Σcredit and flags any difference in red.
 
 ```jsx
-const { TrialBalance, Money } = window.MeridianDesignSystem_4f61be;
+const { TrialBalance, Money } = window.MeridianDesignSystem_205d17;
 
 // From raw journal postings — collapse first:
 <TrialBalance rows={Money.buildTrialBalance(postings)} currency="USD" />

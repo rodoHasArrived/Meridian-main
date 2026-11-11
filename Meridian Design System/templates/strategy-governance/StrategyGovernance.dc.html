@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Admin · Strategy Governance & Catalog" description="AMX field catalog beside real strategy governance — lifecycle transitions and version- and proof-bound attestations." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
+<meta name="dc-template" content="strategy-governance">
+<style>html,body{margin:0;padding:0;height:100%}
+.ag-kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.ag-kv .k{color:var(--text-muted)}.ag-kv .v{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;text-align:right;word-break:break-all}
+.ag-audit{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-bottom:1px solid var(--border)}
+.ag-audit .t{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap}
+.ag-audit .m{font-size:11.5px;color:var(--text-primary)}
+</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Governance" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<div data-screen-label="Governance and catalog" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Governance" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="governance" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Governance &amp; AMX catalog</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="60px,18px">{{ fieldChip }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="66px,18px">{{ envLabel }}</x-import>
+</div>
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" flat="{{ true }}" style="padding:10px" hint-size="100%,64px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.GateRail" gates="{{ gates }}" hint-size="100%,44px"></x-import>
+</x-import>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" placeholder="⌕  Search AMX data fields…" value="{{ q }}" on-change="{{ onQuery }}" hint-size="100%,30px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ cat }}" on-change="{{ onCat }}" options="{{ catOptions }}" hint-size="380px,26px"></x-import>
+<sc-if value="{{ hasFields }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ fields }}" as="f" hint-placeholder-count="4">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border);border-radius:2px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="font:600 13px var(--font-body);color:var(--text-primary)">{{ f.name }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ f.tone }}" hint-size="50px,18px">{{ f.cat }}</x-import>
+<code style="font:12px var(--font-data);color:var(--brand-signal-ink,#944A32)">{{ f.sig }}</code>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ f.freq }}" label="{{ f.freqLabel }}" hint-size="70px,18px"></x-import>
+</div>
+<p style="margin:0;font-size:12px;color:var(--text-secondary)">{{ f.desc }}</p>
+<div style="font:11px var(--font-data);color:var(--text-muted)">Lineage · {{ f.lineage }}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ noFields }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" title="No fields match" description="Clear the search or pick another category." hint-size="100%,160px"></x-import>
+</sc-if>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" style="padding:14px;display:flex;flex-direction:column;gap:12px" hint-size="340px,300px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Governance</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ lcStatus }}" label="{{ lcLabel }}" hint-size="90px,18px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:6px">
+<div class="ag-kv"><span class="k">Strategy</span><span class="v">{{ gStrategy }}</span></div>
+<div class="ag-kv"><span class="k">Reviewed run</span><span class="v">{{ gRun }}</span></div>
+<div class="ag-kv"><span class="k">Proof</span><span class="v">{{ gProof }}</span></div>
+<div class="ag-kv"><span class="k">Freshness</span><span class="v">{{ gFresh }}</span></div>
+</div>
+<div style="width:100%"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" label="Run under review" value="{{ runPick }}" on-change="{{ onRunPick }}" options="{{ runOptions }}" hint-size="100%,52px"></x-import></div>
+<sc-if value="{{ staleNote }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="warning" title="Proof is stale" hint-size="100%,70px">{{ staleText }}</x-import>
+</sc-if>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Sign as" value="{{ signer }}" on-change="{{ onSigner }}" hint-size="100%,52px"></x-import>
+<div style="display:flex;gap:6px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ startReason }}" hint-size="90px,28px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ startDisabled }}" on-click="{{ onStart }}" hint-size="90px,28px">Start review</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ changesReason }}" hint-size="120px,28px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="danger" size="sm" disabled="{{ changesDisabled }}" on-click="{{ onChanges }}" hint-size="120px,28px">Request changes</x-import>
+</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ approveReason }}" hint-size="76px,28px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ approveDisabled }}" on-click="{{ onApprove }}" hint-size="76px,28px">Approve</x-import>
+</x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" style="padding:14px;display:flex;flex-direction:column;gap:8px" hint-size="340px,200px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Attestations</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="20px,18px">{{ attCount }}</x-import>
+</div>
+<sc-for list="{{ atts }}" as="a" hint-placeholder-count="2">
+<div style="display:flex;flex-direction:column;gap:3px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+<div style="display:flex;align-items:center;gap:8px">
+<span style="font:600 12px var(--font-data);color:var(--text-primary)">{{ a.id }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ a.decTone }}" hint-size="70px,18px">{{ a.decision }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ a.state }}" label="{{ a.stateLabel }}" hint-size="80px,18px"></x-import>
+</div>
+<div style="font:11px var(--font-data);color:var(--text-muted)">{{ a.line }}</div>
+<sc-if value="{{ a.hasReason }}" hint-placeholder-val="{{ false }}"><div style="font:11px var(--font-body);color:var(--orange-dim,#724D11)">{{ a.reason }}</div></sc-if>
+</div>
+</sc-for>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" raised="{{ true }}" style="padding:14px;display:flex;flex-direction:column;gap:8px" hint-size="340px,240px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">Audit log</x-import>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ audit }}" as="e" hint-placeholder-count="5">
+<div class="ag-audit"><span class="t">{{ e.t }}</span><span class="m">{{ e.m }}</span></div>
+</sc-for>
+</div>
+</x-import>
+</div>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, runPick: null, q: "", cat: "all", signer: "M. Reyes (Risk)" };
+  K() { return window.MeridianExecutorKit; }
+  componentDidMount() { const wait = setInterval(() => { if (this.K()) { clearInterval(wait); this.K().applyChrome(this.props, "FIXTURE"); this.K().boot(this, (X, idn) => ({ draft: X.getStrategy(idn.strategyId), runPick: idn.runId })); } }, 30); this._wait = wait; }
+  componentWillUnmount() { clearInterval(this._wait); this.K() && this.K().unboot(this); }
+  componentDidUpdate() { this.K() && this.K().applyChrome(this.props, "FIXTURE"); }
+  refresh(X) { this.setState({ draft: X.getStrategy(this.state.draft.id) }); }
+  renderVals() {
+    const K = this.K(), env = String(this.props.environment ?? "FIXTURE").toUpperCase();
+    if (!K) return { dataState: "loading" };
+    const base = { dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")), onRetry: () => window.location.reload(), envLabel: env, envVariant: env.toLowerCase(), navSections: K.NAV_SECTIONS, onNav: (id) => K.nav(id) };
+    if (!this.state.booted) return { ...base, statusItems: [{ label: "Governance", value: "Loading" }].concat(K.statusTail(env)), gates: [], fields: [], catOptions: this.cats(), runOptions: [], atts: [], audit: [], hasFields: true, noFields: false, fieldChip: "…" };
+    const X = K.X(), SM = K.ds().StrategyModel, RM = K.ds().StrategyRunModel, d = this.state.draft;
+    const storage = X.storageNotice();
+    const completed = X.listRuns(d.id).filter((r) => r.lifecycle === "complete");
+    const run = (this.state.runPick && X.getRun(this.state.runPick)) || completed.find((r) => !r.legacy) || null;
+    const fresh = run ? X.freshnessFor(run.id) : { state: "unknown", changed: [] };
+    const proof = run && !run.legacy ? RM.verifyProof(run) : { state: "unverified" };
+    const formationOk = SM.formationReady(d);
+    const lc = SM.lifecycleMeta(d.lifecycle);
+    const sevMap = { ready: "Passed", review: "InProgress", action: "ReviewRequired", blocked: "Blocked", info: "NotStarted" };
+    const q = this.state.q.trim().toUpperCase();
+    const fields = K.FIELD_META.filter((f) => (this.state.cat === "all" || f.cat === this.state.cat) && (!q || f.name.includes(q) || f.desc.toUpperCase().includes(q)));
+    const allAtts = X.getStore().attestations.filter((a) => a.strategyId === d.id);
+    const approvable = d.lifecycle === "in-review" && run && !run.legacy && fresh.state === "current" && proof.state === "verified" && formationOk;
+    const t = () => window.MeridianToast;
+    const doTransition = (to, note) => { const res = X.transition(d.id, to, { actor: this.state.signer, note }); if (res.ok) { this.refresh(X); const tt = t(); tt && tt.success && tt.success("Strategy " + to, d.id + " v" + d.version); } else { const tt = t(); tt && tt.error && tt.error("Transition unavailable", res.issue ? res.issue.message : ""); } };
+    return {
+      ...base,
+      statusItems: [
+        { label: "Strategy", value: d.id + " v" + d.version },
+        { status: lc.severity === "blocked" ? "err" : "ok", label: "Lifecycle", value: lc.label },
+        { label: "Attestations", value: allAtts.filter((a) => X.attestationState(a).state === "standing").length + " standing / " + allAtts.length },
+      ].concat(K.statusTail(env)),
+      fieldChip: fields.length + " fields",
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      gates: [
+        { key: "Formation", label: "Formation", status: formationOk ? "Passed" : "Blocked" },
+        { key: "Checkpoint", label: "Checkpoint", status: ["ready-for-review", "in-review", "approved", "active"].includes(d.lifecycle) ? "Passed" : "NotStarted" },
+        { key: "Proof", label: "Proof current", status: !run ? "NotStarted" : run.legacy ? "ReviewRequired" : fresh.state === "current" ? "Passed" : "ReviewRequired" },
+        { key: "Review", label: "Review", status: d.lifecycle === "in-review" ? "InProgress" : ["approved", "active"].includes(d.lifecycle) ? "Passed" : d.lifecycle === "changes-requested" ? "ReviewRequired" : "NotStarted" },
+        { key: "Approval", label: "Approval", status: ["approved", "active"].includes(d.lifecycle) ? "Passed" : "NotStarted" },
+      ],
+      q: this.state.q, onQuery: (e) => this.setState({ q: e.target.value }),
+      cat: this.state.cat, onCat: (v) => this.setState({ cat: v }), catOptions: this.cats(),
+      hasFields: fields.length > 0, noFields: fields.length === 0,
+      fields: fields.map((f) => ({ name: f.name, cat: f.cat, tone: f.tone, sig: f.sig, desc: f.desc, freq: f.freq, freqLabel: f.freqLabel, lineage: f.owner + " · since AMX " + f.since + " · fallback: " + f.fallback })),
+      lcStatus: sevMap[lc.severity] || "NotStarted", lcLabel: lc.label.toLowerCase(),
+      gStrategy: d.id + " · v" + d.version,
+      gRun: run ? run.id + " · v" + (run.strategyVersion ?? "?") : "none",
+      gProof: run && run.proof ? K.hash8(run.proof.inputHash) + " · " + proof.state : "none",
+      gFresh: !run ? "—" : run.legacy ? "n/a · legacy" : fresh.state + (fresh.changed.length ? " · " + fresh.changed.join(", ") : ""),
+      runPick: run ? run.id : null, onRunPick: (v) => { X.setUrlState({ run: v }); this.setState({ runPick: v }); },
+      runOptions: completed.map((r) => ({ value: r.id, label: r.id + " · v" + (r.strategyVersion ?? "?") + (r.legacy ? " · legacy" : "") })),
+      staleNote: run && !run.legacy && fresh.state === "stale",
+      staleText: "Draft material inputs changed (" + fresh.changed.join(", ") + ") since " + (run ? run.id : "") + ". Approval stays gated until the draft is reverted or rerun.",
+      signer: this.state.signer, onSigner: (e) => this.setState({ signer: e.target.value }),
+      startDisabled: d.lifecycle !== "ready-for-review",
+      startReason: d.lifecycle === "ready-for-review" ? "Move to in-review." : "Requires lifecycle ready-for-review — checkpoint the formation first (now: " + d.lifecycle + ").",
+      onStart: () => doTransition("in-review", "Review opened"),
+      changesDisabled: d.lifecycle !== "in-review",
+      changesReason: d.lifecycle === "in-review" ? "Record a changes-requested attestation and return the draft." : "Requires an open review.",
+      onChanges: () => { if (d.lifecycle !== "in-review") return; X.attest({ strategyId: d.id, runId: run ? run.id : null, decision: "changes-requested", signedBy: this.state.signer, role: "Risk", note: "Returned from review" }); doTransition("changes-requested", "Changes requested"); },
+      approveDisabled: !approvable,
+      approveReason: approvable ? "Record a version- and proof-bound approval." : (d.lifecycle !== "in-review" ? "Requires an open review (now: " + d.lifecycle + ")." : !run ? "Pick a completed run." : run.legacy ? "Legacy artifacts cannot carry an approval." : fresh.state !== "current" ? "Proof is stale — revert or rerun first." : proof.state !== "verified" ? "Proof integrity check failed." : "Formation carries blocking issues."),
+      onApprove: () => { if (!approvable) return; const att = X.attest({ strategyId: d.id, runId: run.id, decision: "approve", signedBy: this.state.signer, role: "Risk", note: "Approved on " + run.id + " proof" }); doTransition("approved", "Approved · " + att.id); },
+      attCount: String(allAtts.length),
+      atts: allAtts.slice().reverse().map((a) => { const st = X.attestationState(a); return {
+        id: a.id, decision: a.decision, decTone: a.decision === "approve" ? "success" : "warning",
+        state: st.state === "standing" ? "Passed" : "ReviewRequired", stateLabel: st.state,
+        line: "v" + a.strategyVersion + " · " + (a.runId || "no run") + " · " + K.hash8(a.proofHash) + " · " + a.signedBy + " · " + K.iso(a.signedAt).slice(0, 16),
+        hasReason: st.state !== "standing", reason: st.reason || "",
+      }; }),
+      audit: (d.history || []).map((h) => ({ t: K.iso(h.at).slice(0, 16), m: h.from + " → " + h.to + (h.actor ? " · " + h.actor : "") + (h.note ? " · " + h.note : "") })).concat(allAtts.map((a) => ({ t: K.iso(a.signedAt).slice(0, 16), m: a.decision + " · " + a.id + " · " + a.signedBy }))).sort((x, y) => (x.t < y.t ? 1 : -1)).slice(0, 8),
+    };
+  }
+  cats() { return [{ value: "all", label: "All" }, { value: "Price", label: "Price" }, { value: "Yield", label: "Yield" }, { value: "Risk", label: "Risk" }, { value: "Signal", label: "Signal" }, { value: "Data", label: "Data" }]; }
+}
+</script>
+</body>
+</html>

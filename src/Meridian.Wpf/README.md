@@ -875,8 +875,28 @@ now follows that focused attribution pattern: the oversized hero is replaced by 
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.
 The desktop shell visual system now targets a light institutional workstation frame with a
-near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
-workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
+graphite global app bar, paper page bands, compact filter bars, and dense table chrome. Colors in
+`Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
+workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
+`ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
+(`ConsoleAccentCyan`) is the brand signal only. Paper simulation uses slate (`ModePaperColor`),
+independent of live red and fixture amber; actual chart traces use graphite. `OnAccentTextColor` is
+the dark ink the package puts on a terracotta fill (4.7:1; white is 4.0:1). Brand art in
+`Assets/Brand/` is copied from `Meridian Design System/assets/brand/` (identity v1.0); the startup
+window shows `meridian-mark-light-256.png`, a transparent raster of `meridian-mark-light.svg`, because
+the package reserves the light mark for graphite surfaces and WPF does not load SVG directly.
+Retained SVG text declarations follow the package's IBM Plex Sans identity; canonical asset
+copies stay byte-aligned with the package.
+IBM Plex Sans now supplies display and body text; IBM Plex Mono supplies financial values, code,
+identifiers, and keyboard labels. All ten package faces and both OFL licenses are embedded from
+`Assets/Fonts/`, so no installed fonts or network access are required. Window and Page roots set
+an inherited body default; existing mono declarations use `MeridianDataFontFamily`. Symbol glyphs
+retain Segoe MDL2 Assets. `ThemeTypography.xaml` loads before `AppStyles.xaml` so shared families
+resolve before their consumers, with existing font sizes, weights, and density retained.
+`DesignSystemResourceTests` verifies embedded face resolution, canonical binary/license parity,
+body inheritance, preserved symbol fonts, primary control rendering, and selection/environment roles.
+These tests require Windows; Linux builds of the WPF projects are stubs and do not validate fonts
+or XAML. Workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
 inspector host primitives before adding page-local cards or dark terminal styling. The Data shell is
@@ -1129,3 +1149,12 @@ summary/journal arrivals, missing summaries, basis preservation, scope resets, a
 pending proof invalidation.
 
 Acceptance and commands: [W10 posted amount provenance](../../docs/testing/w10-amount-provenance.md).
+
+### Posted-ledger account postings
+
+`PostedLedgerViewModel.SelectedTrialBalanceRow` loads the selected account's postings for the
+period into `AccountPostings` through `ILedgerReportsApiClient.GetAccountRunningBalanceAsync`,
+the same shared running-balance route the browser workstation uses. A response for a row or period
+that is no longer selected is discarded, and reloading the trial balance clears the selection.
+The request carries the selected row's symbol, financial account and dimension set, so the postings
+and ending balance are those of that row only.

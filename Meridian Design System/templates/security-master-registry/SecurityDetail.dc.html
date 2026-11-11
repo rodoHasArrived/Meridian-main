@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- Companion page of the Security Master Registry template: standalone record view opened via ?security=<id>. Lean header, tabbed record, optimistic edits, versioned annotations, rejected-edit strip and audit trail; state is shared with the registry. -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="./securities-data.js"></script>
+<script src="./record-state.js"></script>
+<meta name="dc-template" content="security-detail">
+<style>html,body{margin:0;padding:0;height:100%}[data-smr-show="off"]{display:none!important}</style>
+</helmet>
+<div style="min-height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<header style="position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;height:44px;padding:0 16px;background:var(--topbar-bg,#29323A);border-bottom:1px solid var(--border-strong);flex-shrink:0">
+<img src="../../assets/brand/meridian-mark-light.svg" alt="Meridian" style="height:18px;width:auto">
+<span style="width:1px;height:18px;background:rgba(255,255,255,.18)"></span>
+<a href="{{ backHref }}" style="display:inline-flex;align-items:center;gap:6px;font:12px var(--font-body);color:rgba(255,255,255,.78);text-decoration:none" style-hover="color:var(--topbar-text)"><span style="font-family:var(--font-data)">←</span> {{ backLabel }}</a>
+<span style="color:rgba(255,255,255,.3)">/</span>
+<span style="font:600 13px var(--font-display);color:var(--topbar-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ detName }}</span>
+<div style="flex:1"></div>
+<span style="font-family:var(--font-data);font-size:11px;color:rgba(255,255,255,.55)">{{ detSub }}</span>
+<button onClick="{{ onCopyLink }}" title="Copy a link to this record" style="display:inline-flex;align-items:center;gap:5px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.78);font:11px var(--font-body);padding:4px 9px;border-radius:3px;cursor:pointer" style-hover="border-color:rgba(255,255,255,.45);color:var(--topbar-text)">{{ copyLinkLabel }}</button>
+</header>
+<main style="flex:1;min-width:0;padding:20px 24px">
+<div data-screen-label="Security Detail" data-smr-show="{{ detailShow }}" style="display:flex;flex-direction:column;gap:14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticProvider" commit="{{ optCommit }}" on-settle="{{ onOptSettle }}" hint-size="100%,600px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationProvider" object-id="{{ detObjectId }}" object-version="{{ detVersion }}" author="you" hint-size="100%,600px">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:flex-start;gap:14px">
+<div style="flex:1;min-width:0">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ detAnchor }}" hint-size="240px,26px"><h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">{{ detName }}</h1></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="80px,18px">{{ detAssetClass }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ detLifecycleTip }}" hint-size="70px,18px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ detLifecycleVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ detLifecycle }}</x-import></x-import>
+<sc-for list="{{ detFlags }}" as="f" hint-placeholder-count="0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tooltip" content="{{ f.tip }}" hint-size="70px,18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="danger" dot="{{ true }}" hint-size="70px,18px">{{ f.label }}</x-import>
+</x-import>
+</sc-for>
+</div>
+<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:7px">
+<sc-for list="{{ detIdents }}" as="i" hint-placeholder-count="4">
+<button data-smr-show="{{ i.presentShow }}" onClick="{{ i.copy }}" title="{{ i.title }}" style="display:inline-flex;align-items:baseline;gap:6px;border:1px solid var(--border-strong);background:var(--card-surface,#F8F7F3);padding:3px 8px;border-radius:3px;cursor:pointer" style-hover="border-color:var(--text-muted)">
+<span style="font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)">{{ i.label }}</span>
+<span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ i.value }}</span>
+</button>
+<span data-smr-show="{{ i.emptyShow }}" title="{{ i.title }}" style="display:inline-flex;align-items:baseline;gap:6px;border:1px dashed var(--border-strong);background:transparent;padding:3px 8px;border-radius:3px">
+<span style="font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-disabled)">{{ i.label }}</span>
+<span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-disabled)">—</span>
+</span>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OptimisticRowBar" row-ids="{{ detRowId }}" label="edits on this record" hint-size="0px,0px"></x-import>
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Depth</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Toggle" checked="{{ editMode }}" on-change="{{ onEditMode }}" label="Edit Mode" hint-size="110px,24px"></x-import>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-left:none;border-radius:4px;overflow:hidden">
+<sc-for list="{{ detFacts }}" as="k" hint-placeholder-count="6">
+<div style="flex:1 1 150px;border-left:1px solid var(--border);padding:10px 14px;display:flex;flex-direction:column;gap:3px;min-width:0">
+<span style="font-size:9.5px;font-weight:700;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)">{{ k.label }}</span>
+<span data-smr-show="{{ k.neutralShow }}" style="font-family:var(--font-data);font-size:13px;font-weight:600;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.value }}</span>
+<span data-smr-show="{{ k.goodShow }}" style="font-family:var(--font-data);font-size:13px;font-weight:600;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.value }}</span>
+<span data-smr-show="{{ k.warnShow }}" style="font-family:var(--font-data);font-size:13px;font-weight:600;color:var(--orange);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.value }}</span>
+<span data-smr-show="{{ k.alertShow }}" style="font-family:var(--font-data);font-size:13px;font-weight:600;color:var(--red);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.value }}</span>
+<span style="font-size:10.5px;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ k.note }}</span>
+</div>
+</sc-for>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:0 18px 18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" default-tab="{{ 0 }}" tabs="{{ detTabs }}" hint-size="100%,400px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,360px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureProvider" screen-id="security-detail" detail="{{ detail }}" hint-size="100%,360px">
+<div style="display:flex;flex-direction:column;gap:18px;padding:18px 2px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="150px,14px">Lineage &amp; provenance</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">as of {{ detAsOf }}</span>
+</div>
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);padding:12px 14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EntitySummary" columns="{{ 5 }}" items="{{ provItems }}" hint-size="100%,50px"></x-import>
+</div>
+</div>
+<div style="border-top:1px solid var(--border)"></div>
+<sc-if value="{{ editMode }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="Edit mode is on" hint-size="100%,60px">Click any field to edit. An edit writes at once and reads Provisional until the registry confirms it; a rejection restores the prior value with the reason attached; a confirmed edit stays revertible — hover it for Revert…, or revert everything on this record from the header.</x-import>
+</sc-if>
+<div data-smr-show="{{ rejectedShow }}" style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Rejected edits</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ rejectedCount }} · prior values kept</span>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onDismissRejected }}" hint-size="60px,24px">Dismiss</x-import>
+</div>
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);border-left:3px solid var(--red)">
+<sc-for list="{{ detRejected }}" as="r" hint-placeholder-count="1">
+<div style="display:grid;grid-template-columns:140px 1fr auto;gap:12px;align-items:baseline;padding:8px 12px;border-bottom:1px solid var(--border)">
+<span style="font-weight:600;font-size:12px;color:var(--text-primary)">{{ r.field }}</span>
+<span style="font-size:12.5px;color:var(--text-secondary)"><span style="font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);text-decoration:line-through">{{ r.value }}</span> — {{ r.reason }}</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);white-space:nowrap">{{ r.ts }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-for list="{{ detSections }}" as="sec" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div data-smr-show="{{ sec.dividerShow }}" style="border-top:1px solid var(--border)"></div>
+<div data-smr-show="{{ sec.fieldsShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureRegion" id="{{ sec.id }}" title="{{ sec.title }}" secondary="{{ sec.secondary }}" count="{{ sec.count }}" count-label="fields" hint-size="100%,110px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 4 }}" items="{{ sec.items }}" hint-size="100%,80px"></x-import>
+</x-import>
+</div>
+<div data-smr-show="{{ sec.checklistShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormSectionLabel" hint-size="120px,16px">{{ sec.title }}</x-import>
+<div style="display:flex;flex-wrap:wrap;gap:10px 24px">
+<sc-for list="{{ sec.checks }}" as="c" hint-placeholder-count="3">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Checkbox" checked="{{ c.checked }}" disabled="{{ true }}" label="{{ c.label }}" on-change="{{ noop }}" hint-size="180px,20px"></x-import>
+</sc-for>
+</div>
+</div>
+<div data-smr-show="{{ sec.calloutShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ sec.tone }}" title="{{ sec.title }}" hint-size="100%,60px">{{ sec.text }}</x-import>
+</div>
+<div data-smr-show="{{ sec.scheduleShow }}" style="display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.FormSectionLabel" hint-size="120px,16px">{{ sec.title }}</x-import>
+<div data-smr-show="{{ sec.hasRowsShow }}" style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead>
+<tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Event Type</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Payment Date</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Index</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Spread</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Expected</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Actual</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Posted</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ sec.rows }}" as="e" hint-placeholder-count="2">
+<tr>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ e.eventType }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ e.paymentDate }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ e.index }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ e.spread }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ e.expected }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ e.actual }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ e.postedVariant }}" dot="{{ true }}" hint-size="70px,18px">{{ e.postedLabel }}</x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div data-smr-show="{{ sec.noRowsShow }}" style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="table" compact="{{ true }}" title="No cash flow schedules available" detail="Import data or add schedules to view projected and actual amounts." hint-size="100%,120px"></x-import>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,200px">
+<div style="padding:18px 2px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ValidationIssueList" issues="{{ detValidation }}" empty-label="No validation issues on file" hint-size="100%,120px"></x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px">
+<div style="display:flex;align-items:center;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">Compliance status</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ detCompStatus }}" hint-size="70px,18px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 4 }}" items="{{ detCompItems }}" hint-size="100%,80px"></x-import>
+<div style="border-top:1px solid var(--border)"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ValidationIssueList" issues="{{ detCompChecks }}" hint-size="100%,100px"></x-import>
+<div data-smr-show="{{ detRestrictedShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="danger" title="Restricted" hint-size="100%,60px">This security is on the restricted list. See Operational flags on the Overview tab for detail.</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="display:flex;flex-direction:column;gap:16px;padding:18px 2px;max-width:760px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationPanel" title="Anchored annotations" empty-text="No annotations. Press ¶ beside the security name to anchor one; follow-notes go stale when the record changes, pinned notes keep their version." hint-size="100%,80px"></x-import>
+<div style="border-top:1px solid var(--border)"></div>
+<div data-smr-show="{{ noNotesShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="inbox" compact="{{ true }}" title="No notes yet" detail="Add the first note below." hint-size="100%,100px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column">
+<sc-for list="{{ detNotes }}" as="n" hint-placeholder-count="2">
+<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+<div style="display:flex;gap:8px;align-items:baseline;margin-bottom:3px">
+<span style="font-weight:600;font-size:12px;color:var(--text-primary)">{{ n.author }}</span>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted)">{{ n.ts }}</span>
+</div>
+<div style="font-size:13px;color:var(--text-secondary);line-height:1.5">{{ n.text }}</div>
+</div>
+</sc-for>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" label="Add a note" rows="{{ 3 }}" value="{{ noteDraft }}" on-change="{{ onNoteDraft }}" placeholder="Log a decision, review outcome, or context for the next operator…" hint-size="100%,90px"></x-import>
+<div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ addNoteDisabled }}" on-click="{{ onAddNote }}" hint-size="80px,26px">Add note</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="padding:18px 2px">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead>
+<tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Timestamp</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">User</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Field</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Old Value</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">New Value</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ detAudit }}" as="a" hint-placeholder-count="3">
+<tr>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);white-space:nowrap">{{ a.ts }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-primary)">{{ a.user }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ a.field }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">{{ a.oldValue }}</td>
+<td style="padding:7px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ a.newValue }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</x-import>
+</x-import>
+</div>
+</div>
+</x-import>
+</x-import>
+</div>
+<div data-smr-show="{{ redirectShow }}" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:10px">
+<span style="font:600 14px var(--font-display);color:var(--text-primary)">Returning to the registry…</span>
+<span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">No security matches this link.</span>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;previewSecurity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ust-4-25-29&quot;,&quot;options&quot;:[&quot;ust-4-25-29&quot;,&quot;aapl-4-5-25&quot;,&quot;bac-frn-sofr-27&quot;,&quot;barc-irs-sofr&quot;,&quot;bx-refviii&quot;,&quot;eurusd-fwd-citi&quot;,&quot;bund-1-7-32&quot;,&quot;fhlmc-sd8123&quot;,&quot;octagon-clo-23-1a&quot;,&quot;ppl-johnson-001&quot;,&quot;sofi-abs-24-1a&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;}}">
+class Component extends DCLogic {
+  state = { detail: null, editMode: false, noteDraft: "", shared: null, missing: false, copied: false };
+  TODAY = new Date("2026-07-04");
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  data() { return window.SECURITIES || []; }
+  toast(tone, title, detail) { const t = window.MeridianToast; if (t) (t[tone] || t.show)(title, detail); }
+  noop = () => {};
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "compact"):(this.props.density ?? "compact")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    const S = window.SMR_STATE;
+    this.setState({ shared: S ? S.read() : null });
+    if (S) this._unsub = S.subscribe((sh) => this.setState({ shared: sh }));
+    const id = this.id();
+    if (!id || !this.data().some((r) => r.id === id)) { this.setState({ missing: true }); this._t = setTimeout(() => { location.replace(this.backHref()); }, 900); }
+  }
+  componentWillUnmount() { if (this._unsub) this._unsub(); clearTimeout(this._t); }
+  componentDidUpdate() { this.applyChrome(); }
+  // A real link always carries ?security=. With no param at all (design-system preview) we fall
+  // back to previewSecurity; an id that resolves to nothing still redirects to the registry.
+  param() { try { return new URL(location.href).searchParams.get("security"); } catch (e) { return null; } }
+  id() { return this.param() || this.props.previewSecurity || "ust-4-25-29"; }
+  backHref() { return "./SecurityMasterRegistry.dc.html"; }
+  // This record page carries its own compact header rather than WorkstationTopbar, but the way
+  // back is still the app map's to name (4.4 · E-1) — so this link and the masthead breadcrumb
+  // elsewhere in the suite call the registry the same thing.
+  backLabel() {
+    const M = window.MeridianAppMap;
+    return "Back to " + (M && M.label ? M.label("security-master") : "registry");
+  }
+  shared() { return this.state.shared || (window.SMR_STATE ? window.SMR_STATE.EMPTY : { fieldEdits: {}, auditExtra: {}, notesById: {}, overrides: {}, rejected: {} }); }
+  writeShared(mut) {
+    const S = window.SMR_STATE; const cur = S ? S.read() : this.shared();
+    const next = mut(cur);
+    if (S) S.write(next);
+    this.setState({ shared: { ...cur, ...next } });
+  }
+  anyFieldVal(row, label) { for (const s of row.sections) if (s.type === "fields") { const f = s.fields.find((y) => y.label === label); if (f) return f.value; } return null; }
+  feedFor(src) {
+    if (!src) return "—";
+    if (/BVAL|Bloomberg/i.test(src)) return "Bloomberg BVAL";
+    if (/QuantLib|Internal/i.test(src)) return "Internal model";
+    if (/NAV/i.test(src)) return "GP NAV statement";
+    if (/amortized/i.test(src)) return "Amortized cost";
+    return src;
+  }
+  confidenceFor(level) {
+    if (level === "Level 1") return { label: "High — observable", color: "var(--green)" };
+    if (level === "Level 2") return { label: "Medium — derived", color: "var(--orange)" };
+    return { label: "Model-derived", color: "var(--red)" };
+  }
+  lifecycleOf(row) {
+    if (row.lifecycle) return row.lifecycle;
+    if (!row.maturityDate || row.maturityDate === "—") return "Perpetual";
+    return new Date(row.maturityDate) < this.TODAY ? "Matured" : "Active";
+  }
+  lifecycleVariant(l) { return l === "Active" ? "success" : l === "Pending" ? "warning" : l === "Matured" || l === "Called" || l === "Delisted" ? "danger" : "neutral"; }
+  row() {
+    const base = this.data().find((x) => x.id === this.id());
+    if (!base) return null;
+    const sh = this.shared(); const o = sh.overrides[base.id] || {};
+    const restricted = o.restricted != null ? o.restricted : (base.compliance.restricted || base.flags.includes("Restricted"));
+    const lifecycle = this.lifecycleOf(base);
+    const r = { ...base, flags: o.flags || base.flags, restricted, lifecycle, lifecycleVariant: this.lifecycleVariant(lifecycle),
+      complianceStatus: o.complianceStatus || base.compliance.status,
+      fairValueLevel: this.anyFieldVal(base, "Fair Value Level") || "—",
+      pricingSource: this.anyFieldVal(base, "Pricing Source") || "—",
+      dataSteward: o.dataSteward || this.anyFieldVal(base, "Data Steward") || "—" };
+    const edits = sh.fieldEdits[r.id];
+    if (!edits) return r;
+    return { ...r, sections: r.sections.map((sec) => sec.type === "fields" ? { ...sec, fields: sec.fields.map((f) => edits[f.label] != null ? { ...f, value: edits[f.label] } : f) } : sec) };
+  }
+  renderVals() {
+    this.applyChrome();
+    const s = this.state; const el = React.createElement;
+    const { OptimisticCell } = this.ds();
+    const row = this.row(); const sh = this.shared();
+    const notes = row ? (sh.notesById[row.id] || row.notesSeed) : [];
+    const audit = row ? [...(sh.auditExtra[row.id] || []), ...row.audit] : [];
+    const checks = row && window.complianceChecks ? window.complianceChecks(row.compliance) : [];
+    const conf = row ? this.confidenceFor(row.fairValueLevel) : null;
+    const rejected = row ? (sh.rejected[row.id] || []) : [];
+    const stamp = () => new Date().toISOString().slice(0, 16).replace("T", " ") + "Z";
+    return {
+      noop: this.noop, backHref: this.backHref(), backLabel: this.backLabel(),
+      copyLinkLabel: s.copied ? "Link copied" : "Copy link",
+      onCopyLink: () => {
+        const write = navigator.clipboard ? navigator.clipboard.writeText(location.href) : Promise.reject();
+        write.then(() => { this.setState({ copied: true }); setTimeout(() => this.setState({ copied: false }), 1600); }).catch(() => this.toast("warning", "Copy blocked", "Copy the address bar instead."));
+      },
+      detIdents: row ? [
+        { key: "CUSIP", value: row.cusip }, { key: "ISIN", value: row.isin },
+        { key: "SEDOL", value: row.sedol }, { key: "Ticker", value: row.ticker },
+      ].map((i) => {
+        const empty = !i.value || i.value === "—";
+        return { label: i.key, value: empty ? "—" : i.value, presentShow: empty ? "off" : "on", emptyShow: empty ? "on" : "off",
+          title: empty ? "No " + i.key + " on this record" : "Copy " + i.key,
+          copy: empty ? this.noop : () => { const w = navigator.clipboard ? navigator.clipboard.writeText(i.value) : Promise.reject(); w.then(() => this.toast("success", i.key + " copied", i.value)).catch(() => {}); } };
+      }) : [],
+      detFacts: row ? (() => {
+        const open = row.validation.filter((v) => v.severity !== "Ready");
+        const months = row.maturityDate && row.maturityDate !== "—" ? Math.round((new Date(row.maturityDate) - this.TODAY) / (1000 * 3600 * 24 * 30.44)) : null;
+        const level = row.fairValueLevel;
+        const tone = (t) => ({ neutralShow: t === "neutral" ? "on" : "off", goodShow: t === "good" ? "on" : "off", warnShow: t === "warn" ? "on" : "off", alertShow: t === "alert" ? "on" : "off" });
+        return [
+          { label: "Currency", value: row.currency, note: row.assetClass, ...tone("neutral") },
+          { label: "Rating", value: row.rating || "—", note: row.sector, ...tone("neutral") },
+          { label: "Maturity", value: row.maturityDate || "—", note: months == null ? "no maturity" : months < 0 ? Math.abs(months) + "mo ago" : "in " + months + "mo", ...tone(months != null && months >= 0 && months <= 12 ? "warn" : "neutral") },
+          { label: "Issued", value: row.issueDate || "—", note: row.issuer, ...tone("neutral") },
+          { label: "Valuation", value: level, note: conf.label, ...tone(level === "Level 1" ? "good" : level === "Level 2" ? "warn" : "alert") },
+          { label: "Validation", value: open.length ? open.length + " open" : "Clean", note: open.length ? open[0].code : "all checks passing", ...tone(open.some((v) => v.severity === "Blocked") ? "alert" : open.length ? "warn" : "good") },
+          { label: "Steward", value: row.dataSteward, note: "reviewed " + row.compliance.lastReview, ...tone("neutral") },
+        ];
+      })() : [],
+      detailShow: row ? "on" : "off", redirectShow: s.missing ? "on" : "off",
+      detail: s.detail ?? this.props.detail ?? "full",
+      onDetail: (v) => this.setState({ detail: v }),
+      detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
+      detName: row ? row.name : (s.missing ? "Not found" : ""), detAssetClass: row ? row.assetClass : "",
+      detFlags: row ? row.flags.map((f) => ({ label: f, tip: f === "Restricted" ? "Trading restricted — see Compliance tab" : f })) : [],
+      detSub: row ? row.shortCode + " · " + row.issuer : "",
+      detLifecycle: row ? row.lifecycle : "", detLifecycleVariant: row ? row.lifecycleVariant : "neutral",
+      detLifecycleTip: row ? (row.maturityDate && row.maturityDate !== "—" ? "Maturity " + row.maturityDate : "No maturity date") : "",
+      editMode: s.editMode, onEditMode: (v) => this.setState({ editMode: v }),
+      detRowId: row ? row.id : "",
+      optCommit: (edit) => new Promise((resolve, reject) => setTimeout(() => {
+        const v = String(edit.value).trim();
+        if (!v) return reject(new Error("Empty value refused · REG-FIELD-01"));
+        if (edit.field === "CUSIP" && !/^[0-9A-Z]{9}$/.test(v)) return reject(new Error("CUSIP must be 9 alphanumerics · REG-CUSIP-01"));
+        if (edit.field === "Rating" && !/^(AAA|AA[+-]?|A[+-]?|BBB[+-]?|BB[+-]?|B[+-]?|CCC|NR)$/.test(v)) return reject(new Error("Not a recognised rating notch · REG-RATING-02"));
+        resolve({ receipt: "smr-" + Date.now().toString(36) });
+      }, 650)),
+      onOptSettle: (edit) => {
+        const now = stamp(); const id = edit.rowId;
+        if (edit.status === "confirmed") this.writeShared((p) => ({
+          fieldEdits: { ...p.fieldEdits, [id]: { ...(p.fieldEdits[id] || {}), [edit.field]: String(edit.value).trim() } },
+          auditExtra: { ...p.auditExtra, [id]: [{ ts: now, user: "You", field: edit.field, oldValue: String(edit.prior ?? "—"), newValue: String(edit.value).trim() }, ...(p.auditExtra[id] || [])] },
+        }));
+        else if (edit.status === "reverted") this.writeShared((p) => ({
+          fieldEdits: { ...p.fieldEdits, [id]: { ...(p.fieldEdits[id] || {}), [edit.field]: edit.prior } },
+          auditExtra: { ...p.auditExtra, [id]: [{ ts: now, user: "You", field: edit.field + " · reverted: " + (edit.reason || "no reason"), oldValue: String(edit.value), newValue: String(edit.prior ?? "—") }, ...(p.auditExtra[id] || [])] },
+        }));
+        else if (edit.status === "rejected") {
+          this.toast("warning", "Edit rejected · " + edit.field, edit.reason);
+          this.writeShared((p) => ({
+            rejected: { ...p.rejected, [id]: [{ ts: now, field: edit.field, value: String(edit.value), reason: edit.reason || "Rejected by registry" }, ...(p.rejected[id] || [])] },
+            auditExtra: { ...p.auditExtra, [id]: [{ ts: now, user: "You", field: edit.field + " · rejected: " + (edit.reason || "no reason"), oldValue: String(edit.prior ?? "—"), newValue: String(edit.prior ?? "—") + " (kept)" }, ...(p.auditExtra[id] || [])] },
+          }));
+        }
+      },
+      rejectedShow: rejected.length ? "on" : "off", rejectedCount: String(rejected.length), detRejected: rejected,
+      onDismissRejected: () => this.writeShared((p) => { const n = { ...p.rejected }; delete n[row.id]; return { rejected: n }; }),
+      detObjectId: row ? "security:" + row.id : "",
+      detVersion: row ? 1 + audit.length : 1,
+      detAnchor: row ? { kind: "header", ref: "security:" + row.id, label: row.name } : { kind: "header", ref: "none" },
+      detTabs: [
+        { label: "Overview" }, { label: "Validation", count: row ? row.validation.length : 0 },
+        { label: "Compliance" }, { label: "Notes & Comments", count: notes.length },
+        { label: "Audit History", count: audit.length },
+      ],
+      detAsOf: row ? row.compliance.lastReview : "",
+      provItems: row ? [
+        { label: "Primary source", value: row.pricingSource, mono: false },
+        { label: "Ingest feed", value: this.feedFor(row.pricingSource), mono: false },
+        { label: "Fair-value level", value: row.fairValueLevel },
+        { label: "Data steward", value: row.dataSteward, mono: false },
+        { label: "Record confidence", value: conf.label, color: conf.color, mono: false },
+      ] : [],
+      detSections: row ? (() => { let fieldsSeen = 0; return row.sections.map((sec, i) => {
+        const out = { id: "sec-" + i, secondary: false, count: null, title: sec.title || "", dividerShow: i > 0 ? "on" : "off",
+          fieldsShow: "off", checklistShow: "off", calloutShow: "off", scheduleShow: "off", hasRowsShow: "off", noRowsShow: "off",
+          items: [], checks: [], rows: [], tone: sec.tone || "info", text: sec.text || "" };
+        if (sec.type === "fields") {
+          out.fieldsShow = "on"; out.count = (sec.fields || []).length; out.secondary = fieldsSeen >= 2; fieldsSeen += 1;
+          out.items = sec.fields.map((f) => s.editMode && OptimisticCell
+            ? { label: f.label, value: el(OptimisticCell, { rowId: row.id, field: f.label, value: f.value, mode: "text", validator: (v) => v.trim().length ? true : "Cannot be empty" }) }
+            : { label: f.label, value: el("span", { style: { color: f.accent ? "var(--brand-signal,#C56343)" : undefined, fontWeight: f.accent ? 600 : undefined } }, f.value) });
+        } else if (sec.type === "checklist") { out.checklistShow = "on"; out.checks = sec.items; }
+        else if (sec.type === "callout") out.calloutShow = "on";
+        else if (sec.type === "schedule") {
+          out.scheduleShow = "on"; const has = sec.rows && sec.rows.length;
+          out.hasRowsShow = has ? "on" : "off"; out.noRowsShow = has ? "off" : "on";
+          out.rows = (sec.rows || []).map((e) => ({ ...e, postedVariant: e.posted ? "success" : "neutral", postedLabel: e.posted ? "Posted" : "Scheduled" }));
+        }
+        return out;
+      }); })() : [],
+      detValidation: row ? row.validation : [],
+      detCompStatus: row ? row.compliance.status : "Ready",
+      detCompItems: row ? [
+        { label: "Sanctions screened", value: row.compliance.sanctionsScreened ? "Yes" : "No" },
+        { label: "On watchlist", value: row.compliance.watchlist ? "Yes" : "No" },
+        { label: "Last review", value: row.compliance.lastReview },
+        { label: "Reviewed by", value: row.compliance.reviewedBy },
+      ] : [],
+      detCompChecks: checks,
+      detRestrictedShow: row && row.restricted ? "on" : "off",
+      noNotesShow: notes.length === 0 ? "on" : "off", detNotes: notes,
+      noteDraft: s.noteDraft, onNoteDraft: (e) => this.setState({ noteDraft: e.target.value }),
+      addNoteDisabled: !s.noteDraft.trim(),
+      onAddNote: () => { const text = s.noteDraft.trim(); this.writeShared((p) => ({ notesById: { ...p.notesById, [row.id]: [...(p.notesById[row.id] || row.notesSeed), { author: "You", ts: stamp(), text }] } })); this.setState({ noteDraft: "" }); },
+      detAudit: audit,
+    };
+  }
+}
+</script>
+</body>
+</html>

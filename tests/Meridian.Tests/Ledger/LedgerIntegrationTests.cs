@@ -1709,6 +1709,19 @@ public sealed class LedgerIntegrationTests
         manifest.Content.Should().Contain("financial-statements.json,application/json,");
         manifest.Content.Should().Contain("tax-lot-realized-gains.csv,text/csv,");
         manifest.Content.Should().Contain("line-provenance.csv,text/csv,");
+        // GL detail and its control totals tie back to the source journal for the period.
+        var periodLines = ledger.GetJournalEntries(request.PeriodStart, request.AsOf).SelectMany(entry => entry.Lines).ToArray();
+        var glDetail = pack.Artifacts.Single(artifact => artifact.Name == "gl-detail.csv");
+        glDetail.Content.Should().StartWith("Timestamp,JournalEntryId,LedgerEntryId,Description,ActivityType,StrategyId,AccountName,AccountType,Symbol,FinancialAccountId,Debit,Credit");
+        glDetail.Content.Split('\n', StringSplitOptions.RemoveEmptyEntries).Should().HaveCount(periodLines.Length + 1);
+        manifest.Content.Should().Contain($"gl-detail-line-count,{periodLines.Length}");
+        manifest.Content.Should().Contain("gl-detail-debit-credit-variance,0");
+        manifest.Content.Should().Contain("gl-detail.csv,text/csv,");
+        var attribution = pack.Artifacts.Single(artifact => artifact.Name == "pnl-by-strategy-symbol.csv");
+        attribution.Content.Should().StartWith("StrategyId,Symbol,Revenue,Expenses,NetIncome");
+        attribution.Content.Split('\n', StringSplitOptions.RemoveEmptyEntries).Skip(1)
+            .Sum(row => decimal.Parse(row.Trim().Split(',')[^1], System.Globalization.CultureInfo.InvariantCulture))
+            .Should().Be(pack.Statements.NetIncome);
         var statementsArtifact = pack.Artifacts.Single(artifact => artifact.Name == "financial-statements.json");
         statementsArtifact.Content.Should().Contain("\"schema\": \"ledger-financial-statements-v1\"");
         statementsArtifact.Content.Should().Contain("\"trialBalanceRows\": [");

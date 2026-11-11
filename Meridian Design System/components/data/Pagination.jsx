@@ -8,23 +8,23 @@ function inject() {
   injected = true;
   const css = `
 .pgn-wrap { display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 12px; background: var(--bg-medium, #EDEAE4); border-radius: var(--radius-chip,2px);
-  border: 1px solid var(--border, #E4E3DE); flex-wrap: wrap; }
-.pgn-info { font-family: var(--font-data); font-size: 12px; color: var(--text-muted, #5E666F); }
+  padding: 12px; background: var(--bg-medium, #EBE8E1); border-radius: var(--radius-chip,2px);
+  border: 1px solid var(--border, #D2CDC3); flex-wrap: wrap; }
+.pgn-info { font-family: var(--font-data); font-size: 12px; color: var(--text-muted, #606870); }
 .pgn-controls { display: flex; align-items: center; gap: 4px; }
-.pgn-btn { appearance: none; border: 1px solid var(--border, #E4E3DE); background: var(--bg-light, #FBFAF8);
-  color: var(--text-primary, #22252A); width: 28px; height: 28px; border-radius: var(--radius-button,2px);
+.pgn-btn { appearance: none; border: 1px solid var(--border, #D2CDC3); background: var(--bg-light, #F8F7F3);
+  color: var(--text-primary, #20252B); width: 28px; height: 28px; border-radius: var(--radius-button,2px);
   cursor: pointer; font-family: var(--font-data); font-size: 12px; font-weight: 500;
   display: flex; align-items: center; justify-content: center;
   transition: background 100ms ease, border-color 100ms ease; }
-.pgn-btn:hover:not(:disabled) { background: var(--bg-active, #F2E3DB); border-color: var(--accent, #A85436); }
+.pgn-btn:hover:not(:disabled) { background: var(--bg-active, #E7EDF2); border-color: var(--brand-signal,#C56343); }
 .pgn-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.pgn-btn--active { background: var(--accent, #A85436); color: var(--text-on-accent, #fff); border-color: var(--accent, #A85436); }
-.pgn-jump { height: 28px; padding: 4px 8px; border: 1px solid var(--border, #E4E3DE);
-  border-radius: var(--radius-button,2px); background: var(--bg-light, #FBFAF8);
+.pgn-btn--active { background: var(--interaction-selected,#496C8F); color: var(--text-on-accent, #0D1217); border-color: var(--interaction-selected,#496C8F); }
+.pgn-jump { height: 28px; padding: 4px 8px; border: 1px solid var(--border, #D2CDC3);
+  border-radius: var(--radius-button,2px); background: var(--bg-light, #F8F7F3);
   font-family: var(--font-data); font-size: 12px; width: 50px; text-align: center;
   transition: border-color 100ms ease; }
-.pgn-jump:focus { outline: none; border-color: var(--accent, #A85436);
+.pgn-jump:focus { outline: none; border-color: var(--brand-signal,#C56343);
   box-shadow: 0 0 0 2px color-mix(in srgb,var(--border-focus) 35%,transparent); }
 `;
   const el = document.createElement("style");
@@ -43,6 +43,11 @@ export function Pagination({
 }) {
   inject();
   const [jumpValue, setJumpValue] = React.useState(String(currentPage));
+
+  // Keep the jump box in step with paging done through the buttons (or the parent).
+  React.useEffect(() => {
+    setJumpValue(String(currentPage));
+  }, [currentPage]);
 
   const handlePrev = () => {
     if (currentPage > 1) onPageChange(currentPage - 1);
@@ -102,7 +107,7 @@ export function Pagination({
       </div>
 
       <div className="pgn-controls">
-        <button
+        <button type="button"
           className="pgn-btn"
           onClick={handlePrev}
           disabled={currentPage === 1}
@@ -115,17 +120,19 @@ export function Pagination({
           page === "..." ? (
             <span key={idx} style={{ padding: "0 4px", color: "var(--text-muted)" }}>…</span>
           ) : (
-            <button
+            <button type="button"
               key={idx}
               className={`pgn-btn ${page === currentPage ? "pgn-btn--active" : ""}`}
               onClick={() => handlePageClick(page)}
+              aria-label={`Page ${page}`}
+              aria-current={page === currentPage ? "page" : undefined}
             >
               {page}
             </button>
           )
         )}
 
-        <button
+        <button type="button"
           className="pgn-btn"
           onClick={handleNext}
           disabled={currentPage === totalPages}

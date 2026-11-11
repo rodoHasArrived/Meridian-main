@@ -7,7 +7,7 @@ export function Breadcrumb({ items = [], separator = "·" }) {
     <nav aria-label="breadcrumb" style={{
       display:"flex", alignItems:"center", gap:6,
       fontFamily:"var(--font-data)", fontSize:12,
-      color:"var(--text-muted,#5E666F)",
+      color:"var(--text-muted,#606870)",
       flexWrap:"wrap",
     }}>
       {items.map((item, i) => {
@@ -15,11 +15,11 @@ export function Breadcrumb({ items = [], separator = "·" }) {
         return (
           <React.Fragment key={i}>
             {i > 0 && (
-              <span style={{ color:"var(--text-disabled,#94999F)", fontSize:10 }}>{separator}</span>
+              <span style={{ color:"var(--text-disabled,#A4ABB2)", fontSize:10 }}>{separator}</span>
             )}
             {isLast ? (
               <span style={{
-                color:"var(--text-primary,#22252A)", fontWeight:600,
+                color:"var(--text-primary,#20252B)", fontWeight:600,
                 fontFamily:"var(--font-body)",
               }} aria-current="page">
                 {item.label}
@@ -30,13 +30,12 @@ export function Breadcrumb({ items = [], separator = "·" }) {
                 onClick={item.onClick}
                 style={{
                   appearance:"none", border:"none", background:"transparent", padding:0,
-                  color:"var(--accent,#A85436)", fontFamily:"var(--font-data)", fontSize:12,
+                  color:"var(--brand-signal-ink,#944A32)", fontFamily:"var(--font-data)", fontSize:12,
                   cursor:item.onClick ? "pointer" : "default",
                   textDecoration:"none",
-                  transition:"opacity .1s ease",
                 }}
-                onMouseEnter={e => { if (item.onClick) e.currentTarget.style.opacity = "0.7"; }}
-                onMouseLeave={e => { e.currentTarget.style.opacity = "1"; }}
+                onMouseEnter={e => { if (item.onClick) e.currentTarget.style.textDecoration = "underline"; }}
+                onMouseLeave={e => { e.currentTarget.style.textDecoration = "none"; }}
               >
                 {item.label}
               </button>

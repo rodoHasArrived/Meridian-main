@@ -1,0 +1,136 @@
+<!-- @dsCard group="Documentation" viewport="1280x920" name="UX depth proposal · toward 4.1" subtitle="Six tracks that deepen the layer around the decision — continuity, in-flight state, attention, keyboard, annotation, coverage debt" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Documentation — UX depth proposal</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+.wrap{max-width:1240px;display:grid;gap:14px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--border-strong,#AAA49A);padding-bottom:10px}
+h1{font-size:16px;font-weight:650;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+.headnote{font-family:var(--font-data);font-size:10px;color:var(--text-muted);text-align:right;line-height:1.6;white-space:nowrap}
+.thesis{font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:96ch;margin:0}
+.thesis strong{color:var(--text-primary);font-weight:600}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:11px 12px 12px;display:grid;gap:9px}
+.panel--wide{grid-column:span 2}
+.ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.ptitle h2{font-size:12px;font-weight:650;margin:0}
+.ptitle .k{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.q{font-size:11.5px;line-height:1.45;color:var(--text-secondary);font-style:italic;margin:0}
+.items{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start}
+.id{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted);padding-top:1px;min-width:26px}
+.item p{margin:0;font-size:11.5px;line-height:1.45}
+.item p b{font-weight:650}
+.ev{display:block;font-family:var(--font-data);font-size:9.5px;line-height:1.5;color:var(--text-muted);margin-top:3px}
+.pill{display:inline-block;font-family:var(--font-data);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:2px;border:1px solid;white-space:nowrap}
+.pill--absent{color:var(--severity-blocked-fg);border-color:var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.pill--unadopted{color:var(--severity-action-fg);border-color:var(--severity-action-bd);background:var(--severity-action-bg)}
+.pill--partial{color:var(--severity-review-fg);border-color:var(--severity-review-bd);background:var(--severity-review-bg)}
+.pill--debt{color:var(--severity-info-fg,#606870);border-color:var(--severity-info-bd,#D2CDC3);background:var(--severity-info-bg,#EBE8E1)}
+.seq{border:1px solid var(--border);border-radius:2px;background:var(--surface-well,#FCFBF8);padding:11px 12px}
+.seq h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0 0 8px}
+.waves{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border)}
+.wave{padding:9px 11px;border-right:1px solid var(--border);display:grid;gap:4px}
+.wave:last-child{border-right:0}
+.wave .w{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.wave .ids{font-family:var(--font-data);font-size:11px;font-weight:600;color:var(--text-primary)}
+.wave .why{font-size:10.5px;line-height:1.4;color:var(--text-secondary)}
+.foot{font-size:10.5px;line-height:1.55;color:var(--text-muted);margin:0}
+.foot code{font-family:var(--font-data);font-size:10px}
+</style>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Proposal · not law · baseline 3.5.0</div>
+      <h1>Deepening the layer around the decision</h1>
+    </div>
+    <div class="headnote">268 exports · 26 templates<br>167 adopted · 101 with no template</div>
+  </div>
+
+  <p class="thesis">The decision layer is finished work — guarded flows, reversibility classes, evidence and consequence rails, twelve time roles, ten data conditions. What is thin is the layer <strong>around</strong> the decision: how an operator <strong>arrives, resumes, keeps attention, submits, and returns</strong>. Every item below is stated as a gap with evidence, drawn from <code>adoption-census-4.0.json</code>, <code>CONTRACT_AUDIT.md</code> §D, and <code>BROWSER_TEST_PLAN.md</code>. Full report: <code>docs/UX_DEPTH_4_1.md</code>.</p>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="ptitle"><h2>A · Session &amp; workspace continuity</h2><span class="pill pill--absent">Absent</span></div>
+      <p class="q">“Put my wall back the way I left it. What moved while I was out?”</p>
+      <div class="items">
+        <div class="item"><span class="id">A-1</span><p><b>WorkspaceLayout</b> — named, persisted, shareable pane layouts; pop a region to its own window with linked selection intact.<span class="ev">SplitPane is pane-local · SavedViews table-local · no screen-level layout identity</span></p></div>
+        <div class="item"><span class="id">A-2</span><p><b>ObjectTrail</b> — recents · pinned · back/forward across the 17 object types, keyed by ref <em>and</em> version.<span class="ev">Breadcrumb: 0 templates · ObjectModel types nothing records traversal</span></p></div>
+        <div class="item"><span class="id">A-3</span><p><b>HandoverBrief</b> — what changed on my objects, what breached, what is mine now.<span class="ev">No export addresses the returning operator; EventTimeline is per-object</span></p></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>B · Action in flight</h2><span class="pill pill--absent">Absent</span></div>
+      <p class="q">“I pressed Post ninety seconds ago. Where is it?”</p>
+      <div class="items">
+        <div class="item"><span class="id">B-1</span><p><b>ActionQueue</b> — one tray, one ladder: submitted → acknowledged → confirmed | rejected | timed out, each with idempotency key, elapsed clock, retry path.<span class="ev">Serves orders · postings · backfills · delivery — four domains hand-rolling a spinner</span></p></div>
+        <div class="item"><span class="id">B-2</span><p><b>OptimisticCell</b> — pending value renders <em>provisional</em> until confirmed; rejection reverts with the reason attached.<span class="ev">Reuses an existing data condition — no new vocabulary</span></p></div>
+        <div class="item"><span class="id">B-3</span><p><b>VersionConflictNotice</b> extended post-submission — a conflict found after the write is not the one found while editing.<span class="ev">DecisionFlow ends at commit; ConnectionState governs reads only</span></p></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>C · Attention &amp; escalation</h2><span class="pill pill--partial">Partial</span></div>
+      <p class="q">“I distrust this figure. Tell me when it moves.”</p>
+      <div class="items">
+        <div class="item"><span class="id">C-1</span><p><b>SubscriptionChip</b> — watch any ValueEnvelope, gate lane, or case row; emits a rule the alerting workstation owns.<span class="ev">Today: leave the screen, rebuild the figure as a rule from scratch</span></p></div>
+        <div class="item"><span class="id">C-2</span><p>Adopt <b>NotificationCenter</b> as the standing inbox, with per-object mute and a severity floor.<span class="ev">NotificationCenter: 0 of 26 templates</span></p></div>
+        <div class="item"><span class="id">C-3</span><p><b>EscalationPath</b> — on breach: who is next, at what time, through which channel.<span class="ev">SlaChip states posture, never the path out of it</span></p></div>
+      </div>
+    </div>
+
+    <div class="panel panel--wide">
+      <div class="ptitle"><h2>D · Keyboard &amp; motor economy — built, unadopted</h2><span class="pill pill--unadopted">Unadopted</span></div>
+      <p class="q">“Six interaction primitives ship. No screen proves how they behave together.”</p>
+      <div class="items" style="grid-template-columns:1fr 1fr;display:grid;gap:8px 18px">
+        <div class="item"><span class="id">D-1</span><p><b>ShortcutHelp</b> (<code>?</code>) generated from registered hotkey scopes — a keyboard map that cannot drift from the code.<span class="ev">Replaces the static keyboard-map card · HotkeysProvider in 4 of 26 templates</span></p></div>
+        <div class="item"><span class="id">D-2</span><p><b>CommandPalette</b> deepened — async object resolution (order id, symbol, case number), recency ranking, screen-scoped mode, verbs on a row.<span class="ev">commands is a static array; it cannot answer “find object X”</span></p></div>
+        <div class="item"><span class="id">D-3</span><p><b>templates/interaction-depth/</b> — one normative screen exercising right-click, bulk edit, saved views, column chooser, 50k-row virtualization, keyboard-only path.<span class="ev">ContextMenu · MultiSelect · SavedViews · ColumnChooser · VirtualizedList · Popover — 0 templates each</span></p></div>
+        <div class="item"><span class="id">D-4</span><p>Keyboard conformance becomes a clause in the template contract, the way density and environment already are.<span class="ev">guidelines/TEMPLATE_CONTRACT.md</span></p></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>E · Reading depth</h2><span class="pill pill--absent">Absent</span></div>
+      <p class="q">“I can sign this figure but I cannot mark it up.”</p>
+      <div class="items">
+        <div class="item"><span class="id">E-1</span><p><b>AnnotationLayer</b> — a note anchored to a cell, series point, or figure region; versioned with the object, stale on material change, surfaced in the evidence rail.<span class="ev">Review is attestation-only across all 268 exports</span></p></div>
+        <div class="item"><span class="id">E-2</span><p>Promote two committed selections into a <b>ComparisonPlate</b> from the grid or chart, not only in template source.<span class="ev">ComparisonPlate: card-only adoption</span></p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid" style="grid-template-columns:1fr 2fr">
+    <div class="panel">
+      <div class="ptitle"><h2>F · Coverage debt</h2><span class="pill pill--debt">Carried</span></div>
+      <div class="items">
+        <div class="item"><span class="id">F-1</span><p>OMS adapter diagnostics — retry schedule, last error, key rotation.<span class="ev">CONTRACT_AUDIT §D-2 · unbuilt</span></p></div>
+        <div class="item"><span class="id">F-2</span><p>Operations-continuity approvals over GateRail + CloseCalendar.<span class="ev">CONTRACT_AUDIT §D-1 · 28 routes</span></p></div>
+        <div class="item"><span class="id">F-3</span><p>Trading depth — OptionChainTable and TimeAndSalesTape have no screen.<span class="ev">adoption census · noTemplate[]</span></p></div>
+        <div class="item"><span class="id">F-4</span><p>Accessibility close-out — grid semantics and focus return from overlays remain unverified.<span class="ev">tests/BROWSER_TEST_PLAN.md · deferred run</span></p></div>
+      </div>
+    </div>
+
+    <div class="seq">
+      <h2>Sequencing — additive waves, one new guideline each at most</h2>
+      <div class="waves">
+        <div class="wave"><span class="w">Wave 1</span><span class="ids">A-1 · A-2 · B-1</span><span class="why">Continuity and in-flight state are the two absences an operator meets every session.</span></div>
+        <div class="wave"><span class="w">Wave 2</span><span class="ids">D-1 · D-2 · D-3</span><span class="why">Turns six built-but-unadopted primitives into a normative interaction reference.</span></div>
+        <div class="wave"><span class="w">Wave 3</span><span class="ids">C-1 · C-2 · C-3 · A-3</span><span class="why">Attention layer, once subscriptions have an inbox to land in.</span></div>
+        <div class="wave"><span class="w">Wave 4</span><span class="ids">E-1 · E-2 · F</span><span class="why">Annotation, then the carried coverage debt from the contract audit.</span></div>
+      </div>
+      <p class="foot" style="margin-top:9px">Restraint clause: no track adds a second way to do something the system already does. B-2 reuses the <code>provisional</code> data condition, E-1 reuses attestation supersession, C-1 emits a rule the existing alerting screen owns, and A-1 persists through the same <code>ColumnManager</code>/<code>SavedViews</code> mechanism rather than a parallel store.</p>
+    </div>
+  </div>
+</div>
+</body>
+</html>

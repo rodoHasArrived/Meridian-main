@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.CollectionSessionPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:converters="clr-namespace:Meridian.Wpf.Converters"
@@ -234,7 +235,7 @@
                     <TextBlock Text="Session Summary" Style="{StaticResource CardHeaderStyle}" Margin="0,0,0,12" />
                     <TextBlock Text="{Binding SessionSummaryText}"
                                Foreground="{StaticResource ConsoleTextMutedBrush}" TextWrapping="Wrap"
-                               FontFamily="Consolas" FontSize="11" />
+                               FontFamily="{DynamicResource MeridianDataFontFamily}" FontSize="11" />
                 </StackPanel>
             </Border>
         </StackPanel>

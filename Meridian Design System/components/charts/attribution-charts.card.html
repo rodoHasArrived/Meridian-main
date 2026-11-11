@@ -5,14 +5,16 @@
   <meta charset="UTF-8" />
   <title>Attribution &amp; exposure</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
-const { WaterfallChart, Treemap, BarChart } = window.MeridianDesignSystem_4f61be;
+const { WaterfallChart, Treemap, BarChart } = window.MeridianDesignSystem_205d17;
 
-function Section({ title, sub, children, span, h = 250 }) {
+function Section({ title, sub, children, span, h = null }) {
   return (
     <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2,
       padding:14, gridColumn: span ? `span ${span}` : undefined, display:"flex", flexDirection:"column" }}>
@@ -20,7 +22,7 @@ function Section({ title, sub, children, span, h = 250 }) {
         <span style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em", color:"var(--text-muted)" }}>{title}</span>
         {sub && <span style={{ fontFamily:"var(--font-data)", fontSize:11, color:"var(--text-secondary)" }}>{sub}</span>}
       </div>
-      <div style={{ height:h }}>{children}</div>
+      <div style={h ? { height: h } : undefined}>{children}</div>
     </div>
   );
 }
@@ -58,43 +60,29 @@ const EXPOSURE = [
 ];
 
 // ── P&L by sector ($k, signed) ──
-const SECTOR_PNL = [
-  { label: "Tech", value: 412 },
-  { label: "Financials", value: 186 },
-  { label: "Health", value: 67 },
-  { label: "Industrials", value: 38 },
-  { label: "Staples", value: 12 },
-  { label: "Utilities", value: -21 },
-  { label: "Materials", value: -58 },
-  { label: "Energy", value: -94 },
-];
+const SECTOR_LABELS = ["Tech", "Financials", "Health", "Industrials", "Staples", "Utilities", "Materials", "Energy"];
+const SECTOR_PNL = [412, 186, 67, 38, 12, -21, -58, -94];
 const sk = (v) => (v < 0 ? "\u2212" : "") + "$" + Math.abs(Math.round(v)) + "k";
 
 // ── gross exposure by strategy ($M, ranked rows) ──
-const STRATEGY_EXP = [
-  { label: "Momentum", value: 12.4 },
-  { label: "Carry & roll", value: 9.8 },
-  { label: "Stat arb", value: 7.2 },
-  { label: "Overwrite", value: 4.4 },
-  { label: "Event", value: 3.1 },
-  { label: "Cash", value: 1.9 },
-];
+const STRATEGY_LABELS = ["Momentum", "Carry & roll", "Stat arb", "Overwrite", "Event", "Cash"];
+const STRATEGY_EXP = [12.4, 9.8, 7.2, 4.4, 3.1, 1.9];
 
 function Demo() {
   return (
     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, maxWidth:1120 }}>
-      <Section title="WaterfallChart · P&L attribution" sub="2026-Q2 · gross \u2192 net · $k" span={2} h={280}>
-        <WaterfallChart items={ATTRIB} totalLabel="Net P&L" valueFmt={k} />
+      <Section title="WaterfallChart · P&L attribution" sub="2026-Q2 · gross \u2192 net · $k" span={2}>
+        <WaterfallChart items={ATTRIB} totalLabel="Net P&L" valueFmt={k} height={280} />
       </Section>
       <Section title="Treemap · exposure by position" sub="area = weight $M · wash = day \u0394" span={2} h={330}>
         <Treemap items={EXPOSURE} valueFmt={(v) => "$" + v.toFixed(2) + "M"} />
       </Section>
-      <Section title="BarChart · P&L by sector" sub="signed · Q2 realized · $k" h={240}>
-        <BarChart data={SECTOR_PNL} signed valueFmt={sk} />
+      <Section title="BarChart · P&L by sector" sub="signed · Q2 realized · $k">
+        <BarChart values={SECTOR_PNL} labels={SECTOR_LABELS} signed valueFmt={sk} height={240} />
       </Section>
-      <Section title="BarChart · gross exposure by strategy" sub="horizontal ranked · $M" h={240}>
+      <Section title="BarChart · gross exposure by strategy" sub="horizontal ranked · $M">
         <div style={{ paddingTop:38 }}>
-          <BarChart data={STRATEGY_EXP} horizontal valueFmt={(v) => "$" + v.toFixed(1) + "M"} />
+          <BarChart values={STRATEGY_EXP} labels={STRATEGY_LABELS} horizontal valueFmt={(v) => "$" + v.toFixed(1) + "M"} />
         </div>
       </Section>
     </div>

@@ -98,6 +98,23 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task DefaultInterest_MorePostedThanIsNowOwed_BlocksWithTheExcess()
+    {
+        // 8,219.18 was accrued through 29 April; a receipt later dated 9 April shows only 2,739.73 was owed.
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate),
+             CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, new(2026, 4, 9)),
+             PostedInterest("20260429", 8_219.18m)]);
+
+        var result = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        result.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        result.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("exceeds").And.Contain("5479.45");
+        result.Intake.Created.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task DefaultInterest_PostedAccrualThatWasReversed_IsOwedAgain()
     {
         // April's 8,219.18 was posted and then reversed, so May owes the whole cumulative amount.

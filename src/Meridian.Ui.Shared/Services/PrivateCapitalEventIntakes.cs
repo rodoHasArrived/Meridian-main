@@ -212,6 +212,14 @@ internal static class CapitalCallDefaultInterestDraftProducer
                 // A posted reversal keeps the accrual's fund event and credits the receivable back.
                 .Sum(static line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : -line.Amount);
             var increment = defaulted.AccruedInterest - alreadyPosted;
+            // More interest is posted than is now owed (a receipt was recorded late with an
+            // earlier date, say). That is an overstatement to correct, not a settled accrual.
+            if (increment < -LedgerToleranceConstants.Balance)
+            {
+                blockers.Add(FormattableString.Invariant(
+                    $"Default interest posted for commitment '{commitmentId}' on call '{callId}' ({alreadyPosted:0.00}) exceeds the {defaulted.AccruedInterest:0.00} now owed through {through:yyyy-MM-dd} by {-increment:0.00}; reverse the excess before accruing further."));
+                continue;
+            }
             if (increment <= LedgerToleranceConstants.Balance)
             {
                 skipped.Add(new(commitmentId, $"Default interest through {through:yyyy-MM-dd} ({defaulted.AccruedInterest:0.00}) is already posted ({alreadyPosted:0.00})."));

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Asset-Liability Review" description="One horizon selection traversing four analytical views. Overview small multiples navigate; one visualization is dominant at a time; the calculation and evidence inspector stays with the selection." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="alm-review">
+<style>html,body{margin:0;padding:0;height:100%}
+[data-al-show="off"]{display:none}
+.al-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
+.al-frame{flex:1;min-height:0;display:flex}
+.al-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.al-screen>*{grid-column:2;min-width:0}
+.al-screen>*{min-width:0}
+.al-main{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;padding:12px 16px 0;overflow:hidden}
+.al-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.al-head h1{font:600 20px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap}
+.al-state{margin:0;font:14px/21px var(--font-body);color:var(--text-secondary);max-width:96ch;text-wrap:pretty}
+.al-state b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
+.al-seg{display:flex;border:1px solid var(--border);border-radius:2px;overflow:hidden;flex:none}
+.al-main>*{flex:none}.al-plane>*{flex:none}.al-rail>*{flex:none}
+.al-tab{appearance:none;border:0;border-left:1px solid var(--border);background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:7px 13px;cursor:pointer;min-height:32px}
+.al-tab:first-child{border-left:0}
+.al-tab[data-on="on"]{background:var(--interaction-selected-surface);color:var(--text-primary);font-weight:600;box-shadow:inset 0 -2px 0 var(--interaction-selected)}
+.al-tab:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.al-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.al-tile{position:relative;cursor:pointer;background:none;border:0;padding:0;text-align:left;display:block}
+.al-tile:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:2px}
+.al-tile[data-on="on"]{box-shadow:inset 3px 0 0 var(--interaction-selected)}
+.al-strip{position:relative;height:30px;display:flex;gap:2px;align-items:stretch;margin-top:2px}
+.al-bar{position:relative;flex:1;min-width:0}
+.al-bar[data-on="on"]{background:var(--interaction-selected-surface)}
+.al-fill{position:absolute;left:18%;right:18%;min-height:1px;background:var(--chart-primary)}
+.al-fill[data-dir="up"]{bottom:50%}
+.al-fill[data-dir="down"]{top:50%;background:var(--red-dim)}
+.al-fill[data-h="0"]{height:0}.al-fill[data-h="1"]{height:2.2%}.al-fill[data-h="2"]{height:4.4%}.al-fill[data-h="3"]{height:6.6%}.al-fill[data-h="4"]{height:8.8%}.al-fill[data-h="5"]{height:11%}.al-fill[data-h="6"]{height:13.2%}.al-fill[data-h="7"]{height:15.4%}.al-fill[data-h="8"]{height:17.6%}.al-fill[data-h="9"]{height:19.8%}.al-fill[data-h="10"]{height:22%}.al-fill[data-h="11"]{height:24.2%}.al-fill[data-h="12"]{height:26.4%}.al-fill[data-h="13"]{height:28.6%}.al-fill[data-h="14"]{height:30.8%}.al-fill[data-h="15"]{height:33%}.al-fill[data-h="16"]{height:35.2%}.al-fill[data-h="17"]{height:37.4%}.al-fill[data-h="18"]{height:39.6%}.al-fill[data-h="19"]{height:41.8%}.al-fill[data-h="20"]{height:44%}
+.al-body{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:10px;padding-bottom:12px}
+.al-plane{min-width:0;display:flex;flex-direction:column;gap:8px;overflow-y:auto}
+.al-rail{min-width:0;display:flex;flex-direction:column;gap:8px;border-left:1px solid var(--border);padding-left:10px;overflow-y:auto}
+.al-kv{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font:12px var(--font-data);margin:0}
+.al-kv dt{color:var(--text-muted)}
+.al-kv dd{margin:0;color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums;text-align:right}
+.al-h{font:600 11px var(--font-body);letter-spacing:.01em;color:var(--text-muted);margin:0}
+@media (max-width:1100px){.al-tiles{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:900px){.al-main{overflow-y:auto;padding-bottom:12px}.al-body{grid-template-columns:1fr;min-height:0}.al-rail{border-left:0;border-top:1px solid var(--border);padding-left:0;padding-top:10px;overflow:visible}.al-plane{overflow:visible}.al-tiles{grid-template-columns:1fr}.al-seg{width:100%}.al-tab{flex:1;min-height:40px}}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Asset-liability review" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextProvider" value="{{ context }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LinkedSelectionProvider" scope="horizon" value="{{ selection }}" items="{{ horizonItems }}" url-param="horizon" on-change="{{ onSelectionChange }}" hint-size="100%,860px">
+<div data-screen-label="Asset-liability review" class="al-screen">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Asset-Liability" environment="{{ environment }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div class="al-frame">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="alm" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<div class="al-pane">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" actions="{{ contextActions }}" hint-size="100%,40px"></x-import>
+<main class="al-main">
+<h1 style="font:600 20px var(--font-display);margin:0;color:var(--text-primary)">Asset-liability review</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ bookHeader }}" hint-size="100%,92px"></x-import>
+<div class="al-head">
+<div class="al-seg">
+<button type="button" class="al-tab" data-on="{{ baseOn }}" onClick="{{ setBase }}">Base</button>
+<button type="button" class="al-tab" data-on="{{ scenarioOn }}" onClick="{{ setScenario }}">+200 bp scenario</button>
+</div>
+</div>
+<p class="al-state">The <b>{{ worstLabel }}</b> bucket carries the largest net liability gap: <b>{{ worstBase }}</b> on the base book, widening to <b>{{ worstScenario }}</b> under a +200 bp parallel shift — a deterioration of <b>{{ worstDelta }}</b>. Selected horizon <b>{{ selectionLabel }}</b>: net <b>{{ selectionNet }}</b>, coverage {{ selectionCoverage }}, condition {{ selectionCondition }}.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnalyticalFigureGrid" title="Overview · four readings of one book" shared-scale="Each panel is scaled to its own maximum; the horizontal rule is zero on every panel" columns="{{ 4 }}" source="Position master · Risk engine · Liability model" hint-size="100%,150px">
+<button type="button" class="al-tile" data-on="{{ cashOn }}" onClick="{{ viewCash }}" aria-pressed="{{ cashPressed }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnalyticalFigure" variant="small-multiple" title="Cash gap" unit="USD millions" condition="{{ cashCondition }}" selected-label="{{ selectionLabel }}" selected-value="{{ selectionNet }}" hint-size="100%,110px">
+<div class="al-strip">
+<sc-for list="{{ cashStrip }}" as="b" hint-placeholder-count="8"><div class="al-bar" data-on="{{ b.on }}" title="{{ b.title }}"><div class="al-fill" data-dir="{{ b.dir }}" data-h="{{ b.h }}"></div></div></sc-for>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="zero" orientation="horizontal" position="{{ half }}" hint-size="100%,1px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="selection" orientation="vertical" position="{{ horizonPos }}" hint-size="1px,100%"></x-import>
+</div>
+</x-import>
+</button>
+<button type="button" class="al-tile" data-on="{{ matOn }}" onClick="{{ viewMaturity }}" aria-pressed="{{ matPressed }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnalyticalFigure" variant="small-multiple" title="Maturity concentration" unit="USD millions" condition="confirmed" selected-label="{{ selectionLabel }}" selected-value="{{ selectionMaturity }}" hint-size="100%,110px">
+<div class="al-strip">
+<sc-for list="{{ matStrip }}" as="b" hint-placeholder-count="8"><div class="al-bar" data-on="{{ b.on }}" title="{{ b.title }}"><div class="al-fill" data-dir="{{ b.dir }}" data-h="{{ b.h }}"></div></div></sc-for>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="zero" orientation="horizontal" position="{{ half }}" hint-size="100%,1px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="selection" orientation="vertical" position="{{ horizonPos }}" hint-size="1px,100%"></x-import>
+</div>
+</x-import>
+</button>
+<button type="button" class="al-tile" data-on="{{ durOn }}" onClick="{{ viewDuration }}" aria-pressed="{{ durPressed }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnalyticalFigure" variant="small-multiple" title="Duration driver" unit="Years" condition="{{ durCondition }}" selected-label="{{ sectorLabel }}" selected-value="{{ selectionDuration }}" hint-size="100%,110px">
+<div class="al-strip">
+<sc-for list="{{ durStrip }}" as="b" hint-placeholder-count="9"><div class="al-bar" data-on="{{ b.on }}" title="{{ b.title }}"><div class="al-fill" data-dir="{{ b.dir }}" data-h="{{ b.h }}"></div></div></sc-for>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="zero" orientation="horizontal" position="{{ half }}" hint-size="100%,1px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="selection" orientation="vertical" position="{{ sectorPos }}" hint-size="1px,100%"></x-import>
+</div>
+</x-import>
+</button>
+<button type="button" class="al-tile" data-on="{{ basisOn }}" onClick="{{ viewBasis }}" aria-pressed="{{ basisPressed }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnalyticalFigure" variant="small-multiple" title="Basis difference" unit="USD" condition="provisional" selected-label="Widest" selected-value="{{ basisWidest }}" hint-size="100%,110px">
+<div class="al-strip">
+<sc-for list="{{ basisStrip }}" as="b" hint-placeholder-count="4"><div class="al-bar" data-on="{{ b.on }}" title="{{ b.title }}"><div class="al-fill" data-dir="{{ b.dir }}" data-h="{{ b.h }}"></div></div></sc-for>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Datum" role="zero" orientation="horizontal" position="{{ half }}" hint-size="100%,1px"></x-import>
+</div>
+</x-import>
+</button>
+</x-import>
+<div class="al-body">
+<div class="al-plane">
+<div class="al-seg" role="tablist" style="align-self:flex-start">
+<button type="button" class="al-tab" data-on="{{ cashOn }}" onClick="{{ viewCash }}">Cash flow</button>
+<button type="button" class="al-tab" data-on="{{ matOn }}" onClick="{{ viewMaturity }}">Maturity</button>
+<button type="button" class="al-tab" data-on="{{ durOn }}" onClick="{{ viewDuration }}">Duration</button>
+<button type="button" class="al-tab" data-on="{{ basisOn }}" onClick="{{ viewBasis }}">Basis</button>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ContinuityFrame" state="{{ continuity }}" subject="Analytics feed" since="{{ snapshotSince }}" snapshot-at="02:14 UTC" coverage="{{ coverageLabel }}" on-retry="{{ onContinuityRetry }}" retry-label="Refresh" hint-size="100%,520px">
+<div data-al-show="{{ cashShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CashFlowLadder" items="{{ cashFlows }}" currency="USD" basis="{{ basisLabel }}" bucket-definition="By expected settlement date, calendar horizon buckets; option-adjusted for calls and prepayments" as-of="Jun 30, 2026" source="Investment accounting · liability cash-flow model v3.1" coverage="98 of 100 positions scheduled" cumulative="{{ true }}" show-scenario="{{ showScenario }}" scenario-label="+200 bp scenario" selected-id="{{ selectedBucket }}" on-select="{{ commitHorizon }}" description="Expected asset inflows against liability outflows across eight horizon buckets, with net and cumulative gap." hint-size="100%,500px"></x-import>
+</div>
+<div data-al-show="{{ matShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MaturityLadder" items="{{ maturities }}" primary-label="Portfolio" comparison-label="Liabilities" comparison-mode="Assets versus liabilities" measure="Market value" currency="USD" as-of="Jun 30, 2026" source="Position master · custodian-confirmed" coverage="100 of 100 positions" bucket-definition="By effective maturity, call-adjusted; perpetuals and undated notes report as Unknown" mode="{{ maturityMode }}" on-mode-change="{{ onMaturityMode }}" show-parity="{{ true }}" selected-id="{{ selectedBucket }}" on-select="{{ commitHorizon }}" description="Portfolio maturity profile against the liability profile across the declared bucket set." hint-size="100%,500px"></x-import>
+</div>
+<div data-al-show="{{ durShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DurationContribution" items="{{ durations }}" duration-definition="Effective duration, option-adjusted" duration-unit="yrs" contribution-unit="yrs" comparison-label="Benchmark" show-comparison="{{ true }}" total="{{ durationTotal }}" comparison-total="{{ 5.02 }}" scenario="{{ scenarioName }}" group-by="Sector" unit="market value" as-of="Jun 30, 2026" source="Risk engine · analytics run RA-2026-06-30" rank="{{ durationRank }}" on-rank-change="{{ onDurationRank }}" selected-id="{{ selectedSector }}" on-select="{{ onSelectSector }}" on-open-trace="{{ openTrace }}" description="Duration contribution by sector against benchmark, ranked by contribution." hint-size="100%,520px"></x-import>
+</div>
+<div data-al-show="{{ basisShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.BasisComparisonMatrix" bases="{{ bases }}" rows="{{ basisRows }}" object="{{ basisObject }}" title="Basis comparison" attribute-label="Measure" reference-basis="stat" as-of="Jun 30, 2026" period="Q2 2026" notation="accounting" difference-mode="{{ basisMode }}" on-difference-mode-change="{{ onBasisMode }}" selected-cell="{{ selectedCell }}" on-select-cell="{{ onSelectCell }}" on-open-trace="{{ openTrace }}" on-open-evidence="{{ openEvidence }}" description="Carrying value, market value, amortized cost, unrealized gain, interest income, impairment, classification and measurement method across four reporting bases for the selected sector." hint-size="100%,460px"></x-import>
+</div>
+</x-import>
+</div>
+<aside class="al-rail" aria-label="Calculation and evidence inspector">
+<div class="al-seg">
+<button type="button" class="al-tab" data-on="{{ readoutOn }}" onClick="{{ showReadout }}">Readout</button>
+<button type="button" class="al-tab" data-on="{{ traceOn }}" onClick="{{ openTrace }}">Calculation</button>
+<button type="button" class="al-tab" data-on="{{ evidenceOn }}" onClick="{{ openEvidence }}">Evidence</button>
+</div>
+<div data-al-show="{{ readoutShow }}" style="display:flex;flex-direction:column;gap:10px">
+<h2 class="al-h">Selected horizon</h2>
+<dl class="al-kv">
+<dt>Horizon</dt><dd>{{ selectionLabel }}</dd>
+<dt>Asset inflow</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ selectionAssets }}" condition="{{ bucketCondition }}" detail="{{ bucketDetail }}" authority="derived" align="right" label="{{ assetsLabel }}" clocks="{{ almClocks }}" hint-size="96px,18px"></x-import></dd>
+<dt>Liability outflow</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ selectionLiabilities }}" condition="{{ bucketCondition }}" detail="{{ bucketDetail }}" authority="derived" align="right" label="{{ liabilitiesLabel }}" clocks="{{ almClocks }}" hint-size="96px,18px"></x-import></dd>
+<dt>Net gap</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ selectionNet }}" condition="{{ bucketCondition }}" detail="{{ bucketDetail }}" authority="derived" align="right" label="{{ netLabel }}" clocks="{{ almClocks }}" hint-size="96px,18px"></x-import></dd>
+<dt>Scenario net</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ selectionScenarioNet }}" condition="estimated" detail="{{ scenarioDetail }}" authority="estimate" align="right" label="{{ scenarioLabel }}" clocks="{{ almClocks }}" hint-size="96px,18px"></x-import></dd>
+<dt>Maturity concentration</dt><dd>{{ selectionMaturity }}</dd>
+<dt>Cash-flow class</dt><dd>{{ selectionClass }}</dd>
+<dt>Coverage</dt><dd>{{ selectionCoverage }}</dd>
+</dl>
+<h2 class="al-h">Basis in force</h2>
+<p style="margin:0;font:12px/18px var(--font-body);color:var(--text-secondary)">Nominal amounts, not discounted. Present value is a separate control and is never mixed into these figures without it.</p>
+<h2 class="al-h">Sector in focus</h2>
+<dl class="al-kv">
+<dt>Sector</dt><dd>{{ sectorLabel }}</dd>
+<dt>Weight</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ sectorWeight }}" condition="confirmed" authority="derived" align="right" label="{{ weightLabel }}" clocks="{{ analyticsClocks }}" hint-size="80px,18px"></x-import></dd>
+<dt>Duration</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ sectorDuration }}" condition="{{ sectorCondition }}" detail="{{ sectorDetail }}" authority="derived" align="right" label="{{ durationLabel }}" evidence="{{ analyticsEvidence }}" clocks="{{ analyticsClocks }}" hint-size="80px,18px"></x-import></dd>
+<dt>Contribution</dt><dd><x-import component-from-global-scope="MeridianDesignSystem_205d17.ValueEnvelope" value="{{ selectionDuration }}" condition="{{ sectorCondition }}" detail="{{ sectorDetail }}" authority="derived" align="right" label="{{ contribLabel }}" evidence="{{ analyticsEvidence }}" clocks="{{ analyticsClocks }}" hint-size="80px,18px"></x-import></dd>
+</dl>
+</div>
+<div data-al-show="{{ traceShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CalculationTrace" title="{{ traceTitle }}" formula="Σ (position market value ÷ portfolio market value × effective duration) = aggregate duration contribution" technical-figure="" technical-formula="sum(w_i * d_i) where w_i = mv_i / mv_total, d_i = effective_duration(oas_curve, prepay_model=CPR_12)" steps="{{ traceSteps }}" result="{{ traceResult }}" rounding="Half-even · 2 decimal places" basis="Management" condition="confirmed" as-of="Jun 30, 2026" calculation-version="RISK 6.4.0" calculated-at="Jul 1, 2026 02:14 UTC" executed-by="Risk engine" engine="meridian-risk@6.4.0" reproducibility="Reproducing this contribution requires the same position weights, the same OAS curve date, and the same prepayment model. A difference implies a repriced position, a new curve, or a model version change." default-level="expanded" hint-size="100%,480px"></x-import>
+</div>
+<div data-al-show="{{ evidenceShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidencePreview" dc-props="{{ evidence }}" on-open-original="{{ noop }}" on-copy-citation="{{ noop }}" hint-size="100%,460px"></x-import>
+</div>
+</aside>
+</div>
+</main>
+</div>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+const CASH=[
+  {id:"b0",label:"0–1 year",assets:420000000,liabilities:380000000,scenarioAssets:406000000,scenarioLiabilities:384000000,condition:"confirmed",klass:"Contractual",detail:"Contractual coupons, maturities and expected claims",coverage:"100%"},
+  {id:"b1",label:"1–3 years",assets:640000000,liabilities:710000000,scenarioAssets:618000000,scenarioLiabilities:716000000,condition:"confirmed",klass:"Contractual",detail:"Contractual coupons, principal and annuity payments",coverage:"100%"},
+  {id:"b2",label:"3–5 years",assets:512000000,liabilities:498000000,scenarioAssets:497000000,scenarioLiabilities:501000000,condition:"confirmed",klass:"Contractual",coverage:"99%"},
+  {id:"b3",label:"5–7 years",assets:388000000,liabilities:404000000,scenarioAssets:371000000,scenarioLiabilities:407000000,condition:"provisional",klass:"Expected from contractual options",detail:"Call assumptions provisional",coverage:"98%"},
+  {id:"b4",label:"7–10 years",assets:296000000,liabilities:341000000,scenarioAssets:281000000,scenarioLiabilities:344000000,condition:"confirmed",klass:"Expected from contractual options",coverage:"100%"},
+  {id:"b5",label:"10–20 years",assets:218000000,liabilities:302000000,scenarioAssets:204000000,scenarioLiabilities:306000000,condition:"estimated",klass:"Behaviourally modelled",detail:"Liability projection, model output",coverage:"96%"},
+  {id:"b6",label:"20+ years",assets:104000000,liabilities:188000000,scenarioAssets:96000000,scenarioLiabilities:191000000,condition:"estimated",klass:"Behaviourally modelled",coverage:"94%"},
+  {id:"b7",label:"Unscheduled",assets:38000000,liabilities:12000000,unscheduled:38000000,condition:"missing",klass:"Unscheduled",detail:"Timing not determinable — kept visible, never netted",coverage:"—"},
+];
+const MATURITIES=[
+  {id:"m0",label:"0–1 year",primary:512000000,comparison:470000000,condition:"confirmed"},
+  {id:"m1",label:"1–3 years",primary:744000000,comparison:812000000,condition:"confirmed"},
+  {id:"m2",label:"3–5 years",primary:601000000,comparison:588000000,condition:"confirmed"},
+  {id:"m3",label:"5–7 years",primary:432000000,comparison:451000000,condition:"provisional",detail:"Call-adjusted using provisional assumptions"},
+  {id:"m4",label:"7–10 years",primary:318000000,comparison:377000000,condition:"confirmed"},
+  {id:"m5",label:"10–20 years",primary:241000000,comparison:334000000,condition:"estimated"},
+  {id:"m6",label:"20+ years",primary:118000000,comparison:206000000,condition:"estimated"},
+  {id:"m7",label:"Unknown",primary:44000000,comparison:0,condition:"missing",unknown:true,detail:"Perpetual and undated notes"},
+];
+const DURATIONS=[
+  {id:"d0",label:"Utilities",weight:14.2,duration:7.8,comparisonContribution:0.94,condition:"confirmed"},
+  {id:"d1",label:"Financials",weight:19.6,duration:4.2,comparisonContribution:0.88,condition:"confirmed"},
+  {id:"d2",label:"Industrials",weight:16.1,duration:5.4,comparisonContribution:0.81,condition:"confirmed"},
+  {id:"d3",label:"Treasury and agency",weight:21.4,duration:6.1,comparisonContribution:1.42,condition:"confirmed"},
+  {id:"d4",label:"Structured product",weight:11.8,duration:3.1,comparisonContribution:0.51,condition:"provisional",detail:"Prepayment model CPR 12"},
+  {id:"d5",label:"Municipal",weight:7.4,duration:8.9,comparisonContribution:0.44,condition:"confirmed"},
+  {id:"d6",label:"Private placement",weight:4.2,duration:null,comparisonContribution:0.18,condition:"missing",detail:"Duration unavailable — no vendor analytics"},
+  {id:"d7",label:"Cash and equivalents",weight:3.1,duration:0,comparisonContribution:0,condition:"confirmed"},
+  {id:"d8",label:"Interest-rate swaps",weight:2.2,duration:-9.4,comparisonContribution:-0.16,condition:"confirmed",detail:"Receive-fixed overlay, offsets portfolio duration"},
+];
+const BASES=[
+  {id:"stat",label:"Statutory",meta:"SSAP 26R"},
+  {id:"gaap",label:"GAAP",meta:"ASC 320 · AFS"},
+  {id:"tax",label:"Tax",meta:"IRC 1272"},
+  {id:"mgmt",label:"Management",meta:"Economic"},
+];
+const CARRYING={stat:9800000,gaap:10100000,tax:9700000,mgmt:10000000};
+const EVIDENCE={
+  title:"Sector analytics extract — June 2026",type:"model",source:"Risk engine",sourceSystem:"Analytics run RA-2026-06-30",documentId:"RA-2026-06-30-SECT",section:"Sector aggregation",
+  before:"Sector duration contribution, general account\n\nSector                     Weight   Duration   Contribution\nUtilities                  14.20%      7.80        ",
+  highlight:"1.11",
+  after:"\nFinancials                 19.60%      4.20        0.82\nTreasury and agency        21.40%      6.10        1.31\n\nAggregate effective duration                        5.42\n",
+  statementDate:"Jun 30, 2026",receivedAt:"Jul 1, 2026 02:14 UTC",extraction:"Complete · 9 sectors",condition:"confirmed",
+  citation:"Risk analytics run RA-2026-06-30, sector aggregation, utilities duration contribution line.",
+  textEquivalent:"Utilities carries a 14.20% portfolio weight and 7.80 years effective duration, contributing 1.11 years to the aggregate effective duration of 5.42 years as of June 30, 2026.",
+  metadata:[{label:"Curve date",value:"Jun 30, 2026"},{label:"Prepay model",value:"CPR 12"}],
+};
+
+class Component extends DCLogic {
+  // Selection is committed through LinkedSelectionProvider — `commitHorizon` is the single
+  // entry point every surface calls, the provider owns URL sync and broadcast, and no
+  // surface synchronises with another by hand.
+  state={scenario:false,view:"cash",inspector:"readout",selection:{id:"b1",label:"1–3 years"},
+         selectedSector:"d0",maturityMode:"amount",durationRank:"contribution",basisMode:"absolute",
+         selectedCell:null,continuity:"live"};
+
+  applyChrome(){
+    const html=document.documentElement;
+    html.setAttribute("data-theme",(window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme??"light"):(this.props.theme??"light")));
+    html.setAttribute("data-environment",(window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment??"PAPER").toUpperCase()):(String(this.props.environment??"PAPER").toUpperCase())));
+    if(document.body)document.body.setAttribute("data-theme-density",(window.MeridianPrefs?window.MeridianPrefs.density(this.props.density??"default"):(this.props.density??"default")));
+  }
+  componentDidMount(){this.applyChrome()}
+  componentDidUpdate(){this.applyChrome()}
+
+  // The template logic can run before ds-base finishes loading the numeric authority.
+  // Preserve missingness until the import resolver rerenders with the compiled bundle.
+  money(v){const F=window.MeridianDesignSystem_205d17?.Format;return v==null||!F?"—":`$${F.number(Math.abs(v)/1e6,{maxDecimals:1,minDecimals:0})}M`}
+  signed(v){return v==null?"—":(v<0?"−":"+")+this.money(v)}
+  net(b,scen){return scen?(b.scenarioAssets??b.assets)-(b.scenarioLiabilities??b.liabilities):b.assets-b.liabilities}
+
+  // One bar geometry for all four panels: shared midline, magnitude scaled to the panel's own
+  // maximum, sign carried by position above/below zero rather than by colour alone. Geometry is
+  // published as direction + a 0–20 magnitude step, so the panel paints from literal CSS rules
+  // rather than a style hole that cannot resolve until the logic class lands.
+  strip(rows,selId){
+    const max=Math.max(...rows.map(r=>Math.abs(r.value)),1e-9);
+    return rows.map(r=>({
+      id:r.id,on:r.id===selId?"on":"off",
+      title:`${r.label}: ${r.text}`,
+      dir:r.value>=0?"up":"down",
+      h:String(Math.round(Math.abs(r.value)/max*20)),
+    }));
+  }
+
+  renderVals(){
+    this.applyChrome();
+    const s=this.state,noop=()=>{};
+    const bucket=CASH.find(b=>b.id===(s.selection&&s.selection.id))||CASH[1];
+    const sector=DURATIONS.find(d=>d.id===s.selectedSector)||DURATIONS[0];
+    const contrib=sector.duration==null?null:sector.weight/100*sector.duration;
+    const matched=MATURITIES.find(m=>m.label===bucket.label);
+    const netBase=this.net(bucket,false),netScen=this.net(bucket,true);
+    const worst=CASH.reduce((a,b)=>this.net(b,false)<this.net(a,false)?b:a,CASH[0]);
+    const wBase=this.net(worst,false),wScen=this.net(worst,true);
+    const durItems=DURATIONS.map(d=>s.scenario&&d.duration!=null?{...d,duration:Math.round(d.duration*0.93*100)/100}:d);
+    const basisRefs=BASES.map(b=>({id:b.id,label:b.label,value:CARRYING[b.id]-CARRYING.stat,text:this.signed(CARRYING[b.id]-CARRYING.stat)}));
+    const widest=basisRefs.reduce((a,b)=>Math.abs(b.value)>Math.abs(a.value)?b:a,basisRefs[0]);
+    const idx=CASH.findIndex(b=>b.id===bucket.id),sidx=DURATIONS.findIndex(d=>d.id===sector.id);
+    const commit=(row)=>{
+      const hit=CASH.find(c=>c.id===row.id)||CASH.find(c=>c.label===row.label);
+      if(hit)this.setState({selection:{id:hit.id,label:hit.label}});
+    };
+    const view=(v)=>()=>this.setState({view:v});
+    const on=(v)=>s.view===v?"on":"off";
+    const insp=(v)=>s.inspector===v?"on":"off";
+
+    return {
+      noop,half:0.5,
+      dataState:this.props.dataState??"ready",
+      navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("alm"):[]),
+      onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
+      environment:String(this.props.environment??"PAPER").toUpperCase(),
+      onRetry:()=>this.setState({continuity:"live"}),
+      onContinuityRetry:s.continuity==="live"?null:()=>this.setState({continuity:"live"}),
+      continuity:s.continuity,
+      snapshotSince:Date.now()-9*60*1000,
+      coverageLabel:"98 of 100 positions scheduled",
+
+      // Analytical context, declared once for the screen.
+      context:{entity:{type:"Legal entity",label:"Meridian Life · General account"},book:"General account",
+        basis:"Nominal · not discounted",period:"FY2026 · Q2",asOf:"Jun 30, 2026",currency:"USD",
+        scenario:s.scenario?"+200 bp parallel shift":"Base",condition:bucket.condition,locked:false},
+      contextCondition:bucket.condition,
+      contextActions:null,
+
+      // Provider-owned selection.
+      selection:s.selection,
+      horizonItems:CASH.map(b=>({id:b.id,label:b.label})),
+      onSelectionChange:(v)=>{if(v&&v.id&&v.id!==s.selection.id)this.setState({selection:{id:v.id,label:v.label}})},
+      commitHorizon:commit,
+      selectedBucket:bucket.id,
+
+      baseOn:s.scenario?"off":"on",scenarioOn:s.scenario?"on":"off",
+      setBase:()=>this.setState({scenario:false}),
+      setScenario:()=>this.setState({scenario:true}),
+      showScenario:s.scenario,
+      scenarioName:s.scenario?"+200 bp parallel shift":null,
+      basisLabel:"Nominal",
+
+      // The book under review is the screen's object; the horizon bucket is the committed
+      // selection inside it. One identity statement, not a page title.
+      bookHeader:{
+        type:"portfolio",id:"GA-001",identifierLabel:"Book",
+        name:"Meridian Life · general account",
+        context:{entity:"Meridian Life",basis:"Nominal · not discounted",scenario:s.scenario?"+200 bp parallel shift":"Base"},
+        value:{label:"Net mismatch",amount:this.signed(netBase),secondary:`${bucket.label} horizon`},
+        condition:bucket.condition,asOf:"2026-06-30",version:"FY2026 · Q2",
+      },
+
+      worstLabel:worst.label,worstBase:this.money(wBase),worstScenario:this.money(wScen),
+      worstDelta:this.money(wScen-wBase),
+
+      selectionLabel:bucket.label,
+      selectionAssets:this.money(s.scenario?(bucket.scenarioAssets??bucket.assets):bucket.assets),
+      selectionLiabilities:this.money(s.scenario?(bucket.scenarioLiabilities??bucket.liabilities):bucket.liabilities),
+      selectionNet:this.signed(netBase),
+      selectionScenarioNet:this.signed(netScen),
+      selectionMaturity:matched?this.money(matched.primary):"Not in the maturity bucket set",
+      selectionClass:bucket.klass,
+      selectionCondition:bucket.condition==="missing"?"Missing — timing not determinable":bucket.condition,
+      selectionCoverage:bucket.coverage||"—",
+      cashCondition:bucket.condition==="missing"?"missing":bucket.condition,
+      durCondition:sector.condition,
+
+      // Every stated figure in the rail travels as an envelope — the bucket's and the sector's
+      // condition/detail move INTO the figure instead of sitting in a row beside it.
+      bucketCondition:bucket.condition,
+      bucketDetail:bucket.detail,
+      almClocks:{asOf:"2026-06-30",reportingPeriod:{start:"2026-01-01",end:"2026-06-30"}},
+      analyticsClocks:{asOf:"2026-06-30",calculatedAt:"2026-07-01 02:14:00Z"},
+      analyticsEvidence:[{label:"Sector analytics extract",ref:"RA-2026-06-30-SECT"}],
+      assetsLabel:bucket.label+" asset inflow",
+      liabilitiesLabel:bucket.label+" liability outflow",
+      netLabel:bucket.label+" net gap",
+      scenarioLabel:bucket.label+" net gap under scenario",
+      scenarioDetail:"rate-shock projection",
+      sectorCondition:sector.condition,
+      sectorDetail:sector.detail,
+      weightLabel:sector.label+" portfolio weight",
+      durationLabel:sector.label+" effective duration",
+      contribLabel:sector.label+" duration contribution",
+
+      sectorLabel:sector.label,
+      sectorWeight:sector.weight.toFixed(2)+"%",
+      sectorDuration:sector.duration==null?"Not available":sector.duration.toFixed(2)+" yrs",
+      selectionDuration:contrib==null?"Not available":contrib.toFixed(2)+" yrs",
+      basisWidest:`${widest.label} ${widest.text}`,
+
+      cashStrip:this.strip(CASH.map(b=>({id:b.id,label:b.label,value:this.net(b,s.scenario),text:this.signed(this.net(b,s.scenario))})),bucket.id),
+      matStrip:this.strip(MATURITIES.map(m=>({id:m.id,label:m.label,value:m.primary,text:this.money(m.primary)})),matched?matched.id:null),
+      durStrip:this.strip(durItems.map(d=>({id:d.id,label:d.label,value:d.duration==null?0:d.weight/100*d.duration,text:d.duration==null?"Not available":(d.weight/100*d.duration).toFixed(2)+" yrs"})),sector.id),
+      basisStrip:this.strip(basisRefs,widest.id),
+      horizonPos:(idx+0.5)/CASH.length,
+      sectorPos:(sidx+0.5)/DURATIONS.length,
+
+      cashOn:on("cash"),matOn:on("maturity"),durOn:on("duration"),basisOn:on("basis"),
+      cashPressed:s.view==="cash",matPressed:s.view==="maturity",durPressed:s.view==="duration",basisPressed:s.view==="basis",
+      cashShow:on("cash"),matShow:on("maturity"),durShow:on("duration"),basisShow:on("basis"),
+      viewCash:view("cash"),viewMaturity:view("maturity"),viewDuration:view("duration"),viewBasis:view("basis"),
+
+      readoutOn:insp("readout"),traceOn:insp("trace"),evidenceOn:insp("evidence"),
+      readoutShow:insp("readout"),traceShow:insp("trace"),evidenceShow:insp("evidence"),
+      showReadout:()=>this.setState({inspector:"readout"}),
+      openTrace:()=>this.setState({inspector:"trace"}),
+      openEvidence:()=>this.setState({inspector:"evidence"}),
+
+      cashFlows:CASH,
+      maturities:MATURITIES,
+      maturityMode:s.maturityMode,
+      onMaturityMode:m=>this.setState({maturityMode:m}),
+      durations:durItems,
+      durationTotal:s.scenario?5.07:5.42,
+      durationRank:s.durationRank,
+      onDurationRank:r=>this.setState({durationRank:r}),
+      selectedSector:s.selectedSector,
+      onSelectSector:d=>this.setState({selectedSector:d.id}),
+      evidence:EVIDENCE,
+
+      bases:BASES,
+      basisObject:`${sector.label} · aggregated holdings`,
+      basisMode:s.basisMode,
+      onBasisMode:m=>this.setState({basisMode:m}),
+      selectedCell:s.selectedCell,
+      onSelectCell:sel=>this.setState({selectedCell:sel.key}),
+      basisRows:[
+        {id:"carrying",label:"Carrying value",unit:"USD",values:{
+          stat:{value:CARRYING.stat,method:"Amortized cost",source:"Ledger",asOf:"Jun 30, 2026",condition:"confirmed"},
+          gaap:{value:CARRYING.gaap,method:"Fair value",source:"ICE Evaluated",asOf:"Jun 30, 2026",condition:"confirmed"},
+          tax:{value:CARRYING.tax,method:"Tax basis",source:"Tax subledger",condition:"confirmed"},
+          mgmt:{value:CARRYING.mgmt,method:"Economic",source:"Risk engine",condition:"provisional"}}},
+        {id:"market",label:"Market value",unit:"USD",values:{
+          stat:{value:10100000,source:"ICE Evaluated",condition:"confirmed"},
+          gaap:{value:10100000,source:"ICE Evaluated",condition:"confirmed"},
+          tax:{value:null,condition:"na"},
+          mgmt:{value:10100000,source:"ICE Evaluated",condition:"confirmed"}}},
+        {id:"amortized",label:"Amortized cost",unit:"USD",values:{
+          stat:{value:9800000,method:"Effective yield",condition:"confirmed"},
+          gaap:{value:9800000,method:"Effective yield",condition:"confirmed"},
+          tax:{value:9700000,method:"Constant yield",condition:"confirmed"},
+          mgmt:{value:9800000,condition:"confirmed"}}},
+        {id:"unrealized",label:"Unrealized gain",unit:"USD",values:{
+          stat:{value:null,condition:"na"},
+          gaap:{value:300000,method:"Through OCI",condition:"confirmed"},
+          tax:{value:null,condition:"na"},
+          mgmt:{value:200000,method:"Through earnings",condition:"provisional"}}},
+        {id:"interest",label:"Interest income · Q2",unit:"USD",values:{
+          stat:{value:117256,condition:"confirmed"},
+          gaap:{value:117256,condition:"confirmed"},
+          tax:{value:112400,method:"OID accrual",condition:"confirmed"},
+          mgmt:{value:117256,condition:"confirmed"}}},
+        {id:"impair",label:"Impairment",unit:"USD",values:{
+          stat:{value:0,condition:"confirmed"},
+          gaap:{value:0,method:"CECL allowance",condition:"confirmed"},
+          tax:{value:null,condition:"na"},
+          mgmt:{value:0,condition:"confirmed"}}},
+        {id:"deferred",label:"Deferred tax",unit:"USD",values:{
+          stat:{value:null,condition:"na"},
+          gaap:{value:63000,condition:"confirmed"},
+          tax:{value:null,condition:"na"},
+          mgmt:{value:63000,condition:"estimated"}}},
+        {id:"class",label:"Classification",differenceKind:"Classification",method:true,values:{
+          stat:{value:"Schedule D · 2.C",condition:"confirmed",override:"Reclassified from 2.B in July"},
+          gaap:{value:"Available for sale",condition:"confirmed"},
+          tax:{value:"Capital asset",condition:"confirmed"},
+          mgmt:{value:"Core fixed income",condition:"confirmed"}}},
+        {id:"method",label:"Measurement method",differenceKind:"Method",method:true,values:{
+          stat:{value:"Amortized cost",condition:"confirmed"},
+          gaap:{value:"Fair value",condition:"confirmed"},
+          tax:{value:"Tax basis",condition:"confirmed"},
+          mgmt:{value:"Economic",condition:"provisional"}}},
+      ],
+
+      traceTitle:`Duration contribution — ${sector.label}`,
+      traceSteps:[
+        {id:"mv",label:`${sector.label} market value`,value:"$1,284,600,000",source:"Position master · custodian-confirmed",sourceId:"POS-2026-06-30",asOf:"Jun 30, 2026",condition:"confirmed",summary:true},
+        {id:"tot",label:"Portfolio market value",value:"$9,046,000,000",operator:"÷",source:"Position master",sourceId:"POS-2026-06-30",asOf:"Jun 30, 2026",condition:"confirmed",summary:true},
+        {id:"w",label:"Portfolio weight",value:sector.weight.toFixed(2),unit:"%",kind:"intermediate",condition:"confirmed"},
+        {id:"d",label:"Effective duration, option-adjusted",value:sector.duration==null?"—":sector.duration.toFixed(2),unit:"yrs",operator:"×",source:"Risk engine · OAS curve Jun 30",sourceId:"RA-2026-06-30",asOf:"Jun 30, 2026",condition:sector.condition,summary:true},
+        {id:"c",label:"Duration contribution",value:contrib==null?"—":contrib.toFixed(2),unit:"yrs",kind:"intermediate",condition:sector.condition},
+        {id:"prepay",label:"Prepayment assumption",value:"CPR 12",source:"Model policy",sourceId:"MDL-PREPAY-2026",condition:"estimated",detail:"Applies to structured product only",changedBy:"Risk governance",changedAt:"Apr 2, 2026"},
+      ],
+      traceResult:{label:`${sector.label} contribution to aggregate duration`,value:contrib==null?"Not available — duration missing":contrib.toFixed(2),unit:contrib==null?"":"yrs"},
+    };
+  }
+}
+</script>
+</body>
+</html>
