@@ -374,7 +374,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             <Button type="button" variant="outline" className="reconciliation-back-to-queue" onClick={returnToQueue}>
               Back to break queue
             </Button>
-            <div className="row-detail-panel">
+            <div>
               {reconciliation.selectedDetail ? (
                 <EntitySummary
                   eyebrow={reconciliation.selectedDetail.eyebrow}

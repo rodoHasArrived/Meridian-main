@@ -86,7 +86,12 @@ export function StatusRow({
               {/* Values are financially material, so a long one wraps onto another line; it
                   never truncates. */}
               {summary.issues.map((fact) => (
-                <span key={fact.id} className="inline-flex min-w-0 max-w-full items-baseline gap-x-1.5 text-xs leading-5">
+                <span
+                  key={fact.id}
+                  className="inline-flex min-w-0 max-w-full items-baseline gap-x-1.5 text-xs leading-5"
+                  data-trust-fact={fact.id}
+                  data-trust-tone={fact.tone}
+                >
                   <span className={cn("h-1.5 w-1.5 shrink-0 self-center rounded-full", dotClasses[fact.tone])} aria-hidden="true" />
                   <span className="shrink-0 text-muted-foreground">{fact.label}:</span>
                   <span className="min-w-0 break-words font-medium text-foreground">{fact.value}</span>

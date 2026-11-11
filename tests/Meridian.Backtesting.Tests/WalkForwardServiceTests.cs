@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Sdk;
 using Meridian.Backtesting.WalkForward;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -420,6 +421,26 @@ public sealed class WalkForwardServiceTests
         report.Windows.Count(static w => w.TestResult is null).Should().Be(1);
         report.Windows[0].ErrorMessage.Should().Be("boom");
         report.Disclosures.Should().Contain(item => item.Code == "walk-forward-failed-windows");
+    }
+
+    [Fact]
+    public void ComputeStitchedOosMetrics_LargeShortWindowGain_CapsAnnualisedReturnInsteadOfOverflowing()
+    {
+        // One 50% out-of-sample day annualises to 1.5^252 (~2e44), past decimal.MaxValue. The
+        // unchecked decimal cast threw OverflowException and lost the whole walk-forward report.
+        var request = CreateBaseRequest(new DateOnly(2024, 1, 8), new DateOnly(2024, 1, 8));
+        var window = new WalkForwardWindowResult
+        {
+            Window = new WalkForwardWindow(0, new DateOnly(2024, 1, 1), new DateOnly(2024, 1, 5), request.From, request.To),
+            TestResult = CreateResult(request, netPnl: 500m, dailyReturns: [0.5])
+        };
+
+        var act = () => WalkForwardService.ComputeStitchedOosMetrics([window], annualRiskFreeRate: 0.0);
+
+        act.Should().NotThrow();
+        var metrics = act()!;
+        metrics.TotalReturn.Should().Be(0.5m);
+        metrics.AnnualizedReturn.Should().Be((decimal)ReportedReturn.MaxMagnitude);
     }
 
     // ────────────────────────────────────────────────────────────────────────

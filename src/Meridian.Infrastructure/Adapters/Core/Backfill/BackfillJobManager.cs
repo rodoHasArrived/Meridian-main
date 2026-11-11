@@ -25,7 +25,10 @@ public sealed class BackfillJobManager : IDisposable
     private readonly RootedPathGuard _jobsPathGuard;
     private readonly Func<string, string, CancellationToken, Task> _atomicWriteAsync;
     private readonly ILogger _log;
+    private static readonly JsonSerializerOptions PersistedJobJsonOptions = new() { WriteIndented = true };
+
     private readonly SemaphoreSlim _persistLock = new(1, 1);
+    private readonly object _jobStateSync = new();
     private readonly object _jobCancellationHandlerSync = new();
     private Func<string, CancellationToken, Task>? _jobCancellationHandler;
     private Func<IReadOnlyCollection<BackfillRequest>, Task>? _uncommittedBatchCancellationHandler;
@@ -502,73 +505,89 @@ public sealed class BackfillJobManager : IDisposable
         if (!_jobs.TryGetValue(request.JobId, out var job))
             return;
 
-        if (job.SymbolProgress.TryGetValue(request.Symbol, out var progress))
+        BackfillJobStatus? completedFromStatus = null;
+
+        // Request workers complete concurrently. The per-symbol HashSet, the per-provider
+        // dictionaries, and the counters below are not thread-safe, and PersistJobAsync enumerates
+        // the same collections while serializing, so every mutation happens under one lock.
+        lock (_jobStateSync)
         {
-            if (request.Status == BackfillRequestStatus.Completed)
+            if (job.SymbolProgress.TryGetValue(request.Symbol, out var progress))
             {
-                progress.CompletedRequests++;
-                progress.BarsRetrieved += request.BarsRetrieved;
-                progress.SuccessfulProvider = request.AssignedProvider;
-
-                // Mark dates as filled
-                var current = request.FromDate;
-                while (current <= request.ToDate)
+                if (request.Status == BackfillRequestStatus.Completed)
                 {
-                    if (current.DayOfWeek != DayOfWeek.Saturday && current.DayOfWeek != DayOfWeek.Sunday)
+                    progress.CompletedRequests++;
+                    progress.BarsRetrieved += request.BarsRetrieved;
+                    progress.SuccessfulProvider = request.AssignedProvider;
+
+                    // Mark dates as filled, counting only dates this request newly covered.
+                    var newlyFilledDates = 0;
+                    var current = request.FromDate;
+                    while (current <= request.ToDate)
                     {
-                        progress.FilledDates.Add(current);
+                        if (current.DayOfWeek != DayOfWeek.Saturday &&
+                            current.DayOfWeek != DayOfWeek.Sunday &&
+                            progress.FilledDates.Add(current))
+                        {
+                            newlyFilledDates++;
+                        }
+                        current = current.AddDays(1);
                     }
-                    current = current.AddDays(1);
+
+                    // Update stats
+                    job.Statistics.TotalBarsRetrieved += request.BarsRetrieved;
+                    job.Statistics.SuccessfulRequests++;
+                    job.Statistics.GapsFilled += newlyFilledDates;
+
+                    if (request.AssignedProvider != null)
+                    {
+                        job.Statistics.RequestsByProvider.TryGetValue(request.AssignedProvider, out var count);
+                        job.Statistics.RequestsByProvider[request.AssignedProvider] = count + 1;
+
+                        job.Statistics.BarsByProvider.TryGetValue(request.AssignedProvider, out var bars);
+                        job.Statistics.BarsByProvider[request.AssignedProvider] = bars + request.BarsRetrieved;
+                    }
                 }
-
-                // Update stats
-                job.Statistics.TotalBarsRetrieved += request.BarsRetrieved;
-                job.Statistics.SuccessfulRequests++;
-                job.Statistics.GapsFilled += progress.FilledDates.Count;
-
-                if (request.AssignedProvider != null)
+                else if (request.Status == BackfillRequestStatus.Failed)
                 {
-                    job.Statistics.RequestsByProvider.TryGetValue(request.AssignedProvider, out var count);
-                    job.Statistics.RequestsByProvider[request.AssignedProvider] = count + 1;
+                    progress.FailedRequests++;
+                    progress.LastError = request.ErrorMessage;
+                    job.Statistics.FailedRequests++;
+                }
 
-                    job.Statistics.BarsByProvider.TryGetValue(request.AssignedProvider, out var bars);
-                    job.Statistics.BarsByProvider[request.AssignedProvider] = bars + request.BarsRetrieved;
+                job.Statistics.TotalRequestsMade++;
+
+                // Check if symbol is complete
+                if (progress.CompletedRequests + progress.FailedRequests >= progress.TotalRequests)
+                {
+                    progress.CompletedAt = DateTimeOffset.UtcNow;
+                    progress.Status = progress.FailedRequests == 0
+                        ? SymbolBackfillStatus.Completed
+                        : SymbolBackfillStatus.Failed;
                 }
             }
-            else if (request.Status == BackfillRequestStatus.Failed)
-            {
-                progress.FailedRequests++;
-                progress.LastError = request.ErrorMessage;
-                job.Statistics.FailedRequests++;
-            }
 
-            job.Statistics.TotalRequestsMade++;
+            // Check if job is complete
+            var allComplete = job.SymbolProgress.Values.All(p =>
+                p.Status == SymbolBackfillStatus.Completed ||
+                p.Status == SymbolBackfillStatus.Failed ||
+                p.Status == SymbolBackfillStatus.Skipped);
 
-            // Check if symbol is complete
-            if (progress.CompletedRequests + progress.FailedRequests >= progress.TotalRequests)
+            if (allComplete && job.Status == BackfillJobStatus.Running)
             {
-                progress.CompletedAt = DateTimeOffset.UtcNow;
-                progress.Status = progress.FailedRequests == 0
-                    ? SymbolBackfillStatus.Completed
-                    : SymbolBackfillStatus.Failed;
+                var hasFailures = job.SymbolProgress.Values.Any(p => p.Status == SymbolBackfillStatus.Failed);
+                completedFromStatus = job.Status;
+
+                job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
+                job.CompletedAt = DateTimeOffset.UtcNow;
+                job.StatusReason = hasFailures ? "Completed with errors" : "All symbols backfilled successfully";
             }
         }
 
-        // Check if job is complete
-        var allComplete = job.SymbolProgress.Values.All(p =>
-            p.Status == SymbolBackfillStatus.Completed ||
-            p.Status == SymbolBackfillStatus.Failed ||
-            p.Status == SymbolBackfillStatus.Skipped);
-
-        if (allComplete && job.Status == BackfillJobStatus.Running)
+        // Observers and persistence run outside the state lock; only the worker that performed
+        // the terminal transition reports it.
+        if (completedFromStatus is { } previousStatus)
         {
-            var hasFailures = job.SymbolProgress.Values.Any(p => p.Status == SymbolBackfillStatus.Failed);
-            var previousStatus = job.Status;
-
-            job.Status = hasFailures ? BackfillJobStatus.Failed : BackfillJobStatus.Completed;
-            job.CompletedAt = DateTimeOffset.UtcNow;
-            job.StatusReason = hasFailures ? "Completed with errors" : "All symbols backfilled successfully";
-
             OnJobStatusChanged?.Invoke(job, previousStatus);
 
             _log.Information("Job {JobId} completed: {Status} ({SuccessRate}% success rate)",
@@ -659,10 +678,12 @@ public sealed class BackfillJobManager : IDisposable
         try
         {
             var filePath = GetJobFilePath(job.JobId);
-            var json = JsonSerializer.Serialize(job, new JsonSerializerOptions
+            string json;
+            // Serialization enumerates the progress collections that request workers mutate.
+            lock (_jobStateSync)
             {
-                WriteIndented = true
-            });
+                json = JsonSerializer.Serialize(job, PersistedJobJsonOptions);
+            }
             _jobsPathGuard.EnsurePath(filePath);
             await _atomicWriteAsync(filePath, json, ct).ConfigureAwait(false);
         }

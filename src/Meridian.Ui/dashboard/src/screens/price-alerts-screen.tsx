@@ -185,7 +185,7 @@ export function PriceAlertsScreen() {
           Price alerts
         </span>
       }
-      scope="Data Lane"
+      scope="Data"
       description={vm.heroDescription}
       focus={vm.summaryMetrics.map((metric): FocusSignal => ({
         id: metric.id,

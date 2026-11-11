@@ -5,6 +5,7 @@ import { axe } from "jest-axe";
 import { MemoryRouter } from "react-router-dom";
 import type { AppShellAttentionSignal } from "@/app-shell.attention";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { PageTrustProvider, usePageTrustRegistry } from "@/lib/page-trust-context";
 import { ShellStatusSignalsProvider } from "@/lib/shell-status-signals-context";
 
 const readyFacts = {
@@ -232,5 +233,27 @@ describe("OperationalTrustSummary", () => {
       // A ready shell signal adds no tile either; the page breakdown stays the page's own facts.
       expect(within(container.querySelector("dl")!).queryByText("Providers")).toBeNull();
     });
+  });
+  it("reports the freshness it shows to the shell so the status bar repeats the same answer", () => {
+    function FreshnessProbe() {
+      const { registry, pageFreshness } = usePageTrustRegistry();
+      return (
+        <PageTrustProvider registry={registry}>
+          <output data-testid="page-freshness">{pageFreshness ? `${pageFreshness.tone}:${pageFreshness.value}` : "none"}</output>
+          <OperationalTrustSummary
+            source={{ value: "Retained portfolio", tone: "ready" }}
+            scope={{ value: "All brokerage accounts", tone: "ready" }}
+            freshness={{ value: "Stale · 187d ago", tone: "review" }}
+            completeness={{ value: "2 positions", tone: "ready" }}
+          />
+        </PageTrustProvider>
+      );
+    }
+
+    const { container, unmount } = render(<FreshnessProbe />);
+    expect(screen.getByTestId("page-freshness")).toHaveTextContent("review:Stale · 187d ago");
+    // The named issue carries its fact and tone, which the capture harness reads on every route.
+    expect(container.querySelector("[data-trust-fact='freshness']")).toHaveAttribute("data-trust-tone", "review");
+    unmount();
   });
 });

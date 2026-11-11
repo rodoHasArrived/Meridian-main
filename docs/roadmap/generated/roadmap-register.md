@@ -997,11 +997,11 @@ Implemented one shared valuation freshness policy with default blocking, require
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-26 |
+| Last reviewed | 2026-11-10 |
 
 ### Current Summary
 
-Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
+Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Focused verification ran on 2026-11-10 against source 471d651e - the lineage, SLA-calendar, statement-intake and statement-lineage test classes passed locally on Linux (39 tests), the same filter passed on hosted Linux (Targeted Test run 42910954556), and FundReconciliationWorkbenchServiceTests passed on hosted Windows with the full WPF build (Targeted Test run 42910959791, 12 tests). The browser source-observation test was not rerun in that pass, and rendered operator verification remains required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
 
 ### Exit Criteria
 

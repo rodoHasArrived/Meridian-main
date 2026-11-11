@@ -22,7 +22,10 @@ posting authority or tax character.
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a
-connection switch. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
+connection switch. `IBrokerageAccountIdentity` is for a broker that gives one account more than one
+identifier: the gateway reports one as the account's identity and recognizes the others, so a link
+retained under an older identifier is neither refused nor treated as a second account. A catalog
+entry declares such identifiers under `BrokerageExternalAccountMetadata.AccountIdAliases`. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
 submitting or treating a missing broker response as permission to retry.
 
 ## Shared close and lot convergence

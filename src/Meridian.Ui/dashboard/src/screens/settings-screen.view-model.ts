@@ -1347,7 +1347,7 @@ const BACKEND_CAPABILITY_GROUPS: BackendCapabilityDefinition[] = [
     workspaceLabel: "Reporting",
     route: WORKSTATION_ROUTE_CATALOG.reporting,
     title: "Governed reports and exports",
-    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval lanes.",
+    description: "Reporting workspace posture, analysis exports, report-pack recipients, data dictionaries, and approval queues.",
     isAvailable: (payload) => payload.reporting !== null && payload.reporting !== undefined,
     unavailableDetail: "Reporting workspace data has not loaded.",
     endpoints: [

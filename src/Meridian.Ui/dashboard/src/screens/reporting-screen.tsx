@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
 import { useLocation } from "react-router-dom";
@@ -476,8 +477,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       message: trigger === "auto" ? "Refreshing live portfolio views from market tick cadence." : "Refreshing live portfolio views.",
       details: [
         trigger === "auto"
-          ? "Reporting is using the shared portfolio refresh lane on the live tick cadence."
-          : "Reporting is using the shared portfolio refresh lane."
+          ? "Reporting refreshes with the shared portfolio data on the live tick cadence."
+          : "Reporting refreshes with the shared portfolio data."
       ]
     });
 
@@ -830,7 +831,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         }}
         completeness={{
           value: `${pluralizeCount(vm.templateRows.length, "template")} · ${pluralizeCount(vm.runStatusRows.length, "run")}`,
-          detail: "Caller-visible Reporting records",
+          detail: "Reporting records you can access",
           tone: vm.templateRows.length > 0 ? "ready" : "review"
         }}
         blocker={governanceScopeUnavailable ? {
@@ -1703,7 +1704,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 {run.hasNextActions ? (
                   <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md border border-primary/25 bg-primary/10 px-3 py-2" aria-label={`${run.id} governed workflow continuation`}>
                     <p className="min-w-0 flex-1 text-xs leading-5 text-primary">
-                      Legacy pack mutations are retired. Continue validation, approval, release, restatement, and distribution from the governed run.
+                      Report packs can no longer be changed here. Continue validation, approval, release, restatement, and distribution from the report run.
                     </p>
                     <Button asChild size="sm" variant="outline">
                       <a href={workstationRouteWithQuery("reportingRunDetail", { runId: run.id })}>
@@ -2203,7 +2204,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       <section className="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
         <Card className="panel-surface">
           <CardHeader>
-            <div className="eyebrow-label">Reporting Lane</div>
+            <div className="eyebrow-label">Reporting</div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
               Evidence and distribution
@@ -2387,17 +2388,9 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 >
                   {vm.selectedProfile.readinessSummary}
                 </div>
-                <dl className="grid gap-2">
+                <dl className="border-t border-border/60">
                   {vm.selectedProfile.fields.map((field) => (
-                    <div
-                      key={field.label}
-                      className="grid grid-cols-[minmax(0,0.6fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/60 bg-secondary/25 px-3 py-2"
-                    >
-                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                      <dd className={cn("text-right font-mono text-xs", field.className)}>
-                        {field.value}
-                      </dd>
-                    </div>
+                    <DetailFieldItem key={field.label} label={field.label} value={field.value} valueClassName={field.className} />
                   ))}
                 </dl>
                 <div className="grid gap-2 pt-2" role="list" aria-label={`${vm.selectedProfile.title} export actions`}>
