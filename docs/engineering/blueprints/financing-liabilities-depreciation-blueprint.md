@@ -160,7 +160,7 @@ type** rather than renaming `LoanId`.
   *depends on* `Meridian.Ledger`; `LoanAccountingProjector` already lives in
   `Meridian.Application.DirectLending`. Repo and borrowings are liability-side financing,
   conceptually distinct from private-credit assets.
-  **Consequences:** Keeps `AccountingSemanticBoundaryTests` green — posting math stays in
+  **Consequences:** Keeps `AccountingSemanticsBoundaryTests` green — posting math stays in
   `Meridian.Ledger`, event-to-line mapping in the application layer.
 
 - **Decision:** The depreciation projector lives **in `Meridian.Ledger`** next to
@@ -736,7 +736,7 @@ unpostable. The repo/borrowing halves of Phase 1 also remain.
 
 ### Phase 6: Wrap-up
 
-- [ ] Confirm `AccountingSemanticBoundaryTests` allowlist covers the new application-layer
+- [ ] Confirm `AccountingSemanticsBoundaryTests` allowlist covers the new application-layer
       projectors (posting math stayed in `Meridian.Ledger`).
 - [ ] `docs/domain/` note: repo and borrowings as financing subjects; update `LedgerAccounts` and
       module READMEs.
@@ -759,7 +759,7 @@ unpostable. The repo/borrowing halves of Phase 1 also remain.
 
 | Risk | Likelihood | Impact | Mitigation |
 |---|---|---|---|
-| `AccountingSemanticBoundaryTests` fails if posting logic drifts into the application layer | Med | High | Keep all `LedgerAccount` / balance math in `Meridian.Ledger`; projectors only *map* events to existing accounts. Verify the allowlist in Phase 6. |
+| `AccountingSemanticsBoundaryTests` fails if posting logic drifts into the application layer | Med | High | Keep all `LedgerAccount` / balance math in `Meridian.Ledger`; projectors only *map* events to existing accounts. Verify the allowlist in Phase 6. |
 | Depreciation penny-drift over asset life | Med | Med | Final-period rounding absorption; golden-fixture sum tests. |
 | Repo direction sign errors (borrow vs lend legs inverted) | Med | High | Explicit per-leg projector tests; the `RepoLegKindDto` split makes direction total. |
 | Idempotency gaps cause double-posting on retry | Low | High | Stable idempotency-key format plus store-level dedup (copied from DirectLending). |
