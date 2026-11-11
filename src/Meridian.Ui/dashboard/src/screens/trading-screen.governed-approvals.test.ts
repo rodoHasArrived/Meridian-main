@@ -22,6 +22,16 @@ function escalation(overrides: Partial<RiskEscalation> = {}): RiskEscalation {
     resolvedBy: null,
     resolutionReason: null,
     resolvedAt: null,
+    stopPrice: null,
+    trailPrice: null,
+    trailPercent: null,
+    timeInForce: "Day",
+    routedNotional: null,
+    fundAccountId: null,
+    strategyId: null,
+    positionIntent: null,
+    optionContract: null,
+    legs: null,
     ...overrides
   };
 }
