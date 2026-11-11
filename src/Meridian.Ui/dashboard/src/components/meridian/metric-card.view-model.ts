@@ -1,3 +1,5 @@
+import { normalizeFinancialLabel } from "@/lib/format";
+import { buildMetricTrust } from "@/lib/metric-trust";
 import type { MetricSnapshot } from "@/types";
 
 export interface MetricCardViewModel {
@@ -11,6 +13,10 @@ export interface MetricCardViewModel {
   labelId: string;
   valueId: string;
   deltaId: string | null;
+  /** "Stale" / "Unverified" when the figure's source is not current; null for a fresh figure. */
+  freshnessLabel: string | null;
+  /** "Source: … · As of … · Scope: …" when the metric states where it comes from. */
+  provenanceText: string | null;
 }
 
 const toneClass: Record<MetricSnapshot["tone"], string> = {
@@ -29,15 +35,19 @@ const toneLabel: Record<MetricSnapshot["tone"], string> = {
 
 export function buildMetricCardViewModel(metric: MetricSnapshot): MetricCardViewModel {
   const id = normalizeMetricId(metric.id || metric.label);
-  const label = metric.label.trim();
+  const trust = buildMetricTrust(metric);
+  const label = normalizeFinancialLabel(metric.label.trim());
   const value = metric.value.trim();
-  const delta = metric.delta.trim() || null;
+  // A bare change with no stated baseline is not shown; see `resolveMetricDelta`.
+  const delta = trust.delta?.text ?? null;
   const deltaAriaLabel = delta ? `Change ${normalizeDeltaForSpeech(delta)}` : null;
   const ariaLabel = [
     `${label} metric`,
     value,
     deltaAriaLabel,
-    `Status ${toneLabel[metric.tone]}`
+    `Status ${toneLabel[metric.tone]}`,
+    trust.freshnessDetail?.replace(/\.$/, "") ?? null,
+    trust.provenanceText
   ].filter(Boolean).join(". ");
 
   return {
@@ -50,7 +60,9 @@ export function buildMetricCardViewModel(metric: MetricSnapshot): MetricCardView
     deltaAriaLabel,
     labelId: `${id}-label`,
     valueId: `${id}-value`,
-    deltaId: delta ? `${id}-delta` : null
+    deltaId: delta ? `${id}-delta` : null,
+    freshnessLabel: trust.freshnessLabel,
+    provenanceText: trust.provenanceText
   };
 }
 

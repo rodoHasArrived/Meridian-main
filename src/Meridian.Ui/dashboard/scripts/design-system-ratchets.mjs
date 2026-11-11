@@ -10,6 +10,11 @@
 //     instead of the shared `@/lib/format` module.
 //   - rawTables: hand-built <table> elements instead of the table system (DenseDataTable, or
 //     DenseDataTableHeaderCell inside a `dense-data-table` for grouped rows).
+//   - handRolledNumberFormatting: `.toFixed(` calls, which build a displayed number without
+//     thousands separators, a pinned locale or the shared sign convention.
+//   - localMoneyFormatters: money and P&L formatters defined in a screen (formatMoney,
+//     formatCurrency, formatPnl, formatSigned*, fmtMoney, ...) instead of imported from
+//     `@/lib/format`; each one can round, sign or abbreviate differently from its neighbours.
 //
 // `design-system-ratchets.test.ts` fails when a file exceeds its baseline, when a file not in
 // the baseline gains an occurrence, or when a file drops below its baseline (lock the progress
@@ -27,6 +32,9 @@ const SCREENS_DIR = path.join(DASHBOARD_ROOT, "src", "screens");
 const STRING_LITERAL = /"([^"\n]*)"|'([^'\n]*)'|`([^`]*)`/g;
 // `\b` keeps type references such as `Intl.DateTimeFormatOptions` out of the count.
 const DIRECT_INTL = /Intl\.(?:NumberFormat|DateTimeFormat)\b|\.toLocaleString\(|\.toLocaleDateString\(|\.toLocaleTimeString\(/g;
+const TO_FIXED = /\.toFixed\(/g;
+// A function or const declaration whose name marks it as a money or P&L formatter.
+const LOCAL_MONEY_FORMATTER = /\b(?:function|const)\s+(?:format|fmt)(?:Money|Currency|Pnl|PnL|Usd|Dollars?|Notional|Signed|Compact)\w*/g;
 // A <table opening tag that is not styled as the table system's `dense-data-table`.
 const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
 
@@ -62,6 +70,18 @@ export const RATCHETS = {
     description: "hand-built <table> elements in screens/ (use DenseDataTable from ui-kit-primitives)",
     count(source) {
       return [...source.matchAll(RAW_TABLE)].length;
+    }
+  },
+  handRolledNumberFormatting: {
+    description: ".toFixed() number formatting in screens/ (use formatNumber, formatPercent, formatMoney or formatPnl from @/lib/format)",
+    count(source) {
+      return [...source.matchAll(TO_FIXED)].length;
+    }
+  },
+  localMoneyFormatters: {
+    description: "money and P&L formatters defined in screens/ (import formatMoney, formatPnl or formatCurrency from @/lib/format)",
+    count(source) {
+      return [...source.matchAll(LOCAL_MONEY_FORMATTER)].length;
     }
   }
 };
