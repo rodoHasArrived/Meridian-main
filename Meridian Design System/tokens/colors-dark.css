@@ -21,28 +21,6 @@
   :root {
     color-scheme: dark;
 
-    /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
-       literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
-       other fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
-       painted a paper panel on a graphite screen. Re-point them at the flipped component
-       token in both dark blocks. The forced-light block needs no restatement: it sets every
-       one of these component tokens to a literal, so the reference resolves light there. */
-    --theme-bg-canvas:      var(--bg);
-    --theme-bg-light:       var(--bg-light);
-    --theme-bg-hover:       var(--bg-hover);
-    --theme-bg-active:      var(--bg-active);
-    --theme-border:         var(--border);
-    --theme-border-strong:  var(--border-strong);
-    --theme-primary-text:   var(--text-primary);
-    --theme-secondary-text: var(--text-secondary);
-    --theme-muted-text:     var(--text-muted);
-    --theme-accent:         var(--accent);
-    --theme-border-focus:   var(--border-focus);
-    --theme-topbar-bg:      var(--topbar-bg);
-    --theme-topbar-text:    var(--topbar-text);
-    --theme-statusbar-bg:   var(--statusbar-bg);
-    --theme-statusbar-text: var(--statusbar-text);
-
     /* Surfaces — cool carbon, flat */
     --bg:                 #11171D;  /* canvas */
     --bg-light:           #171E25;  /* plate — panel surface */
@@ -122,10 +100,32 @@
     --chart-compare-1:    #7F9DB8;
     --chart-compare-2:    #9AA2A9;
   }
-  /* A white-label html[data-brand] rule outranks the :root re-point above, so under an OS dark
-     preference --theme-accent kept the brand's LIGHT literal while manual dark gave the dark
-     signal. Same reach as the manual block; forced light is left to the brand. */
-  html[data-brand]:not([data-theme="light"]) { --theme-accent: var(--accent); }
+  /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light literals
+     and only the component tokens flip, so in dark mode --theme-bg-canvas and the other
+     fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
+     painted a paper panel on a graphite screen. Re-point them at the flipped component token.
+     The rule excludes forced light on purpose. This media block still matches under an OS-dark
+     preference with data-theme="light", and a re-point left active there turns the brand
+     mapping `--accent: var(--theme-accent)` into a cycle for any brand that states no accent.
+     The extra :not() also outranks a `html[data-brand]` literal, so a brand's --theme-accent
+     follows its dark accent here exactly as it does in the manual block below. */
+  :root:not([data-theme="light"]) {
+    --theme-bg-canvas:      var(--bg);
+    --theme-bg-light:       var(--bg-light);
+    --theme-bg-hover:       var(--bg-hover);
+    --theme-bg-active:      var(--bg-active);
+    --theme-border:         var(--border);
+    --theme-border-strong:  var(--border-strong);
+    --theme-primary-text:   var(--text-primary);
+    --theme-secondary-text: var(--text-secondary);
+    --theme-muted-text:     var(--text-muted);
+    --theme-accent:         var(--accent);
+    --theme-border-focus:   var(--border-focus);
+    --theme-topbar-bg:      var(--topbar-bg);
+    --theme-topbar-text:    var(--topbar-text);
+    --theme-statusbar-bg:   var(--statusbar-bg);
+    --theme-statusbar-text: var(--statusbar-text);
+  }
 }
 
 /* ── 2. Manual dark — identical token block, attribute-driven ── */
@@ -136,8 +136,7 @@
      literals and only the component tokens flip, so in dark mode --theme-bg-canvas and the
      other fourteen still resolved to the LIGHT value: app CSS pasted against the name contract
      painted a paper panel on a graphite screen. Re-point them at the flipped component
-     token in both dark blocks. The forced-light block needs no restatement: it sets every
-     one of these component tokens to a literal, so the reference resolves light there. */
+     token, as the auto-dark rule above does. */
   --theme-bg-canvas:      var(--bg);
   --theme-bg-light:       var(--bg-light);
   --theme-bg-hover:       var(--bg-hover);

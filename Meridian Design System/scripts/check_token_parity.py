@@ -98,8 +98,9 @@ def dark_blocks(text):
     # missing from the media block alone went unseen.
     for path, body in flat_blocks(text):
         parts = path.split(" >> ")
+        leaf = parts[-1].replace(" ", "").split(",")
         if (len(parts) > 1 and "prefers-color-scheme:dark" in parts[0].replace(" ", "")
-                and ":root" in parts[-1].replace(" ", "").split(",")):
+                and (":root" in leaf or AUTO_NOT_LIGHT in leaf)):
             found["auto"].update(declared(body))
     for sel, body in blocks(text):
         s = sel.replace(" ", "")
@@ -110,6 +111,8 @@ def dark_blocks(text):
     return found
 
 
+# Auto-dark declarations that must NOT survive a forced light theme sit under this selector.
+AUTO_NOT_LIGHT = ':root:not([data-theme="light"])'
 UPSTREAM_INDEX = pathlib.Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 THEME_MIRRORS = {
     "--theme-bg-canvas": "--bg", "--theme-bg-light": "--bg-light",
@@ -157,7 +160,7 @@ def flat_blocks(text):
 
 def mode_envs(sheets):
     """Declarations per mode, in cascade order: light, auto dark, manual dark, forced light."""
-    env = {"light": {}, "auto": {}, "manual": {}, "forced-light": {}}
+    env = {"light": {}, "auto": {}, "auto-not-light": {}, "manual": {}, "forced-light": {}}
     for text in sheets:
         for selector, body in flat_blocks(text):
             leaf = selector.split(" >> ")[-1].replace(" ", "")
@@ -165,6 +168,8 @@ def mode_envs(sheets):
             dark_media = "prefers-color-scheme:dark" in selector.replace(" ", "")
             if dark_media and ":root" in parts:
                 env["auto"].update(declared(body))
+            elif dark_media and AUTO_NOT_LIGHT in parts:
+                env["auto-not-light"].update(declared(body))
             elif not dark_media and ":root" in parts or ".meridian-root" in parts:
                 env["light"].update(declared(body))
             if ':root[data-theme="dark"]' in parts:
@@ -175,7 +180,7 @@ def mode_envs(sheets):
     # Forced light is what renders under an OS-dark preference with data-theme="light": the
     # media block still matches, so a token it flips stays dark unless the forced-light block
     # restates it. Leaving the auto layer out reported such a token with its light value.
-    return {"light": light, "auto": {**light, **env["auto"]},
+    return {"light": light, "auto": {**light, **env["auto"], **env["auto-not-light"]},
             "manual": {**light, **env["manual"]},
             "forced-light": {**light, **env["auto"], **env["forced-light"]}}
 
@@ -269,10 +274,16 @@ def theme_findings(files):
             if got != f"var({mirror})":
                 out.append(f"THEME    {theme} must be var({mirror}) in the {label} dark block "
                            f"(found {got or 'nothing'}) — the name would stay light in dark mode")
-        forced = dark["forced-light"].get(mirror, "")
-        if not (forced.startswith("#") or forced.startswith("rgb")):
-            out.append(f"THEME    forced-light must state {mirror} as a literal so {theme} "
-                       "resolves light under an OS-dark preference")
+    # The auto-dark re-points must not reach a forced light theme: the media block still
+    # matches there, and a re-point left active makes `--accent: var(--theme-accent)` a cycle.
+    for selector, body in flat_blocks(files["colors-dark.css"]):
+        parts = selector.split(" >> ")
+        leaf = parts[-1].replace(" ", "").split(",")
+        if (len(parts) > 1 and "prefers-color-scheme:dark" in parts[0].replace(" ", "")
+                and ":root" in leaf):
+            for theme in sorted(set(THEME_MIRRORS) & set(declared(body))):
+                out.append(f"THEME    {theme} is re-pointed under a bare :root in the auto-dark "
+                           f"block; move it under {AUTO_NOT_LIGHT} so forced light keeps the literal")
     return out
 
 

@@ -229,10 +229,24 @@ states the button paints. The bundle-parity check skips sources the manifest no
 longer exports, and test files are not scanned as call sites. No threshold was
 lowered.
 
-**Still failing.** Six white-label `data-brand` presets declare no dark accent
-and no focus token (12 findings in `check_contrast.py`); the previous package
-version carried both. No consumer in this repository sets `data-brand`. The
-governance gate is unchanged at 67 findings and 25 warnings.
+**White-label presets.** The six `data-brand` presets state a dark accent trio
+and a ghost fill again, as the previous package version did, and three rules
+in `tokens/theme.css` carry a brand's accent family into auto dark, manual dark
+and forced light. Before this a brand lost its accent under `data-theme="dark"`
+and `data-theme="light"`, and under an OS-dark preference kept its light accent
+beneath a white label. The auto-dark `--theme-*` re-points moved under
+`:root:not([data-theme="light"])`: left on a bare `:root` they stayed active
+under forced light and made `--accent: var(--theme-accent)` a cycle for a brand
+that states no accent. Computed in Chromium for 24 combinations (OS light/dark,
+no theme / dark / light, no brand / indigo / amber / an unknown brand): every
+accent, label, ghost and focus value is the intended one and every label
+clears 4.5:1. `check_contrast.py` no longer requires a brand to restate the
+focus token, because the focus ring is the interaction blue for every brand;
+it passes with zero findings. No consumer in this repository sets
+`data-brand`.
+
+**Still failing.** The governance gate is unchanged at 67 findings and 25
+warnings.
 
 ## Production browser integration follow-up
 

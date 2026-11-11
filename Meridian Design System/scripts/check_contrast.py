@@ -266,8 +266,11 @@ def check_brands(root: Path) -> list[str]:
         # caught the same way, one round later. Deriving the list from the default means the
         # next token added there is covered without anyone remembering to add it here.
         if stated["light"]:
-            family = {name for name in defaults
-                      if name.startswith("--theme-accent") or name == "--theme-border-focus"}
+            # --theme-border-focus left this list in 4.3.0. The focus ring is the interaction
+            # blue for every brand (the focus law forbids the signal, and so a brand's accent,
+            # in a focus rule), so a brand that restated it would be breaking the system, not
+            # completing its identity. The "focus ring on card" row below still measures it.
+            family = {name for name in defaults if name.startswith("--theme-accent")}
             missing = sorted(family - set(declared))
             for name in missing:
                 print(f"[light · brand {brand}] no {name}: inherits the default FAIL")
