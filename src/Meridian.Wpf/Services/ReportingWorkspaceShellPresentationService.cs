@@ -1,5 +1,6 @@
 using Meridian.Contracts.Workstation;
 using Meridian.Wpf.Models;
+using UtcFormat = Meridian.Ui.Services.FormatHelpers;
 
 namespace Meridian.Wpf.Services;
 
@@ -299,7 +300,7 @@ public static class ReportingWorkspaceShellPresentationService
         var first = items[0];
         var due = first.DueAtUtc is null
             ? null
-            : $" Due {first.DueAtUtc:yyyy-MM-dd HH:mm} UTC.";
+            : $" Due {UtcFormat.FormatUtcTimestamp(first.DueAtUtc.Value)}.";
         var owner = string.IsNullOrWhiteSpace(first.Owner)
             ? null
             : $" Owner: {first.Owner}.";

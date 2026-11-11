@@ -107,8 +107,9 @@ export function usePortfolioPositionsTable() {
     const current = stateRef.current.sort;
     update({ ...stateRef.current, sort: { columnId, direction: current?.columnId === columnId && current.direction === "asc" ? "desc" : "asc" } });
   }, [update]);
+  const setHiddenColumns = useCallback((hiddenColumns: string[]) => update({ ...stateRef.current, hiddenColumns }), [update]);
   const resetControls = useCallback(() => update({ ...DEFAULT_PORTFOLIO_POSITIONS_TABLE_STATE }), [update]);
   const clearFilters = useCallback(() => update({ ...stateRef.current, search: "", side: null, readiness: "all" }), [update]);
 
-  return { state, setSearch, setSide, setReadiness, toggleSort, resetControls, clearFilters, flushSearch, shareError };
+  return { state, setSearch, setSide, setReadiness, toggleSort, setHiddenColumns, resetControls, clearFilters, flushSearch, shareError };
 }

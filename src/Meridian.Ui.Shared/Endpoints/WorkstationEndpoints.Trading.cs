@@ -23,6 +23,32 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static partial class WorkstationEndpoints
 {
+    /// <summary>
+    /// The host's singleton broker book is readable only once its owning fund account is selected
+    /// and authorized. Shared by the trading workspace and the cross-screen counts endpoint so both
+    /// hide the same orders.
+    /// </summary>
+    private static async Task<bool> CanReadBrokerPortfolioAsync(
+        BrokeragePortfolioState? brokerPortfolio,
+        Guid? fundAccountId,
+        HttpContext context) =>
+        brokerPortfolio is null
+            || fundAccountId.HasValue && brokerPortfolio.FundAccountId == fundAccountId
+                && await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
+                    .ConfigureAwait(false);
+
+    /// <summary>
+    /// Open orders the trading blotter shows: every order the OMS reports open, limited to the
+    /// selected fund account when a broker book is attached. The open-order count is this list's length.
+    /// </summary>
+    private static IReadOnlyList<OrderState> SelectVisibleOpenOrders(
+        IOrderManager? oms,
+        BrokeragePortfolioState? brokerPortfolio,
+        Guid? fundAccountId) =>
+        oms?.GetOpenOrders()
+            .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId)
+            .ToArray() ?? [];
+
     // PR-03: returns typed DTO instead of anonymous object.
     // Returns null when neither the execution layer nor the strategy run read service is
     // registered so the route can respond 503 instead of serving fabricated positions and fills.
@@ -32,10 +58,8 @@ public static partial class WorkstationEndpoints
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
         var brokerPortfolio = portfolio as BrokeragePortfolioState;
-        var canReadBrokerPortfolio = brokerPortfolio is null
-            || fundAccountId.HasValue && brokerPortfolio.FundAccountId == fundAccountId
-                && await FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(fundAccountId.Value, context)
-                    .ConfigureAwait(false);
+        var canReadBrokerPortfolio = await CanReadBrokerPortfolioAsync(brokerPortfolio, fundAccountId, context)
+            .ConfigureAwait(false);
         if (!canReadBrokerPortfolio)
         {
             // The workstation still needs its account-selection/recovery panel. Hide the
@@ -77,9 +101,8 @@ public static partial class WorkstationEndpoints
         var realisedPnl = portfolio?.RealisedPnl ?? run?.NetPnl ?? 0m;
         var unrealisedPnl = portfolio?.UnrealisedPnl ?? 0m;
         var totalPnl = realisedPnl + unrealisedPnl;
-        var visibleOpenOrders = oms?.GetOpenOrders()
-            .Where(order => brokerPortfolio is null || order.FundAccountId == fundAccountId).ToArray() ?? [];
-        var openOrderCount = visibleOpenOrders.Length;
+        var visibleOpenOrders = SelectVisibleOpenOrders(oms, brokerPortfolio, fundAccountId);
+        var openOrderCount = visibleOpenOrders.Count;
         var pnlTone = totalPnl >= 0m ? "success" : "warning";
 
         // --- Positions (live execution layer when available) — PR-03: typed rows ---

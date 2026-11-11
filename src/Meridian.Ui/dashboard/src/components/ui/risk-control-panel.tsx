@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const toneClass = {
   success: "text-success",
@@ -74,7 +75,7 @@ export function RiskControlPanel() {
           </div>
         ) : null}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold uppercase text-muted-foreground">{vm.rowsLabel}</h4>
+          <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.rowsLabel) && "uppercase")}>{vm.rowsLabel}</h4>
           {vm.rows.map((row) => (
             <article key={row.ruleName} className="rounded-[2px] border border-border/70 bg-background/35 p-3">
               <div className="flex items-center justify-between gap-3">

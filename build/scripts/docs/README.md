@@ -451,8 +451,16 @@ Generates documentation health metrics with scoring.
 ```bash
 python3 generate-health-dashboard.py \
   --output docs/status/doc-health-dashboard.md \
-  --json-output health.json
+  --json-output health.json \
+  --volatile-json-output artifacts/docs/doc-health-line-metrics.json
 ```
+
+`--json-output` writes the tracked, merge-stable payload: file, orphan, heading, staleness and
+marker counts plus a `signal_digest` of them. Line counts (`total_lines`, `average_lines`, per-file
+`line_count`) change on every Markdown edit, so they are written only to the optional untracked
+`--volatile-json-output` path. Independent Markdown edits therefore do not conflict on the
+dashboard. Concurrent signal changes, such as two branches that each add a file, conflict on the
+digest line instead of merging into a wrong count.
 
 ### repair-links.py
 

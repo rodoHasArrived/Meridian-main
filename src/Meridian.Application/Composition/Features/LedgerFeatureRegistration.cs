@@ -102,7 +102,10 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
                 sp.GetService<IAssetAccountingEventProjectionStore>(),
                 sp.GetRequiredService<IAccountingPostingCandidateAuthorityBuilder>(),
                 sp.GetService<Meridian.Contracts.FixedIncome.IBondCalculationPolicy>(),
-                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>()));
+                sp.GetService<Meridian.Contracts.FixedIncome.IBondSettlementConsiderationService>(),
+                sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterTermsCapabilityVerifier>() is { } floor
+                    ? floor.VerifyAsync
+                    : null));
         services.TryAddSingleton<IAccountingBasisProjectionSetService, AccountingBasisProjectionSetService>();
 
         return services;

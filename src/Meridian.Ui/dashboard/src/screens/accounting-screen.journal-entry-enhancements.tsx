@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -150,7 +151,7 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
           </TechnicalDetails>
           <div className="rounded border border-border/70 bg-background/50 p-2">
             <label className="space-y-1 text-sm">
-              <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
+              <span className="text-xs font-semibold text-muted-foreground">Security Master picker</span>
               <div className="flex gap-2">
                 <input className="min-h-9 min-w-0 flex-1 rounded border border-border bg-background px-2" value={view.securitySearchQuery} placeholder="Ticker, ISIN, CUSIP, FIGI, name" onChange={(event) => view.updateSecuritySearchQuery(event.target.value)} />
                 <Button size="icon" variant="outline" busy={view.securitySearchBusy} aria-label="Search Security Master" onClick={() => void view.searchSecurityMaster()}><Search className="h-3.5 w-3.5" aria-hidden="true" /></Button>
@@ -171,7 +172,7 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
 function DimensionField({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (value: string | null) => void }) {
   return (
     <label className="space-y-1">
-      <span className="text-xs font-semibold uppercase text-muted-foreground">{label}</span>
+      <span className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</span>
       <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
     </label>
   );

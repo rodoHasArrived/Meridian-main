@@ -1,4 +1,13 @@
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
+import {
+  countOpenBreaks,
+  countOpenOrders,
+  countProviderHealth,
+  OPEN_BREAKS_DEFINITION,
+  OPEN_ORDERS_DEFINITION,
+  PROVIDERS_DEFINITION
+} from "./cross-screen-counts";
+import type { WorkstationCrossScreenCounts } from "../types/cross-screen-counts";
 import { fixtureTradingRisk } from "./dev-fixtures.trading-risk";
 import type {
   CoveredCallChainPreview,
@@ -2194,7 +2203,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "100", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$18,840.00", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$1,180.00", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2253,7 +2262,7 @@ const fixturePortfolioFinancialRecordExplorerRows: FinancialRecordExplorerDto["r
       fields: [
         { label: "Quantity", value: "16", detail: "Retained fixture quantity.", tone: "Default" },
         { label: "Market value", value: "$6,747.20", detail: "Fixture market value.", tone: "Default" },
-        { label: "Unrealized PnL", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
+        { label: "Unrealized P&L", value: "+$59.20", detail: "Fixture unrealized gain.", tone: "Success" }
       ],
       proofActions: [
         {
@@ -2327,7 +2336,7 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
       tone: "Default"
     },
     {
-      label: "Unrealized PnL",
+      label: "Unrealized P&L",
       value: "+$1,239",
       detail: "Fixture unrealized gain retained for portfolio review.",
       tone: "Success"
@@ -2342,8 +2351,8 @@ const fixturePortfolioFinancialRecordExplorer: FinancialRecordExplorerDto = {
     { columnId: "quantity", header: "Quantity", cellKind: "number", width: 120, isRightAligned: true },
     { columnId: "averageCost", header: "Average cost", cellKind: "currency", width: 140, isRightAligned: true },
     { columnId: "marketValue", header: "Market value", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "unrealizedPnl", header: "Unrealized PnL", cellKind: "currency", width: 150, isRightAligned: true },
-    { columnId: "realizedPnl", header: "Realized PnL", cellKind: "currency", width: 140, isRightAligned: true }
+    { columnId: "unrealizedPnl", header: "Unrealized P&L", cellKind: "currency", width: 150, isRightAligned: true },
+    { columnId: "realizedPnl", header: "Realized P&L", cellKind: "currency", width: 140, isRightAligned: true }
   ],
   rows: fixturePortfolioFinancialRecordExplorerRows,
   selectedRecord: fixturePortfolioFinancialRecordExplorerRows[0]!.detail,
@@ -4386,7 +4395,7 @@ const fixtureOperationsContinuityWorkflow: OperationsContinuityWorkflow = {
       fromGateStatus: "NotStarted",
       toGateStatus: "InProgress",
       actor: "ops-user",
-      rationale: "Open monthly close lane.",
+      rationale: "Open monthly close.",
       correlationId: "dev-continuity",
       references: [],
       previousHash: null,
@@ -5830,8 +5839,18 @@ function createFixtureFinancialRecordExplorer(seed: FixtureFinancialRecordExplor
   };
 }
 
+// Counted from the same fixtures the Trading, Data and Accounting screens read, with the same
+// definitions, as the server counts its own sources (A3).
+const fixtureCrossScreenCounts: WorkstationCrossScreenCounts = {
+  asOf: "2026-03-21T14:30:00Z",
+  openOrders: { count: countOpenOrders(fixtureTradingWorkspace.openOrders) ?? 0, definition: OPEN_ORDERS_DEFINITION },
+  providers: { ...(countProviderHealth(fixtureDataWorkspace.providers) ?? { healthy: 0, total: 0 }), definition: PROVIDERS_DEFINITION },
+  openBreaks: { count: countOpenBreaks(fixtureAccountingWorkspace.breakQueue) ?? 0, definition: OPEN_BREAKS_DEFINITION }
+};
+
 const fixtures = {
   [WORKSTATION_API_ENDPOINTS.systemStatus]: fixtureSystemOverview,
+  [WORKSTATION_API_ENDPOINTS.crossScreenCounts]: fixtureCrossScreenCounts,
   [WORKSTATION_API_ENDPOINTS.session]: fixtureSession,
   [WORKSTATION_API_ENDPOINTS.strategy]: fixtureStrategyWorkspace,
   [WORKSTATION_API_ENDPOINTS.strategyBriefing]: fixtureStrategyBriefing,

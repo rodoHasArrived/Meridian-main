@@ -880,6 +880,39 @@ public static class SecurityAssetTermsSchema
     }
 
     /// <summary>
+    /// Every spelling the schema declares for the top-level term <paramref name="key"/>: the key
+    /// itself first, then each alias any class's top-level field with that key declares, in class
+    /// declaration order, deduplicated case-insensitively. Element (array/nested) fields are not
+    /// consulted, so a swap leg's per-leg aliases never widen a top-level term's spellings.
+    /// Readers that accept "either spelling" of a term derive the list here instead of restating it.
+    /// </summary>
+    public static IReadOnlyList<string> DeclaredSpellings(string key)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        var spellings = new List<string> { key };
+        foreach (var fields in FieldsByAssetClass.Values)
+        {
+            foreach (var field in fields)
+            {
+                if (!string.Equals(field.Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
+
+                foreach (var alias in field.Aliases)
+                {
+                    if (!spellings.Contains(alias, StringComparer.OrdinalIgnoreCase))
+                    {
+                        spellings.Add(alias);
+                    }
+                }
+            }
+        }
+
+        return spellings;
+    }
+
+    /// <summary>
     /// The declared fields of <paramref name="assetClass"/> a node writes: those introduced at or below
     /// its write version (<see cref="SecurityAssetClassCatalog.GetTermsVersion"/>). Authoring surfaces
     /// (the asset-class registry, term blocks, the field-edit validator) offer these, never a field

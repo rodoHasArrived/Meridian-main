@@ -436,6 +436,70 @@ type SinkingFundTerms = {
     IsProRata: bool
 }
 
+// ---------------------------------------------------------------------------
+// ADR-027 stage 3 (S3-E): module homes for the codec-only field complement
+// ---------------------------------------------------------------------------
+
+/// Exercise terms for instruments that carry a right: listed options, warrants, swaptions and
+/// caps/floors/collars. The home for the strike, the right and the style that the flat codec
+/// alone carried before S3-E.
+type ExerciseTerms = {
+    /// The right the holder owns, as the class spells it: "Put"/"Call" (option, warrant),
+    /// "Payer"/"Receiver" (swaption), "Cap"/"Floor"/"Collar" (cap/floor).
+    OptionRight: string option
+    /// Strike as a price of the underlying (option, warrant).
+    StrikePrice: decimal option
+    /// Strike as a decimal rate (swaption); may be negative. Cap and floor strike rates stay on
+    /// FloatingRateTerms.CapRate/FloorRate, where they bound the reference index.
+    StrikeRate: decimal option
+    /// "American", "European" or "Bermudan"; None leaves the style undeclared.
+    ExerciseStyle: string option
+    /// The security the right is exercised into, when it is a security-master record.
+    UnderlyingSecurityId: SecurityId option
+    /// Premium paid for the right, as an amount (cap/floor).
+    PremiumAmount: decimal option
+}
+
+/// The currency pair of an FX or crypto instrument, with the agreed rate when the instrument
+/// fixes one. The home for the pair fields the flat codec alone carried before S3-E.
+type CurrencyPairTerms = {
+    BaseCurrency: string option
+    QuoteCurrency: string option
+    /// Currency the net difference is paid in (non-deliverable forward).
+    SettlementCurrency: string option
+    /// Agreed forward rate, quote currency per unit of base currency.
+    ForwardRate: decimal option
+}
+
+/// The amounts a contract is written on: the notional of a derivative, the face of one note,
+/// and the committed amount of a commitment with its funded and unfunded split. The home for
+/// the amounts the flat codec alone carried before S3-E. (A structured-credit tranche's original
+/// face stays on StructuredProductTerms.NotionalBalance; swap leg notionals stay on the legs.)
+type NotionalTerms = {
+    /// Contract notional (FX forwards in the base currency; CDS, swaption, cap/floor).
+    Notional: decimal option
+    /// Face amount of one unit (structured note).
+    Denomination: decimal option
+    /// Total committed amount (private fund commitment, commitment or guarantee).
+    CommittedAmount: decimal option
+    FundedAmount: decimal option
+    UnfundedAmount: decimal option
+}
+
+/// The governance envelope of a profile-backed custom asset together with the profile-governed
+/// terms document it pins, carried opaquely exactly as CustomAssetTerms carries it: profile
+/// fields are dynamic and governed by the approved profile version, so the module holds the
+/// document rather than modelling per-profile shapes. The home for the envelope the flat codec
+/// alone carried before S3-E.
+type ProfileEnvelopeTerms = {
+    /// Identifier of the approved custom-asset profile governing the record.
+    CustomProfileId: string
+    /// Version of the approved profile the record's fields were validated against.
+    ProfileVersion: int
+    /// The complete terms document (envelope, profileFields and any additional governed keys).
+    TermsJson: string
+}
+
 type SecurityTermModules = {
     // --- Original 15 modules ---
     Maturity: MaturityTerms option
@@ -468,6 +532,15 @@ type SecurityTermModules = {
     InflationLinked: InflationLinkedTerms option
     /// Contractual sinking fund or scheduled principal instalment schedule.
     SinkingFund: SinkingFundTerms option
+    // --- ADR-027 stage 3 (S3-E) module homes ---
+    /// Strike, right, style and underlying for options, warrants, swaptions and caps/floors.
+    Exercise: ExerciseTerms option
+    /// Base/quote (and settlement) currencies and the agreed rate for FX and crypto instruments.
+    CurrencyPair: CurrencyPairTerms option
+    /// Notional, denomination and commitment amounts.
+    Notional: NotionalTerms option
+    /// Profile pin and governed terms document of a profile-backed custom asset.
+    ProfileEnvelope: ProfileEnvelopeTerms option
 }
 
 [<RequireQualifiedAccess>]
@@ -548,6 +621,28 @@ module SweepVehicle =
         | OtherVehicle other -> other
 
 [<RequireQualifiedAccess>]
+module DividendFrequency =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | DividendFrequency.Annual -> "Annual"
+        | DividendFrequency.SemiAnnual -> "SemiAnnual"
+        | DividendFrequency.Quarterly -> "Quarterly"
+        | DividendFrequency.Monthly -> "Monthly"
+        | DividendFrequency.Irregular -> "Irregular"
+        | DividendFrequency.NoDividend -> "NoDividend"
+
+[<RequireQualifiedAccess>]
+module CovenantKind =
+
+    [<CompiledName("Label")>]
+    let label = function
+        | CovenantKind.FinancialMaintenance -> "FinancialMaintenance"
+        | CovenantKind.Incurrence -> "Incurrence"
+        | CovenantKind.Negative -> "Negative"
+        | CovenantKind.Affirmative -> "Affirmative"
+
+[<RequireQualifiedAccess>]
 module SecurityTermModules =
     let empty = {
         Maturity = None
@@ -575,4 +670,8 @@ module SecurityTermModules =
         StructuredProduct = None
         InflationLinked = None
         SinkingFund = None
+        Exercise = None
+        CurrencyPair = None
+        Notional = None
+        ProfileEnvelope = None
     }

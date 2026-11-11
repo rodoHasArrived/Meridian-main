@@ -24,6 +24,11 @@ internal static class AccountReconciliationChecks
         string.Equals(result.Status, StatusUnverified, StringComparison.OrdinalIgnoreCase);
 
     /// <summary>A break is a check where two independently sourced values were compared and disagreed.</summary>
+    /// <summary>Check categories whose variance is a cash amount (as opposed to a count).</summary>
+    internal static bool IsMonetaryCategory(string category) =>
+        string.Equals(category, "Cash", StringComparison.Ordinal) ||
+        string.Equals(category, "Continuity", StringComparison.Ordinal);
+
     internal static bool IsBreak(AccountReconciliationResultDto result) =>
         !result.IsMatch && !IsUnverified(result);
 
@@ -229,8 +234,11 @@ internal static class AccountReconciliationChecks
             TotalChecks: results.Count,
             TotalMatched: matched,
             TotalBreaks: breaks,
+            // A monetary total: only cash-denominated checks contribute. The position-count
+            // check's variance is a number of lines, and adding it to cash variances produced
+            // a figure in no unit at all.
             BreakAmountTotal: results
-                .Where(result => IsBreak(result) && result.Variance.HasValue)
+                .Where(result => IsBreak(result) && result.Variance.HasValue && IsMonetaryCategory(result.Category))
                 .Sum(static result => Math.Abs(result.Variance!.Value)),
             RequestedAt: now,
             CompletedAt: now,

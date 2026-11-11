@@ -13,7 +13,7 @@ SPEC.loader.exec_module(module)
 
 class GeneratedOutputTests(unittest.TestCase):
     def test_patch_includes_new_and_deleted_files_without_changing_real_index(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
 
             def git(*args):
@@ -46,7 +46,7 @@ class GeneratedOutputTests(unittest.TestCase):
             self.assertTrue(module.check(root, root / "artifacts/docs"))
 
     def test_output_must_be_outside_generator_inputs(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             with self.assertRaises(ValueError):
                 module.check(root, root / "docs/status")

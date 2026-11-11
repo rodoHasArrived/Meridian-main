@@ -2,6 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Instruments.FixedIncome;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Calendars;
 using Meridian.Contracts.DirectLending;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.SecurityMaster;
@@ -32,12 +33,14 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
         IInstrumentPositionProjectionStore? positionProjectionStore = null,
         ISecurityMasterCashFlowService? cashFlows = null,
         TimeProvider? clock = null,
-        IBondCalculationPolicy? bondPolicy = null)
+        IBondCalculationPolicy? bondPolicy = null,
+        IBusinessDayCalendarSource? calendars = null)
     {
         _projectionStore = projectionStore;
         _securityMasterQueryService = securityMasterQueryService;
         _bondReferenceService = bondReferenceService;
-        _obligationProjectionService = obligationProjectionService ?? new AssetObligationProjectionService(bondPolicy, clock ?? TimeProvider.System);
+        _obligationProjectionService = obligationProjectionService
+            ?? new AssetObligationProjectionService(bondPolicy, clock ?? TimeProvider.System, calendars);
         _positionProjectionStore = positionProjectionStore;
         _cashFlows = cashFlows;
         _clock = clock ?? TimeProvider.System;
@@ -151,7 +154,9 @@ public sealed class AssetOperationsReadService : IAssetOperationsQueryService
             return await _obligationProjectionService.ProjectFromSecurityMasterAsync(security, context, ct: ct).ConfigureAwait(false);
         }
 
-        return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security), context);
+        // The cutover policy, when configured, was evaluated above and did not block this record.
+        return AssetOperationsProjectionBuilder.FromBondReference(bond, BuildSubject(security), context,
+            _obligationProjectionService.ResolveDeclaredExercise(security, context));
     }
 
     private Task<SecurityDetailDto?> SelectSecurityAsync(Guid securityId, BondCalculationContext context, CancellationToken ct)
@@ -205,8 +210,6 @@ public sealed class AssetOperationsProjectionCommandService : IAssetOperationsCo
 /// </summary>
 public static partial class AssetOperationsProjectionBuilder
 {
-    private const string TimelineEngineVersion = "asset-terms-obligations-timeline-v1";
-    private const string FixedIncomeCashFlowEngineVersion = "fixed-income-cash-flow-projection-v1";
     private const decimal DefaultPrincipalBasis = 100m;
 
     public static AssetOperationsProjectionDto FromDirectLending(
@@ -362,7 +365,8 @@ public static partial class AssetOperationsProjectionBuilder
         => new(Sha256Digest.ComputeBytesUtf8(
             FormattableString.Invariant($"meridian/direct-lending/assets/{loanId:N}/{securityId:N}/{FormattableString.Invariant(item)}")).AsSpan(0, 16));
 
-    public static AssetOperationsDetailDto WithTermsObligationsTimeline(AssetOperationsDetailDto detail, DateTimeOffset? now = null)
+    public static AssetOperationsDetailDto WithTermsObligationsTimeline(
+        AssetOperationsDetailDto detail, DateTimeOffset? now = null, BondExerciseNoticeWatchResult? declaredExercise = null)
     {
         ArgumentNullException.ThrowIfNull(detail);
         if (detail.TermsObligationsTimeline is not null)
@@ -381,7 +385,8 @@ public static partial class AssetOperationsProjectionBuilder
                 detail.ActualActivity,
                 detail.ReconciliationResults,
                 detail.LedgerProjections,
-                now ?? DateTimeOffset.UtcNow)
+                now ?? DateTimeOffset.UtcNow,
+                declaredExercise)
         };
     }
 
@@ -484,7 +489,8 @@ public static partial class AssetOperationsProjectionBuilder
         IReadOnlyList<AssetActualActivityDto> actualActivity,
         IReadOnlyList<AssetReconciliationResultDto> reconciliationResults,
         IReadOnlyList<AssetLedgerProjectionDto> ledgerProjections,
-        DateTimeOffset now)
+        DateTimeOffset now,
+        BondExerciseNoticeWatchResult? declaredExercise = null)
     {
         var latestRun = projectionRuns.MaxBy(static run => run.GeneratedAt);
         var projectionAsOf = latestRun?.ProjectionAsOf
@@ -542,7 +548,8 @@ public static partial class AssetOperationsProjectionBuilder
             subject,
             terms,
             projectionAsOf,
-            ledgerProjections));
+            ledgerProjections,
+            declaredExercise));
 
         foreach (var lifecycle in lifecycleEvents.OrderBy(static row => row.EffectiveDate))
         {
@@ -586,6 +593,8 @@ public static partial class AssetOperationsProjectionBuilder
             warnings.Add("No projected cash-flow obligations are available for the timeline.");
         }
 
+        warnings.AddRange(AssetObligationProjectionService.DeclaredExerciseWarnings(declaredExercise));
+
         var variances = AssetObligationProjectionService.BuildTimelineVariances(
             subject,
             projectedCashFlows,
@@ -609,16 +618,21 @@ public static partial class AssetOperationsProjectionBuilder
             warnings.Add("Timeline rows are Expected/Projected support only. Attach complete accepted retained evidence before treating the timeline as ready.");
         }
 
+        // A timeline whose option events came from a declared schedule (or its blocker) is not the v1 output.
+        var timelineVersion = declaredExercise is null
+            ? AssetOperationsEngineVersions.ObligationTimeline
+            : AssetOperationsEngineVersions.DeclaredObligationTimeline;
         return new AssetTermsObligationsTimelineDto(
             subject.SecurityId,
             projectionAsOf,
-            latestRun is null ? TimelineEngineVersion : $"{latestRun.EngineVersion}+{TimelineEngineVersion}",
+            latestRun is null ? timelineVersion : $"{latestRun.EngineVersion}+{timelineVersion}",
             warnings.Count == 0 ? "Ready" : "ReviewRequired",
             events.OrderBy(static row => row.EffectiveDate).ThenBy(static row => row.EventKind).ToArray(),
             warnings,
             generatedAt,
             latestRun?.SourceDomain ?? "AssetOperations",
-            latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"))
+            latestRun?.SourceEntityId ?? subject.SecurityId.ToString("D"),
+            declaredExercise is null ? null : AssetObligationProjectionService.BuildDeclaredExerciseTimelinePayload(declaredExercise))
         {
             AssetClass = subject.AssetClass,
             Variances = variances,
@@ -654,11 +668,18 @@ public static partial class AssetOperationsProjectionBuilder
     private static bool AmountMatches(decimal? expectedAmount, decimal actualAmount)
         => expectedAmount.HasValue && RoundCash(expectedAmount.Value) == RoundCash(actualAmount);
 
+    /// <summary>
+    /// Activity types that are cash paid out, never a receipt (PRD-115: a refund of a loan's
+    /// unapplied cash). They stay on the timeline but cannot evidence an expected receipt.
+    /// </summary>
+    private static readonly HashSet<string> OutgoingActivityTypes = new(StringComparer.Ordinal) { "UnappliedCashRefund" };
+
     private static AssetActualActivityDto? FindActivity(
         AssetProjectedCashFlowDto flow,
         AssetReconciliationResultDto? reconciliation,
         IReadOnlyList<AssetActualActivityDto> actualActivity)
     {
+        actualActivity = actualActivity.Where(activity => !OutgoingActivityTypes.Contains(activity.ActivityType)).ToArray();
         if (reconciliation?.ActualDate is DateOnly actualDate)
         {
             var matched = actualActivity.FirstOrDefault(activity =>

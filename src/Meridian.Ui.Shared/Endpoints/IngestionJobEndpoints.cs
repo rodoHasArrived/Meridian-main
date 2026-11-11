@@ -4,12 +4,14 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Pipeline;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Meridian.Identity.Auth;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
 /// <summary>
 /// Maps REST API endpoints for the unified ingestion job contract.
-/// Exposes job creation, state transitions, checkpoint management, and queries.
+/// Exposes job creation and queries; state transitions go through the governed workstation action route.
 /// </summary>
 /// <remarks>
 /// Addresses P0: "No unified job contract across realtime/backfill flows"
@@ -22,12 +24,14 @@ public static class IngestionJobEndpoints
     /// </summary>
     public static void MapIngestionJobEndpoints(
         this WebApplication app,
-        IngestionJobService jobService,
         JsonSerializerOptions jsonOptions)
     {
         // List all jobs with optional filtering
-        app.MapGet(UiApiRoutes.IngestionJobs, (string? state, string? workload) =>
+        app.MapGet(UiApiRoutes.IngestionJobs, (string? state, string? workload, HttpContext ctx) =>
         {
+            if (ResolveService(ctx) is not { } jobService)
+                return ServiceUnavailable();
+
             IngestionJobState? stateFilter = null;
             IngestionWorkloadType? workloadFilter = null;
 
@@ -43,13 +47,17 @@ public static class IngestionJobEndpoints
             return Results.Json(new { summary, jobs }, jsonOptions);
         })
         .WithName("ListIngestionJobs")
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithTags("Ingestion")
         .WithDescription("Lists all ingestion jobs with optional state and workload type filtering.")
         .Produces(200);
 
         // Get a specific job by ID
-        app.MapGet(UiApiRoutes.IngestionJobById, (string jobId) =>
+        app.MapGet(UiApiRoutes.IngestionJobById, (string jobId, HttpContext ctx) =>
         {
+            if (ResolveService(ctx) is not { } jobService)
+                return ServiceUnavailable();
+
             var job = jobService.GetJob(jobId);
             if (job == null)
                 return Results.NotFound(new { error = $"Job '{jobId}' not found" });
@@ -57,64 +65,25 @@ public static class IngestionJobEndpoints
             return Results.Json(job, jsonOptions);
         })
         .WithName("GetIngestionJob")
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithTags("Ingestion")
         .WithDescription("Gets details of a specific ingestion job including progress and checkpoint.")
         .Produces<IngestionJob>(200)
         .Produces(404);
 
-        // Transition a job to a new state
-        app.MapPost(UiApiRoutes.IngestionJobTransition, async (string jobId, HttpContext ctx, CancellationToken ct) =>
-        {
-            IngestionJobTransitionRequest? request;
-            try
-            {
-                request = await ctx.Request.ReadFromJsonAsync<IngestionJobTransitionRequest>(jsonOptions, ct);
-            }
-            catch (OperationCanceledException) when (ct.IsCancellationRequested)
-            {
-                // The caller hung up mid-body. Propagate rather than answering 400, which blames
-                // them for malformed JSON they never finished sending.
-                throw;
-            }
-            catch
-            {
-                return Results.BadRequest(new { error = "Invalid request body" });
-            }
-
-            if (request == null || string.IsNullOrEmpty(request.TargetState))
-                return Results.BadRequest(new { error = "targetState is required" });
-
-            if (!Enum.TryParse<IngestionJobState>(request.TargetState, true, out var targetState))
-                return Results.BadRequest(new { error = $"Invalid state: '{request.TargetState}'" });
-
-            var success = await jobService.TransitionAsync(jobId, targetState, request.ErrorMessage, ct);
-            if (!success)
-            {
-                var job = jobService.GetJob(jobId);
-                if (job == null)
-                    return Results.NotFound(new { error = $"Job '{jobId}' not found" });
-
-                return Results.Conflict(new
-                {
-                    error = $"Cannot transition from '{job.State}' to '{targetState}'",
-                    currentState = job.State.ToString(),
-                    requestedState = targetState.ToString()
-                });
-            }
-
-            return Results.Json(jobService.GetJob(jobId), jsonOptions);
-        })
-        .WithName("TransitionIngestionJob")
-        .WithTags("Ingestion")
-        .WithDescription("Transitions an ingestion job to a new state (e.g., Queued, Running, Paused, Completed, Failed, Cancelled).")
-        .Produces<IngestionJob>(200)
-        .Produces(400)
-        .Produces(404)
-        .Produces(409);
+        // State transitions and deletion are deliberately not exposed here. Operator state changes
+        // (pause, resume, retry, cancel) go through the governed workstation action route
+        // (ApplyWorkstationIngestionOperationAction), which validates the transition against the
+        // job's checkpoint and retry envelope, requires a rationale and idempotency key, enforces
+        // tenant/company scope and retains action evidence. A raw transition/delete route here would
+        // bypass every one of those safeguards.
 
         // Create a new ingestion job
         app.MapPost(UiApiRoutes.IngestionJobs, async (HttpContext ctx, CancellationToken ct) =>
         {
+            if (ResolveService(ctx) is not { } jobService)
+                return ServiceUnavailable();
+
             CreateIngestionJobRequest? request;
             try
             {
@@ -151,55 +120,50 @@ public static class IngestionJobEndpoints
             return Results.Created($"/api/ingestion/jobs/{job.JobId}", job);
         })
         .WithName("CreateIngestionJob")
+        .RequirePermission(UserPermission.TriggerBackfill)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .WithTags("Ingestion")
         .WithDescription("Creates a new ingestion job in Draft state.")
         .Produces<IngestionJob>(201)
         .Produces(400);
 
         // Get resumable jobs
-        app.MapGet("/api/ingestion/jobs/resumable", () =>
+        app.MapGet("/api/ingestion/jobs/resumable", (HttpContext ctx) =>
         {
+            if (ResolveService(ctx) is not { } jobService)
+                return ServiceUnavailable();
+
             var jobs = jobService.GetResumableJobs();
             return Results.Json(new { count = jobs.Count, jobs }, jsonOptions);
         })
         .WithName("GetResumableJobs")
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithTags("Ingestion")
         .WithDescription("Returns all jobs that can be resumed (failed or paused with a checkpoint).")
         .Produces(200);
 
         // Get job summary
-        app.MapGet("/api/ingestion/summary", () =>
+        app.MapGet("/api/ingestion/summary", (HttpContext ctx) =>
         {
+            if (ResolveService(ctx) is not { } jobService)
+                return ServiceUnavailable();
+
             var summary = jobService.GetSummary();
             return Results.Json(summary, jsonOptions);
         })
         .WithName("GetIngestionSummary")
+        .RequireAnyPermission(UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill)
         .WithTags("Ingestion")
         .WithDescription("Returns a summary of all ingestion jobs by state and workload type.")
         .Produces<IngestionJobSummary>(200);
 
-        // Delete a terminal job
-        app.MapDelete(UiApiRoutes.IngestionJobById, async (string jobId, CancellationToken ct) =>
-        {
-            var success = await jobService.DeleteJobAsync(jobId, ct);
-            if (!success)
-            {
-                var job = jobService.GetJob(jobId);
-                if (job == null)
-                    return Results.NotFound(new { error = $"Job '{jobId}' not found" });
-
-                return Results.Conflict(new { error = "Can only delete jobs in a terminal state (Completed, Failed, Cancelled)" });
-            }
-
-            return Results.Ok(new { deleted = true, jobId });
-        })
-        .WithName("DeleteIngestionJob")
-        .WithTags("Ingestion")
-        .WithDescription("Deletes a terminal ingestion job (completed, failed, or cancelled).")
-        .Produces(200)
-        .Produces(404)
-        .Produces(409);
     }
+
+    private static IngestionJobService? ResolveService(HttpContext context) =>
+        context.RequestServices.GetService<IngestionJobService>();
+
+    private static IResult ServiceUnavailable() =>
+        Results.Problem("Ingestion job service is not registered.", statusCode: StatusCodes.Status501NotImplemented);
 }
 
 /// <summary>
@@ -213,13 +177,4 @@ internal sealed class CreateIngestionJobRequest
     public DateTime? FromDate { get; set; }
     public DateTime? ToDate { get; set; }
     public IngestionSla? Sla { get; set; }
-}
-
-/// <summary>
-/// Request body for transitioning a job state.
-/// </summary>
-internal sealed class IngestionJobTransitionRequest
-{
-    public string TargetState { get; set; } = string.Empty;
-    public string? ErrorMessage { get; set; }
 }

@@ -1,31 +1,18 @@
 import { ChevronDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
+import { DesignSystemBadge } from "@/design-system/badge";
 import { cn } from "@/lib/utils";
 
-const trustToneRank = {
-  ready: 0,
-  pending: 1,
-  review: 2,
-  blocked: 3
-} as const;
-
 /**
- * Consolidated build / environment / data-source / provider posture control.
- * The masthead keeps one compact summary visible; supporting facts and route
- * actions remain available in a native disclosure.
+ * The masthead environment badge: PAPER / LIVE / DEMO, plus the data qualifier (SEEDED,
+ * SIMULATED, SAMPLE, UNKNOWN) whenever the loaded data is not confirmed real. It says what the
+ * operator is looking at and nothing else; what needs attention is the attention pill's job, so
+ * this badge never changes colour for a provider or queue issue. Build, environment, provenance
+ * and provider facts stay available in a native disclosure.
  */
 export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrustStripState }) {
-  const mode = viewModel.items.find((item) => item.id === "mode")?.value ?? "Unknown mode";
-  const source = viewModel.items.find((item) => item.id === "source")?.value ?? "Unknown source";
-  const provider = viewModel.items.find((item) => item.id === "providers");
-  const summaryTone = viewModel.items.reduce<(typeof viewModel.items)[number]["tone"]>(
-    (current, item) => trustToneRank[item.tone] > trustToneRank[current] ? item.tone : current,
-    "ready"
-  );
-  const summaryValue = provider && provider.tone !== "ready"
-    ? `${mode} · ${source} · ${provider.value}`
-    : `${mode} · ${source}`;
+  const { environment } = viewModel;
   const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
@@ -37,16 +24,23 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
       data-design-system-component="Status"
     >
       <details className="workstation-trust-details">
-        <summary
-          className={cn(
-            "workstation-trust-summary",
-            `workstation-trust-item-${summaryTone}`,
-            `mds-status--${summaryTone}`
-          )}
-          aria-label={summaryAriaLabel}
-        >
-          <span className="workstation-trust-label">Trust</span>
-          <span className="workstation-trust-value">{summaryValue}</span>
+        <summary className="workstation-trust-summary" aria-label={summaryAriaLabel}>
+          <DesignSystemBadge
+            className="workstation-trust-environment"
+            variant={environment.variant}
+            dot
+            data-environment={environment.variant}
+          >
+            {environment.label}
+          </DesignSystemBadge>
+          {environment.dataLabel ? (
+            <>
+              <span className="workstation-trust-sep" aria-hidden="true">·</span>
+              <span className="workstation-trust-value workstation-trust-data" data-testid="masthead-data-label">
+                {environment.dataLabel}
+              </span>
+            </>
+          ) : null}
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>
         <div

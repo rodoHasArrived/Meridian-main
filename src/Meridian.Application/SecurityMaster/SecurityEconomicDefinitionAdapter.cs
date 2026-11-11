@@ -7,12 +7,47 @@ namespace Meridian.Application.SecurityMaster;
 
 internal static class SecurityEconomicDefinitionAdapter
 {
+    /// <summary>
+    /// Stored classification labels come from the F# domain's explicit name functions, never from the
+    /// union's <c>ToString()</c>, which renders <c>OtherFamily "x"</c> / <c>OtherSubType "x"</c> with
+    /// their payload syntax and an option-wrapped family as <c>Some(...)</c>.
+    /// </summary>
+    private static class ClassificationLabels
+    {
+        public static string AssetClass(SecurityClassification classification)
+            => SecurityClassificationModule.assetClassName(classification.AssetClass);
+
+        public static string? Family(SecurityClassification classification)
+            => classification.Family is null
+                ? null
+                : SecurityClassificationModule.familyName(classification.Family.Value);
+
+        public static string SubType(SecurityClassification classification)
+            => SecurityClassificationModule.subTypeName(classification.SubType);
+    }
+
     public static SecurityEconomicDefinition ToEconomicDefinition(SecurityProjectionRecord projection)
         => SecurityMasterLegacyUpgrade.toEconomicDefinition(SecurityMasterMapping.ToRecord(projection));
 
     public static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityProjectionRecord projection)
+        => ToEconomicRecord(ToEconomicDefinition(projection), projection);
+
+    /// <summary>
+    /// ADR-027 stage 2 (S2-B3): derives the economic record from a typed domain record already in
+    /// hand, skipping the per-write encode → re-decode seam (`ToProjection` → `ToRecord`) the
+    /// projection-only overload takes. The command services use this whenever no profile-backed
+    /// override replaced the projection's class or terms — there the projection's flat document is
+    /// exactly the codec serialization of <paramref name="record"/>, so the derivation is
+    /// byte-identical by the replay corpus's amend-cycle pins. Profile-backed overrides and the
+    /// replay/rebuild paths keep the projection-only overload: re-deriving from the overridden or
+    /// stored document is the authoritative route there, and the projection decode remains the
+    /// permanent read-only legacy upcaster.
+    /// </summary>
+    public static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityMasterRecord record, SecurityProjectionRecord projection)
+        => ToEconomicRecord(SecurityMasterLegacyUpgrade.toEconomicDefinition(record), projection);
+
+    private static SecurityEconomicDefinitionRecord ToEconomicRecord(SecurityEconomicDefinition definition, SecurityProjectionRecord projection)
     {
-        var definition = ToEconomicDefinition(projection);
 
         // A projection rebuilt from an economic event that predates retained flat terms carries the
         // original economic document under retainedEconomicTerms. Fold it back so modules and fields
@@ -28,9 +63,9 @@ internal static class SecurityEconomicDefinitionAdapter
 
         return new SecurityEconomicDefinitionRecord(
             projection.SecurityId,
-            definition.Classification.AssetClass.ToString(),
-            definition.Classification.Family?.ToString(),
-            definition.Classification.SubType.ToString(),
+            ClassificationLabels.AssetClass(definition.Classification),
+            ClassificationLabels.Family(definition.Classification),
+            ClassificationLabels.SubType(definition.Classification),
             definition.Classification.TypeName,
             definition.Classification.IssuerType is null ? null : definition.Classification.IssuerType.Value,
             definition.Classification.RiskCountry is null ? null : definition.Classification.RiskCountry.Value,
@@ -50,10 +85,10 @@ internal static class SecurityEconomicDefinitionAdapter
     }
 
     public static string GetAssetClass(SecurityProjectionRecord projection)
-        => ToEconomicDefinition(projection).Classification.AssetClass.ToString();
+        => ClassificationLabels.AssetClass(ToEconomicDefinition(projection).Classification);
 
     public static string GetSubType(SecurityProjectionRecord projection)
-        => ToEconomicDefinition(projection).Classification.SubType.ToString();
+        => ClassificationLabels.SubType(ToEconomicDefinition(projection).Classification);
 
     public static SecurityProjectionRecord ToProjection(
         SecurityEconomicDefinitionRecord economic,
@@ -87,15 +122,17 @@ internal static class SecurityEconomicDefinitionAdapter
         // The flat family is keyed per asset class, so the fallback flattens against the record's
         // asset class: every value the economic document carries (call dates, pool factors, issuer
         // identity, sweep, fund and financing terms) lands at that class's declared flat key. It is
-        // still lossy for what the economic document never held — an option's strike, a swap's
-        // legs, a bond's subclass (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
+        // still lossy for what the economic document never held — a swap's legs, a bond's
+        // subclass, an option's listing detail (SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.UnrecoverableKeys)
         // — so the payload is stamped with FlattenedFromMarkerProperty and a projection rebuilt
         // through this route stays distinguishable from one whose flat terms were always present.
         // Retained flat terms are read at the class's current terms version (ADR-024); the flattened
         // branch is already stamped at it.
         var assetSpecificTerms = economic.LegacyAssetSpecificTerms is { } legacyTerms
             ? SecurityAssetClassTermsUpgrader.UpgradeForRead(legacyAssetClass, legacyTerms.Clone())
-            : SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload;
+            : StripRetainedWhenLossless(
+                SecurityAssetSpecificTermsUpcasterChain.Normalize(economic.EconomicTerms, legacyAssetClass).Payload,
+                economic);
         var primaryIdentifier = economic.Identifiers.FirstOrDefault(identifier => identifier.IsPrimary);
 
         return new SecurityProjectionRecord(
@@ -114,6 +151,84 @@ internal static class SecurityEconomicDefinitionAdapter
             economic.EffectiveTo,
             economic.Identifiers,
             aliases ?? Array.Empty<SecurityAliasDto>());
+    }
+
+    /// <summary>
+    /// ADR-027 stage 1 increment 6: ends <c>retainedEconomicTerms</c> for documents the flat
+    /// family holds completely. After the economic-only flatten, the candidate (retained carry
+    /// removed) is rebuilt into its next economic document; when that reproduces the source
+    /// byte-for-byte, the flat row IS the document and the carry adds nothing, so it is dropped.
+    /// Byte equality is deliberately the strictest test: image documents written by the current
+    /// serializer pass; historical shapes (the pre-increment-5 module set, different member
+    /// forms) and hand-shaped documents fail and keep the carry with its fold-on-read, and any
+    /// exception on the trial rebuild fails closed to keeping it. The single tolerated
+    /// difference is a module key added after this gate shipped that the image predates and the
+    /// rebuild emits null (<see cref="EqualsBeforeLaterModuleKeys"/>), so serializer growth does
+    /// not undo the retirement for images already stored. No stored payload is rewritten — this
+    /// changes only what a freshly rebuilt projection carries.
+    /// </summary>
+    private static JsonElement StripRetainedWhenLossless(JsonElement flattened, SecurityEconomicDefinitionRecord economic)
+    {
+        try
+        {
+            if (!SecurityTermsEnvelope.TryGetRetainedEconomicTerms(flattened, out _))
+            {
+                return flattened;
+            }
+
+            var candidateTerms = RemoveRetainedKey(flattened);
+            var candidate = ToProjection(economic with { LegacyAssetSpecificTerms = candidateTerms });
+            var rebuilt = ToEconomicRecord(candidate).EconomicTerms;
+            return string.Equals(rebuilt.GetRawText(), economic.EconomicTerms.GetRawText(), StringComparison.Ordinal)
+                   || EqualsBeforeLaterModuleKeys(rebuilt, economic.EconomicTerms)
+                ? candidateTerms
+                : flattened;
+        }
+        catch (Exception exception) when (exception is InvalidOperationException or ArgumentException or KeyNotFoundException or JsonException)
+        {
+            return flattened;
+        }
+    }
+
+    /// <summary>
+    /// The one difference the gate tolerates: a module key the serializer gained after the gate
+    /// shipped (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate"/>)
+    /// that the source image predates and the rebuild emits null. Such a rebuild carries nothing
+    /// the source does not, so the carry is still redundant. A later-module key the rebuild
+    /// populates, or one the source itself carries, is compared as written.
+    /// </summary>
+    private static bool EqualsBeforeLaterModuleKeys(JsonElement rebuilt, JsonElement source)
+    {
+        if (rebuilt.ValueKind != JsonValueKind.Object || source.ValueKind != JsonValueKind.Object)
+        {
+            return false;
+        }
+
+        var node = JsonNode.Parse(rebuilt.GetRawText())!.AsObject();
+        var removed = false;
+        foreach (var module in SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.ModulesAddedAfterIdentityGate)
+        {
+            if (!source.TryGetProperty(module, out _)
+                && node.TryGetPropertyValue(module, out var value)
+                && value is null)
+            {
+                node.Remove(module);
+                removed = true;
+            }
+        }
+
+        return removed
+               && string.Equals(
+                   JsonSerializer.SerializeToElement(node).GetRawText(),
+                   source.GetRawText(),
+                   StringComparison.Ordinal);
+    }
+
+    private static JsonElement RemoveRetainedKey(JsonElement flattened)
+    {
+        var node = JsonNode.Parse(flattened.GetRawText())!.AsObject();
+        node.Remove(SecurityTermsEnvelope.RetainedEconomicTermsKey);
+        return JsonSerializer.SerializeToElement(node);
     }
 
     /// <summary>
@@ -138,13 +253,16 @@ internal static class SecurityEconomicDefinitionAdapter
         };
     }
 
-    private static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
+    internal static bool HasPreferredClassification(SecurityEconomicDefinitionRecord economic)
     {
-        static bool IsPreferredLabel(string? value)
-            => value is not null && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
-                                     || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
+        // Retained events may still carry the legacy F# rendering (Some(PreferredEquity),
+        // OtherSubType "..."), so labels are decoded before matching; the payload is not rewritten.
+        static bool IsPreferredLabel(string? stored)
+            => ClassificationLabelReader.Normalize(stored) is { } value
+               && (value.Equals("PreferredEquity", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("PreferredShare", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("Preferred", StringComparison.OrdinalIgnoreCase)
+                   || value.Equals("ConvertiblePreferred", StringComparison.OrdinalIgnoreCase));
 
         return IsPreferredLabel(economic.AssetFamily)
                || IsPreferredLabel(economic.SubType)
@@ -159,9 +277,9 @@ internal static class SecurityEconomicDefinitionAdapter
     private static JsonElement BuildClassificationJson(SecurityEconomicDefinition definition)
         => JsonSerializer.SerializeToElement(new
         {
-            assetClass = definition.Classification.AssetClass.ToString(),
-            assetFamily = definition.Classification.Family?.ToString(),
-            subType = definition.Classification.SubType.ToString(),
+            assetClass = ClassificationLabels.AssetClass(definition.Classification),
+            assetFamily = ClassificationLabels.Family(definition.Classification),
+            subType = ClassificationLabels.SubType(definition.Classification),
             typeName = definition.Classification.TypeName,
             issuerType = definition.Classification.IssuerType is null ? null : definition.Classification.IssuerType.Value,
             riskCountry = definition.Classification.RiskCountry is null ? null : definition.Classification.RiskCountry.Value
@@ -288,6 +406,152 @@ internal static class SecurityEconomicDefinitionAdapter
                 originator = definition.Terms.StructuredProduct.Value.Originator is null ? null : definition.Terms.StructuredProduct.Value.Originator.Value,
                 creditEnhancementPct = definition.Terms.StructuredProduct.Value.CreditEnhancementPct,
                 factorScheduleReference = definition.Terms.StructuredProduct.Value.FactorScheduleReference is null ? null : definition.Terms.StructuredProduct.Value.FactorScheduleReference.Value
+            },
+            // ADR-027 stage 1, increment 5: the eleven modules the serializer historically never
+            // wrote. Every module key is emitted (null when the definition has no such module), the
+            // same contract the first fourteen keep, so the economic family stops depending on the
+            // retained flat document for them.
+            floatingRate = definition.Terms.FloatingRate is null ? null : new
+            {
+                referenceIndex = definition.Terms.FloatingRate.Value.ReferenceIndex is null ? null : definition.Terms.FloatingRate.Value.ReferenceIndex.Value,
+                spreadBps = definition.Terms.FloatingRate.Value.SpreadBps,
+                resetFrequency = definition.Terms.FloatingRate.Value.ResetFrequency is null ? null : definition.Terms.FloatingRate.Value.ResetFrequency.Value,
+                floorRate = definition.Terms.FloatingRate.Value.FloorRate,
+                capRate = definition.Terms.FloatingRate.Value.CapRate
+            },
+            tradingParameters = definition.Terms.TradingParameters is null ? null : new
+            {
+                lotSize = definition.Terms.TradingParameters.Value.LotSize,
+                tickSize = definition.Terms.TradingParameters.Value.TickSize,
+                contractMultiplier = definition.Terms.TradingParameters.Value.ContractMultiplier,
+                marginRequirementPct = definition.Terms.TradingParameters.Value.MarginRequirementPct,
+                tradingHoursUtc = definition.Terms.TradingParameters.Value.TradingHoursUtc is null ? null : definition.Terms.TradingParameters.Value.TradingHoursUtc.Value,
+                circuitBreakerThresholdPct = definition.Terms.TradingParameters.Value.CircuitBreakerThresholdPct
+            },
+            creditRating = definition.Terms.CreditRating is null ? null : new
+            {
+                ratings = definition.Terms.CreditRating.Value.Ratings
+                    .Select(rating => new
+                    {
+                        agency = rating.Agency,
+                        grade = rating.Grade,
+                        outlook = rating.Outlook is null ? null : rating.Outlook.Value,
+                        issuanceLevel = rating.IssuanceLevel is null ? null : rating.IssuanceLevel.Value,
+                        asOfDt = rating.AsOfDt
+                    })
+                    .ToArray(),
+                compositeRating = definition.Terms.CreditRating.Value.CompositeRating is null ? null : definition.Terms.CreditRating.Value.CompositeRating.Value,
+                isInvestmentGrade = definition.Terms.CreditRating.Value.IsInvestmentGrade,
+                isHighYield = definition.Terms.CreditRating.Value.IsHighYield
+            },
+            depositaryReceipt = definition.Terms.DepositaryReceipt is null ? null : new
+            {
+                underlyingSecurityId = definition.Terms.DepositaryReceipt.Value.UnderlyingSecurityId is null ? (Guid?)null : definition.Terms.DepositaryReceipt.Value.UnderlyingSecurityId.Value.Item,
+                depositaryBank = definition.Terms.DepositaryReceipt.Value.DepositaryBank is null ? null : definition.Terms.DepositaryReceipt.Value.DepositaryBank.Value,
+                ordinaryShareRatio = definition.Terms.DepositaryReceipt.Value.OrdinaryShareRatio,
+                underlyingExchangeMic = definition.Terms.DepositaryReceipt.Value.UnderlyingExchangeMic is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingExchangeMic.Value,
+                underlyingCurrency = definition.Terms.DepositaryReceipt.Value.UnderlyingCurrency is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingCurrency.Value,
+                underlyingIsin = definition.Terms.DepositaryReceipt.Value.UnderlyingIsin is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingIsin.Value,
+                underlyingCountry = definition.Terms.DepositaryReceipt.Value.UnderlyingCountry is null ? null : definition.Terms.DepositaryReceipt.Value.UnderlyingCountry.Value,
+                cusipOfOrdinary = definition.Terms.DepositaryReceipt.Value.CusipOfOrdinary is null ? null : definition.Terms.DepositaryReceipt.Value.CusipOfOrdinary.Value
+            },
+            dividendSchedule = definition.Terms.DividendSchedule is null ? null : new
+            {
+                dividendFrequency = DividendFrequencyModule.Label(definition.Terms.DividendSchedule.Value.DividendFrequency),
+                annualDividendRate = definition.Terms.DividendSchedule.Value.AnnualDividendRate,
+                lastExDate = definition.Terms.DividendSchedule.Value.LastExDate,
+                lastPayDate = definition.Terms.DividendSchedule.Value.LastPayDate,
+                lastDividendPerShare = definition.Terms.DividendSchedule.Value.LastDividendPerShare,
+                dividendCurrency = definition.Terms.DividendSchedule.Value.DividendCurrency is null ? null : definition.Terms.DividendSchedule.Value.DividendCurrency.Value,
+                isQualifiedDividend = definition.Terms.DividendSchedule.Value.IsQualifiedDividend
+            },
+            covenants = definition.Terms.Covenants is null ? null : new
+            {
+                covenants = definition.Terms.Covenants.Value.Covenants
+                    .Select(covenant => new
+                    {
+                        kind = CovenantKindModule.Label(covenant.Kind),
+                        description = covenant.Description,
+                        threshold = covenant.Threshold,
+                        metric = covenant.Metric is null ? null : covenant.Metric.Value,
+                        testFrequency = covenant.TestFrequency is null ? null : covenant.TestFrequency.Value
+                    })
+                    .ToArray()
+            },
+            esg = definition.Terms.Esg is null ? null : new
+            {
+                esgScore = definition.Terms.Esg.Value.EsgScore,
+                esgProvider = definition.Terms.Esg.Value.EsgProvider is null ? null : definition.Terms.Esg.Value.EsgProvider.Value,
+                esgRating = definition.Terms.Esg.Value.EsgRating is null ? null : definition.Terms.Esg.Value.EsgRating.Value,
+                esgAsOf = definition.Terms.Esg.Value.EsgAsOf,
+                isGreenBond = definition.Terms.Esg.Value.IsGreenBond,
+                isSocialBond = definition.Terms.Esg.Value.IsSocialBond,
+                isSustainabilityLinked = definition.Terms.Esg.Value.IsSustainabilityLinked,
+                unSdgAlignments = definition.Terms.Esg.Value.UNSDGAlignments.ToArray(),
+                paiIndicatorFlags = definition.Terms.Esg.Value.PaiIndicatorFlags.ToArray()
+            },
+            venue = definition.Terms.Venue is null ? null : new
+            {
+                isListedOnExchange = definition.Terms.Venue.Value.IsListedOnExchange,
+                primaryExchMic = definition.Terms.Venue.Value.PrimaryExchMic is null ? null : definition.Terms.Venue.Value.PrimaryExchMic.Value,
+                executionVenueMic = definition.Terms.Venue.Value.ExecutionVenueMic is null ? null : definition.Terms.Venue.Value.ExecutionVenueMic.Value,
+                ccpName = definition.Terms.Venue.Value.CcpName is null ? null : definition.Terms.Venue.Value.CcpName.Value,
+                otcProtocol = definition.Terms.Venue.Value.OtcProtocol is null ? null : definition.Terms.Venue.Value.OtcProtocol.Value
+            },
+            multiCalendar = definition.Terms.MultiCalendar is null ? null : new
+            {
+                calendars = definition.Terms.MultiCalendar.Value.Calendars
+                    .Select(calendar => new { calendarId = calendar.CalendarId, calendarPurpose = calendar.CalendarPurpose })
+                    .ToArray()
+            },
+            inflationLinked = definition.Terms.InflationLinked is null ? null : new
+            {
+                inflationIndex = definition.Terms.InflationLinked.Value.InflationIndex is null ? null : definition.Terms.InflationLinked.Value.InflationIndex.Value,
+                baseIndexValue = definition.Terms.InflationLinked.Value.BaseIndexValue,
+                baseDate = definition.Terms.InflationLinked.Value.BaseDate,
+                currentFactor = definition.Terms.InflationLinked.Value.CurrentFactor,
+                factorDate = definition.Terms.InflationLinked.Value.FactorDate,
+                indexFloor = definition.Terms.InflationLinked.Value.IndexFloor
+            },
+            sinkingFund = definition.Terms.SinkingFund is null ? null : new
+            {
+                schedule = definition.Terms.SinkingFund.Value.Schedule
+                    .Select(instalment => new { sinkDate = instalment.SinkDate, amount = instalment.Amount })
+                    .ToArray(),
+                sinkFrequency = definition.Terms.SinkingFund.Value.SinkFrequency is null ? null : definition.Terms.SinkingFund.Value.SinkFrequency.Value,
+                isProRata = definition.Terms.SinkingFund.Value.IsProRata
+            },
+            // ADR-027 stage 3 (S3-E): module homes for the codec-only field complement. Same
+            // contract as every other module: the key is always emitted, null when unset.
+            exercise = definition.Terms.Exercise is null ? null : new
+            {
+                optionRight = definition.Terms.Exercise.Value.OptionRight is null ? null : definition.Terms.Exercise.Value.OptionRight.Value,
+                strikePrice = definition.Terms.Exercise.Value.StrikePrice,
+                strikeRate = definition.Terms.Exercise.Value.StrikeRate,
+                exerciseStyle = definition.Terms.Exercise.Value.ExerciseStyle is null ? null : definition.Terms.Exercise.Value.ExerciseStyle.Value,
+                underlyingSecurityId = definition.Terms.Exercise.Value.UnderlyingSecurityId is null ? (Guid?)null : definition.Terms.Exercise.Value.UnderlyingSecurityId.Value.Item,
+                premiumAmount = definition.Terms.Exercise.Value.PremiumAmount
+            },
+            currencyPair = definition.Terms.CurrencyPair is null ? null : new
+            {
+                baseCurrency = definition.Terms.CurrencyPair.Value.BaseCurrency is null ? null : definition.Terms.CurrencyPair.Value.BaseCurrency.Value,
+                quoteCurrency = definition.Terms.CurrencyPair.Value.QuoteCurrency is null ? null : definition.Terms.CurrencyPair.Value.QuoteCurrency.Value,
+                settlementCurrency = definition.Terms.CurrencyPair.Value.SettlementCurrency is null ? null : definition.Terms.CurrencyPair.Value.SettlementCurrency.Value,
+                forwardRate = definition.Terms.CurrencyPair.Value.ForwardRate
+            },
+            notional = definition.Terms.Notional is null ? null : new
+            {
+                notional = definition.Terms.Notional.Value.Notional,
+                denomination = definition.Terms.Notional.Value.Denomination,
+                committedAmount = definition.Terms.Notional.Value.CommittedAmount,
+                fundedAmount = definition.Terms.Notional.Value.FundedAmount,
+                unfundedAmount = definition.Terms.Notional.Value.UnfundedAmount
+            },
+            profileEnvelope = definition.Terms.ProfileEnvelope is null ? null : new
+            {
+                customProfileId = definition.Terms.ProfileEnvelope.Value.CustomProfileId,
+                profileVersion = definition.Terms.ProfileEnvelope.Value.ProfileVersion,
+                terms = EmbedProfileDocument(definition.Terms.ProfileEnvelope.Value.TermsJson)
             }
         });
         // Keep byte-identical economics for records without a dated history. The additive field
@@ -304,6 +568,29 @@ internal static class SecurityEconomicDefinitionAdapter
             return JsonSerializer.SerializeToElement(expanded);
         }
         return document;
+    }
+
+    /// <summary>
+    /// The profile-governed terms document as the economic document carries it: embedded as JSON
+    /// when it is JSON, so it stays one queryable document rather than a string inside one. Text
+    /// that does not parse is carried as a JSON string, so an invalid document is preserved for
+    /// the envelope validation to refuse instead of being dropped here.
+    /// </summary>
+    private static JsonElement EmbedProfileDocument(string termsJson)
+    {
+        if (!string.IsNullOrWhiteSpace(termsJson))
+        {
+            try
+            {
+                using var document = JsonDocument.Parse(termsJson);
+                return document.RootElement.Clone();
+            }
+            catch (JsonException)
+            {
+            }
+        }
+
+        return JsonSerializer.SerializeToElement(termsJson ?? string.Empty);
     }
 
     /// Maps a <see cref="VotingRightsCat"/> DU to a stable wire token.

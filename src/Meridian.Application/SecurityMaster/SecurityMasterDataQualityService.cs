@@ -74,13 +74,19 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             scanned++;
             violations.AddRange(RunMinimumAttributeRules(security, now));
             violations.AddRange(RunTaxonomyRules(security, now));
+            violations.AddRange(RunTermsFormatRules(security, now));
             violations.AddRange(RunConsistencyRules(security, now));
             violations.AddRange(RunStalenessRules(security, now));
         }
 
         violations.AddRange(await RunCoverageRulesAsync(now, ct).ConfigureAwait(false));
 
-        var report = new SecurityMasterQualityReportDto(now, scanned, violations.Count, violations);
+        var untaggedTermsPayloads = await CountUntaggedTermsPayloadsAsync(ct).ConfigureAwait(false);
+
+        var report = new SecurityMasterQualityReportDto(now, scanned, violations.Count, violations)
+        {
+            UntaggedTermsPayloadCount = untaggedTermsPayloads,
+        };
         await _reportStore.SaveAsync(report, ct).ConfigureAwait(false);
 
         _logger.LogInformation(
@@ -110,11 +116,10 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         if (requiresMaturity)
         {
             // The canonical Security Master mapper stores maturity under "maturity" for
-            // Bond/CD/CP/TBill and "maturityDate" for swaps; accept either spelling.
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
-                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate")
-                ?? TryReadDateField(security.CommonTerms, "maturity")
-                ?? TryReadDateField(security.CommonTerms, "maturityDate");
+            // Bond/CD/CP/TBill and "maturityDate" for swaps; accept every spelling the schema
+            // declares for the term (MaturitySpellings), asset-specific terms first.
+            var maturity = TryReadFirstDateField(security.AssetSpecificTerms, MaturitySpellings)
+                ?? TryReadFirstDateField(security.CommonTerms, MaturitySpellings);
 
             if (maturity is null)
             {
@@ -222,8 +227,7 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         {
             var issueDate = TryReadDateField(security.AssetSpecificTerms, "issueDate")
                 ?? TryReadDateField(security.CommonTerms, "issueDate");
-            var maturity = TryReadDateField(security.AssetSpecificTerms, "maturity")
-                ?? TryReadDateField(security.AssetSpecificTerms, "maturityDate");
+            var maturity = TryReadFirstDateField(security.AssetSpecificTerms, MaturitySpellings);
 
             if (issueDate.HasValue && maturity.HasValue && maturity.Value <= issueDate.Value)
             {
@@ -254,6 +258,44 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
             }
         }
     }
+
+    // ── Terms payload format (ADR-024 decision 5) ───────────────────────────
+
+    /// <summary>
+    /// Flags an active record whose asset-specific terms carry no declared <c>termsFormat</c> tag
+    /// (rule TX003). These are the rows the ADR-024 shape rule still classifies by inference; the
+    /// tag is stamped on the record's next write, so the rule names the record rather than asking
+    /// for a payload rewrite — ADR-024 rejected rewriting stored blobs. The report-level
+    /// <see cref="SecurityMasterQualityReportDto.UntaggedTermsPayloadCount"/> gauges the whole
+    /// stored population, inactive rows included.
+    /// </summary>
+    private static IEnumerable<DataQualityRuleViolationDto> RunTermsFormatRules(
+        SecurityProjectionRecord security, DateTimeOffset now)
+    {
+        if (SecurityTermsEnvelope.GetDeclaredFormat(security.AssetSpecificTerms) is not null)
+        {
+            yield break;
+        }
+
+        var inferredFamily = security.AssetSpecificTerms.ValueKind == JsonValueKind.Object
+            ? SecurityTermsEnvelope.ResolveFormat(security.AssetSpecificTerms)
+            : SecurityTermsFormats.Flat;
+        yield return Violation(
+            "TX003", "Untagged Terms Payload Format", DataQualityRuleCategory.TaxonomyCheck,
+            security.SecurityId, "assetSpecificTerms.termsFormat",
+            $"Asset-specific terms declare no termsFormat; the ADR-024 shape rule infers '{inferredFamily}'. " +
+            "The tag is stamped on the record's next write; the shape rule retires only when no untagged payload remains.",
+            DataQualityRuleSeverity.Warning, now);
+    }
+
+    /// <summary>
+    /// The ADR-024 decision-5 retirement-gate count over every stored row, active and inactive:
+    /// one store-level aggregate (<see cref="ISecurityMasterStore.CountUntaggedAssetSpecificTermsAsync"/>)
+    /// with the same semantics as <c>SecurityTermsEnvelope.GetDeclaredFormat</c>, so the gauge
+    /// never loads full projections just to count.
+    /// </summary>
+    private Task<int> CountUntaggedTermsPayloadsAsync(CancellationToken ct)
+        => _securityStore.CountUntaggedAssetSpecificTermsAsync(ct);
 
     // ── StalenessMonitor rules ──────────────────────────────────────────────
 
@@ -355,9 +397,15 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         => field.Type == SecurityAssetTermFieldType.Date
            && (IsMaturityKey(field.Key) || field.Aliases.Any(IsMaturityKey));
 
+    /// <summary>
+    /// The maturity term's declared spellings (key first, then schema aliases): today
+    /// <c>maturity</c>, <c>maturityDate</c>. Pinned by
+    /// <c>MaturitySpellings_DeriveTheRetainedPair</c> so a new schema alias is a deliberate change.
+    /// </summary>
+    internal static readonly IReadOnlyList<string> MaturitySpellings = SecurityAssetTermsSchema.DeclaredSpellings("maturity");
+
     private static bool IsMaturityKey(string key)
-        => string.Equals(key, "maturity", StringComparison.OrdinalIgnoreCase)
-           || string.Equals(key, "maturityDate", StringComparison.OrdinalIgnoreCase);
+        => MaturitySpellings.Contains(key, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>
     /// Whether the terms carry a value of the declared kind under the field's key or one of its
@@ -473,6 +521,19 @@ public sealed class SecurityMasterDataQualityService : ISecurityMasterDataQualit
         return DateOnly.TryParse(value.GetString(), System.Globalization.CultureInfo.InvariantCulture, out var date)
             ? new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
             : null;
+    }
+
+    private static DateTimeOffset? TryReadFirstDateField(JsonElement element, IReadOnlyList<string> fieldNames)
+    {
+        foreach (var fieldName in fieldNames)
+        {
+            if (TryReadDateField(element, fieldName) is { } value)
+            {
+                return value;
+            }
+        }
+
+        return null;
     }
 
     private static DateTimeOffset? TryReadDateField(JsonElement element, string fieldName)

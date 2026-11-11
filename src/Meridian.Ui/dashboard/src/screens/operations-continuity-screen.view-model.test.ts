@@ -930,7 +930,7 @@ describe("Operations Continuity view model", () => {
       { label: "Approval", value: "Reviewer Assigned" },
       {
         label: "Sign-off",
-        value: "Reviewer Assigned by fund-controller at May 08, 15:05 UTC: Pending final ledger validation before close sign-off."
+        value: "Reviewer Assigned by fund-controller at May 8, 2026, 15:05 UTC: Pending final ledger validation before close sign-off."
       },
       { label: "Report pack", value: "Blocked: Close workflow has unresolved ledger blockers." },
       { label: "Period lock", value: "Open until close publication" },
@@ -939,7 +939,7 @@ describe("Operations Continuity view model", () => {
     ]));
     expect(vm.gates.map((gate) => gate.label)).toEqual(["Broker intake", "Ledger posting"]);
     expect(vm.gates[0]).toMatchObject({
-      completedLabel: "May 08, 14:20 UTC by Operations user",
+      completedLabel: "May 8, 2026, 14:20 UTC by Operations user",
       completedByTechnicalLabel: "ops-user"
     });
     expect(vm.blockers[0]).toMatchObject({
@@ -1104,7 +1104,7 @@ describe("Operations Continuity view model", () => {
       title: "Ledger posting controller check",
       statusLabel: "Pending",
       ownerLabel: "fund-controller",
-      dueLabel: "May 09, 00:00 UTC",
+      dueLabel: "May 9, 2026, 00:00 UTC",
       evidenceLabel: "ledger-evidence-1",
       routeHref: "/accounting/ledger"
     });
@@ -1114,7 +1114,7 @@ describe("Operations Continuity view model", () => {
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       ownerLabel: "Reviewer fund-controller",
-      dueLabel: "Submitted May 08, 15:05 UTC",
+      dueLabel: "Submitted May 8, 2026, 15:05 UTC",
       evidenceLabel: "1 evidence link",
       routeHref: "/accounting/approvals"
     });
@@ -1147,7 +1147,7 @@ describe("Operations Continuity view model", () => {
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       actorLabel: "Reviewer fund-controller / Operator ops-user",
-      submittedLabel: "Submitted May 08, 15:05 UTC",
+      submittedLabel: "Submitted May 8, 2026, 15:05 UTC",
       decidedLabel: "Decision pending",
       rationale: "Pending final ledger validation before close sign-off.",
       reviewer: "fund-controller",
@@ -1251,7 +1251,7 @@ describe("Operations Continuity view model", () => {
       acknowledgementCountLabel: "0 acknowledged",
       approvalCountLabel: "2 control approvals required",
       evidenceCountLabel: "1/1 evidence pointer",
-      dueSoonLabel: "Next due May 09, 00:00 UTC: Ledger posting controller check",
+      dueSoonLabel: "Next due May 9, 2026, 00:00 UTC: Ledger posting controller check",
       statusTone: "blocked"
     });
     expect(vm.timeline[0]).toMatchObject({
@@ -1555,9 +1555,9 @@ describe("Operations Continuity view model", () => {
       severityLabel: "Warning",
       severityTone: "review",
       ownerLabel: "fund-controller",
-      dueLabel: "May 09, 00:00 UTC",
-      slaLabel: "SLA Warning due May 09, 16:00 UTC",
-      escalationLabel: "Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA",
+      dueLabel: "May 9, 2026, 00:00 UTC",
+      slaLabel: "SLA Warning due May 9, 2026, 16:00 UTC",
+      escalationLabel: "Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA",
       varianceLabel: "Expected 125,000.25 / Actual 124,998.25 / Variance -2",
       materialityLabel: "Materiality 2",
       sourceLabel: "ledger vs custodian",
@@ -2460,7 +2460,7 @@ describe("Operations Continuity view model", () => {
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       actorLabel: "Reviewer fund-controller / Operator ops-user",
-      decidedLabel: "May 08, 15:05 UTC",
+      decidedLabel: "May 8, 2026, 15:05 UTC",
       evidenceLabel: "1 evidence link",
       evidenceHref: "/accounting/approvals",
       evidenceRouteLabel: "Open evidence",
@@ -2551,7 +2551,7 @@ describe("Operations Continuity view model", () => {
       statusLabel: "Reviewer Assigned",
       statusTone: "review",
       ownerLabel: "Reviewer fund-controller / Operator ops-user",
-      dueLabel: "May 08, 15:05 UTC",
+      dueLabel: "May 8, 2026, 15:05 UTC",
       evidenceLabel: "1 evidence link",
       actionLabel: "Complete private-capital close approval",
       routeHref: "/accounting/approvals"
@@ -2580,7 +2580,7 @@ describe("Operations Continuity view model", () => {
       statusTone: "blocked",
       summaryLabel: "0/1 calendar item ready; 2 open checklist items.",
       scopeLabel: `Selected 2026-05 / ${fundAccountId}`,
-      freshnessLabel: "Generated May 10, 18:45 UTC",
+      freshnessLabel: "Generated May 10, 2026, 18:45 UTC",
       itemCountLabel: "1 calendar item",
       blockerCountLabel: "1 blocker",
       checklistCountLabel: "2 open checklist items",
@@ -2746,7 +2746,7 @@ describe("Operations Continuity view model", () => {
     });
     expect(vm.checklist[0]).toMatchObject({
       id: "close-gate-ledgerposting",
-      acknowledgementLabel: "Acknowledged by fund-controller at May 09, 15:30 UTC",
+      acknowledgementLabel: "Acknowledged by fund-controller at May 9, 2026, 15:30 UTC",
       acknowledgementCommandPostureLabel: "Acknowledgement retained",
       acknowledgementGuardLabel: "Expected workflow version 4",
       canAcknowledge: false,
@@ -2833,7 +2833,7 @@ describe("Operations Continuity view model", () => {
 
     expect(vm.selectedDetail?.metadata).toContainEqual({
       label: "Close package",
-      value: "close-package-2026-05 signed by fund-controller at May 10, 18:45 UTC"
+      value: "close-package-2026-05 signed by fund-controller at May 10, 2026, 18:45 UTC"
     });
     expect(vm.closePackage).toMatchObject({
       statusLabel: "Published",
@@ -2843,7 +2843,7 @@ describe("Operations Continuity view model", () => {
       manifestLabel: "close-package-2026-05-manifest",
       manifestHref: "/accounting/operations-continuity/79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6/close-package/close-package-2026-05-manifest",
       evidenceHashLabel: "b5f6c7d8e9a00112233445566778899aabbccddeeff00112233445566778899",
-      publishedLabel: "Published May 10, 18:45 UTC",
+      publishedLabel: "Published May 10, 2026, 18:45 UTC",
       signerLabel: "Signed by fund-controller",
       rationaleLabel: "Controller sign-off after report pack and checklist evidence were retained.",
       evidenceLabel: "1 retained evidence link",
@@ -2937,14 +2937,14 @@ describe("Operations Continuity view model", () => {
 
     expect(vm.selectedDetail?.metadata).toContainEqual({
       label: "Period lock",
-      value: "Reopened by ops-admin at May 11, 13:15 UTC"
+      value: "Reopened by ops-admin at May 11, 2026, 13:15 UTC"
     });
     expect(vm.closeGovernance).toMatchObject({
       statusLabel: "Reopened",
       statusTone: "review",
       lockLabel: "Period reopened under governance",
       closeAuditLabel: "Workflow Closed f4d29af8 / closehash-pa",
-      reopenAuditLabel: "Workflow Reopened by ops-admin at May 11, 13:15 UTC / reopenhash-i",
+      reopenAuditLabel: "Workflow Reopened by ops-admin at May 11, 2026, 13:15 UTC / reopenhash-i",
       reopenIncidentLabel: "Incident incident-2026-05-close-restatement",
       reopenEvidenceLabel: "1 reopen evidence link",
       reopenRationaleLabel: "Reopened after custodian correction incident required ledger restatement.",

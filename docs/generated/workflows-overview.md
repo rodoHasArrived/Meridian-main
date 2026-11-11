@@ -24,7 +24,7 @@ This inventory is generated from `.github/workflows/*.yml` and `.github/workflow
 | `.github/workflows/desktop-user-manual.yml` | Desktop User Manual | workflow_dispatch |
 | `.github/workflows/desktop-workflow-runner.yml` | Desktop Workflow Runner | workflow_dispatch |
 | `.github/workflows/documentation.yml` | Documentation Automation | workflow_dispatch, pull_request, push, merge_group |
-| `.github/workflows/generated-repair-publish.yml` | Generated Repair Publisher | push, schedule, workflow_dispatch, workflow_run |
+| `.github/workflows/generated-repair-publish.yml` | Generated Repair Publisher | pull_request_target, push, schedule, workflow_dispatch, workflow_run |
 | `.github/workflows/generated-repair.yml` | Generated Repair | pull_request_target, workflow_dispatch |
 | `.github/workflows/golden-path-validation.yml` | Golden Path Validation | pull_request, push, workflow_dispatch |
 | `.github/workflows/ibapi-runtime.yml` | IB API Official Runtime | workflow_dispatch, schedule |

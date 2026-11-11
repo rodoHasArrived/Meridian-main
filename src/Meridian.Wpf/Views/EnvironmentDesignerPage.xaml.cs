@@ -109,16 +109,43 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
         }
     }
 
+    /// <summary>
+    /// Runs an <c>async void</c> event handler's work so a failure is shown on the page and logged
+    /// instead of escaping to the dispatcher, where any exception type the global handler does
+    /// not classify as recoverable ends the application.
+    /// </summary>
+    private async System.Threading.Tasks.Task RunHandlerAsync(
+        string operation,
+        System.Func<System.Threading.Tasks.Task> action)
+    {
+        try
+        {
+            await action().ConfigureAwait(true);
+        }
+        catch (System.OperationCanceledException)
+        {
+            // A cancelled action leaves the page as it was.
+        }
+        catch (System.Exception ex)
+        {
+            StatusText = $"{operation} failed: {ex.Message}";
+            global::Meridian.Wpf.Services.LoggingService.Instance.LogError("Environment Designer action failed.", ex);
+        }
+    }
+
     private async void OnRefreshClick(object sender, RoutedEventArgs e)
-        => await RefreshAsync().ConfigureAwait(true);
+        => await RunHandlerAsync("Refresh", () => RefreshAsync()).ConfigureAwait(true);
 
     private async void OnCreateBlankDraftClick(object sender, RoutedEventArgs e)
-        => await CreateDraftAsync(BuildBlankDraftRequest()).ConfigureAwait(true);
+        => await RunHandlerAsync("Create draft", () => CreateDraftAsync(BuildBlankDraftRequest())).ConfigureAwait(true);
 
     private async void OnCreateAdvisoryStarterClick(object sender, RoutedEventArgs e)
-        => await CreateDraftAsync(BuildAdvisoryStarterDraftRequest()).ConfigureAwait(true);
+        => await RunHandlerAsync("Create draft", () => CreateDraftAsync(BuildAdvisoryStarterDraftRequest())).ConfigureAwait(true);
 
     private async void OnSaveDraftClick(object sender, RoutedEventArgs e)
+        => await RunHandlerAsync("Save draft", SaveDraftClickCoreAsync).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task SaveDraftClickCoreAsync()
     {
         var saved = await SaveEditorDraftAsync().ConfigureAwait(true);
         if (saved is not null)
@@ -128,6 +155,9 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
     }
 
     private async void OnValidateDraftClick(object sender, RoutedEventArgs e)
+        => await RunHandlerAsync("Validate draft", ValidateDraftClickCoreAsync).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ValidateDraftClickCoreAsync()
     {
         var draft = await SaveEditorDraftAsync().ConfigureAwait(true);
         if (draft is null)
@@ -143,6 +173,9 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
     }
 
     private async void OnPreviewPublishClick(object sender, RoutedEventArgs e)
+        => await RunHandlerAsync("Preview publish", PreviewPublishClickCoreAsync).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PreviewPublishClickCoreAsync()
     {
         var draft = await SaveEditorDraftAsync().ConfigureAwait(true);
         if (draft is null)
@@ -160,6 +193,9 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
     }
 
     private async void OnPublishClick(object sender, RoutedEventArgs e)
+        => await RunHandlerAsync("Publish", PublishClickCoreAsync).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PublishClickCoreAsync()
     {
         var draft = await SaveEditorDraftAsync().ConfigureAwait(true);
         if (draft is null)
@@ -184,6 +220,9 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
     }
 
     private async void OnRollbackClick(object sender, RoutedEventArgs e)
+        => await RunHandlerAsync("Rollback", RollbackClickCoreAsync).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RollbackClickCoreAsync()
     {
         if (SelectedVersion is null)
         {
@@ -273,17 +312,28 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
             return null;
         }
 
-        var saved = await _designService.SaveDraftAsync(
-            draft with
-            {
-                UpdatedBy = Environment.UserName,
-                Definition = draft.Definition with
+        EnvironmentDraftDto saved;
+        try
+        {
+            saved = await _designService.SaveDraftAsync(
+                draft with
                 {
-                    OrganizationName = string.IsNullOrWhiteSpace(draft.Definition.OrganizationName)
-                        ? "Untitled Organization"
-                        : draft.Definition.OrganizationName.Trim()
-                }
-            }).ConfigureAwait(true);
+                    UpdatedBy = Environment.UserName,
+                    Definition = draft.Definition with
+                    {
+                        OrganizationName = string.IsNullOrWhiteSpace(draft.Definition.OrganizationName)
+                            ? "Untitled Organization"
+                            : draft.Definition.OrganizationName.Trim()
+                    }
+                }).ConfigureAwait(true);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            // Callers are async void click handlers; an escaped exception would crash the app.
+            StatusText = "Draft could not be saved.";
+            ValidationAndDiffText = ex.Message;
+            return null;
+        }
 
         await RefreshAsync(saved.DraftId, SelectedVersion?.VersionId).ConfigureAwait(true);
         return saved;
@@ -298,6 +348,22 @@ public partial class EnvironmentDesignerPage : Page, INotifyPropertyChanged
         {
             draft = JsonSerializer.Deserialize<EnvironmentDraftDto>(DraftJson, JsonOptions)
                 ?? throw new JsonException("Editor content did not deserialize into an environment draft.");
+
+            // System.Text.Json leaves omitted constructor members null even when they are
+            // non-nullable, so a draft without "definition" used to throw a
+            // NullReferenceException from an async void handler and crash the desktop app.
+            if (draft.Definition is null)
+            {
+                error = "Draft JSON must include a \"definition\" object.";
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(draft.Name))
+            {
+                error = "Draft JSON must include a non-empty \"name\".";
+                return false;
+            }
+
             return true;
         }
         catch (Exception ex)

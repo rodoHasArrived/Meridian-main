@@ -20,6 +20,8 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerTone
 } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { normalizeFinancialLabel, pluralizeCount } from "@/lib/format";
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -237,7 +239,7 @@ export function FinancialRecordExplorerShell({
     <section className={cn("workspace-section-band", className)} aria-labelledby={titleId}>
       <div className="workspace-section-subheader">
         <div className="min-w-0">
-          <p className="eyebrow-label">{explorerLabel}</p>
+          <p className={eyebrowClassName(explorerLabel)}>{explorerLabel}</p>
           <h2 id={titleId} className="workspace-section-title">{headerTitle}</h2>
           <p className="workspace-section-summary">{headerDescription}</p>
           {dtoMode ? (
@@ -285,7 +287,7 @@ export function FinancialRecordExplorerShell({
         <div className="space-y-3">
           <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
           <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
-          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: item.label, value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
+          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
           <AppliedFilterStrip filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
         </div>
         <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
@@ -303,7 +305,7 @@ export function FinancialRecordExplorerShell({
                 placeholder="Search financial records"
                 aria-label={`Search ${headerTitle}`}
               />
-              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
+              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{pluralizeCount(rows.length, "row")}</Badge>}
             </div>
             <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
             <RecordGraph explorer={dtoMode} />
@@ -344,7 +346,7 @@ function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[]
     <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer scope">
       {items.map((item) => (
         <div key={item.id} className="rounded-md border border-border/70 bg-background/60 px-3 py-2">
-          <dt className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</dt>
+          <dt className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</dt>
           <dd className="mt-1 truncate font-mono text-sm text-foreground">{item.value}</dd>
         </div>
       ))}
@@ -390,7 +392,7 @@ function ExplorerSummaryStrip({ items }: { items: FinancialRecordExplorerSummary
     <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer summary">
       {items.map((item) => (
         <div key={item.id} className={cn("rounded-md border px-3 py-2", summaryToneClass(item.tone))}>
-          <div className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</div>
+          <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
           <div className="mt-1 font-mono text-lg font-semibold">{item.value}</div>
         </div>
       ))}
@@ -632,7 +634,7 @@ function ExplorerGrid({
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr aria-rowindex={1}>
             {columns.map((column) => (
-              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
+              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{normalizeFinancialLabel(column.header)}</th>
             ))}
           </tr>
         </thead>

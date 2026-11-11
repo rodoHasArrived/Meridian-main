@@ -108,7 +108,7 @@ public sealed class MultiCurrencyTests
             ["EUR"] = 1.085m,
         };
 
-        var total = balance.ToBaseCurrency(rates);
+        var total = balance.ToBaseCurrency(rates, "USD");
         total.Should().Be(10_000m + 1_000m * 1.085m);
     }
 
@@ -119,8 +119,32 @@ public sealed class MultiCurrencyTests
         balance.Add("USD", 10_000m);
 
         // No rate provided for USD — should assume 1:1
-        var total = balance.ToBaseCurrency(new Dictionary<string, decimal>());
+        var total = balance.ToBaseCurrency(new Dictionary<string, decimal>(), "USD");
         total.Should().Be(10_000m);
+    }
+
+    [Fact]
+    public void MultiCurrencyBalance_ToBaseCurrency_ThrowsWhenANonBaseCurrencyHasNoRate()
+    {
+        var balance = new MultiCurrencyCashBalance();
+        balance.Add("USD", 10_000m);
+        balance.Add("JPY", 1_000_000m);
+
+        // A missing rate must not be read as 1:1: 1,000,000 JPY is not 1,000,000 USD.
+        var act = () => balance.ToBaseCurrency(new Dictionary<string, decimal> { ["USD"] = 1m }, "USD");
+
+        act.Should().Throw<InvalidOperationException>().WithMessage("*JPY*");
+    }
+
+    [Fact]
+    public void MultiCurrencyBalance_ToBaseCurrency_IgnoresZeroBalancesWithoutARate()
+    {
+        var balance = new MultiCurrencyCashBalance();
+        balance.Add("USD", 10_000m);
+        balance.Add("JPY", 500m);
+        balance.Subtract("JPY", 500m);
+
+        balance.ToBaseCurrency(new Dictionary<string, decimal>(), "USD").Should().Be(10_000m);
     }
 
     [Fact]

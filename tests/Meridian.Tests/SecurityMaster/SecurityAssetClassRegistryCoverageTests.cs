@@ -66,6 +66,10 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     {
         SecurityAssetClassRegistry.AssetClassesWithProjection(SecurityTermsProjectionKind.TermsJsonOnly)
             .Should().NotIntersectWith(PostgresSecurityMasterStore.ProjectedAssetClasses);
+        // CustomAsset was the last terms-JSON-only class until its profile-keyed projection
+        // (migration 064); a new class declaring TermsJsonOnly must be a deliberate gap.
+        SecurityAssetClassRegistry.AssetClassesWithProjection(SecurityTermsProjectionKind.TermsJsonOnly)
+            .Should().BeEmpty();
     }
 
     [Fact]

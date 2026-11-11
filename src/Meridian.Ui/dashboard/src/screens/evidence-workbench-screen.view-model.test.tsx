@@ -649,7 +649,7 @@ describe("Evidence Workbench view model", () => {
       subjectLabel: "Strategy Run run-1",
       vaultLabel: "ev-request-list-demo",
       manifestHref: "/workstation/evidence/strategy-run/run-1/manifest.json",
-      retainedLabel: "Retained May 9, 12:35 UTC",
+      retainedLabel: "Retained May 9, 2026, 12:35 UTC",
       supportRequestSummaryLabel: "2 support requests"
     });
     expect(vm.requestListPanel.rows[0]?.supportRequestRows[0]).toMatchObject({
@@ -659,7 +659,7 @@ describe("Evidence Workbench view model", () => {
       statusLabel: "Open",
       workItemLabel: "audit-request:close-2026-05"
     });
-    expect(vm.generatedLabel).toBe("May 9, 12:30 UTC");
+    expect(vm.generatedLabel).toBe("May 9, 2026, 12:30 UTC");
     expect(vm.missingEvidence).toEqual(["strategy-run:run-1:ledger"]);
     expect(vm.staleEvidence).toEqual([staleNode.evidenceId]);
     expect(vm.orphanEvidence).toEqual(["strategy-run:run-1:unlinked-approval"]);
@@ -675,7 +675,7 @@ describe("Evidence Workbench view model", () => {
     expect(vm.nodeGroups[0].rows[0]).toMatchObject({
       kindLabel: "Strategy Run Detail",
       statusLabel: "Ready",
-      freshnessLabel: "Fresh as of May 9, 12:00 UTC",
+      freshnessLabel: "Fresh as of May 9, 2026, 12:00 UTC",
       artifactCountLabel: "1 artifact",
       workItemCountLabel: "0 work items",
       selectAriaLabel: "Inspect Strategy Run Detail evidence for Momentum strategy run"
@@ -1517,9 +1517,9 @@ describe("Evidence Workbench view model", () => {
           hashLabel: "a".repeat(64),
           sourceLabel: "/api/workstation/reconciliation/statement-runs/import-1",
           canonicalSubjectLabel: "Report report-pack-1",
-          captureLabel: "Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement",
+          captureLabel: "Upload via Evidence Vault upload; received May 9, 2026, 12:30 UTC; reference portal-upload:broker-statement",
           extractionLabel: "1 extracted field; 1 validated; 1 reviewed",
-          retainedLabel: "Retained May 9, 12:36 UTC"
+          retainedLabel: "Retained May 9, 2026, 12:36 UTC"
         })
       ],
       requestListSummaryLabel: "1 request list",
@@ -1919,7 +1919,7 @@ describe("EvidenceWorkbenchScreen", () => {
     await user.click(within(retainedArtifactList).getByText("Technical details"));
     expect(retainedArtifactPath).toBeVisible();
     expect(within(retainedArtifactList).getByText("Report report-pack-1")).toBeVisible();
-    expect(within(retainedArtifactList).getByText("Upload via Evidence Vault upload; received May 9, 12:30 UTC; reference portal-upload:broker-statement")).toBeVisible();
+    expect(within(retainedArtifactList).getByText("Upload via Evidence Vault upload; received May 9, 2026, 12:30 UTC; reference portal-upload:broker-statement")).toBeVisible();
     expect(screen.getByText("1 extracted field; 1 validated; 1 reviewed")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Evidence vault request lists" })).toBeInTheDocument();
     expect(screen.getAllByText("Audit Request List").length).toBeGreaterThanOrEqual(2);

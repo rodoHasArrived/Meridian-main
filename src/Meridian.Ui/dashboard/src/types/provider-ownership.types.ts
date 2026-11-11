@@ -56,6 +56,11 @@ export interface ProviderCredentialMigrationReceipt {
   rolledBack: boolean;
   rolledBackBy?: string | null;
   rolledBackAt?: string | null;
+  /** A separate provider-wide OAuth token moved under the scope with the record and moves back on rollback. */
+  oAuthTokenTransferred?: boolean;
+  /** Set once the verified migration was finalized: rollback ends and the provider-wide record is released. */
+  finalizedBy?: string | null;
+  finalizedAt?: string | null;
 }
 
 export interface ProviderRuntimeCredentialBinding {

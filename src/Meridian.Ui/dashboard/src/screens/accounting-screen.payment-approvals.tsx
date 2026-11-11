@@ -26,6 +26,8 @@ import {
   type PaymentApprovalTone
 } from "@/screens/accounting-screen.payment-approvals.view-model";
 import type { BankTransaction, PendingPayment } from "@/types/banking-payments.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 type DecisionKind = "approve" | "reject";
 
@@ -262,7 +264,7 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[2px] border border-border bg-secondary/20 p-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div>
       <div className="mt-1 text-xl font-semibold">{value}</div>
     </div>
   );

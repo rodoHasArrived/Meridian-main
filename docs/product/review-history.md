@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-05
+**Reviewed:** 2026-11-01
 
 Use this index for dated reviews, brainstorms, design inputs, and acceptance records. Return to
 [Product](README.md) for product direction and current status sources. Findings describe the source
@@ -10,6 +10,7 @@ and evidence available to each author; they do not establish current delivery or
 
 ## Planning and Acceptance Records
 
+- [Single-principal attestation policy proposal (2026-11-02)](single-principal-attestation-policy-proposal-2026-11-02.md) and [synthetic acceptance matrix](single-principal-attestation-acceptance-matrix-2026-11-02.md) are draft decision inputs for `W14-ATTEST-001`, registered by merged PR #3358. They compare eligibility and exclusions, preserve existing approval controls, and leave owner adoption and independent Security/Accounting review outstanding; they implement no exception or metric.
 - [Product Plans](plans/README.md#next-work-determinations) owns the latest prioritization pointer
   and retained next-work determinations, including [2026-10-02](plans/next-work-determination-2026-10-02.md)
   and [2026-09-27](plans/next-work-determination-2026-09-27.md).
@@ -32,6 +33,14 @@ and "remains" describe those dated reviews and their named addenda. Follow the o
 for commit anchors, qualifications, and later addenda; recheck current source before turning a
 finding into implementation work.
 
+- [Adversarial Value-Proposition Review (2026-11-01)](value-proposition-review-2026-11-01.md) —
+  adversarial review of a proposed expansion of the end-user value proposition, checked against
+  charter Version 1.6, the roadmap registry, ADR-019, and source at `86a1689f`. It finds that most
+  proposed capabilities already exist or are registered, that the proposed bond MVP's hardest step
+  (coupon-accrual posting) is written and tested but has no production caller, that the proposed
+  workbench already exists with a browser-local lot record beside the ledger, and that two-principal
+  approval rules conflict with the single-operator v1 envelope. Its second refinement became charter
+  Version 1.7 under `DEC-VALUE-PROPOSITION-001`; it registers no row and changes no status
 - [Reporting Operating Model (2026-09)](reporting-operating-model-2026-09.md) — refined
   reporting semantics: the `Report`/`Edition`/`Publication` object split, the four-destination
   consolidation inside the existing Reporting root, the scope contract with separated effective

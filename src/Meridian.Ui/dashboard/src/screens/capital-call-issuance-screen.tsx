@@ -41,7 +41,7 @@ function CapitalScopeSelection() {
   const selectedBook = books.find(book => book.ledgerBookId === bookId);
   return <div className="space-y-4 p-4" data-testid="capital-call-issuance-screen">
     <div className="flex flex-wrap items-start justify-between gap-3"><div>
-      <h1 className="text-lg font-semibold">Commitments and capital calls</h1>
+      <h2 className="text-lg font-semibold">Commitments and capital calls</h2>
       <p className="max-w-4xl text-sm text-muted-foreground">Review commitments, retain call allocations and match cash receipts to posted calls. Issuance, funding, journal approval and notice delivery each retain their own state.</p>
     </div><Link className="text-sm text-primary underline" to={WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts}>Capital accounts</Link></div>
     <h2 className="sr-only">Capital operations</h2>

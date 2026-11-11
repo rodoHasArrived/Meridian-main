@@ -425,6 +425,91 @@ public sealed class SecurityMasterDataQualityServiceTests
             Identifiers: Array.Empty<SecurityIdentifierDto>(),
             Aliases: Array.Empty<SecurityAliasDto>());
 
+    // ── Terms payload format (ADR-024 decision 5) ───────────────────────────
+
+    [Fact]
+    public async Task RunQualityChecksAsync_FlagsUntaggedTermsPayload_NamingTheInferredFamily()
+    {
+        var (sut, store) = BuildSut();
+        var untagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD",
+            assetSpecificTerms: new { maturity = "2030-01-01" });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { untagged });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        var violation = report.Violations.Should()
+            .ContainSingle(v => v.RuleId == "TX003" && v.SecurityId == untagged.SecurityId).Subject;
+        violation.Category.Should().Be(DataQualityRuleCategory.TaxonomyCheck);
+        violation.Severity.Should().Be(DataQualityRuleSeverity.Warning);
+        violation.FieldPath.Should().Be("assetSpecificTerms.termsFormat");
+        violation.Message.Should().Contain("'flat'");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_UntaggedProfileEnvelope_InfersCustomProfile()
+    {
+        var (sut, store) = BuildSut();
+        var untagged = MakeSecurity(Guid.NewGuid(), "CustomAsset", currency: "USD",
+            assetSpecificTerms: new { customProfileId = "profile-1", profileFields = new { notional = 100 } });
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { untagged });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().ContainSingle(v => v.RuleId == "TX003")
+            .Which.Message.Should().Contain("'customProfile'");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_TaggedPayload_RaisesNoFormatViolation()
+    {
+        var (sut, store) = BuildSut();
+        var taggedTerms = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
+            """{"maturity":"2030-01-01"}""", "Bond")).RootElement.Clone();
+        var tagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = taggedTerms };
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { tagged });
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.Violations.Should().NotContain(v => v.RuleId == "TX003");
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_ReportsTheStoreGateCount_BesideTheActiveRowRule()
+    {
+        var (sut, store) = BuildSut();
+        var tagged = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
+            """{"maturity":"2030-01-01"}""", "Bond")).RootElement.Clone();
+        var taggedSecurity = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = tagged };
+        var untaggedActive = MakeSecurity(Guid.NewGuid(), "Equity", currency: "USD");
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { taggedSecurity, untaggedActive });
+        // The gauge is the store's single aggregate (ADR-024 decision 5), never a projection load:
+        // it covers inactive rows the active scan skips, so it can exceed the scan's own findings.
+        store.CountUntaggedAssetSpecificTermsAsync(Arg.Any<CancellationToken>()).Returns(2);
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.UntaggedTermsPayloadCount.Should().Be(2);
+        report.Violations.Where(v => v.RuleId == "TX003").Should()
+            .ContainSingle(v => v.SecurityId == untaggedActive.SecurityId);
+        await store.DidNotReceive().LoadAllAsync(Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task RunQualityChecksAsync_AllTagged_ReportsZeroUntaggedPayloads()
+    {
+        var (sut, store) = BuildSut();
+        var taggedTerms = JsonDocument.Parse(SecurityTermsEnvelope.StampFlat(
+            """{"maturity":"2030-01-01"}""", "Bond")).RootElement.Clone();
+        var tagged = MakeSecurity(Guid.NewGuid(), "Bond", currency: "USD") with { AssetSpecificTerms = taggedTerms };
+        store.LoadActiveAsync(Arg.Any<CancellationToken>()).Returns(new[] { tagged });
+        store.CountUntaggedAssetSpecificTermsAsync(Arg.Any<CancellationToken>()).Returns(0);
+
+        var report = await sut.RunQualityChecksAsync();
+
+        report.UntaggedTermsPayloadCount.Should().Be(0);
+        report.Violations.Should().NotContain(v => v.RuleId == "TX003");
+    }
+
     private static SecurityProjectionRecord MakeStaleSecurityTerms(Guid securityId)
         => new(
             SecurityId: securityId,

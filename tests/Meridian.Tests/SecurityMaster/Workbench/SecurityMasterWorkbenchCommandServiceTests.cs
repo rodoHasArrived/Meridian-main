@@ -955,9 +955,12 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             Actor: "ops.analyst",
             Justification: "Factor correction.");
 
+        // ADR-027 stage 2 (S2-B4): since the validation recomposition, the refusing rule is the
+        // definition surface's — the ledgered code must surface through the workbench route, so
+        // the term-block path is provably on the same authority as the canonical amend.
         await harness.Service.Invoking(s => s.UpdateSecurityFieldAsync(request))
             .Should().ThrowAsync<ArgumentException>()
-            .WithMessage("*domain invariants*");
+            .WithMessage("*domain invariants*[structured_credit_current_factor_invalid]*");
     }
 
     [Fact]
@@ -4335,7 +4338,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             long currentVersion,
             IEnumerable<ISecurityMasterRevisionPublishedHandler>? handlers = null,
             Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
-            ISecurityMasterRevisionStore? revisions = null)
+            ISecurityMasterRevisionStore? revisions = null,
+            Microsoft.Extensions.Options.IOptionsMonitor<SecurityMasterWorkbenchOptions>? workbenchOptions = null)
         {
             _assetProfileCatalog = assetProfileCatalog
                 ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
@@ -4379,7 +4383,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
                 NullLogger<SecurityMasterWorkbenchCommandService>.Instance,
                 FieldProvenance.Object,
                 ProjectionStore.Object,
-                _assetProfileCatalog);
+                _assetProfileCatalog,
+                workbenchOptions);
         }
 
         private readonly Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog _assetProfileCatalog;

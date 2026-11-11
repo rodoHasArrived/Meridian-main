@@ -7,6 +7,11 @@ import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } fr
 
 const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
 vi.mock("@/lib/api", () => api);
+const ownership = vi.hoisted(() => ({
+  createOwnedProviderConnection: vi.fn(), bindProviderRuntimeCredential: vi.fn(), previewProviderCredentialMigration: vi.fn(), migrateProviderCredential: vi.fn(),
+  rollbackProviderCredential: vi.fn(), getProviderRuntimeCredentialStatus: vi.fn(), applyProviderRuntimeCredential: vi.fn(), finalizeProviderCredentialMigration: vi.fn()
+}));
+vi.mock("@/lib/api/provider-ownership.api", () => ownership);
 const session = { displayName: "Operator", role: "Admin", environment: "paper", activeWorkspace: "settings", commandCount: 0 } as SessionInfo;
 const row = { providerId: "alpaca", displayName: "Alpaca", affectedWorkflowsLabel: "Paper orders" } as SettingsProviderConnectionRow;
 const owned = (id: string): ProviderRoutingConnection => ({ connectionId: id, providerFamilyId: "alpaca", displayName: id, tenantId: "tenant-a", externalAccountId: `account-${id}`, credentialEnvironment: "paper", enabled: true } as ProviderRoutingConnection);
@@ -144,6 +149,41 @@ describe("owned provider credential editor", () => {
     await userEvent.click(screen.getByRole("button", { name: "Save Alpaca credentials" }));
     await screen.findByText(/Selected ownership changed or was removed/);
     expect(api.putProviderCredentials).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
+  });
+  it("keeps the selected ownership and its migration receipt across the refresh a migration triggers, so verify then finalize can follow", async () => {
+    const receipt = { providerId: "alpaca", scope: { tenantId: "tenant-a", connectionId: "paper-a", externalAccountId: "account-paper-a", environment: "paper" }, credentialGeneration: "gen-1", actor: "operator-a", migratedAt: "2026-10-31T00:00:00Z", rolledBack: false };
+    ownership.previewProviderCredentialMigration.mockResolvedValue({ providerId: "alpaca", displayName: "Alpaca", credentialState: "Configured", credentialSource: "LocalEncryptedStore", verificationState: "NotVerified", missingFields: [], presentFields: ["KeyId"], auditMetadata: { credentialGeneration: "gen-1" } });
+    ownership.migrateProviderCredential.mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...receipt, migrationId: request.migrationId }));
+    ownership.finalizeProviderCredentialMigration.mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...receipt, migrationId: request.migrationId, finalizedBy: "controller", finalizedAt: "2026-11-01T00:00:00Z" }));
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select();
+    const listings = api.getProviderRoutingConnections.mock.calls.length;
+
+    fireEvent.click(screen.getByRole("button", { name: "Preview migration" }));
+    await screen.findByText(/generation gen-1 can be migrated/);
+    fireEvent.click(screen.getByRole("button", { name: "Migrate to this connection" }));
+    await screen.findByText(/retained by operator-a at generation gen-1/);
+    await screen.findByText("Owned connections refreshed; selected connection status reloaded.");
+    expect(api.getProviderRoutingConnections.mock.calls.length).toBeGreaterThan(listings);
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+    expect(screen.getByLabelText("Alpaca migration receipt")).toHaveTextContent(/· migrated · generation gen-1 · paper-a/);
+
+    await userEvent.click(screen.getByRole("button", { name: "Re-verify Alpaca connection" }));
+    await screen.findByText("Verification succeeded.");
+    expect(api.verifyProviderConnection).toHaveBeenCalledWith("alpaca", expect.objectContaining({ connectionId: "paper-a" }));
+    expect(screen.getByLabelText("Alpaca migration receipt")).toBeInTheDocument();
+    const finalize = screen.getByRole("button", { name: "Finalize migration" });
+    expect(finalize).toBeEnabled();
+    fireEvent.click(finalize);
+    await screen.findByText(/finalized by controller; rollback has ended/);
+    expect(ownership.finalizeProviderCredentialMigration).toHaveBeenCalledWith("paper-a", { providerId: "alpaca", migrationId: ownership.migrateProviderCredential.mock.calls[0][1].migrationId });
+    expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("paper-a");
+
+    api.getProviderRoutingConnections.mockResolvedValue([owned("paper-b")]);
+    ownership.getProviderRuntimeCredentialStatus.mockResolvedValue({ providerId: "alpaca", connectionId: "paper-a", isBound: false, pendingRestart: false, detail: "Not bound." });
+    fireEvent.click(screen.getByRole("button", { name: "Check running instances" }));
+    await screen.findByText(/Selected ownership changed or was removed/);
     expect(screen.getByLabelText("Alpaca owned connection")).toHaveValue("");
   });
   it("retains selection through ordinary data refreshes but blocks when the session disappears", async () => {

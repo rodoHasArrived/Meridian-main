@@ -976,6 +976,59 @@ public sealed class BrokeragePortfolioSyncServiceTests
     }
 
     [Fact]
+    public async Task DiscoverAccountsAsync_LinkRetainedUnderAProviderAlias_StillMatchesItsCatalogEntry()
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            const string providerId = "alpaca";
+            const string accountNumber = "PA3ALPACA01";
+            const string retainedUuid = "d23b8f95-7654-4c6e-8bf8-b0d4ed1796c2";
+            // The catalog names the account by its account number and declares the UUID an alias.
+            var catalog = new FixedAccountCatalog(providerId,
+            [
+                BuildExternalAccount(providerId, accountNumber) with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = retainedUuid }
+                },
+                BuildExternalAccount(providerId, "PA9SOMEONEELSE") with
+                {
+                    Metadata = new Dictionary<string, string> { [BrokerageExternalAccountMetadata.AccountIdAliases] = "another-uuid" }
+                }
+            ]);
+            var (service, serviceProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter(providerId),
+                new FixedActivityAdapter(providerId),
+                includeSecurityLookup: true,
+                catalogs: [catalog]);
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            var fundAccountId = Guid.NewGuid();
+            await serviceProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(
+                new CreateAccountRequest(fundAccountId, AccountTypeDto.Brokerage, "BRK-ALIAS", "BRK-ALIAS", "USD",
+                    DateTimeOffset.UtcNow.AddDays(-1), "tests"),
+                cts.Token);
+            await service.LinkAccountAsync(
+                fundAccountId,
+                new BrokerageAccountLinkRequestDto(providerId, retainedUuid, "Retained under the UUID", "tests"),
+                cts.Token);
+
+            var authorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid> { fundAccountId }), ct: cts.Token);
+            var unauthorized = await service.DiscoverAccountsAsync(
+                (_, _) => Task.FromResult<IReadOnlySet<Guid>>(new HashSet<Guid>()), ct: cts.Token);
+
+            authorized.Should().ContainSingle("only the account behind the caller's own link is visible")
+                .Which.AccountId.Should().Be(accountNumber);
+            unauthorized.Should().BeEmpty("an alias never widens the authorization filter");
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
+    [Fact]
     public async Task DiscoverAccountsAsync_ReturnsOnlyAuthorizedLinkedAccountsInOneBatch()
     {
         var root = CreateTempRoot();
@@ -1368,6 +1421,70 @@ public sealed class BrokeragePortfolioSyncServiceTests
             DeleteTempRoot(root);
         }
     }
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public async Task RunSyncAsync_FailedOrPartialSyncKeepsLastGoodPositionsAndSuccessTimestamp(
+        bool portfolioFails, bool activityFails)
+    {
+        var root = CreateTempRoot();
+        try
+        {
+            var fundAccountId = Guid.NewGuid();
+            var request = new WorkstationBrokerageSyncRunRequestDto("alpaca", "PA-KEEP", "ops-review");
+            var (goodService, goodProvider) = CreateService(
+                root,
+                new FixedPortfolioAdapter("alpaca"),
+                new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            await goodProvider.GetRequiredService<IFundAccountService>().CreateAccountAsync(new CreateAccountRequest(
+                fundAccountId,
+                AccountTypeDto.Brokerage,
+                "BRK-KEEP",
+                "Keep last good brokerage",
+                "USD",
+                DateTimeOffset.UtcNow.AddDays(-10),
+                "tests"));
+            var good = await goodService.RunSyncAsync(fundAccountId, request);
+            var goodPositions = await goodService.GetPositionsAsync(fundAccountId);
+            goodPositions.Should().NotBeEmpty();
+            good.LastSuccessfulSyncAt.Should().NotBeNull();
+
+            var (failingService, _) = CreateService(
+                root,
+                portfolioFails ? new ThrowingPortfolioAdapter("alpaca", "portfolio unavailable") : new FixedPortfolioAdapter("alpaca"),
+                activityFails ? new ThrowingActivityAdapter("alpaca", "activity unavailable") : new FixedActivityAdapter("alpaca"),
+                includeSecurityLookup: true);
+            var status = await failingService.RunSyncAsync(fundAccountId, request);
+
+            status.Health.Should().Be(activityFails
+                ? WorkstationBrokerageSyncHealth.Failed
+                : WorkstationBrokerageSyncHealth.Degraded);
+            var view = await failingService.GetViewAsync(fundAccountId);
+            view!.Positions.Select(static position => position.Symbol)
+                .Should().Equal(goodPositions.Select(static position => position.Symbol),
+                    "a failed portfolio fetch is not evidence that the account holds nothing");
+            view.Balance.Should().NotBeNull();
+            status.PositionCount.Should().Be(goodPositions.Count);
+            status.Warnings.Should().Contain(warning => warning.Contains("carried forward", StringComparison.OrdinalIgnoreCase));
+            // Reconciliation judges provider freshness from the sync time and this flag alone,
+            // so carried-forward state must not look like a new observation.
+            good.IsStale.Should().BeFalse();
+            status.IsStale.Should().BeTrue("carried-forward balances and positions are not a fresh provider observation");
+            view.Status.IsStale.Should().BeTrue();
+            if (activityFails)
+            {
+                status.LastSuccessfulSyncAt.Should().Be(good.LastSuccessfulSyncAt,
+                    "a fully failed attempt must not erase when the account last synced");
+                view.Fills.Should().NotBeEmpty();
+            }
+        }
+        finally
+        {
+            DeleteTempRoot(root);
+        }
+    }
+
     private static (BrokeragePortfolioSyncService Service, ServiceProvider Provider) CreateService(
         string root,
         IBrokeragePortfolioSync portfolioAdapter,

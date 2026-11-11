@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatMoney, formatNumber, formatPnl, formatPrefixedCurrency } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1417,7 +1417,7 @@ export function buildStrategyBuilderWorkbenchViewModel({
       },
       {
         id: "builder-proof",
-        label: "Proof lane",
+        label: "Proof path",
         value: "Backtest",
         detail: "No live trading from builder v1",
         tone: "default"
@@ -2355,21 +2355,12 @@ function buildNetDirectionLabel(direction: "Long" | "Short" | "Flat", longNotion
 }
 
 function formatPrice(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  return `$${value.toFixed(2)}`;
-}
-
-function formatPnl(value: number): string {
-  if (!Number.isFinite(value)) return "—";
-  const sign = value > 0 ? "+" : value < 0 ? "−" : "";
-  return `${sign}$${Math.abs(value).toFixed(2)}`;
+  return formatMoney(value, { decimals: 2 });
 }
 
 function formatQuantity(value: number): string {
   if (!Number.isFinite(value)) return "—";
-  return value.toLocaleString(undefined, {
-    maximumFractionDigits: 4
-  });
+  return formatNumber(value, { maximumFractionDigits: 4 });
 }
 
 function formatCurrency(value: number): string {

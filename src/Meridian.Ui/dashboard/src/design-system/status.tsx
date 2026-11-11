@@ -1,4 +1,6 @@
-import { DesignSystemBadge, type DesignSystemBadgeProps } from "@/design-system/badge";
+import type { HTMLAttributes, ReactNode } from "react";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import "@/styles/status-badge.css";
 
 /**
  * The Meridian operator status vocabulary collapses every readiness string onto five
@@ -23,7 +25,11 @@ const SEVERITY_ALIASES: Record<string, DesignSystemSeverity> = {
   error: "blocked", blocker: "blocked", breached: "blocked",
   info: "info", unknown: "info", notstarted: "info", missing: "info", pending: "info",
   draft: "info", neutral: "info", notrequired: "info", notready: "info", skipped: "info",
-  paused: "info"
+  paused: "info",
+  // Aliases the operations SeverityBadge recognised before it became StatusBadge, so every
+  // status that badge already knew keeps its tone.
+  livelinked: "ready", reviewerassigned: "review", sourcebacked: "review",
+  exceptionsopen: "action", reviewrequiredsoon: "action", danger: "blocked", default: "info"
 };
 
 /** Collapse any Meridian status / severity string onto one of the five canonical severities. */
@@ -42,14 +48,6 @@ export function normalizeDesignSystemSeverity(status: string | null | undefined)
   return SEVERITY_ALIASES[key] ?? "action";
 }
 
-const SEVERITY_BADGE_VARIANT: Record<DesignSystemSeverity, NonNullable<DesignSystemBadgeProps["variant"]>> = {
-  ready: "success",
-  review: "default",
-  action: "warning",
-  blocked: "danger",
-  info: "outline"
-};
-
 const SEVERITY_DEFAULT_LABEL: Record<DesignSystemSeverity, string> = {
   ready: "Ready",
   review: "Review",
@@ -58,26 +56,81 @@ const SEVERITY_DEFAULT_LABEL: Record<DesignSystemSeverity, string> = {
   info: "Info"
 };
 
-export interface DesignSystemStatusProps extends Omit<DesignSystemBadgeProps, "variant"> {
-  /** A canonical severity, or any Meridian readiness string that will be normalized. */
-  status: DesignSystemSeverity | string;
+/**
+ * Map the presentation tones screen view-models already use onto the five severities, so a
+ * screen can hand its tone straight to {@link StatusBadge}. Unrecognized tones escalate to
+ * action, as unrecognized statuses do.
+ */
+export function toneToSeverity(tone: string | null | undefined): DesignSystemSeverity {
+  switch (tone) {
+    case "success":
+    case "positive":
+    case "ready":
+      return "ready";
+    case "primary":
+    case "default":
+    case "review":
+      return "review";
+    case "warning":
+    case "action":
+      return "action";
+    case "danger":
+    case "destructive":
+    case "blocked":
+      return "blocked";
+    case "muted":
+    case "outline":
+    case "neutral":
+    case "info":
+    case null:
+    case undefined:
+      return "info";
+    default:
+      return "action";
+  }
+}
+
+export { statusLabelText, usesTrackedCaps } from "@/design-system/label-case";
+
+export interface StatusBadgeProps extends Omit<HTMLAttributes<HTMLSpanElement>, "children"> {
+  /** A canonical severity, or any Meridian readiness string; normalized onto the five tones. */
+  status?: DesignSystemSeverity | string | null;
+  /** Visible label; defaults to the canonical severity name. */
+  label?: ReactNode;
+  /** Same as `label`, for JSX children. `label` wins when both are given. */
+  children?: ReactNode;
+  /** Prepend a filled status dot. @default true */
+  dot?: boolean;
 }
 
 /**
- * Severity chip built on {@link DesignSystemBadge}, encoding the five canonical operator
- * severities (ready - review - action - blocked - info) with the design-system's semantic
- * state tokens. Any raw readiness string is normalized via
- * {@link normalizeDesignSystemSeverity}.
+ * The one operator status component. Five tones (ready, review, action, blocked, info), shared
+ * with the WPF desktop's `.severity-badge`; any readiness string is normalized by
+ * {@link normalizeDesignSystemSeverity}, which escalates an unrecognized server state to action
+ * rather than hiding it as info. Labels over two words render in normal case.
  *
  * @example
- * <DesignSystemStatus status="ReviewRequired" />       // -> "Review"
- * <DesignSystemStatus status="blocked" dot>Halted</DesignSystemStatus>
+ * <StatusBadge status="ReviewRequired" />          // -> "Review"
+ * <StatusBadge status="Blocked" label="3 breaks" /> // custom label, blocked tone
  */
-export function DesignSystemStatus({ status, children, dot = true, ...props }: DesignSystemStatusProps) {
+export function StatusBadge({ status = "info", label, children, dot = true, className, ...props }: StatusBadgeProps) {
   const severity = normalizeDesignSystemSeverity(status);
+  const content = label ?? children ?? SEVERITY_DEFAULT_LABEL[severity];
+  const classes = [
+    "mds-sev",
+    `mds-sev--${severity}`,
+    usesTrackedCaps(content) ? null : "mds-sev--sentence",
+    className
+  ].filter(Boolean).join(" ");
   return (
-    <DesignSystemBadge variant={SEVERITY_BADGE_VARIANT[severity]} dot={dot} {...props}>
-      {children ?? SEVERITY_DEFAULT_LABEL[severity]}
-    </DesignSystemBadge>
+    <span className={classes} data-design-system-component="Status" data-severity={severity} {...props}>
+      {dot ? <span className="mds-sev__dot" aria-hidden="true" /> : null}
+      {content}
+    </span>
   );
 }
+
+/** @deprecated Use {@link StatusBadge}; kept so existing call sites keep working. */
+export type DesignSystemStatusProps = StatusBadgeProps;
+/** @deprecated Use {@link StatusBadge}. */
+export const DesignSystemStatus = StatusBadge;

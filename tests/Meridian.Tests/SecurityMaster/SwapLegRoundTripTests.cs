@@ -325,8 +325,13 @@ public sealed class SwapLegRoundTripTests
     }
 
     [Fact]
-    public async Task PersistedSwap_ProjectsActualNotionalsAndNetsRetainedLegEconomics()
+    public async Task PersistedSwap_IsBlockedUntilPerLegRateUnitsAreDeclarable()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and a Security Master swap leg can
+        // declare its unit only in a per-leg conventions block the engine refuses
+        // (LegConventionsNotFollowed). Blocked until per-leg units are declarable. Pinned before D3:
+        // fixed legs of 20,000 x 2, floating legs of 8,125 x 4, net -8,125, 11,875, -8,125, 11,875,
+        // no principal and not normalized per 100.
         // First-of-month dates keep all four payments ahead of the real-time cutoff and
         // make the retained 30/360 conventions produce exact quarter/half-year amounts.
         var today = DateOnly.FromDateTime(DateTime.UtcNow.Date);
@@ -380,16 +385,14 @@ public sealed class SwapLegRoundTripTests
         var projection = await service.GetProjectionAsync(persisted.SecurityId, StructuredCashFlowScenario.Base);
 
         projection.Should().NotBeNull();
-        projection!.BlockedReason.Should().BeNull();
-        projection.IsNormalizedPer100.Should().BeFalse();
-        projection.LegSchedules.Should().HaveCount(2);
-        projection.LegSchedules![0].Schedule.Should().HaveCount(2)
-            .And.OnlyContain(static payment => payment.InterestAmount == 20_000m);
-        projection.LegSchedules[1].Schedule.Should().HaveCount(4)
-            .And.OnlyContain(static payment => payment.InterestAmount == 8_125m);
-        projection.Schedule.Select(static payment => payment.InterestAmount)
-            .Should().Equal(-8_125m, 11_875m, -8_125m, 11_875m);
-        projection.Schedule.Should().OnlyContain(static payment => payment.PrincipalAmount == 0m);
+        projection!.BlockedReason.Should().Be(
+            "Rate legs.fixedRate = 0.04 on Swap has no declared unit (Fraction, Percent or BasisPoints). "
+            + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.");
+        projection.Schedule.Should().BeEmpty();
+        projection.LegSchedules.Should().BeNull();
+        // The retained leg economics still survive the round trip and reach the resolver.
+        projection.TermsUsed!.Legs!.Select(static leg => leg.FixedRate).Should().Equal(0.04m, null);
+        projection.TermsUsed.Legs!.Select(static leg => leg.Notional).Should().Equal(1_000_000m, 1_000_000m);
     }
 
     private static StructuredCashFlowTerms Resolve(SecurityProjectionRecord projection)

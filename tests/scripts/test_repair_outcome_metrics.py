@@ -318,7 +318,7 @@ class CollectionHealthTests(unittest.TestCase):
             self.snapshot["collection"] = collection
 
     def test_cli_classifies_without_github_credentials_or_repo_argument(self):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             path = Path(temporary) / "snapshot.json"
             for complete in (True, False):
                 self.snapshot["collection"]["runDataComplete"] = complete

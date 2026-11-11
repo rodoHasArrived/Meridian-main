@@ -84,6 +84,7 @@
     <None Include="..\fixtures\fund-economics\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fund-economics\golden\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\fixed-income\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\fixed-income\%(RecursiveDir)%(Filename)%(Extension)" />
     <None Include="..\fixtures\schedules\golden\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\schedules\golden\%(RecursiveDir)%(Filename)%(Extension)" />
+    <None Include="..\fixtures\cross-screen-counts\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\cross-screen-counts\%(Filename)%(Extension)" />
     <None Include="..\fixtures\security-master\**\*.json" CopyToOutputDirectory="PreserveNewest" Link="fixtures\security-master\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 

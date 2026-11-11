@@ -229,37 +229,48 @@ public sealed class DataSamplingService
         SamplingOptions options,
         CancellationToken ct = default)
     {
-        var response = await _apiClient.PostWithResponseAsync<SampleEstimateResponse>(
-            "/api/sampling/estimate",
-            new
-            {
-                symbols = options.Symbols,
-                fromDate = options.FromDate?.ToString(FormatHelpers.IsoDateFormat),
-                toDate = options.ToDate?.ToString(FormatHelpers.IsoDateFormat),
-                strategy = options.Strategy.ToString(),
-                sampleSize = options.SampleSize,
-                samplePercent = options.SamplePercent,
-                intervalSeconds = options.IntervalSeconds,
-                eventTypes = options.EventTypes
-            },
-            ct);
+        // The server exposes GET /api/sampling/estimate?symbol=... (one symbol per request) and
+        // returns the stored population and a Cochran recommended size. This client used to POST
+        // a body the route does not accept and read fields the server never returned, so every
+        // estimate failed. Query each requested symbol and combine the results.
+        IReadOnlyList<string?> symbols = options.Symbols is { Count: > 0 }
+            ? options.Symbols.Where(static symbol => !string.IsNullOrWhiteSpace(symbol)).Select(static symbol => (string?)symbol).ToList()
+            : [null];
+        if (symbols.Count == 0)
+            symbols = [null];
 
-        if (response.Success && response.Data != null)
+        long population = 0;
+        long recommended = 0;
+        foreach (var symbol in symbols)
         {
-            return new SampleEstimate
+            var endpoint = symbol is null
+                ? "/api/sampling/estimate"
+                : $"/api/sampling/estimate?symbol={Uri.EscapeDataString(symbol)}";
+            var response = await _apiClient.GetWithResponseAsync<SampleEstimateResponse>(endpoint, ct)
+                .ConfigureAwait(false);
+            if (!response.Success || response.Data is null)
             {
-                Success = true,
-                TotalSourceRecords = response.Data.TotalSourceRecords,
-                EstimatedSampleSize = response.Data.EstimatedSampleSize,
-                EstimatedFileSizeBytes = response.Data.EstimatedFileSizeBytes,
-                EstimatedDurationSeconds = response.Data.EstimatedDurationSeconds
-            };
+                return new SampleEstimate
+                {
+                    Success = false,
+                    Error = response.ErrorMessage ?? "Sampling estimate unavailable"
+                };
+            }
+
+            population += response.Data.EstimatedPopulation;
+            recommended += response.Data.RecommendedSampleSize;
         }
 
         return new SampleEstimate
         {
-            Success = false,
-            Error = response.ErrorMessage ?? "Sampling estimate unavailable"
+            Success = true,
+            TotalSourceRecords = population,
+            // An explicit size is honoured up to the available population; otherwise the
+            // server's statistical recommendation is used.
+            EstimatedSampleSize = options.SampleSize is > 0 ? Math.Min(options.SampleSize.Value, population) : recommended,
+            // The server does not estimate output size or duration.
+            EstimatedFileSizeBytes = 0,
+            EstimatedDurationSeconds = 0
         };
     }
 
@@ -541,12 +552,13 @@ public sealed class SamplingResponse
 /// <summary>
 /// Carries API estimates for source records, sampled records, output bytes, and duration.
 /// </summary>
+/// <summary>Shape of <c>GET /api/sampling/estimate</c>.</summary>
 public sealed class SampleEstimateResponse
 {
-    public long TotalSourceRecords { get; set; }
-    public long EstimatedSampleSize { get; set; }
-    public long EstimatedFileSizeBytes { get; set; }
-    public double EstimatedDurationSeconds { get; set; }
+    public long EstimatedPopulation { get; set; }
+    public int RecommendedSampleSize { get; set; }
+    public int DataFilesFound { get; set; }
+    public string? Status { get; set; }
 }
 
 /// <summary>

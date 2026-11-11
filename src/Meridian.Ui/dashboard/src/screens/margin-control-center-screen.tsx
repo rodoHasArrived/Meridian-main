@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { PanelSurface } from "@/components/ui/panel-surface";
 import { certifyMarginSnapshot, getMarginControlCenter } from "@/lib/api";
 import type { MarginControlAccount, MarginControlCenter } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatCurrency, formatNumber, formatUtcTimestamp } from "@/lib/format";
 
 export function MarginControlCenterScreen() {
   const [data, setData] = useState<MarginControlCenter | null>(null);
@@ -37,7 +40,7 @@ export function MarginControlCenterScreen() {
         <div>
           <div className="flex items-center gap-2">
             <ShieldAlert className="h-4 w-4 text-primary" aria-hidden="true" />
-            <h1 className="text-base font-semibold text-foreground">Margin Control Center</h1>
+            <h2 className="text-base font-semibold text-foreground">Margin Control Center</h2>
           </div>
           <p className="mt-1 max-w-3xl text-xs leading-5 text-muted-foreground">
             Compare broker-reported margin to Meridian shadow estimates across accounts and primes. Provider figures
@@ -86,7 +89,7 @@ function SummaryCards({ data, loading }: { data: MarginControlCenter | null; loa
       {items.map(([label, value]) => (
         <Card key={label}>
           <CardContent className="p-4">
-            <p className="text-[0.6875rem] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+            <p className={cn("text-[0.6875rem] font-medium text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p>
             <p className="mt-2 font-mono text-xl font-semibold tabular-nums">{loading ? "—" : value ?? 0}</p>
           </CardContent>
         </Card>
@@ -205,7 +208,7 @@ function AccountMarginCard({ account, onCertified }: { account: MarginControlAcc
               Certification note
               <Input className="mt-1" value={note} onChange={(event) => setNote(event.target.value)} placeholder="Explain the EOD evidence reviewed" />
             </label>
-            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
+            <Button size="sm" onClick={() => void certify()} disabled={!note.trim()} disabledReason="Enter a certification note first." busy={certifying} busyLabel="Certifying…">Certify EOD snapshot</Button>
             {certificationError ? <p className="text-xs text-destructive" role="alert">{certificationError}</p> : null}
           </div>
         ) : account.certificationState === "Certified" ? (
@@ -237,9 +240,9 @@ function Comparison({ label, initial, maintenance, excess, currency }: { label: 
   return <div className="rounded-[2px] border border-border p-3"><p className="text-xs font-semibold">{label}</p><dl className="mt-2 grid grid-cols-3 gap-2 text-xs"><div><dt className="text-muted-foreground">Initial</dt><dd className="mt-1 font-mono">{money(initial, currency)}</dd></div><div><dt className="text-muted-foreground">Maintenance</dt><dd className="mt-1 font-mono">{money(maintenance, currency)}</dd></div><div><dt className="text-muted-foreground">Excess</dt><dd className="mt-1 font-mono">{money(excess, currency)}</dd></div></dl></div>;
 }
 
-function Metric({ label, value }: { label: string; value: string }) { return <div><p className="text-[0.6875rem] uppercase tracking-wide text-muted-foreground">{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
+function Metric({ label, value }: { label: string; value: string }) { return <div><p className={cn("text-[0.6875rem] text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</p><p className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</p></div>; }
 function Th(props: React.ThHTMLAttributes<HTMLTableCellElement>) { return <th className="px-3 py-2 font-medium" {...props} />; }
 function Td({ className = "", ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) { return <td className={`px-3 py-2 ${className}`} {...props} />; }
-function number(value: number) { return new Intl.NumberFormat(undefined, { maximumFractionDigits: 4 }).format(value); }
-function money(value: number | null | undefined, currency = "USD") { return value == null ? "—" : new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 2 }).format(value); }
-function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString(); }
+function number(value: number) { return formatNumber(value, { maximumFractionDigits: 4 }); }
+function money(value: number | null | undefined, currency = "USD") { return formatCurrency(value, { currency, maximumFractionDigits: 2 }); }
+function dateTime(value: string) { const parsed = new Date(value); return Number.isNaN(parsed.getTime()) ? value : formatUtcTimestamp(parsed); }

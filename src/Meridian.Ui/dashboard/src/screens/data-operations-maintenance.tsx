@@ -35,6 +35,9 @@ import type {
   MaintenanceStatistics,
   MaintenanceTaskTypeOption
 } from "@/types/archive-maintenance.types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { formatUtcTimestamp } from "@/lib/format";
 
 const EXECUTION_LIMIT = 25;
 
@@ -148,7 +151,7 @@ export function ArchiveMaintenanceOperations() {
         <div className="grid gap-2 md:grid-cols-4" aria-label="Archive maintenance posture">
           {metrics.map((metric) => (
             <div key={metric.id} className="rounded-[2px] border border-border bg-secondary/20 p-3">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">{metric.label}</div>
+              <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(metric.label) && "uppercase tracking-wide")}>{metric.label}</div>
               <div className={toneTextClassName(metric.tone)}>{metric.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{metric.detail}</div>
             </div>
@@ -171,7 +174,12 @@ export function ArchiveMaintenanceOperations() {
               ))}
             </select>
           </label>
-          <Button size="sm" disabled={!runnableTaskType || busy === "execute"} onClick={() => void runMaintenance()}>
+          <Button
+            size="sm"
+            disabled={!runnableTaskType || busy === "execute"}
+            disabledReason={!runnableTaskType ? "No maintenance task types are available to run." : "A maintenance run is starting."}
+            onClick={() => void runMaintenance()}
+          >
             <Wrench className="mr-2 h-4 w-4" />
             {busy === "execute" ? "Starting…" : "Run maintenance now"}
           </Button>
@@ -260,7 +268,7 @@ function badgeVariant(tone: MaintenanceTone): "default" | "success" | "warning" 
 }
 
 function formatTimestamp(value: string): string {
-  return new Date(value).toLocaleString();
+  return formatUtcTimestamp(new Date(value));
 }
 
 function errorMessage(reason: unknown): string {

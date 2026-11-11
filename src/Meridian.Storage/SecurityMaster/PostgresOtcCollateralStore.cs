@@ -119,24 +119,22 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             SnapshotRecordedEvent,
             stored.ComputedBy,
             stored.ComputedAt,
-            new
-            {
-                snapshotId = stored.SnapshotId,
-                nettingSetId = stored.NettingSetId,
-                collateralAgreementId = stored.CollateralAgreementId,
-                asOfDate = stored.AsOfDate,
-                version = stored.Version,
-                status = stored.Status.ToString(),
-                nettingBasis = stored.NettingBasis.ToString(),
-                provenance = stored.Provenance.ToString(),
-                currency = stored.Currency,
-                netExposure = stored.NetExposure,
-                grossPositive = stored.GrossPositive,
-                grossNegative = stored.GrossNegative,
-                movements = stored.Movements.Select(Describe).ToArray(),
-                blockerCount = stored.Blockers.Count,
-                payloadSha256 = stored.PayloadSha256
-            },
+            new OtcExposureSnapshotRecordedPayload(
+                stored.SnapshotId,
+                stored.NettingSetId,
+                stored.CollateralAgreementId,
+                stored.AsOfDate,
+                stored.Version,
+                stored.Status.ToString(),
+                stored.NettingBasis.ToString(),
+                stored.Provenance.ToString(),
+                stored.Currency,
+                stored.NetExposure,
+                stored.GrossPositive,
+                stored.GrossNegative,
+                stored.Movements.Select(Describe).ToArray(),
+                stored.Blockers.Count,
+                stored.PayloadSha256),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -266,13 +264,11 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             previous is null ? BalanceRecordedEvent : BalanceAmendedEvent,
             balance.UpdatedBy,
             balance.UpdatedAt,
-            new
-            {
-                masterAgreementId = agreement.MasterAgreementId,
-                balance = Describe(balance),
-                previous = previous is null ? null : Describe(previous),
-                changes = previous is null ? [] : ChangedFields(previous, balance)
-            },
+            new OtcCollateralBalanceChangedPayload(
+                agreement.MasterAgreementId,
+                Describe(balance),
+                previous is null ? null : Describe(previous),
+                previous is null ? [] : ChangedFields(previous, balance)),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return balance;
@@ -369,11 +365,9 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             CallIssuedEvent,
             call.UpdatedBy,
             call.UpdatedAt,
-            new
-            {
-                call = Describe(call),
-                snapshot = new { snapshotId = snapshot.SnapshotId, version = snapshot.Version, asOfDate = snapshot.AsOfDate, payloadSha256 = snapshot.PayloadSha256 }
-            },
+            new OtcMarginCallIssuedPayload(
+                Describe(call),
+                new OtcMarginCallSnapshotReferencePayload(snapshot.SnapshotId, snapshot.Version, snapshot.AsOfDate, snapshot.PayloadSha256)),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return call;
@@ -427,13 +421,11 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
             OtcMarginCallRules.EventType(request.Action),
             next.UpdatedBy,
             next.UpdatedAt,
-            new
-            {
-                call = Describe(next),
-                previous = Describe(current),
-                action = request.Action.ToString(),
-                reason = string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim()
-            },
+            new OtcMarginCallTransitionedPayload(
+                Describe(next),
+                Describe(current),
+                request.Action.ToString(),
+                string.IsNullOrWhiteSpace(request.Reason) ? null : request.Reason.Trim()),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return next;
@@ -482,57 +474,51 @@ public sealed class PostgresOtcCollateralStore : IOtcCollateralStore
         return changes;
     }
 
-    private static object Describe(OtcCollateralBalanceDto balance) => new
-    {
-        balanceId = balance.BalanceId,
-        collateralAgreementId = balance.CollateralAgreementId,
-        direction = balance.Direction.ToString(),
-        kind = balance.Kind.ToString(),
-        eligibleCollateralDescription = balance.EligibleCollateralDescription,
-        securityId = balance.SecurityId,
-        currency = balance.Currency,
-        quantity = balance.Quantity,
-        unitValue = balance.UnitValue,
-        valuedAmount = balance.ValuedAmount,
-        haircutPercent = balance.HaircutPercent,
-        valuedAsOf = balance.ValuedAsOf,
-        reference = balance.Reference,
-        notes = balance.Notes,
-        version = balance.Version,
-        updatedBy = balance.UpdatedBy,
-        updatedAt = balance.UpdatedAt
-    };
+    private static OtcCollateralBalancePayload Describe(OtcCollateralBalanceDto balance) => new(
+        balance.BalanceId,
+        balance.CollateralAgreementId,
+        balance.Direction.ToString(),
+        balance.Kind.ToString(),
+        balance.EligibleCollateralDescription,
+        balance.SecurityId,
+        balance.Currency,
+        balance.Quantity,
+        balance.UnitValue,
+        balance.ValuedAmount,
+        balance.HaircutPercent,
+        balance.ValuedAsOf,
+        balance.Reference,
+        balance.Notes,
+        balance.Version,
+        balance.UpdatedBy,
+        balance.UpdatedAt);
 
-    private static object Describe(OtcMarginCallDto call) => new
-    {
-        callId = call.CallId,
-        nettingSetId = call.NettingSetId,
-        collateralAgreementId = call.CollateralAgreementId,
-        snapshotId = call.SnapshotId,
-        kind = call.Kind.ToString(),
-        mover = call.Mover.ToString(),
-        currency = call.Currency,
-        amountCalled = call.AmountCalled,
-        amountAgreed = call.AmountAgreed,
-        status = call.Status.ToString(),
-        issuedOn = call.IssuedOn,
-        dueOn = call.DueOn,
-        disputeReason = call.DisputeReason,
-        settledOn = call.SettledOn,
-        settledAmount = call.SettledAmount,
-        notes = call.Notes,
-        version = call.Version,
-        updatedBy = call.UpdatedBy,
-        updatedAt = call.UpdatedAt
-    };
+    private static OtcMarginCallPayload Describe(OtcMarginCallDto call) => new(
+        call.CallId,
+        call.NettingSetId,
+        call.CollateralAgreementId,
+        call.SnapshotId,
+        call.Kind.ToString(),
+        call.Mover.ToString(),
+        call.Currency,
+        call.AmountCalled,
+        call.AmountAgreed,
+        call.Status.ToString(),
+        call.IssuedOn,
+        call.DueOn,
+        call.DisputeReason,
+        call.SettledOn,
+        call.SettledAmount,
+        call.Notes,
+        call.Version,
+        call.UpdatedBy,
+        call.UpdatedAt);
 
-    private static object Describe(OtcCollateralMovementDto movement) => new
-    {
-        kind = movement.Kind.ToString(),
-        mover = movement.Mover.ToString(),
-        amount = movement.Amount,
-        currency = movement.Currency
-    };
+    private static OtcCollateralMovementPayload Describe(OtcCollateralMovementDto movement) => new(
+        movement.Kind.ToString(),
+        movement.Mover.ToString(),
+        movement.Amount,
+        movement.Currency);
 
     private static void AddCallParameters(NpgsqlCommand command, OtcMarginCallDto call)
     {

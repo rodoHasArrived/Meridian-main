@@ -6,6 +6,8 @@ import {
   type DataProvenanceKind
 } from "@/app-shell.data-provenance-badge";
 import type { DataWorkspaceResponse, SessionInfo } from "@/types";
+import { countProviderHealth } from "@/lib/cross-screen-counts";
+import type { WorkstationCrossScreenCounts, WorkstationProviderHealthCount } from "@/types/cross-screen-counts";
 
 export type AppShellTrustStripTone = "ready" | "review" | "blocked" | "pending";
 
@@ -20,9 +22,72 @@ export interface AppShellTrustStripItem {
   actionLabel: string | null;
 }
 
+/**
+ * The session environment as the masthead pill's leading segment. PAPER vs LIVE is the one
+ * fact an operator cannot afford to lose, so it carries its own variant (LIVE uses the
+ * alarm-red `--live-env` token) and never shrinks, whatever else the pill truncates.
+ */
+export interface AppShellTrustStripEnvironment {
+  label: string;
+  variant: "live" | "paper" | "research" | "default";
+  /**
+   * The data qualifier that rides beside the environment: SEEDED, SIMULATED, SAMPLE or UNKNOWN
+   * whenever the loaded data is not confirmed real, and null for real data. It replaces the
+   * separate sample-data chip, so the badge is the one place that says what the operator is
+   * looking at.
+   */
+  dataLabel: string | null;
+}
+
 export interface AppShellTrustStripState {
   ariaLabel: string;
+  environment: AppShellTrustStripEnvironment;
   items: AppShellTrustStripItem[];
+}
+
+function buildTrustStripEnvironment(
+  session: SessionInfo | null,
+  loading: boolean,
+  dataLabel: string | null
+): AppShellTrustStripEnvironment {
+  return { ...resolveEnvironmentBadge(session, loading), dataLabel };
+}
+
+function resolveEnvironmentBadge(
+  session: SessionInfo | null,
+  loading: boolean
+): Pick<AppShellTrustStripEnvironment, "label" | "variant"> {
+  switch (session?.environment) {
+    case "live":
+      return { label: "LIVE", variant: "live" };
+    case "paper":
+      return { label: "PAPER", variant: "paper" };
+    case "research":
+      return { label: "DEMO", variant: "research" };
+    default:
+      return loading ? { label: "LOADING", variant: "default" } : { label: "DEMO", variant: "research" };
+  }
+}
+
+/**
+ * The one rule for the data-source tone, read by the masthead, every page status row and Today.
+ *
+ * Declared demo data on a PAPER or DEMO session is the expected state: the environment badge
+ * names it permanently, so it is not also raised as a warning. It becomes an issue only when the
+ * operator could be misled: provenance that was never confirmed, or non-real data inside a LIVE
+ * session.
+ */
+export function resolveDataSourceTone(
+  provenance: DataProvenanceKind,
+  environment: SessionInfo["environment"] | null | undefined
+): AppShellTrustStripTone {
+  if (provenance === "real") {
+    return "ready";
+  }
+  if (provenance === "unknown") {
+    return "review";
+  }
+  return environment === "live" ? "blocked" : "ready";
 }
 
 export function buildTrustStripState({
@@ -32,7 +97,8 @@ export function buildTrustStripState({
   dataProvenance,
   workspaceErrors,
   session,
-  data
+  data,
+  crossScreenCounts = null
 }: {
   loading: boolean;
   bootstrapFailed: boolean;
@@ -41,9 +107,12 @@ export function buildTrustStripState({
   workspaceErrors: AppShellWorkspaceErrorMap;
   session: SessionInfo | null;
   data: DataWorkspaceResponse | null;
+  /** The shell's cross-screen counts; used for provider health on routes without the Data workspace. */
+  crossScreenCounts?: WorkstationCrossScreenCounts | null;
 }): AppShellTrustStripState {
   const providerPosture = buildProviderTrustStripItem({
     data,
+    sharedProviders: crossScreenCounts?.providers ?? null,
     loading,
     bootstrapFailed,
     dataWorkspaceError: workspaceErrors.data
@@ -62,13 +131,9 @@ export function buildTrustStripState({
       : session?.environment === "paper"
         ? "Paper"
         : "Demo";
-  const environmentTone: AppShellTrustStripTone = loading
-    ? "pending"
-    : environmentValue === "Live"
-      ? "review"
-      : environmentValue === "Paper"
-        ? "ready"
-        : "review";
+  // The environment is identity, not a warning: LIVE is announced by the alarm-red badge and
+  // never counted as an issue on its own.
+  const environmentTone: AppShellTrustStripTone = loading ? "pending" : "ready";
   const environmentDetail = loading
     ? "Session environment is loading."
     : session?.environment === "research"
@@ -78,11 +143,11 @@ export function buildTrustStripState({
         : "Session environment is not loaded; Demo is the safe default.";
 
   const dataSourceValue = resolvedProvenance.toUpperCase();
-  const dataSourceTone: AppShellTrustStripTone = provenanceBadge.visible
-    ? "review"
-    : "ready";
+  const dataSourceTone = resolveDataSourceTone(resolvedProvenance, session?.environment);
   const dataSourceDetail = provenanceBadge.visible
-    ? `${provenanceBadge.headline}. ${provenanceBadge.detail}`
+    ? dataSourceTone === "blocked"
+      ? `${provenanceBadge.headline} in a LIVE session. ${provenanceBadge.detail}`
+      : `${provenanceBadge.headline}. ${provenanceBadge.detail}`
     : "Server mode evidence identifies the loaded workstation data as real.";
   const dataSourceHref = provenanceBadge.visible
     ? WORKSTATION_ROUTE_CATALOG.dataProviders
@@ -93,6 +158,14 @@ export function buildTrustStripState({
 
   return {
     ariaLabel: "Workstation build, environment, provenance, and provider posture",
+    // Follows the session itself, not the workspace bootstrap: the session card this badge
+    // replaced showed PAPER/LIVE as soon as the session resolved, so a known environment is
+    // never hidden behind LOADING while workspace data is still arriving.
+    environment: buildTrustStripEnvironment(
+      session,
+      loading,
+      provenanceBadge.visible ? provenanceBadge.label : null
+    ),
     items: [
       {
         id: "build",
@@ -133,15 +206,33 @@ export function buildTrustStripState({
 
 function buildProviderTrustStripItem({
   data,
+  sharedProviders,
   loading,
   bootstrapFailed,
   dataWorkspaceError
 }: {
   data: DataWorkspaceResponse | null;
+  sharedProviders: WorkstationProviderHealthCount | null;
   loading: boolean;
   bootstrapFailed: boolean;
   dataWorkspaceError?: string;
 }): AppShellTrustStripItem {
+  if (!data && sharedProviders) {
+    // Routes that do not load the Data workspace show the same count the Data screen shows.
+    const value = `${sharedProviders.healthy}/${sharedProviders.total} healthy`;
+    const detail = `${formatCount(sharedProviders.healthy, "provider")} healthy of ${sharedProviders.total} listed in Data provider posture.`;
+    return {
+      id: "providers",
+      label: "Providers",
+      value,
+      detail,
+      tone: sharedProviders.total > 0 && sharedProviders.healthy === sharedProviders.total ? "ready" : "review",
+      ariaLabel: `Providers ${value}. ${detail}`,
+      href: WORKSTATION_ROUTE_CATALOG.dataProviders,
+      actionLabel: "Open provider posture"
+    };
+  }
+
   if (!data) {
     if (loading) {
       return {
@@ -193,7 +284,7 @@ function buildProviderTrustStripItem({
   const blocked = providers.filter((provider) => provider.status === "Blocked").length;
   const degraded = providers.filter((provider) => provider.status === "Degraded").length;
   const warning = providers.filter((provider) => provider.status === "Warning").length;
-  const healthy = providers.filter((provider) => provider.status === "Healthy").length;
+  const healthy = countProviderHealth(providers)?.healthy ?? 0;
   const value = blocked > 0
     ? `${blocked} blocked`
     : degraded > 0

@@ -18,6 +18,7 @@ import {
   type ReportingCommandStatus
 } from "@/screens/reporting-screen.shared-components";
 import type { ReportWriterDatasetSource } from "@/types";
+import { eyebrowClassName } from "@/design-system/label-case";
 
 export type ExportsReportRunDraftField =
   | "templateRowId"
@@ -124,7 +125,7 @@ export function ExportsReportRunner({
         <CardHeader>
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
-              <div className="eyebrow-label">{workspaceLabel}</div>
+              <div className={eyebrowClassName(workspaceLabel)}>{workspaceLabel}</div>
               <CardTitle>Run a governed report now</CardTitle>
               <CardDescription>
                 Submit approved Reporting templates through Meridian reporting services with explicit date, requester, retry, and dataset context.

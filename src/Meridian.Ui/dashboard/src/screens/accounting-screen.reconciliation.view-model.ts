@@ -43,6 +43,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 type StatementRunSummaryWithMetadata = StatementRunSummary & {
   brokerCustodian?: string | null;
@@ -304,18 +305,18 @@ export function buildReconciliationComparisonViewState({
     const queueMatch = fallbackQueue.find((item) => item.runId === run.runId);
     const ledgerTitle = queueMatch?.strategyName ?? "Meridian ledger";
     const ledgerMeta = [
-      matchCount.toLocaleString() + " matched",
-      openCount > 0 ? openCount.toLocaleString() + " open" : "no open breaks"
+      formatCount(matchCount) + " matched",
+      openCount > 0 ? formatCount(openCount) + " open" : "no open breaks"
     ].join(" · ");
 
     return {
       id: run.runId,
       statementTitle: brokerCustodian,
       statementMeta: `${period} · ${account}`,
-      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${matchCount.toLocaleString()} matched`,
+      statementValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalCash) : `${formatCount(matchCount)} matched`,
       ledgerTitle,
       ledgerMeta,
-      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${openCount.toLocaleString()} open` : "Matched"),
+      ledgerValue: index === 0 && cashFlow ? formatCurrency(cashFlow.totalLedgerCash) : (openCount > 0 ? `${formatCount(openCount)} open` : "Matched"),
       statusLabel,
       statusTone: rawStatus === "SecurityCoverageOpen"
         ? "danger"
@@ -383,7 +384,7 @@ export function buildReconciliationComparisonViewState({
       ? "Balanced"
       : Math.abs(netVariance) >= 0.005
         ? `Out by ${formatCurrencyForCode(Math.abs(netVariance), summaryCurrency)}`
-        : `${openCount.toLocaleString()} open break${openCount === 1 ? "" : "s"}`;
+        : `${formatCount(openCount)} open break${openCount === 1 ? "" : "s"}`;
   } else {
     matchedCount = sourceRows.reduce((total, run) => total + (run.matchCount ?? run.positionMatches + run.cashMatches + run.transactionMatches), 0);
     openCount = sourceRows.reduce((total, run) => total + run.openExceptionCount, 0);
@@ -399,8 +400,8 @@ export function buildReconciliationComparisonViewState({
     subtitle: cashFlow?.summary ?? "Broker and custodian statements are compared with Meridian ledger balances from shared reconciliation read models.",
     statementHeading: hasTransactionLines ? "Custodian statement" : "Statement",
     ledgerHeading: hasTransactionLines ? "Internal ledger" : "Ledger",
-    matchedBadgeLabel: `${matchedCount.toLocaleString()} matched`,
-    openBadgeLabel: `${openCount.toLocaleString()} open`,
+    matchedBadgeLabel: `${formatCount(matchedCount)} matched`,
+    openBadgeLabel: `${formatCount(openCount)} open`,
     statementBalanceLabel,
     ledgerBalanceLabel,
     varianceLabel,

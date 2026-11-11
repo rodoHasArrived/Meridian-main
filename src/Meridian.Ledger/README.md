@@ -11,6 +11,10 @@ last_reviewed: 2026-10-02
 
 # src/Meridian.Ledger
 
+`LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
+
+Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
+
 `PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
 governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
 partial receipt while retaining the originating installment and fund-event identity. Historical
@@ -27,7 +31,11 @@ requires source-backed opening authority instead of inferring commitments from a
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
-`ShortLotJournalProjector` owns book accounting for governed short opening and cover. Quantities
+`ShortLotJournalProjector` owns book accounting for governed short opening and cover; its
+`CoverInCurrency` derives the transaction-currency cover with fees from reviewed `ShortCoverTerms`
+(cash at cover FX, liability relief at acquisition FX, fee expense, book result at acquisition FX and
+a separate realized FX result, each amount rounded once to its currency's minor units), and `Reverse`
+yields the exact inverse of a posted short journal for immutable reversal receipts. Quantities
 and retained proceeds stay positive; direction selects liability accounting. A cover relieves
 opening proceeds against cash execution cost and recognizes the difference as book gain/loss.
 It does not infer short-sale tax character or manufacture corporate-action payments.

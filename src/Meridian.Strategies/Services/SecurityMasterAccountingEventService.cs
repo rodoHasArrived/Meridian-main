@@ -53,7 +53,20 @@ public sealed record SecurityFixedIncomeTerms(
     decimal? CurrentFactor = null,
     decimal? OriginalFace = null,
     decimal? CurrentFace = null,
-    bool RequiresFactorSchedule = false);
+    bool RequiresFactorSchedule = false)
+{
+    /// <summary>
+    /// The unit the record itself declares for <see cref="CouponRate"/> (its
+    /// <c>scheduleConventions.couponRateUnit</c>), or <see langword="null"/> when it declares none.
+    /// </summary>
+    public RateUnit? CouponRateUnit { get; init; }
+
+    /// <summary>
+    /// The catalog asset class whose rate-field defaults (<see cref="SecurityRateFieldUnits"/>) apply to
+    /// <see cref="CouponRate"/>; <see langword="null"/> reads the security's accounting asset class.
+    /// </summary>
+    public string? TermsAssetClass { get; init; }
+}
 
 public sealed record SecurityAccountingRule(
     string AccountingClassification,
@@ -391,6 +404,22 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             issues.Add(CreateIssue("SM_COUPON_TERMS_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing coupon rate.", ReconciliationBreakSeverity.High));
         }
 
+        // A fixed coupon posts only under a declared unit (review D10, slice 4): an undeclared legacy
+        // rate is refused with its reason instead of posting an amount guessed from its magnitude.
+        if (terms.CouponRate is { } couponRate
+            && terms.CouponType?.Equals("Fixed", StringComparison.OrdinalIgnoreCase) == true
+            && ResolveCouponRate(security, couponRate) is var (resolution, field)
+            && !resolution.TryGetFraction(out _))
+        {
+            issues.Add(CreateIssue(
+                resolution is RateUnitResolution.OutOfRange ? "SM_COUPON_RATE_OUT_OF_RANGE" : "SM_COUPON_RATE_UNIT_UNDECLARED",
+                "security-master",
+                security.Symbol,
+                accountId,
+                $"Security '{security.Symbol}': {RateUnitNormalizer.DescribeRefusal(resolution, terms.TermsAssetClass ?? security.AssetClass, field)} No coupon accrual or receipt was generated.",
+                ReconciliationBreakSeverity.High));
+        }
+
         if (string.IsNullOrWhiteSpace(terms.DayCountConvention))
         {
             issues.Add(CreateIssue("SM_DAY_COUNT_MISSING", "security-master", security.Symbol, accountId, $"Security '{security.Symbol}' is missing day-count convention.", ReconciliationBreakSeverity.High));
@@ -433,7 +462,13 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         var convention = DayCountConventions.Parse(terms.DayCountConvention);
         var accrualDays = DayCountConventions.Days(convention, start, end);
         var fraction = DayCountConventions.Fraction(convention, start, end);
-        var accruedAmount = RoundMoney(position.ParAmount * NormalizeRate(terms.CouponRate!.Value) * fraction);
+        // The coverage gate refuses an unresolved unit before generation, so the rate resolves here.
+        if (!ResolveCouponRate(security, terms.CouponRate!.Value).Resolution.TryGetFraction(out var annualRate))
+        {
+            return;
+        }
+
+        var accruedAmount = RoundMoney(position.ParAmount * annualRate * fraction);
         if (accruedAmount <= 0m)
         {
             return;
@@ -476,7 +511,7 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
             couponDate >= request.PeriodStart &&
             couponDate < request.PeriodEnd)
         {
-            var couponAmount = RoundMoney(position.ParAmount * NormalizeRate(terms.CouponRate.Value) / terms.PaymentFrequencyPerYear!.Value);
+            var couponAmount = RoundMoney(position.ParAmount * annualRate / terms.PaymentFrequencyPerYear!.Value);
             if (couponAmount > 0m)
             {
                 var couponSnapshot = CreateSnapshot(request, security, position, priorFactor: null, currentFactor: terms.CurrentFactor);
@@ -876,7 +911,17 @@ public sealed class SecurityMasterAccountingEventService : ISecurityMasterAccoun
         decimal? actualAmount = null) =>
         new(code, source, symbol, accountId, reason, severity, "/workstation/data/security-master", expectedAmount, actualAmount);
 
-    private static decimal NormalizeRate(decimal rate) => rate > 1m ? rate / 100m : rate;
+    /// <summary>
+    /// Reads the coupon through <see cref="RateUnitNormalizer"/>: the record's declared unit, then the
+    /// coupon field's declared default for the terms' catalog class. Magnitude never selects a unit.
+    /// </summary>
+    private static (RateUnitResolution Resolution, string Field) ResolveCouponRate(SecurityMasterAccountingSecurity security, decimal couponRate)
+    {
+        var terms = security.FixedIncomeTerms!;
+        var assetClass = terms.TermsAssetClass ?? security.AssetClass;
+        var field = SecurityRateFieldUnits.CouponFieldKey(assetClass);
+        return (RateUnitNormalizer.Normalize(assetClass, field, couponRate, terms.CouponRateUnit), field);
+    }
 
     private static decimal RoundMoney(decimal value) => decimal.Round(value, 2, MidpointRounding.AwayFromZero);
 

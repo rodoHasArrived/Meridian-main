@@ -1,18 +1,21 @@
 import type { ReactNode } from "react";
-import { AlertTriangle, Info, RefreshCcw } from "lucide-react";
+import { AlertTriangle, ChevronRight, RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb";
+import type { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { WorkspaceOverflowMenu } from "@/components/meridian/workspace-views-menu";
 import { buildWorkspaceHeaderViewModel } from "@/components/meridian/workspace-header.view-model";
 import type { SessionInfo, WorkspaceSummary } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /**
- * Top-of-workspace header strip rendered inside each workspace layout.
+ * Single-row workspace header rendered above every route.
  *
- * Displays the workspace title, posture, description, and an optional refresh action. When the
- * active session environment is `"live"`,
- * a high-contrast alarm banner is prepended to warn operators they are in a
- * real-money environment.
+ * Left: the breadcrumb, whose last crumb is the page name and the page heading
+ * (`Trading > Orders`). Centre: the operating-scope chip. Right: Refresh, the shell actions
+ * (Views) and an overflow menu holding Copy link and the About text. The route body carries the
+ * task title ("Orders blotter"); the header never repeats the workspace name as a second heading.
  *
  * **Live banner:** built from `WorkspaceSummary.environment` — shown automatically
  * when `session.environment === "live"`. Uses `--state-live-*` CSS tokens and
@@ -24,22 +27,29 @@ import type { SessionInfo, WorkspaceSummary } from "@/types";
  *
  * @example
  * <WorkspaceHeader
+ *   breadcrumbItems={[{ label: "Trading", onClick: openTrading }, { label: "Orders" }]}
  *   workspace={workspaceSummary}
  *   session={session}
+ *   scope={<OperatingScopeChip viewModel={continuity} onEditOperatingContext={openScopePicker} />}
  *   onRefresh={() => void refresh()}
  *   refreshing={isRefreshing}
  * />
  */
 interface WorkspaceHeaderProps {
+  /** Ancestors followed by the current page; the last item renders as the heading. */
   breadcrumbItems?: BreadcrumbItem[];
   workspace: WorkspaceSummary;
   session: SessionInfo | null;
   onRefresh?: () => void;
   refreshing?: boolean;
-  /** Shell-provided header actions (e.g. copy link, save view), rendered before refresh. */
+  /** Shell-provided header actions (e.g. Views), rendered after refresh. */
   actions?: ReactNode;
-  /** Persistent scope and optional workflow disclosure in the compact header. */
-  context?: ReactNode;
+  /** Rarely used actions (e.g. Copy link), rendered inside the overflow menu. */
+  overflowActions?: ReactNode;
+  /** Closes the overflow menu when the route changes. */
+  routeKey?: string;
+  /** The operating-scope chip, centred in the row. */
+  scope?: ReactNode;
 }
 
 export function WorkspaceHeader({
@@ -49,13 +59,18 @@ export function WorkspaceHeader({
   onRefresh,
   refreshing = false,
   actions,
-  context
+  overflowActions,
+  routeKey,
+  scope
 }: WorkspaceHeaderProps) {
+  const currentCrumb = breadcrumbItems.at(-1);
+  const ancestors = breadcrumbItems.slice(0, -1);
   const viewModel = buildWorkspaceHeaderViewModel({
     workspace,
     session,
     canRefresh: Boolean(onRefresh),
-    refreshing
+    refreshing,
+    pageTitle: typeof currentCrumb?.label === "string" ? currentCrumb.label : undefined
   });
 
   return (
@@ -73,38 +88,41 @@ export function WorkspaceHeader({
           aria-label={viewModel.liveBanner.ariaLabel}
         >
           <AlertTriangle className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-          <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em]">
+          <span className={cn("text-[10px] font-semibold", usesTrackedCaps(viewModel.liveBanner.label) && "font-mono uppercase tracking-[0.14em]")}>
             {viewModel.liveBanner.label}
           </span>
           <span className="text-xs leading-5 opacity-80">{viewModel.liveBanner.detail}</span>
         </div>
       ) : null}
-      <div className="workspace-header-shell workstation-header-compact">
-        <div className="workstation-header-location">
-          {breadcrumbItems.length > 0 ? <Breadcrumb items={breadcrumbItems} /> : null}
-          <div className="workstation-header-title-row">
-            <h1 className="font-display font-semibold text-foreground">{viewModel.title}</h1>
-            {viewModel.badges.map((badge) => (
-              <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
-                {badge.label}
-              </Badge>
+      {/* One row, in visual and focus order: breadcrumb ending in the page heading, the scope
+          chip, then the actions. */}
+      <div className="workspace-header-shell workstation-header-row">
+        <nav aria-label="Breadcrumb" className="workstation-header-crumbs">
+          <ol>
+            {ancestors.map((item, index) => (
+              <li key={`${index}-${String(item.label)}`}>
+                {item.href ? (
+                  <a className="workstation-header-crumb" href={item.href}>{item.label}</a>
+                ) : (
+                  <button type="button" className="workstation-header-crumb" onClick={item.onClick} disabled={!item.onClick}>
+                    {item.label}
+                  </button>
+                )}
+                <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/60" aria-hidden="true" />
+              </li>
             ))}
-            <details className="workstation-header-info" onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                event.preventDefault();
-                event.currentTarget.open = false;
-                event.currentTarget.querySelector("summary")?.focus();
-              }
-            }}>
-              <summary aria-label={`About ${workspace.label}`} title={`About ${workspace.label}`}>
-                <Info className="size-4" aria-hidden="true" />
-              </summary>
-              <p>{viewModel.description}</p>
-            </details>
-          </div>
-        </div>
+            <li>
+              <h1 className="type-page-title text-foreground" aria-current="page">{currentCrumb?.label ?? viewModel.title}</h1>
+              {viewModel.badges.map((badge) => (
+                <Badge key={badge.id} variant={badge.variant} aria-label={badge.ariaLabel}>
+                  {badge.label}
+                </Badge>
+              ))}
+            </li>
+          </ol>
+        </nav>
+        {scope ? <div className="workstation-header-scope">{scope}</div> : null}
         <div className="workstation-header-actions">
-          {actions}
           {viewModel.refreshAction && onRefresh ? (
             <Button
               variant="ghost"
@@ -122,8 +140,15 @@ export function WorkspaceHeader({
               <span>{refreshing ? "Refreshing" : "Refresh"}</span>
             </Button>
           ) : null}
+          {actions}
+          <WorkspaceOverflowMenu routeKey={routeKey}>
+            {overflowActions}
+            <section className="workstation-header-about" aria-label={viewModel.aboutLabel}>
+              <p>{viewModel.description}</p>
+              <p className="text-muted-foreground">{viewModel.maturityNote}</p>
+            </section>
+          </WorkspaceOverflowMenu>
         </div>
-        {context ? <div className="workstation-header-context">{context}</div> : null}
         <span className="sr-only" aria-label={viewModel.sessionPillAriaLabel}>{viewModel.sessionLabel}</span>
       </div>
       <span className="sr-only" aria-live="polite">{viewModel.liveAnnouncement}</span>

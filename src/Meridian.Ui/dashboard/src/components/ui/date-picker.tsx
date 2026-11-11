@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface DatePickerProps {
   value?: string | null;
@@ -67,7 +68,7 @@ export function DatePicker({ value, onChange, label, placeholder = "Select dateâ
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <label htmlFor={id} className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={id} className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </label>
       ) : null}

@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
+import { eyebrowClassName } from "@/design-system/label-case";
+import { pluralizeCount } from "@/lib/format";
 
 export function DataOverviewHub({
   vm,
@@ -26,21 +28,21 @@ export function DataOverviewHub({
       title: "Import retained files",
       description: "Choose a governed template and preview a retained source before validation handoff.",
       href: WORKSTATION_ROUTE_CATALOG.dataImport,
-      status: `${vm.uploadPanelState.templateOptions.length} templates`
+      status: pluralizeCount(vm.uploadPanelState.templateOptions.length, "template")
     },
     {
       id: "backfills",
       title: "Backfill queue",
       description: "Inspect historical repair pressure and selected job evidence.",
       href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
-      status: `${vm.backfillSection.rows.length} jobs`
+      status: pluralizeCount(vm.backfillSection.rows.length, "job")
     },
     {
       id: "exports",
       title: "Export packages",
       description: "Review retained export records and downstream handoff posture.",
       href: WORKSTATION_ROUTE_CATALOG.dataExports,
-      status: `${vm.exportSection.rows.length} packages`
+      status: pluralizeCount(vm.exportSection.rows.length, "package")
     },
     {
       id: "query",
@@ -77,7 +79,7 @@ export function DataOverviewHub({
       <div role="status" className="workspace-task-health">
         <strong>Data operations</strong>
         <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
-          {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
+          {degradedPanelCount > 0 ? `${pluralizeCount(degradedPanelCount, "diagnostic")} unavailable` : "Diagnostics ready"}
         </Badge>
       </div>
       <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
@@ -93,7 +95,7 @@ export function RouteFocusCard({ state }: { state: DataOperationsRouteFocusCardS
   return (
     <Card id={state.id} role={state.role} aria-label={state.ariaLabel} className="panel-surface-strong">
       <CardHeader>
-        <div className="eyebrow-label">{state.eyebrow}</div>
+        <div className={eyebrowClassName(state.eyebrow)}>{state.eyebrow}</div>
         <CardTitle>{state.title}</CardTitle>
         <CardDescription>{state.description}</CardDescription>
       </CardHeader>

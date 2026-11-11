@@ -1696,7 +1696,7 @@ describe("accounting-screen view model", () => {
     });
     expect(state.rows[0]).toMatchObject({
       rowId: "journal-cash-1",
-      timestampLabel: "Jun 30, 14:30 UTC",
+      timestampLabel: "Jun 30, 2026, 14:30 UTC",
       amountLabel: "$120,500 debit / $120,500 credit",
       lineCountLabel: "2 lines",
       dimensionLabel: "Fund: fund-alpha / Entity: entity-alpha / Sleeve: sleeve-credit +2",

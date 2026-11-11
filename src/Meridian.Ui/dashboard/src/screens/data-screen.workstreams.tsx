@@ -21,6 +21,8 @@ import {
   type DataOperationsExportRow,
   type useDataViewModel
 } from "@/screens/data-screen.view-model";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 type DataOperationsVm = ReturnType<typeof useDataViewModel>;
 
@@ -612,7 +614,7 @@ function EmptyState({ state }: { state: DataOperationsEmptyState }) {
 function FieldTile({ field }: { field: DataOperationsDetailField }) {
   return (
     <div className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-      <div className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{field.label}</div>
+      <div className={cn("text-[11px] font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-wide")}>{field.label}</div>
       <div className="mt-1 min-w-0 break-words text-sm font-medium text-foreground">{field.value}</div>
     </div>
   );

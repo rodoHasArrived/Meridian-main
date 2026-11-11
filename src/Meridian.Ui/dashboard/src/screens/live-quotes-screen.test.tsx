@@ -1311,10 +1311,12 @@ describe("LiveQuotesScreen quick trade", () => {
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Enter a symbol before loading live market data.");
     expect(screen.getByText("Enter a symbol to load live BBO, recent trades, and L2 depth.")).toBeInTheDocument();
+    // One explanation and one next step: no "No symbols" repeated across the strip, matrix and table.
     expect(screen.getByText("Start a quote list")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Add starter symbols" })).toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "Add starter symbols" })).toHaveLength(1);
     expect(screen.getByRole("link", { name: "Import symbols from watchlist" })).toHaveAttribute("href", "/data/quotes?view=watchlist");
-    expect(screen.getByRole("button", { name: "Search symbol" })).toBeInTheDocument();
+    expect(screen.queryByText(/No symbols/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("treegrid", { name: "Live quote matrix" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Selected symbol detail" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Open replay workflow" })).not.toBeInTheDocument();
     expect(api.getLiveQuote).not.toHaveBeenCalled();

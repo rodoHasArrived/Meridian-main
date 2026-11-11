@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -121,6 +122,28 @@ public sealed class SecurityMasterInstrumentPassportTests
             !string.IsNullOrWhiteSpace(handoff.BlockerReason) &&
             handoff.ImpactedOutputs.Count > 0 &&
             !string.IsNullOrWhiteSpace(handoff.Route));
+    }
+
+    [Fact]
+    public async Task GetInstrumentPassportAsync_LegacyUnionPayload_IsDecodedOnceAndShownVerbatim()
+    {
+        // A retained free-text payload is the label itself. The trust snapshot's economic definition
+        // decodes it once; the passport summaries and classification profile must use that decoded
+        // value rather than decode it again (which would blank "None" and unwrap "Some(Equity)").
+        var securityId = Guid.Parse("0C5B7E16-2F4D-4E9B-9C1A-6D3B2A8E4F10");
+        var queryService = new StubSecurityMasterQueryService(
+            securityId,
+            assetFamily: "Some(OtherFamily \"Some(Equity)\")",
+            subType: "OtherSubType \"None\"");
+        var service = CreateService(queryService);
+
+        var passport = await service.GetInstrumentPassportAsync(securityId, fundProfileId: null);
+        var snapshot = await service.GetTrustSnapshotAsync(securityId, fundProfileId: null);
+
+        snapshot!.EconomicDefinition.AssetFamily.Should().Be("Some(Equity)");
+        snapshot.EconomicDefinition.SubType.Should().Be("None");
+        passport!.ClassificationProfile!.AssetFamily.Should().Be("Some(Equity)");
+        passport.ClassificationProfile.SubType.Should().Be("None");
     }
 
     [Fact]
@@ -355,7 +378,7 @@ public sealed class SecurityMasterInstrumentPassportTests
         var dataQualityService = Substitute.For<ISecurityMasterDataQualityService>();
         dataQualityService.GetLatestReportAsync(Arg.Any<CancellationToken>())
             .Returns(Task.FromResult<SecurityMasterQualityReportDto?>(new SecurityMasterQualityReportDto(
-                now,
+                now.ToOffset(TimeSpan.FromHours(-4)),
                 1,
                 0,
                 [])));
@@ -381,6 +404,8 @@ public sealed class SecurityMasterInstrumentPassportTests
         sections["cash-flow-source-governance"].Summary.Should().Contain("ClientProvided");
         sections["vendor-entitlements"].Summary.Should().Contain("direct-client contract");
         sections["data-quality-controls"].Status.Should().Be("Ready");
+        sections["data-quality-controls"].Summary.Should().Contain(
+            $"from the {now.UtcDateTime.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture)} UTC run");
         sections["manual-change-review"].Summary.Should().Contain("manual change");
         passport.OperatingModel.Should().NotBeNull();
         passport.OperatingModel!.ManualChangeApproval.PolicyKey.Should().Be("operations-continuity.security-master-override");
@@ -518,7 +543,10 @@ public sealed class SecurityMasterInstrumentPassportTests
             tenancyRegistry,
             httpContextAccessor);
 
-    private sealed class StubSecurityMasterQueryService(Guid securityId)
+    private sealed class StubSecurityMasterQueryService(
+        Guid securityId,
+        string? assetFamily = "Public Equity",
+        string subType = "CommonShare")
         : ContractSecurityMasterQueryService
     {
         private readonly DateTimeOffset _effectiveFrom = new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero);
@@ -590,8 +618,8 @@ public sealed class SecurityMasterInstrumentPassportTests
                 ? new SecurityEconomicDefinitionRecord(
                     SecurityId: securityId,
                     AssetClass: "Equity",
-                    AssetFamily: "Public Equity",
-                    SubType: "CommonShare",
+                    AssetFamily: assetFamily,
+                    SubType: subType,
                     TypeName: "Common Share",
                     IssuerType: "Corporate",
                     RiskCountry: "US",

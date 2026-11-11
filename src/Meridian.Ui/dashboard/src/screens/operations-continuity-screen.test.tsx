@@ -1086,7 +1086,7 @@ describe("OperationsContinuityScreen", () => {
     });
     const gates = screen.getByRole("table", { name: "Operations continuity gates" });
     const brokerIntakeGate = within(gates).getByRole("row", { name: "Broker intake gate, Passed, 0 blockers" });
-    expect(within(brokerIntakeGate).getByText("May 08, 14:20 UTC by Operations user")).toBeInTheDocument();
+    expect(within(brokerIntakeGate).getByText("May 8, 2026, 14:20 UTC by Operations user")).toBeInTheDocument();
     const completionIdentity = within(brokerIntakeGate).getByText("Completion identity").closest("details");
     expect(completionIdentity).not.toHaveAttribute("open");
     expect(within(completionIdentity as HTMLElement).getByText("Actor ID: ops-user")).toBeInTheDocument();
@@ -1109,12 +1109,12 @@ describe("OperationsContinuityScreen", () => {
     const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
     expect(within(breakCases).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(breakCases).getByText("fund-controller")).toBeInTheDocument();
-    expect(within(breakCases).getByText("Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance -2")).toBeInTheDocument();
     expect(within(breakCases).getByText("1 retained evidence link")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open retained evidence for break recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
-    expect(within(breakCases).getByText("SLA Warning due May 09, 16:00 UTC")).toBeInTheDocument();
+    expect(within(breakCases).getByText("SLA Warning due May 9, 2026, 16:00 UTC")).toBeInTheDocument();
     expect(within(breakCases).getByText("Materiality 2")).toBeInTheDocument();
     expect(within(breakCases).getByText("Root cause Broker Cash Timing")).toBeInTheDocument();
     expect(within(breakCases).getByText("Approval Ready For Signoff")).toBeInTheDocument();
@@ -1227,7 +1227,7 @@ describe("OperationsContinuityScreen", () => {
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
-    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
@@ -1314,7 +1314,7 @@ describe("OperationsContinuityScreen", () => {
     const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });
     expect(within(workflowApprovalHistory).getByText("approval-close-2026-05")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Reviewer fund-controller / Operator ops-user")).toBeInTheDocument();
-    expect(within(workflowApprovalHistory).getByText("Submitted May 08, 15:05 UTC")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Submitted May 8, 2026, 15:05 UTC")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Decision pending")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Pending final ledger validation before close sign-off.")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByRole("link", { name: "Open approval evidence for workflow approval approval-close-2026-05" }))

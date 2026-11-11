@@ -15,6 +15,7 @@ describe("bond calculation API adapters", () => {
         asOf: "2026-10-29T00:00:00Z",
         settlementDate: "2026-10-30",
         knownAt: "2026-10-29T12:00:00Z",
+        calculationVersion: "bond-analytics-v3",
         cleanPrice: "99.123456789012345678",
         yieldConvention: "AnnualEffective"
       },
@@ -26,7 +27,22 @@ describe("bond calculation API adapters", () => {
     expect(params.get("cleanPrice")).toBe("99.123456789012345678");
     expect(params.has("yield")).toBe(false);
     expect(params.get("knownAt")).toBe("2026-10-29T12:00:00Z");
+    expect(params.get("calculationVersion")).toBe("bond-analytics-v3");
     expect(options.signal).toBe(controller.signal);
+  });
+
+  it.each(["bond-analytics-v1", "bond-analytics-v2"] as const)("retains explicit %s requests", async (calculationVersion) => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await getBondAnalytics("bond", {
+      asOf: "2026-02-15T00:00:00Z",
+      settlementDate: "2026-02-15",
+      yield: "0.03",
+      calculationVersion
+    });
+    const params = new URL(String(fetchMock.mock.calls[0][0]), "https://meridian.invalid").searchParams;
+    expect(params.get("calculationVersion")).toBe(calculationVersion);
+    expect(params.get("yield")).toBe("0.03");
   });
 
   it("passes authoritative errors through instead of returning seeded analytics", async () => {

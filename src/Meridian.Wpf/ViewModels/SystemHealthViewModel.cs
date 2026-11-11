@@ -375,6 +375,9 @@ public sealed class SystemHealthViewModel : BindableBase, IDisposable
     }
 
     private async void OnRefreshTimerTick(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshTimerTickCoreAsync(sender, e), nameof(OnRefreshTimerTick)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RefreshTimerTickCoreAsync(object? sender, EventArgs e)
     {
         await LoadDataAsync();
     }

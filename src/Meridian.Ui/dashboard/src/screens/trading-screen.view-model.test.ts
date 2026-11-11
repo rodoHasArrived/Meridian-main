@@ -420,7 +420,7 @@ describe("trading blotter view model", () => {
     expect(state.hasFills).toBe(true);
     expect(state.cancelAllDisabled).toBe(false);
     expect(state.cancelAllDisabledReason).toBeNull();
-    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
+    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open order");
     expect(state.positionRows[1]).toMatchObject({
       id: "tsla-short-1",
       isSelected: true,
@@ -437,10 +437,15 @@ describe("trading blotter view model", () => {
     expect(state.fillRows[0]).toMatchObject({
       id: "FL-1",
       isSelected: true,
-      detailPanelId: "trading-fill-detail",
-      ariaExpanded: true,
+      detailPanelId: "trading-execution-detail",
+      // Orders and fills share one pane; it shows the open order until a fill is selected.
+      ariaExpanded: false,
       selectAriaLabel: "Inspect fill FL-1"
     });
+    expect(state.orderRows[0]).toMatchObject({ detailPanelId: "trading-execution-detail", ariaExpanded: true });
+    expect(state.selectedExecutionKind).toBe("order");
+    expect(state.selectedExecution).toBe(state.selectedOrder);
+    expect(state.executionDetailId).toBe("trading-execution-detail");
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
       statusLabel: "Review required",
@@ -461,7 +466,30 @@ describe("trading blotter view model", () => {
       ariaLabel: "Fill detail for FL-1"
     }));
     expect(state.selectedFill?.fields).toContainEqual({ label: "Provider", value: "Interactive Brokers", tone: "muted" });
+    expect(state.selectedPosition).toMatchObject({ objectType: "Position", shownInRow: ["Side", "Mark readiness"] });
+    expect(state.selectedOrder).toMatchObject({ objectType: "Order", shownInRow: ["Symbol", "Side", "Type", "Status", "Submitted"] });
+    expect(state.selectedFill).toMatchObject({ objectType: "Fill" });
     expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
+  });
+
+  it("keys the shared order and fill pane to the table selected last", () => {
+    const fillSelected = buildTradingBlotterViewModel({ data: tradingWorkspace, lastExecutionKind: "fill" });
+
+    expect(fillSelected.selectedExecutionKind).toBe("fill");
+    expect(fillSelected.selectedExecution).toBe(fillSelected.selectedFill);
+    expect(fillSelected.fillRows[0]?.ariaExpanded).toBe(true);
+    expect(fillSelected.orderRows[0]?.ariaExpanded).toBe(false);
+
+    // With no open orders the pane falls back to the latest fill, and the reverse.
+    const fillsOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [] }, lastExecutionKind: "order" });
+    expect(fillsOnly.selectedExecutionKind).toBe("fill");
+    expect(fillsOnly.selectedExecution?.objectType).toBe("Fill");
+    const ordersOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, fills: [] }, lastExecutionKind: "fill" });
+    expect(ordersOnly.selectedExecutionKind).toBe("order");
+
+    const empty = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [], fills: [] } });
+    expect(empty.selectedExecution).toBeNull();
+    expect(empty.executionEmptyText).toBe("No open orders or recent fills in this session.");
   });
 
   it("keeps unavailable and empty states in the view model", () => {
@@ -833,7 +861,7 @@ describe("trading readiness view model", () => {
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
       expect.objectContaining({ id: "live", label: "Live", value: "Not live ready", level: "review", ariaLabel: "Live operation readiness: Not live ready" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
-      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
+      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 2026, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 2026, 16:05 UTC" })
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
@@ -868,7 +896,7 @@ describe("trading readiness view model", () => {
         ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
       }
     ]);
-    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 2026, 16:05 UTC.");
   });
 
   it("surfaces explicit live-readiness blockers in summary rows", () => {
@@ -1052,7 +1080,7 @@ describe("trading readiness view model", () => {
     });
 
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
-    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 2026, 16:10 UTC.");
   });
 
   it("aborts and discards old account recovery when scope changes without a new workspace payload", async () => {

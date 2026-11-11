@@ -1,5 +1,6 @@
 import { Fragment, type KeyboardEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface ComboboxOption {
   value: string;
@@ -122,7 +123,7 @@ export function Combobox({
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <span className={cn("mb-1.5 block text-[10px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
           {label}
         </span>
       ) : null}

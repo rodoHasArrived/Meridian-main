@@ -8,6 +8,7 @@ import type { SessionInfo } from "@/types";
 
 const trustStrip: AppShellTrustStripState = {
   ariaLabel: "Trust status",
+  environment: { label: "PAPER", variant: "paper", dataLabel: "SEEDED" },
   items: [
     {
       id: "mode",
@@ -69,7 +70,8 @@ describe("WorkstationTopbar", () => {
     );
 
     expect(screen.getByText("Meridian")).toBeInTheDocument();
-    expect(screen.getByText("Accounting")).toBeInTheDocument();
+    // The workspace is announced, not shown: the header breadcrumb is its one visible name.
+    expect(screen.getByText("Current workspace: Accounting")).toHaveClass("sr-only");
     const navToggle = screen.getByRole("button", { name: "Open workspace navigation" });
     expect(navToggle).toHaveAttribute("aria-expanded", "false");
     await userEvent.click(navToggle);
@@ -82,7 +84,7 @@ describe("WorkstationTopbar", () => {
     expect(onOpenCommandPalette).toHaveBeenCalledTimes(1);
 
     expect(screen.getByRole("region", { name: "Trust status" })).toHaveAttribute("aria-live", "polite");
-    await userEvent.click(screen.getByText("Trust"));
+    await userEvent.click(screen.getByText("PAPER"));
     expect(screen.getByRole("link", { name: "Mode Paper Open settings." })).toHaveAttribute("href", "/settings");
     expect(screen.getByText("Provider")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Activity" })).toBeInTheDocument();
@@ -107,7 +109,7 @@ describe("WorkstationTopbar", () => {
             hasPopup: "dialog"
           }}
           onOpenCommandPalette={vi.fn()}
-          trustStrip={{ ariaLabel: "Trust status", items: [] }}
+          trustStrip={{ ariaLabel: "Trust status", environment: { label: "LOADING", variant: "default", dataLabel: null }, items: [] }}
           session={null}
         />
       </MemoryRouter>

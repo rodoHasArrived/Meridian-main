@@ -1,5 +1,6 @@
 import { type CSSProperties, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export interface GaugeProps {
   value?: number;
@@ -60,7 +61,7 @@ export function Gauge({
             </div>
           ) : null}
           {label ? (
-            <div className="mt-1 font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <div className={cn("mt-1 text-[9px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
               {label}
             </div>
           ) : null}
@@ -102,7 +103,7 @@ export function LinearGauge({
       {label || showValue ? (
         <div className="flex items-baseline justify-between">
           {label ? (
-            <span className="font-mono text-[9px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{label}</span>
+            <span className={cn("text-[9px] font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>{label}</span>
           ) : null}
           {showValue ? (
             <span className="font-mono text-sm font-semibold tabular-nums text-foreground">{Math.round(percent)}%</span>

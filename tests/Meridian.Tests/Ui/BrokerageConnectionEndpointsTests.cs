@@ -1,6 +1,5 @@
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -16,7 +15,7 @@ using Meridian;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Reconciliation;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -180,7 +179,15 @@ public sealed class BrokerageConnectionEndpointsTests
 
         try
         {
-            await using var server = new UiServer(configPath, GetFreeTcpPort());
+            // The endpoint data source only materializes once the pipeline builds, so the server
+            // must start — but on 127.0.0.1:0, where Kestrel assigns a free port atomically. The
+            // old version pre-reserved a port with a bind-release-rebind helper (Kestrel refuses
+            // the default localhost URL with port 0), and that raced parallel tests for the
+            // released port, making this test flake under full-suite load.
+            await using var server = new UiServer(
+                configPath,
+                port: 0,
+                apiHostOptions: new ApiHostOptions { Urls = ["http://127.0.0.1:0"] });
             await server.StartAsync().WaitAsync(TimeSpan.FromSeconds(30));
             var app = GetServerApp(server);
 
@@ -355,20 +362,6 @@ public sealed class BrokerageConnectionEndpointsTests
         };
 
         return JsonSerializer.Serialize(config, new JsonSerializerOptions { WriteIndented = true });
-    }
-
-    private static int GetFreeTcpPort()
-    {
-        var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        try
-        {
-            return ((IPEndPoint)listener.LocalEndpoint).Port;
-        }
-        finally
-        {
-            listener.Stop();
-        }
     }
 
     private sealed class UiServerDevelopmentEnvironmentScope : IDisposable

@@ -7,6 +7,7 @@ import {
   type ReactNode
 } from "react";
 import { cn } from "@/lib/utils";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * `ScreenLayout` — the canonical skeleton for secondary and detail routes.
@@ -256,7 +257,7 @@ export const ScreenLayout = forwardRef<HTMLDivElement, ScreenLayoutProps>(functi
               className="rounded-[2px] border border-border bg-card text-card-foreground"
             >
               <div className="flex items-center justify-between gap-2 px-4 py-2">
-                <span className="eyebrow-label text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span className={cn(eyebrowClassName(focusLabel), "text-xs font-medium text-muted-foreground", usesTrackedCaps(focusLabel) && "uppercase tracking-wide")}>
                   {focusLabel}
                 </span>
                 {focusCollapsible ? (

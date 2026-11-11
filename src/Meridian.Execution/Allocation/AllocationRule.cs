@@ -19,15 +19,25 @@ public sealed record AllocationRule(
     public static AllocationRule Create(string name, IReadOnlyDictionary<string, decimal> weights)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
-        ArgumentNullException.ThrowIfNull(weights);
-        if (weights.Count == 0)
-            throw new ArgumentException("At least one slice weight is required.", nameof(weights));
-        if (weights.Values.Any(w => w < 0m))
-            throw new ArgumentException("All slice weights must be non-negative.", nameof(weights));
-        if (weights.Values.Sum() == 0m)
-            throw new ArgumentException("Slice weights must not all be zero.", nameof(weights));
+        ValidateWeights(weights, nameof(weights));
 
         return new AllocationRule(Guid.NewGuid(), name, weights);
+    }
+
+    /// <summary>
+    /// Throws when <paramref name="weights"/> cannot be allocated against: empty, negative, or
+    /// summing to zero. The positional constructor (and <c>with</c>) bypass <see cref="Create"/>,
+    /// so allocation re-checks this rather than failing later with an index error.
+    /// </summary>
+    internal static void ValidateWeights(IReadOnlyDictionary<string, decimal>? weights, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(weights, paramName);
+        if (weights.Count == 0)
+            throw new ArgumentException("At least one slice weight is required.", paramName);
+        if (weights.Values.Any(w => w < 0m))
+            throw new ArgumentException("All slice weights must be non-negative.", paramName);
+        if (weights.Values.Sum() == 0m)
+            throw new ArgumentException("Slice weights must not all be zero.", paramName);
     }
 
     /// <summary>

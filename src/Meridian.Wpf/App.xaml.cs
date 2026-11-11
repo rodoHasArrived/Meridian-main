@@ -129,6 +129,9 @@ public partial class App : System.Windows.Application
     public static WpfServices.PendingOperationsQueueService OperationsQueue => WpfServices.PendingOperationsQueueService.Instance;
 
     private async void OnStartup(object sender, StartupEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => StartupCoreAsync(sender, e), nameof(OnStartup)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task StartupCoreAsync(object sender, StartupEventArgs e)
     {
         WpfServices.LoggingService.Instance.LogInfo("WPF application startup beginning");
         try
@@ -478,6 +481,12 @@ public partial class App : System.Windows.Application
         // ConfigStore reports, the root a server's StorageOptions is built from.
         services.AddSecurityMasterTermsCapability(static sp =>
             sp.GetRequiredService<Meridian.Application.UI.ConfigStore>().GetDataRoot());
+        // The governed-edit switch is checked on the web API, so the desktop editor must honour the
+        // same SecurityMasterWorkbench:RequireGovernedTermAmendments setting rather than bypass it.
+        services.Configure<Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions>(
+            configuration.GetSection(Meridian.Application.SecurityMaster.SecurityMasterWorkbenchOptions.SectionName));
+        services.AddSingleton<Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy,
+            Meridian.Application.SecurityMaster.GovernedTermAmendmentPolicy>();
         services.AddSingleton<LoginSessionService>();
         services.AddSingleton<WpfServices.DesktopAuthenticationSession>();
         services.AddTransient<StartupWindowViewModel>();

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { Menu, Search } from "lucide-react";
-import { DesignSystemBadge } from "@/design-system/badge";
 import { DesignSystemTrustStrip } from "@/design-system/trust-strip";
 import type { AppShellTrustStripState } from "@/app-shell.view-model";
 import type { SessionInfo } from "@/types";
@@ -63,10 +62,8 @@ export function DesignSystemMasthead({
           <img src={brandMarkSrc} alt="" aria-hidden="true" />
           <div className="workstation-brand-copy min-w-0">
             <div className="name ws-brand__name">Meridian</div>
-            <div className="sub ws-brand__mod" aria-hidden="true">
-              <span className="workstation-brand-sep ws-brand__sep">/</span>
-              {workspaceLabel}
-            </div>
+            {/* The workspace is named once, visibly, by the header breadcrumb below; the
+                masthead only announces it so the banner landmark still states the location. */}
             <span className="sr-only">Current workspace: {workspaceLabel}</span>
           </div>
         </div>
@@ -95,8 +92,10 @@ export function DesignSystemMasthead({
             className="workstation-session-card mds-session-card"
             role="group"
             aria-label={`Current session: ${session.environment}, ${session.displayName}, ${session.role}`}
+            title={`${session.displayName} · ${session.role}`}
           >
-            <DesignSystemBadge variant={session.environment} dot>{session.environment}</DesignSystemBadge>
+            {/* The environment is the masthead environment badge's leading, never-shrinking
+                segment, so the masthead fits one row; the group label still names it. */}
             <span className="workstation-session-name">{session.displayName}</span>
             <span className="workstation-session-role text-muted-foreground">{session.role}</span>
           </div>

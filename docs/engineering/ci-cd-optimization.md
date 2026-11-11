@@ -24,10 +24,13 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 
 The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
 now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
-repository-structure output. Its existing rules/example/AI checks and diagram generation remain;
-a docs-only maintained-generation pass converges the full documentation sequence before freshness
-validation. New generated files and deletions are included in the drift check, with
-`artifacts/docs/generated-repair.patch` and `drift.json` retained alongside generation evidence.
+repository-structure output. Its existing rules and memory checks and the dashboard regression
+gate run on every event. The docs-only maintained-generation pass and freshness validation run
+once per event: Meridian CI `verify-docs` owns them for pull requests to `main`, `main` pushes and
+merge groups, and Documentation Automation runs the same catalog only for the events Meridian CI
+does not receive (pull requests to other branches and manual runs). New generated files and
+deletions are included in the drift check, with `artifacts/docs/generated-repair.patch` and
+`drift.json` retained alongside generation evidence by whichever workflow ran it.
 
 Maintenance PR/push runs delegate workflow hygiene, AI contract drift and navigation validation to
 the canonical lanes. Scheduled/manual Maintenance still repeats those checks; tooling metadata
@@ -502,11 +505,15 @@ requeues. Repair commit markers suppress self-triggered loops only for an alread
 later base advances can repair the branch again. Publisher concurrency is scoped to each source
 run so an unrelated PR cannot evict pending repair work from a global group.
 
-On main pushes, daily at 05:23 UTC and on manual dispatch, the publisher also scans open
-same-repository PRs for a stale base. It dispatches at most ten new head/base pairs per run,
-deduplicates already requested pairs and reports the remaining backlog. Daily/manual scans continue
-remaining work. API pagination is bounded to 1,000 items and fails explicitly if that limit is
-reached. This is separate from each repair's two stale-ref retries.
+On PR merges into `main`, main pushes, daily at 05:23 UTC and on manual dispatch, the publisher
+scans all open same-repository PRs for a stale base, including drafts and conflicted PRs. Unmerged
+closures are excluded. Each scan reads the latest base, follows API pagination and dispatches every
+eligible head/base pair, pacing writes one second apart instead of leaving a daily backlog.
+Overlapping refresh jobs are serialized; pending scans can coalesce because each scans the latest
+base and all open PRs. Candidate publication retains independent per-source-run concurrency.
+Only active or successful trusted default-branch generation requests suppress duplicates; failed
+or cancelled requests remain eligible for a later scan. API failures are explicit. This discovery
+is separate from each repair's two stale-ref retries.
 
 Without App configuration, PR repair provides artifacts only. Forks, source/handwritten conflicts,
 uncertain reviewed module hashes, and changes to generators/dependencies/automation policy retain

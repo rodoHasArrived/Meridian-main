@@ -94,21 +94,60 @@ public sealed class SecurityKindMappingTests
         SecurityKindMapping.ToInstrumentTypes("UnknownAssetClass").Should().BeEmpty();
     }
 
+    /// <summary>
+    /// InstrumentType values deliberately left without a reverse asset-class mapping, each with its
+    /// reason. Empty today: every market-data instrument type names one Security Master class. A new
+    /// enum value must either be mapped in <see cref="SecurityKindMapping"/> or be listed here with
+    /// the ambiguity or outside-slice reason that justifies leaving it unmapped.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<InstrumentType, string> UnmappedInstrumentTypes =
+        new Dictionary<InstrumentType, string>();
+
+    /// <summary>
+    /// Mapped InstrumentType values whose asset class does not list them back, each with its reason.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<InstrumentType, string> OneWayInstrumentTypes =
+        new Dictionary<InstrumentType, string>
+        {
+            [InstrumentType.Index] =
+                "An index is not a holdable security: it routes to OtherSecurity, but OtherSecurity declares no market-data instrument type.",
+        };
+
     [Fact]
-    public void ToAssetClass_RoundTripsThroughToInstrumentTypes_ExceptDocumentedOneWayMappings()
+    public void ToAssetClass_MapsEveryInstrumentType_OrListsItAsDeliberatelyUnmapped()
     {
-        // Index is the one InstrumentType that maps to an asset class (OtherSecurity) whose own
-        // instrument-type list is empty, so it does not round-trip.
-        foreach (var instrumentType in Enum.GetValues<InstrumentType>().Where(static type => type != InstrumentType.Index))
+        UnmappedInstrumentTypes.Keys.Should().NotIntersectWith(OneWayInstrumentTypes.Keys,
+            "a type is either unmapped or mapped one-way, never both");
+
+        foreach (var instrumentType in Enum.GetValues<InstrumentType>())
         {
             var assetClass = SecurityKindMapping.ToAssetClass(instrumentType);
-            if (assetClass is null)
+            if (UnmappedInstrumentTypes.ContainsKey(instrumentType))
             {
+                assetClass.Should().BeNull($"{instrumentType} is listed as deliberately unmapped");
                 continue;
             }
 
-            SecurityKindMapping.ToInstrumentTypes(assetClass)
-                .Should().Contain(instrumentType, $"{instrumentType} maps to '{assetClass}', which must list it back");
+            assetClass.Should().NotBeNull(
+                $"{instrumentType} has no reverse mapping; map it in SecurityKindMapping or list it with a reason in {nameof(UnmappedInstrumentTypes)}");
+            SecurityAssetClassCatalog.AssetClasses.Should().Contain(assetClass!,
+                $"{instrumentType} must map to a canonical catalog class");
+        }
+    }
+
+    [Fact]
+    public void ToAssetClass_RoundTripsThroughToInstrumentTypes_ExceptDocumentedOneWayMappings()
+    {
+        foreach (var instrumentType in Enum.GetValues<InstrumentType>().Where(type => !UnmappedInstrumentTypes.ContainsKey(type)))
+        {
+            var assetClass = SecurityKindMapping.ToAssetClass(instrumentType);
+            assetClass.Should().NotBeNull();
+            var listedBack = SecurityKindMapping.ToInstrumentTypes(assetClass!).Contains(instrumentType);
+
+            listedBack.Should().Be(!OneWayInstrumentTypes.ContainsKey(instrumentType),
+                OneWayInstrumentTypes.ContainsKey(instrumentType)
+                    ? $"{instrumentType} is documented as one-way; if '{assetClass}' now lists it back, remove the exception"
+                    : $"{instrumentType} maps to '{assetClass}', which must list it back");
         }
     }
 

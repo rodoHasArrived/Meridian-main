@@ -98,11 +98,11 @@ public sealed partial class PortableDataPackager
             var packageChecksum = await ComputeFileChecksumAsync(packagePath, ct);
             var packageInfo = new FileInfo(packagePath);
 
+            // Hash and size describe the final file on disk, so they are recorded on the
+            // returned manifest/result only. A zip cannot embed its own checksum: rewriting the
+            // manifest entry afterwards would change the bytes the checksum was computed over.
             manifest.PackageChecksum = packageChecksum;
             manifest.PackageSizeBytes = packageInfo.Length;
-
-            // Update the manifest inside the package with final checksum
-            await UpdateManifestInPackageAsync(packagePath, manifest, options.Format, ct);
 
             // Build result
             result = PackageResult.CreateSuccess(packagePath, manifest);
@@ -357,7 +357,8 @@ public sealed partial class PortableDataPackager
             CreatedAt = manifest.CreatedAt,
             TotalFiles = manifest.TotalFiles,
             TotalEvents = manifest.TotalEvents,
-            PackageSizeBytes = manifest.PackageSizeBytes,
+            // The embedded manifest cannot record the size of the file that contains it.
+            PackageSizeBytes = new FileInfo(packagePath).Length,
             UncompressedSizeBytes = manifest.UncompressedSizeBytes,
             Symbols = manifest.Symbols,
             EventTypes = manifest.EventTypes,

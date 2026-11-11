@@ -20,6 +20,17 @@ describe("EmptyState (Concrete)", () => {
     expect(onAction).toHaveBeenCalledOnce();
   });
 
+  it("paints the action with full-color accent tokens, not the bare HSL --accent triple", () => {
+    render(<EmptyState title="Empty" action="Add row" onAction={() => undefined} />);
+    const css = [...document.head.querySelectorAll("style[data-mds]")].map((style) => style.textContent ?? "").join("\n");
+    const action = css.match(/\.mds-empty__action\{[^}]*\}/)?.[0] ?? "";
+    expect(action).toContain("background:var(--ws-accent,");
+    expect(action).toContain("color:hsl(var(--accent-foreground,");
+    // --accent is "16 51% 44%" in the workstation, so var(--accent) as a color is invalid and
+    // left white text on the page background.
+    expect(css).not.toMatch(/(background|border|color):var\(--accent[,)]/);
+  });
+
   it("can be named as a status region for screen placeholders", () => {
     render(<EmptyState title="No rows" role="status" ariaLabel="Provider rows empty state" compact />);
     expect(screen.getByRole("status", { name: "Provider rows empty state" })).toHaveClass("mds-empty--compact");

@@ -1,0 +1,139 @@
+{
+  "description": "Version-1 Security Master governance payloads exactly as the pre-contract reflective JsonSerializer.Serialize(object) writers produced them. Captured on 2026-11-04 by running the Meridian.Tests SecurityMaster Postgres tests against source 2535d26336c3 with a temporary capture hook in PostgresSecurityGovernanceEventLog.AppendAsync. 'payload' is the serializer's raw output. Entries with origin 'derived-from-MarginCallAgreed' change only the action/status values of the captured MarginCallAgreed payload, because the same writer statement produces them. Never edit captured payloads; add a new version's fixtures beside these.",
+  "sourceRevision": "2535d26336c3",
+  "events": [
+    {
+      "stream": "Aliases",
+      "eventType": "AliasRevisionRecorded",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"aliasId\":\"76dc6e4b-6149-4cf6-a4bc-f693a707f933\",\"aliasKind\":\"Ticker\",\"aliasValue\":\"OLD-289671ecf3eb41cc8ec31bb2b19fa0db\",\"provider\":\"Vendor\",\"scope\":\"Operations\",\"reason\":\"original\",\"validFrom\":\"2026-10-05T21:44:54.8574427+00:00\",\"validTo\":null,\"isEnabled\":true}"
+    },
+    {
+      "stream": "OperatorOverrides",
+      "eventType": "Patched",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"setKeys\":[\"rating\"],\"removedKeys\":[],\"previousValues\":{\"rating\":\"AA\"},\"values\":{\"rating\":\"BBB\"},\"reasonCode\":\"Reference correction.\",\"approvalStatus\":\"Pending\",\"expectedCanonicalVersion\":1}"
+    },
+    {
+      "stream": "OperatorOverrides",
+      "eventType": "Rejected",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"decision\":\"Rejected\",\"reviewer\":\"reviewer-2\",\"stagedBy\":\"operator-1\",\"comment\":\"insufficient evidence\",\"reasonCode\":\"correction\",\"restoresPriorDecision\":false,\"values\":{\"rating\":\"AA\"}}"
+    },
+    {
+      "stream": "OperatorOverrides",
+      "eventType": "Approved",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"decision\":\"Approved\",\"reviewer\":\"checker\",\"stagedBy\":\"checker\",\"comment\":\"Published revisions\\u0027 decision re-converged after discards removed the deferring staged revisions.\",\"reasonCode\":\"Restore published value.\",\"restoresPriorDecision\":true,\"values\":{\"rating\":\"AA\"}}"
+    },
+    {
+      "stream": "Curves",
+      "eventType": "CurveDefined",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"curveId\":\"61cf304d-f924-4705-a800-e3680401947a\",\"curveKey\":\"USD-SOFR-3M-68D30547\",\"kind\":\"Forward\",\"currency\":\"USD\",\"indexName\":\"SOFR-E2E-9CEA778C\",\"tenor\":\"3M\",\"dayCount\":\"Actual360\",\"interpolation\":\"Linear\",\"source\":\"test\",\"description\":null}"
+    },
+    {
+      "stream": "Curves",
+      "eventType": "CurveVersionPublished",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"curveId\":\"70bd7285-48d9-480b-a225-a805660f5f59\",\"curveVersionId\":\"5fabbb00-c861-417e-a68d-d9741c506250\",\"curveKey\":\"USD-DISCOUNT-B453203C\",\"kind\":\"Discount\",\"currency\":\"USD\",\"indexName\":null,\"version\":1,\"asOf\":\"2026-06-30\",\"pointCount\":2,\"contentSha256\":\"a02e585ecbc765414109e3df06ae478ae422c2ba6c2416db3b382bf2c9a1ef11\",\"source\":\"test-vendor\",\"sourcedAt\":\"2026-06-30T17:00:00+00:00\"}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "CollateralBalanceRecorded",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"masterAgreementId\":\"ef04bd7e-04d9-4906-b6a3-7613266cda77\",\"balance\":{\"balanceId\":\"75e44206-3b9c-4791-a101-fe3ef0a5c59b\",\"collateralAgreementId\":\"084ea307-613f-4561-bf49-544ec910acd1\",\"direction\":\"Posted\",\"kind\":\"Security\",\"eligibleCollateralDescription\":\"US Treasuries\",\"securityId\":\"545a3d6f-0eea-43c5-80f1-fd683145b93e\",\"currency\":\"USD\",\"quantity\":2000,\"unitValue\":100.125,\"valuedAmount\":200250.000,\"haircutPercent\":2,\"valuedAsOf\":\"2026-03-30\",\"reference\":null,\"notes\":null,\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:45.1738614+00:00\"},\"previous\":null,\"changes\":[]}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "ExposureSnapshotRecorded",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"snapshotId\":\"8d027c98-aadb-402a-b887-cb56982d2b3a\",\"nettingSetId\":\"ab5aafdc-e2ce-4ce7-9218-2ac772e94815\",\"collateralAgreementId\":\"490fdd9c-1f18-4e8d-827d-17cd976db576\",\"asOfDate\":\"2026-03-31\",\"version\":1,\"status\":\"Complete\",\"nettingBasis\":\"CloseOutNet\",\"provenance\":\"Real\",\"currency\":\"USD\",\"netExposure\":1750000.0000000000,\"grossPositive\":2750000.0000000000,\"grossNegative\":1000000.0000000000,\"movements\":[{\"kind\":\"Delivery\",\"mover\":\"Counterparty\",\"amount\":500000.0000000000,\"currency\":\"USD\"}],\"blockerCount\":0,\"payloadSha256\":\"8d908529a757702a587762076d7eca7a3d39a9aa54386497fb5cf75f1daecb41\"}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "MarginCallIssued",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"call\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":null,\"status\":\"Issued\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.8953935+00:00\"},\"snapshot\":{\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"version\":2,\"asOfDate\":\"2026-03-31\",\"payloadSha256\":\"631ac558eedbca0a75ffb0aedfb18a1256b998b4361d953eaf8f9aa359d5b722\"}}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "CollateralBalanceAmended",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"masterAgreementId\":\"139ce1bd-5099-4f7a-8119-cd0e00b1c08d\",\"balance\":{\"balanceId\":\"c9d3dcff-2622-4f90-be73-657c45d626d3\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"direction\":\"Posted\",\"kind\":\"Cash\",\"eligibleCollateralDescription\":\"USD cash\",\"securityId\":null,\"currency\":\"USD\",\"quantity\":400000,\"unitValue\":1,\"valuedAmount\":400000,\"haircutPercent\":0,\"valuedAsOf\":\"2026-03-30\",\"reference\":\"CASH-1\",\"notes\":\"confirmed with custodian\",\"version\":2,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.7840775+00:00\"},\"previous\":{\"balanceId\":\"c9d3dcff-2622-4f90-be73-657c45d626d3\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"direction\":\"Posted\",\"kind\":\"Cash\",\"eligibleCollateralDescription\":\"USD cash\",\"securityId\":null,\"currency\":\"USD\",\"quantity\":400000.0000000000,\"unitValue\":1.0000000000,\"valuedAmount\":400000.0000000000,\"haircutPercent\":0.0000000000,\"valuedAsOf\":\"2026-03-30\",\"reference\":\"CASH-1\",\"notes\":null,\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.775589+00:00\"},\"changes\":[\"notes\"]}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "MarginCallAgreed",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"call\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":330000.0000000000,\"status\":\"Agreed\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":2,\"updatedBy\":\"casey.doyle\",\"updatedAt\":\"2026-11-04T21:44:46.9445084+00:00\"},\"previous\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":null,\"status\":\"Issued\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.895393+00:00\"},\"action\":\"Agree\",\"reason\":null}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "MarginCallSettled",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"call\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":330000.0000000000,\"status\":\"Settled\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":\"2026-04-01\",\"settledAmount\":330000.0000000000,\"notes\":\"day-one call\",\"version\":3,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.9608556+00:00\"},\"previous\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":330000.0000000000,\"status\":\"Agreed\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":2,\"updatedBy\":\"casey.doyle\",\"updatedAt\":\"2026-11-04T21:44:46.944508+00:00\"},\"action\":\"Settle\",\"reason\":null}"
+    },
+    {
+      "stream": "Aliases",
+      "eventType": "AliasRevisionsSynchronized",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"appendedRevisions\":1}"
+    },
+    {
+      "stream": "ProjectionRebuild",
+      "eventType": "ProjectionBatchRebuilt",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"projectionName\":\"projection-race-4f65e84c7ec94c7581e24e9268ec371a\",\"lastGlobalSequence\":200,\"records\":[{\"SecurityId\":\"4f65e84c-7ec9-4c75-81e2-4e9268ec371a\",\"Version\":2}]}"
+    },
+    {
+      "stream": "UnderlyingGraph",
+      "eventType": "UnderlyingLinkDeclared",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"link\":{\"linkId\":\"8fc29a42-0478-5757-ae37-4c4bfaf539af\",\"securityId\":\"a78a2709-9f64-45ad-9a05-461d129af679\",\"role\":\"BasketConstituent\",\"underlyingSecurityId\":\"b108c1f0-80b9-43d6-97b2-138134311e2f\",\"reference\":null,\"weight\":0.4000000000,\"validFrom\":\"2026-01-01T00:00:00+00:00\",\"validTo\":\"2027-01-01T00:00:00+00:00\",\"notes\":null,\"declaredBy\":\"casey\",\"declaredAt\":\"2026-11-04T21:44:53.048877+00:00\"},\"previous\":null,\"changes\":[]}"
+    },
+    {
+      "stream": "UnderlyingGraph",
+      "eventType": "UnderlyingLinkAmended",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"link\":{\"linkId\":\"9359932b-31f2-5956-a785-510a108f9fa3\",\"securityId\":\"f9171cbb-ae61-4fb5-9f18-4d2f26e00b55\",\"role\":\"BasketConstituent\",\"underlyingSecurityId\":\"0d749dd9-4a70-48a3-9de1-d45c7d46393c\",\"reference\":null,\"weight\":0.6500000000,\"validFrom\":\"2026-01-01T00:00:00+00:00\",\"validTo\":null,\"notes\":\"rebalanced\",\"declaredBy\":\"jordan\",\"declaredAt\":\"2026-11-04T21:44:53.094106+00:00\"},\"previous\":{\"linkId\":\"9359932b-31f2-5956-a785-510a108f9fa3\",\"securityId\":\"f9171cbb-ae61-4fb5-9f18-4d2f26e00b55\",\"role\":\"BasketConstituent\",\"underlyingSecurityId\":\"0d749dd9-4a70-48a3-9de1-d45c7d46393c\",\"reference\":null,\"weight\":0.6000000000,\"validFrom\":\"2026-01-01T00:00:00+00:00\",\"validTo\":null,\"notes\":\"initial weight\",\"declaredBy\":\"casey\",\"declaredAt\":\"2026-11-04T21:44:53.091122+00:00\"},\"changes\":[\"weight\",\"notes\"]}"
+    },
+    {
+      "stream": "UnderlyingGraph",
+      "eventType": "UnderlyingLinkRemoved",
+      "payloadVersion": 1,
+      "origin": "captured",
+      "payload": "{\"link\":{\"linkId\":\"9359932b-31f2-5956-a785-510a108f9fa3\",\"securityId\":\"f9171cbb-ae61-4fb5-9f18-4d2f26e00b55\",\"role\":\"BasketConstituent\",\"underlyingSecurityId\":\"0d749dd9-4a70-48a3-9de1-d45c7d46393c\",\"reference\":null,\"weight\":0.6500000000,\"validFrom\":\"2026-01-01T00:00:00+00:00\",\"validTo\":null,\"notes\":\"rebalanced\",\"declaredBy\":\"jordan\",\"declaredAt\":\"2026-11-04T21:44:53.094106+00:00\"}}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "MarginCallDisputed",
+      "payloadVersion": 1,
+      "origin": "derived-from-MarginCallAgreed",
+      "payload": "{\"call\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":330000.0000000000,\"status\":\"Disputed\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":2,\"updatedBy\":\"casey.doyle\",\"updatedAt\":\"2026-11-04T21:44:46.9445084+00:00\"},\"previous\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":null,\"status\":\"Issued\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.895393+00:00\"},\"action\":\"Dispute\",\"reason\":null}"
+    },
+    {
+      "stream": "OtcCollateral",
+      "eventType": "MarginCallCancelled",
+      "payloadVersion": 1,
+      "origin": "derived-from-MarginCallAgreed",
+      "payload": "{\"call\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":330000.0000000000,\"status\":\"Cancelled\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":2,\"updatedBy\":\"casey.doyle\",\"updatedAt\":\"2026-11-04T21:44:46.9445084+00:00\"},\"previous\":{\"callId\":\"6692d7c9-5321-4a71-bd08-47a161afeffd\",\"nettingSetId\":\"0b8209bd-f515-4f6c-8a05-76b467d2ebba\",\"collateralAgreementId\":\"bb6ea851-fc05-4b4f-8179-40939c59b088\",\"snapshotId\":\"6f82634c-69c7-4f26-8ef4-70cd37005921\",\"kind\":\"Delivery\",\"mover\":\"Fund\",\"currency\":\"USD\",\"amountCalled\":330000.0000000000,\"amountAgreed\":null,\"status\":\"Issued\",\"issuedOn\":\"2026-03-31\",\"dueOn\":\"2026-04-01\",\"disputeReason\":null,\"settledOn\":null,\"settledAmount\":null,\"notes\":\"day-one call\",\"version\":1,\"updatedBy\":\"casey\",\"updatedAt\":\"2026-11-04T21:44:46.895393+00:00\"},\"action\":\"Cancel\",\"reason\":null}"
+    }
+  ]
+}

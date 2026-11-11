@@ -94,19 +94,17 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             DefinedEvent,
             stored.CreatedBy,
             stored.CreatedAt,
-            new
-            {
-                curveId = stored.CurveId,
-                curveKey = stored.CurveKey,
-                kind = stored.Kind.ToString(),
-                currency = stored.Currency,
-                indexName = stored.IndexName,
-                tenor = stored.Tenor,
-                dayCount = stored.DayCount,
-                interpolation = stored.Interpolation.ToString(),
-                source = stored.Source,
-                description = stored.Description
-            },
+            new CurveDefinedPayload(
+                stored.CurveId,
+                stored.CurveKey,
+                stored.Kind.ToString(),
+                stored.Currency,
+                stored.IndexName,
+                stored.Tenor,
+                stored.DayCount,
+                stored.Interpolation.ToString(),
+                stored.Source,
+                stored.Description),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;
@@ -234,21 +232,19 @@ public sealed class PostgresSecurityCurveStore : ISecurityCurveStore
             VersionPublishedEvent,
             stored.PublishedBy,
             stored.RecordedAt,
-            new
-            {
-                curveId = stored.CurveId,
-                curveVersionId = stored.CurveVersionId,
-                curveKey = stored.CurveKey,
-                kind = definition.Kind.ToString(),
-                currency = definition.Currency,
-                indexName = definition.IndexName,
-                version = stored.Version,
-                asOf = stored.AsOf,
-                pointCount = stored.Points.Count,
-                contentSha256 = stored.ContentSha256,
-                source = stored.Source,
-                sourcedAt = stored.SourcedAt
-            },
+            new CurveVersionPublishedPayload(
+                stored.CurveId,
+                stored.CurveVersionId,
+                stored.CurveKey,
+                definition.Kind.ToString(),
+                definition.Currency,
+                definition.IndexName,
+                stored.Version,
+                stored.AsOf,
+                stored.Points.Count,
+                stored.ContentSha256,
+                stored.Source,
+                stored.SourcedAt),
             ct).ConfigureAwait(false);
         await transaction.CommitAsync(ct).ConfigureAwait(false);
         return stored;

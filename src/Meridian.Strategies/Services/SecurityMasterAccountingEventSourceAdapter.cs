@@ -338,8 +338,34 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     || HasTypedFactorSchedule(definition)
                     // A securitized instrument without typed history must surface missing
                     // coverage, including older economic records with no history module.
-                    || ResolveAccountingAssetClass(definition) == SecurityAccountingInstrumentClasses.AssetBackedSecurity),
+                    || ResolveAccountingAssetClass(definition) == SecurityAccountingInstrumentClasses.AssetBackedSecurity)
+            {
+                CouponRateUnit = ReadDeclaredCouponRateUnit(definition),
+                TermsAssetClass = ResolveTermsAssetClass(definition)
+            },
             ToAccountingRule(definition));
+    }
+
+    // The catalog class whose flat terms (and rate-field unit defaults) the record carries.
+    private static string? ResolveTermsAssetClass(SecurityEconomicDefinitionRecord definition)
+    {
+        var name = string.IsNullOrWhiteSpace(definition.LegacyAssetClass) ? definition.TypeName : definition.LegacyAssetClass;
+        return SecurityAssetClassCatalog.TryGet(name, out var descriptor) ? descriptor.AssetClass : null;
+    }
+
+    // The coupon unit the record declares in its retained flat terms' scheduleConventions block
+    // (readable under ADR-024 increment 4a), or null when it declares none or cannot be read here.
+    private static RateUnit? ReadDeclaredCouponRateUnit(SecurityEconomicDefinitionRecord definition)
+    {
+        if (definition.LegacyAssetSpecificTerms is not { } retained || ResolveTermsAssetClass(definition) is not { } assetClass)
+        {
+            return null;
+        }
+
+        var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(assetClass, retained);
+        return declared.Status == SecurityDeclaredConventionsStatus.Declared
+            ? RateUnitNormalizer.ParseCouponRateUnit(declared.Block.CouponRateUnit)
+            : null;
     }
 
     private static SecurityAccountingRule? ToAccountingRule(SecurityEconomicDefinitionRecord definition)
@@ -637,14 +663,22 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// which the event service's own gate rejects as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT at Info —
     /// the correct outcome for an instrument this first accounting slice does not cover.
     /// </para>
+    /// <para>
+    /// The sub-type is read through <see cref="ClassificationLabelReader"/>: an event retained before
+    /// the label helpers may still carry <c>OtherSubType "x"</c>, which is decoded here rather than
+    /// rewritten in the stored event.
+    /// </para>
     /// </summary>
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
-        => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
-               definition.TypeName,
-               definition.SubType,
-               definition.AssetClass)
-           ?? definition.SubType
-           ?? definition.AssetClass;
+    {
+        var subType = ClassificationLabelReader.NormalizeRequired(definition.SubType);
+        return SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
+                   definition.TypeName,
+                   subType,
+                   definition.AssetClass)
+               ?? subType
+               ?? definition.AssetClass;
+    }
 
     private static string? NormalizeCouponType(string? couponType)
     {

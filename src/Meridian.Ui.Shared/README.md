@@ -6,10 +6,38 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Ui.Shared
+
+Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
+
+Sampling endpoints bound `sampleSize` to 1..100,000, reject confidence or margin-of-error values outside (0, 1), keep at most 50 saved samples in memory, report `no_data` instead of inventing a population of 100,000, honour cancellation while counting, and no longer echo the storage root.
+
+Lean results ingest and auto-export reconfiguration confine request-supplied paths to the configured roots (`LEAN_RESULTS_PATH`/`LEAN_PATH` and `LEAN_DATA_PATH`/`LEAN_PATH`) and no longer echo paths in errors. `MarginCertificationStore` refuses to upsert over an unreadable evidence file. The workstation position-limit rule counts working orders.
+
+`MapUiEndpoints` registers the banking (`/api/banking/*`), ingestion-job (`/api/ingestion/*`) and
+money-market-fund (`/api/security-master/money-market-funds/*`) groups. Every route declares its
+permission; the groups resolve their services per request (501 when unregistered); malformed banking
+and MMF search bodies return 400; `/api/dev/seed/bank-transactions` is mapped only in Development and
+Test hosts. The ingestion group exposes reads and Draft job creation only; job state changes stay on
+the governed workstation ingestion-operation action route.
+Banking approve, reject, currency-remediation and bank-evidence routes derive the action origin from
+the authenticated principal (`ResolveTrustedActionOrigin`), so API-key callers cannot pass the
+banking services' human-only gate with the body's default `HumanOperator` origin.
+
+The existing bond analytics GET accepts optional `calculationVersion` and forwards it unchanged to
+`IBondAnalyticsService`. Omission retains v2; explicit v1/v2 fixed/zero and v3 floating requests use
+the service's model admission and typed refusals. The route retains tenant and view-permission
+requirements. Endpoint tests exercise actual SOFR pricing, fixing/curve refusals and legacy JSON.
+
+`GET /api/reference-data/bonds/{securityId}/exercise-notices?asOf=…&horizonDays=…&knownAt=…` is the
+read-only notice-date watch. `BondExerciseNoticeReadService` loads the retained row the way analytics
+does, then `BondExerciseNoticeWatch` lists each declared call or put window as `Upcoming`, `Open`,
+`DeadlineElapsed` or `NotStated` within a 1–366 day horizon (default 90). The route has the same tenant
+scope and `ViewSecurityMaster`/`ModifySecurityMaster` permission as analytics. Windows record no notice
+and grant no exercise authority; an elapsed deadline needs retained notice evidence.
 
 Capital-call intake resolves frozen call plans and approved commitment terms from durable
 private-capital authority. Legacy caller-supplied totals are consistency checks. Trusted automated
@@ -61,6 +89,11 @@ Focused validation uses the `PrivateCapital` and `CapitalCall` test filters in `
 with `EnableWindowsTargeting=true` and a configured PostgreSQL ledger test connection.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
+
+Direct-lending `POST /api/loans/{loanId}/unapplied-cash/apply` and `/unapplied-cash/refund` (PRD-115) are
+governed like the other loan mutations: `ManageDirectLending`, the direct-lending mutation rate limit,
+fund-scoped write tenancy and command-id idempotency. They return the updated servicing state, 404 for
+an unknown loan, and a validation problem when the amount is not positive or exceeds the held cash.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -277,6 +310,10 @@ and a retained preview identity; it cannot submit approved evidence or a prepare
 
 Trading recovery uses `LiveBrokeragePortfolioSyncService` to publish account-scoped Alpaca
 holdings, cash, buying power, currency and completeness to the existing exposure provider.
+A linked identifier is accepted when the gateway recognizes it as a name of the connected account
+(Alpaca's account number or its internal UUID), and two names for one broker account cannot bind it
+to two local accounts. Authorized account discovery also matches a retained link against a catalog
+entry's declared aliases, without widening the authorization filter.
 Broker holdings replace local projections for that account; remaining OMS exposure stays reserved.
 The mandatory brokerage risk rule blocks missing, stale, interrupted or inconsistent evidence.
 An order/fill change, reconnect or restart requires synchronization again. The shared readiness
@@ -573,6 +610,60 @@ Provider setup passes the server-resolved actor into credential persistence. Pla
 require an authenticated actor and never fall back to a request identity; signed webhook authentication
 remains independent of operator sessions.
 
+## Cross-screen counts
+
+`Services/CrossScreenCountDefinitions.cs` is the one definition of each count several screens show:
+open orders are the orders the OMS reports open for the fund account in scope; provider health is
+rows with status Healthy out of every provider the Data workspace lists; open breaks are break-queue
+items not resolved, dismissed or signed off. The Trading, Data and Accounting headline cards count
+with it (the Data card previously read the metrics store's own tally, which could disagree with its
+list), and `GET /api/workstation/cross-screen-counts` returns all three for Settings, the shell and
+WPF. Each count is gated by the permission of the route that owns its source, and is null when the
+caller may not read it. `tests/fixtures/cross-screen-counts/cross-screen-counts.json` holds this
+class and the browser's `lib/cross-screen-counts.ts` to the same expected values.
+
+## Paper futures daily settlement
+
+`Services/PaperFuturesSettlementService.cs` settles the daily variation margin of every open paper
+futures position once per NYSE trading day, after the regular close. Each pass walks the active
+paper sessions and, for each variation-margin position, settles every closed trading day after its
+last settlement and after it opened, oldest first (at most `MaxCatchUpTradingDays`, default 5), at
+that day's `IMarkPriceSource` mark; the close stands in for the exchange settlement price. A day
+with no price is skipped with a warning, never settled on a stale price. Settlements go through
+`PaperSessionPersistenceService.RecordSettlementAsync`, which persists before applying and ignores
+a day already settled, so repeated passes are safe. The job is off unless
+`PaperTrading:FuturesSettlement:Enabled` is true, and stays idle without a registered mark price
+source. `AddPaperFuturesSettlement` registers it; the host calls it next to the paper sessions.
+
+## Operator default scope
+
+`GET`/`PUT /api/workstation/operator/scope-preference` read and save the signed-in operator's
+default operating scope. `Workflows/FileOperatorScopePreferenceStore.cs` keeps one record per
+tenant, company and user under the data root (`workstation/operators/scope-preferences.json`)
+through the snapshot store's atomic replace; values are trimmed, capped at 128 printable characters,
+and an empty scope clears the default. Both routes require an authenticated session and only ever
+read or write the caller's own record.
+
+## Operator surface visits
+
+`GET`/`POST /api/workstation/operator/visits/{surface}` read and record the signed-in operator's
+last visit to a workstation surface, the baseline for "since your last visit" markers.
+`Workflows/FileOperatorSurfaceVisitStore.cs` keeps one record per tenant, company, user and surface
+(`workstation/operators/surface-visits.json`) through the snapshot store's atomic replace. Recording
+returns the visit it replaced as `previousVisitAt`; reading records nothing. A surface id is a
+lowercase slug of at most 64 characters. Both routes require an authenticated session and only
+touch the caller's own records.
+
+## Bulk break triage
+
+The break queue's bulk assign, route and resolve actions use
+`POST /api/workstation/reconciliation/break-queue/bulk/dry-run` and `/bulk/execute`, which run each
+case as its own casework command (`{bulkActionId}:{breakId}`) and retain one audit entry per case.
+The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
+an Assign request, it also replaces the assignee with the authenticated operator, then clears the
+flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
+dry run, the per-case audit and the session assignee.
+
 ## Portfolio cash-ladder currency evidence
 
 `PortfolioCashLadderReadService` requires currency evidence for every opening cash balance and
@@ -691,6 +782,9 @@ the header. Readiness status and access policy are unchanged. Focused coverage l
 enforced rules read, so the dashboard and the gate cannot disagree. `DrawdownGuardrailRule` takes
 this service directly; the order-rate rule is bound the other way round, through
 `RiskRuleRuntimeService.OrderRateUsageProbe`.
+The drawdown circuit breaker fails closed: without registered portfolio state the drawdown
+cannot be measured, so it rejects the order instead of approving it. Hosts register
+`IPortfolioState` on every path.
 
 **Composition invariant: the probe must close over the same `OrderRateThrottle` instance that the
 validator enforces with.** `WorkstationServiceCollectionExtensions` constructs the throttle once,
@@ -796,7 +890,16 @@ institution and external-account evidence match the statement source. `AdminMain
 override account scope; other callers require account-scoped `ManageDirectLending` authorization.
 `SecurityMasterWorkbenchQueryService` is published under
 `Meridian.Ui.Shared.Services` and composes Application Security Master services into the shared
-workstation drill-in projection. The Security Master alias upsert route accepts corrections to an
+workstation drill-in projection. For a Bond that declares a call or put schedule, the snapshot's schedule
+book takes its `Call`, `Put`, `CallNoticeDeadline` and `PutNoticeDeadline` rows and the next lifecycle
+date from the declared outcome the asset-operations obligation timeline uses
+(`AssetObligationProjectionService.ResolveDeclaredExerciseAsync`), not from the economic
+`call.firstCallDate`. A blocked schedule adds no call or put row; its code and reason are appended to
+the schedule summary and source summary. A fault while resolving is logged and shown as a
+`DeclaredExerciseUnavailable` blocker; the snapshot does not fail. The service takes the host's
+`IBusinessDayCalendarSource`, `IBondCalculationPolicy`, `TimeProvider` and logger as optional
+constructor arguments, resolved from the container. Records that declare no schedule, CertificateOfDeposit and StructuredCredit keep the scalar
+read. The Security Master alias upsert route accepts corrections to an
 existing alias ID as a new revision; re-pointing an alias at a different security returns 409.
 `SecurityMasterEndpoints.Curves.cs` maps the stored-curve routes (`/api/security-master/curves`,
 `/curves/{curveId}`, `/curves/{curveId}/versions`, where `asOf` with an optional `knownAt` returns
@@ -845,6 +948,8 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+Portfolio explorer column headers and record fields spell profit and loss "P&L" ("Realized P&L",
+"Unrealized P&L"), the spelling the workspace metric cards already use.
 The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses
 `SecurityMasterWorkbenchQueryService`, `IAssetOperationsQueryService`, and report-line provenance
 from `FinancialRecordExplorerReadService` for instrument identity, provider evidence,
@@ -946,7 +1051,8 @@ carry it could be satisfied by the same edit that defeated it. **That journal is
 2; a v1 journal written before the boundary was bound is refused by name on read** rather than
 verified under the weaker rules or reported as tampering. Store write cycles (workspace saves and
 audit appends alike) and chain verification hold a cross-process lock file beside the snapshot for
-their whole read-modify-write span, so the browser host and the WPF shell composing this store over
+their whole read-modify-write span (`CrossProcessFileLock`, which delegates to
+`Core.IO.ExclusiveFileLock`), so the browser host and the WPF shell composing this store over
 one data root serialize against each other instead of interleaving whole-document replacements --
 without it, the later writer silently discarded the earlier process's committed event and the
 surviving snapshot then read as tampered against the anchor. The shared accounting endpoints stamp the resolved
@@ -1011,6 +1117,10 @@ flags without an accounting/reporting evidence chain.
 Execution position close/upsize endpoints also carry the optional `fundAccountId` action scope into
 their generated `OrderRequest`, keeping broker-order readiness checks on the same account-scoped
 readiness projection as the workstation payload.
+The keyed close action refuses a `lotSelection` it cannot honour instead of accepting and ignoring
+it: the close is an ordinary order with no lot instruction, so a specific lot is always refused, any
+selection is refused for a broker-backed position, and for the paper book a method is accepted only
+when it equals `PaperTradingPortfolio.LotSelectionMethod`. A request without the field is unchanged.
 Accounting production-readiness assessment also treats tenant administration evidence as
 tenant/company scoped: retained setup, admin-role, browser/WPF admin-studio, approval-queue,
 dimension-mapping, sandbox, and runbook evidence must name the selected tenant and company before
@@ -2493,7 +2603,14 @@ targets for Security Master passport/profile, provider evidence, reconciliation 
 mapping/evidence, Asset Operations detail, and close readiness so clients can navigate without
 maintaining local routing rules. `/api/workstation/assets/{securityId}/operations` returns the
 shared Security Master-keyed operations detail for loans, bonds, and later asset classes instead of
-surface-specific read models. Missing retained provider inputs remain review-required or blocked rows; clients must not
+surface-specific read models. Evidence that names no resolved security is classified by
+`MultiAssetEvidenceClassRouter` (remediation slice 8): exact-token routes over the produced
+candidate-type and ledger-effect vocabulary, unresolved outside it, replacing the substring
+inference that read any "factor"-containing shape as `Bond`. The workstation sub-type
+(`SecurityMasterSecurityReferenceLookup.DeriveSubType`, shared with `WorkstationEndpoints`) reads
+the F# asset-class registry for every catalog class, keeping three pinned legacy spellings
+("Bond", "Deposit", "MoneyMarket") and declaring Equity sub-type-ambiguous;
+`WorkstationSecuritySubTypeCoverageTests` pins the full table. Missing retained provider inputs remain review-required or blocked rows; clients must not
 mark asset classes ready with UI-local checks. The shared read model treats private-credit
 commitments, unfunded commitments, paydowns, covenant notices, and obligation schedules as
 `DirectLoan` provider evidence. Structured credit, private fund interests, private company equity,
@@ -2920,7 +3037,9 @@ read a park as a failure and resubmit — each resubmission mints a new client o
 `AggregatePortfolioExposureProvider` feeds the portfolio-aware rules from the same aggregated
 cross-run positions the Portfolio workspace reports, valuing them at live marks only while those
 marks are fresh, reserving accepted-but-unfilled orders, and reporting option reference prices per
-contract while keeping the contract multiplier in exposure totals.
+contract while keeping the contract multiplier in exposure totals. `BrokeragePortfolioState` puts the
+same observed option multiplier on the `PositionState` it projects, so that view's P&L and market
+value are in dollars rather than quote × contracts.
 
 `/api/security-master/asset-classes` and `/api/security-master/asset-classes/{assetClass}`
 return the Security Master asset-class registry (fields, validation, projection, lot and
@@ -2959,10 +3078,34 @@ its pre-check's 400. A write
 that declares a non-flat `termsFormat` is told what to submit. Deactivate refusals still answer 500;
 no read route changes.
 
+A node whose Security Master terms capability floor refuses it answers 503 rather than 500:
+`MeridianApiExceptionHandler` maps `SecurityMasterTermsCapabilityRefusedException` to
+`ApiProblemDetails.ServiceUnavailable` (service `security master terms capability`) with the fixed
+`SecurityMasterTermsCapabilityRefusedException.RefusalMessage` as `detail`, and logs the specific
+cause at Warning instead of returning it. The ledger posting-candidate, conflict-resolution,
+workbench-command and bond-cutover routes exclude it from their `InvalidOperationException` 409
+catches. `SecurityMasterTermsCapabilityRefusalEndpointsTests` pins it on the create, amend, term-block
+and deactivate routes, and `WorkstationEndpointsTests` on the ledger posting route
+([terms contract rollout](../../docs/operators/security-master-terms-contract-rollout.md)).
+
 `POST /api/security-master/structured-credit-reclassification/report` (AdminMaintenance) builds the
 ADR-022 report of active securitised `Bond` and `CustomAsset` rows with their proposed
 `StructuredCredit` terms and blockers. It is mapped only when the Postgres-backed service is
 registered and it never writes; applying a proposal is a governed amendment.
+
+## Security Master governance controls (2026-11)
+
+- **Stale field proposals.** The workbench publish route answers a `StaleFieldProposalException` with 409 `stale-field-proposal`, carrying the base and current versions. A successful publish carries `canonicalMerge`, which says whether the approved edit changed the golden record.
+- **Governed term-amendment refusal.** The Security Master endpoints build their HTTP 403 problem from `GovernedTermAmendmentPolicy.RefusalTitle` and `RefusalDetail`, so the API and the WPF editor show the same guidance when `RequireGovernedTermAmendments` is on. The direct write routes also answer the service's own `GovernedTermAmendmentRequiredException` with that same 403, and the workstation host registers `IGovernedTermAmendmentPolicy`, which `SecurityMasterService` enforces.
+
+See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
+
+**Brokerage sync carry-forward.** A failed or partial brokerage sync keeps the last good positions,
+balance and activity for whichever half returned nothing, with an explicit warning, and a
+carried-forward balance is not recorded as a new balance snapshot. A projection that carries
+state forward is marked stale, so reconciliation does not treat it as a fresh provider observation. **Package files.** Package
+download and delete require the resolved file to be a direct child of the selected packages
+directory (the packages root, or a requested directory under it).
 
 ## Diagrams
 

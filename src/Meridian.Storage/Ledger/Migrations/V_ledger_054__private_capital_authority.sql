@@ -59,6 +59,24 @@ create unique index if not exists ux_private_capital_bank_line
     on __SCHEMA__.private_capital_postings(tenant_id, company_id, bank_line_id)
     where kind = 'Funding';
 
+comment on table __SCHEMA__.private_capital_commitments is
+    'Effective-dated source-backed investor commitment revisions; approval changes only retained review metadata.';
+comment on table __SCHEMA__.private_capital_calls is
+    'Immutable reviewed capital-call allocations bound to exact approved commitment revisions and accounting scope.';
+comment on table __SCHEMA__.private_capital_postings is
+    'Immutable issuance and funding receipts committed atomically with their ledger journals and source identities.';
+
+create index if not exists ix_private_capital_commitments_book
+    on __SCHEMA__.private_capital_commitments(ledger_book_id);
+create index if not exists ix_private_capital_calls_book
+    on __SCHEMA__.private_capital_calls(ledger_book_id);
+create index if not exists ix_private_capital_postings_book
+    on __SCHEMA__.private_capital_postings(ledger_book_id);
+create index if not exists ix_private_capital_postings_call
+    on __SCHEMA__.private_capital_postings(tenant_id, company_id, fund_profile_id, ledger_book_id, call_id);
+create index if not exists ix_private_capital_postings_commitment_revision
+    on __SCHEMA__.private_capital_postings(tenant_id, company_id, fund_profile_id, ledger_book_id, commitment_id, commitment_revision);
+
 create or replace function __SCHEMA__.protect_private_capital_authority()
 returns trigger language plpgsql as $function$
 begin
@@ -79,12 +97,9 @@ begin
 end
 $function$;
 
-drop trigger if exists protect_private_capital_commitment on __SCHEMA__.private_capital_commitments;
-create trigger protect_private_capital_commitment before update or delete on __SCHEMA__.private_capital_commitments
+create or replace trigger protect_private_capital_commitment before update or delete on __SCHEMA__.private_capital_commitments
     for each row execute function __SCHEMA__.protect_private_capital_authority();
-drop trigger if exists protect_private_capital_call on __SCHEMA__.private_capital_calls;
-create trigger protect_private_capital_call before update or delete on __SCHEMA__.private_capital_calls
+create or replace trigger protect_private_capital_call before update or delete on __SCHEMA__.private_capital_calls
     for each row execute function __SCHEMA__.protect_private_capital_authority();
-drop trigger if exists protect_private_capital_posting on __SCHEMA__.private_capital_postings;
-create trigger protect_private_capital_posting before update or delete on __SCHEMA__.private_capital_postings
+create or replace trigger protect_private_capital_posting before update or delete on __SCHEMA__.private_capital_postings
     for each row execute function __SCHEMA__.protect_private_capital_authority();

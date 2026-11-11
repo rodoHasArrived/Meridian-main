@@ -245,7 +245,7 @@ public sealed class CrossSourceBackfillReconciliationService
             var bars = await provider.GetDailyBarsAsync(symbol, from, to, ct).ConfigureAwait(false);
             return ProviderFetchResult.Succeeded(bars);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             throw;
         }

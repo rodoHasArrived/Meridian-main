@@ -1,5 +1,6 @@
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * Compact status label in font-mono uppercase, used for environment state, data posture,
@@ -40,10 +41,15 @@ const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>
 };
 
 export function DesignSystemBadge({ children, className, dot = false, variant = "default", ...props }: DesignSystemBadgeProps) {
+  // Tracked mono caps are for one- or two-word badges; a count or sentence reads in normal case.
+  const caseClasses = usesTrackedCaps(children)
+    ? "font-mono text-[10px] uppercase tracking-[0.14em]"
+    : "mds-badge--sentence text-[11px] normal-case tracking-normal";
   return (
     <span
       className={cn(
-        "mds-badge inline-flex min-h-6 items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em]",
+        "mds-badge inline-flex min-h-6 items-center gap-1.5 rounded-[2px] border px-2.5 py-1 font-semibold",
+        caseClasses,
         badgeVariantClasses[variant],
         className
       )}

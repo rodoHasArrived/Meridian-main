@@ -27,23 +27,36 @@ public sealed class SecurityAssetClassLiteralRatchetTests
     // is held to the catalog elsewhere (SecurityAssetClassRegistryCoverageTests,
     // SecurityAssetClassParityGuardTests, SecurityAssetClassSurfaceParityTests, SecurityKindMappingTests).
     // The asset-pack registry's readiness and profile dispatch are held to every domain kind and
-    // canonical profile target by SecurityAssetClassOperationalWiringTests.
+    // canonical profile target by SecurityAssetClassOperationalWiringTests. The rate-field unit table
+    // (review D10, slice 4) is keyed by class and schema field like the schema itself, and is held to
+    // the catalog and schema by RateUnitNormalizerTests. The classification label
+    // reader's KnownCaseNames set is held to the F# AssetClass/AssetFamily/SecuritySubType unions by
+    // ClassificationLabelReaderTests.KnownCaseNames_MatchTheFSharpClassificationUnions. The
+    // class-gated validateDefinitionTerms dispatch in SecurityMasterCommands.fs (ADR-027 S2-B1) is
+    // held to the catalog by SecurityDefinitionValidationEquivalenceTests: the ledgered class keys
+    // must be declared catalog classes, every declared class runs the clean-twin theory, and the
+    // mutation table must cover exactly the ledgered codes.
     private static readonly string[] KnownDispatchSites =
     [
         "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
         "src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs",
+        "src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs",
         "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Profiles.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetPackRegistry.Readiness.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
         "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
+        "src/Meridian.Contracts/SecurityMaster/SecurityRateFieldUnits.cs",
         "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",
         "src/Meridian.FSharp/Domain/SecurityClassification.fs",
         "src/Meridian.FSharp/Domain/SecurityMaster.fs",
+        "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
         "src/Meridian.ReferenceData/SecurityMaster/SecurityKindMapping.cs",
         "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
-        "src/Meridian.Ui.Shared/Services/SecurityMasterSecurityReferenceLookup.cs",
+        // SecurityMasterSecurityReferenceLookup left the list in remediation slice 8: its sub-type
+        // switch now reads the F# AssetClassRegistry, keeping only three pinned legacy spellings
+        // and one declared ambiguous class (WorkstationSecuritySubTypeCoverageTests).
     ];
 
     private static readonly string[] SkippedPathSegments = ["/bin/", "/obj/", "/node_modules/", "/wwwroot/"];

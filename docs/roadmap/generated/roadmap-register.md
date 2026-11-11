@@ -17,7 +17,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-10-30
+Snapshot date: 2026-11-01
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -997,11 +997,11 @@ Implemented one shared valuation freshness policy with default blocking, require
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-26 |
+| Last reviewed | 2026-11-10 |
 
 ### Current Summary
 
-Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Current focused, hosted, Windows and rendered operator verification remain required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
+Implementation in PR 3004 separates stable business lineage from comparison policy, retains executed mapping fingerprints and completed recovery evidence, resolves named SLA calendars, and shows source state and occurrence age in browser and WPF. Source clearing never disposes governed casework. Reconstructed after workspace maintenance removed an earlier unpublished implementation; that earlier local test result is not acceptance evidence for this head. Focused verification ran on 2026-11-10 against source 471d651e - the lineage, SLA-calendar, statement-intake and statement-lineage test classes passed locally on Linux (39 tests), the same filter passed on hosted Linux (Targeted Test run 42910954556), and FundReconciliationWorkbenchServiceTests passed on hosted Windows with the full WPF build (Targeted Test run 42910959791, 12 tests). The browser source-observation test was not rerun in that pass, and rendered operator verification remains required. Legacy imports without mapping proof remain non-comparable, and historical policy forks require explicit review.
 
 ### Exit Criteria
 
@@ -1811,6 +1811,41 @@ Adopted as planned product direction under DEC-TRADING-STRATEGY-DIRECTION-001 an
 - `SRC-CONTRACTS`
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
+- `SRC-UI-SERVICES`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+
+## W14-ATTEST-001 - Single-principal attestation for governed approvals in the single-operator envelope
+| Field | Value |
+| --- | --- |
+| Wave | W14 |
+| Status | planned |
+| Health | green |
+| Priority | medium |
+| Owner lane | Platform Security and Governance |
+| Evidence posture | planned_evidence |
+| Last reviewed | 2026-11-02 |
+
+### Current Summary
+
+Adopted as unranked planned direction under DEC-SINGLE-PRINCIPAL-001 from design charter Section 25.3.12, answering the open question recorded by DEC-VALUE-PROPOSITION-001. Source enforces actor separation for corporate-action approval/posting (MakerCheckerRequired), reconciliation waiver/supersession (SelfApprovalNotAllowed), and new Security Master override approvals (OperatorOverrideSelfApprovalException); existing privileged reconciliation sign-off with a reason remains a separate path, and distinct actor IDs alone do not prove independent human control. The ADR-019 v1 envelope is a single-operator local workstation with no supported path for an independent approver. The row plans an audited, tenant-scoped single-principal declaration under which eligible approvals are recorded as preparer attestations that every passport, trace, package, and audit view labels as not independently reviewed, with Verified Coverage reporting attested items separately. It registers planning scope only: no ADR-019 envelope text, PRD-000 sign-off, source enforcement, rank, or release authority changes, and small-team maker-checker between distinct principals remains a separate future envelope decision. The 2026-11-02 draft policy proposal and synthetic acceptance matrix compare a named non-posting first slice with separately adopted economic-action eligibility and record proposed exclusions, evidence, withdrawal, labels, and coverage treatment. Owner decisions and independent Security and Accounting review remain open; no policy option is adopted.
+
+### Exit Criteria
+
+- An audited, tenant-scoped single-principal declaration exists; with it off, existing guarded approvals and their documented exceptions behave exactly as today, with no attestation authority.
+- With it on, eligible approvals are recorded as attestations by the preparer, distinct from independent approvals in contracts, storage, and audit events; material or high-risk classes named by policy stay blocked.
+- Every Number Passport, decision trace, report package, and audit view shows "attested by preparer - not independently reviewed" on both the browser and WPF workstations, and a delivered package reproduces its original attestation label after the declaration is withdrawn.
+- Verified Coverage reports attested items separately and never merges them with independently approved items; whether attested items count toward the headline is decided under W11-COVER-001.
+- Turning the declaration on or off is an audited administrative action, and items created after it is withdrawn require independent approval.
+- Roadmap status remains planned until this item links implementation paths, the excluded-class policy, and browser and WPF evidence; the row changes no ADR-019 envelope or PRD-000 sign-off.
+
+### Source Modules
+
+- `SRC-DESIGN-IDENTITY`
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE`
+- `SRC-STRATEGIES`
+- `SRC-CONTRACTS`
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`

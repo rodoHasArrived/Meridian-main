@@ -10,6 +10,7 @@ import type {
   SecurityScheduleDetailFieldViewModel,
 } from "./accounting-screen.view-model";
 import type { SecurityAliasEntry, SecurityIdentifierEntry, SecurityMasterConflict } from "@/types";
+import { formatUtcDate } from "@/lib/format";
 
 interface ReferenceDataRoutePostureCounts {
   totalCount: number;
@@ -138,7 +139,7 @@ export function formatSecurityDate(value: string | null | undefined): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
 
 export function formatSecurityDateRange(from: string | null | undefined, to: string | null | undefined): string {
@@ -158,7 +159,7 @@ export function formatConflictDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
 
 export function formatSecurityConflictField(value: string): string {
