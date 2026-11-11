@@ -388,19 +388,48 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException(
                 $"The cash-flow projection for {ticker} states no accrual interval for a coupon period, so its interest cannot be accrued by day.");
 
-        var amortizedThrough = windowStart.AddDays(-1);
         Guid? bookPositionId = null;
         if (context.OptionalInput("bookPositionId") is { } positionText)
             bookPositionId = Guid.TryParse(positionText, out var parsedPosition) && parsedPosition != Guid.Empty
                 ? parsedPosition
                 : throw new InvalidOperationException("The calculated template input 'bookPositionId' must be a book position identifier.");
-        var lots = (await inputs.ListOpenLotsAsync(context.Scope, LedgerAccounts.Securities(ticker, financialAccountId),
-                securityId, bookPositionId, context.EffectiveDate, ct).ConfigureAwait(false))
-            .Where(lot => lot.SecurityId == securityId)
-            .ToArray();
-        if (lots.Length == 0)
+        var securitiesAccount = LedgerAccounts.Securities(ticker, financialAccountId);
+        async Task<LedgerTaxLot[]> LotsHeldAsync(DateOnly date)
+            => (await inputs.ListOpenLotsAsync(context.Scope, securitiesAccount, securityId, bookPositionId, date, ct).ConfigureAwait(false))
+                .Where(lot => lot.SecurityId == securityId)
+                .OrderBy(lot => lot.LotId, StringComparer.Ordinal)
+                .ToArray();
+
+        // A holding can be sold or reduced inside the window, so the lots open at its end do not
+        // say what was held on each day. With a book position the holding is read for every day
+        // and the window is split wherever it changes; a lot accrues through the last day it is
+        // still open at the close. Without a book position only the closing lots are known.
+        var holdings = new List<(DateOnly Start, DateOnly End, LedgerTaxLot[] Lots)>();
+        if (bookPositionId is null)
+        {
+            holdings.Add((windowStart, context.EffectiveDate, await LotsHeldAsync(context.EffectiveDate).ConfigureAwait(false)));
+        }
+        else
+        {
+            var from = windowStart;
+            LedgerTaxLot[]? held = null;
+            for (var day = windowStart; day <= context.EffectiveDate; day = day.AddDays(1))
+            {
+                var onDay = await LotsHeldAsync(day).ConfigureAwait(false);
+                if (held is not null && !SameHolding(held, onDay))
+                {
+                    holdings.Add((from, day.AddDays(-1), held));
+                    from = day;
+                }
+                held = onDay;
+            }
+            holdings.Add((from, context.EffectiveDate, held ?? []));
+        }
+
+        holdings.RemoveAll(static holding => holding.Lots.Length == 0);
+        if (holdings.Count == 0)
             return RecurringJournalCalculationResult.NothingDue(
-                $"The fund book holds no open lot of {ticker} at {context.EffectiveDate:yyyy-MM-dd}; no coupon or amortization accrues.");
+                $"The fund book holds no open lot of {ticker} between {windowStart:yyyy-MM-dd} and {context.EffectiveDate:yyyy-MM-dd}; no coupon or amortization accrues.");
         // Projected interest is for the security's whole principal face; the fund earns its share.
         if (projection.TermsUsed?.PrincipalFace is not { } principalFace || principalFace <= 0m)
             throw new InvalidOperationException(
@@ -408,16 +437,20 @@ public sealed class FixedIncomeAccrualCalculation(
 
         // The bridge posts to a scratch ledger that is never persisted; its journals are the
         // calculation result and reach the real ledger only through the approved draft.
-        var scratch = new DomainLedger();
-        await bridge.PostProjectedCashFlowsAsync(securityId, ticker, scratch, new AmortizationLedgerPostingContext(
-            lots, financialAccountId, StructuredCashFlowScenario.Base, ProjectionAsOf: projectionAsOf,
-            AmortizedThrough: amortizedThrough,
-            AccrualWindow: new AmortizationAccrualWindow(windowStart, context.EffectiveDate),
-            CouponPrincipalBasis: principalFace), ct).ConfigureAwait(false);
-        var journals = scratch.Journal
-            .Where(journal => journal.Metadata.ActivityType == AmortizationActivity &&
-                journal.Metadata.EffectiveDate is { } date && InWindow(date, windowStart, context.EffectiveDate))
-            .ToArray();
+        var journals = new List<JournalEntry>();
+        foreach (var (start, end, heldLots) in holdings)
+        {
+            var scratch = new DomainLedger();
+            await bridge.PostProjectedCashFlowsAsync(securityId, ticker, scratch, new AmortizationLedgerPostingContext(
+                heldLots, financialAccountId, StructuredCashFlowScenario.Base, ProjectionAsOf: projectionAsOf,
+                AmortizedThrough: start.AddDays(-1),
+                AccrualWindow: new AmortizationAccrualWindow(start, end),
+                CouponPrincipalBasis: principalFace), ct).ConfigureAwait(false);
+            journals.AddRange(scratch.Journal.Where(journal => journal.Metadata.ActivityType == AmortizationActivity &&
+                journal.Metadata.EffectiveDate is { } date && InWindow(date, start, end)));
+        }
+
+        var lotCount = holdings.SelectMany(static holding => holding.Lots).Select(static lot => lot.LotId).Distinct(StringComparer.Ordinal).Count();
         var lines = journals.SelectMany(journal => journal.Lines)
             .GroupBy(line => line.Account)
             .SelectMany(group => new[]
@@ -433,7 +466,7 @@ public sealed class FixedIncomeAccrualCalculation(
 
         var total = lines.Sum(line => line.debit);
         var description = FormattableString.Invariant(
-            $"Fixed-income accrual and amortization {ticker} for {windowStart:yyyy-MM-dd} to {context.EffectiveDate:yyyy-MM-dd} ({RecurringJournalCalculationMath.Money(total)} from {lots.Length} open lot(s))");
+            $"Fixed-income accrual and amortization {ticker} for {windowStart:yyyy-MM-dd} to {context.EffectiveDate:yyyy-MM-dd} ({RecurringJournalCalculationMath.Money(total)} from {lotCount} lot(s){(holdings.Count > 1 ? ", holding changed during the window" : string.Empty)})");
         var journalEvent = new AutomatedJournalEvent(AutomatedJournalEventKind.RecurringTemplate, ticker, total,
             context.OccurredAtUtc, financialAccountId, description, securityId, EffectiveDate: context.EffectiveDate);
         var metadata = new JournalEntryMetadata(ActivityType: AmortizationActivity, Symbol: ticker, SecurityId: securityId,
@@ -442,6 +475,10 @@ public sealed class FixedIncomeAccrualCalculation(
     }
 
     private static bool InWindow(DateOnly date, DateOnly start, DateOnly end) => date >= start && date <= end;
+
+    private static bool SameHolding(LedgerTaxLot[] left, LedgerTaxLot[] right)
+        => left.Length == right.Length &&
+           left.Zip(right).All(static pair => pair.First.LotId == pair.Second.LotId && pair.First.Quantity == pair.Second.Quantity);
 }
 
 /// <summary>

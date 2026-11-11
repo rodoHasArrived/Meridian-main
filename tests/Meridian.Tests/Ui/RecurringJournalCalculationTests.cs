@@ -620,6 +620,27 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task FixedIncome_PositionSoldDuringTheWindow_AccruesForTheDaysItWasHeld()
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Guid.NewGuid().ToString("D") },
+            endsOn: JanuaryEnd);
+        // The whole issue at par: half is sold on 11 January and the rest on 21 January.
+        LedgerTaxLot Lot(decimal quantity) => new("lot-1", new(2025, 12, 31), quantity, 100m, SecurityId)
+        { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
+        var fixture = await CreateFixtureAsync(cashFlows: MonthlyCouponCashFlows(), lotsOn: date =>
+            date < new DateOnly(2026, 1, 11) ? [Lot(10_000m)] : date < new DateOnly(2026, 1, 21) ? [Lot(5_000m)] : []);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        // 5,000 a month: 10 days on the whole issue, then 10 days on half, then nothing.
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        var draft = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        draft.TotalDebits.Should().Be(1_612.90m + 806.45m);
+        draft.Memo.Should().Contain("holding changed during the window");
+    }
+
+    [Fact]
     public async Task FixedIncome_BondInAnotherCurrency_BlocksInsteadOfDraftingUnconvertedAmounts()
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
@@ -727,7 +748,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
 
     private async Task<Fixture> CreateFixtureAsync(IReconciliationFxRateProvider? rates = null,
         IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null,
-        IFixedAssetRegister? assets = null, string bondCurrency = "USD")
+        IFixedAssetRegister? assets = null, string bondCurrency = "USD",
+        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null)
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -758,7 +780,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configurationService, audit,
             journalStore: journal.Object, recurringStore: store);
         var intake = new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService);
-        var inputs = new LedgerInputs(_ledger, lots ?? [], () => _ledgerReads++);
+        var inputs = new LedgerInputs(_ledger, lots ?? [], () => _ledgerReads++, lotsOn);
         var cashFlowService = cashFlows ?? MonthlyCouponCashFlows();
         var runner = new RecurringJournalRunner(store, intake, drafts, new Periods(_closedMonths),
         [
@@ -798,7 +820,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         }
     }
 
-    private sealed class LedgerInputs(DomainLedger ledger, IReadOnlyList<LedgerTaxLot> lots, Action onLedgerRead) : IRecurringJournalCalculationInputs
+    private sealed class LedgerInputs(DomainLedger ledger, IReadOnlyList<LedgerTaxLot> lots, Action onLedgerRead,
+        Func<DateOnly, IReadOnlyList<LedgerTaxLot>>? lotsOn = null) : IRecurringJournalCalculationInputs
     {
         public Task<IReadOnlyLedger> HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct)
         {
@@ -808,7 +831,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
 
         public Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId,
             Guid? bookPositionId, DateOnly asOf, CancellationToken ct)
-            => Task.FromResult(lots);
+            => Task.FromResult(lotsOn?.Invoke(asOf) ?? lots);
     }
 
     private static TableReconciliationFxRateProvider Rates(IEnumerable<ReconciliationFxQuote> quotes)

@@ -108,7 +108,9 @@ Rules that keep an amount from being drafted twice:
   date, and a bond whose Security Master currency is not the book currency is blocked, because
   its amounts would be drafted unconverted. Coupon accrues only on the lots the book holds: each
   lot earns its face share of the projection's interest from the day it was acquired, and a book
-  with no open lot drafts nothing. The runner uses the template's `bookPositionId` to reconstruct
+  with no open lot drafts nothing. When the template names a `bookPositionId`, the holding is
+  read for every day of the window and the accrual is split wherever it changes, so a lot sold
+  or reduced mid-window accrues through the last day it is still open at the close. The runner uses the template's `bookPositionId` to reconstruct
   the lots held at the effective date. Scheduled bond accruals run the following day or later,
   so a template without a book position is blocked.
 
