@@ -310,6 +310,9 @@ commands, execution simulation, diagnostics registration, UI endpoints, and fund
 data access consume `Meridian.DataIntegration.Historical.HistoricalDataQueryService` instead of
 owning file-backed historical-data query logic.
 
+`DataQualityReportGenerator` exports daily and weekly reports as JSON, CSV, HTML, or Markdown; CSV
+text cells use the Storage `SpreadsheetFormulaGuard` and HTML text values are HTML-encoded.
+
 Provider data-quality validators, analyzers, freshness SLA monitoring, report generation,
 clock-skew estimation, spread monitoring, pipeline data-loss accounting, stored market-event schema
 compatibility checks, and validation-stage counters live in this module. Connection-health
