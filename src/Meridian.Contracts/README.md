@@ -45,6 +45,11 @@ underlying exposure and exact leverage, settlement methods, raw classification l
 behavior and operational pricing/fixing sources. These homes recover class-owned flat fields without
 converting their labels or units; operational source names grant no calculation authority.
 
+`Workstation/OperatorTriageDtos.cs` defines personal acknowledgement/snooze, shared assignment,
+per-item bulk outcomes and the metadata persistence seam; these commands do not resolve underlying
+financial work. `Ledger/PostedPeriodComparisonDtos.cs` carries explicit fiscal comparison ranges,
+accounting basis/policy/currency, exact decimal changes and posted-journal population identities.
+
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 Canonical amortization v3 is an explicit opt-in for remaining-face treatment and automatic

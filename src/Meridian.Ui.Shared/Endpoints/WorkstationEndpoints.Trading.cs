@@ -134,11 +134,9 @@ public static partial class WorkstationEndpoints
         }
         else
         {
-            // No live positions yet — show an informational placeholder row
-            positions =
-            [
-                new WorkstationTradingPositionRow("—", "—", "—", "—", "—", "—", "—", "—", "No open positions")
-            ];
+            // Empty-state copy belongs to the client, not to the financial population.
+            // A placeholder row inflated position counts and could be exported as a holding.
+            positions = [];
         }
 
         // --- Open orders (live OMS when available) — PR-03: typed rows ---

@@ -26,6 +26,13 @@ vi.mock("@/lib/reporting-income-comparison-api", async (importOriginal) => ({
   getIncomeComparisonCandidates: vi.fn(async () => [])
 }));
 
+// Personal-view reads are covered by the workbench suite. Keep export command
+// response ordering independent of that separate background preferences read.
+vi.mock("@/lib/table-workbench", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/table-workbench")>(),
+  loadTableViews: vi.fn(async () => [])
+}));
+
 function recentRun(overrides: Partial<ReportingRunStatusProjection>): ReportingRunStatusProjection {
   return {
     runId: "investor-monthly-statement-20260501",
@@ -5784,4 +5791,45 @@ describe("ReportingScreen", () => {
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
   });
+  it("moves run-status keyboard selection with j/k while leaving governed actions explicit", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const second = within(queue).getByRole("listitem", { name: "Review run keyboard-run-b" });
+    expect(first).toHaveAttribute("tabindex", "0");
+    first.focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(second).toHaveFocus());
+    expect(second).toHaveAttribute("aria-current", "true");
+    await user.keyboard("ard");
+    expect(second).toHaveFocus();
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    await user.keyboard("k");
+    await waitFor(() => expect(first).toHaveFocus());
+    expect(screen.getByText(/j\/k select a run/)).toBeInTheDocument();
+  });
+
+  it("keeps reporting queue shortcuts out of audit controls and modifier commands", async () => {
+    const user = userEvent.setup();
+    const data = { ...accounting, reporting: { ...accounting.reporting, recentRuns: [
+      recentRun({ runId: "keyboard-run-a" }), recentRun({ runId: "keyboard-run-b" })
+    ] } };
+    renderWithRouter(<ReportingScreen data={data} />, { initialEntries: ["/reporting/run-status"] });
+    const queue = screen.getByRole("list", { name: "Report run review queue" });
+    const first = within(queue).getByRole("listitem", { name: "Review run keyboard-run-a" });
+    const audit = within(first).getByRole("button", { name: /Audit, lineage, and artifacts/ });
+    audit.focus();
+    await user.keyboard("jk");
+    expect(audit).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+    first.focus();
+    await user.keyboard("{Control>}j{/Control}");
+    expect(first).toHaveFocus();
+    expect(first).toHaveAttribute("aria-current", "true");
+  });
+
 });

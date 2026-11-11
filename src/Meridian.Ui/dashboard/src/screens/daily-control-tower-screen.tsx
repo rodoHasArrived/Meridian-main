@@ -9,19 +9,18 @@ import type {
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { PanelSurface } from "@/components/ui/panel-surface";
-import { ScreenLayout } from "@/components/ui/screen-layout";
-import { KeyValueGrid } from "@/components/data/concrete";
-import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
+import { DetailRail } from "@/components/meridian/detail-rail";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { buildAttentionSignalFact } from "@/components/meridian/attention-signal-fact";
 import { StatusRow } from "@/components/meridian/status-row";
-import { ReadinessPanel, SeverityBadge, WorkspaceSection } from "@/components/operations";
+import type { OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
+import { OperatorTriageQueue } from "@/components/meridian/operator-triage-queue";
+import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
+import { SeverityBadge } from "@/components/operations";
 import { buildDailyControlTowerModel } from "@/lib/daily-control-tower";
-import {
-  badgeVariantToSeverityStatus,
-  readinessToneToSeverityStatus
-} from "@/lib/shared-tone-mappings";
+import { badgeVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { eyebrowClassName } from "@/design-system/label-case";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export interface DailyControlTowerScreenProps {
   viewModel: AppShellWorkflowContinuityViewModel;
@@ -46,16 +45,11 @@ export function DailyControlTowerScreen({
   // leaving the tower. Falls back to the leading decision's row until one is chosen
   // (or when the chosen row leaves the queue on refresh).
   const [selectedQueueItemId, setSelectedQueueItemId] = useState<string | null>(null);
-  const [reviewAllScopes, setReviewAllScopes] = useState(false);
   const selectedQueueRow =
     model.queueRows.find((row) => row.item.id === selectedQueueItemId) ?? model.leadingRow;
   const evidencePanelId = "daily-control-tower-evidence-detail";
-  const queueVisible = viewModel.operatingScope.hasScope || reviewAllScopes;
-  // With a decision queued, the headline carries that decision's own status. With none, it
-  // carries the workstation attention state, so an empty queue never reads as a warning the
-  // masthead pill does not show.
-  const headlineTone = model.leadingRow ? model.statusTone : attention.tone;
-  const headlineLabel = model.leadingRow ? model.statusLabel : attention.statusLabel;
+  const freshnessEvidence = selectedQueueRow?.proofPassportItems.find((item) => item.id === "freshness");
+  const freshness = buildTowerFreshness(selectedQueueRow?.proof?.timestampIso, freshnessEvidence?.detail);
 
   useEffect(() => {
     if (selectedQueueItemId && !model.queueRows.some((row) => row.item.id === selectedQueueItemId)) {
@@ -66,7 +60,7 @@ export function DailyControlTowerScreen({
   const queueColumns: DenseDataTableColumn<(typeof model.queueRows)[number]>[] = [
     {
       id: "item",
-      label: "Blocked item",
+      label: "Item",
       className: "min-w-[18rem]",
       render: (row) => (
         <div className="space-y-2">
@@ -78,7 +72,7 @@ export function DailyControlTowerScreen({
         </div>
       )
     },
-    { id: "owner", label: "Owner", render: (row) => row.item.workspaceLabel },
+    { id: "workspace", label: "Workspace", render: (row) => row.item.workspaceLabel },
     { id: "output", label: "Affected output", render: (row) => row.outputLabel },
     {
       id: "action",
@@ -101,80 +95,60 @@ export function DailyControlTowerScreen({
     }
   ];
 
+  const queueKeyboard = useQueueKeyboard({ rows: model.queueRows, selectedId: selectedQueueRow?.item.id ?? null,
+    getId: (row: (typeof model.queueRows)[number]) => row.item.id,
+    onSelect: (row: (typeof model.queueRows)[number]) => setSelectedQueueItemId(row.item.id) });
+
   return (
-    <ScreenLayout
-      title="What needs an operator decision now"
-      scope="Daily control tower"
-      description="One priority, followed by a ranked finance queue with evidence available in place."
-    >
-      <ReadinessPanel
-        state={readinessToneToSeverityStatus(headlineTone)}
-        statusLabel={headlineLabel}
-        title={model.decision.title}
-        detail={model.decision.summary}
-        actions={
-          <Button asChild variant="outline" size="sm">
-            <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
-              <span>{model.nextActionLabel}</span>
-              <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </Link>
-          </Button>
-        }
-      >
-        <KeyValueGrid
-          columns={2}
-          items={[
-            { label: model.decision.reasonLabel, value: model.decision.reason },
-            { label: "Owner", value: model.ownerLabel },
-            { label: "Output", value: model.outputLabel },
-            { label: "Evidence", value: model.evidenceLabel }
-          ]}
-        />
-      </ReadinessPanel>
-
-      {/* The same attention state the masthead pill reads: one line naming only the open
-          issues, with every signal and its recovery action behind "Details". */}
-      <StatusRow
-        label="Workstation status"
-        clearText="All clear: no open issues"
-        facts={attention.signals.map((signal) => buildAttentionSignalFact(signal, viewModel.operatingScope))}
-        action={onRefresh ? (
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={refreshing}
-            aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
-            onClick={onRefresh}
-          >
-            {refreshing ? "Refreshing" : "Refresh evidence"}
-          </Button>
-        ) : null}
-      />
-
-      <WorkspaceSection
-        title="Finance queue"
-        summary="Each row carries the evidence needed to move from source issue to downstream output."
-      >
-        {!queueVisible ? (
-          <PanelSurface flat role="region" aria-label="Choose Control Tower scope" className="grid gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
-            <div>
-              <h3 className="text-sm font-semibold text-foreground">Choose the scope for today’s queue</h3>
-              <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                Select a fund, account, provider, symbol, run, or date window to rank the most relevant decisions. You can still review the combined queue when cross-scope triage is required.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {onEditOperatingScope ? (
-                <Button type="button" size="sm" onClick={onEditOperatingScope}>Set operating scope</Button>
-              ) : null}
-              <Button type="button" size="sm" variant="outline" onClick={() => setReviewAllScopes(true)}>
-                Review all scopes
+    <div className="space-y-3">
+      <h2 className="sr-only">What needs an operator decision now</h2>
+      <section aria-label="Priority decision">
+        {/* The masthead and Today share one attention object; retain every signal and its
+            recovery path while showing only open issues in the collapsed row. */}
+        <StatusRow
+          label="Workstation status"
+          clearText="All clear: no open issues"
+          facts={attention.signals.map((signal) => buildAttentionSignalFact(signal, viewModel.operatingScope))}
+          action={
+            <>
+              <Button asChild variant="outline" size="sm">
+                <Link to={model.nextActionHref} aria-label={model.nextActionAriaLabel}>
+                  {model.nextActionLabel}<ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                </Link>
               </Button>
-            </div>
-          </PanelSurface>
-        ) : model.queueRows.length > 0 ? (
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
+              {onRefresh ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={refreshing}
+                  aria-label={refreshing ? "Refreshing control tower evidence" : "Refresh control tower evidence"}
+                  onClick={onRefresh}
+                >
+                  {refreshing ? "Refreshing" : "Refresh evidence"}
+                </Button>
+              ) : null}
+            </>
+          }
+        />
+      </section>
+
+      <section aria-label="Daily control tower confidence" className="space-y-2">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <span title={viewModel.operatingScope.summary}><span className="text-muted-foreground">Scope </span>{viewModel.operatingScope.hasScope ? viewModel.operatingScope.summary : "All authorized scopes"}</span>
+          <span title={freshness.detail}><span className="text-muted-foreground">Selected evidence </span>{freshness.value}</span>
+          <span>{model.queueRows.length} loaded workspace items</span>
+          {onEditOperatingScope ? (
+            <Button type="button" variant="ghost" size="sm" onClick={onEditOperatingScope}>
+              {viewModel.operatingScope.hasScope ? "Change scope filter" : "Set operating scope"}
+            </Button>
+          ) : null}
+        </div>
+      </section>
+
+      <section aria-label="Finance queue">
+        <OperatorTriageQueue key={viewModel.operatingScope.fundAccountId ?? "all"} fundAccountId={viewModel.operatingScope.fundAccountId} refreshKey={refreshing} fallback={model.queueRows.length > 0 ? (
+          <div onKeyDownCapture={queueKeyboard} className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
             <DenseDataTable
               tableId="daily-control-tower-queue"
               columns={queueColumns}
@@ -192,26 +166,14 @@ export function DailyControlTowerScreen({
               maxVisibleRows={null}
             />
             {selectedQueueRow ? (
-              <DenseRowDetailPanel
+              <DetailRail
                 id={evidencePanelId}
                 ariaLabel={`${selectedQueueRow.item.label} evidence summary`}
-                selectedSourceLabel={selectedQueueRow.item.label}
-                className="space-y-3 border-l border-border bg-background/50 p-4"
+                title={selectedQueueRow.item.label}
+                fields={selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => ({ label: passportItem.label,
+                  value: <><span>{passportItem.value}</span><p className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</p></> }))}
               >
-                <div>
-                  <p className="eyebrow-label eyebrow-label--sentence">Selected queue evidence</p>
-                  <h3 className="text-sm font-semibold text-foreground">{selectedQueueRow.item.label}</h3>
-                  <p className="mt-1 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
-                </div>
-                <dl className="grid gap-2">
-                  {selectedQueueRow.proofPassportItems.slice(0, 4).map((passportItem) => (
-                    <div key={passportItem.id} className="rounded border border-border bg-card p-2">
-                      <dt className={eyebrowClassName(passportItem.label)}>{passportItem.label}</dt>
-                      <dd className="mt-1 text-xs font-medium leading-5 text-foreground">{passportItem.value}</dd>
-                      <dd className="mt-1 text-xs leading-5 text-muted-foreground">{passportItem.detail}</dd>
-                    </div>
-                  ))}
-                </dl>
+                <p className="my-3 text-sm leading-6 text-muted-foreground">{selectedQueueRow.proofPassportSummary}</p>
                 {selectedQueueRow.proofPassportItems.length > 4 ? (
                   <TechnicalDetails
                     label="More evidence"
@@ -228,16 +190,43 @@ export function DailyControlTowerScreen({
                     </dl>
                   </TechnicalDetails>
                 ) : null}
-              </DenseRowDetailPanel>
+              </DetailRail>
             ) : null}
           </div>
         ) : (
           <PanelSurface flat role="status" className="p-4 text-sm text-muted-foreground">
             {model.emptyQueueText}
           </PanelSurface>
-        )}
-      </WorkspaceSection>
+        )} />
+      </section>
 
-    </ScreenLayout>
+    </div>
   );
+}
+
+const TOWER_FRESHNESS_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+function buildTowerFreshness(
+  timestampIso: string | null | undefined,
+  detail: string | null | undefined,
+  nowMs = Date.now()
+): { value: string; detail: string; tone: OperationalTrustTone } {
+  const observedAtMs = Date.parse(timestampIso ?? "");
+  if (!Number.isFinite(observedAtMs)) {
+    return {
+      value: "Timestamp unavailable",
+      detail: detail ?? "No timestamped evidence is linked to the leading decision.",
+      tone: "review"
+    };
+  }
+
+  const observedAt = new Date(observedAtMs);
+  const timestampLabel = formatUtcTimestamp(observedAt);
+  const stale = nowMs - observedAtMs > TOWER_FRESHNESS_WINDOW_MS;
+
+  return {
+    value: `${stale ? "Stale update" : "Current"} · ${timestampLabel}`,
+    detail: detail ?? "Latest evidence for the leading decision.",
+    tone: stale ? "review" : "ready"
+  };
 }

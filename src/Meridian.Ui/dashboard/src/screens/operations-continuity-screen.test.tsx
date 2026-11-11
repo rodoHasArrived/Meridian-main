@@ -1882,17 +1882,18 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const reopen = await screen.findByRole("button", { name: "Reopen governed period for 2026-05" });
-    fireEvent.change(await screen.findByLabelText("Incident id"), {
+    const reopenForm = screen.getByRole("form", { name: "Governed period reopen command" });
+    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen governed period for 2026-05" });
+    fireEvent.change(within(reopenForm).getByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });
-    fireEvent.change(screen.getByLabelText("Approval reference"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Approval reference"), {
       target: { value: "admin-approval-42" }
     });
-    fireEvent.change(screen.getByLabelText("Justification"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Justification"), {
       target: { value: "Controller approved restatement remediation." }
     });
-    fireEvent.change(screen.getByLabelText("Impact summary"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Impact summary"), {
       target: { value: "Ledger and report package will be regenerated with retained evidence." }
     });
     await user.click(reopen);
@@ -1957,7 +1958,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
 
     await waitFor(() => {
       expect(assignOperationsContinuityBreakCase).toHaveBeenCalledWith(
@@ -1985,7 +1987,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Resolve break recon-break-42" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Resolve break recon-break-42" }));
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("Break version conflict.")).toBeInTheDocument();

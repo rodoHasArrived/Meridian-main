@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Moq;
 
 namespace Meridian.Tests.Storage;
 
@@ -867,7 +869,7 @@ public sealed class LedgerBookServiceTests
     [Fact]
     public async Task LedgerEndpoints_PeriodReportingRoutes_RetainTrialBalanceDimensions()
     {
-        await using var app = await CreateAppAsync();
+        await using var app = await CreateAppAsync(withRetainedOwnership: true);
         var client = app.GetTestClient();
         var store = (InMemoryLedgerJournalStore)app.Services.GetRequiredService<ILedgerJournalStore>();
 
@@ -1545,7 +1547,8 @@ public sealed class LedgerBookServiceTests
     }
 
     private static async Task<WebApplication> CreateAppAsync(
-        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending)
+        UserPermission permissions = UserPermission.ViewTrades | UserPermission.ManageDirectLending,
+        bool withRetainedOwnership = false)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -1555,6 +1558,13 @@ public sealed class LedgerBookServiceTests
         builder.Services.AddRateLimiter(options =>
             options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ =>
                 RateLimitPartition.GetNoLimiter("ledger-tests")));
+        if (withRetainedOwnership)
+        {
+            var tenancy = new Mock<IFundProfileTenancyRegistry>();
+            tenancy.Setup(registry => registry.ResolveAsync("alpha-fund", It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new FundProfileOwnership("alpha-fund", "ledger-test-tenant", "ledger-test-company"));
+            builder.Services.AddSingleton(tenancy.Object);
+        }
         builder.Services.AddSingleton<IOperatorInboxService, InMemoryOperatorInboxService>();
         builder.Services.AddSingleton<ILedgerJournalStore, InMemoryLedgerJournalStore>();
         builder.Services.AddSingleton<ILedgerBookService>(sp =>

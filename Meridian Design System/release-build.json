@@ -12,6 +12,7 @@
   "build": {
     "esbuild": "0.28.2",
     "reactPreview": "19.3.1",
+    "jsxPreview": "7.29.0",
     "sourceHashes": {
       "api/accounting.js": "32a06149bbd3e32d60456970b7d0a25fef31aed21cffc2d01b999eb3aeab13f4",
       "api/analytics.js": "93324c43ff214c4fa63c40715e531989d37d79bf693e9d492fde823e8fa6b437",
@@ -496,6 +497,10 @@
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
       "bytes": 222579
     },
+    "_preview_jsx.js": {
+      "sha256": "bca7e2ea5a2fcd5b7acb07e55b07d898fb4ea7ed0934d859c62c37437de12ead",
+      "bytes": 3137862
+    },
     "_ds_manifest.json": {
       "sha256": "63e76c1adfda2702ea2482fae784545f1f72db122e20c3b41f031dc2e054423d",
       "bytes": 158587
@@ -509,6 +514,6 @@
   "externalRequirements": {
     "components": "Consumer supplied React global (React 18 or 19)",
     "templates": "Design Component host for x-dc/x-import/helmet elements",
-    "preview": "Offline React production runtime and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md"
+    "preview": "Offline React production runtime, offline JSX compiler and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md"
   }
 }

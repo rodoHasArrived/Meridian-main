@@ -30,7 +30,7 @@ LITERAL_START = re.compile(r"#[0-9a-fA-F]{3,8}\b|\brgba?\(", re.I)
 NUMBER = re.compile(r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)%?")
 SIMPLE_HEX = re.compile(r"#[0-9a-fA-F]{3}(?:[0-9a-fA-F]{3})?\Z")
 DARK_CONTEXT = re.compile(r"prefers-color-scheme\s*:\s*dark|(?:\\?[\"'])dark(?:\\?[\"'])", re.I)
-GENERATED_NAMES = {"_ds_bundle.js", "_preview_runtime.js"}
+GENERATED_NAMES = {"_ds_bundle.js", "_preview_runtime.js", "_preview_jsx.js"}
 
 
 def mask_comments(text: str) -> str:

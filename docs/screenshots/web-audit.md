@@ -1,82 +1,102 @@
 # Web Workstation Screenshot Audit
 
-Date: 2026-07-14 UTC
+Date: 2026-11-11 UTC
+
+The original program audit below describes PR #3497's source branch. The combined
+Design System 4.3 integration is recorded at the end of this document.
 
 ## Outcome
 
-The browser-workstation catalog was regenerated after the interface-improvement pass. All 75
-fixture-backed captures completed successfully at a 1440 x 1100 viewport, and the freshness
-validator confirmed that the route manifest and PNG inventory agree.
+The browser UX program regenerated all **82 fixture-backed routes** at 1440 × 1100.
+The completed manifest reports 82 passed and zero failed captures. Freshness validation
+confirmed 82 expected routes and 82 matching PNG files. The two new captures cover the
+separate Factor Paydown and Consolidation workflows.
 
-| Family | Captures | Review outcome |
+| Family | Captures | Current assessment |
 | --- | ---: | --- |
-| Daily Control Tower | 1 | Clear operator posture, blocker, and next-action framing. |
-| Trading | 5 | Route-specific task states remain readable within the shared workstation shell. |
-| Portfolio | 6 | Source, run, freshness, and record evidence now use operator-facing language; technical references are progressively disclosed. |
-| Accounting | 22 | Reconciliation, close, approvals, external GL, Security Master, and evidence routes now show explicit blockers, human-readable dates, and consistent selected-run context. |
-| Reporting | 13 | First-use guidance, report-pack health, run status, approval routing, schedule dates, and retained evidence are explicit. |
-| Strategy | 7 | Research and promotion workflows distinguish action, evidence, and technical detail more clearly. |
-| Data | 10 | Provider and evidence routes prioritize operator tasks while retaining technical proof behind focused controls. |
-| Settings | 11 | Preferences, access, provider setup, accounting systems, and diagnostics are distinct routes; stale provider evidence fails closed rather than appearing production-ready. |
-| **Total** | **75** | **Complete current-run catalog.** |
+| Daily Control Tower | 1 | Combined queue appears without selecting scope; health and priority stay compact. Fixture persistence is explicitly unavailable. |
+| Trading | 5 | Recovery remains visible; Orders and Fills share one active detail rail. Metrics and technical confidence are disclosed separately. |
+| Portfolio | 7 | Source figures retain basis/context; positions expose additional decision fields. Missing currency, history or equity stays unavailable. |
+| Accounting | 26 | Dedicated mutation routes, compact investigation rails, scoped comparisons and collaboration replace stacked workflows. |
+| Reporting | 13 | Export browsing uses the shared workbench; governed lifecycle, retained amounts and decision controls preserve their authority. |
+| Strategy | 7 | Run browsing exposes retained performance and trends; absent measurements are not replaced with illustrative production statistics. |
+| Data | 12 | Provider health leads the overview; freshness, coverage and retained history have text/table alternatives. Upload previews are labeled explicitly. |
+| Settings | 11 | Evidence-based setup checklist replaces the repeated navigation table. Detailed configuration remains on its own routes. |
+| **Total** | **82** | **Current synthetic catalog complete.** |
 
 ## Evidence
 
 - Screenshots: `docs/screenshots/web/*.png`
-- Capture manifest: `artifacts/web-screenshots/manifest.json`
+- Manifest: `artifacts/web-screenshots/manifest.json` (generated artifact)
 - Route catalog: `scripts/dev/web-screenshot-routes.json`
-- Fixture catalog: `scripts/dev/web-screenshot-fixtures.json`
-- Capture command: `node scripts/dev/capture-web-screenshots.mjs --port 5188 --output-dir docs/screenshots/web --config scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json`
-- Freshness validation: `python scripts/dev/validate-screenshot-captures.py --surface web --output-dir docs/screenshots/web --web-routes scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json --require-fresh`
-- Workflow tests: `python tests/scripts/test_refresh_screenshots_workflow.py`
+- Fixture catalog: `scripts/dev/web-screenshot-fixtures.json`, plus the typed accounting scenario
+- Capture: `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium node scripts/dev/capture-web-screenshots.mjs --skip-server --port 5189 --output-dir docs/screenshots/web --manifest artifacts/web-screenshots/manifest.json --readiness-timeout-ms 12000`
+- Freshness: `python3 scripts/dev/validate-screenshot-captures.py --surface web --output-dir docs/screenshots/web --web-routes scripts/dev/web-screenshot-routes.json --manifest artifacts/web-screenshots/manifest.json --require-fresh`
+- Capture-contract tests: `python3 -m unittest tests.scripts.test_refresh_screenshots_workflow` — 41 passed.
 
-The capture manifest reports `status: passed`, `selectedCaptureCount: 75`, and
-`totalCaptureCount: 75`. Freshness validation reported 75 expected captures and 75 PNG files.
+The maintained fixture Vite server ran in explicit `fixture-only` mode. Capture readiness now
+checks current headings and the selected reconciliation rail itself, rather than removed shell
+headings or collapsed metrics. Capture success is not evidence that an unsupported API exists.
 
-## Improvements Confirmed In The Rendered Catalog
+## Rendered review
 
-- The seven root workspaces remain Trading, Portfolio, Accounting, Reporting, Strategy, Data, and
-  Settings, with one shared operating-context shell across the catalog.
-- Operator-facing summaries use human-readable dates, source names, run context, and freshness
-  language instead of exposing implementation identifiers as primary content.
-- Raw run, policy, record, provider, configuration, and evidence references remain available but
-  move into collapsed technical-detail regions where they are not required for the next operator action.
-- Ready, review, stale, delayed, blocked, and unavailable states are no longer presented as
-  interchangeable. In particular, delayed provider verification and unresolved accounting breaks
-  block readiness or export handoff.
-- Accounting surfaces show explicit next actions and governing blockers: selected ledger-run
-  context, out-of-balance trial-balance posture, statement-run reconciliation, approval routing,
-  unresolved external-GL breaks, retained evidence, and payment-evidence requirements.
-- The Security Master explorer and command deck share selection state, use descriptive identity
-  labels, and tolerate incomplete passport evidence without crashing or inventing trust.
-- Reporting routes distinguish setup, run, validation, governance, scheduling, export, and
-  operations-record tasks instead of repeating one generic overview state.
-- Settings keeps routine preferences and guided provider setup separate from advanced manifests,
-  endpoint inventories, IDs, and runtime diagnostics.
+The shared shell keeps seeded provenance visible, uses one route H1 and combines operating
+scope and workflow context. Selected rows use blue-grey rather than the danger treatment.
+The footer reports synchronization/connection state. Mandatory trading recovery remains visible.
 
-## Visual Review
+A separate 20-route/viewport layout inspection covered ten task routes at 1440 and 1366 pixels.
+Every inspected route had one H1, no document-level horizontal overflow and no JavaScript page
+error. The task region began at 101 pixels at both widths, and the largest measured initial task scroll
+extent was 1,901 pixels. These measurements describe the task region, not the first table row:
+Today's first queue row was at 445 pixels and its first priority action was at 130 pixels at both widths.
+Expanded evidence, warnings and configuration inventories are not hidden to satisfy a height target.
 
-The regenerated key workflows were inspected at their captured viewport for broken layout,
-cropping, hierarchy, contradictory status, raw identifiers, stale timestamps, and fixture-only
-language. No blocking layout defect was found in the reviewed operator flows. Long administration
-and advanced-diagnostics routes remain intentionally dense, but their technical content is confined
-to routes whose stated purpose is configuration or diagnostic evidence.
+Additional rendered checks exercised scoped Paydown navigation, exact-decimal comparison CSV,
+authoritative cancellation preview, Today assignment/snooze/retry outcomes, approval discussion,
+Reporting keyboard selection, and figure-context hover/focus/Escape. Financial writes were blocked
+in cancellation/Accounting inspection. Stateful UI checks used explicit synthetic API interception.
+Four additional light/dark checks at 1440/1366 verified visible table input borders, opaque menus,
+sticky selected-cell backgrounds and left/right overflow shadows, with zero page errors.
 
-## Residual Risks And Evidence Limits
+Browse tables use the shared toolbar and contained scrolling; financial statements and editable
+worksheets retain their appropriate layouts. The screen AST governance baseline is empty for its
+checked raw-table, literal-status-badge and JSX formatter patterns. This is scoped coverage, not
+proof that every possible status or financial presentation is automatically checked.
 
-- Screenshots prove rendered layout and visible copy for fixture states; they do not prove live
-  backend behavior, production-data accuracy, or authorization enforcement.
-- Screenshot inspection cannot prove keyboard order, focus restoration, accessible names,
-  screen-reader announcements, pointer-target sizing, zoom reflow, or token-level WCAG contrast.
-  Automated component and accessibility tests are complementary evidence, not a substitute for a
-  rendered assistive-technology pass.
-- Several expert routes are deliberately long because they expose configuration or evidence
-  inventories. Their progressive disclosure should continue to be evaluated with real operators
-  and realistic data volumes.
-- The WPF desktop catalog under `docs/screenshots/desktop` was not changed or audited by this web
-  pass.
+## Evidence limits
 
-## Follow-Up Validation
+- These are synthetic fixtures, not live-provider or production-data verification.
+- Chromium on Linux was available. Windows Chrome/Edge and assistive-technology verification
+  remain release-environment checks; screenshot success does not prove those environments.
+- The whole catalog was captured; focused workflows and selected dense screens received deeper
+  interaction/layout inspection. An 1100-pixel PNG alone does not establish full route height.
+- Missing retained figure subjects remain explicitly unverified. Legacy Close history gaps,
+  missing currency and absent observations are not synthesized. See the program's source limits.
+- The WPF source and desktop screenshots were not changed. Browser-first differences are recorded
+  in `docs/engineering/plans/wpf-web-ui-alignment-plan.md`.
 
-Before release, keep the 75-route capture and freshness check in the validation lane, run the full
-browser unit/accessibility suite, and use GitHub Actions as the authoritative integration result.
+The implementation and verification record is in
+[`browser-workstation-ux-program.md`](../engineering/plans/browser-workstation-ux-program.md).
+Hosted checks remain the integration authority.
+
+## Design System 4.3 integration verification
+
+The combined PR #3501 tree refreshed all 82 synthetic routes in four disjoint successful
+capture runs. Coverage, actual route identity, image quality and freshness passed validation.
+The existing WPF changes in #3501 are preserved; this browser program authors no WPF changes.
+
+Eighteen interaction groups passed at 1920 × 1080, 1440 × 900 and 1366 × 768. Eighteen axe
+scans reported no violations; manual incomplete checks remain. All 28 navigation mask checks
+passed in light, dark and forced-color appearances. Masthead text measured 11.34:1 in light
+appearance and 16.38:1 in dark appearance. All ten WOFF2 faces loaded and decoded without
+font errors. No runtime errors, missing assets or page-wide horizontal overflow were observed.
+
+Today has one local authoritative priority row and a default authorized queue. Source, scope,
+retained history, personal triage, complete exports and technical identities remain inspectable.
+Run identities stay copyable in collapsed technical details. Limit and Stop typing retain
+`188.0` → `188.05`; local review acknowledgement cannot carry into another account scope.
+Those input checks used synthetic data and prevented all API writes.
+
+These remain Linux Chromium and synthetic-data results. Windows, assistive technology, live
+providers and production activation are outside this evidence. See the implementation record
+linked above for builds, tests and remaining source limits.

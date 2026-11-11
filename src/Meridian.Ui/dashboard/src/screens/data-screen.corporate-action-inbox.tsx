@@ -1,6 +1,8 @@
+import { exportTableQuery } from "@/lib/table-workbench";
+import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { RefreshCcw, Search, ShieldAlert } from "lucide-react";
 import { useMemo } from "react";
-import { DenseDataTable, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { ToolbarStrip } from "@/components/meridian/ui-kit-primitives";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,9 +26,10 @@ import type {
 
 export const CORPORATE_ACTION_CASE_WORKSPACE_ID = "corporate-action-case-workspace";
 
-const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
+const queueColumns: TableWorkbenchColumn<CorporateActionInboxRowModel>[] = [
   {
     id: "event",
+    exportValue: (row) => `${row.actionType} ${row.ticker}`,
     label: "Event",
     render: (row) => (
       <span className="block min-w-0">
@@ -40,6 +43,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "deadline",
+    exportValue: (row) => row.exDateLabel,
     label: "Ex-date / deadline",
     render: (row) => (
       <span className="block">
@@ -50,6 +54,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "case",
+    exportValue: (row) => row.statusLabel,
     label: "Case / status",
     render: (row) => (
       <span className="block">
@@ -62,6 +67,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "assignment",
+    exportValue: (row) => row.assignmentLabel,
     label: "Assignment",
     render: (row) => (
       <span className="block">
@@ -72,6 +78,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "control",
+    exportValue: (row) => row.versionLabel,
     label: "Conflict / version",
     render: (row) => (
       <span className="block">
@@ -82,6 +89,7 @@ const queueColumns: DenseDataTableColumn<CorporateActionInboxRowModel>[] = [
   },
   {
     id: "value",
+    exportValue: (row) => row.valueLabel,
     label: "Terms",
     align: "right",
     render: (row) => (
@@ -180,26 +188,15 @@ function SourceFacts({ row }: { row: CorporateActionInboxRowModel }) {
   ];
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border-collapse text-xs" aria-label="Corporate action source facts and provenance">
-        <thead>
-          <tr>
-            <th scope="col" className="border-b border-border px-2 py-1.5 text-left">Field</th>
-            <th scope="col" className="border-b border-border px-2 py-1.5 text-left">Winning value</th>
-            <th scope="col" className="border-b border-border px-2 py-1.5 text-left">Source</th>
-            <th scope="col" className="border-b border-border px-2 py-1.5 text-left">Evidence</th>
-          </tr>
-        </thead>
-        <tbody>
-          {facts.map((fact, index) => (
-            <tr key={`${fact.field}-${fact.source}-${index}`}>
-              <th scope="row" className="border-b border-border/60 px-2 py-1.5 text-left font-medium">{fact.field}</th>
-              <td className="border-b border-border/60 px-2 py-1.5 font-mono">{fact.value}</td>
-              <td className="border-b border-border/60 px-2 py-1.5">{fact.source}</td>
-              <td className="border-b border-border/60 px-2 py-1.5 font-mono">{fact.evidenceId ?? "Not supplied"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <TableWorkbench workbenchId="data-corporate-action-source-facts" sourceKey={row.rowId}
+        sourceDescription="Source facts retained for the selected corporate action case; fallback summaries do not establish complete source evidence."
+        completePopulation={suppliedFacts.length > 0} rows={facts.map((fact, index) => ({ ...fact, id: `${fact.field}:${index}` }))}
+        getRowId={(fact) => fact.id} getSearchText={(fact) => `${fact.field} ${fact.value} ${fact.source} ${fact.evidenceId ?? ""}`}
+        ariaLabel="Corporate action source facts and provenance" emptyText="No retained source facts."
+        columns={[{ id: "field", label: "Field", render: (fact) => fact.field, exportValue: (fact) => fact.field },
+          { id: "value", label: "Winning value", render: (fact) => fact.value, exportValue: (fact) => fact.value },
+          { id: "source", label: "Source", render: (fact) => fact.source, exportValue: (fact) => fact.source },
+          { id: "evidence", label: "Evidence", render: (fact) => fact.evidenceId ?? "Not supplied", exportValue: (fact) => fact.evidenceId }]} />
       <p className="mt-2 text-xs text-muted-foreground">
         Agreeing sources: {row.agreeingSources.join(", ") || "none"} · Dissenting sources: {row.dissentingSources.join(", ") || "none"}
       </p>
@@ -554,7 +551,11 @@ export function CorporateActionInboxRegion({ panel }: { panel: CorporateActionIn
             <>
               <QueueFilters filters={panel.filters} rows={allRows} onChange={panel.setFilters} />
               <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.35fr)_minmax(24rem,0.85fr)]">
-                <DenseDataTable
+                <TableWorkbench workbenchId="data-corporate-action-queue" sourceKey={allRows.map((row) => `${row.acceptanceScope?.tenantId ?? "unknown"}:${row.acceptanceScope?.companyId ?? "unknown"}`).sort().join("|")}
+                  sourceDescription="CSV includes all authorized shared economic reference proposals and exact tenant/company cases, with per-row evidence namespaces."
+                  filterState={{ ...panel.filters }} onRestoreFilters={(filters) => panel.setFilters({ search: filters.search ?? "", status: filters.status ?? "All", assignment: filters.assignment ?? "All", conflict: filters.conflict ?? "All" })}
+                  onExportAll={(columns, search, sort, signal) => exportTableQuery("data-corporate-action-queue", columns, search, sort?.columnId, sort?.direction, signal, { ...panel.filters })}
+                  getSearchText={(row) => `${row.ticker} ${row.actionType} ${row.statusLabel} ${row.assignmentLabel}`}
                   columns={queueColumns}
                   rows={panel.rows}
                   getRowId={(row) => row.rowId}
