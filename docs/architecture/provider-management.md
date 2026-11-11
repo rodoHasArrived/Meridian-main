@@ -421,9 +421,10 @@ architecture supports the following deterministic semantics:
 - Concurrent multi-symbol runs do not guarantee completion order. Treat per-symbol validation
   signals, execution history, and checkpoints as the evidence boundary instead of task completion
   sequence.
-- `ResumeFromCheckpoint=true` skips fully covered symbols and advances partially covered symbols to
-  the day after the recorded checkpoint. Fresh non-resume runs clear only matching-granularity
-  checkpoints, so intraday and daily lanes do not wipe each other.
+- `ResumeFromCheckpoint=true` skips only dates recorded as durably written by the same provider and
+  feed, and fetches every uncovered part of the requested range (before, inside and after the
+  recorded coverage). Date-only checkpoints are not used to skip. Fresh non-resume runs clear only
+  matching-granularity checkpoints and coverage, so intraday and daily lanes do not wipe each other.
 - `PriorityBackfillQueue` orders jobs by `Critical`, `High`, `Normal`, `Low`, then `Deferred`, and
   keeps dependency-blocked jobs paused until all dependencies complete.
 
