@@ -28,6 +28,7 @@ import {
 import type { BankTransaction, PendingPayment } from "@/types/banking-payments.types";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 type DecisionKind = "approve" | "reject";
 
@@ -183,40 +184,23 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
           <Metric label="Evidence recorded" value={String(summary.evidenceCount)} />
         </div>
 
-        <table className="w-full text-sm" aria-label="Payment intents">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Amount</th>
-              <th>Effective</th>
-              <th>Reference</th>
-              <th>Status</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="py-4 text-center text-muted-foreground">
-                  {!entityId ? "Select an entity to load payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.pendingPaymentId} className="border-t border-border/60" aria-label={row.ariaLabel}>
-                <td className="py-2">
+        <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Amount", className: "py-2", render: (row) => <>
                   <div className="font-mono text-xs">{row.amount}</div>
                   <div className={row.currencyMissing ? "text-xs text-warning" : "text-xs text-muted-foreground"}>
                     {row.currencyLabel}
                   </div>
-                </td>
-                <td className="font-mono text-xs">{row.effectiveDate}</td>
-                <td className="max-w-[16rem] break-words text-xs text-muted-foreground">{row.externalRef}</td>
-                <td>
+                </> },
+            { id: "column-2", label: "Effective", className: "font-mono text-xs", render: (row) => <>{row.effectiveDate}</> },
+            { id: "column-3", label: "Reference", className: "max-w-[16rem] break-words text-xs text-muted-foreground", render: (row) => <>{row.externalRef}</> },
+            { id: "column-4", label: "Status", render: (row) => <>
                   <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
                   {row.decisionSummary ? (
                     <div className="mt-1 text-xs text-muted-foreground">{row.decisionSummary}</div>
                   ) : null}
-                </td>
-                <td className="text-right">
+                </> },
+            { id: "column-5", label: "Actions", className: "text-right", render: (row) => <>
                   {row.canDecide ? (
                     decision?.id === row.pendingPaymentId ? (
                       <span className="flex flex-wrap items-center justify-end gap-2">
@@ -251,11 +235,17 @@ function EntityPaymentApprovalsPanel({ entityId }: { entityId?: string }) {
                       </span>
                     )
                   ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                </> }
+          ]}
+          rows={rows}
+          getRowId={(row) => String(row.pendingPaymentId)}
+          getRowClassName={() => "border-t border-border/60"}
+          getRowAriaLabel={(row) => row.ariaLabel}
+          ariaLabel={"Payment intents"}
+          tableClassName={"w-full text-sm"}
+          emptyText={!entityId ? "Select an entity to load payment intents." : loading ? "Loading payment intents…" : summary.emptyMessage}
+          maxVisibleRows={null}
+        />
       </CardContent>
     </Card>
   );

@@ -49,6 +49,7 @@ import type {
   SecureReportingIssuedAccessGrant
 } from "@/types/reporting-governance";
 import { formatUtcTimestamp } from "@/lib/format";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 type ResourcePhase = "loading" | "ready" | "unavailable";
 
@@ -1053,40 +1054,31 @@ function AuditPanel({ run }: { run: GovernedReportingRun }) {
           />
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[64rem] text-left text-sm">
-              <caption className="sr-only">Retained governed reporting audit events</caption>
-              <thead>
-                <tr className="border-b border-border text-xs text-muted-foreground">
-                  <th scope="col" className="px-2 py-2">Version</th>
-                  <th scope="col" className="px-2 py-2">When</th>
-                  <th scope="col" className="px-2 py-2">Action</th>
-                  <th scope="col" className="px-2 py-2">Actor</th>
-                  <th scope="col" className="px-2 py-2">Transition</th>
-                  <th scope="col" className="px-2 py-2">Note</th>
-                  <th scope="col" className="px-2 py-2">Hash</th>
-                </tr>
-              </thead>
-              <tbody>
-                {run.auditTrail.map((entry) => (
-                  <tr key={entry.eventId} className="border-b border-border/60 align-top">
-                    <td className="px-2 py-2 font-mono text-xs">{entry.aggregateVersion}</td>
-                    <td className="px-2 py-2">{formatTimestamp(entry.occurredAtUtc)}</td>
-                    <td className="px-2 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Version", className: "px-2 py-2 font-mono text-xs", render: (entry) => <>{entry.aggregateVersion}</> },
+            { id: "column-2", label: "When", className: "px-2 py-2", render: (entry) => <>{formatTimestamp(entry.occurredAtUtc)}</> },
+            { id: "column-3", label: "Action", className: "px-2 py-2", render: (entry) => <>
                       <div>{entry.action}</div>
                       <div className="font-mono text-xs text-muted-foreground">{entry.permissionUsed}</div>
-                    </td>
-                    <td className="px-2 py-2">{entry.authority.actorId}</td>
-                    <td className="px-2 py-2">
+                    </> },
+            { id: "column-4", label: "Actor", className: "px-2 py-2", render: (entry) => <>{entry.authority.actorId}</> },
+            { id: "column-5", label: "Transition", className: "px-2 py-2", render: (entry) => <>
                       {presentTransition(entry.fromGovernanceState, entry.toGovernanceState)}
-                    </td>
-                    <td className="max-w-xs px-2 py-2 text-muted-foreground">
+                    </> },
+            { id: "column-6", label: "Note", className: "max-w-xs px-2 py-2 text-muted-foreground", render: (entry) => <>
                       {entry.note ? redactReportingCredentialText(entry.note) : "No note"}
-                    </td>
-                    <td className="max-w-xs break-all px-2 py-2 font-mono text-xs">{entry.hash}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> },
+            { id: "column-7", label: "Hash", className: "max-w-xs break-all px-2 py-2 font-mono text-xs", render: (entry) => <>{entry.hash}</> }
+          ]}
+          rows={run.auditTrail}
+          getRowId={(entry) => String(entry.eventId)}
+          getRowClassName={() => "border-b border-border/60 align-top"}
+          ariaLabel={"Retained governed reporting audit events"}
+          tableClassName={"w-full min-w-[64rem] text-left text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         )}
       </CardContent>
@@ -1164,22 +1156,10 @@ function RestatementPanel({
         ) : (
           <>
             <div className="overflow-x-auto">
-              <table className="w-full min-w-[42rem] text-left text-sm">
-                <caption className="sr-only">Governed revisions in this report series</caption>
-                <thead>
-                  <tr className="border-b border-border text-xs text-muted-foreground">
-                    <th scope="col" className="px-2 py-2">Revision</th>
-                    <th scope="col" className="px-2 py-2">Run</th>
-                    <th scope="col" className="px-2 py-2">Execution</th>
-                    <th scope="col" className="px-2 py-2">Governance</th>
-                    <th scope="col" className="px-2 py-2">Snapshot</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {history.runs.map((revision) => (
-                    <tr key={revision.runId} className="border-b border-border/60">
-                      <td className="px-2 py-2 font-mono text-xs">{revision.revision}</td>
-                      <td className="px-2 py-2">
+              <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Revision", className: "px-2 py-2 font-mono text-xs", render: (revision) => <>{revision.revision}</> },
+            { id: "column-2", label: "Run", className: "px-2 py-2", render: (revision) => <>
                         {revision.runId === run.runId ? (
                           <span className="font-mono text-xs">{revision.runId} (current)</span>
                         ) : (
@@ -1190,14 +1170,19 @@ function RestatementPanel({
                             {revision.runId}
                           </Link>
                         )}
-                      </td>
-                      <td className="px-2 py-2">{revision.executionState}</td>
-                      <td className="px-2 py-2">{revision.governanceState}</td>
-                      <td className="max-w-xs break-all px-2 py-2 font-mono text-xs">{revision.snapshot.snapshotHash}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </> },
+            { id: "column-3", label: "Execution", className: "px-2 py-2", render: (revision) => <>{revision.executionState}</> },
+            { id: "column-4", label: "Governance", className: "px-2 py-2", render: (revision) => <>{revision.governanceState}</> },
+            { id: "column-5", label: "Snapshot", className: "max-w-xs break-all px-2 py-2 font-mono text-xs", render: (revision) => <>{revision.snapshot.snapshotHash}</> }
+          ]}
+          rows={history.runs}
+          getRowId={(revision) => String(revision.runId)}
+          getRowClassName={() => "border-b border-border/60"}
+          ariaLabel={"Governed revisions in this report series"}
+          tableClassName={"w-full min-w-[42rem] text-left text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
             </div>
 
             {history.restatementRequests.length > 0 ? (
@@ -1679,29 +1664,15 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
         <p className="text-sm text-muted-foreground">No durable delivery jobs are retained for this run.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[68rem] text-left text-sm">
-            <caption className="sr-only">Durable report deliveries and provider receipts</caption>
-            <thead>
-              <tr className="border-b border-border text-xs text-muted-foreground">
-                <th scope="col" className="px-2 py-2">Job</th>
-                <th scope="col" className="px-2 py-2">Transport</th>
-                <th scope="col" className="px-2 py-2">Recipient</th>
-                <th scope="col" className="px-2 py-2">State</th>
-                <th scope="col" className="px-2 py-2">Attempts</th>
-                <th scope="col" className="px-2 py-2">Provider reference</th>
-                <th scope="col" className="px-2 py-2">Receipts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {resource.data.map((delivery) => (
-                <tr key={delivery.jobId} className="border-b border-border/60 align-top">
-                  <td className="break-all px-2 py-2 font-mono text-xs">
+          <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Job", className: "break-all px-2 py-2 font-mono text-xs", render: (delivery) => <>
                     <div>{delivery.jobId}</div>
                     <div className="mt-1 text-muted-foreground">release v{delivery.releaseVersion}</div>
                     <div className="mt-1">{delivery.artifactManifestHashSha256}</div>
-                  </td>
-                  <td className="px-2 py-2">{delivery.transportId}</td>
-                  <td className="px-2 py-2">
+                  </> },
+            { id: "column-2", label: "Transport", className: "px-2 py-2", render: (delivery) => <>{delivery.transportId}</> },
+            { id: "column-3", label: "Recipient", className: "px-2 py-2", render: (delivery) => <>
                     <div>
                       <span className="text-xs text-muted-foreground">{delivery.recipientKind ?? "User"}</span>
                       {" · "}{redactReportingCredentialText(delivery.recipient)}
@@ -1709,8 +1680,8 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                     <div className="mt-1 break-all text-xs text-muted-foreground">
                       {redactReportingCredentialText(delivery.destination)}
                     </div>
-                  </td>
-                  <td className="px-2 py-2">
+                  </> },
+            { id: "column-4", label: "State", className: "px-2 py-2", render: (delivery) => <>
                     <Badge variant={deliveryStateVariant(delivery.state)}>{delivery.state}</Badge>
                     {delivery.lastErrorCode ? <div className="mt-1 text-xs text-danger">{delivery.lastErrorCode}</div> : null}
                     {delivery.lastError ? (
@@ -1718,14 +1689,14 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                         {redactReportingCredentialText(delivery.lastError)}
                       </div>
                     ) : null}
-                  </td>
-                  <td className="px-2 py-2 font-mono text-xs">{delivery.attemptCount}/{delivery.maxAttempts}</td>
-                  <td className="break-all px-2 py-2 font-mono text-xs">
+                  </> },
+            { id: "column-5", label: "Attempts", className: "px-2 py-2 font-mono text-xs", render: (delivery) => <>{delivery.attemptCount}/{delivery.maxAttempts}</> },
+            { id: "column-6", label: "Provider reference", className: "break-all px-2 py-2 font-mono text-xs", render: (delivery) => <>
                     {delivery.providerMessageId
                       ? redactReportingCredentialText(delivery.providerMessageId)
                       : "Pending"}
-                  </td>
-                  <td className="px-2 py-2">
+                  </> },
+            { id: "column-7", label: "Receipts", className: "px-2 py-2", render: (delivery) => <>
                     {delivery.receipts.length > 0 ? (
                       <ul className="space-y-1" aria-label={`Receipts for ${delivery.jobId}`}>
                         {delivery.receipts.map((receipt) => (
@@ -1745,11 +1716,16 @@ function DeliveryHistory({ resource }: { resource: ResourceState<SecureReporting
                         ))}
                       </ul>
                     ) : "No receipts"}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </> }
+          ]}
+          rows={resource.data}
+          getRowId={(delivery) => String(delivery.jobId)}
+          getRowClassName={() => "border-b border-border/60 align-top"}
+          ariaLabel={"Durable report deliveries and provider receipts"}
+          tableClassName={"w-full min-w-[68rem] text-left text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
         </div>
       )}
     </section>

@@ -2095,6 +2095,28 @@ loaded fonts, workspace navigation, proof-dialog keyboard behavior, density,
 native Accounting borders/selection, and fresh accessibility scans. Fixture API
 gaps remain explicit in the report and are not backend validation.
 
+The full PR #3501 adoption review is recorded in
+`Meridian Design System/api/project-compatibility.json`. It covers every browser
+screen and shared adapter, including concrete reasons for retaining specialized
+accounting tables, native file controls and embedded row actions. The dashboard
+keeps its existing React, routes, service contracts and financial semantics.
+
+Provider institution search now uses shared search input and selectable dense
+results while retaining explicit server search and exact institution identifiers.
+Maintenance history uses a shared filter and read-only dense table without
+sorting or changing the 25-row service-order limit. Report-writer token actions
+use shared buttons with visible keyboard focus and disabled reasons, preserving
+reordering, removal and drag behavior. Other compatible forms and flat tables
+use the same adapters; specialized financial tables retain their row/header and
+grouping semantics. `DenseDataTable.tableClassName` preserves a screen's existing
+minimum table width without introducing a row cap or sort.
+
+Reproduce package-wide offline validation from the design-system directory with
+`npm run test:library` and `npm run test:types`; the package's test guide documents
+the source-level interaction suites. These synthetic checks establish component
+and browser behavior. Live providers, backend writes, native Windows/Edge and
+assistive-technology announcement journeys require their own evidence.
+
 ### Workspace-specific styling
 
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped

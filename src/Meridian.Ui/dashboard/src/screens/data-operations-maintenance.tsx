@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { Select } from "@/components/ui/select";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import {
   cancelMaintenanceExecution,
   executeMaintenanceTask,
@@ -26,6 +28,7 @@ import {
 import {
   buildMaintenanceExecutionRow,
   buildMaintenanceMetrics,
+  type MaintenanceExecutionRowViewModel,
   type MaintenanceTone
 } from "@/screens/data-operations-maintenance.view-model";
 import type {
@@ -127,6 +130,38 @@ export function ArchiveMaintenanceOperations() {
     }
   }
 
+  const executionColumns: DenseDataTableColumn<MaintenanceExecutionRowViewModel>[] = [
+    { id: "task", label: "Task", render: (row) => row.taskTypeLabel },
+    {
+      id: "status", label: "Status", render: (row) => (
+        <>
+          <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
+          {row.errorMessage ? <div className="mt-1 text-xs text-danger">{row.errorMessage}</div> : null}
+        </>
+      )
+    },
+    { id: "trigger", label: "Trigger", render: (row) => row.triggerLabel },
+    { id: "started", label: "Started", render: (row) => <span className="font-mono text-xs">{formatTimestamp(row.startedAt)}</span> },
+    { id: "duration", label: "Duration", render: (row) => row.durationLabel },
+    { id: "files", label: "Files", numeric: true, render: (row) => row.filesProcessed },
+    { id: "issues", label: "Issues fixed", numeric: true, render: (row) => row.issuesLabel },
+    { id: "reclaimed", label: "Reclaimed", numeric: true, render: (row) => row.bytesSavedLabel },
+    {
+      id: "actions", label: "", srLabel: "Actions", align: "right", render: (row) => row.cancellable ? (
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          disabled={busy === `cancel:${row.executionId}`}
+          disabledReason="Cancellation is already in progress for this execution."
+          onClick={() => void cancel(row.executionId)}
+        >
+          Cancel
+        </Button>
+      ) : null
+    }
+  ];
+
   return (
     <section aria-labelledby="archive-maintenance-title" className="workspace-region space-y-3">
       <CardHeader>
@@ -161,8 +196,7 @@ export function ArchiveMaintenanceOperations() {
         <div className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1 text-xs uppercase tracking-wide text-muted-foreground">
             Task type
-            <select
-              className="h-9 rounded-[2px] border border-border bg-background px-2 text-sm text-foreground"
+            <Select
               aria-label="Maintenance task type"
               value={runnableTaskType}
               onChange={(event) => setSelectedTaskType(event.target.value)}
@@ -172,7 +206,7 @@ export function ArchiveMaintenanceOperations() {
                   {taskType.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <Button
             size="sm"
@@ -193,58 +227,13 @@ export function ArchiveMaintenanceOperations() {
           </Button>
         </div>
 
-        <table className="w-full text-sm" aria-label="Maintenance execution history">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Task</th>
-              <th>Status</th>
-              <th>Trigger</th>
-              <th>Started</th>
-              <th>Duration</th>
-              <th>Files</th>
-              <th>Issues fixed</th>
-              <th>Reclaimed</th>
-              <th className="sr-only">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.length === 0 ? (
-              <tr>
-                <td colSpan={9} className="py-4 text-center text-muted-foreground">
-                  {failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
-                </td>
-              </tr>
-            ) : rows.map((row) => (
-              <tr key={row.executionId} className="border-t border-border/60">
-                <td className="py-2">{row.taskTypeLabel}</td>
-                <td>
-                  <Badge variant={badgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-                  {row.errorMessage ? (
-                    <div className="mt-1 text-xs text-danger">{row.errorMessage}</div>
-                  ) : null}
-                </td>
-                <td>{row.triggerLabel}</td>
-                <td className="font-mono text-xs">{formatTimestamp(row.startedAt)}</td>
-                <td>{row.durationLabel}</td>
-                <td>{row.filesProcessed}</td>
-                <td>{row.issuesLabel}</td>
-                <td>{row.bytesSavedLabel}</td>
-                <td className="text-right">
-                  {row.cancellable ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={busy === `cancel:${row.executionId}`}
-                      onClick={() => void cancel(row.executionId)}
-                    >
-                      Cancel
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DenseDataTable
+          columns={executionColumns}
+          rows={rows}
+          getRowId={(row) => row.executionId}
+          emptyText={failedOnly ? "No failed maintenance executions recorded." : "No maintenance executions recorded."}
+          ariaLabel="Maintenance execution history"
+        />
       </CardContent>
     </section>
   );
@@ -255,7 +244,7 @@ function toneTextClassName(tone: MaintenanceTone): string {
     case "success":
       return "mt-1 text-xl font-semibold text-success";
     case "warning":
-      return "mt-1 text-xl font-semibold text-warning";
+      return "mt-1 text-xl font-semibold text-[var(--severity-action-fg)]";
     case "danger":
       return "mt-1 text-xl font-semibold text-danger";
     default:

@@ -7,6 +7,7 @@ import {
   useProviderAccountingPanel,
   type ProviderAccountingServices
 } from "@/screens/data-screen.provider-accounting.view-model";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export function ProviderAccountingRegion({ services }: { services?: ProviderAccountingServices }) {
   const { panel, requestStatus, refresh } = useProviderAccountingPanel(services);
@@ -87,41 +88,32 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
 
           {panel.rateLimits.length > 0 ? (
             <div className="mt-3 overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[920px] text-left text-xs" aria-label="Current provider rate-limit state">
-                <thead className="bg-secondary/40 text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Provider / surface</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Connection / reachability</th>
-                    <th className="px-3 py-2 font-medium">Requests</th>
-                    <th className="px-3 py-2 font-medium">Remaining</th>
-                    <th className="px-3 py-2 font-medium">Reset countdown</th>
-                    <th className="px-3 py-2 font-medium">Failure / reason</th>
-                    <th className="px-3 py-2 font-medium">Retry posture</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {panel.rateLimits.map((row) => (
-                    <tr key={row.id} className="border-t border-border/70 align-top">
-                      <td className="px-3 py-2">
+              <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Provider / surface", className: "px-3 py-2", render: (row) => <>
                         <span className="block font-semibold text-foreground">{row.provider}</span>
                         <span className="text-muted-foreground">{row.surface}</span>
-                      </td>
-                      <td className="px-3 py-2">
+                      </> },
+            { id: "column-2", label: "Status", className: "px-3 py-2", render: (row) => <>
                         <Badge variant={row.statusTone === "danger" ? "danger" : row.statusTone === "warning" ? "warning" : "success"}>
                           {row.status}
                         </Badge>
-                      </td>
-                      <td className="max-w-[17rem] px-3 py-2 text-muted-foreground">{row.connectionPosture}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.requestUsage}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.remaining}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.resetCountdown}</td>
-                      <td className="max-w-[18rem] px-3 py-2 text-muted-foreground">{row.failureReason}</td>
-                      <td className="max-w-[18rem] px-3 py-2 text-muted-foreground">{row.retryPosture}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </> },
+            { id: "column-3", label: "Connection / reachability", className: "max-w-[17rem] px-3 py-2 text-muted-foreground", render: (row) => <>{row.connectionPosture}</> },
+            { id: "column-4", label: "Requests", className: "px-3 py-2 font-mono text-foreground", render: (row) => <>{row.requestUsage}</> },
+            { id: "column-5", label: "Remaining", className: "px-3 py-2 font-mono text-foreground", render: (row) => <>{row.remaining}</> },
+            { id: "column-6", label: "Reset countdown", className: "px-3 py-2 font-mono text-foreground", render: (row) => <>{row.resetCountdown}</> },
+            { id: "column-7", label: "Failure / reason", className: "max-w-[18rem] px-3 py-2 text-muted-foreground", render: (row) => <>{row.failureReason}</> },
+            { id: "column-8", label: "Retry posture", className: "max-w-[18rem] px-3 py-2 text-muted-foreground", render: (row) => <>{row.retryPosture}</> }
+          ]}
+          rows={panel.rateLimits}
+          getRowId={(row) => String(row.id)}
+          getRowClassName={() => "border-t border-border/70 align-top"}
+          ariaLabel={"Current provider rate-limit state"}
+          tableClassName={"w-full min-w-[920px] text-left text-xs"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
             </div>
           ) : (
             <div className="mt-3 rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">

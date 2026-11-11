@@ -8,6 +8,9 @@ import * as api from "@/lib/api/private-capital.api";
 import { CapitalBankObservationImport } from "@/screens/capital-call-bank-observation-import";
 import { CapitalCallLines, capitalAmount, capitalIsPositive, effectiveCapitalCommitments, type CapitalMutation } from "@/screens/private-capital-presenters";
 import type { PreviewPrivateCapitalCall, PrivateCapitalCall, PrivateCapitalCallPreview, PrivateCapitalCommitment } from "@/types/private-capital";
+import { TextArea } from "@/components/ui/text-area";
+import { Select } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type Field = readonly [key: string, label: string, type?: string];
 const commitmentFields: Field[] = [
@@ -70,9 +73,9 @@ export function CapitalCommitmentForm({ bookId, locked, mutate }: { bookId: stri
   return <Card><CardHeader><CardTitle>Prepare commitment revision</CardTitle><CardDescription>Retain source terms for review. Revision zero creates a new commitment; an amendment names the current revision. Retaining a draft does not call capital or post a journal.</CardDescription></CardHeader><CardContent>
     <form onSubmit={event => { event.preventDefault(); void submit(); }}><fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Commitment terms</legend>
       <Fields fields={commitmentFields} values={values} update={update} />
-      <FormRow label="Retained commitment evidence (one reference per line)" labelFor={`${id}-evidence`}><textarea id={`${id}-evidence`} className="min-h-20 w-full rounded border border-border bg-background p-2 text-sm"
+      <FormRow label="Retained commitment evidence (one reference per line)" labelFor={`${id}-evidence`}><TextArea rows={2} id={`${id}-evidence`} className="min-h-20 w-full text-sm"
         value={evidence} onChange={event => { setEvidence(event.target.value); setConfirmed(false); }} /></FormRow>
-      <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I checked the source terms and retained evidence.</label>
+      <Checkbox className="flex gap-2 text-sm" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} label={<>I checked the source terms and retained evidence.</>} />
       <Button type="submit" disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Check the source terms and retained evidence first." : undefined}>Retain commitment draft</Button>
     </fieldset></form>{error ? <p role="alert" className="mt-2 text-sm text-danger">{error}</p> : null}
   </CardContent></Card>;
@@ -108,10 +111,10 @@ export function CapitalCallPlanForm({ bookId, commitments, locked, mutate, onRet
     <form onSubmit={event => { event.preventDefault(); void prepare(); }}><fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Call terms and approved commitments</legend>
       <Fields fields={callFields} values={values} update={(key, value) => { invalidate(); if (key === "noticeDate") setSelected([]); setValues(current => ({ ...current, [key]: value })); }} />
       <fieldset className="space-y-2"><legend className="text-sm font-semibold">Approved commitments</legend>
-        {!values.noticeDate ? <p className="text-sm">Enter a notice date to select the effective approved commitment revisions.</p> : !eligible.length ? <p className="text-sm">No active approved commitment revision is effective for this notice date.</p> : eligible.map(row => <label key={row.commitmentId} className="flex flex-wrap items-center gap-2 text-sm">
-          <input type="checkbox" checked={selected.includes(row.commitmentId)} onChange={event => { invalidate(); setSelected(current => event.target.checked ? [...new Set([...current, row.commitmentId])] : current.filter(value => value !== row.commitmentId)); }} />
+        {!values.noticeDate ? <p className="text-sm">Enter a notice date to select the effective approved commitment revisions.</p> : !eligible.length ? <p className="text-sm">No active approved commitment revision is effective for this notice date.</p> : eligible.map(row => <Checkbox key={row.commitmentId} className="flex flex-wrap items-center gap-2 text-sm" checked={selected.includes(row.commitmentId)} onChange={event => { invalidate(); setSelected(current => event.target.checked ? [...new Set([...current, row.commitmentId])] : current.filter(value => value !== row.commitmentId)); }} label={<>
+
           {row.commitmentId} · {row.investorId} · v{row.revision} · Uncalled {capitalAmount(row.uncalledAmount, row.scope.currency)}
-        </label>)}
+        </>} />)}
       </fieldset><Button type="submit" variant="outline" disabled={loading || !eligible.length}>{loading ? "Preparing allocation…" : "Preview call allocation"}</Button>
     </fieldset></form>
     {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}
@@ -119,7 +122,7 @@ export function CapitalCallPlanForm({ bookId, commitments, locked, mutate, onRet
       {preview.result.blockers.length ? <ul role="alert" className="list-disc pl-5 text-sm text-danger">{preview.result.blockers.map(reason => <li key={reason}>{reason}</li>)}</ul> : null}
       {preview.result.call ? <><CapitalCallLines call={preview.result.call} /><p className="break-all text-xs text-muted-foreground">Plan {preview.result.call.planHash}</p></> : null}
       {preview.result.isReady && preview.result.call ? <fieldset disabled={locked} className="space-y-2"><legend className="sr-only">Call allocation review</legend>
-        <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I reviewed each allocation and the uncalled balances.</label>
+        <Checkbox className="flex gap-2 text-sm" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} label={<>I reviewed each allocation and the uncalled balances.</>} />
         <Button disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Review and confirm each allocation and uncalled balance first." : undefined} onClick={() => { const reviewed = preview; void mutate("Call plan retention", async signal => {
           const call = await api.retainPrivateCapitalCall(bookId, reviewed.request, reviewed.result.call!.planHash, { signal }); onRetained(call.callId); return call;
         }); }}>Retain reviewed call</Button>
@@ -162,12 +165,12 @@ export function CapitalFundingForm({ call, locked, mutate }: { call: PrivateCapi
     }} />
     {!eligible.length ? <p role="status" className="text-sm">No posted outstanding installment is eligible for funding. Inspect issuance approval and posting first.</p> : <form onSubmit={event => { event.preventDefault(); void submit(); }}>
       <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Cash receipt and evidence</legend>
-        <label className="grid gap-1 text-sm">Posted installment<select className="rounded border border-border bg-background p-2" value={selected} onChange={event => { setSelected(event.target.value); setConfirmed(false); }}>
+        <label className="grid gap-1 text-sm">Posted installment<Select value={selected} onChange={event => { setSelected(event.target.value); setConfirmed(false); }}>
           <option value="">Select a posted installment</option>{eligible.map(line => <option key={line.installmentId} value={line.installmentId}>{line.installmentId} · Outstanding {capitalAmount(line.outstandingAmount, call.scope.currency)}</option>)}
-        </select></label><Fields fields={fundingFields} values={values} update={(key, value) => { setValues(current => ({ ...current, [key]: value })); setConfirmed(false); }} />
-        <FormRow label="Retained bank or remittance evidence (one reference per line)" labelFor={`${id}-evidence`}><textarea id={`${id}-evidence`} className="min-h-20 w-full rounded border border-border bg-background p-2 text-sm"
+        </Select></label><Fields fields={fundingFields} values={values} update={(key, value) => { setValues(current => ({ ...current, [key]: value })); setConfirmed(false); }} />
+        <FormRow label="Retained bank or remittance evidence (one reference per line)" labelFor={`${id}-evidence`}><TextArea rows={2} id={`${id}-evidence`} className="min-h-20 w-full text-sm"
           value={evidence} onChange={event => { setEvidence(event.target.value); setConfirmed(false); }} /></FormRow>
-        <label className="flex gap-2 text-sm"><input type="checkbox" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} />I matched this cash receipt to the installment and retained bank evidence.</label>
+        <Checkbox className="flex gap-2 text-sm" checked={confirmed} onChange={event => setConfirmed(event.target.checked)} label={<>I matched this cash receipt to the installment and retained bank evidence.</>} />
         <Button type="submit" disabled={locked || !confirmed} disabledReason={locked ? "Wait for the current operation or resolve its unconfirmed outcome." : !confirmed ? "Match the cash receipt to the installment and retained bank evidence first." : undefined}>Queue funding draft for review</Button>
       </fieldset></form>}
     {error ? <p role="alert" className="text-sm text-danger">{error}</p> : null}

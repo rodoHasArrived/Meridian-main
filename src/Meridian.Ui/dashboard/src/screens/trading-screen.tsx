@@ -87,6 +87,7 @@ import { pluralizeCount } from "@/lib/format";
 import { useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { withTradingHeadlineEvidence } from "@/screens/trading-screen.headline-evidence";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { TextArea } from "@/components/ui/text-area";
 
 interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
@@ -1406,14 +1407,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               <label htmlFor={strategyLifecycle.strategyIdInputId} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(strategyLifecycle.strategyIdLabel) && "uppercase tracking-[0.14em]")}>
                 {strategyLifecycle.strategyIdLabel}
               </label>
-              <input
+              <Input
                 id={strategyLifecycle.strategyIdInputId}
                 type="text"
                 placeholder={strategyLifecycle.strategyIdPlaceholder}
                 value={strategyLifecycle.strategyId}
                 aria-describedby={`${strategyLifecycle.strategyIdHelpId} ${strategyLifecycle.strategyIdStatusId}`}
                 onChange={(e) => strategyLifecycle.updateStrategyId(e.target.value)}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full font-mono text-sm"
               />
               <p id={strategyLifecycle.strategyIdHelpId} className="text-xs text-muted-foreground">
                 {strategyLifecycle.helpText}
@@ -1635,7 +1636,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.runId.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.runId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.runId.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.runId.id}
                   aria-label={promotionGate.fields.runId.ariaLabel}
                   placeholder={promotionGate.fields.runId.placeholder}
@@ -1643,7 +1644,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.runId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.runId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
                 {promotionGate.fields.runId.helpText ? (
                   <span id={promotionGate.fields.runId.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.runId.helpText}</span>
@@ -1651,7 +1652,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               </label>
               <label htmlFor={promotionGate.fields.approvedBy.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvedBy.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvedBy.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.approvedBy.id}
                   aria-label={promotionGate.fields.approvedBy.ariaLabel}
                   placeholder={promotionGate.fields.approvedBy.placeholder}
@@ -1659,14 +1660,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.approvedBy.field, e.target.value)}
                   aria-describedby={promotionGate.fields.approvedBy.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                   required={promotionGate.fields.approvedBy.required}
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.approvalReason.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.approvalReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.approvalReason.label}</span>
-              <input
+              <Input
                 id={promotionGate.fields.approvalReason.id}
                 aria-label={promotionGate.fields.approvalReason.ariaLabel}
                 placeholder={promotionGate.fields.approvalReason.placeholder}
@@ -1674,13 +1675,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.approvalReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.approvalReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
                 required={promotionGate.fields.approvalReason.required}
               />
             </label>
             <label htmlFor={promotionGate.fields.rejectionReason.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.rejectionReason.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.rejectionReason.label}</span>
-              <input
+              <Input
                 id={promotionGate.fields.rejectionReason.id}
                 aria-label={promotionGate.fields.rejectionReason.ariaLabel}
                 placeholder={promotionGate.fields.rejectionReason.placeholder}
@@ -1688,13 +1689,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.rejectionReason.field, e.target.value)}
                 aria-describedby={promotionGate.fields.rejectionReason.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="w-full text-sm"
               />
             </label>
             <div className="grid gap-3 sm:grid-cols-2">
               <label htmlFor={promotionGate.fields.reviewNotes.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.reviewNotes.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.reviewNotes.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.reviewNotes.id}
                   aria-label={promotionGate.fields.reviewNotes.ariaLabel}
                   placeholder={promotionGate.fields.reviewNotes.placeholder}
@@ -1702,12 +1703,12 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.reviewNotes.field, e.target.value)}
                   aria-describedby={promotionGate.fields.reviewNotes.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full text-sm"
                 />
               </label>
               <label htmlFor={promotionGate.fields.manualOverrideId.id} className="grid gap-1 text-sm">
                 <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.manualOverrideId.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.manualOverrideId.label}</span>
-                <input
+                <Input
                   id={promotionGate.fields.manualOverrideId.id}
                   aria-label={promotionGate.fields.manualOverrideId.ariaLabel}
                   placeholder={promotionGate.fields.manualOverrideId.placeholder}
@@ -1715,13 +1716,13 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                   onChange={(e) => promotionGate.updateField(promotionGate.fields.manualOverrideId.field, e.target.value)}
                   aria-describedby={promotionGate.fields.manualOverrideId.describedBy ?? undefined}
                   disabled={promotionGate.busy}
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="w-full font-mono text-sm"
                 />
               </label>
             </div>
             <label htmlFor={promotionGate.fields.evidenceReferences.id} className="grid gap-1 text-sm">
               <span className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(promotionGate.fields.evidenceReferences.label) && "uppercase tracking-[0.14em]")}>{promotionGate.fields.evidenceReferences.label}</span>
-              <textarea
+              <TextArea rows={2}
                 id={promotionGate.fields.evidenceReferences.id}
                 aria-label={promotionGate.fields.evidenceReferences.ariaLabel}
                 placeholder={promotionGate.fields.evidenceReferences.placeholder}
@@ -1729,7 +1730,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
                 onChange={(e) => promotionGate.updateField(promotionGate.fields.evidenceReferences.field, e.target.value)}
                 aria-describedby={promotionGate.fields.evidenceReferences.describedBy ?? undefined}
                 disabled={promotionGate.busy}
-                className="min-h-24 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+                className="min-h-24 w-full font-mono text-sm"
               />
               {promotionGate.fields.evidenceReferences.helpText ? (
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>

@@ -37,6 +37,7 @@ import type {
 import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
 import "@/styles/reconciliation-workbench.css";
 import { eyebrowClassName } from "@/design-system/label-case";
+import { Select } from "@/components/ui/select";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -541,22 +542,22 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
               </label>
               <label>
                 Case status
-                <select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
+                <Select value={controls.queueStatus} onChange={(e) => controls.setQueueStatus(e.target.value as ReconciliationQueueStatus)}>
                   {["all", "Open", "InReview", "Resolved", "Dismissed", "SignedOff"].map((status) => (
                     <option key={status} value={status}>
                       {status === "all" ? "All statuses" : status === "InReview" ? "In review" : status === "SignedOff" ? "Signed off" : status}
                     </option>
                   ))}
-                </select>
+                </Select>
               </label>
               <label>
                 Sort breaks
-                <select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
+                <Select value={controls.queueSort} onChange={(e) => controls.setQueueSort(e.target.value as ReconciliationQueueSort)}>
                   <option value="default">Service order</option>
                   <option value="oldest">Oldest detected</option>
                   <option value="newest">Newest detected</option>
                   <option value="severity">Highest urgency</option>
-                </select>
+                </Select>
               </label>
               <Button type="button" variant="ghost" onClick={controls.clearQueueFilters}>Clear filters</Button>
               <Button type="button" variant="ghost" aria-keyshortcuts="?" onClick={() => setShortcutsOpen(true)}>
@@ -690,10 +691,10 @@ export function ReconciliationStatementRuns({ reconciliation, initiallyOpen = fa
     <div className="reconciliation-run-context">
       <label className="reconciliation-run-picker">
         <span>Reconciliation run</span>
-        <select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
+        <Select value={reconciliation.reconciliationQueue.some((run) => run.runId === reconciliation.selectedRunId) ? reconciliation.selectedRunId ?? "" : ""} onChange={(event) => reconciliation.selectRun(event.target.value || null)}>
           <option value="">Choose a reconciliation run</option>
           {reconciliation.reconciliationQueue.map((run) => <option key={run.runId} value={run.runId}>{run.strategyName} · {run.openBreakCount} open</option>)}
-        </select>
+        </Select>
       </label>
       <TechnicalDetails label="Statement runs and import evidence" open={initiallyOpen}>
       <Card className="panel-surface xl:col-span-2">

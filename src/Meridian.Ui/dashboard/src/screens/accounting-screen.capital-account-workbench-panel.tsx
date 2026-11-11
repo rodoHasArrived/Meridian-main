@@ -13,6 +13,7 @@ import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type { CapitalAccountWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
 import { pluralizeCount } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWorkbenchViewModel }) {
   if (!view.available) {
@@ -106,36 +107,26 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
               <Badge variant="outline">{pluralizeCount(view.fundEventCommandRows.length, "event", { localizeCount: true })}</Badge>
             </div>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[940px] text-sm" aria-label="Capital-account fund-event command centers">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Fund event</th>
-                    <th className="px-3 py-2 text-left">Readiness</th>
-                    <th className="px-3 py-2 text-left">Evidence</th>
-                    <th className="px-3 py-2 text-left">Routes</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {view.fundEventCommandRows.map((row) => (
-                    <tr key={row.id} className="border-t border-border/60 align-top">
-                      <td className="px-3 py-2">
+              <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Fund event", className: "px-3 py-2", render: (row) => <>
                         <div className="font-semibold text-foreground">{row.title}</div>
                         <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{row.subtitle}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.memoLabel}</div>
                         <div className="mt-1 font-mono text-xs text-muted-foreground">{row.netActivityLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
+                      </> },
+            { id: "column-2", label: "Readiness", className: "px-3 py-2", render: (row) => <>
                         <Badge variant={row.readinessTone} dot>{row.readinessLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{row.readinessReasonLabel}</div>
                         <div className="mt-1 text-xs text-muted-foreground">{row.nextActionLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs text-muted-foreground">
+                      </> },
+            { id: "column-3", label: "Evidence", className: "px-3 py-2 text-xs text-muted-foreground", render: (row) => <>
                         <div>{row.evidenceLabel}</div>
                         <div className="mt-1">{row.subledgerLabel}</div>
                         <div className="mt-1">{row.ledgerImpactLabel}</div>
                         <div className="mt-1">{row.reportOutputLabel}</div>
-                      </td>
-                      <td className="px-3 py-2">
+                      </> },
+            { id: "column-4", label: "Routes", className: "px-3 py-2", render: (row) => <>
                         <a
                           className="block break-all font-mono text-[11px] text-primary hover:underline"
                           href={row.commandCenterRouteLabel}
@@ -163,11 +154,16 @@ export function CapitalAccountWorkbenchPanel({ view }: { view: CapitalAccountWor
                         >
                           {row.evidenceRouteLabel}
                         </a>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </> }
+          ]}
+          rows={view.fundEventCommandRows}
+          getRowId={(row) => String(row.id)}
+          getRowClassName={() => "border-t border-border/60 align-top"}
+          ariaLabel={"Capital-account fund-event command centers"}
+          tableClassName={"w-full min-w-[940px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
             </div>
           </section>
         ) : null}

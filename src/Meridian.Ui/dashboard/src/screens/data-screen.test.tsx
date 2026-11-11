@@ -753,6 +753,15 @@ describe("DataScreen", () => {
       requestId: "req-plaid-institutions",
       institutions: [
         {
+          institutionId: "ins_business",
+          name: "Chase Business",
+          products: ["Transactions"],
+          countryCodes: ["US"],
+          url: null,
+          primaryColor: null,
+          logo: null
+        },
+        {
           institutionId: "ins_3",
           name: "Chase",
           products: ["Transactions", "Auth", "Identity"],
@@ -826,14 +835,25 @@ describe("DataScreen", () => {
     await user.type(screen.getByLabelText("Plaid client ID"), "client-sandbox-123");
     await user.type(screen.getByLabelText("Plaid secret"), "secret-sandbox-456");
 
-    const bankSearch = screen.getByRole("combobox", { name: "Search supported financial institutions" });
+    const bankSearch = screen.getByRole("searchbox", { name: "Search supported financial institutions" });
     await user.type(bankSearch, "Chase");
-    await user.click(screen.getByRole("button", { name: "Search supported financial institutions for Chase" }));
+    expect(searchPlaidInstitutions).not.toHaveBeenCalled();
+    await user.keyboard("{Enter}");
 
     await waitFor(() => expect(searchPlaidInstitutions).toHaveBeenCalledWith("Chase"));
-    expect(await screen.findByRole("option", { name: /Chase/ })).toHaveTextContent("ins_3 | US | Transactions, Auth, Identity");
-
-    await user.click(screen.getByRole("option", { name: /Chase/ }));
+    const institutions = await screen.findByRole("table", { name: "Supported financial institutions" });
+    const firstInstitution = within(institutions).getByRole("row", { name: "Select Chase Business" });
+    const chase = within(institutions).getByRole("row", { name: "Select Chase" });
+    expect(chase).toHaveTextContent("ins_3 | US | Transactions, Auth, Identity");
+    firstInstitution.focus();
+    await user.keyboard("{End}");
+    expect(chase).toHaveFocus();
+    await user.keyboard("{Home}");
+    expect(firstInstitution).toHaveFocus();
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(chase).toHaveFocus();
+    expect(chase).toHaveAttribute("aria-selected", "true");
+    expect(searchPlaidInstitutions).toHaveBeenCalledTimes(1);
 
     expect(screen.getByText("Chase is selected for the next bank connection step.")).toBeInTheDocument();
     expect(bankSearch).toHaveValue("Chase");

@@ -14,14 +14,26 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { searchExecutionAuditTrail } from "@/lib/api/execution-audit.api";
 import {
   buildAuditTrailPanelViewModel,
-  type AuditTrailTone
+  type AuditTrailTone,
+  type AuditTrailRowViewModel
 } from "@/screens/trading-screen.audit-trail.view-model";
 import type { AuditTrailExplorerResult } from "@/types/execution-audit.types";
 
 const AUDIT_LIMIT = 50;
+
+const auditColumns: DenseDataTableColumn<AuditTrailRowViewModel>[] = [
+  { id: "occurred", label: "Occurred", render: row => <span className="font-mono text-xs">{row.occurredAt}</span> },
+  { id: "object", label: "Object", render: row => <span className="font-mono text-xs">{row.objectLabel}</span> },
+  { id: "action", label: "Action", render: row => row.actionLabel },
+  { id: "outcome", label: "Outcome", render: row => <Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge> },
+  { id: "actor", label: "Actor", render: row => row.actor },
+  { id: "context", label: "Context", render: row => <span className="block max-w-[24rem] break-words text-xs text-muted-foreground">{row.context}</span> },
+  { id: "ledger", label: "Action ledger", render: row => <Badge variant={badgeVariant(row.ledgerTone)}>{row.ledgerLabel}</Badge> }
+];
 
 export function ExecutionAuditTrailPanel() {
   const [result, setResult] = useState<AuditTrailExplorerResult | null>(null);
@@ -99,38 +111,15 @@ export function ExecutionAuditTrailPanel() {
           </div>
         </form>
 
-        <table className="w-full text-sm" aria-label="Execution audit trail entries">
-          <thead>
-            <tr className="text-left text-xs uppercase tracking-wide text-muted-foreground">
-              <th className="py-2">Occurred</th>
-              <th>Object</th>
-              <th>Action</th>
-              <th>Outcome</th>
-              <th>Actor</th>
-              <th>Context</th>
-              <th>Action ledger</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vm.rows.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="py-4 text-center text-muted-foreground">
-                  {loading ? "Loading audit trail…" : vm.emptyState}
-                </td>
-              </tr>
-            ) : vm.rows.map((row) => (
-              <tr key={row.auditId} className="border-t border-border/60" aria-label={row.ariaLabel}>
-                <td className="py-2 font-mono text-xs">{row.occurredAt}</td>
-                <td className="font-mono text-xs">{row.objectLabel}</td>
-                <td>{row.actionLabel}</td>
-                <td><Badge variant={badgeVariant(row.outcomeTone)}>{row.outcome}</Badge></td>
-                <td>{row.actor}</td>
-                <td className="max-w-[24rem] break-words text-xs text-muted-foreground">{row.context}</td>
-                <td><Badge variant={badgeVariant(row.ledgerTone)}>{row.ledgerLabel}</Badge></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DenseDataTable
+          columns={auditColumns}
+          rows={vm.rows}
+          getRowId={row => row.auditId}
+          getRowAriaLabel={row => row.ariaLabel}
+          ariaLabel="Execution audit trail entries"
+          emptyText={loading ? "Loading audit trail…" : vm.emptyState}
+          maxVisibleRows={null}
+        />
       </CardContent>
     </Card>
   );

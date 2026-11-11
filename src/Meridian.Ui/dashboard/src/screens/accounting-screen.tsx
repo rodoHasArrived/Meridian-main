@@ -161,6 +161,7 @@ import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { Select } from "@/components/ui/select";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -2974,7 +2975,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 <label htmlFor="security-master-search" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                   Search securities
                 </label>
-                <input
+                <Input
                   id="security-master-search"
                   type="text"
                   value={securityMaster.query}
@@ -2983,7 +2984,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   aria-controls={securityMaster.hasResults ? "security-master-results" : undefined}
                   aria-describedby="security-master-search-help security-master-search-status"
                   aria-invalid={securityMaster.searchErrorText ? true : undefined}
-                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+                  className="w-full text-sm"
                 />
                 <p id="security-master-search-help" className="text-xs text-muted-foreground">
                   Search by ticker, ISIN, CUSIP, FIGI, or display name.
@@ -3437,22 +3438,9 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.paymentIntents.length > 0 ? (
           <>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[1040px] text-sm" aria-label="Payment intent and cash evidence workflows">
-                <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 text-left">Payment intent</th>
-                    <th className="px-3 py-2 text-left">Status</th>
-                    <th className="px-3 py-2 text-left">Expected cash</th>
-                    <th className="px-3 py-2 text-left">Approvals</th>
-                    <th className="px-3 py-2 text-left">Cash evidence</th>
-                    <th className="px-3 py-2 text-left">Reconciliation</th>
-                    <th className="px-3 py-2 text-left">Audit</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {activity.paymentIntents.map((intent) => (
-                    <tr key={intent.id} className="border-t border-border/60 bg-background/30 align-top">
-                      <td className="px-3 py-2">
+              <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Payment intent", className: "px-3 py-2", render: (intent) => <>
                         <div className="break-all font-mono text-xs text-foreground">{intent.title}</div>
                         <div className="mt-1 break-all text-[11px] text-muted-foreground">{intent.subtitle}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestedLabel}</div>
@@ -3467,19 +3455,19 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                             {intent.workbenchRouteLabel}
                           </a>
                         ) : null}
-                      </td>
-                      <td className="px-3 py-2">
+                      </> },
+            { id: "column-2", label: "Status", className: "px-3 py-2", render: (intent) => <>
                         <Badge variant={intent.statusTone} dot>{intent.statusLabel}</Badge>
                         <div className="mt-1 text-xs text-muted-foreground">{intent.readinessReasonLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.executionDeferredLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs">
+                      </> },
+            { id: "column-3", label: "Expected cash", className: "px-3 py-2 text-xs", render: (intent) => <>
                         <div className="font-mono">{intent.expectedCashLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.requestMetadataLabel}</div>
                         <div className="mt-1 text-[11px] text-muted-foreground">{intent.sourceEvidenceLabel}</div>
-                      </td>
-                      <td className="px-3 py-2 text-xs">{intent.approvalLabel}</td>
-                      <td className="px-3 py-2 text-xs">
+                      </> },
+            { id: "column-4", label: "Approvals", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.approvalLabel}</> },
+            { id: "column-5", label: "Cash evidence", className: "px-3 py-2 text-xs", render: (intent) => <>
                         <div>{intent.bankEvidenceLabel}</div>
                         {intent.evidenceRouteLabel !== "No evidence route" ? (
                           <a
@@ -3492,13 +3480,18 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                             {intent.evidenceRouteLabel}
                           </a>
                         ) : null}
-                      </td>
-                      <td className="px-3 py-2 text-xs">{intent.reconciliationLabel}</td>
-                      <td className="px-3 py-2 text-xs">{intent.auditLabel}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </> },
+            { id: "column-6", label: "Reconciliation", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.reconciliationLabel}</> },
+            { id: "column-7", label: "Audit", className: "px-3 py-2 text-xs", render: (intent) => <>{intent.auditLabel}</> }
+          ]}
+          rows={activity.paymentIntents}
+          getRowId={(intent) => String(intent.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Payment intent and cash evidence workflows"}
+          tableClassName={"w-full min-w-[1040px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
             </div>
 
             <section className="space-y-3" aria-label="Payment intent cash evidence drilldowns">
@@ -3652,23 +3645,9 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.fundEventLedgerRecords.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital fund event ledger records">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Fund event</th>
-                  <th className="px-3 py-2 text-left">Approval</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Subledger</th>
-                  <th className="px-3 py-2 text-left">GL impact</th>
-                  <th className="px-3 py-2 text-left">Report output</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.fundEventLedgerRecords.map((record) => (
-                  <tr key={record.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Fund event", className: "px-3 py-2", render: (record) => <>
                       <div className="font-semibold text-foreground">{record.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{record.memoLabel}</div>
@@ -3698,8 +3677,8 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       >
                         {record.commandCenterRouteLabel}
                       </a>
-                    </td>
-                    <td className="px-3 py-2">
+                    </> },
+            { id: "column-2", label: "Approval", className: "px-3 py-2", render: (record) => <>
                       <Badge variant={record.statusTone} dot>{record.statusLabel}</Badge>
                       <div className="mt-2">
                         <Badge variant={record.readinessTone} dot>{record.readinessLabel}</Badge>
@@ -3730,23 +3709,23 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {record.approvalRouteLabel}
                         </a>
                       ) : null}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{record.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono text-xs">
+                    </> },
+            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (record) => <>{record.effectiveDateLabel}</> },
+            { id: "column-4", label: "Net", className: "px-3 py-2 font-mono text-xs", render: (record) => <>
                       <div>{record.netActivityLabel}</div>
                       <div className="mt-1 text-[11px] text-muted-foreground">{record.grossActivityLabel} gross</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-5", label: "Subledger", className: "px-3 py-2 text-xs", render: (record) => <>
                       <div>{record.subledgerLabel}</div>
                       <div className="mt-1 text-muted-foreground">{record.capitalAccountRollForwardLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{record.ledgerImpactLabel}</td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-6", label: "GL impact", className: "px-3 py-2 text-xs", render: (record) => <>{record.ledgerImpactLabel}</> },
+            { id: "column-7", label: "Report output", className: "px-3 py-2 text-xs", render: (record) => <>
                       <div>{record.reportOutputLabel}</div>
                       <div className="mt-1 text-muted-foreground">{record.reportOutputDetailLabel}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{record.reportOutputRouteLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-8", label: "Evidence", className: "px-3 py-2 text-xs", render: (record) => <>
                       <div>{record.evidenceLabel}</div>
                       {record.evidenceRouteLabel !== "No evidence route" ? (
                         <a
@@ -3779,70 +3758,56 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : (
                         <div className="mt-2 text-[11px] text-muted-foreground">{record.evidenceCategorySummaryLabel}</div>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> }
+          ]}
+          rows={activity.fundEventLedgerRecords}
+          getRowId={(record) => String(record.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital fund event ledger records"}
+          tableClassName={"w-full min-w-[980px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
         {activity.capitalAccounts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[760px] text-sm" aria-label="Private-capital capital account activity">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Capital account</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Calls</th>
-                  <th className="px-3 py-2 text-left">Distributions</th>
-                  <th className="px-3 py-2 text-left">Other</th>
-                  <th className="px-3 py-2 text-left">Last event</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccounts.map((account) => (
-                  <tr key={account.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Capital account", className: "px-3 py-2", render: (account) => <>
                       <div className="break-all font-mono text-xs text-foreground">{account.title}</div>
                       <div className="mt-1 break-all text-[11px] text-muted-foreground">{account.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono">{account.netActivityLabel}</td>
-                    <td className="px-3 py-2 font-mono">{account.contributionLabel}</td>
-                    <td className="px-3 py-2 font-mono">{account.distributionLabel}</td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-2", label: "Net", className: "px-3 py-2 font-mono", render: (account) => <>{account.netActivityLabel}</> },
+            { id: "column-3", label: "Calls", className: "px-3 py-2 font-mono", render: (account) => <>{account.contributionLabel}</> },
+            { id: "column-4", label: "Distributions", className: "px-3 py-2 font-mono", render: (account) => <>{account.distributionLabel}</> },
+            { id: "column-5", label: "Other", className: "px-3 py-2 text-xs", render: (account) => <>
                       <div>Subscriptions {account.subscriptionLabel}</div>
                       <div>Redemptions {account.redemptionLabel}</div>
                       <div>Fees {account.managementFeeLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-6", label: "Last event", className: "px-3 py-2 text-xs", render: (account) => <>
                       <div>{account.eventCountLabel}</div>
                       <div className="mt-1 text-muted-foreground">{account.lastEventLabel}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> }
+          ]}
+          rows={activity.capitalAccounts}
+          getRowId={(account) => String(account.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital capital account activity"}
+          tableClassName={"w-full min-w-[760px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
         {activity.capitalAccountSubledgers.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[980px] text-sm" aria-label="Private-capital capital account subledgers">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Capital account</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Roll-forward</th>
-                  <th className="px-3 py-2 text-left">Activity</th>
-                  <th className="px-3 py-2 text-left">Counts</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccountSubledgers.map((subledger) => (
-                  <tr key={subledger.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Capital account", className: "px-3 py-2", render: (subledger) => <>
                       <div className="break-all font-mono text-xs text-foreground">{subledger.title}</div>
                       <div className="mt-1 break-all text-[11px] text-muted-foreground">{subledger.subtitle}</div>
                       {subledger.activityRouteLabel !== "No subledger route" ? (
@@ -3856,29 +3821,29 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                           {subledger.activityRouteLabel}
                         </a>
                       ) : null}
-                    </td>
-                    <td className="px-3 py-2">
+                    </> },
+            { id: "column-2", label: "Status", className: "px-3 py-2", render: (subledger) => <>
                       <Badge variant={subledger.statusTone} dot>{subledger.statusLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{subledger.issueLabel}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{subledger.dateRangeLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">
+                    </> },
+            { id: "column-3", label: "Roll-forward", className: "px-3 py-2 font-mono text-xs", render: (subledger) => <>
                       <div>{subledger.openingLabel} opening</div>
                       <div className="mt-1">{subledger.netActivityLabel} net</div>
                       <div className="mt-1">{subledger.endingLabel} ending</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-4", label: "Activity", className: "px-3 py-2 text-xs", render: (subledger) => <>
                       <div>Calls {subledger.contributionLabel}</div>
                       <div>Distributions {subledger.distributionLabel}</div>
                       <div className="mt-1 text-muted-foreground">{subledger.otherActivityLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-5", label: "Counts", className: "px-3 py-2 text-xs", render: (subledger) => <>
                       <div>{subledger.eventCountLabel}</div>
                       <div className="mt-1">{subledger.approvalQueueLabel}</div>
                       <div className="mt-1">{subledger.postedEventLabel}</div>
                       <div className="mt-1">{subledger.publishedReportLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-6", label: "Evidence", className: "px-3 py-2 text-xs", render: (subledger) => <>
                       <div>{subledger.evidenceLabel}</div>
                       <div className="mt-2 rounded border border-border/60 bg-secondary/20 px-2 py-1 text-[11px] text-muted-foreground">
                         <div className="flex flex-wrap items-center gap-1">
@@ -3907,130 +3872,111 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
                       ) : (
                         <div className="mt-2 text-[11px] text-muted-foreground">{subledger.evidenceCategorySummaryLabel}</div>
                       )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> }
+          ]}
+          rows={activity.capitalAccountSubledgers}
+          getRowId={(subledger) => String(subledger.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital capital account subledgers"}
+          tableClassName={"w-full min-w-[980px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
         {activity.capitalAccountSubledgerEntries.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital capital account subledger">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Event</th>
-                  <th className="px-3 py-2 text-left">Status</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Net</th>
-                  <th className="px-3 py-2 text-left">Running</th>
-                  <th className="px-3 py-2 text-left">Gross</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.capitalAccountSubledgerEntries.map((entry) => (
-                  <tr key={entry.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Event", className: "px-3 py-2", render: (entry) => <>
                       <div className="font-semibold text-foreground">{entry.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{entry.subtitle}</div>
                       <div className="mt-1 text-xs text-muted-foreground">{entry.memoLabel}</div>
-                    </td>
-                    <td className="px-3 py-2">
+                    </> },
+            { id: "column-2", label: "Status", className: "px-3 py-2", render: (entry) => <>
                       <Badge variant={entry.statusTone} dot>{entry.statusLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{entry.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{entry.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.netActivityLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.runningBalanceLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{entry.grossAmountLabel}</td>
-                    <td className="px-3 py-2 text-xs">{entry.evidenceLabel}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> },
+            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (entry) => <>{entry.effectiveDateLabel}</> },
+            { id: "column-4", label: "Net", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.netActivityLabel}</> },
+            { id: "column-5", label: "Running", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.runningBalanceLabel}</> },
+            { id: "column-6", label: "Gross", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (entry) => <>{entry.grossAmountLabel}</> },
+            { id: "column-7", label: "Evidence", className: "px-3 py-2 text-xs", render: (entry) => <>{entry.evidenceLabel}</> }
+          ]}
+          rows={activity.capitalAccountSubledgerEntries}
+          getRowId={(entry) => String(entry.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital capital account subledger"}
+          tableClassName={"w-full min-w-[820px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
         {activity.ledgerImpacts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[820px] text-sm" aria-label="Private-capital ledger impacts">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Impact</th>
-                  <th className="px-3 py-2 text-left">Readiness</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Debits</th>
-                  <th className="px-3 py-2 text-left">Credits</th>
-                  <th className="px-3 py-2 text-left">Imbalance</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.ledgerImpacts.map((impact) => (
-                  <tr key={impact.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Impact", className: "px-3 py-2", render: (impact) => <>
                       <div className="font-semibold text-foreground">{impact.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{impact.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2">
+                    </> },
+            { id: "column-2", label: "Readiness", className: "px-3 py-2", render: (impact) => <>
                       <Badge variant={impact.readinessTone} dot>{impact.readinessLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{impact.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{impact.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.debitLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.creditLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{impact.imbalanceLabel}</td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (impact) => <>{impact.effectiveDateLabel}</> },
+            { id: "column-4", label: "Debits", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.debitLabel}</> },
+            { id: "column-5", label: "Credits", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.creditLabel}</> },
+            { id: "column-6", label: "Imbalance", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (impact) => <>{impact.imbalanceLabel}</> },
+            { id: "column-7", label: "Evidence", className: "px-3 py-2 text-xs", render: (impact) => <>
                       <div>{impact.evidenceLabel}</div>
                       <div className="mt-1 text-muted-foreground">{impact.lineLabel}</div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> }
+          ]}
+          rows={activity.ledgerImpacts}
+          getRowId={(impact) => String(impact.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital ledger impacts"}
+          tableClassName={"w-full min-w-[820px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
         {activity.reportOutputs.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <table className="w-full min-w-[960px] text-sm" aria-label="Private-capital report outputs">
-              <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
-                <tr>
-                  <th className="px-3 py-2 text-left">Output</th>
-                  <th className="px-3 py-2 text-left">Readiness</th>
-                  <th className="px-3 py-2 text-left">Effective</th>
-                  <th className="px-3 py-2 text-left">Amount</th>
-                  <th className="px-3 py-2 text-left">Evidence</th>
-                  <th className="px-3 py-2 text-left">Workflow</th>
-                  <th className="px-3 py-2 text-left">Route</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activity.reportOutputs.map((output) => (
-                  <tr key={output.id} className="border-t border-border/60 bg-background/30 align-top">
-                    <td className="px-3 py-2">
+            <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Output", className: "px-3 py-2", render: (output) => <>
                       <div className="font-semibold text-foreground">{output.title}</div>
                       <div className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{output.subtitle}</div>
-                    </td>
-                    <td className="px-3 py-2">
+                    </> },
+            { id: "column-2", label: "Readiness", className: "px-3 py-2", render: (output) => <>
                       <Badge variant={output.readinessTone} dot>{output.readinessLabel}</Badge>
                       <div className="mt-1 text-xs text-muted-foreground">{output.issueLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{output.effectiveDateLabel}</td>
-                    <td className="px-3 py-2 font-mono tabular-nums text-xs">{output.amountLabel}</td>
-                    <td className="px-3 py-2 text-xs">{output.evidenceLabel}</td>
-                    <td className="px-3 py-2 text-xs">
+                    </> },
+            { id: "column-3", label: "Effective", className: "px-3 py-2 font-mono text-xs", render: (output) => <>{output.effectiveDateLabel}</> },
+            { id: "column-4", label: "Amount", className: "px-3 py-2 font-mono tabular-nums text-xs", render: (output) => <>{output.amountLabel}</> },
+            { id: "column-5", label: "Evidence", className: "px-3 py-2 text-xs", render: (output) => <>{output.evidenceLabel}</> },
+            { id: "column-6", label: "Workflow", className: "px-3 py-2 text-xs", render: (output) => <>
                       <div className="break-all font-mono text-[11px] text-foreground">{output.workflowLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.publicationLabel}</div>
                       <div className="mt-1 text-muted-foreground">{output.provenanceLabel}</div>
-                    </td>
-                    <td className="px-3 py-2 break-all font-mono text-[11px] text-muted-foreground">{output.routeLabel}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </> },
+            { id: "column-7", label: "Route", className: "px-3 py-2 break-all font-mono text-[11px] text-muted-foreground", render: (output) => <>{output.routeLabel}</> }
+          ]}
+          rows={activity.reportOutputs}
+          getRowId={(output) => String(output.id)}
+          getRowClassName={() => "border-t border-border/60 bg-background/30 align-top"}
+          ariaLabel={"Private-capital report outputs"}
+          tableClassName={"w-full min-w-[960px] text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
           </div>
         ) : null}
 
@@ -4353,7 +4299,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                         tabIndex={-1}
                       >
                         <td>
-                          <select disabled={Boolean(view.draft.assetAccountingDraft)}
+                          <Select disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-account-${line.lineId}`}
                             value={line.accountPath}
                             onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
@@ -4368,7 +4314,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                           >
                             <option value="">Select GL account</option>
                             {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                          </select>
+                          </Select>
                           {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
                         </td>
                         <td>
@@ -4546,27 +4492,27 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
               <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.22fr)_minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)_auto]">
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Label</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
+                  <Input className="min-h-9 w-full" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold text-muted-foreground">Route or path</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
+                  <Input className="min-h-9 w-full font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Kind</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
+                  <Select className="min-h-9 w-full" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
                     <option value="SourceDocument">Source document</option>
                     <option value="ApprovalSupport">Approval support</option>
                     <option value="ReconciliationEvidence">Reconciliation</option>
                     <option value="ValuationSupport">Valuation support</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Scope</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
+                  <Select className="min-h-9 w-full" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
                     <option value="">Header</option>
                     {view.draft.lines.map((line) => <option key={line.lineId} value={line.lineId}>{line.side} {line.accountPath || line.lineId}</option>)}
-                  </select>
+                  </Select>
                 </label>
                 <div className="flex items-end">
                   <Button

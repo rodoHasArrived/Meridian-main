@@ -26,6 +26,8 @@ import type {
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { formatUtcTimestamp } from "@/lib/format";
+import { Select } from "@/components/ui/select";
+import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 
 export function IngestionOperationsWorkstream() {
   const [snapshot, setSnapshot] = useState<IngestionOperationsSnapshot | null>(null);
@@ -85,32 +87,33 @@ export function IngestionOperationsWorkstream() {
         </div>
         <div className="grid gap-3 md:grid-cols-[12rem_minmax(18rem,1fr)]">
           <label className="space-y-1 text-xs font-medium text-muted-foreground">State
-            <select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={stateFilter} onChange={(event) => setStateFilter(event.target.value)}>
+            <Select className="min-h-9 w-full text-sm" value={stateFilter} onChange={(event) => setStateFilter(event.target.value)}>
               {["All", "Queued", "Running", "Paused", "Failed", "Completed", "Cancelled"].map((state) => <option key={state}>{state}</option>)}
-            </select>
+            </Select>
           </label>
           <label className="space-y-1 text-xs font-medium text-muted-foreground">Action rationale
             <Input value={rationale} onChange={(event) => setRationale(event.target.value)} aria-label="Ingestion action rationale" />
           </label>
         </div>
         <div className="overflow-x-auto rounded-[2px] border border-border">
-          <table className="w-full min-w-[58rem] text-left text-sm">
-            <caption className="sr-only">Ingestion jobs with state, checkpoint posture, retries, evidence, and available actions.</caption>
-            <thead className="bg-secondary/40 text-xs uppercase tracking-wide text-muted-foreground"><tr><th className="px-3 py-2">Job</th><th className="px-3 py-2">State</th><th className="px-3 py-2">Progress</th><th className="px-3 py-2">Checkpoint</th><th className="px-3 py-2">Retry</th><th className="px-3 py-2">Evidence</th><th className="px-3 py-2">Actions</th></tr></thead>
-            <tbody>
-              {jobs.map((job) => <tr key={job.jobId} className="border-t border-border align-top">
-                <td className="px-3 py-3"><div className="font-mono font-semibold">{job.jobId}</div><div className="text-xs text-muted-foreground">{job.provider} · {job.workloadType}<br />{job.symbols.join(", ")}</div></td>
-                <td className="px-3 py-3"><Badge variant={stateVariant(job.state)} dot>{job.state}</Badge>{job.errorMessage ? <div className="mt-1 max-w-64 text-xs text-danger">{job.errorMessage}</div> : null}</td>
-                <td className="px-3 py-3 font-mono">{job.progressPercent.toFixed(1)}%</td>
-                <td className="px-3 py-3">{job.isResumable ? <Badge variant="success">Durable</Badge> : <span className="text-muted-foreground">None</span>}</td>
-                <td className="px-3 py-3 font-mono text-xs">{job.attemptCount}/{job.maxRetries}</td>
-                <td className="px-3 py-3">{job.evidenceRoute ? <Link className="text-primary underline-offset-2 hover:underline" to={job.evidenceRoute}>Open</Link> : "—"}</td>
-                <td className="px-3 py-3"><div className="flex flex-wrap gap-1">{job.actions.map((action) => <Button key={action.action} size="sm" variant="outline" disabled={!action.enabled || busy !== null || !rationale.trim()} title={action.disabledReason ?? undefined} onClick={() => void apply(job, action.action)}>{busy === `${job.jobId}:${action.action}` ? "Applying…" : action.label}</Button>)}</div></td>
-              </tr>)}
-              {!snapshot ? <tr><td className="px-3 py-6 text-muted-foreground" colSpan={7}>Loading ingestion operations…</td></tr> : null}
-              {snapshot && jobs.length === 0 ? <tr><td className="px-3 py-6 text-muted-foreground" colSpan={7}>No jobs match this filter.</td></tr> : null}
-            </tbody>
-          </table>
+          <DenseDataTable
+          columns={[
+            { id: "column-1", label: "Job", className: "px-3 py-3", render: (job) => <><div className="font-mono font-semibold">{job.jobId}</div><div className="text-xs text-muted-foreground">{job.provider} · {job.workloadType}<br />{job.symbols.join(", ")}</div></> },
+            { id: "column-2", label: "State", className: "px-3 py-3", render: (job) => <><Badge variant={stateVariant(job.state)} dot>{job.state}</Badge>{job.errorMessage ? <div className="mt-1 max-w-64 text-xs text-danger">{job.errorMessage}</div> : null}</> },
+            { id: "column-3", label: "Progress", className: "px-3 py-3 font-mono", render: (job) => <>{job.progressPercent.toFixed(1)}%</> },
+            { id: "column-4", label: "Checkpoint", className: "px-3 py-3", render: (job) => <>{job.isResumable ? <Badge variant="success">Durable</Badge> : <span className="text-muted-foreground">None</span>}</> },
+            { id: "column-5", label: "Retry", className: "px-3 py-3 font-mono text-xs", render: (job) => <>{job.attemptCount}/{job.maxRetries}</> },
+            { id: "column-6", label: "Evidence", className: "px-3 py-3", render: (job) => <>{job.evidenceRoute ? <Link className="text-primary underline-offset-2 hover:underline" to={job.evidenceRoute}>Open</Link> : "—"}</> },
+            { id: "column-7", label: "Actions", className: "px-3 py-3", render: (job) => <><div className="flex flex-wrap gap-1">{job.actions.map((action) => <Button key={action.action} size="sm" variant="outline" disabled={!action.enabled || busy !== null || !rationale.trim()} title={action.disabledReason ?? undefined} onClick={() => void apply(job, action.action)}>{busy === `${job.jobId}:${action.action}` ? "Applying…" : action.label}</Button>)}</div></> }
+          ]}
+          rows={jobs}
+          getRowId={(job) => String(job.jobId)}
+          getRowClassName={() => "border-t border-border align-top"}
+          ariaLabel={"Ingestion jobs with state, checkpoint posture, retries, evidence, and available actions."}
+          tableClassName={"w-full min-w-[58rem] text-left text-sm"}
+          emptyText={"No records."}
+          maxVisibleRows={null}
+        />
         </div>
       </CardContent>
     </section>
@@ -169,8 +172,8 @@ export function StorageAssuranceWorkstream() {
             {snapshot?.alerts.length ? <Card><CardHeader><CardTitle className="text-base">Quality alerts</CardTitle></CardHeader><CardContent className="space-y-2">{snapshot.alerts.map((alert) => <StatusBanner key={alert.alertId} tone={alert.severity === "Critical" ? "danger" : "warning"} title={alert.subject} detail={alert.message} />)}</CardContent></Card> : null}
           </div>
           <Card><CardHeader><CardTitle className="text-base">Guarded maintenance</CardTitle><CardDescription>Preview first; execute only against the unchanged, unexpired candidate set.</CardDescription></CardHeader><CardContent className="space-y-3">
-            <label className="block space-y-1 text-xs font-medium text-muted-foreground">Action<select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={action} onChange={(event) => { setAction(event.target.value as StorageMaintenanceAction); setPreview(null); }}><option value="QualityCheck">Quality check</option><option value="Cleanup" disabled={!snapshot?.permissions.canDelete}>Temporary-file cleanup</option><option value="TierMigration" disabled={!snapshot?.permissions.canMigrate}>Copy-only tier migration</option></select></label>
-            {action === "TierMigration" ? <label className="block space-y-1 text-xs font-medium text-muted-foreground">Target tier<select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={targetTier} onChange={(event) => setTargetTier(event.target.value)}>{["Hot", "Warm", "Cold", "Archive"].map((tier) => <option key={tier}>{tier}</option>)}</select></label> : null}
+            <label className="block space-y-1 text-xs font-medium text-muted-foreground">Action<Select className="min-h-9 w-full text-sm" value={action} onChange={(event) => { setAction(event.target.value as StorageMaintenanceAction); setPreview(null); }}><option value="QualityCheck">Quality check</option><option value="Cleanup" disabled={!snapshot?.permissions.canDelete}>Temporary-file cleanup</option><option value="TierMigration" disabled={!snapshot?.permissions.canMigrate}>Copy-only tier migration</option></Select></label>
+            {action === "TierMigration" ? <label className="block space-y-1 text-xs font-medium text-muted-foreground">Target tier<Select className="min-h-9 w-full text-sm" value={targetTier} onChange={(event) => setTargetTier(event.target.value)}>{["Hot", "Warm", "Cold", "Archive"].map((tier) => <option key={tier}>{tier}</option>)}</Select></label> : null}
             <Button className="w-full" disabled={busy} onClick={() => void createPreview()}>{busy ? "Working…" : "Preview action"}</Button>
             {preview ? <div className="space-y-2 rounded-[2px] border border-warning/50 bg-warning/5 p-3"><div className="font-semibold">Preview: {preview.action}</div><div className="text-xs text-muted-foreground">{preview.candidates.length} candidates · {formatBytes(preview.affectedBytes)} · expires {formatDate(preview.expiresAt)}</div><label className="block space-y-1 text-xs font-medium">Rationale<Input value={rationale} onChange={(event) => setRationale(event.target.value)} /></label><label className="block space-y-1 text-xs font-medium">Type “{preview.confirmationText}”<Input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label><Button variant="destructive" className="w-full" disabled={busy || !rationale.trim() || confirmation !== preview.confirmationText} onClick={() => void executePreview()}>Execute guarded action</Button></div> : null}
           </CardContent></Card>

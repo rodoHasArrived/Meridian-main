@@ -32,6 +32,7 @@ import type {
   ReportRunParameterDraftField,
   ReportRunParameterDraftState
 } from "@/screens/report-run-parameters-screen.view-model";
+import { TextArea } from "@/components/ui/text-area";
 
 export type ReportingScheduleArtifactFormat = Extract<GovernanceReportArtifactFormat, "Pdf" | "Xlsx" | "Csv">;
 
@@ -504,8 +505,8 @@ export function ReportingScheduleManagementPanel({
               </div>
               <label className="mt-3 block space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Ledger dimensions (JSON)</span>
-                <textarea
-                  className="min-h-24 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                <TextArea rows={2}
+                  className="min-h-24 w-full font-mono text-sm"
                   value={scheduleDraft.runParameters.dimensionsJson}
                   onChange={(event) => onRunParameterChange("dimensionsJson", event.target.value)}
                   aria-label="Reporting schedule ledger dimensions (JSON)"
@@ -517,8 +518,8 @@ export function ReportingScheduleManagementPanel({
               </label>
               <label className="mt-3 block space-y-1">
                 <span className="text-xs font-medium text-muted-foreground">Template parameters (JSON)</span>
-                <textarea
-                  className="min-h-20 w-full rounded-sm border border-input bg-background px-3 py-2 font-mono text-sm text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                <TextArea rows={2}
+                  className="min-h-20 w-full font-mono text-sm"
                   value={scheduleDraft.runParameters.templateParametersJson}
                   onChange={(event) => onRunParameterChange("templateParametersJson", event.target.value)}
                   aria-label="Reporting schedule template parameters (JSON)"
