@@ -18,8 +18,11 @@ the parent must state why no alternatives are available. Keep model output
 separate from observed data and show stale/missing model inputs outside this
 selector; it does not validate the model or persist the choice.
 
-The current keyboard handler supports Up/Down/Left/Right selection through the
-controlled callback. It does not move focus to the newly selected item and does
-not implement Space/Enter on its div-based radios. Validate or supply a complete
-radio interaction before adopting it in a keyboard-dependent production flow;
-the presence of ARIA roles alone does not establish accessibility.
+The selector uses native buttons with radio semantics. Tab enters the selected
+option (or the first option when the selection is absent or no longer available).
+Arrow keys wrap through options, moving focus and calling `onChange`; Home/End
+move to the first/last option. Space/Enter activate the focused option through
+the native button behavior. The caller must update `value` to reflect selection.
+An unavailable selection remains unselected until the operator chooses an option;
+the fallback Tab stop never silently changes the model. Printed records remain
+disabled and outside the Tab order.

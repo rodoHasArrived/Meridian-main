@@ -1,4 +1,4 @@
-import { Children, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Children, useId, useState, type KeyboardEvent, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export interface TabItem {
@@ -18,6 +18,9 @@ export interface TabsProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function Tabs({ children, className, defaultValue, onValueChange, tabs, value, ...props }: TabsProps) {
+  const instanceId = useId();
+  const tabId = (id: string) => `${instanceId}-tab-${id}`;
+  const panelId = (tab: TabItem) => tab.panelId ?? `${instanceId}-panel-${tab.id}`;
   const [internalValue, setInternalValue] = useState(defaultValue ?? tabs[0]?.id ?? "");
   const activeValue = value ?? internalValue;
   const panels = Children.toArray(children);
@@ -55,13 +58,13 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
       <div className="flex flex-wrap gap-0.5 border-b border-border" role="tablist">
         {tabs.map((tab, index) => {
           const selected = tab.id === activeValue;
-          const panelId = tab.panelId ?? `tab-panel-${tab.id}`;
           return (
             <button
               key={tab.id}
+              id={tabId(tab.id)}
               type="button"
               role="tab"
-              aria-controls={panelId}
+              aria-controls={panelId(tab)}
               aria-label={tab.ariaLabel}
               aria-selected={selected}
               disabled={tab.disabled}
@@ -86,7 +89,14 @@ export function Tabs({ children, className, defaultValue, onValueChange, tabs, v
         const tab = tabs[index];
         const selected = tab?.id === activeValue;
         return (
-          <div key={tab?.id ?? index} id={tab?.panelId ?? `tab-panel-${tab?.id ?? index}`} role="tabpanel" hidden={!selected}>
+          <div
+            key={tab?.id ?? index}
+            id={tab ? panelId(tab) : `${instanceId}-panel-${index}`}
+            role="tabpanel"
+            aria-labelledby={tab ? tabId(tab.id) : undefined}
+            tabIndex={0}
+            hidden={!selected}
+          >
             {panel}
           </div>
         );

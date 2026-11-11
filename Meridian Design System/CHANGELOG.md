@@ -6,6 +6,10 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 
 ## [Unreleased] — increment A · semantic safety
 
+### Fixed — consuming-workstation component review
+- **`ScenarioSelector`** — native button radios support Space/Enter; arrows and Home/End move focus with selection. A missing saved selection leaves a reachable first option without changing the caller's value; read-only choices remain disabled.
+- **`OptimisticProvider`** — observer exceptions no longer reinterpret successful writes or compensating writes as transport failures, interrupt dispatch, or stop subsequent batch notifications. Observer errors remain visible in the console. Source-level Chromium regressions cover both repairs.
+
 One rule, applied to every surface that decides something: **a surface may assert only what
 something established.** Absence is a named state — never a zero, never a pass, never a clock
 standing in for an acknowledgement. Record: `docs/SEMANTIC_SAFETY_4_4.md`. Gate:

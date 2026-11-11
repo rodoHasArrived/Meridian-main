@@ -130,20 +130,19 @@ the package's stable channel does not make every export stable. Review the 4.0
 removed table APIs and template remaps in `docs/UPGRADING.md` before integrating
 older consumers. Preserve the current namespace and exact public manifest.
 
-**Residual callback fault boundary.** `OptimisticProvider` calls `onSettle` inside
-the commit/revert `try` block. A consumer callback that throws after a successful
-transport result can be classified as a rejected commit or failed revert. Keep
-settlement callbacks nonthrowing and treat this as a follow-up fault-isolation
-fix; these checks do not establish safe behavior for a throwing callback.
+**Observer fault boundary.** The component-adoption follow-up isolates synchronous
+`onSettle` and ledger-subscriber errors from transport outcomes. Confirmed edits
+stay confirmed; successful newest-first compensations stay reverted; remaining
+notifications continue. Observer errors are logged. Asynchronous consumer work
+still owns its promise failures; no live write transport is certified here.
 
-**Residual chart interaction.** `ScenarioSelector` updates controlled selection
-on arrow keys but does not move focus or implement Space/Enter on its div-based
-radios. Its prompt records that limitation. `ChartAnnotations` supplies no
+**Chart interaction.** `ScenarioSelector` now uses native button radios with
+Space/Enter activation, arrow/Home/End focus and selection, and a reachable
+fallback for a missing saved selection without silently changing the model.
+Read-only options remain disabled. `ChartAnnotations` still supplies no
 independent keyboard controls, and peer marks in `PeerComparisonStrip` rely on
 native titles. Include consequential annotation/peer values in an accessible
-adjacent table or inspector, and complete the selector interaction before using
-it as a keyboard-dependent production control. These components were not
-established as fully accessible by the ordinary HTML reference's automated run.
+adjacent table or inspector before production use.
 
 **Verification scope.** A passing Python release gate covers its static checks.
 It does not prove every template, screen-reader journey, Windows Edge behavior,
@@ -172,3 +171,33 @@ files. Its scanner exception matches only that complete digest in those exact
 paths. Negative controls confirm that other content in those files and the same
 digest elsewhere remain detectable. Remaining release/governance limitations
 above still apply.
+
+## Component adoption follow-up
+
+This pass reviews package/runtime compatibility and the existing dashboard
+adapters. The application continues to use its own React and TypeScript
+components; the global package bundle and preview React runtime are not loaded
+into production. Shared names alone are not a compatibility guarantee.
+
+| Surface | Review result and integration |
+| --- | --- |
+| Cash Ladder | Reuses shared `Select`/`Input`, retaining blank/default, Enter/apply, scenario and account-reset behavior. The interactive SVG is a named group with pressed bucket controls. |
+| Provider integration workbench | Reuses shared `Select`/`TextArea` for template/capability and JSON/CSV drafts; labels, disabled states, service validation and activation boundaries are retained. |
+| Shared Tabs | Instance-specific generated ids, labelled/focusable panels and preserved explicit panel links. Market Data tab URL changes retain focus; scope/hash navigation still hands off focus. |
+| Shared MetricCard | Uses the current workstation surface/border roles, correcting pale cards with dark-theme text while retaining nested light scopes. |
+| DenseDataTable | Nonselectable/empty scroll areas are named keyboard stops; selectable-row navigation is preserved. |
+| Package ScenarioSelector / OptimisticProvider | Source-level Chromium regressions cover keyboard behavior and synchronous observer fault isolation; the generated export is rebuilt. |
+
+The package's standalone release/browser and agency checks remain scoped to
+synthetic examples, not every template or live financial workflow. The release
+governance check still reports **67 failures and 25 warnings**. Comparing its
+findings with an extracted copy of the original `ec33af6168` PR tree confirms
+that the finding set is unchanged; the six other static release gates pass.
+No governance rule or baseline was weakened.
+
+`npm run test:components` runs the two new source-level browser regressions;
+set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium. Dashboard integration
+coverage includes Cash Ladder and provider screen behavior, tab identity/focus,
+route focus, table keyboard access, design contracts and the production build.
+The Cash Ladder API is absent from the fixture server, so browser control QA
+uses an explicit synthetic response; that is not backend-integration evidence.
