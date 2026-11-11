@@ -31,6 +31,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
     private readonly IGovernedLedgerPostingTarget? _postingTarget;
     private readonly ReportPackWorkflowService? _reportPackWorkflowService;
     private readonly IBankTransactionSource? _bankTransactionSource;
+    private readonly IPrivateCapitalStore? _privateCapitalAuthorityStore;
 
     public ManualJournalEntryWorkbenchService(
         IManualJournalEntryDraftStore draftStore,
@@ -48,7 +49,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService? assetCandidatePosting = null,
         Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService? assetAccountingSource = null,
         Func<Meridian.FinancialOperations.Ledger.IAccountingPostingCandidatePostService?>? assetCandidatePostingFactory = null,
-        Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null)
+        Func<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService?>? assetAccountingSourceFactory = null,
+        IPrivateCapitalStore? privateCapitalStore = null)
     {
         _draftStore = draftStore ?? throw new ArgumentNullException(nameof(draftStore));
         _configurationService = configurationService ?? throw new ArgumentNullException(nameof(configurationService));
@@ -58,6 +60,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         _postingTarget = postingTarget;
         _reportPackWorkflowService = reportPackWorkflowService;
         _bankTransactionSource = bankTransactionSource;
+        _privateCapitalAuthorityStore = privateCapitalStore;
         _mutationRecovery = mutationRecovery ?? DefaultMutationRecoveryFor(draftStore);
         _recurringStore = recurringStore;
         _consolidationGuard = consolidationGuard;
@@ -317,8 +320,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             AutomationEvidenceAssessment = existing is null
                 ? request.Draft.AutomationEvidenceAssessment
                 : existing.AutomationEvidenceAssessment,
+            PrivateCapitalAuthorityJson = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.PrivateCapitalAuthorityJson : null)
+                : existing.PrivateCapitalAuthorityJson,
             TreasuryContext = existing is not null &&
-                (existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
+                (existing.PrivateCapitalAuthorityJson is not null ||
+                 existing.RequiresRecurringJournalEvidence || existing.RecurringJournalEvidenceJson is not null ||
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
@@ -449,6 +456,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             TenantId = tenantId,
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
+            PrivateCapitalAuthorityJson = existing?.PrivateCapitalAuthorityJson,
             RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
             RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
@@ -1082,6 +1090,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         ManualJournalSecurityMasterLineage? securityLineage)
     {
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        AddMetadataTag(tags, "private-capital.authority", draft.PrivateCapitalAuthorityJson);
         AddMetadataTag(tags, RecurringJournalEvidenceGuard.EvidenceTag, draft.RecurringJournalEvidenceJson);
         AddMetadataTag(tags, RecurringJournalEvidenceGuard.DigestTag, draft.RecurringJournalEvidenceDigest);
         AddMetadataTag(tags, ValuationMarkEvidenceGuard.EvidenceTag, draft.ValuationMarkEvidenceJson);

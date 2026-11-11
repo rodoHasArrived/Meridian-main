@@ -263,6 +263,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
                 sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
+            services.AddSingleton<Meridian.Ledger.IPrivateCapitalStore, PostgresPrivateCapitalStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<IAccountingActionAuditStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
             services.AddSingleton<PostgresFundProfileTenancyRegistry>();
@@ -849,6 +850,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         {
             ConnectionString = configuration.GetConnectionString(LedgerStartup.ConnectionStringVariable) ?? string.Empty,
             SchemaName = configuration.GetSchema(LedgerStartup.SchemaVariable, LedgerStartup.DefaultSchema),
+            PrivateCapitalBankingSchema = configuration.GetSchema(BankingStartup.SchemaVariable, BankingStartup.DefaultSchema),
             EnablePeriodLocking = configuration.GetBoolean("MERIDIAN_LEDGER_ENABLE_PERIOD_LOCKING", true),
             RequireGovernedPostingCommand = requireGovernedProductionWrites,
             RequireExpectedVersion = requireGovernedProductionWrites

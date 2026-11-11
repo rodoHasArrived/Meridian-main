@@ -106,7 +106,20 @@ public sealed class ReportingRunCertificationService
         }
 
         var parameters = NormalizeParameters(readiness.ResolvedParameters, capture.Checkpoint);
-        var access = BuildAccessScope(template, readiness.ResolvedTemplate, accessContext);
+        var accessTemplate = string.Equals(template.TemplateId, CapitalCallNoticeReportingService.TemplateId,
+            StringComparison.OrdinalIgnoreCase)
+            ? template with
+            {
+                AccessPolicy = new ReportAccessPolicyDto(ReportAccessModeDto.Restricted,
+                    OwnerPrincipalId: accessContext.ActorPrincipalId,
+                    Principals: [new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.User,
+                        CapitalCallNoticeSourceValidator.Required(parameters, "recipientPrincipalId")),
+                        new ReportAccessPrincipalDto(ReportAccessPrincipalKindDto.Group,
+                            CapitalCallNoticeSourceValidator.Required(parameters, "reviewGroupPrincipalId"))],
+                    CompanyId: accessContext.CompanyId)
+            }
+            : template;
+        var access = BuildAccessScope(accessTemplate, readiness.ResolvedTemplate, accessContext);
         var scope = new ReportingOperationalScope(
             capture.Checkpoint.TenantId,
             capture.Checkpoint.OrganizationId,
@@ -313,7 +326,9 @@ public sealed class ReportingRunCertificationService
             .ConfigureAwait(false);
         try
         {
-            ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
+            if (!string.Equals(templateId, CapitalCallNoticeReportingService.TemplateId, StringComparison.Ordinal)
+                || parameters.Finality != ReportingFinalityDto.Draft)
+                ReportingReconciliationEvidenceValidation.RequireCommittedCloseWorkflow(reconciliation);
         }
         catch (ArgumentException exception)
         {
@@ -426,11 +441,12 @@ public sealed class ReportingRunCertificationService
         ArgumentNullException.ThrowIfNull(readiness);
         if (!string.Equals(certified.Readiness.EvaluationId, readiness.EvaluationId, StringComparison.Ordinal)
             || !string.Equals(certified.Readiness.EvidenceHash, readiness.EvidenceHash, StringComparison.OrdinalIgnoreCase)
-            || !string.Equals(
-                certified.Snapshot.ParametersHash,
-                ComputeParametersHash(
-                    readiness.ResolvedParameters,
-                    certified.Snapshot.RequiresCertifiedLedgerPresentation),
+            || !ReportingCanonicalParameterSerializer.MatchesRetained(
+                certified.Snapshot.ParametersCanonicalJson,
+                readiness.ResolvedParameters,
+                certified.Snapshot.RequiresCertifiedLedgerPresentation)
+            || !string.Equals(certified.Snapshot.ParametersHash,
+                ComputeHash(certified.Snapshot.ParametersCanonicalJson!),
                 StringComparison.OrdinalIgnoreCase)
             || !string.Equals(certified.Snapshot.SourceCheckpointId, certified.AuthoritativeSource.CheckpointId, StringComparison.Ordinal)
             || !string.Equals(certified.Snapshot.SourceCheckpointHash, certified.AuthoritativeSource.CheckpointHash, StringComparison.OrdinalIgnoreCase))

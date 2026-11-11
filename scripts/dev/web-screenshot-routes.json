@@ -689,17 +689,29 @@
     },
     {
       "id": "W03O",
-      "docLabel": "Accounting \u2014 Capital Call Issuance",
+      "docLabel": "Accounting \u2014 Commitments and capital calls",
       "name": "web-accounting-capital-calls",
-      "path": "/accounting/capital-calls",
+      "path": "/accounting/capital-calls?ledgerBookId=3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
       "requiredApiRoutes": [
-        "/api/workstation/accounting"
+        "/api/ledger/books",
+        "/api/ledger/private-capital/workbench"
       ],
-      "waitForText": "Capital Call Issuance",
+      "waitForText": "Commitments and capital calls",
       "waitForTexts": [
-        "How this run is governed",
-        "Capital-call id",
-        "This surface never posts."
+        "Prepare commitment revision",
+        "Retained commitment register",
+        "commitment-a",
+        "investor-a",
+        "1000000.00 USD",
+        "Prepare capital call"
+      ],
+      "waitForSelectors": [
+        "table[aria-label=\"Commitment register and posted capital balances\"] tbody tr"
+      ],
+      "waitForAbsentTexts": [
+        "Capital activity unavailable",
+        "Book authority unavailable",
+        "Loading commitment and posting authority"
       ]
     },
     {
