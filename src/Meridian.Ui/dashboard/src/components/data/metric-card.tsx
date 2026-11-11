@@ -7,8 +7,10 @@ import { memo, type ReactNode } from "react";
 import { injectStyle } from "../operations/inject-style";
 
 const CSS = `
-.mds-metric{background:var(--card-surface-raised,#FCFBF8);
-  border:1px solid var(--border,#D2CDC3);border-left-width:3px;
+/* Resolve the workstation's active scope before the standalone package roles.
+   The dashboard's --border is an HSL channel list, not a CSS color. */
+.mds-metric{background:var(--ws-surface-raised,var(--card-surface-raised,#FCFBF8));
+  border:1px solid var(--ws-border,var(--border,#D2CDC3));border-left-width:3px;
   border-radius:var(--radius-card,2px);padding:18px;}
 .mds-metric--neutral{border-left-color:var(--border-strong,#AAA49A);}
 .mds-metric--info{border-left-color:var(--semantic-info,#2F648A);}

@@ -2046,6 +2046,19 @@ Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `W
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
+Cash Ladder uses the shared `Select` for scenarios and `Input type="number"` for the minimum
+balance draft. Blank input still requests the service default; Enter and Apply threshold keep
+the existing request and account-reset behavior. The provider integration workbench uses shared
+`Select` and `TextArea` controls for template/capability choices and JSON/CSV drafts, preserving
+the existing labels, disabled states, validation, and service-owned activation workflow.
+The shared `Tabs` primitive generates instance-specific tab/panel ids, labels each panel from its
+tab, and includes the visible panel in keyboard focus order. Explicit `panelId` links are retained;
+reusing tab values across independent groups no longer creates duplicate generated ids.
+Market Data's URL-backed tab changes retain tab focus; operating-scope and evidence-hash navigation
+still use the shell's route focus handoff.
+Metric cards resolve the active workstation surface and border roles, including nested light scopes.
+Nonselectable and empty dense tables provide named keyboard stops for scrolling. Cash Ladder's
+interactive chart exposes a labelled group and pressed bucket controls with visible keyboard focus.
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped
 under Close, Records, Reconciliation, Review, and Administration; Accounting screens do not repeat
 those routes in a horizontal tab strip or task-mode launcher. Governed delivery evidence remains a

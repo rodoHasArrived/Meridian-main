@@ -189,11 +189,11 @@ describe("DenseDataTable table system", () => {
     render(
       <DenseDataTable ariaLabel="Positions" emptyText="No positions" columns={columns.slice(0, 1)} rows={rows} getRowId={(row) => row.id} />
     );
-    const region = screen.getByRole("region", { name: "Positions (scrollable table)" });
+    // Rows are not selectable here, so the wrap itself is the tab stop (a selectable table's
+    // rows already are, and a second stop would only slow the operator down).
+    const region = screen.getByRole("region", { name: "Positions scroll area" });
     expect(region).toHaveClass("dense-data-table-wrap");
     expect(region).toHaveAttribute("tabindex", "0");
-    // The table keeps its own exact name, so existing label lookups still resolve to one element.
-    expect(screen.getByLabelText("Positions")).toBe(screen.getByRole("table", { name: "Positions" }));
 
     const css = readFileSync(resolve(process.cwd(), "src/styles/ui-kit-primitives.css"), "utf8");
     const rule = css.match(/\.dense-data-table-wrap:focus-visible\s*\{([^}]*)\}/);

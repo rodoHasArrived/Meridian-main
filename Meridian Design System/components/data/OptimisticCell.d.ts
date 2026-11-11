@@ -51,8 +51,9 @@ export interface OptimisticProviderProps {
   commit?: (edit: OptimisticEdit) => Promise<void | { receipt?: string }>;
   /** The compensating write for one or many confirmed edits, newest first, under one reason. Preserve this order when applying field priors. */
   revert?: (edits: OptimisticEdit[], reason: string) => Promise<void>;
-  /** Fires on confirmed, rejected and reverted — the parent updates its model here. */
+  /** Fires on confirmed, rejected and reverted — the parent updates its model here. Synchronous observer errors are logged without changing the transport outcome or stopping batch notifications. */
   onSettle?: (edit: OptimisticEdit) => void;
+  /** Observes ledger changes. Synchronous errors are logged without interrupting writes or other subscribers. */
   onChange?: (entries: OptimisticEdit[]) => void;
   children?: React.ReactNode;
 }

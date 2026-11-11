@@ -4422,9 +4422,11 @@ Meridian-main
 │   │   ├── gallery.html
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── mock-transport.js
+│   │   ├── optimistic-observer-regression.mjs
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
+│   │   ├── scenario-selector-regression.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
 │   │   ├── test_contrast.py
@@ -9149,6 +9151,7 @@ Meridian-main
 │   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.font-licenses.test.ts
 │   │   │   │   ├── vite-config.scenarios.test.ts
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts

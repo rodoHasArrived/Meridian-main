@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { Breadcrumb } from "@/components/ui/breadcrumb";
@@ -123,6 +123,41 @@ describe("design-system UI primitives", () => {
     await user.keyboard("{Home}");
     expect(overview).toHaveFocus();
     expect(overview).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("keeps repeated tab identities local and labels keyboard-reachable panels", async () => {
+    const user = userEvent.setup();
+    const tabs = [{ id: "overview", label: "Overview" }, { id: "history", label: "History", panelId: "explicit-history" }];
+    render(
+      <>
+        <Tabs aria-label="First record" tabs={tabs}>
+          <TabPanel>First overview</TabPanel>
+          <TabPanel>First history</TabPanel>
+        </Tabs>
+        <Tabs aria-label="Second record" tabs={[{ id: "overview", label: "Overview" }, { id: "history", label: "History" }]}>
+          <TabPanel>Second overview</TabPanel>
+          <TabPanel>Second history</TabPanel>
+        </Tabs>
+      </>
+    );
+
+    const first = within(screen.getByLabelText("First record"));
+    const second = within(screen.getByLabelText("Second record"));
+    const firstTab = first.getByRole("tab", { name: "Overview" });
+    const secondTab = second.getByRole("tab", { name: "Overview" });
+    const firstPanel = first.getByRole("tabpanel", { name: "Overview" });
+    const secondPanel = second.getByRole("tabpanel", { name: "Overview" });
+    expect(firstTab.id).not.toBe(secondTab.id);
+    expect(firstPanel.id).not.toBe(secondPanel.id);
+    expect(firstTab).toHaveAttribute("aria-controls", firstPanel.id);
+    expect(secondTab).toHaveAttribute("aria-controls", secondPanel.id);
+
+    firstTab.focus();
+    await user.keyboard("{ArrowRight}{Tab}");
+    const historyPanel = first.getByRole("tabpanel", { name: "History" });
+    expect(historyPanel).toHaveAttribute("id", "explicit-history");
+    expect(historyPanel).toHaveFocus();
+    expect(secondTab).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders context menu and multi-select command primitives", async () => {

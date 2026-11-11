@@ -80,7 +80,7 @@
       "components/charts/PeerComparisonStrip.jsx": "c5486bbf76c0ab86ae0568886aaf76e0a6d53b0f9c17c3da72fc7dcb29f36278",
       "components/charts/PnLCalendar.jsx": "4365a50860cab79a7fac99ab0427f274473a21bf13ca40875403c83d626167d3",
       "components/charts/ScatterChart.jsx": "772c981326d6c1bf74c8359548109c18b04634160333c23a54ad53c6f976cb51",
-      "components/charts/ScenarioSelector.jsx": "79196fc07aee6a1641703d1509b9fa71d17e5b3cd929f1756016915f3e892ba0",
+      "components/charts/ScenarioSelector.jsx": "3345d0b3e3adaa6880b52bdb4a37c589b99af0460be42a7e30e7b9db919853a7",
       "components/charts/SmallMultiples.jsx": "d91f942d02c134069d4c5a1f4240802a295d4cf0571d6e7f9c24aaeb241aa21e",
       "components/charts/Sparkline.jsx": "657a89467f21fba260d7d86379c5277c7585e3223532234b68a889808977da06",
       "components/charts/TimeframeSwitcher.jsx": "5f530894d7e1a5ab2ea595e771c6645f80576d599f44b863a52b76accc335850",
@@ -179,7 +179,7 @@
       "components/data/KeyValueGrid.jsx": "94656a4ba732dfcae2adc551d11e548d0fae2c6a4d067e7578b5ec13dd0be9c7",
       "components/data/LinkedSelectionProvider.jsx": "cd7a709dc43b469123867da343765408aa33d1e39fe024b3460b0ba5bf664214",
       "components/data/MetricCard.jsx": "33cfbc354d7a564236ce4320ca28dbe612614462058f993404b103a6d8a92082",
-      "components/data/OptimisticCell.jsx": "6533a9550833fa387c600aaafdde88560ad36824dfd40cd31a1504ba5ad3f229",
+      "components/data/OptimisticCell.jsx": "b6e4734d5f8f1dd282500b9abf5ee73e99d379832078cd744a4f19aeb481139b",
       "components/data/Pagination.jsx": "4061917e12f0c6efe3902d32b543b87aed408213b293670c9dcd828261afdcc8",
       "components/data/SavedViews.jsx": "ebd09a16b67b60e2617ec733f4a9ff2bca1ab6638ed4660895ca34f8f1f86f7c",
       "components/data/SelectionCompare.jsx": "2dbce821c9f279692df59da6d7a6998d57c86b2e15584e6b9a3d646e4b060b67",
@@ -255,8 +255,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "426565e3065fb5c17d8017831393b65907be11ea82d8d2b40cf3d589d1e824a7",
-      "bytes": 1676549
+      "sha256": "a8619e2ebb10194fe3e558a2e14e81ffd857dbd1fe847877ffbd5688f986d68c",
+      "bytes": 1677339
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
