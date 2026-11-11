@@ -234,8 +234,18 @@ def package_modes(root: Path, brand: dict[str, str] | None = None) -> dict[str, 
     colors = parse_tokens((root / "tokens/colors.css").read_text(encoding="utf-8"))
     theme = parse_tokens(BRAND_BLOCK.sub("", (root / "tokens/theme.css").read_text(encoding="utf-8")))
     light = {**colors, **theme, **(brand or {})}
-    dark = {**light, **parse_tokens((root / "tokens/colors-dark.css").read_text(encoding="utf-8"))}
-    return {"light": light, "dark": dark}
+    dark_sheet = (root / "tokens/colors-dark.css").read_text(encoding="utf-8")
+    dark = {**light, **parse_tokens(dark_sheet)}
+    # A brand selector is html[data-brand] (0,1,1). A plain OS-dark :root (0,1,0)
+    # loses direct roles such as text-on-accent even when imported later. The stronger
+    # :root:not([data-theme="light"]) (0,2,0) owns the dark roles while opting out of
+    # forced light. Measure the actual selector, not the import-order prose.
+    media = re.search(r"@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*([^{}]+)\{", blank_comments(dark_sheet))
+    selector = media.group(1).strip() if media else ""
+    classes = len(re.findall(r"\[[^\]]+\]|:(?!not\(|is\(|where\()[a-z-]+", selector))
+    auto_dark = dark if classes >= 2 else {**dark, **(brand or {})}
+    forced_light = {**light, **scoped_tokens(dark_sheet, ':root[data-theme="light"]')}
+    return {"light": light, "forced-light": forced_light, "auto-dark": auto_dark, "dark": dark}
 
 
 def check_brands(root: Path) -> list[str]:
@@ -248,6 +258,11 @@ def check_brands(root: Path) -> list[str]:
     for brand, declared in brands.items():
         for mode, tokens in package_modes(root, declared).items():
             failures.extend(check_mode(f"{mode} · brand {brand}", tokens))
+            if mode in ("light", "forced-light") and "--theme-accent" in declared:
+                expected = resolve(declared["--theme-accent"], tokens)
+                actual = resolve("var(--accent)", tokens)
+                if actual is None or expected is None or actual != expected:
+                    failures.append(f"[{mode} · brand {brand}] declared signal identity is overridden by the default palette")
     return failures
 
 
@@ -393,7 +408,7 @@ def production_paths(base: Path):
     for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
         if not path.is_file() or (path != base and path.suffix not in CALL_SITE_SUFFIXES):
             continue
-        if re.search(r"(?:^|[./_-])(?:test|spec)(?:[./_-]|$)", path.name) or path.name.endswith(".d.ts"):
+        if re.search(r"\.(?:test|spec)\.[^.]+$", path.name) or path.name.endswith(".d.ts"):
             continue
         yield path
 
@@ -430,26 +445,28 @@ def check_var_chains(root: Path) -> list[str]:
         declared: set[str] = set()
         for f in files:
             declared |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
-        graph = {}
-        for f in files:
-            for name, value in parse_tokens(f.read_text(encoding="utf-8")).items():
-                graph.setdefault(name, set()).update(re.findall(r"var\(\s*(--[a-zA-Z0-9-]+)", value))
-        complete, cycles = set(), set()
-        def visit(name, pending):
-            if name in pending:
-                cycle = pending[pending.index(name):]
-                cycles.add(tuple(sorted(cycle)))
-                return
-            if name in complete:
-                return
-            for ref in graph.get(name, set()):
-                if ref in graph:
-                    visit(ref, [*pending, name])
-            complete.add(name)
-        for name in graph:
-            visit(name, [])
-        for cycle in sorted(cycles):
-            failures.append(f"[var-chain] {track}: cyclic custom-property dependency: {', '.join(cycle)}")
+        if track == "package":
+            variants = package_modes(root)
+        else:
+            index_text = files[0].read_text(encoding="utf-8")
+            variants = {mode: scoped_tokens(index_text, f':root[data-theme="{mode}"]') for mode in ("light", "dark")}
+        for mode, effective in variants.items():
+            graph = {name: set(re.findall(r"var\(\s*(--[a-zA-Z0-9-]+)", value)) for name, value in effective.items()}
+            complete, cycles = set(), set()
+            def visit(name, pending):
+                if name in pending:
+                    cycles.add(tuple(sorted(pending[pending.index(name):])))
+                    return
+                if name in complete:
+                    return
+                for ref in graph.get(name, set()):
+                    if ref in graph:
+                        visit(ref, [*pending, name])
+                complete.add(name)
+            for name in graph:
+                visit(name, [])
+            for cycle in sorted(cycles):
+                failures.append(f"[var-chain] {track} {mode}: cyclic custom-property dependency: {', '.join(cycle)}")
         for f in files:
             text = blank_comments(f.read_text(encoding="utf-8"))
             for lineno, line in enumerate(text.splitlines(), 1):
@@ -658,6 +675,7 @@ def check_fallbacks(root: Path) -> list[str]:
                     tokens.setdefault(name, value)
         token_sets[track] = tokens
     failures, checked, guarded = [], 0, 0
+    superseded = superseded_values(root)
     for track, base in call_sites(root):
         if not base.exists():
             continue
@@ -681,7 +699,11 @@ def check_fallbacks(root: Path) -> list[str]:
                         continue
                     # Existing known-gap debt remains visible as a note, never grows here.
                     if name in KNOWN_UNDECLARED:
-                        print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
+                        stale = sorted({value.upper() for value in HEX_LITERAL.findall(fallback) if len(value) == 7} & superseded)
+                        if stale:
+                            failures.append(f"[fallback] {_rel(path, root)}:{lineno}: existing undeclared {name} renders retired palette {', '.join(stale)}")
+                        else:
+                            print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
                         continue
                     failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) — this track declares no such token; the fallback is always active")
     # This debt list belongs to package consumers, not similarly named workstation aliases.
@@ -1117,8 +1139,8 @@ def check_elevation_guidance(root: Path) -> list[str]:
 
 def run_checks(root: Path, scope: str = "all") -> list[str]:
     modes = package_modes(root)
-    light, dark = modes["light"], modes["dark"]
-    return (check_mode("light", light) + check_mode("dark", dark)
+    failures = [failure for mode, tokens in modes.items() for failure in check_mode(mode, tokens)]
+    return (failures
             + check_brands(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
             + check_var_chains(root) + check_fallbacks(root)

@@ -20,7 +20,8 @@
     "test:contracts": "node tests/full-library-browser.mjs --kind=contracts && node tests/chart-trading-contract-regression.mjs && node tests/accounting-interaction-regression.mjs",
     "test:types": "node tests/public-contract-types.mjs",
     "test:chart-trading": "node tests/chart-trading-contract-regression.mjs",
-    "test:accounting": "node tests/accounting-interaction-regression.mjs"
+    "test:accounting": "node tests/accounting-interaction-regression.mjs",
+    "test:source": "node tests/source-contracts.mjs"
   },
   "devDependencies": {
     "@babel/standalone": "7.29.0",

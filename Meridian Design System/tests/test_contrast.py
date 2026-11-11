@@ -2,6 +2,7 @@ import importlib.util
 import sys
 import contextlib
 import io
+import re
 import shutil
 import tempfile
 import unittest
@@ -87,6 +88,21 @@ class ContrastGuardRegressionTest(unittest.TestCase):
         failures = self.quiet(mod.check_brands, self.root)
         self.assertTrue(any("brand broken" in failure and "primary button label" in failure for failure in failures))
 
+    def test_auto_dark_brand_cascade_rejects_a_weaker_os_selector(self):
+        dark = self.root / "tokens/colors-dark.css"
+        content = dark.read_text(encoding="utf-8")
+        content = re.sub(r"(@media\s*\(prefers-color-scheme:\s*dark\)\s*\{\s*)[^{}]+\{", r"\1:root {", content, count=1)
+        dark.write_text(content, encoding="utf-8")
+        failures = self.quiet(mod.check_brands, self.root)
+        self.assertTrue(any("auto-dark · brand indigo" in failure and "signal-fill label" in failure for failure in failures))
+
+    def test_forced_light_preserves_brand_identity_instead_of_default_signal(self):
+        dark = self.root / "tokens/colors-dark.css"
+        with dark.open("a", encoding="utf-8") as out:
+            out.write('\n:root[data-theme="light"] { --accent:#C56343; --text-on-accent:#0D1217; }\n')
+        failures = self.quiet(mod.check_brands, self.root)
+        self.assertTrue(any("forced-light · brand indigo" in failure and "identity is overridden" in failure for failure in failures))
+
     def test_workstation_uses_actual_primary_hover_not_accent_signal(self):
         target = self.repo / mod.WS_INDEX
         target.parent.mkdir(parents=True, exist_ok=True)
@@ -107,6 +123,10 @@ class ContrastGuardRegressionTest(unittest.TestCase):
         target.write_text(target.read_text().replace("color-mix(in srgb, var(--brand-axis) 88%, var(--ws-surface))", "#F5F3EE", 1), encoding="utf-8")
         failures = self.quiet(mod.check_workstation, self.root)
         self.assertTrue(any("light · workstation" in failure and "hover" in failure for failure in failures))
+        button = self.repo / mod.WS_BUTTON
+        button.parent.mkdir(parents=True, exist_ok=True)
+        button.write_text('const primary = "mds-btn--primary hover:bg-[var(--ws-accent)]";', encoding="utf-8")
+        self.assertTrue(any("primary button paints an accent" in failure for failure in self.quiet(mod.check_workstation, self.root)))
 
     def test_defined_token_fallback_need_not_equal_light_color(self):
         self.write("components/Example.jsx", 'const CSS = `.example{color:var(--text-primary,#123456);}`;')
@@ -116,6 +136,11 @@ class ContrastGuardRegressionTest(unittest.TestCase):
         self.write("components/Example.jsx", 'const CSS = `.example{color:var(--nonexistent,#20252B);}`;')
         failures = self.quiet(mod.check_fallbacks, self.root)
         self.assertTrue(any("--nonexistent" in failure and "always active" in failure for failure in failures))
+
+    def test_existing_known_gap_cannot_render_a_retired_fallback_palette(self):
+        self.write("components/Example.jsx", 'const CSS = `.example{box-shadow:var(--shadow-raised,0 0 4px #06F3FF);}`;')
+        failures = self.quiet(mod.check_fallbacks, self.root)
+        self.assertTrue(any("--shadow-raised" in failure and "retired palette" in failure for failure in failures))
 
     def test_undeclared_bare_style_fails_while_negative_tests_and_lint_strings_do_not(self):
         source = self.write("components/Example.jsx", 'const CSS = `.example{color:var(--missing-bare);}`;')

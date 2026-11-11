@@ -18,7 +18,8 @@
 
 /* ── 1. Auto (OS) dark ── */
 @media (prefers-color-scheme: dark) {
-  :root {
+  /* Outrank html[data-brand] while leaving the explicit light opt-out intact. */
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
 
     /* Tier-1 theme inputs the app also reads directly. theme.css authors them as light
@@ -221,9 +222,9 @@
 }
 
 /* ── 3. Forced light — opt out of OS dark by re-asserting the light base values
-      (mirrors colors.css). Higher specificity (0,2,0) than the auto-dark :root
-      (0,1,0), so <html data-theme="light"> wins under OS dark; a harmless no-op
-      under OS light. ── */
+      (mirrors colors.css). The auto-dark selector explicitly excludes this scope. Brand accents and
+      their label ink continue to come from theme.css; appearance does not erase
+      a chosen light brand identity. ── */
 :root[data-theme="light"] {
   color-scheme: light;
 
@@ -247,11 +248,6 @@
   --text-disabled:      #A4ABB2;
   --ink-inverse:        #F5F3EE;
 
-  --accent:             #C56343;
-  --accent-dim:         #CB6E4E;
-  --accent-hover:       #D2795A;
-  --accent-ghost:       #F6E6DF;
-  --text-on-accent:     #0D1217;
   --text-on-fill:       #FFFFFF;
 
   --focus:              #2D6FB3;

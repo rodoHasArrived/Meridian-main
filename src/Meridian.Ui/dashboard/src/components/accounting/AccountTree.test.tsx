@@ -75,6 +75,32 @@ describe("AccountTree", () => {
     expect(assets).toHaveFocus();
   });
 
+  it("enters and leaves the whole tree through one Tab stop while disclosure stays clickable", async () => {
+    const user = userEvent.setup();
+    render(<>
+      <button type="button">Before tree</button>
+      <AccountTree nodes={nodes} />
+      <button type="button">After tree</button>
+    </>);
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Before tree" })).toHaveFocus();
+    await user.tab();
+    const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
+    expect(assets).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "After tree" })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(assets).toHaveFocus();
+    await user.keyboard("{ArrowDown}");
+    expect(screen.getByRole("treeitem", { name: /1010 Cash/ })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "After tree" })).toHaveFocus();
+    await user.click(screen.getByRole("button", { name: "Collapse Assets" }));
+    expect(screen.queryByText("Cash")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Expand Assets" }));
+    expect(screen.getByText("Cash")).toBeInTheDocument();
+  });
+
   it("expands and collapses from the keyboard without onSelect", async () => {
     render(<AccountTree nodes={nodes} defaultExpandedDepth={0} />);
     const assets = screen.getByRole("treeitem", { name: /1000 Assets/ });
