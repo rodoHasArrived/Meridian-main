@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Contracts
@@ -357,6 +357,9 @@ more separately identified child lots. Every target carries an approved positive
 original/current transaction and functional basis, acquisition FX and holding period. Independent
 currency residuals go to the final target. Dividend/purchase recipes, linked cash cases and new
 holding periods cannot use this carried-basis path; taxable spin-offs remain outside it.
+`OpenLotValidation` reconciles a retained functional basis to transaction basis times acquisition
+FX within one minor unit of the functional currency and never less than 0.01, so a basis rounded
+to whole yen or won is accepted while a two-decimal currency keeps the one-cent bound.
 Only the refunded successor receives `ScheduleD`; unsupported action or allocation shapes fail
 validation. Optional instruction fields are omitted when absent to preserve earlier payloads.
 Successor lot labels must already be trimmed before fingerprinting or drafting, remain distinct,
