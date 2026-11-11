@@ -483,6 +483,44 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task FixedIncome_BondInAnotherCurrency_BlocksInsteadOfDraftingUnconvertedAmounts()
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+        var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
+        var fixture = await CreateFixtureAsync(lots: [lot], bondCurrency: "EUR");
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("denominated in EUR");
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task FixedIncome_CouponWithoutAnAccrualInterval_BlocksInsteadOfRecognizingItWhole()
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+        var service = new Mock<ISecurityMasterCashFlowService>(MockBehavior.Strict);
+        service.Setup(value => value.GetProjectionAsOfAsync(SecurityId, StructuredCashFlowScenario.Base,
+                It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid securityId, StructuredCashFlowScenario scenario, DateTimeOffset asOf, CancellationToken _) =>
+                new StructuredCashFlowProjectionDto(securityId, StructuredCashFlowSourceKind.CalculatedBullet, scenario, asOf,
+                    [new StructuredCashFlowScheduleEntry(new DateTimeOffset(2026, 1, 31, 0, 0, 0, TimeSpan.Zero), 0m, 30_000m, 1m)],
+                    StructuredCashFlowStaleness.Fresh, asOf,
+                    TermsUsed: StructuredCashFlowTerms.Empty with
+                    { MaturityDate = new DateOnly(2030, 12, 31), DayCountConvention = "ACT/365", PrincipalFace = 1_000_000m }));
+        var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
+        var fixture = await CreateFixtureAsync(lots: [lot], cashFlows: service.Object);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("no accrual interval");
+    }
+
+    [Fact]
     public async Task CalculatedDraft_PassesTheExistingSubmitAndApproveFlow_WithoutSelfApproval()
     {
         Capitalize(10_000_000m);
@@ -540,9 +578,18 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         => new(new FixedAssetRecord(id, name, "USD", cost, 0m, inService, months, DepreciationMethod.StraightLine),
             Tenant, Company, Fund, Book, "controller", Registered, "evidence://fixed-asset-invoice");
 
+    private static ISecurityMasterQueryService Securities(string currency)
+    {
+        var service = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
+        service.Setup(value => value.GetByIdAsync(SecurityId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SecurityDetailDto(SecurityId, "Bond", SecurityStatusDto.Active, Ticker, currency, default, default, [], [], 1,
+                Registered, null));
+        return service.Object;
+    }
+
     private async Task<Fixture> CreateFixtureAsync(IReconciliationFxRateProvider? rates = null,
         IReadOnlyList<LedgerTaxLot>? lots = null, ISecurityMasterCashFlowService? cashFlows = null,
-        IFixedAssetRegister? assets = null)
+        IFixedAssetRegister? assets = null, string bondCurrency = "USD")
     {
         var configuration = new InMemoryAccountingConfigurationStore();
         await configuration.SaveAsync(new AccountingConfigurationWorkspaceDto(Fund, Book,
@@ -582,7 +629,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
             new FixedAssetDepreciationCalculation(assets),
             new FixedIncomeAccrualCalculation(inputs,
                 new SecurityMasterAmortizationLedgerBridge(cashFlowService, NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance),
-                cashFlowService),
+                cashFlowService, Securities(bondCurrency)),
             new FxRevaluationCalculation(inputs, rates ?? Rates([]))
         ]);
         return new(runner, drafts, workbench, inputs);

@@ -347,7 +347,8 @@ public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? regis
 public sealed class FixedIncomeAccrualCalculation(
     IRecurringJournalCalculationInputs inputs,
     ISecurityMasterAmortizationLedgerBridge? bridge = null,
-    ISecurityMasterCashFlowService? cashFlows = null) : IRecurringJournalCalculation
+    ISecurityMasterCashFlowService? cashFlows = null,
+    ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
 {
     public const string CalculationKind = "fixed-income-accrual";
     private const string AmortizationActivity = "FixedIncomeAmortization";
@@ -371,6 +372,20 @@ public sealed class FixedIncomeAccrualCalculation(
             ?? throw new InvalidOperationException($"No cash-flow projection is available for {ticker}.");
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blocked)
             throw new InvalidOperationException($"The cash-flow projection for {ticker} cannot be posted: {blocked}");
+
+        // Projected amounts are in the bond's own currency and are drafted unconverted.
+        if (securities is null)
+            throw new InvalidOperationException("Security Master is unavailable, so the bond's currency cannot be confirmed; fixed-income accruals are blocked.");
+        var security = await securities.GetByIdAsync(securityId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Security Master holds no security for {ticker}; its currency cannot be confirmed.");
+        if (!string.Equals(security.Currency?.Trim(), context.Scope.Currency.Trim(), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException(
+                $"{ticker} is denominated in {security.Currency}, not the book currency {context.Scope.Currency}; cross-currency bond accruals are not supported.");
+        // Without its accrual interval a coupon could only be recognized whole on its payment date.
+        if (projection.Schedule.Any(static entry => entry.InterestAmount > 0m &&
+                (entry.AccrualStart is not { } start || entry.AccrualEnd is not { } end || end <= start)))
+            throw new InvalidOperationException(
+                $"The cash-flow projection for {ticker} states no accrual interval for a coupon period, so its interest cannot be accrued by day.");
 
         var amortizedThrough = windowStart.AddDays(-1);
         Guid? bookPositionId = null;

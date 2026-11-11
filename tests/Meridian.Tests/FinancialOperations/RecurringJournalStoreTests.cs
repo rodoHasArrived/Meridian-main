@@ -241,6 +241,22 @@ public sealed class RecurringJournalStoreTests : IDisposable
         session.Schedules.Select(item => item.Version).Should().Equal(1, 2, 3);
     }
 
+    [Fact]
+    public async Task CalculatedDefinitions_CanBeRestoredAfterAnEdit()
+    {
+        var calculated = new JournalTemplate("fee", "Management fee", "Calculated", [],
+            calculation: new JournalTemplateCalculation("management-fee-accrual"));
+        await Store().InitializeAsync();
+        await using var session = await Store().OpenSessionAsync();
+        await session.ConfigureAsync(Schedule(), calculated, Scope, [Evidence()], "controller", 0, 0, At);
+        await session.ConfigureAsync(Schedule(200), calculated, Scope, [Evidence()], "controller", 1, 1, At);
+
+        // A calculated template has no fixed lines to plan, which must not stop the restore.
+        await session.ActivateDefinitionsAsync("schedule-a", 1, 1, "controller", "Restore original", At);
+
+        session.GetCurrentSchedule("schedule-a").Version.Should().Be(1);
+    }
+
     [Theory]
     [InlineData(LedgerViewKind.Historical, null)]
     [InlineData(LedgerViewKind.Actual, "simulation-1")]

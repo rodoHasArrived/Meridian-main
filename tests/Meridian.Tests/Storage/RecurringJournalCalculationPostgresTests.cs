@@ -161,10 +161,16 @@ public sealed class RecurringJournalCalculationPostgresTests
                         TermsUsed: Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms.Empty with
                         { MaturityDate = new DateOnly(2026, 12, 31), DayCountConvention = "ACT/365", PrincipalFace = 1_000_000m }));
 
+            var securities = new Mock<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>(MockBehavior.Strict);
+            securities.Setup(service => service.GetByIdAsync(securityId, It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new Meridian.Contracts.SecurityMaster.SecurityDetailDto(securityId, "Bond",
+                    Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active, "UST30", "USD", default, default, [], [], 1,
+                    DateTimeOffset.UnixEpoch, null));
+
             var fixture = await CreateFixtureAsync(root, database, book, recurring, inputs => new FixedIncomeAccrualCalculation(inputs,
                 new Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge(cashFlows.Object,
                     Microsoft.Extensions.Logging.Abstractions.NullLogger<Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge>.Instance),
-                cashFlows.Object));
+                cashFlows.Object, securities.Object));
 
             await fixture.Runner.RunDueAsync(Due(JanuaryEnd), ct: ct);
 

@@ -73,6 +73,20 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task DefaultInterest_PostedAccrualThatWasReversed_IsOwedAgain()
+    {
+        // April's 8,219.18 was posted and then reversed, so May owes the whole cumulative amount.
+        var fixture = await CreateFixtureAsync(
+            [CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf)],
+            [CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate),
+             PostedInterest("20260429", 8_219.18m), PostedInterest("20260429", 8_219.18m, reversal: true)]);
+
+        var may = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+
+        may.Intake.Created.Should().ContainSingle().Which.TotalDebits.Should().Be(16_438.36m);
+    }
+
+    [Fact]
     public async Task DefaultInterest_StopsAtTheCureDate_AndIgnoresACallFundedWithinGrace()
     {
         var issuance = new[]
@@ -196,6 +210,32 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Distribution_ReversedAndItsReversalPosted_NoLongerCountsOrBlocks()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = (await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))).Intake.Created.Single();
+        await first.Drafts.SaveAsync(declared with { Status = ManualJournalEntryStatusDto.Reversed });
+        var reversal = declared with
+        {
+            JournalEntryId = Guid.NewGuid(),
+            Status = ManualJournalEntryStatusDto.Draft,
+            EntryType = ManualJournalEntryTypeDto.Reversal,
+            ReversalOfJournalEntryId = declared.JournalEntryId
+        };
+        await first.Drafts.SaveAsync(reversal);
+
+        var pending = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        pending.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        pending.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("post its reversal first");
+
+        // With the reversal posted, dist-1 paid nothing: dist-2 starts again from return of capital.
+        await first.Drafts.SaveAsync(reversal with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        var next = await (await CreateFixtureAsync([], [])).Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        next.Intake.Created.Should().ContainSingle().Which.Lines.Should().NotContain(line => line.AccountPath == "Equity:Carried Interest Allocation");
+    }
+
+    [Fact]
     public async Task DefaultInterest_TwoAccrualsAtOnce_OnlyOneIsAdmitted()
     {
         var fixture = await CreateFixtureAsync(
@@ -268,13 +308,16 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
             [new DistributionInvestorInput("lp-1", "ca-lp-1", 1_000_000m, 80_000m, amount, ["evidence://distribution/notice"])],
             BookId, null, "entity-alpha", Tenant, Company, AsOf);
 
-    private static PrivateCapitalLedgerImpactDto PostedInterest(string through, decimal amount)
+    private static PrivateCapitalLedgerImpactDto PostedInterest(string through, decimal amount, bool reversal = false)
     {
+        var (receivable, income) = reversal
+            ? (AccountingTemplateLineSideDto.Credit, AccountingTemplateLineSideDto.Debit)
+            : (AccountingTemplateLineSideDto.Debit, AccountingTemplateLineSideDto.Credit);
         var id = Guid.NewGuid();
         return new($"journal-entry:{id:D}", id, $"fund-event:{Fund}:default-interest:{DefaultId}:{through}", "DefaultInterest",
             "ca-lp-1", "lp-1", ManualJournalEntryStatusDto.Approved, new DateOnly(2026, 4, 29), "USD", amount, amount, 0m, 2, true, true, [],
-            [new("line-1", "Capital Call Default Interest Receivable", AccountingTemplateLineSideDto.Debit, amount, "USD", "lp-1", null, null, null),
-             new("line-2", "Capital Call Default Interest Income", AccountingTemplateLineSideDto.Credit, amount, "USD", Fund, null, null, null)],
+            [new("line-1", "Capital Call Default Interest Receivable", receivable, amount, "USD", "lp-1", null, null, null),
+             new("line-2", "Capital Call Default Interest Income", income, amount, "USD", Fund, null, null, null)],
             []);
     }
 

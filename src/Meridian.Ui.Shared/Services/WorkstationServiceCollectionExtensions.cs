@@ -1194,7 +1194,8 @@ public static class WorkstationServiceCollectionExtensions
             new FixedIncomeAccrualCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
                 sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
-                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>())));
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
+                sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
             new FxRevaluationCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),

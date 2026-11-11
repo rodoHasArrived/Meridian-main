@@ -198,8 +198,9 @@ internal static class CapitalCallDefaultInterestDraftProducer
             var alreadyPosted = ledgerImpacts
                 .Where(impact => IsSettled(impact) && impact.FundEventId.StartsWith(interestEventPrefix, StringComparison.OrdinalIgnoreCase))
                 .SelectMany(static impact => impact.Lines)
-                .Where(line => line.Side == AccountingTemplateLineSideDto.Debit && IsAccount(line, InterestReceivable, investorId))
-                .Sum(static line => line.Amount);
+                .Where(line => IsAccount(line, InterestReceivable, investorId))
+                // A posted reversal keeps the accrual's fund event and credits the receivable back.
+                .Sum(static line => line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : -line.Amount);
             var increment = defaulted.AccruedInterest - alreadyPosted;
             if (increment <= LedgerToleranceConstants.Balance)
             {
@@ -332,31 +333,16 @@ internal static class DistributionDeclarationDraftProducer
             var blocked = false;
             foreach (var prior in registered.Where(record => !ReferenceEquals(record, same)))
             {
-                var priorDraft = draftById.GetValueOrDefault(prior.JournalEntryId);
-                var status = priorDraft?.Status;
-                if (status is ManualJournalEntryStatusDto.Rejected)
-                    continue;
-                if (status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked)
+                var (consumed, problem) = ResolvePrior(prior, draftById.GetValueOrDefault(prior.JournalEntryId), queueDrafts, investorId);
+                if (problem is not null)
                 {
-                    // A draft can be edited before it is posted. Its tiers count only while the
-                    // posted amounts still equal the waterfall that was retained for it.
-                    var gpTotal = prior.GpCatchUp + prior.GpCarry;
-                    var total = prior.ReturnOfCapital + prior.PreferredReturn + prior.LpCatchUp + prior.LpCarry + gpTotal;
-                    var postedGp = priorDraft!.Lines.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit && IsCarriedInterest(line.AccountPath))
-                        .Sum(static line => line.Amount);
-                    if (Math.Abs(priorDraft.TotalDebits - total) > LedgerToleranceConstants.Balance ||
-                        Math.Abs(postedGp - gpTotal) > LedgerToleranceConstants.Balance)
-                    {
-                        blockers.Add(FormattableString.Invariant(
-                            $"Posted distribution '{prior.DistributionId}' to investor '{investorId}' ({priorDraft.TotalDebits:0.00}, GP {postedGp:0.00}) no longer matches its retained waterfall ({total:0.00}, GP {gpTotal:0.00}); its tiers cannot be relied on. Reverse and redeclare it before declaring another."));
-                        blocked = true;
-                        continue;
-                    }
-                    priors.Add(prior);
-                    continue;
+                    blockers.Add(problem);
+                    blocked = true;
                 }
-                blockers.Add($"Earlier distribution '{prior.DistributionId}' to investor '{investorId}' is {(status?.ToString() ?? "not in the journal queue")}; post or reject it first, because this distribution's tiers depend on what it paid.");
-                blocked = true;
+                else if (consumed)
+                {
+                    priors.Add(prior);
+                }
             }
             if (blocked)
                 continue;
@@ -397,6 +383,52 @@ internal static class DistributionDeclarationDraftProducer
         }
 
         return (new(blockers.Distinct(StringComparer.OrdinalIgnoreCase).ToArray(), drafts, assessments, []), records);
+    }
+
+    /// <summary>
+    /// Whether an earlier declaration's tiers were paid. A rejected or fully reversed distribution
+    /// paid nothing; a posted one (or a posted rebook of it) paid its tiers only while the posted
+    /// amounts still equal the retained waterfall; anything still in flight blocks.
+    /// </summary>
+    private static (bool Consumed, string? Problem) ResolvePrior(DistributionDeclarationRecord prior, ManualJournalEntryDraftDto? draft,
+        IReadOnlyList<ManualJournalEntryDraftDto> queueDrafts, string investorId)
+    {
+        for (var depth = 0; depth < 16; depth++)
+        {
+            switch (draft?.Status)
+            {
+                case ManualJournalEntryStatusDto.Rejected:
+                    return (false, null);
+                case ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked:
+                    // A draft can be edited before it is posted.
+                    var gpTotal = prior.GpCatchUp + prior.GpCarry;
+                    var total = prior.ReturnOfCapital + prior.PreferredReturn + prior.LpCatchUp + prior.LpCarry + gpTotal;
+                    var postedGp = draft.Lines.Where(static line => line.Side == AccountingTemplateLineSideDto.Debit && IsCarriedInterest(line.AccountPath))
+                        .Sum(static line => line.Amount);
+                    return Math.Abs(draft.TotalDebits - total) <= LedgerToleranceConstants.Balance &&
+                           Math.Abs(postedGp - gpTotal) <= LedgerToleranceConstants.Balance
+                        ? (true, null)
+                        : (false, FormattableString.Invariant(
+                            $"Posted distribution '{prior.DistributionId}' to investor '{investorId}' ({draft.TotalDebits:0.00}, GP {postedGp:0.00}) no longer matches its retained waterfall ({total:0.00}, GP {gpTotal:0.00}); its tiers cannot be relied on. Reverse it, post the reversal, and redeclare under a new distribution id."));
+                case ManualJournalEntryStatusDto.Reversed:
+                    var reversalId = draft.JournalEntryId;
+                    var reversal = queueDrafts.FirstOrDefault(item => item.ReversalOfJournalEntryId == reversalId && item.Status != ManualJournalEntryStatusDto.Rejected);
+                    return reversal?.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked
+                        ? (false, null)
+                        : (false, $"Earlier distribution '{prior.DistributionId}' to investor '{investorId}' is being reversed; post its reversal first.");
+                case ManualJournalEntryStatusDto.Rebooked:
+                    // The rebooked journal stands in for the original; judge it the same way.
+                    var rebookedId = draft.JournalEntryId;
+                    draft = queueDrafts.FirstOrDefault(item => item.RebookedFromJournalEntryId == rebookedId && item.Status != ManualJournalEntryStatusDto.Rejected);
+                    if (draft is null)
+                        return (false, $"Earlier distribution '{prior.DistributionId}' to investor '{investorId}' was rebooked but its replacement journal is not in the queue.");
+                    continue;
+                default:
+                    return (false, $"Earlier distribution '{prior.DistributionId}' to investor '{investorId}' is {(draft?.Status.ToString() ?? "not in the journal queue")}; post or reject it first, because this distribution's tiers depend on what it paid.");
+            }
+        }
+
+        return (false, $"Earlier distribution '{prior.DistributionId}' to investor '{investorId}' has an unresolved correction chain.");
     }
 
     private static bool IsCarriedInterest(string? accountPath)

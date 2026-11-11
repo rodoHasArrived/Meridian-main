@@ -240,7 +240,9 @@ public sealed class FileRecurringJournalStore : IRecurringJournalStore
                 ?? throw new InvalidOperationException("The requested schedule version is not retained.");
             var template = _document.Templates.SingleOrDefault(item => Same(item.TemplateId, schedule.Schedule.TemplateId) && item.Version == templateVersion)
                 ?? throw new InvalidOperationException("The requested template version is not retained.");
-            _ = RecurringJournalPlanner.Plan(schedule.Schedule.ToSchedule(), template.Template, 1);
+            // A calculated template has no fixed lines to plan; its terms are checked when it runs.
+            if (template.Template.Calculation is null)
+                _ = RecurringJournalPlanner.Plan(schedule.Schedule.ToSchedule(), template.Template, 1);
             await CommitAsync(_document with
             {
                 Activations = [.. _document.Activations,

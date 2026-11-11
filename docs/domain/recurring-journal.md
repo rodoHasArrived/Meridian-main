@@ -97,8 +97,10 @@ Rules that keep an amount from being drafted twice:
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
-  coupon period sum to the coupon exactly. A period without accrual dates is recognized whole in
-  the window containing its period date. Coupon accrues only on the lots the book holds: each
+  coupon period sum to the coupon exactly. A projection that states no accrual interval for a
+  coupon period blocks the occurrence instead of recognizing the coupon whole on its payment
+  date, and a bond whose Security Master currency is not the book currency is blocked, because
+  its amounts would be drafted unconverted. Coupon accrues only on the lots the book holds: each
   lot earns its face share of the projection's interest from the day it was acquired, and a book
   with no open lot drafts nothing. Lot quantities for a past date are reconstructed when the
   template names a `bookPositionId`; without one a backdated occurrence is blocked, because only
@@ -142,14 +144,16 @@ intakes that admit approval drafts the same way:
   date, rate, day-count convention and grace days
   are operator-attested with retained evidence. Interest is accrued to its cumulative amount
   through the requested date and only the part not already posted is drafted; an earlier
-  default-interest draft still awaiting approval blocks a further accrual, and requests are
+  default-interest draft still awaiting approval blocks a further accrual, a posted reversal of
+  an earlier accrual is netted off what counts as posted, and requests are
   handled one at a time on a host.
 - **Distribution waterfall** (`/api/ledger/journal-automation/distribution-intake`). Each
   investor's distribution is split by the European waterfall. The tiers already paid come from
   the distribution register for posted distributions, so return of capital, preferred return and
   GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
-  a rejected one is ignored. A posted distribution whose amounts were edited away from its
-  retained waterfall blocks the next until it is reversed and redeclared. A distribution draft found without its register record (an
+  a rejected one is ignored, and so is one that was reversed once its reversal is posted. A
+  posted distribution (or its posted rebook) whose amounts were edited away from its retained
+  waterfall blocks the next until it is reversed and redeclared under a new id. A distribution draft found without its register record (an
   interrupted request) also blocks further declarations until that declaration is repeated,
   which restores the record against the same draft. Declarations are handled one at a time on a
   host, so two overlapping requests cannot both read the same earlier tiers.
