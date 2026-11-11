@@ -443,14 +443,17 @@ public static class LedgerReportPackBuilder
     private readonly record struct GeneralLedgerLine(JournalEntry Entry, LedgerEntry Line);
 
     /// <summary>
-    /// The journal lines of the report period (period start through as-of) inside the pack's
+    /// The journal lines of the report period (after period start, through as-of) inside the pack's
     /// financial-account and dimension scope, in a deterministic order.
     /// </summary>
     private static IReadOnlyList<GeneralLedgerLine> SelectGeneralLedgerLines(
         IReadOnlyLedger ledger,
         LedgerReportPackRequest request,
         string? financialAccountId)
+        // Same window as the pack's period statements (LedgerFinancialStatementBuilder): a journal
+        // stamped exactly at the period start belongs to the opening balance, not to this period.
         => ledger.GetJournalEntries(request.PeriodStart, request.AsOf)
+            .Where(entry => entry.Timestamp > request.PeriodStart)
             .SelectMany(static entry => entry.Lines.Select(line => new GeneralLedgerLine(entry, line)))
             .Where(item => string.IsNullOrWhiteSpace(financialAccountId)
                 || string.Equals(item.Line.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))

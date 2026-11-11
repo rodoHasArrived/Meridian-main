@@ -173,7 +173,9 @@ public sealed record BacktestRequest(
         AnnualShortRebateRate,
         CanonicalAccountFinancing(),
         CanonicalRiskFreeRateSeries(),
-        DefaultBrokerageAccountId);
+        DefaultBrokerageAccountId,
+        // Only counts when it takes effect: explicit request events win over the source.
+        PopulateAssetEventsFromSecurityMaster && AssetEvents is null);
 
     /// <summary>
     /// Canonical form of the resolved account financing configuration. Uses <see cref="ResolveAccounts"/>

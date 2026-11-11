@@ -2335,6 +2335,8 @@ capital-call presentation tests.
 
 Selecting a trial-balance account in the Accounting posted-ledger panel renders
 `LedgerAccountRunningBalancePanel`, which lists the account's postings for the selected period
-with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`. The
+with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`.
+The route is not scoped by dimension, so when the account has more than one trial-balance row the
+panel states that the postings cover all of its dimension scopes. The
 route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
 which is at its file-size limit.

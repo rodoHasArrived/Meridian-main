@@ -175,8 +175,8 @@ and FX rate) alongside the functional debit/credit so currency no longer has to 
 account symbols; the currency-aware `Ledger.PostLines` overload and
 `MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
 
-`LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted between the
-period start and the as-of time, inside the pack's financial-account and dimension scope) and
+`LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
+period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and
 `pnl-by-strategy-symbol.csv` (period revenue and expense grouped by the journal's `StrategyId` and
 the line's symbol; lines without either are kept under an empty key so the rows sum to the pack's
 net income). `manifest.csv` carries control totals over the GL detail: journal-entry count, line

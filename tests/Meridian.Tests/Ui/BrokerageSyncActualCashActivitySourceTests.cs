@@ -38,6 +38,21 @@ public sealed class BrokerageSyncActualCashActivitySourceTests
     }
 
     [Fact]
+    public async Task GetActualActivityAsync_KeepsTheBrokersSign_SoAReversalNetsAgainstItsReceipt()
+    {
+        var source = CreateSource(Projection(
+            isStale: false,
+            Cash("coupon-1", "Bond Interest Received", 125.50m, "2026-06-15", "UST10"),
+            Cash("coupon-1-reversal", "Bond Interest Reversal", -125.50m, "2026-06-15", "UST10")));
+
+        var rows = await source.GetActualActivityAsync([Position()], PeriodStart, PeriodEnd);
+
+        rows.Select(row => row.IncomeAmount).Should().Equal(125.50m, -125.50m);
+        rows.Sum(row => row.CashAmount).Should().Be(0m);
+        rows.Should().OnlyContain(row => row.Classification == "Income" && row.PrincipalAmount == 0m);
+    }
+
+    [Fact]
     public async Task GetActualActivityAsync_ReturnsNothing_WhenProjectionIsStaleOrMissing()
     {
         var stale = CreateSource(Projection(isStale: true, Cash("coupon-1", "Bond Interest Received", 125.50m, "2026-06-15", "UST10")));

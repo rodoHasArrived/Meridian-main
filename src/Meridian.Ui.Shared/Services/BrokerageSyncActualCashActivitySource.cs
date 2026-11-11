@@ -91,7 +91,9 @@ public sealed class BrokerageSyncActualCashActivitySource : ISecurityActualCashA
                     continue;
                 }
 
-                var amount = Math.Abs(cash.Amount);
+                // Signed as the broker reported it: a reversal or correction must net against the
+                // receipt it corrects, not count as a second receipt.
+                var amount = cash.Amount;
                 rows.Add(new SecurityActualCashActivity(
                     SourceName,
                     cash.TransactionId,

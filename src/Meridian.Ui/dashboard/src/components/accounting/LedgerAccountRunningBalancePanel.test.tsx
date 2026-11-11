@@ -76,6 +76,21 @@ describe("LedgerAccountRunningBalancePanel", () => {
     expect(screen.getByText(/2 postings; ending balance/)).toHaveTextContent("$300.00");
   });
 
+  it("states when the postings combine several trial-balance rows of the account", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(makeRunningBalance());
+
+    render(
+      <LedgerAccountRunningBalancePanel
+        periodId={PERIOD_ID}
+        accountName="Management fees"
+        combinedAcrossScopes
+        formatAmount={formatAmount}
+      />
+    );
+
+    expect(await screen.findByText(/cover all\s+of its dimension scopes/)).toBeInTheDocument();
+  });
+
   it("says so when the account has no postings in the period", async () => {
     vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(
       makeRunningBalance({ points: [], totalCredits: 0, endingBalance: 0 })

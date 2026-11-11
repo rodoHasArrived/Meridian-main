@@ -181,9 +181,17 @@ public sealed partial class PostedLedgerViewModel : BindableBase, IDisposable
                 PostedLedgerProjection.FormatAmount(point.Balance, BaseCurrency)));
         }
 
+        // The trial balance has one row per account per dimension scope, but the postings route
+        // selects by account, symbol and financial account only. Say so rather than let a
+        // combined ending balance read as the selected row's.
+        var combinedAcrossScopes = TrialBalance.Count(other =>
+            other.AccountName == row.AccountName &&
+            other.Symbol == row.Symbol &&
+            other.FinancialAccountId == row.FinancialAccountId) > 1;
+        var scopeNote = combinedAcrossScopes ? " · all dimension scopes of this account" : string.Empty;
         AccountPostingsStatusText = AccountPostings.Count == 0
             ? $"No postings to {row.AccountName} in the selected period."
-            : $"{row.AccountName} · {AccountPostings.Count} postings · ending balance {PostedLedgerProjection.FormatAmount(response.Data.EndingBalance, BaseCurrency)}";
+            : $"{row.AccountName} · {AccountPostings.Count} postings · ending balance {PostedLedgerProjection.FormatAmount(response.Data.EndingBalance, BaseCurrency)}{scopeNote}";
     }
 
     public bool IsRefreshing

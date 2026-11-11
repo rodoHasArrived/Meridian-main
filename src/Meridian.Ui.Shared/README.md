@@ -1956,7 +1956,9 @@ control accounts, and a difference above 0.01 is a `SubledgerTieOut` warning clo
 `BrokeragePortfolioSyncService` retains a per-account activity history
 (`activity-history/{fundAccountId}.json`): each sync's fills and cash transactions are merged by
 provider id, so rows later snapshots no longer return are kept without duplicates. The current
-projection is unchanged and remains the latest provider snapshot. `BrokerageSyncActualCashActivitySource`
+projection is unchanged and remains the latest provider snapshot. The history is served only for
+the external account the fund account is currently linked to, and cash amounts keep the broker's
+sign so a reversal nets against its receipt. `BrokerageSyncActualCashActivitySource`
 reads interest/coupon and principal/paydown cash for held symbols from that history (or from a
 fresh projection) and supplies it to expected-income reconciliation.
 

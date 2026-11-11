@@ -387,13 +387,39 @@ public sealed class BrokeragePortfolioSyncService
     public async Task<IReadOnlyList<FundAccountBrokerageCashTransactionDto>> GetCashTransactionHistoryAsync(
         Guid fundAccountId,
         CancellationToken ct = default)
-        => (await TryLoadActivityHistoryAsync(fundAccountId, ct).ConfigureAwait(false)).History?.CashTransactions ?? [];
+        => (await LoadActivityHistoryForActiveLinkAsync(fundAccountId, ct).ConfigureAwait(false))?.CashTransactions ?? [];
 
     /// <summary>Every fill a sync has observed for the account, deduplicated by provider fill id.</summary>
     public async Task<IReadOnlyList<FundAccountBrokerageFillDto>> GetFillHistoryAsync(
         Guid fundAccountId,
         CancellationToken ct = default)
-        => (await TryLoadActivityHistoryAsync(fundAccountId, ct).ConfigureAwait(false)).History?.Fills ?? [];
+        => (await LoadActivityHistoryForActiveLinkAsync(fundAccountId, ct).ConfigureAwait(false))?.Fills ?? [];
+
+    /// <summary>
+    /// The retained history only when it belongs to the external account the fund account is
+    /// linked to now. After a relink the old account's rows stay on disk until the next
+    /// successful activity sync replaces them, and they are not the new account's activity.
+    /// </summary>
+    private async Task<BrokerageActivityHistory?> LoadActivityHistoryForActiveLinkAsync(
+        Guid fundAccountId,
+        CancellationToken ct)
+    {
+        var history = (await TryLoadActivityHistoryAsync(fundAccountId, ct).ConfigureAwait(false)).History;
+        if (history is null)
+        {
+            return null;
+        }
+
+        // An explicit link wins; a sync run directly from a request has no link file, and its
+        // identity is then the one on the current projection.
+        var link = await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false)
+            ?? (await TryLoadPriorProjectionAsync(fundAccountId, ct).ConfigureAwait(false))?.Link;
+        return link is not null
+               && string.Equals(history.ProviderId, link.ProviderId, StringComparison.OrdinalIgnoreCase)
+               && string.Equals(history.ExternalAccountId, link.ExternalAccountId, StringComparison.Ordinal)
+            ? history
+            : null;
+    }
 
     public async Task<FundAccountBrokerageSyncActivityDto?> GetViewAsync(Guid fundAccountId, CancellationToken ct = default)
         => await LoadProjectionAsync(fundAccountId, ct).ConfigureAwait(false);

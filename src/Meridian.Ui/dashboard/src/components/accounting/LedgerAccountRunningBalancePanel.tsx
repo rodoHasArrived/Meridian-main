@@ -8,6 +8,12 @@ export interface LedgerAccountRunningBalancePanelProps {
   accountName: string;
   symbol?: string | null;
   financialAccountId?: string | null;
+  /**
+   * True when the trial balance shows this account on more than one row (one per dimension
+   * scope). The postings route is not scoped by dimension, so the list and its ending balance
+   * then cover every scope of the account, not only the selected row.
+   */
+  combinedAcrossScopes?: boolean;
   /** Formats an amount in the selected book's currency. */
   formatAmount: (value: number) => string;
 }
@@ -19,14 +25,16 @@ type RunningBalanceState =
 
 /**
  * Account drill-down for the posted ledger: every posting to the selected trial-balance account
- * in the period, with the balance after each one. Reads the governed book of record, so the last
- * balance here is the figure the trial balance shows for the same account scope.
+ * in the period, with the balance after each one. Reads the governed book of record. Postings are
+ * selected by account, symbol and financial account, not by dimension scope; when the account has
+ * several trial-balance rows the panel says the list combines them.
  */
 export function LedgerAccountRunningBalancePanel({
   periodId,
   accountName,
   symbol = null,
   financialAccountId = null,
+  combinedAcrossScopes = false,
   formatAmount
 }: LedgerAccountRunningBalancePanelProps) {
   const [state, setState] = useState<RunningBalanceState>({ status: "loading" });
@@ -64,6 +72,12 @@ export function LedgerAccountRunningBalancePanel({
     <section role="region" aria-label={title} className="row-detail-panel min-w-0">
       <div className="eyebrow-label">Account running balance</div>
       <h3 className="mt-1 text-sm font-semibold text-foreground">{title}</h3>
+      {combinedAcrossScopes ? (
+        <p className="mt-2 text-sm text-muted-foreground">
+          This account appears on more than one trial-balance row. The postings and ending balance below cover all
+          of its dimension scopes, not only the selected row.
+        </p>
+      ) : null}
       {state.status === "loading" ? (
         <p role="status" className="mt-2 text-sm text-muted-foreground">Loading postings…</p>
       ) : state.status === "error" ? (

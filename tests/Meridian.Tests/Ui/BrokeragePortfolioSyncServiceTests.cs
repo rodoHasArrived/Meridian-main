@@ -428,6 +428,13 @@ public sealed class BrokeragePortfolioSyncServiceTests
                 .Select(static cash => cash.TransactionId)
                 .Should().BeEquivalentTo(["cash-2", "cash-3"], "the projection stays the latest provider snapshot");
             (await service.GetCashTransactionHistoryAsync(Guid.NewGuid(), cts.Token)).Should().BeEmpty();
+
+            // After a relink the retained rows belong to the previous external account and must
+            // not be served as the new account's activity.
+            await service.LinkAccountAsync(fundAccountId,
+                new BrokerageAccountLinkRequestDto("alpaca", "PA-RELINKED", "Relinked account", "tests"), cts.Token);
+            (await service.GetCashTransactionHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
+            (await service.GetFillHistoryAsync(fundAccountId, cts.Token)).Should().BeEmpty();
         }
         finally
         {
