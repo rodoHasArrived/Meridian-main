@@ -103,8 +103,10 @@ schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). S3-E no
 per-class scalar field with one of the 52 shared module homes, including the residual complement
 and complete declared schedules. Each field group has replay checks; a global reflection ratchet
 requires every stored field on all 32 payloads to use a registered module type. The permanent
-legacy upcaster and retained-history fold remain. See the remediation plan's follow-through
-section for current-output extensions and compatibility boundaries.
+legacy upcaster and retained-history fold remain. Every term rule is now expressed on the
+definition surface; the codec-only validator that held the remainder is removed. See the
+remediation plan's follow-through section for current-output extensions and compatibility
+boundaries.
 
 ## Preconditions the decision item names
 
