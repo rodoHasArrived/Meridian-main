@@ -127,8 +127,7 @@ scenario signal, blue focus/selection, and its own material hierarchy. The
 browser workstation and WPF theme tokens were migrated to this palette in the
 same pull request, so the parity manifest now declares `valuesShared: true` and
 `scripts/check_token_parity.py` compares every name both sides declare in all
-four theme scopes. One difference is recorded under
-`upstreamValueDivergences`: the Review severity hue. See
+four theme scopes, and `upstreamValueDivergences` is empty. See
 [Application integration](#application-integration) for what moved in each
 direction.
 
@@ -219,9 +218,9 @@ states). This pass added:
 **Gate changes.** `check_token_parity.py` gained two passes: the theme inputs
 must flip in dark, and every token name declared by both the package and the
 workstation (224 at this commit) must resolve to the same value in light, auto
-dark, manual dark and forced light. The only recorded difference is the Review
-severity hue: the workstation uses ochre, the package keeps the terracotta
-signal, and the choice is left to the owner. In `check_contrast.py`, rows that held
+dark, manual dark and forced light. No difference is recorded: the Review
+severity chip, the last one, is the terracotta signal on both sides by the
+owner's decision. In `check_contrast.py`, rows that held
 `--accent` and `--accent-dim` to the text threshold now hold
 `--brand-signal-text` to it and the signal to the 3:1 non-text threshold,
 matching the 4.3.0 role of each token. The paper and pending chip rows measure
