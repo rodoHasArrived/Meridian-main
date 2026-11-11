@@ -85,7 +85,7 @@ stages are ordered so each is independently valuable and the decision can stop a
 | Component | Location | Purpose |
 |-----------|----------|---------|
 | Per-class model | `src/Meridian.FSharp/Domain/SecurityMaster.fs` | `SecurityKind` union and per-class term records |
-| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The 25 term modules |
+| Module model | `src/Meridian.FSharp/Domain/SecurityTermModules.fs` | The term modules (25 at acceptance; 29 since the stage-3 S3-E module homes) |
 | Economic definition | `src/Meridian.FSharp/Domain/SecurityEconomicDefinition.fs` | Classification + modules record events carry |
 | Bridge (upgrade) | `src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs` | Flat record → economic definition |
 | Bridge (mapping) | `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Commands, DTOs, event envelopes |
@@ -100,7 +100,8 @@ started.
 
 *Status at 2026-11-10:* stages 1 and 2 are complete. In stage 3 both codec arms are asserted from
 the schema and every class's scalar decode is schema-bound (S3-D, 32 of 32). The record contraction
-(S3-E) has not started: its module homes are in pull request #3446.
+(S3-E) has module homes for strikes, currency pairs, notionals and the profile envelope
+(pull request #3446); the contraction of the per-class records has not started.
 
 ## Preconditions the decision item names
 

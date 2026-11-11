@@ -260,9 +260,13 @@ public sealed class OrderManagementSystemReportStreamTests
         var view = new Meridian.Execution.Adapters.OmsGovernedExecutionOrderGateway(gateway, () => oms);
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         await using var updates = view.StreamOrderUpdatesAsync(cts.Token).GetAsyncEnumerator(cts.Token);
-        _ = updates.MoveNextAsync().AsTask();
+        // Start reading before the first order so the stream is subscribed, then await that read
+        // before calling MoveNextAsync again: an async iterator must not run two moves at once.
+        var first = updates.MoveNextAsync();
 
         var original = await oms.PlaceOrderAsync(StreamLimit("reused-id", 10m, 100m));
+        (await first).Should().BeTrue();
+        var seen = new List<Meridian.Execution.Models.OrderStatusUpdate> { updates.Current };
         await gateway.PublishAsync(
             BuildReport(original.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 10m, fillPrice: 100m));
         await WaitUntilAsync(() => oms.GetOrder(original.OrderId)!.Status == OrderStatus.Filled,
@@ -274,8 +278,8 @@ public sealed class OrderManagementSystemReportStreamTests
         await gateway.PublishAsync(
             BuildReport(replacement.OrderId, OrderStatus.Filled, ExecutionReportType.Fill, filledQty: 5m, fillPrice: 200m));
 
-        var seen = await ReadUpdatesUntilAsync(updates,
-            update => update.Status == Meridian.Execution.Models.OrderStatus.Filled && update.FilledQuantity == 5m);
+        seen.AddRange(await ReadUpdatesUntilAsync(updates,
+            update => update.Status == Meridian.Execution.Models.OrderStatus.Filled && update.FilledQuantity == 5m));
         seen[^1].AverageFillPrice.Should().Be(200m);
         seen.Should().NotContain(update => update.FilledQuantity > 10m,
             "the replacement order must not inherit the previous order's fills");
