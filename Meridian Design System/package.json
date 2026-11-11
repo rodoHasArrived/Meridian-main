@@ -13,6 +13,7 @@
     "test:release": "python3 -m unittest discover -s tests -p test_release.py",
     "test:browser": "node tests/release-browser.mjs",
     "test:agency": "node tests/agency-regression.mjs",
+    "test:patches": "node tests/local-patches-regression.mjs && node tests/interaction-depth-regression.mjs && npm run test:components",
     "test:components": "node tests/scenario-selector-regression.mjs && node tests/optimistic-observer-regression.mjs && node tests/modal-title-id-regression.mjs"
   },
   "devDependencies": {

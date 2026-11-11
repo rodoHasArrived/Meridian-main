@@ -10,7 +10,8 @@
 <!-- release:generated:end -->
 
 Current-branch evidence and a reproducible distribution handoff:
-[4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md).
+[4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md) ·
+[Local patches to re-apply after a re-export](docs/LOCAL_PATCHES.md).
 These describe this working tree separately from the historical upstream release reports.
 
 An operator-workstation design system for **Meridian** — a self-hosted trading, market-data, research, and reporting platform. Meridian collects equities data from providers (Polygon, IBKR, Databento…), maintains a security master, runs backfills and quality scans, executes backtests/strategy runs, and operates live & paper trading with accounting and report-pack delivery.

@@ -80,6 +80,18 @@ After extraction, verify the payload against its internal inventory/SHA256SUMS.
 Checksums detect changed bytes; they do not independently establish authorship or
 publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
 
+## Accepting a re-export
+
+A fresh export from the design source replaces the vendored files and drops every
+local fix that was not carried upstream. Before accepting a new tree, rebuild and
+run the local-patch regressions, then re-apply whatever fails from
+[LOCAL_PATCHES.md](LOCAL_PATCHES.md):
+
+```bash
+npm run build
+MERIDIAN_CHROMIUM_PATH=/path/to/chromium npm run test:patches
+```
+
 ## Consumer dependencies
 
 - **Component bundle:** React is a consumer-supplied peer/global. Load React
