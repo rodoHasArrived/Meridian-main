@@ -84,14 +84,25 @@ const KIND_LABEL = { cell: "Cell", point: "Series point", line: "Ledger line", h
 const Ctx = React.createContext(null);
 let seq = 0;
 
-function createStore(initial, handlers) {
-  let notes = initial.slice();
+function createStore(initial, handlers, objectId) {
+  // Persisted collections may contain several objects. Unscoped seed notes belong
+  // to the object for which this store is first created.
+  let notes = initial.filter((n) => n.objectId == null || n.objectId === objectId)
+    .map((n) => ({ ...n, objectId }));
+  const reservedIds = new Set(initial.map((n) => n.id));
   const subs = new Set();
   const emit = () => { subs.forEach((f) => f(notes)); handlers.current.onChange && handlers.current.onChange(notes); };
   return {
     subscribe(f) { subs.add(f); return () => subs.delete(f); },
     get notes() { return notes; },
-    add(n) { const note = { id: `ann-${++seq}`, at: Date.now(), author: handlers.current.author || "you", lifecycle: "follow", ...n }; notes = [...notes, note]; emit(); return note; },
+    add(n) {
+      // A persisted ann-1 must not collide with the first add after a reload.
+      let id;
+      do { id = `ann-${++seq}`; } while (reservedIds.has(id));
+      reservedIds.add(id);
+      const note = { at: Date.now(), author: handlers.current.author || "you", lifecycle: "follow", ...n, id, objectId };
+      notes = [...notes, note]; emit(); return note;
+    },
     remove(id) { notes = notes.filter((n) => n.id !== id); emit(); },
     repin(id, version) { notes = notes.map((n) => (n.id === id ? { ...n, version, lifecycle: n.lifecycle } : n)); emit(); },
   };
@@ -100,11 +111,16 @@ function createStore(initial, handlers) {
 export function AnnotationProvider({ objectId, objectVersion = 1, author = "you", annotations = [], onChange, onFocus, children }) {
   const handlers = React.useRef({});
   handlers.current = { author, onChange };
-  const store = React.useRef(null);
-  if (!store.current) store.current = createStore(annotations, handlers);
+  // Detail panes reuse their provider while moving between accounts or securities.
+  // Keep one ledger per object, so a switch never relabels the previous object's
+  // notes or judges their staleness against the newly selected object's version.
+  const stores = React.useRef(null);
+  if (!stores.current) stores.current = new Map();
+  if (!stores.current.has(objectId)) stores.current.set(objectId, createStore(annotations, handlers, objectId));
+  const store = stores.current.get(objectId);
   const [, force] = React.useState(0);
-  React.useEffect(() => store.current.subscribe(() => force((n) => n + 1)), []);
-  const value = React.useMemo(() => ({ store: store.current, objectId, objectVersion, onFocus }), [objectId, objectVersion, onFocus, store.current.notes]);
+  React.useEffect(() => store.subscribe(() => force((n) => n + 1)), [store]);
+  const value = React.useMemo(() => ({ store, objectId, objectVersion, onFocus }), [store, objectId, objectVersion, onFocus, store.notes]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 
@@ -112,7 +128,7 @@ function useLayer() {
   const ctx = React.useContext(Ctx);
   const local = React.useRef(null);
   const handlers = React.useRef({ author: "you" });
-  if (!ctx && !local.current) local.current = { store: createStore([], handlers), objectId: "local", objectVersion: 1 };
+  if (!ctx && !local.current) local.current = { store: createStore([], handlers, "local"), objectId: "local", objectVersion: 1 };
   const layer = ctx || local.current;
   const [, force] = React.useState(0);
   React.useEffect(() => layer.store.subscribe(() => force((n) => n + 1)), [layer.store]);
@@ -121,7 +137,10 @@ function useLayer() {
 export function useAnnotations() {
   const layer = useLayer();
   const decorate = (n) => ({ ...n, stale: n.lifecycle === "follow" && n.version < layer.objectVersion });
-  return { ...layer, notes: layer.store.notes.map(decorate), add: layer.store.add, remove: layer.store.remove, repin: layer.store.repin, current: layer.objectVersion };
+  const add = React.useCallback((note) => layer.store.add({ ...note, version: note.version ?? layer.objectVersion }), [layer.store, layer.objectVersion]);
+  return { ...layer, notes: layer.store.notes.map(decorate),
+    add,
+    remove: layer.store.remove, repin: layer.store.repin, current: layer.objectVersion };
 }
 /** Bundle carrier — the compiler exposes only capitalized exports. */
 export const AnnotationHooks = { useAnnotations };

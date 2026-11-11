@@ -1,16 +1,23 @@
 # Meridian Design System — Getting Started
 
-Welcome to **Meridian**, a production-ready design system for operator workstations. This guide walks you through setup, consumption, and common patterns.
+Meridian is a design-system package for operator workstations. This guide covers
+setup, consumption, and common patterns. The declared release channel and current
+source census are generated in [Metrics](METRICS.md); current export verification
+and dependency boundaries are documented in [Export handoff](EXPORT_4_3_0.md).
 
 ## 30-second overview
 
-Meridian ships **223 exported symbols**, **7 pre-built workstation templates**, and **632 design tokens** grounded in the desktop app's **"Programmed Institutionalism"** language: light institutional workstation, hairline borders, one terracotta accent, desaturated semantics, no gradients or shadows.
+Meridian implements **Programmed Institutionalism**: an institutional workstation
+with a paper/plate/well hierarchy, fine borders, a terracotta brand/scenario
+signal, independent blue interaction roles, and restrained semantic colors.
+Use `_ds_manifest.json` and the generated [Metrics](METRICS.md) for current
+component, template, token, theme, and maturity counts.
 
 - **Light canvas** `#F2F0EB` with panels in gray-white
-- **Hard edges** (0–2px radii, visible borders, no card shadows)
+- **Tight geometry** (tokenized 2/4/6/8px radii, fine rules, no card shadows)
 - **One signal** terracotta `#C56343` for brand/scenario moments; graphite `#29323A` for primary actions
 - **Mono data** (IBM Plex Mono) for all prices, IDs, counts, timestamps
-- **Motion** 120–300ms standard cubic on color/border; no springs, no entrance animation
+- **Motion** uses the tokenized 80/120/180/240/280ms ramp; respect reduced motion
 - **Keyboard-first** (Ctrl-K command palette, arrow navigation, focus rings)
 
 ---
@@ -27,6 +34,12 @@ cp -r templates/dashboard-workstation/ ../my-project/meridian-dashboard/
 ```
 
 ### Step 2: Open the template and edit
+
+These `.dc.html` templates require the Design Component host and its JSX runtime.
+Opening one as ordinary HTML is not sufficient. For a standard browser check,
+use the ordinary HTML smoke entry included in the export; it exercises the
+component bundle without claiming full template-host compatibility. Keep shared
+helpers and the design-system asset tree available when copying a template.
 
 1. Navigate to the template folder: `cd ../my-project/meridian-dashboard/`
 2. Open `DashboardWorkstation.dc.html` in your browser
@@ -87,7 +100,10 @@ Templates are **directly editable in the browser** — click any text or element
 
 ## Component reference
 
-**All 189 exports are documented in `docs/COMPONENT_API_REFERENCE.card.html`** (plus sub-cards for each family). Open that file in your browser to see live examples, prop defaults, and keyboard behavior.
+Start with `docs/COMPONENT_API_REFERENCE.card.html` and each component's `.d.ts`,
+`.prompt.md`, and specimen card for props, states, and keyboard behavior. Use
+`api/families.json` for current family membership and per-export stability; the
+reference card is a discovery aid, not a separate authoritative export count.
 
 Quick reference by category:
 

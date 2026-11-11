@@ -58,7 +58,7 @@ function inject() {
   el.setAttribute("data-mds", "object-scope");
   el.textContent = `
 .mds-scope{font:700 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted,#606870);white-space:nowrap}
-.mds-scope[data-rel="same"]{color:var(--text-disabled,#A4ABB2)}
+.mds-scope[data-rel="same"]{color:var(--text-secondary,#535C65)}
 .mds-scope[data-rel="instrument"],.mds-scope[data-rel="aggregate"],.mds-scope[data-rel="sibling"],.mds-scope[data-rel="holding"]{color:var(--text-secondary,#535C65)}
 .mds-scope--chip{border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);padding:0 5px;line-height:15px;display:inline-block}
 .mds-scope--chip[data-foreign="on"]{border-style:dashed;border-color:var(--text-muted,#606870)}

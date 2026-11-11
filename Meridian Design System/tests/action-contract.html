@@ -6,8 +6,7 @@
 <title>Meridian 4.2 — action contract</title>
 <link rel="stylesheet" href="../styles.css">
 <style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px;max-width:100ch}table{border-collapse:collapse;width:100%;max-width:1080px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}#stage{position:absolute;left:-9999px;top:0;width:900px}</style>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="../_preview_runtime.js"></script>
 <script src="../_ds_bundle.js"></script>
 <script src="./mock-transport.js"></script>
 </head>
@@ -31,18 +30,20 @@ const {createMockTransport}=window.MeridianMockTransport;
 const DECL={label:"Submit order",endpoint:"POST /v1/orders",idempotencyKey:"ORD-TOK-1",permission:{required:"trade.submit",held:true,actor:"k.ito"},posture:"confirmed",failureSurface:"Blotter row · status bar",payload:{symbol:"AAPL",qty:100}};
 
 // Mount a provider and capture its api. Polling replaces act(): the contract is async by nature.
-function mount(props,children){
+async function mount(props,children){
   const host=document.createElement("div");document.getElementById("stage").appendChild(host);
   const root=ReactDOM.createRoot(host);
   let api=null;
-  root.render(React.createElement(ActionEnvelopeProvider,props,(a)=>{api=a;return children?children(a):React.createElement(ActionEnvelope,{action:"order.submit"});}));
-  return {host,root,get api(){return api},unmount(){root.unmount();host.remove();}};
+  root.render(React.createElement(ActionEnvelopeProvider,props,(a)=>{api=a;return children?children(a):React.createElement(ActionEnvelope,{...props.actions["order.submit"],action:"order.submit"});}));
+  const mounted={host,root,get api(){return api},unmount(){root.unmount();host.remove();}};
+  await settle(mounted,a=>a!==null);
+  return mounted;
 }
 const settle=async(m,pred,ms=4000)=>{const t0=Date.now();while(Date.now()-t0<ms){await sleep(20);if(pred(m.api))return true;}throw new Error("state never settled: "+JSON.stringify(m.api&&m.api.instructions));};
 
 async function main(){
   suite="vocabulary";
-  await t("five fates, and none of them is 'failed'",()=>{const ids=ACTION_STATES.map(s=>s.id).join(",");eq(ids,"idle,inflight,landed,unlanded,rejected");ok(!/failed/i.test(JSON.stringify(ACTION_STATES)),"'failed' is not a fate")});
+  await t("five fates, and none of them is 'failed'",()=>{const ids=ACTION_STATES.map(s=>s.id).join(",");eq(ids,"idle,inflight,landed,unlanded,rejected");ok(!ACTION_STATES.some(state=>state.id==="failed"),"'failed' is not a fate")});
   await t("every fate carries an operator sentence",()=>ok(ACTION_STATES.every(s=>s.meaning&&s.meaning.length>20&&s.severity)));
   await t("unlanded is not styled as an error state",()=>eq(ACTION_STATES.find(s=>s.id==="unlanded").severity,"action"));
   await t("exports reachable from the bundle",()=>ok(ActionEnvelope&&ActionEnvelopeProvider&&InstructionLedger&&ActionStateChip&&ActionHooks.useAction));
@@ -50,9 +51,10 @@ async function main(){
   suite="landed";
   {
     const tp=createMockTransport({latencyMs:40});
-    const m=mount({actions:{"order.submit":DECL},transport:tp});
-    await settle(m,a=>a&&a.instructions.length===0||true);
+    const m=await mount({actions:{"order.submit":DECL},transport:tp});
+    await settle(m,a=>a.instructions.length===0);
     const r=await m.api.submit("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state===r.state);
     await t("submit lands with a receipt id and latency",()=>{eq(r.state,"landed");ok(r.receipt.id&&r.receipt.latencyMs>=0,"no receipt")});
     await t("instruction recorded once, keyed by the declared key",()=>{eq(m.api.instructions.length,1);eq(m.api.instructions[0].idempotencyKey,"ORD-TOK-1")});
     await t("nothing unresolved after landing",()=>eq(m.api.unresolved.length,0));
@@ -63,9 +65,10 @@ async function main(){
   suite="double submit";
   {
     const tp=createMockTransport({latencyMs:120});
-    const m=mount({actions:{"order.submit":DECL},transport:tp});
+    const m=await mount({actions:{"order.submit":DECL},transport:tp});
     const a=m.api.submit("order.submit"),b=m.api.submit("order.submit"),c=m.api.submit("order.submit");
     const [ra,rb,rc]=await Promise.all([a,b,c]);
+    await settle(m,x=>x.instructions.length===1&&x.instructions[0].state==="landed");
     await t("three clicks are ONE instruction",()=>eq(m.api.instructions.length,1));
     await t("the transport was called once",()=>eq(tp.calls(),1));
     await t("the duplicates are reported as deduped, not silently dropped",()=>ok(rb.deduped&&rc.deduped&&ra.state));
@@ -77,8 +80,9 @@ async function main(){
   suite="rejected";
   {
     const tp=createMockTransport({latencyMs:20,mode:"reject"});
-    const m=mount({actions:{"order.submit":DECL},transport:tp});
+    const m=await mount({actions:{"order.submit":DECL},transport:tp});
     const r=await m.api.submit("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state===r.state);
     await t("a 4xx with a reason is REJECTED, not unlanded",()=>eq(r.state,"rejected"));
     await t("the reason is part of the record",()=>ok(/desk limit/.test(m.api.instructions[0].reason||""),"reason lost"));
     await t("the reason is on screen",()=>ok(/desk limit/.test(m.host.textContent)));
@@ -89,8 +93,9 @@ async function main(){
   suite="unlanded";
   {
     const tp=createMockTransport({latencyMs:20,mode:"error"});
-    const m=mount({actions:{"order.submit":DECL},transport:tp});
+    const m=await mount({actions:{"order.submit":DECL},transport:tp});
     const r=await m.api.submit("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state===r.state);
     await t("a thrown 500 is UNLANDED — the fate is unknown",()=>eq(r.state,"unlanded"));
     await t("the envelope tells the operator not to re-key it",()=>ok(/same idempotency key/i.test(m.host.textContent)));
     await t("it stays unresolved until someone resolves it",()=>eq(m.api.unresolved.length,1));
@@ -98,8 +103,9 @@ async function main(){
   }
   {
     const tp=createMockTransport({mode:"silent"});
-    const m=mount({actions:{"order.submit":DECL},transport:tp,timeoutMs:150});
+    const m=await mount({actions:{"order.submit":DECL},transport:tp,timeoutMs:150});
     const r=await m.api.submit("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state===r.state);
     await t("silence past the timeout is unlanded, with the window in the reason",()=>{eq(r.state,"unlanded");ok(/150/.test(r.reason||""),"timeout not stated")});
     m.unmount();
   }
@@ -108,10 +114,12 @@ async function main(){
   {
     // The nightmare case: the write LANDED, the answer did not. A fresh key would double-send.
     const tp=createMockTransport({latencyMs:20,mode:(inst,attempt)=>attempt===1?"lost":"ok"});
-    const m=mount({actions:{"order.submit":DECL},transport:tp});
+    const m=await mount({actions:{"order.submit":DECL},transport:tp});
     await m.api.submit("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state==="unlanded");
     await t("first attempt is unlanded",()=>eq(m.api.instructions[0].state,"unlanded"));
     const r=await m.api.retry("order.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state==="landed");
     await t("retry reuses the SAME key and increments the attempt",()=>{eq(m.api.instructions[0].idempotencyKey,"ORD-TOK-1");eq(r.receipt.attempt,2)});
     await t("the retry resolves to the ORIGINAL receipt, not a second order",()=>{eq(r.state,"landed");eq(tp.landed().length,1);eq(r.receipt.id,tp.landed()[0])});
     await t("the replay is disclosed as a dedupe",()=>ok(r.receipt.duplicateOf===r.receipt.id));
@@ -121,12 +129,12 @@ async function main(){
 
   suite="permission & declaration defects";
   {
-    const m=mount({actions:{"order.submit":{...DECL,permission:{required:"trade.submit",held:false,actor:"j.moss"}}},transport:createMockTransport()});
+    const m=await mount({actions:{"order.submit":{...DECL,permission:{required:"trade.submit",held:false,actor:"j.moss"}}},transport:createMockTransport()});
     await t("an unheld permission disables the submit and says which permission",()=>{const b=m.host.querySelector("button");ok(b&&b.disabled,"submit not disabled");ok(/not held/.test(m.host.textContent))});
     m.unmount();
   }
   {
-    const m=mount({actions:{"order.submit":{label:"Submit order"}},transport:createMockTransport()});
+    const m=await mount({actions:{"order.submit":{label:"Submit order"}},transport:createMockTransport()});
     await t("an undeclared key and failure surface are rendered AS defects",()=>{const txt=m.host.textContent;ok(/undeclared/i.test(txt),"undeclared not surfaced");ok(m.host.querySelectorAll(".undeclared").length>=2,"defects not marked")});
     m.unmount();
   }
@@ -134,10 +142,11 @@ async function main(){
   suite="ledger";
   {
     const tp=createMockTransport({latencyMs:10,mode:(i)=>i.action==="ingest.backfill"?"reject":"ok"});
-    const m=mount({actions:{"order.submit":DECL,"ingest.backfill":{label:"Enqueue backfill",endpoint:"POST /v1/backfills",idempotencyKey:"BF-2026-08-27-AAPL",permission:{required:"ingest.run",held:true},failureSurface:"Run log · queue row"}},transport:tp},
+    const m=await mount({actions:{"order.submit":DECL,"ingest.backfill":{label:"Enqueue backfill",endpoint:"POST /v1/backfills",idempotencyKey:"BF-2026-08-27-AAPL",permission:{required:"ingest.run",held:true},failureSurface:"Run log · queue row"}},transport:tp},
       ()=>React.createElement(InstructionLedger,null));
     await m.api.submit("order.submit");
     await m.api.submit("ingest.backfill");
+    await settle(m,a=>a.instructions.length===2&&a.instructions.every(i=>i.state!=="inflight"));
     await t("both instructions are listed with their fate",()=>{const txt=m.host.textContent;ok(/Submit order/.test(txt)&&/Enqueue backfill/.test(txt));ok(/Landed/i.test(txt)&&/Rejected/i.test(txt))});
     await t("the ledger counts what is unresolved, not what is sent",()=>ok(/2 sent · 0 unresolved/.test(m.host.textContent),m.host.textContent.slice(0,80)));
     m.unmount();

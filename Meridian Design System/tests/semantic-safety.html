@@ -6,8 +6,7 @@
 <title>Meridian — semantic safety</title>
 <link rel="stylesheet" href="../styles.css">
 <style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px;max-width:104ch;line-height:1.55}table{border-collapse:collapse;width:100%;max-width:1080px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}#stage{position:absolute;left:-9999px;top:0;width:900px}</style>
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+<script src="../_preview_runtime.js"></script>
 <script src="../_ds_bundle.js"></script>
 </head>
 <body>
@@ -28,7 +27,8 @@ const NS=window.MeridianDesignSystem_205d17||{};
 const {TieOutPanel,AttestationPanel,JournalEntryForm,ActionQueue,ActionEnvelopeProvider,ActionHooks,DecisionSnapshot,Assurance}=NS;
 const stage=document.getElementById("stage");
 async function render(el){const host=document.createElement("div");stage.appendChild(host);const root=ReactDOM.createRoot(host);root.render(el);await sleep(90);return{host,txt(){return host.textContent},btn(re){return[...host.querySelectorAll("button")].find(b=>re.test(b.textContent))},unmount(){root.unmount();host.remove()}}}
-async function mountProvider(props){const host=document.createElement("div");stage.appendChild(host);const root=ReactDOM.createRoot(host);let api=null;root.render(React.createElement(ActionEnvelopeProvider,props,(a)=>{api=a;return React.createElement("span",null,"·")}));await sleep(90);return{host,get api(){return api},unmount(){root.unmount();host.remove()}}}
+const settle=async(m,pred,ms=4000)=>{const start=Date.now();while(Date.now()-start<ms){await sleep(20);if(m.api&&pred(m.api))return;}throw new Error("provider did not settle: "+JSON.stringify(m.api&&m.api.instructions));};
+async function mountProvider(props){const host=document.createElement("div");stage.appendChild(host);const root=ReactDOM.createRoot(host);let api=null;root.render(React.createElement(ActionEnvelopeProvider,props,(a)=>{api=a;return React.createElement("span",null,"·")}));const mounted={host,get api(){return api},unmount(){root.unmount();host.remove()}};await settle(mounted,()=>true);return mounted;}
 
 async function main(){
   suite="exports";
@@ -135,6 +135,7 @@ async function main(){
   {
     const m=await mountProvider({actions:{"close.post":{label:"Post close entry"}}});
     const r=await m.api.submit("close.post");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state==="unlanded");
     await t("a provider with no transport lands nothing",()=>{eq(r.state,"unlanded");ok(/no transport/i.test(r.reason||""),r.reason)});
     await t("the unresolved instruction stays unresolved",()=>eq(m.api.unresolved.length,1));
     m.unmount();
@@ -149,26 +150,28 @@ async function main(){
     const answered=async()=>({ok:true});
     const m=await mountProvider({actions:{"ord.submit":{label:"Submit order",idempotencyKey:"ORD-1"}},transport:answered});
     const r=await m.api.submit("ord.submit");
+    await settle(m,a=>a.instructions.length===1&&a.instructions[0].state==="landed");
     await t("an acknowledgement with no receipt is not resolved",()=>{eq(r.state,"landed");ok(!r.receipt.id,"a receipt was invented");eq(m.api.unresolved.length,1)});
     m.unmount();
   }
 
   suite="queue rungs · read off the answer, never off a clock";
+  const receiptAt=new Date().toISOString(); // A current receipt is asserted before its settle window expires.
   const inst=(o)=>({id:o.id||"I1",action:"post",label:o.label||"Post journal entry",idempotencyKey:"K1",keyDeclared:true,state:o.state,receipt:o.receipt,reason:o.reason});
   {
-    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{attempt:1,at:"2026-09-14 09:00:00Z"}})]}));
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{attempt:1,at:receiptAt}})]}));
     await t("landed without a receipt id is acknowledged, not confirmed",()=>{ok(/Acknowledged/.test(r.txt()));ok(!/Confirmed$/.test(r.txt().trim()));ok(/has not confirmed/.test(r.txt()))});
     await t("and it counts as unresolved",()=>ok(/1 unresolved/.test(r.txt()),r.txt().slice(0,140)));
     r.unmount();
   }
   {
-    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"unlanded",receipt:{attempt:1,at:"2026-09-14 09:00:00Z"}})],onRetry:()=>{}}));
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"unlanded",receipt:{attempt:1,at:receiptAt}})],onRetry:()=>{}}));
     await t("no answer is 'timed out', and the ladder claims no acknowledgement",()=>{ok(/Timed out/.test(r.txt()));ok(!/Acknowledged/.test(r.txt()),"the ladder drew an acknowledgement that never happened")});
     await t("the retry is offered on the same key",()=>ok(/same key/.test(r.txt())));
     r.unmount();
   }
   {
-    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{id:"ADP-7",attempt:1,at:"2026-09-14 09:00:00Z"}})]}));
+    const r=await render(React.createElement(ActionQueue,{docked:"inline",instructions:[inst({state:"landed",receipt:{id:"ADP-7",attempt:1,at:receiptAt}})]}));
     await t("landed WITH an adapter receipt is confirmed (positive control)",()=>{ok(/Confirmed/.test(r.txt()));ok(/ADP-7/.test(r.txt()))});
     await t("and nothing is left unresolved",()=>ok(/0 unresolved/.test(r.txt()),r.txt().slice(0,140)));
     r.unmount();

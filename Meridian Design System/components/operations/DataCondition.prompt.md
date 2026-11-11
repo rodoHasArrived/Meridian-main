@@ -12,3 +12,4 @@ The eleven data conditions every Meridian value can be in — `confirmed · prov
 ```
 
 Use `DataConditionValue` in any numeric cell whose value may not be observed — it prints `4.35% Est.`, `4.35% · Stale 18m`, `Missing`, or `—` instead of a bare number or an empty cell. Use `DataConditionLegend` as the *data-state contract* block in `EvidenceInspector`. Observed-data condition and **model uncertainty** are different things: conditions describe the datum, `IntervalBar`/`TraceChart` bands describe the model.
+4.3.0 audit: small condition words use readable text ink; semantic hue stays on the marker, border and wash. Missing/restricted text remains legible and never substitutes a financial value.

@@ -1,9 +1,10 @@
 # Meridian — What a consumer pays
 
-Measured payload and load-behavior reference for consuming projects. Figures measured
-**July 2026** against the then-current bundle; the system now compiles **268 exports across
-181 modules**, so the byte figures below are a floor, not a current reading. Re-run the
-snippet in §5 before quoting any number here.
+Load-behavior reference for consuming projects. The byte figures below are
+historical July 2026 measurements, not measurements of this expanded export.
+Use `release-build.json` and `export-inventory.json` for current asset bytes, and
+the generated [Metrics](METRICS.md) for current source counts. Measure the built
+assets and complete CSS/font closure before setting a payload budget.
 
 ---
 
@@ -15,11 +16,13 @@ snippet in §5 before quoting any number here.
 | `_ds_bundle.js` | 1,141 KB | **~247 KB** | All components, compiled; loads once, cached |
 | React 18 UMD (peer, not bundled) | — | ~45 KB | The bundle expects `React`/`ReactDOM` globals; it ships **no** React copy |
 
-Total first-visit wire cost ≈ **305 KB** gzip (13 + 247 + 45), **plus both webfont families**.
-`tokens/fonts.css` `@import`s IBM Plex Sans *and* IBM Plex Mono from Google Fonts — the
-`local()` `@font-face` entries only avoid the download where the faces are already installed.
-An install with no egress to `fonts.googleapis.com` gets system substitutes for the entire
-type ramp. Self-hosting the subset is an open item.
+The historical first-visit estimate was approximately **305 KB** gzip, plus fonts.
+It is not a current export budget. IBM Plex Sans and Mono are now self-hosted:
+`tokens/fonts.css` uses `local()` first, then ten TTFs in `assets/fonts/`, with both
+OFL licenses beside them. No font CDN is required. Include font payloads and
+cache behavior when measuring a first visit on a machine without installed Plex
+faces. The optional local preview React runtime is a separate asset; existing
+React applications should use their own peer rather than downloading both.
 
 ## 2. How component CSS works (and what it costs)
 
@@ -43,8 +46,8 @@ per-component files would mean dozens of requests and no meaningful savings afte
 The costs to know about:
 
 - **No tree-shaking.** A page using only `Button` still downloads the accounting tables.
-  At ~247 KB gzip, cached after first load, this is cheap for an operator terminal that
-  users live in all day. Don't use the bundle for a marketing page.
+  Its current byte cost must be measured after rebuilding. Keep this operational
+  component bundle scoped to consumers that need its workstation capabilities.
 - **Load order matters:** React UMD → `_ds_bundle.js` → your code. `defer` all three or
   put them at the end of `<body>`.
 - **Load it once.** Templates load it via `ds-base.js`; don't add a second `<script>` —

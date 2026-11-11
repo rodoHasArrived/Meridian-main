@@ -3,20 +3,20 @@
   "note": "The public contract. Physical folders under components/ are an implementation detail; this file is the family assignment every barrel, doc count and future ESM subpath is generated from. Never hand-edit.",
   "namespace": "MeridianDesignSystem_205d17",
   "totals": {
-    "exports": 334,
+    "exports": 351,
     "families": 9,
     "unclassified": 0,
     "releaseCandidate": 28
   },
   "counts": {
     "accounting": 31,
-    "analytics": 41,
-    "coordination": 34,
+    "analytics": 49,
+    "coordination": 41,
     "data": 40,
     "decision": 33,
     "evidence": 49,
     "primitives": 84,
-    "shell": 16,
+    "shell": 18,
     "trading": 6
   },
   "unclassified": [],
@@ -35,6 +35,14 @@
       "domain": "operations",
       "module": "AdapterDiagnostics",
       "source": "components/operations/AdapterDiagnostics.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ANALYTICAL_SCOPES",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
       "stability": "stable"
     },
     {
@@ -558,6 +566,14 @@
       "stability": "stable"
     },
     {
+      "name": "ChartAnnotations",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartAnnotations",
+      "source": "components/charts/ChartAnnotations.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "ChartCard",
       "family": "analytics",
       "domain": "charts",
@@ -1054,6 +1070,30 @@
       "stability": "stable"
     },
     {
+      "name": "DistributionRange",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DistributionRange",
+      "source": "components/charts/DistributionRange.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DonutChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DonutChart",
+      "source": "components/charts/DonutChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DotMatrix",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DotMatrix",
+      "source": "components/charts/DotMatrix.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "DrawdownChart",
       "family": "analytics",
       "domain": "charts",
@@ -1446,6 +1486,14 @@
       "stability": "stable"
     },
     {
+      "name": "GlobalSearch",
+      "family": "shell",
+      "domain": "shell",
+      "module": "GlobalSearch",
+      "source": "components/shell/GlobalSearch.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "Grid",
       "family": "primitives",
       "domain": "core",
@@ -1758,6 +1806,22 @@
       "stability": "stable"
     },
     {
+      "name": "ObjectScope",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectScopeProvider",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "ObjectTrail",
       "family": "coordination",
       "domain": "core",
@@ -1851,6 +1915,14 @@
       "domain": "core",
       "module": "PanelSurface",
       "source": "components/core/PanelSurface.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PeerComparisonStrip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "PeerComparisonStrip",
+      "source": "components/charts/PeerComparisonStrip.jsx",
       "stability": "stable"
     },
     {
@@ -1982,6 +2054,14 @@
       "stability": "stable"
     },
     {
+      "name": "ReturnPath",
+      "family": "shell",
+      "domain": "shell",
+      "module": "ReturnPath",
+      "source": "components/shell/ReturnPath.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "RoleBadge",
       "family": "shell",
       "domain": "shell",
@@ -2054,6 +2134,14 @@
       "stability": "stable"
     },
     {
+      "name": "ScenarioSelector",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ScenarioSelector",
+      "source": "components/charts/ScenarioSelector.jsx",
+      "stability": "stable"
+    },
+    {
       "name": "ScheduleLadder",
       "family": "accounting",
       "domain": "accounting",
@@ -2067,6 +2155,38 @@
       "domain": "accounting",
       "module": "ScheduleLadder",
       "source": "components/accounting/ScheduleLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeHooks",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeMark",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeMismatch",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopedValue",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
       "stability": "stable"
     },
     {
@@ -2179,6 +2299,14 @@
       "domain": "core",
       "module": "Slider",
       "source": "components/core/Slider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SmallMultiples",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "SmallMultiples",
+      "source": "components/charts/SmallMultiples.jsx",
       "stability": "stable"
     },
     {
@@ -2587,6 +2715,14 @@
       "domain": "data",
       "module": "VirtualizedList",
       "source": "components/data/VirtualizedList.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WatchlistStrip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "WatchlistStrip",
+      "source": "components/charts/WatchlistStrip.jsx",
       "stability": "stable"
     },
     {

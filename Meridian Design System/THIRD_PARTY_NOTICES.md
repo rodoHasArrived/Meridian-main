@@ -4,9 +4,28 @@ The Meridian Design System's own source (tokens, components, templates, scripts,
 first-party. The following third-party materials are referenced or loaded by consumers:
 
 ## React and ReactDOM — MIT License
-Loaded by consuming pages (and the design-component runtime) from a CDN; not redistributed in
-this repository. Copyright (c) Meta Platforms, Inc. and affiliates. Licensed under the MIT
-License: https://github.com/facebook/react/blob/main/LICENSE
+The component bundle uses a consumer supplied React global. The offline release reference
+loads `_preview_runtime.js`, which redistributes React and React DOM 19.3.1 plus Scheduler.
+Other consuming pages and the Design Component host may load their own runtime. These packages
+use the MIT License below. Copyright (c) Meta Platforms, Inc. and affiliates.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ## IBM Plex Sans and IBM Plex Mono — SIL Open Font License 1.1
 Both families are SELF-HOSTED: TTF binaries (400/400i/500/600/700 each) ship in `assets/fonts/`
@@ -19,8 +38,11 @@ https://github.com/IBM/plex/blob/master/LICENSE.txt
 oxlint code is vendored here. https://github.com/oxc-project/oxc/blob/main/LICENSE
 
 ## Tooling
-`scripts/` uses only the Python 3 standard library (PSF License); nothing third-party is
-vendored, fetched, or bundled. The
+The static gates and ZIP exporter use the Python 3 standard library (PSF License).
+The executable source rebuild uses pinned esbuild 0.28.2 (MIT, copyright 2020 Evan Wallace)
+and the pinned React packages above; Playwright is browser test tooling. Dependencies are
+recorded in `package-lock.json` and installed with `npm ci`. `node_modules` is excluded from
+the ZIP. The
 deterministic fixture engine's PRNG (mulberry32) and FNV-1a hash in
 `templates/_strategy-executor/executor-store.js` are public-domain algorithms implemented
 first-party; the SHA-256 in `components/core/StrategyModel.jsx` is a first-party implementation

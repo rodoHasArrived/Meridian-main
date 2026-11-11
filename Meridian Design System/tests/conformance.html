@@ -189,7 +189,7 @@ async function main() {
   suiteRow("parity", `every component ships a .prompt.md (${jsxModules.length} checked)`, noPrompt.length === 0, "missing: " + noPrompt.slice(0, 4).join(", "));
 
   // ---- parity: the counts stop being typed ------------------------------------------------
-  const [readme, metrics] = await Promise.all([text("readme.md"), text("docs/METRICS.md")]);
+  const [readme, metrics] = await Promise.all([text("README.md"), text("docs/METRICS.md")]);
   const rm = readme && readme.match(/\*\*(\d+) modules across (\d+) domains → (\d+) exported symbols\*\*/);
   suiteRow("counts", "readme inventory census matches the manifest", !!rm && Number(rm[1]) === counts.modules && Number(rm[3]) === counts.exports,
     rm ? `readme says ${rm[1]} modules / ${rm[3]} exports; manifest says ${counts.modules} / ${counts.exports}` : "census line not found in readme.md");

@@ -16,7 +16,7 @@
 // this file into the bundle itself), and it never injects a script or logs at load.
 (function(global){
   var NS = "MeridianDesignSystem_205d17";
-  var NAMES = ["ARCHETYPES","LayoutHooks","LayoutRegion","NavRail","ReadOnlyBanner","RoleBadge","ScreenComposition","SessionControls","StatusBar","UserMenu","WorkspaceLayout","WorkspaceLayoutBar","WorkspaceLayoutGrid","WorkspaceLayoutProvider","WorkstationShell","WorkstationTopbar"];
+  var NAMES = ["ARCHETYPES","GlobalSearch","LayoutHooks","LayoutRegion","NavRail","ReadOnlyBanner","ReturnPath","RoleBadge","ScreenComposition","SessionControls","StatusBar","UserMenu","WorkspaceLayout","WorkspaceLayoutBar","WorkspaceLayoutGrid","WorkspaceLayoutProvider","WorkstationShell","WorkstationTopbar"];
   var root = global.MeridianAPI = global.MeridianAPI || {};
   var api = root.shell || {};
   function ns(){ return global[NS] || {}; }

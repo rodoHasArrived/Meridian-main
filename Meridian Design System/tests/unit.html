@@ -6,8 +6,7 @@
 <title>Meridian 3.5 — offline unit tests</title>
 <link rel="stylesheet" href="../styles.css">
 <style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px}table{border-collapse:collapse;width:100%;max-width:980px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}</style>
-<script>/* offline React stub: enough for module eval — pure model/hook-carrier exports never render */
-if(!window.React){const noop=()=>{},h=(t,p,...c)=>({type:t,props:p||{},children:c});window.React={createElement:h,Fragment:"Fragment",createContext:(v)=>({Provider:"Provider",Consumer:"Consumer",_defaultValue:v}),useState:(v)=>[typeof v==="function"?v():v,noop],useMemo:(f)=>f(),useCallback:(f)=>f,useEffect:noop,useLayoutEffect:noop,useRef:(v)=>({current:v}),useContext:(c)=>c&&c._defaultValue,useId:()=>":r0:",useReducer:(r,v)=>[v,noop],forwardRef:(f)=>f,memo:(c)=>c,Children:{map:(c,f)=>[].concat(c||[]).map(f),toArray:(c)=>[].concat(c||[])},isValidElement:()=>false,cloneElement:(e)=>e,version:"stub"};window.ReactDOM={createRoot:()=>({render:noop,unmount:noop})};}</script>
+<script src="../_preview_runtime.js"></script>
 <script src="../_ds_bundle.js"></script>
 <script src="../api/coordination.js"></script>
 <script src="../api/evidence.js"></script>
@@ -169,10 +168,6 @@ async function main() {
     eq(X.attestationState(att).state, "superseded");
   });
 
-  const fails = rows.filter((r) => !r.ok).length;
-  document.getElementById("sum").textContent = `${rows.length - fails} passed · ${fails} failed · ${rows.length} total`;
-  document.title = fails ? `FAIL ${fails}/${rows.length}` : `PASS ${rows.length}/${rows.length}`;
-  window.__testResults = { total: rows.length, fails, rows };
 }
 // async support: t() queues AsyncFunction assertions and the runner awaits them all.
 (async () => {
@@ -180,7 +175,9 @@ async function main() {
   const syncT = t;
   t = (name, fn) => {
     if (fn.constructor.name === "AsyncFunction") {
-      pending.push(fn().then(() => syncT(name, () => true)).catch((e) => syncT(name, () => { throw e; })));
+      const assertionSuite = suite;
+      const report = (assertion) => { const activeSuite = suite; suite = assertionSuite; syncT(name, assertion); suite = activeSuite; };
+      pending.push(fn().then(() => report(() => true)).catch((e) => report(() => { throw e; })));
     } else syncT(name, fn);
   };
   await main();

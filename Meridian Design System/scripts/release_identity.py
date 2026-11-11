@@ -8,24 +8,25 @@ from three machine-readable sources and nothing else:
   _ds_manifest.json     the census — exports, modules, cards, templates, tokens, themes, fonts
   api/families.json     the public family assignment and the maturity register
 
-It rewrites the marked blocks in readme.md and docs/METRICS.md. This exists because the tree
+It rewrites marked blocks in README.md, docs/METRICS.md, and index.html. This exists because the tree
 called itself production-ready 3.5.0 in one file, a 4.2.0 tree in another, and carried unreleased
 4.1/4.2 work in a third — and because a family table that summed to 284 sat under a sentence
 claiming it covered 303.
 
   python scripts/release_identity.py            # print both blocks
-  python scripts/release_identity.py --write     # rewrite readme.md + docs/METRICS.md
+  python scripts/release_identity.py --write     # rewrite marked documentation/landing blocks
   python scripts/release_identity.py --check     # exit 1 on drift (CI gate)
 """
-import collections, hashlib, json, re, sys, pathlib
+import collections, hashlib, html, json, re, sys, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TARGETS = {
-    "readme.md": "release:generated",
+    "README.md": "release:generated",
     "docs/METRICS.md": "census:generated",
+    "index.html": "landing:generated",
 }
 CHANNEL_LABEL = {
-    "stable": "Production-ready",
+    "stable": "Declared stable package",
     "rc": "Release candidate",
     "beta": "Beta",
     "development": "Development snapshot",
@@ -67,17 +68,18 @@ def render_readme(release, manifest, families, c):
     label = CHANNEL_LABEL.get(release["channel"], release["channel"])
     consume = (f"Consumers should build against the last stable tag, **{release['lastStable']}**"
                if release["channel"] == "development" else
-               f"This is the supported build (**{release['version']}**)")
+               f"`release.json` declares this package **{release['version']} · {release['channel']}**")
     rc = (families or {}).get("totals", {}).get("releaseCandidate", 0)
     return "\n".join([
         f"**{label} · {release['version']} · last stable {release['lastStable']} · {release['declaredAt']}**",
         "",
-        f"> {consume}; this tree is the working branch. Identity is declared once in `release.json` and "
-        f"rendered from it by `scripts/release_identity.py` — no version is typed by hand anywhere in this "
-        f"package. QA evidence: `{release['qaReport']}`"
-        + (f", which still defers {len(release['qaDefers'])} item(s) "
-           f"({'; '.join(release['qaDefers'])}) — that is why this is not " + ("stable" if release["channel"] == "rc" else "a release candidate") + "."
+        f"> {consume}. Identity is rendered by `scripts/release_identity.py`. "
+        f"Upstream release evidence: `{release['qaReport']}`"
+        + (f"; {len(release['qaDefers'])} deferred item(s): "
+           f"{'; '.join(release['qaDefers'])}. These deferrals remain explicit in the declared channel."
            if release.get("qaDefers") else "."),
+        "> The declared channel and upstream QA describe that release; they do not certify later "
+        "working-tree additions or a consuming application. Validate the current export separately.",
         "",
         f"> **Census** (generated from `_ds_manifest.json`): "
         f"**{c['exports']} exports across {c['modules']} modules** in {c['domains']} domains · "
@@ -124,6 +126,18 @@ def render_metrics(release, manifest, families, c):
                   "contract; `core` is precisely why the split exists."]
     return "\n".join(lines)
 
+def render_landing(release, manifest, c):
+    label = html.escape(f"PROGRAMMED INSTITUTIONALISM · {release['version']} · DECLARED {release['channel'].upper()}")
+    counts = {"components": c["exports"], "templates": c["templates"],
+              "tokens": c["tokens"], "cards": c["cards"]}
+    return (
+        '<div class="masthead"><div class="in"><img src="assets/brand/meridian-mark-light.svg" '
+        'alt=""><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">'
+        + label + '</span></div></div>\n'
+        + '<script type="application/json" id="landing-manifest">'
+        + json.dumps(counts, sort_keys=True) + '</script>'
+    )
+
 def splice(path, marker, block):
     text = (ROOT / path).read_text(encoding="utf-8")
     begin, end = f"<!-- {marker}:begin -->", f"<!-- {marker}:end -->"
@@ -137,14 +151,14 @@ def main():
     release, manifest, families = load()
     c = census(manifest)
     blocks = {
-        "readme.md": render_readme(release, manifest, families, c),
+        "README.md": render_readme(release, manifest, families, c),
         "docs/METRICS.md": render_metrics(release, manifest, families, c),
+        "index.html": render_landing(release, manifest, c),
     }
     if families and families["totals"]["exports"] != c["exports"]:
         print(f"FAIL: api/families.json covers {families['totals']['exports']} exports, manifest has "
               f"{c['exports']} — run scripts/generate_families.py --write", file=sys.stderr)
-        if "--check" in sys.argv:
-            return 1
+        return 1
 
     drift, errors = [], []
     for path, marker in TARGETS.items():

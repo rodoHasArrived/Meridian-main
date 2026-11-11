@@ -16,3 +16,4 @@ In-scope figures print a quiet scope word; foreign figures get a left rail and a
 `ScopeMismatch` audits its region and renders nothing when everything is in scope — put one at the foot of a dense analytical panel rather than annotating every figure.
 
 Nest providers: a position drawer opened over a security workspace wraps its own `ObjectScopeProvider scope="position"`, so the drawer's figures read as in-scope inside it while the page behind stays security-scoped.
+4.3.0 audit: the ambient scope word is financial context, so it uses readable secondary ink rather than disabled-control ink in both themes.

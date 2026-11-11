@@ -41,12 +41,14 @@ export interface Annotation {
   stale?: boolean;
 }
 export interface AnnotationProviderProps {
+  /** Stable object identity. Notes stay isolated and are retained when switching back. */
   objectId?: string;
   /** Current version of the object in view — staleness is judged against it. @default 1 */
   objectVersion?: number;
   /** @default "you" */
   author?: string;
-  /** Seed notes (a persisted set). */
+  /** Seed notes on this object's first visit. Explicit other-object notes are ignored;
+   * unscoped seed notes belong to the current object. Later rerenders do not replace edits. */
   annotations?: Omit<Annotation, "stale">[];
   onChange?: (notes: Annotation[]) => void;
   /** Default for `AnnotationPanel.onFocus`. */
@@ -59,6 +61,7 @@ export interface AnnotationsApi {
   notes: Annotation[];
   current: number;
   objectId?: string;
+  /** Generates a collision-safe id; defaults version and objectId to the current object. */
   add(note: Pick<Annotation, "anchor" | "text"> & Partial<Pick<Annotation, "lifecycle" | "version" | "author">>): Annotation;
   remove(id: string): void;
   /** Re-affirm a stale note at the current version. */

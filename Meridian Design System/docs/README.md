@@ -2,6 +2,8 @@
 
 | Doc | Owns |
 | --- | --- |
+| `AUDIT_4_3_0.md` | Current PR #3501 export audit: source census, original gate failures, operating-contract coverage, and integration boundaries |
+| `EXPORT_4_3_0.md` | Reproducible build/export, archive verification, required assets, and dependency handoff |
 | `ARCHITECTURE.md` | compile model, layer/dependency rules, component anatomy, quality gates |
 | `GETTING_STARTED.md` | load the bundle, mount components, consume tokens |
 | `COOKBOOK.md` | assembly recipes — which components, in what order, for five common screens |

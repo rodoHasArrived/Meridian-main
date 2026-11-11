@@ -17,3 +17,5 @@ notional) so a risk panel can price the order before it is sent. The draft clear
 submit.
 
 The ticket owns its draft state; you get the composed order once, on submit. Pair with `Badge variant="live"` context elsewhere on the screen — the environment should never be ambiguous around order entry.
+
+Live acknowledgement belongs to the exact draft and clears after submitted-field edits, identity/environment or prefill-token changes, and submit. Quantity and limit entries must be complete positive decimals; malformed numeric prefixes remain invalid on blur. Unknown environments, missing symbols, invalid side/TIF and absent submit handlers disable submission. This UI reference does not replace server-side authorization, risk checks, validation or idempotency.

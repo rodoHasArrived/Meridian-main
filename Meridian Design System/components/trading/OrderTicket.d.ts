@@ -2,7 +2,12 @@
  * OrderTicket — order-entry primitive. Side toggle (washed green/red, never solid), qty,
  * market/limit, TIF, live notional estimate, and a hard confirm gate when
  * `environment="live"`: the submit button stays disabled until the operator checks the
- * real-capital acknowledgement. Owns its own draft state; emits the composed order once.
+ * real-capital acknowledgement for that exact draft. Editing any submitted field,
+ * identity/environment or prefill context revokes it. Accepts complete positive
+ * decimal entries; malformed numeric prefixes, exponent notation and non-finite
+ * values stay invalid, including after blur. Owns its draft state and clears after
+ * submit. Server-side validation, authorization, risk limits and idempotency remain
+ * the consuming application's responsibility.
  *
  * @example
  * <OrderTicket symbol="AAPL" lastPrice={201.12} environment="live"
@@ -36,13 +41,13 @@ export interface OrderTicketProps {
   symbol?: string;
   /** Drives the header readout and market-order notional estimate. */
   lastPrice?: number | null;
-  /** "live" renders the red confirm gate; "paper"/"fixture" badge otherwise. @default "paper" */
+  /** live/paper/fixture enable submit; unrecognized environments fail closed. @default "paper" */
   environment?: "live" | "paper" | "fixture" | string;
   /** @default "buy" */
   defaultSide?: "buy" | "sell";
   /** @default ["DAY","GTC","IOC","FOK"] */
   tifOptions?: string[];
-  /** Tick precision for the limit field — seeded and blur-formatted to this many decimals. @default 2 */
+  /** Tick precision (integer 0–20) for valid limit entries; invalid configuration uses 2. @default 2 */
   priceDecimals?: number;
   /** Seeds the draft from outside (ladder price click, amend of a working order). */
   prefill?: OrderTicketPrefill | null;

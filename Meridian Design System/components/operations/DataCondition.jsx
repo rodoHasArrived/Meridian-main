@@ -23,11 +23,13 @@ function inject() {
 .mds-cond--chip{border:1px solid transparent;border-radius:var(--radius-chip,2px);padding:3px 7px;min-height:20px;}
 .mds-cond__glyph{font-size:9px;line-height:1;display:inline-block;width:9px;text-align:center;}
 .mds-cond__detail{color:var(--text-muted);font-family:var(--font-data);font-size:10px;letter-spacing:.01em;}
+/* State hue belongs to the marker and wash; small status words need readable ink. */
+.mds-cond>span:not(.mds-cond__glyph){color:var(--text-primary);}
 .mds-condval{display:inline-flex;align-items:baseline;gap:5px;font-family:var(--font-data);
   font-variant-numeric:tabular-nums;font-size:var(--type-body,13px);color:var(--text-primary);}
 .mds-condval--missing,.mds-condval--na{color:var(--text-muted);}
-.mds-condval--missing{color:var(--cond-missing-fg);}
-.mds-condval--restricted .mds-condval__v{color:var(--cond-restricted-fg);font-style:normal;letter-spacing:.01em;}
+.mds-condval--missing{color:var(--text-primary);}
+.mds-condval--restricted .mds-condval__v{color:var(--text-primary);font-style:normal;letter-spacing:.01em;}
 .mds-condval__mark{font-size:8px;line-height:1;position:relative;top:-1px;}
 .mds-condval--estimated .mds-condval__v,.mds-condval--stale .mds-condval__v{color:var(--text-secondary);}
 .mds-legend{display:flex;flex-direction:column;gap:0;width:100%;}

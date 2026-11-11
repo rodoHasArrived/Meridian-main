@@ -41,7 +41,7 @@ export interface OptimisticLedger {
   latest(rowId: string | number, field: string): OptimisticEdit | null;
   forRow(rowId: string | number): OptimisticEdit[];
   commit(edit: Pick<OptimisticEdit, "rowId" | "field" | "prior" | "value">): Promise<void>;
-  /** Reverts only `confirmed` entries; pending ones are left to settle. */
+  /** Reverts confirmed entries newest first; skips entries beneath newer in-flight or unselected confirmed edits of the same field. */
   revert(ids: string | string[], reason: string): Promise<void>;
   dismiss(id: string): void;
 }
@@ -49,7 +49,7 @@ export interface OptimisticLedger {
 export interface OptimisticProviderProps {
   /** The write. Resolve to confirm (optionally `{receipt}`); **throw with the reason** to reject. */
   commit?: (edit: OptimisticEdit) => Promise<void | { receipt?: string }>;
-  /** The compensating write for one or many confirmed edits, under one reason. */
+  /** The compensating write for one or many confirmed edits, newest first, under one reason. Preserve this order when applying field priors. */
   revert?: (edits: OptimisticEdit[], reason: string) => Promise<void>;
   /** Fires on confirmed, rejected and reverted — the parent updates its model here. */
   onSettle?: (edit: OptimisticEdit) => void;

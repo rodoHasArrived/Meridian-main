@@ -89,7 +89,14 @@ function createLedger(handlers = { current: {} }) {
     },
     async revert(ids, reason) {
       const list = Array.isArray(ids) ? ids : [ids];
-      const targets = entries.filter((e) => list.includes(e.id) && e.status === "confirmed");
+      // Compensating writes unwind newest first. Applying 10→20 and then 20→30
+      // oldest first would finish at 20 while claiming both writes were reverted.
+      // Never undo beneath a newer in-flight or unselected confirmed write.
+      const targets = entries.filter((e, index) => list.includes(e.id) && e.status === "confirmed" &&
+        !entries.slice(index + 1).some((later) => later.rowId === e.rowId && later.field === e.field &&
+          (later.status === "pending" || later.status === "reverting" ||
+           (later.status === "confirmed" && !list.includes(later.id)))))
+        .reverse();
       if (!targets.length) return;
       targets.forEach((t) => patch(t.id, () => ({ status: "reverting" })));
       try {

@@ -139,6 +139,10 @@ def write_metrics(mf, prims, rows, tot_e, tot_c):
     zero = [s for s in sorted(tpls) if not tpls[s]["eligible"]]
     worst = [s for s in tpls if tpls[s]["eligible"] and not tpls[s]["conforming"]]
     entries = sum(len(tpls[s]["entries"]) for s in tpls)
+    partial = [s for s in sorted(tpls) if 0 < len(tpls[s]["conforming"]) < len(tpls[s]["eligible"])]
+    partial_text = ", ".join(f"`{s}` ({len(tpls[s]['conforming'])}/{len(tpls[s]['eligible'])})" for s in partial)
+    partial_summary = (f"The {len(partial)} partially migrated templates are {partial_text}."
+                       if partial else "No template is partially migrated.")
     body = ["| Primitive | Eligible | Conforming | Adoption |", "|---|---:|---:|---:|"]
     for p in prims:
         e, c = rows[p]
@@ -157,9 +161,7 @@ templates eligible**. Requiring every primitive on every template would be consi
 {chr(10).join(body)}
 
 **{tot_c} of {tot_e} eligible cells conform — {pct}%.** {len(worst)} of the {len(tpls) - len(zero)} templates with any eligibility
-conform on nothing yet; migration is real work, not a rounding error. The four partially migrated
-templates are `alm-review` ({len(tpls['alm-review']['conforming'])}/{len(tpls['alm-review']['eligible'])}), `strategy-formation` ({len(tpls['strategy-formation']['conforming'])}/{len(tpls['strategy-formation']['eligible'])}), `close-management` ({len(tpls['close-management']['conforming'])}/{len(tpls['close-management']['eligible'])}) and
-`reconciliation` ({len(tpls['reconciliation']['conforming'])}/{len(tpls['reconciliation']['eligible'])}).
+conform on nothing yet; migration is real work, not a rounding error. {partial_summary}
 
 Two figures deliberately absent from this table: a target, and a trend. A percentage is a diagnosis
 of where local state still lives, not a number to move. `Capsule` reads {round(cap_c / cap_e * 100, 1) if cap_e else 0}% on {cap_e} eligible

@@ -2,11 +2,11 @@
 """Meridian — inventory generator (restored 3.5, self-contained, stdlib only, offline).
 
 Regenerates the census between the `<!-- inventory:generated:begin/end -->` markers in
-readme.md from _ds_manifest.json — never hand-edit that block. Idempotent: running twice
+README.md from _ds_manifest.json — never hand-edit that block. Idempotent: running twice
 produces identical bytes.
 
   python scripts/generate_inventory.py            # print the block
-  python scripts/generate_inventory.py --write    # rewrite readme.md in place
+  python scripts/generate_inventory.py --write    # rewrite README.md in place
   python scripts/generate_inventory.py --check    # exit 1 on drift (CI gate)
 """
 import json, re, sys, collections, pathlib
@@ -26,12 +26,14 @@ def load():
         by_module.setdefault(key, []).append(comp["name"])
     return by_module
 
-def render(by_module):
+def render(by_module, namespace=None):
+    if namespace is None:
+        namespace = json.loads((ROOT / "_ds_manifest.json").read_text(encoding="utf-8"))["namespace"]
     total_modules = len(by_module)
     total_exports = sum(len(v) for v in by_module.values())
     out = []
     out.append(f"**{total_modules} modules across {len(DOMAINS)} domains → {total_exports} exported symbols** "
-               "on `window.MeridianDesignSystem_205d17` — this census is generated from `_ds_manifest.json` by "
+               f"on `window.{namespace}` — this census is generated from `_ds_manifest.json` by "
                "`scripts/generate_inventory.py` (run with `--write` after adding a component; CI fails on drift). "
                "Per-component one-liners live in each `<Name>.prompt.md`, when-to-reach-for guidance in "
                "`guidelines/PATTERNS.md`, the domain map in `components/README.md`.")
@@ -56,21 +58,21 @@ def render(by_module):
 def main():
     by_module = load()
     block = render(by_module)
-    readme = (ROOT / "readme.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
     begin, end = "<!-- inventory:generated:begin -->", "<!-- inventory:generated:end -->"
     if begin not in readme or end not in readme:
-        print("readme.md: inventory markers missing", file=sys.stderr)
+        print("README.md: inventory markers missing", file=sys.stderr)
         return 2
     pre, rest = readme.split(begin, 1)
     _, post = rest.split(end, 1)
     updated = pre + begin + "\n" + block + "\n" + end + post
     if "--write" in sys.argv:
-        (ROOT / "readme.md").write_text(updated, encoding="utf-8")
-        print(f"readme.md inventory updated · {len(by_module)} modules")
+        (ROOT / "README.md").write_text(updated, encoding="utf-8")
+        print(f"README.md inventory updated · {len(by_module)} modules")
         return 0
     if "--check" in sys.argv:
         if updated != readme:
-            print("DRIFT: readme.md inventory does not match _ds_manifest.json — run with --write", file=sys.stderr)
+            print("DRIFT: README.md inventory does not match _ds_manifest.json — run with --write", file=sys.stderr)
             return 1
         print("inventory in sync")
         return 0

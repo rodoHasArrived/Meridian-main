@@ -3,8 +3,8 @@
   "authored": true,
   "note": "Hand-authored judgment, machine-checked. Eligibility is a design decision per screen and cannot be generated; scripts/check_template_eligibility.py validates completeness, reason codes and the reference scan, and regenerates the adoption block in docs/METRICS.md.",
   "contract": "guidelines/TEMPLATE_CONTRACT.md",
-  "release": "4.2.0-dev",
-  "classifiedOn": "2026-09-02",
+  "release": "4.3.0",
+  "classifiedOn": "2026-11-11",
   "unit": "template directory (the unit the picker counts), not .dc.html entry",
   "primitives": {
     "ctx": "WorkspaceContextBar / WorkspaceContextProvider",
@@ -32,83 +32,83 @@
     "not-configurable": "Modules are permanent sections, not genuinely movable, resizable or replaceable."
   },
   "totals": {
-    "templates": 28,
-    "entries": 36,
+    "templates": 40,
+    "entries": 49,
     "primitives": 10,
-    "cells": 280,
-    "eligibleCells": 156,
-    "conformingCells": 22,
-    "adoptionPct": 14.1
+    "cells": 400,
+    "eligibleCells": 244,
+    "conformingCells": 24,
+    "adoptionPct": 9.8
   },
   "adoption": {
     "ctx": {
       "primitive": "WorkspaceContextBar / WorkspaceContextProvider",
-      "eligible": 18,
-      "conforming": 4,
-      "pct": 22.2,
+      "eligible": 29,
+      "conforming": 5,
+      "pct": 17.2,
       "referencedByIneligible": 0
     },
     "sel": {
       "primitive": "LinkedSelectionProvider",
-      "eligible": 22,
+      "eligible": 34,
       "conforming": 3,
-      "pct": 13.6,
+      "pct": 8.8,
       "referencedByIneligible": 0
     },
     "tim": {
       "primitive": "TimeContextProvider",
-      "eligible": 20,
+      "eligible": 31,
       "conforming": 2,
-      "pct": 10,
+      "pct": 6.5,
       "referencedByIneligible": 0
     },
     "obj": {
       "primitive": "ObjectHeader",
-      "eligible": 21,
-      "conforming": 4,
-      "pct": 19,
+      "eligible": 33,
+      "conforming": 5,
+      "pct": 15.2,
       "referencedByIneligible": 0
     },
     "dec": {
       "primitive": "DecisionFlowProvider",
-      "eligible": 12,
+      "eligible": 21,
       "conforming": 1,
-      "pct": 8.3,
+      "pct": 4.8,
       "referencedByIneligible": 0
     },
     "grd": {
       "primitive": "ActionGuardList",
-      "eligible": 15,
+      "eligible": 24,
       "conforming": 1,
-      "pct": 6.7,
+      "pct": 4.2,
       "referencedByIneligible": 0
     },
     "con": {
       "primitive": "ContinuityFrame",
-      "eligible": 22,
+      "eligible": 32,
       "conforming": 4,
-      "pct": 18.2,
+      "pct": 12.5,
       "referencedByIneligible": 0
     },
     "fig": {
       "primitive": "AnalyticalFigure",
-      "eligible": 9,
+      "eligible": 14,
       "conforming": 1,
-      "pct": 11.1,
+      "pct": 7.1,
       "referencedByIneligible": 0
     },
     "dat": {
       "primitive": "Datum",
-      "eligible": 11,
+      "eligible": 20,
       "conforming": 2,
-      "pct": 18.2,
+      "pct": 10.0,
       "referencedByIneligible": 0
     },
     "cap": {
       "primitive": "Capsule",
       "eligible": 6,
       "conforming": 0,
-      "pct": 0,
+      "pct": 0.0,
       "referencedByIneligible": 0
     }
   },
@@ -135,13 +135,13 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
+        "con",
         "ctx",
-        "sel",
-        "tim",
-        "obj",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -167,13 +167,13 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
-        "obj",
-        "grd",
+        "cap",
         "con",
-        "cap"
+        "ctx",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -199,12 +199,12 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "sel",
-        "tim",
-        "obj",
+        "con",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -236,12 +236,12 @@
         "dat": 7
       },
       "conforming": [
-        "ctx",
-        "sel",
-        "obj",
         "con",
+        "ctx",
+        "dat",
         "fig",
-        "dat"
+        "obj",
+        "sel"
       ],
       "unmigrated": [
         "tim"
@@ -270,14 +270,14 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
-        "obj",
+        "cap",
         "con",
-        "fig",
+        "ctx",
         "dat",
-        "cap"
+        "fig",
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -326,14 +326,14 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "obj",
-        "dec",
-        "grd",
         "con",
+        "ctx",
+        "dat",
+        "dec",
         "fig",
-        "dat"
+        "grd",
+        "obj",
+        "sel"
       ],
       "stray": []
     },
@@ -382,14 +382,14 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
-        "obj",
+        "cap",
         "con",
-        "fig",
+        "ctx",
         "dat",
-        "cap"
+        "fig",
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -421,16 +421,16 @@
         "dat": 3
       },
       "conforming": [
-        "ctx",
-        "sel",
-        "obj",
         "con",
-        "dat"
+        "ctx",
+        "dat",
+        "obj",
+        "sel"
       ],
       "unmigrated": [
-        "tim",
         "dec",
-        "grd"
+        "grd",
+        "tim"
       ],
       "stray": []
     },
@@ -456,13 +456,13 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
+        "cap",
         "con",
-        "fig",
+        "ctx",
         "dat",
-        "cap"
+        "fig",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -489,10 +489,10 @@
       "conforming": [],
       "unmigrated": [
         "ctx",
-        "sel",
-        "obj",
         "dec",
-        "grd"
+        "grd",
+        "obj",
+        "sel"
       ],
       "stray": []
     },
@@ -518,12 +518,12 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
+        "con",
         "ctx",
-        "sel",
-        "tim",
-        "obj",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -549,10 +549,10 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "sel",
+        "cap",
         "con",
         "fig",
-        "cap"
+        "sel"
       ],
       "stray": []
     },
@@ -578,11 +578,11 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
+        "con",
         "ctx",
-        "sel",
-        "tim",
         "obj",
-        "con"
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -608,9 +608,9 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "tim",
+        "cap",
         "con",
-        "cap"
+        "tim"
       ],
       "stray": []
     },
@@ -636,13 +636,13 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
-        "obj",
         "con",
+        "ctx",
+        "dat",
         "fig",
-        "dat"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -674,16 +674,16 @@
         "con": 1
       },
       "conforming": [
+        "con",
         "ctx",
-        "sel",
-        "tim",
         "obj",
-        "con"
+        "sel",
+        "tim"
       ],
       "unmigrated": [
+        "dat",
         "dec",
-        "grd",
-        "dat"
+        "grd"
       ],
       "stray": []
     },
@@ -709,8 +709,8 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "sel",
-        "obj"
+        "obj",
+        "sel"
       ],
       "stray": []
     },
@@ -737,10 +737,10 @@
       "conforming": [],
       "unmigrated": [
         "ctx",
-        "tim",
-        "obj",
+        "dat",
         "fig",
-        "dat"
+        "obj",
+        "tim"
       ],
       "stray": []
     },
@@ -766,18 +766,19 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "sel",
-        "tim",
-        "obj",
+        "con",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
     "security-master-registry": {
       "archetype": "Investigate",
       "entries": [
+        "SecurityDetail.dc.html",
         "SecurityMasterRegistry.dc.html"
       ],
       "eligible": [
@@ -797,13 +798,13 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
+        "con",
         "ctx",
-        "sel",
-        "tim",
-        "obj",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -852,8 +853,8 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "grd",
-        "con"
+        "con",
+        "grd"
       ],
       "stray": []
     },
@@ -887,12 +888,12 @@
         "con": 1
       },
       "conforming": [
+        "con",
         "ctx",
-        "tim",
-        "obj",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "tim"
       ],
       "unmigrated": [
         "sel"
@@ -921,12 +922,12 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "sel",
-        "tim",
-        "obj",
+        "con",
         "dec",
         "grd",
-        "con"
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -956,15 +957,15 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
-        "ctx",
-        "sel",
-        "tim",
-        "obj",
-        "dec",
-        "grd",
         "con",
+        "ctx",
+        "dat",
+        "dec",
         "fig",
-        "dat"
+        "grd",
+        "obj",
+        "sel",
+        "tim"
       ],
       "stray": []
     },
@@ -990,6 +991,123 @@
       "references": {},
       "conforming": [],
       "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "amx-governance": {
+      "archetype": "Admin",
+      "entries": [
+        "AmxGovernance.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-governance; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "backtest-builder": {
+      "archetype": "Compose",
+      "entries": [
+        "BacktestBuilder.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx renders strategy/benchmark EquityCurve, DrawdownChart with a -6% threshold, and return Histogram; these require figure and reference contracts. Existing form/draft/data prerequisites retain the strategy-formation eligibility. Fixed panels are not configurable. Adoption scans only the .dc.html entry, so imported JSX names are not counted as conformance."
+    },
+    "backtest-compare": {
+      "archetype": "Investigate",
+      "entries": [
+        "BacktestCompare.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx compares two selected immutable runs, KPI deltas, overlaid equity paths, drawdown and return distributions. Context, linked selection, clocks, object, continuity, figure and datum contracts apply; the permanent fixed panels have no working move/resize/replace controls, so Capsule is exempt. Adoption scans only the .dc.html entry."
+    },
+    "books-loop": {
+      "archetype": "Investigate",
+      "entries": [
+        "BooksLoop.dc.html"
+      ],
+      "eligible": [
         "ctx",
         "sel",
         "tim",
@@ -999,7 +1117,296 @@
         "con",
         "dat"
       ],
-      "stray": []
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 2
+      },
+      "conforming": [
+        "ctx"
+      ],
+      "unmigrated": [
+        "con",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: BooksLoop.dc.html carries shared entity/basis/period scope and selected identities across tie-out, draft journal, ledger, trial balance and account sheet; stage/review/submit is guarded. Actual/projected residual zero and debit-credit parity are meaningful references, so Datum is eligible. There is no plotted visualization or configurable module. Only actual entry references count as adoption."
+    },
+    "covered-call-lab": {
+      "archetype": "Compose",
+      "entries": [
+        "CoveredCallLab.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx compares strategy and underlying EquityCurve, with overwrite/model parameters and time-bounded option-chain evidence. Figure and comparator/reference contracts apply. Fixed request/result panels do not qualify as configurable Capsules. Adoption scans only the .dc.html entry."
+    },
+    "family-office": {
+      "archetype": "Investigate",
+      "entries": [
+        "FamilyOffice.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows ownership-graph; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "journaling-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "JournalingWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx joins journal entry, posting history and statement reconciliation; balanced debit/credit arithmetic and reconciliation parity are meaningful references, so Datum is eligible. No plotted figure or configurable module is present. Imported JSX names are not counted as entry conformance."
+    },
+    "position-detail": {
+      "archetype": "Investigate",
+      "entries": [
+        "PositionDetail.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "obj": 1
+      },
+      "conforming": [
+        "obj"
+      ],
+      "unmigrated": [
+        "ctx",
+        "dat",
+        "fig",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: PositionDetail.dc.html switches two holdings/compare mode and propagates entity, portfolio, book, basis and object to multiple work/evidence planes. Trade/posting/valuation/as-of/calculation times coexist; RollforwardTrace supports interpretation, with opening/prior-period and reconciliation-parity references. Context, linked selection, time, object, figure and datum contracts are eligible. Content is a fixed local positions-data.js snapshot with no remote refresh, writes or configurable modules, so continuity, decision, guards and Capsule remain exempt. Actual ObjectHeader entry reference is the only claimed adoption."
+    },
+    "reconciliation-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "ReconciliationWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "split-pane-reconciliation": {
+      "archetype": "Investigate",
+      "entries": [
+        "Split Pane Reconciliation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "strategy-builder": {
+      "archetype": "Compose",
+      "entries": [
+        "StrategyBuilder.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-formation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "strategy-onboarding": {
+      "archetype": "Compose",
+      "entries": [
+        "StrategyOnboarding.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "obj",
+        "dec",
+        "grd"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable",
+        "tim": "single-time-role",
+        "con": "static-content"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx is a local four-step strategy setup form with selected universe/fields/template and review-before-run prerequisites. Those support context, linked selection, object, decision and guards. It has no competing timestamp roles, retained remote evidence, analytical plot/reference, or configurable module; those remain exempt. Imported JSX names are not counted as entry conformance."
     }
   }
 }

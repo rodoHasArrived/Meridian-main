@@ -154,9 +154,9 @@ def check_generated():
     for f in ("_ds_bundle.js", "_ds_manifest.json", "_adherence.oxlintrc.json", "support.js"):
         if not (ROOT / f).exists():
             fail("generated", f"{f} missing")
-    readme = (ROOT / "readme.md").read_text(encoding="utf-8")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
     if "inventory:generated:begin" not in readme:
-        fail("generated", "readme.md inventory markers missing")
+        fail("generated", "README.md inventory markers missing")
 
 def main():
     check_components(); check_manifest(); check_templates(); check_eligibility(); check_generated()

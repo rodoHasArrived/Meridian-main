@@ -16,7 +16,7 @@
 // this file into the bundle itself), and it never injects a script or logs at load.
 (function(global){
   var NS = "MeridianDesignSystem_205d17";
-  var NAMES = ["Capsule","CapsuleBody","CapsuleFooter","CapsuleHeader","ContinuityFrame","ContinuityStatus","Datum","DatumGroup","DensityToggle","HandoverBrief","HandoverBriefChip","LinkedSelectionProvider","LinkedSelectionTarget","OBJECT_TYPES","ObjectHeader","ObjectHooks","ObjectModel","ObjectTrail","ObjectTrailList","ObjectTrailProvider","SelectionHooks","STRATEGY_FORMATION_STEPS","STRATEGY_LIFECYCLE","StrategyModel","TIME_ROLES","TimeContext","TimeContextPanel","TimeContextProvider","TimeHooks","TimeRole","TrailHooks","WorkspaceContextBar","WorkspaceContextProvider","WorkspaceHooks"];
+  var NAMES = ["ANALYTICAL_SCOPES","Capsule","CapsuleBody","CapsuleFooter","CapsuleHeader","ContinuityFrame","ContinuityStatus","Datum","DatumGroup","DensityToggle","HandoverBrief","HandoverBriefChip","LinkedSelectionProvider","LinkedSelectionTarget","OBJECT_TYPES","ObjectHeader","ObjectHooks","ObjectModel","ObjectScope","ObjectScopeProvider","ObjectTrail","ObjectTrailList","ObjectTrailProvider","STRATEGY_FORMATION_STEPS","STRATEGY_LIFECYCLE","ScopeHooks","ScopeMark","ScopeMismatch","ScopedValue","SelectionHooks","StrategyModel","TIME_ROLES","TimeContext","TimeContextPanel","TimeContextProvider","TimeHooks","TimeRole","TrailHooks","WorkspaceContextBar","WorkspaceContextProvider","WorkspaceHooks"];
   var root = global.MeridianAPI = global.MeridianAPI || {};
   var api = root.coordination || {};
   function ns(){ return global[NS] || {}; }

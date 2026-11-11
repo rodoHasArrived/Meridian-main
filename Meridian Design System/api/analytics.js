@@ -16,7 +16,7 @@
 // this file into the bundle itself), and it never injects a script or logs at load.
 (function(global){
   var NS = "MeridianDesignSystem_205d17";
-  var NAMES = ["AnalyticalField","AnalyticalFigure","AnalyticalFigureGrid","AsOfControl","AXIS_FONT","AxisChip","BarChart","CandleChart","CashFlowLadder","ChartCard","ChartCursor","ChartCursorSync","ChartFrame","ChartTooltip","ComparisonPlate","ControlDependencyGraph","CorrelationHeatmap","DepthChart","DrawdownChart","DurationContribution","EquityCurve","Figure","FIGURE_ROLES","FigureSet","Fmt","GEOMETRIES","Histogram","IntervalBar","MATURITY_BUCKETS","MaturityLadder","OwnershipGraph","PlateGrid","PnLCalendar","ROLES","ScatterChart","Sparkline","TimeframeSwitcher","TraceChart","Treemap","WaterfallChart","YieldCurve"];
+  var NAMES = ["AXIS_FONT","AnalyticalField","AnalyticalFigure","AnalyticalFigureGrid","AsOfControl","AxisChip","BarChart","CandleChart","CashFlowLadder","ChartAnnotations","ChartCard","ChartCursor","ChartCursorSync","ChartFrame","ChartTooltip","ComparisonPlate","ControlDependencyGraph","CorrelationHeatmap","DepthChart","DistributionRange","DonutChart","DotMatrix","DrawdownChart","DurationContribution","EquityCurve","FIGURE_ROLES","Figure","FigureSet","Fmt","GEOMETRIES","Histogram","IntervalBar","MATURITY_BUCKETS","MaturityLadder","OwnershipGraph","PeerComparisonStrip","PlateGrid","PnLCalendar","ROLES","ScatterChart","ScenarioSelector","SmallMultiples","Sparkline","TimeframeSwitcher","TraceChart","Treemap","WatchlistStrip","WaterfallChart","YieldCurve"];
   var root = global.MeridianAPI = global.MeridianAPI || {};
   var api = root.analytics || {};
   function ns(){ return global[NS] || {}; }

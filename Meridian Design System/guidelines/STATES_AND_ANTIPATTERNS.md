@@ -17,7 +17,7 @@ component for each so you never render a raw blank:
 | **Loading** | `Skeleton` / `SkeletonTable` (shape-preserving) | A spinner centered in an empty panel; a layout that jumps when data lands |
 | **Empty (no data)** | `EmptyState` with an action | "No results" as bare gray text |
 | **Empty (filtered out)** | `EmptyState` with a *Clear search* action — distinct copy from no-data | The same message as no-data; the user can't tell if they broke it or it's genuinely empty |
-| **Error** | `StatusBanner tone="danger"` + retry; render nothing rather than stale rows | Silently showing the last-good data as if it were fresh |
+| **Error** | Before any data: `StatusBanner tone="danger"` + retry. After valid data: `ContinuityFrame` retains the last-good snapshot with persistent source/as-of/stale labels and unsafe writes blocked | Silently showing last-good data as fresh, or discarding useful evidence on a failed refresh |
 | **Ready** | the component | — |
 
 The Alerting template's toolbar switch demonstrates all five in situ — copy that pattern.

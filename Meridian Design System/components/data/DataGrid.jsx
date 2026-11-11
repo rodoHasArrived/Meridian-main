@@ -83,6 +83,7 @@ function inject() {
   const css = `
 .mds-grid{width:100%;background:var(--bg-surface, #FCFBF8);border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:auto;}
 .mds-grid table{width:100%;border-collapse:collapse;font-family:var(--font-data,ui-monospace);font-variant-numeric:tabular-nums;}
+.mds-grid:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px;}
 .mds-grid th{position:sticky;top:0;z-index:2;background:var(--bg-light,#F8F7F3);text-align:left;
   font-family:var(--font-body,system-ui);font-size:10px;font-variant:all-small-caps;letter-spacing:.06em;
   color:var(--text-muted,#606870);font-weight:var(--weight-medium,500);padding:0 10px;
@@ -273,6 +274,7 @@ export function DataGrid({
 
   return (
     <div className={`mds-grid${className ? " " + className : ""}`}
+      tabIndex={0}
       role={label ? "region" : undefined} aria-label={label}
       style={maxHeight || shouldVirt ? { maxHeight: maxHeight || vh, overflowY: shouldVirt ? "auto" : undefined } : undefined}
       onScroll={shouldVirt ? (e) => setScrollTop(e.currentTarget.scrollTop) : undefined} {...rest}>

@@ -52,7 +52,10 @@ h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);
 </style>
 </head>
 <body>
-<div class="masthead"><div class="in"><img src="assets/brand/meridian-mark-light.svg" alt=""><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">PROGRAMMED INSTITUTIONALISM · V3.1.0 · 2026.08</span></div></div>
+<!-- landing:generated:begin -->
+<div class="masthead"><div class="in"><img src="assets/brand/meridian-mark-light.svg" alt=""><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">PROGRAMMED INSTITUTIONALISM · 4.3.0 · DECLARED STABLE</span></div></div>
+<script type="application/json" id="landing-manifest">{"cards": 135, "components": 351, "templates": 30, "tokens": 680}</script>
+<!-- landing:generated:end -->
 <div class="hero"><div class="in">
 <img class="mk lt" src="assets/brand/meridian-mark.svg" alt="Meridian mark"><img class="mk dk" src="assets/brand/meridian-mark-light.svg" alt="Meridian mark">
 <div>
@@ -78,15 +81,15 @@ h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);
 <div class="type-row"><span class="d1">Portfolio Analysis</span><span class="d2">Interface body, 14px — calm, precise, quietly intelligent.</span><span class="d3">4.35% · +2bp · 412,008</span></div>
 <h2 class="sec"><span>Inventory</span><span class="idx">03 / 04</span></h2>
 <div class="stats">
-<div><div class="v" id="st-comp">223</div><div class="l">Exported components</div></div>
-<div><div class="v" id="st-tmpl">7</div><div class="l">Archetype templates</div></div>
-<div><div class="v" id="st-tok">632</div><div class="l">Tokens</div></div>
+<div><div class="v" id="st-comp">—</div><div class="l">Public exports</div></div>
+<div><div class="v" id="st-tmpl">—</div><div class="l">Manifest templates</div></div>
+<div><div class="v" id="st-tok">—</div><div class="l">Tokens</div></div>
 <div><div class="v">48</div><div class="l">Module icons</div></div>
-<div><div class="v" id="st-cards">98</div><div class="l">Specimen cards</div></div>
+<div><div class="v" id="st-cards">—</div><div class="l">Specimen cards</div></div>
 </div>
 <h2 class="sec"><span>Documents</span><span class="idx">04 / 04</span></h2>
 <div class="grid">
-<a href="readme.md"><div class="n">§1 · GUIDE</div><div class="t">README</div><div class="d">System overview, repository map, component inventory, consumption model.</div></a>
+<a href="README.md"><div class="n">§1 · GUIDE</div><div class="t">README</div><div class="d">System overview, repository map, component inventory, consumption model.</div></a>
 <a href="docs/ARCHITECTURE.md"><div class="n">§2 · ARCHITECTURE</div><div class="t">Architecture</div><div class="d">Compile model, layer &amp; dependency rules, component anatomy, gates.</div></a>
 <a href="CONTRIBUTING.md"><div class="n">§3 · CONTRIBUTE</div><div class="t">Contributing</div><div class="d">Checklists — add a component, token, or template; release protocol.</div></a>
 <a href="guidelines/PATTERNS.md"><div class="n">§4 · PATTERNS</div><div class="t">Patterns</div><div class="d">When to reach for each component; screen composition rules.</div></a>
@@ -95,14 +98,19 @@ h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);
 <a href="docs/COORDINATED_COMPONENTS.md"><div class="n">§7 · COORDINATE</div><div class="t">Coordinated components</div><div class="d">State ownership, analytical figures, proof workflows, and reference compositions.</div></a>
 <a href="tests/gallery.html"><div class="n">§8 · GALLERY</div><div class="t">Card gallery</div><div class="d">Every specimen card on one page — visual-regression baseline.</div></a>
 <a href="CHANGELOG.md"><div class="n">§9 · HISTORY</div><div class="t">Changelog</div><div class="d">Semver history; migration notes in docs/UPGRADING.md.</div></a>
+<a href="preview/release-readiness.html"><div class="n">§10 · REFERENCE</div><div class="t">Operational states</div><div class="d">Ordinary HTML reference with local component runtime and synthetic evidence states.</div></a>
+<a href="docs/AUDIT_4_3_0.md"><div class="n">§11 · AUDIT</div><div class="t">Current export audit</div><div class="d">Current-source census, baseline findings, and integration boundaries.</div></a>
+<a href="docs/EXPORT_4_3_0.md"><div class="n">§12 · EXPORT</div><div class="t">Build and verify</div><div class="d">Reproducible build, archive inventory, checksums, and dependency handoff.</div></a>
 </div>
 </div>
 <script>
-fetch('_ds_manifest.json').then(function(r){return r.json()}).then(function(m){
+function updateInventory(m){
 var n=function(v){return Array.isArray(v)?v.length:(typeof v==='number'?v:(v&&typeof v==='object'?Object.keys(v).length:null))};
 var set=function(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v};
 set('st-comp',n(m.components));set('st-tmpl',n(m.templates));set('st-tok',n(m.tokens));set('st-cards',n(m.cards));
-}).catch(function(){});
+}
+updateInventory(JSON.parse(document.getElementById('landing-manifest').textContent));
+fetch('_ds_manifest.json').then(function(r){if(!r.ok)throw new Error('Manifest unavailable');return r.json()}).then(updateInventory).catch(function(){});
 </script>
 </body>
 </html>

@@ -51,6 +51,15 @@ function inject() {
 const fmtMoney = (n) =>
   formatMoney(Math.abs(n), { currency: "USD", decimals: 2 });
 
+// Order quantities and prices must be whole decimal entries, never numeric prefixes.
+// In particular, parseFloat("10abc") must not turn an invalid draft into an order.
+function positiveDecimal(value) {
+  const text = String(value ?? "").trim();
+  if (!/^(?:\d+(?:\.\d*)?|\.\d+)$/.test(text)) return null;
+  const number = Number(text);
+  return Number.isFinite(number) && number > 0 ? number : null;
+}
+
 export function OrderTicket({
   symbol = "",
   lastPrice = null,
@@ -69,10 +78,11 @@ export function OrderTicket({
   const [type, setType] = React.useState(prefill?.type || "market");
   // Prices carry the instrument's full tick precision: a ticket that reads 201.1 where the venue
   // quotes 201.10 invites a misread at the one moment misreads are expensive.
-  const atTick = (v) => { const n = parseFloat(v); return Number.isFinite(n) ? n.toFixed(priceDecimals) : String(v ?? ""); };
+  const digits = Number.isInteger(priceDecimals) && priceDecimals >= 0 && priceDecimals <= 20 ? priceDecimals : 2;
+  const atTick = (v) => { const n = positiveDecimal(v); return n != null ? n.toFixed(digits) : String(v ?? ""); };
   const [limit, setLimit] = React.useState(prefill?.limitPrice != null ? atTick(prefill.limitPrice) : "");
   const [tif, setTif] = React.useState(prefill?.tif || tifOptions[0]);
-  const [confirmLive, setConfirmLive] = React.useState(false);
+  const [confirmedDraft, setConfirmedDraft] = React.useState(null);
   // A prefill lands only when its token changes, so a ladder click or an amend can seed the
   // draft without the ticket fighting the operator's own typing on every re-render.
   const token = prefill ? String(prefill.token ?? `${prefill.side}|${prefill.qty}|${prefill.type}|${prefill.limitPrice}|${prefill.tif}`) : null;
@@ -85,26 +95,37 @@ export function OrderTicket({
     if (prefill.type) setType(prefill.type);
     if (prefill.limitPrice != null) setLimit(atTick(prefill.limitPrice));
     if (prefill.tif) setTif(prefill.tif);
-    setConfirmLive(false);
+    setConfirmedDraft(null);
   }, [token]);
-  const env = String(environment).toLowerCase();
+  const env = String(environment).trim().toLowerCase();
   const live = env === "live";
-  const q = parseFloat(qty);
-  const px = type === "limit" ? parseFloat(limit) : lastPrice;
-  const notional = Number.isFinite(q) && Number.isFinite(px) ? q * px : null;
-  const valid = Number.isFinite(q) && q > 0 && (type === "market" || (Number.isFinite(parseFloat(limit)) && parseFloat(limit) > 0));
+  const knownEnvironment = ["live", "paper", "fixture"].includes(env);
+  const q = positiveDecimal(qty);
+  const limitPrice = positiveDecimal(limit);
+  const px = type === "limit" ? limitPrice : lastPrice;
+  const estimate = q != null && Number.isFinite(px) && px > 0 ? q * px : null;
+  const notional = Number.isFinite(estimate) ? estimate : null;
+  const valid = typeof symbol === "string" && symbol.trim().length > 0 && knownEnvironment && q != null &&
+    ["buy", "sell"].includes(side) && tifOptions.includes(tif) &&
+    (type === "market" || (type === "limit" && limitPrice != null));
+  // Acknowledgement belongs to this draft, including externally supplied identity
+  // and prefill context. A changing quote alone does not change the submitted order.
+  const draftKey = JSON.stringify([symbol, side, qty, type, limit, tif, env, token]);
+  const confirmLive = confirmedDraft === draftKey;
+  React.useEffect(() => { setConfirmedDraft(null); }, [draftKey]);
   const guardSummary = summarizeGuards(guards);
-  const canSubmit = valid && !guardSummary.blocked && (!live || confirmLive);
+  const canSubmit = valid && typeof onSubmit === "function" && !guardSummary.blocked && (!live || confirmLive);
   const dirty = qty !== "" || limit !== "" || type !== "market";
   React.useEffect(() => {
-    onDraftChange?.({ symbol, side, qty: Number.isFinite(q) ? q : null, type, limitPrice: type === "limit" ? parseFloat(limit) : null, tif, notional, valid });
-  }, [symbol, side, qty, type, limit, tif]);
-  const clear = () => { setQty(""); setLimit(""); setType("market"); setConfirmLive(false); };
+    onDraftChange?.({ symbol, side, qty: q, type, limitPrice: type === "limit" ? limitPrice : null, tif, notional, valid });
+  }, [symbol, side, qty, type, limit, tif, notional, valid]);
+  const clear = () => { setQty(""); setLimit(""); setType("market"); setConfirmedDraft(null); };
   const submit = () => {
     if (!canSubmit || !onSubmit) return;
+    setConfirmedDraft(null);
     onSubmit({
       symbol, side, qty: q, type,
-      limitPrice: type === "limit" ? parseFloat(limit) : null,
+      limitPrice: type === "limit" ? limitPrice : null,
       tif, environment: env, notional,
     });
     clear();
@@ -114,22 +135,26 @@ export function OrderTicket({
       <div className="mds-ticket__hd">
         <span className="mds-ticket__sym">{symbol || "—"}</span>
         <span className="mds-ticket__last">{Number.isFinite(lastPrice) ? `last ${lastPrice.toFixed(4)}` : ""}</span>
-        <Badge variant={live ? "live" : env === "fixture" ? "fixture" : "paper"} dot>{env.toUpperCase()}</Badge>
+        <Badge variant={knownEnvironment ? env : "warning"} dot>{env.toUpperCase() || "UNKNOWN"}</Badge>
       </div>
+      {!knownEnvironment && <span role="status">Unknown environment — order submission disabled.</span>}
       <div className="mds-ticket__side" role="group" aria-label="Order side">
         <button type="button" className="mds-ticket__sbtn mds-ticket__sbtn--buy" aria-pressed={side === "buy"} onClick={() => setSide("buy")}>Buy</button>
         <button type="button" className="mds-ticket__sbtn mds-ticket__sbtn--sell" aria-pressed={side === "sell"} onClick={() => setSide("sell")}>Sell</button>
       </div>
       <div className="mds-ticket__grid">
         <div className="mds-ticket__num">
-          <Input label="Quantity" inputMode="decimal" value={qty} onChange={(e) => setQty(e.target.value)} placeholder="0" />
+          <Input label="Quantity" inputMode="decimal" value={qty}
+            error={qty !== "" && q == null ? "Enter a positive decimal quantity." : undefined}
+            onChange={(e) => setQty(e.target.value)} placeholder="0" />
         </div>
         <Select label="Type" value={type} onChange={setType}
           options={[{ value: "market", label: "Market" }, { value: "limit", label: "Limit" }]} />
         <div className="mds-ticket__num">
           <Input label="Limit price" inputMode="decimal" value={limit} disabled={type !== "limit"}
+            error={type === "limit" && limit !== "" && limitPrice == null ? "Enter a positive decimal price." : undefined}
             onChange={(e) => setLimit(e.target.value)} onBlur={() => limit !== "" && setLimit(atTick(limit))}
-            placeholder={type === "limit" ? (0).toFixed(priceDecimals) : "—"} />
+            placeholder={type === "limit" ? (0).toFixed(digits) : "—"} />
         </div>
         <Select label="Time in force" value={tif} onChange={setTif} options={tifOptions} />
       </div>
@@ -142,7 +167,8 @@ export function OrderTicket({
       )}
       {live && (
         <label className="mds-ticket__gate">
-          <input type="checkbox" checked={confirmLive} onChange={(e) => setConfirmLive(e.target.checked)} />
+          <input type="checkbox" checked={confirmLive}
+            onChange={(e) => setConfirmedDraft(e.target.checked ? draftKey : null)} />
           <span>Live environment — this order executes against real capital. Confirm to enable submit.</span>
         </label>
       )}
