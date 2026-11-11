@@ -71,7 +71,7 @@ import type {
   TradingWorkspaceResponse
 } from "@/types";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { formatCount } from "@/lib/format";
+import { formatCount, formatPercent } from "@/lib/format";
 import { metricFreshnessFromTrustTone, withMetricContext } from "@/lib/metric-trust";
 import { resolveFigureEvidence, resolveFigureScope, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { FigureDifferenceNote } from "@/components/meridian/figure-difference-note";
@@ -1558,11 +1558,17 @@ function PortfolioDrillInChartInner({
       rows: points.map((point) => [
         point.date,
         drillInCurrency(point.totalEquity),
-        `-${Math.abs(point.drawdownFromPeakPercent * 100).toFixed(2)}%`
+        // `|| 0` keeps a zero drawdown from rendering as "-0.00%".
+        formatPercent(-Math.abs(point.drawdownFromPeakPercent * 100) || 0, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })
       ])
     }),
     [points, runTitle]
   );
+
+  const maxDrawdownLabel = `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`;
 
   return (
     <div className="space-y-3">
@@ -1573,7 +1579,7 @@ function PortfolioDrillInChartInner({
           { label: "Final equity", value: drillInCurrency(profile.finalEquity) },
           {
             label: "Max drawdown",
-            value: `-${(profile.maxDrawdownPercent * 100).toFixed(2)}%`,
+            value: maxDrawdownLabel,
             color: "var(--chart-drawdown, #A8443C)"
           },
           { label: "Sharpe", value: profile.sharpeRatio.toFixed(2) }
@@ -1587,7 +1593,7 @@ function PortfolioDrillInChartInner({
             points.length > 0
               ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${drillInCurrency(
                   profile.finalEquity
-                )}, maximum drawdown -${(profile.maxDrawdownPercent * 100).toFixed(2)}%.`
+                )}, maximum drawdown ${maxDrawdownLabel}.`
               : undefined
           }
           accessibleData={accessibleData}
@@ -1637,6 +1643,7 @@ function PortfolioDrillInReturnDistribution({
   }
 
   const { returns, mean, best, worst, positiveShare } = stats;
+  const positiveShareLabel = `${positiveShare.toFixed(0)}%`;
 
   return (
     <ChartCard
@@ -1650,7 +1657,7 @@ function PortfolioDrillInReturnDistribution({
         },
         { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #3A7A56)" },
         { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #A8443C)" },
-        { label: "Positive days", value: `${positiveShare.toFixed(0)}%` }
+        { label: "Positive days", value: positiveShareLabel }
       ]}
       height={220}
       style={{ flexShrink: 0 }}
@@ -1659,7 +1666,7 @@ function PortfolioDrillInReturnDistribution({
         ariaLabel={`Daily return distribution for ${runTitle}`}
         ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
           best
-        )}, worst ${drillInSignedPercent(worst)}, ${positiveShare.toFixed(0)}% positive days.`}
+        )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
         values={returns}
         signed
         showMean
