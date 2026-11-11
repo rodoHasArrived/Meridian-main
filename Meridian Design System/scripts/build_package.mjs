@@ -82,6 +82,20 @@ const manifest = oldManifest;
 const babelVersion = pkg.devDependencies['@babel/standalone'];
 const jsxCompiler = `/* Meridian ${pkg.version} offline JSX preview compiler. @babel/standalone ${babelVersion}; MIT. See THIRD_PARTY_NOTICES.md. */\n`
   + await readFile(resolve(root, 'node_modules/@babel/standalone/babel.min.js'), 'utf8');
+// The template host (support.js, generated) is pinned to React and ReactDOM 18.3.1 by SRI.
+// templates/_scaffold/vendor/ carries those two files so a template opens with no network;
+// they must be the exact bytes the host's own integrity hashes name, or the host would be
+// running on something other than what it was generated for.
+const hostSource = await readFile(resolve(root, 'templates/_scaffold/support.js'), 'utf8');
+const hostRuntime = {};
+for (const [constant, file] of [['REACT_SRI', 'react-18.3.1.production.min.js'], ['REACT_DOM_SRI', 'react-dom-18.3.1.production.min.js']]) {
+  const pinned = hostSource.match(new RegExp(`var ${constant} = "(sha384-[^"]+)"`))?.[1];
+  if (!pinned) throw new Error(`templates/_scaffold/support.js no longer declares ${constant}`);
+  const bytes = await readFile(resolve(root, 'templates/_scaffold/vendor', file));
+  const actual = 'sha384-' + createHash('sha384').update(bytes).digest('base64');
+  if (actual !== pinned) throw new Error(`templates/_scaffold/vendor/${file} is ${actual}; the host pins ${pinned}`);
+  hostRuntime[`templates/_scaffold/vendor/${file}`] = { integrity: actual, bytes: bytes.length };
+}
 const generated = {
   '_ds_bundle.js': bundle.outputFiles[0].text,
   '_preview_runtime.js': runtime.outputFiles[0].text,
@@ -89,7 +103,7 @@ const generated = {
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
   counts: { exports: components.length, cards: manifest.cards.length, templates: manifest.templates.length, tokenRecords: manifest.tokens.length },
-  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, jsxPreview: babelVersion, sourceHashes,
+  build: { esbuild: pkg.devDependencies.esbuild, reactPreview: pkg.devDependencies.react, jsxPreview: babelVersion, hostRuntime, sourceHashes,
     bundledSources: Object.keys(bundle.metafile.inputs).map(path => path.split('\\').join('/'))
       .filter(path => Object.hasOwn(sourceHashes, path)).sort() },
   assets: Object.fromEntries(Object.entries({ ...generated,
@@ -97,7 +111,7 @@ const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlg
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')
   }).map(([path, content]) => [path, { sha256: hash(content), bytes: Buffer.byteLength(content) }])),
   evidenceScope: 'Design-system package export; synthetic examples; not application production certification',
-  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements', preview: 'Offline React production runtime, offline JSX compiler and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
+  externalRequirements: { components: 'Consumer supplied React global (React 18 or 19)', templates: 'Design Component host for x-dc/x-import/helmet elements; its pinned React 18.3.1 runtime is included under templates/_scaffold/vendor', preview: 'Offline React production runtime, offline JSX compiler and IBM Plex fonts included; see THIRD_PARTY_NOTICES.md' }
 };
 generated['release-build.json'] = JSON.stringify(release, null, 2) + '\n';
 for (const [name, content] of Object.entries(generated)) {
