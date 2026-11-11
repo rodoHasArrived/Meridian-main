@@ -16,5 +16,6 @@ export const BASELINE_PATH: string;
 export const RATCHETS: Record<"adHocStatusBadges" | "directIntlFormatting" | "rawTables" | "handRolledNumberFormatting" | "localMoneyFormatters", DesignSystemRatchet>;
 export function isAdHocBadgeClass(value: string): boolean;
 export function scanRatchets(): RatchetCounts;
-export function readBaseline(): RatchetCounts;
+export function readBaseline(baselinePath?: string): RatchetCounts;
+export function writeReducedBaseline(current?: RatchetCounts, baselinePath?: string): boolean;
 export function compareWithBaseline(current?: RatchetCounts, baseline?: RatchetCounts): RatchetComparison;

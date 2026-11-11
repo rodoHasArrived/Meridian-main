@@ -120,10 +120,14 @@ describe("AccountTree", () => {
   });
 
   it("returns the tab stop to the parent when the focused child is collapsed away", async () => {
-    render(<AccountTree nodes={nodes} />);
+    // Two roots, and the collapsed branch is the second: a fallback to the first row of the
+    // tree would put the tab stop on Equity and fail this.
+    const twoRoots: AccountNode[] = [{ code: "3000", name: "Equity", balance: 100 }, ...nodes];
+    render(<AccountTree nodes={twoRoots} />);
     await userEvent.click(screen.getByRole("treeitem", { name: /1010 Cash/ }));
     await userEvent.click(screen.getByRole("button", { name: "Collapse Assets" }));
     expect(screen.getByRole("treeitem", { name: /1000 Assets/ })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("treeitem", { name: /3000 Equity/ })).toHaveAttribute("tabindex", "-1");
   });
 
   it("exposes aria-level and keeps the column header outside the tree", () => {

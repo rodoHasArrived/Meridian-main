@@ -8,9 +8,12 @@
     <script data-meridian-appearance>
       // Apply the persisted choice before the startup shell's first paint.
       try {
-        const appearance = localStorage.getItem("meridian.workstation.appearance.v1");
-        if (appearance === "light" || appearance === "dark") {
-          document.documentElement.setAttribute("data-theme", appearance);
+        // The reserved developer preview owns its appearance without operator storage.
+        if (window.location.pathname.replace(/\/$/, "") !== "/workstation/__design-system") {
+          const appearance = localStorage.getItem("meridian.workstation.appearance.v1");
+          if (appearance === "light" || appearance === "dark") {
+            document.documentElement.setAttribute("data-theme", appearance);
+          }
         }
       } catch { /* Blocked storage follows the system appearance. */ }
     </script>

@@ -7,7 +7,7 @@
     "exports": 351,
     "cards": 135,
     "templates": 30,
-    "tokenRecords": 684
+    "tokenRecords": 694
   },
   "build": {
     "esbuild": "0.28.2",
@@ -23,16 +23,16 @@
       "api/primitives.js": "4c180a2daabd16d496cecccd86369fac40e6cacc51e3d44ab87e7c0285a0b78e",
       "api/shell.js": "033c09bc4874371584610596234a7f5d43168702e24ecf1e5430c0e3b49028ba",
       "api/trading.js": "d1e4efaf7268e3ab4da5faa0ec091a61b1842ee377823620d829585fefbc6802",
-      "components/accounting/AccountTree.jsx": "a68cae03ea5e15290b7f9ca9cafe02ae2baf9da9230a958395826b30e7c90526",
+      "components/accounting/AccountTree.jsx": "ed175e9c1fb2c03cafb8b0f1b30a6fb276745498e9f75cce28301d51c04b5228",
       "components/accounting/AccountingPeriodSelector.jsx": "2a6b872a19c85ce7725b4081f475f91491f181e42e642739b70fbd011206814c",
       "components/accounting/AgingTable.jsx": "4827dccb31bb114062428d0193742dea68f7122587d779ffffc140836814a61a",
-      "components/accounting/AllocationEditor.jsx": "ee151fa8aadb4d68625acccdc0c8bb8eb10b4ab221fea446e01cbd907eaf69d9",
+      "components/accounting/AllocationEditor.jsx": "b84572b95357e32c77aa8c608ab05ca6cd5d5d0ca4e6778029cdb13a356deeee",
       "components/accounting/AmountCell.jsx": "cf075e06cd3672359810daf9d0e03c9efa2b012ef266e2bbcd656f6e4c998d45",
       "components/accounting/Assurance.jsx": "b1d74804002aafe225d22c7a61dc866bf5619fc9120afc6bb2edf09999416b0b",
       "components/accounting/BasisBridge.jsx": "ab4d212327170d45265eb9fe6f3a205503cee8bd2395e9ec7e8e7cd74c6b7ad7",
       "components/accounting/BasisComparisonMatrix.jsx": "d9b335208c327bd44804c7b83275236316a3c01b28438e1e3d29c22c2379e879",
       "components/accounting/CalculationTrace.jsx": "965ee8d556b8c63c8aa5058fe54f6b38eec2aa726a391c8f7ca14f48f69b151e",
-      "components/accounting/CloseCalendar.jsx": "6363ae63d3e521df17ffa8ec848657957ad267a9997420aa60e14d408c0ec49d",
+      "components/accounting/CloseCalendar.jsx": "51a1b6de6b273d87a44facce007313a8eb138521b1cc55ffa95cf9a3e69f1fd4",
       "components/accounting/CommitmentBar.jsx": "8eb6553280b6345fc6b58c5fc9cc1e53d35d2d074bfa6a93cdeb7d82f05b5ae0",
       "components/accounting/FxRevaluationTable.jsx": "8875a2e1dc4f8d8e142757f03eb73ed6ae28c67a05d841aa2189f5b42b8ec863",
       "components/accounting/IncomeSchedule.jsx": "2f250a831b75e163901382523181eab2839ce1b6223c72c448aad88e6dc038b7",
@@ -41,7 +41,7 @@
       "components/accounting/LifecycleRibbon.jsx": "13404beefa15be74401b170f5a338216649cededb559117de72619075e690ef8",
       "components/accounting/Money.jsx": "398838b8e99b76f2022a5dbf6365a94989d25970ab4de99e9d71dd40d5ee10e0",
       "components/accounting/PostingImpactPreview.jsx": "4316a6160070194846c57bde75d77cc7db7b86f9a856bd47e8eab006a499fe93",
-      "components/accounting/ReconciliationPanel.jsx": "6c88043d8ffbebf78225e65f88eadc63e14259e854068bba0d05458989238211",
+      "components/accounting/ReconciliationPanel.jsx": "be504887b15af7d24852523a17a9ee1474e9c91f344b86a9cb74fd36893e8917",
       "components/accounting/RollforwardMatrix.jsx": "4ef5eae7ce466840b6afdba8f5aa140cdf97019eab736c1adba720aad98934b0",
       "components/accounting/RollforwardTrace.jsx": "a8f2c444a8cc247c5c6e9bd75cd013562f60a4237e2c77b706085ca0100f6be0",
       "components/accounting/ScheduleLadder.jsx": "3fdb3d3185ec4819f4063b8e9553a4cf791c402959c1d57165cf422e12889485",
@@ -62,7 +62,7 @@
       "components/charts/ChartFrame.jsx": "2f75ef6888d6b1bbb5dc3b104e5454b0d6b2d6333462889dd4703ea91adf8a22",
       "components/charts/ChartTooltip.jsx": "558b3f58559f782769242398762de488effff4d6471f8f20708e0712d42c6832",
       "components/charts/ComparisonPlate.jsx": "dc127875e2749c7126122494fe1a1e814ae641591bda35cb6498689950b573fd",
-      "components/charts/ControlDependencyGraph.jsx": "3250775e6c487993458f8306fd6dcd5416b2da192ae925aa13b0a0a0d5280a53",
+      "components/charts/ControlDependencyGraph.jsx": "ac63dcfc27ecff4e8d793e711f1c673ca97614705e1ffbf9eb862eeed50265c9",
       "components/charts/CorrelationHeatmap.jsx": "609fea70f2470bc55601f9a0ecb4e8213b44f8e9d4da7c5ac5ea8599f536fc8f",
       "components/charts/CoverageMatrix.jsx": "19cf7a6444da996be272d9cf5beb2d82addfad0fece43b3bdc781a5027277a3a",
       "components/charts/DepthChart.jsx": "9f17864422da12ea133295989d5c3e39b3717d835bcc9e044c21a775cbee83f4",
@@ -72,7 +72,7 @@
       "components/charts/DrawdownChart.jsx": "b92f936c1824e0a37835d85d29174b022438a6f7d2a473dab005f2dd752ac14a",
       "components/charts/DurationContribution.jsx": "2f1a2bcaa58be33bba37a58c0f1c7a4ff68e0c621b1e4d2513827dcf1410a01e",
       "components/charts/EquityCurve.jsx": "a02cea3ad44e1a7ee699545d27ef2799a9ac546c564e7b48a9d763e755394956",
-      "components/charts/Figure.jsx": "c7afd6b40237b1a01537773c031a734c5e65a9aba56069d4f654ec2a53c4223d",
+      "components/charts/Figure.jsx": "9c1a1489fb3d0c0987d61416f331138e8c8aa8908107b6e6e0fc5056eece678c",
       "components/charts/Histogram.jsx": "86f0a48f4257ea524646201972ca0e7130a4808474c7b337ab0af6005e46ed17",
       "components/charts/IntervalBar.jsx": "4257d6cd0f701310751bdbf2ee6b1eafbc3cf0d75c593222df7e814c9691d9c4",
       "components/charts/LineageGraph.jsx": "193add1802f299f7637647dd0e09df4d773ceeab666012174dd61acb67469168",
@@ -105,7 +105,7 @@
       "components/core/ContextMenu.jsx": "e7f0a1f3d76d2c89c44dee645dee439ac3878c93e013905a63440299bbdd7916",
       "components/core/ContinuityFrame.jsx": "fe0b61cee73fcbc9e2f3a2a8a784c9220142b080bab2779f495d88d341a2d08e",
       "components/core/DatePicker.jsx": "9b82d922ad6b2211649f84be6aff287d9a9f2d217fc5fa982b8316d545d67aa5",
-      "components/core/DateRangePicker.jsx": "eb2fc8ffc1c5f3b0b715c220ba0bf62749c2ed5c296ad9a04dc238f3587db3d2",
+      "components/core/DateRangePicker.jsx": "e3227e051cc018a9a8797929498f5f1ba3abace9b1950e4704908ccb3757ebce",
       "components/core/Datum.jsx": "85138d4318055747e56b94ac22cdcd6724b970d000ed4c87032f5277fea9effa",
       "components/core/Delta.jsx": "b7edf8e380ca42227fbc95ee671c2a6851b8883cfb389a7744e9823a104d8218",
       "components/core/DensityToggle.jsx": "3772d220111d66b3a447af867e5171943426ccb346647be2ecd2b5d07d4f5d9c",
@@ -131,7 +131,7 @@
       "components/core/LocalDate.jsx": "39340da0bc1cc4f7b00b425ae640861106fc9e598884ed5628a46f67147f82a3",
       "components/core/MaterialityAssessment.jsx": "25893c510667b0d736d31c625809d55de96fb8e01ec8371823577645bb64992a",
       "components/core/Modal.jsx": "78f47bfbc03ab983e43c3346a8a94345872aedc83fa8fb57db74a55561f6f80d",
-      "components/core/MultiSelect.jsx": "5dcfe5c7627c0c42fc7493d83494ac9d4586a31eee563f853670a73ae92450e6",
+      "components/core/MultiSelect.jsx": "9ea0741d102e606787e4721072ec310daa6ed44ddbdfcb4464a85fa314ba40b5",
       "components/core/NotificationCenter.jsx": "13d93c0d57ba3767f09b1d87b3d2b985ff0ebcc02a07aad0f70f67d5f91bb35a",
       "components/core/NumberInput.jsx": "9503311436be534fa1e7b6b3220f7a952a628dcd9f5171d75b4ba8f2196cc249",
       "components/core/ObjectModel.jsx": "acc7f714fbea4bc7e2bfeeb6cb8b1f17a540228ffb4965baa9fee516fb949b31",
@@ -210,10 +210,10 @@
       "components/operations/ClaimHeader.jsx": "34868b38e34e5c0ff27b6eb8a890d82cf80c76ecb75ba3fa8aebb4e922b8eedf",
       "components/operations/ConnectionState.jsx": "c066557db7a6d5f5e77420ff0e0a712d7817cc217e0b2d9299b9c30fd3be99a7",
       "components/operations/DataCondition.jsx": "f016bf0b977122e728c7daa1f1efd2d7e70d608de8bbc517ffb53025d35cafed",
-      "components/operations/DecisionFlow.jsx": "0d243c75ab85e1f8f67057dc67b0e4e6deaa7882d3e5d33084b3cb72b091cf93",
+      "components/operations/DecisionFlow.jsx": "f6145507354bcb220f285c414d1f497c127a0f4c4e600ddc01b69b2d248f22f8",
       "components/operations/DiffView.jsx": "e09846493e01cc98859fc82b6dd44156416ad649e57c096c498bc2ee99b8c0a3",
       "components/operations/EventTimeline.jsx": "053781b7305139f7ab8a6af012fa3ce0d92dc7dd26a6b4ebe292a53ff53ae0a6",
-      "components/operations/EvidenceInspector.jsx": "288a13cc31ad4ce07862019dba06621c03b0d7486eb5b22f130870bba2c2b6e1",
+      "components/operations/EvidenceInspector.jsx": "490fd3da34ecdbcc19fd8095a246fa5d40bf2427701c09af98d37194c2e87a34",
       "components/operations/EvidenceLink.jsx": "55a6db918befbeb2b2a9b865fd99de2b78af9f4355d781bd097debea3f4b6e8a",
       "components/operations/EvidencePreview.jsx": "2dccc4190cfdf05f63f428a8441ca539f7d2245f6e2287a6d3ceb1464d1aa89a",
       "components/operations/GateRail.jsx": "bb9fd79d6e9c1db5edde1f7d3ede5e7337fb7583cba3bb775e768c138f1fbb7a",
@@ -256,16 +256,16 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "5e52f4623d7a0980d67d5d6087a1cbbd5e6a9285ea0884ec942df2fe39fd0bc5",
-      "bytes": 1718870
+      "sha256": "3610eacc29f316b7a34ea4246d62c90ae4aa09c521524f70c08886b6749ee89d",
+      "bytes": 1719859
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",
       "bytes": 222579
     },
     "_ds_manifest.json": {
-      "sha256": "98f563499df184d7401302235dfff967de0785041a1bb77247b9925e7a426fe7",
-      "bytes": 150066
+      "sha256": "c21170d4052ad774286b9b9af2605f237ebc465740c806376334ebeaaa62d9ff",
+      "bytes": 151058
     },
     "release.json": {
       "sha256": "1b7d36ec5fe817382c067dbb06c0eff5f2852cabc1194d613a67e3c7dd7da064",

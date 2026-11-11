@@ -53,6 +53,10 @@ export interface ReconciliationPanelProps {
   columns?: ReconciliationColumn[];
   /** @default "USD" */
   currency?: string;
+  /** Called when a row's match checkbox is toggled. Without it the checkboxes are read-only. */
+  onToggleItem?: (id: string | number | undefined, matched: boolean) => void;
+  /** Called when a side's header checkbox is toggled, with that side and the new state. */
+  onToggleAll?: (side: ReconciliationSide, matched: boolean) => void;
   /** Explicit statement-side balance. Defaults to the sum of `left.items`. */
   statementBalance?: number | string;
   /** Explicit book-side balance. Defaults to the sum of `right.items`. */

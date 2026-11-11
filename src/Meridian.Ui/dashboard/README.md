@@ -2242,6 +2242,39 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `TODO-SRC-UI-DASHBOARD-002` | Wire Accounting Transaction Lab browser endpoint requests to shared API contracts | done | high |
 <!-- source-todos:end -->
 
+## Design-system development
+
+From the repository root, `npm run check:design-system` runs the focused integration
+checks without installing dependencies, rewriting baselines, regenerating checked-in assets, or starting
+a browser. Use the Node 24 version selected by `.nvmrc`, install both the dashboard and
+`Meridian Design System/` dependencies with their committed lockfiles, and provide Python 3
+(`MERIDIAN_PYTHON` can select its executable). The command rejects stale direct dependencies
+before running consistency, typography, component, asset, gallery, action-contrast, package
+freshness, and export-integrity checks. It is a focused development check; the full application
+and broader legacy package-governance checks retain their own scope and results.
+
+`npm run ratchets:update` from this directory records reductions in existing screen-level UI
+debt. It refuses new offenders or per-file increases and preserves the baseline on failure.
+
+Start `npm run dev:fixtures` from the repository root and open
+`http://127.0.0.1:5173/workstation/__design-system` to inspect the native component workbench.
+It is available only in fixture-only Vite development, before application data providers mount;
+production and backend-connected development do not expose it. The workbench uses the actual
+Button, Badge/status, form, table, and inspector adapters with fixed synthetic records. Appearance,
+density, explicit-light surfaces, data states, and button states live in its shareable URL, with
+a Reset control. It makes no backend requests and does not use operator preference storage.
+
+Browser integration verification is explicit: `npm run check:design-system:browser` from the
+repository root runs the maintained design-system smoke profile. Use its `--help` output for
+server, URL, and evidence-directory options. The profile exercises real fixture-backed routes
+and the workbench, including font loading, selected-state contrast, keyboard focus, appearance,
+density, and asset health; failures retain machine-readable results and screenshots.
+
+The exported package's `tests/gallery.html` reads its specimen inventory directly from
+`_ds_manifest.json`, with metadata, filters, links, and one optional preview at a time. A loaded
+specimen document is not a conformance verdict: some specimens retain their Design Component or
+external-runtime requirements. Package conformance and browser regression harnesses remain separate.
+
 ## Validation
 
 Launcher/process ownership coverage runs from the repository root with

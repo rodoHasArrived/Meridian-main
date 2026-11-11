@@ -93,11 +93,15 @@ def dark_blocks(text):
     found = {"auto": {}, "manual": {}, "forced-light": {}}
     text = strip_comments(text)
     # 1. @media (prefers-color-scheme: dark) { :root { ... } }
-    m = re.search(r"@media[^{]*prefers-color-scheme:\s*dark[^{]*\{(.*)\n\}", text, re.S)
-    if m:
-        for sel, body in blocks(m.group(1)):
-            if ":root" in sel:
-                found["auto"].update(declared(body))
+    # Read through the nesting-aware walker. A greedy `{(.*)\n}` capture ran on to the end of
+    # the file, so the manual block's declarations were filed under "auto" as well and a token
+    # missing from the media block alone went unseen.
+    for path, body in flat_blocks(text):
+        parts = path.split(" >> ")
+        leaf = parts[-1].replace(" ", "").split(",")
+        if (len(parts) > 1 and "prefers-color-scheme:dark" in parts[0].replace(" ", "")
+                and (":root" in leaf or AUTO_NOT_LIGHT in leaf)):
+            found["auto"].update(declared(body))
     for sel, body in blocks(text):
         s = sel.replace(" ", "")
         if 'data-theme="dark"' in s:
@@ -107,6 +111,8 @@ def dark_blocks(text):
     return found
 
 
+# Auto-dark declarations that must NOT survive a forced light theme sit under this selector.
+AUTO_NOT_LIGHT = ':root:not([data-theme="light"])'
 UPSTREAM_INDEX = pathlib.Path("src/Meridian.Ui/dashboard/src/styles/index.css")
 THEME_MIRRORS = {
     "--theme-bg-canvas": "--bg", "--theme-bg-light": "--bg-light",
@@ -154,7 +160,7 @@ def flat_blocks(text):
 
 def mode_envs(sheets):
     """Declarations per mode, in cascade order: light, auto dark, manual dark, forced light."""
-    env = {"light": {}, "auto": {}, "manual": {}, "forced-light": {}}
+    env = {"light": {}, "auto": {}, "auto-not-light": {}, "manual": {}, "forced-light": {}}
     for text in sheets:
         for selector, body in flat_blocks(text):
             leaf = selector.split(" >> ")[-1].replace(" ", "")
@@ -162,6 +168,8 @@ def mode_envs(sheets):
             dark_media = "prefers-color-scheme:dark" in selector.replace(" ", "")
             if dark_media and ":root" in parts:
                 env["auto"].update(declared(body))
+            elif dark_media and AUTO_NOT_LIGHT in parts:
+                env["auto-not-light"].update(declared(body))
             elif not dark_media and ":root" in parts or ".meridian-root" in parts:
                 env["light"].update(declared(body))
             if ':root[data-theme="dark"]' in parts:
@@ -169,9 +177,12 @@ def mode_envs(sheets):
             if ':root[data-theme="light"]' in parts and ":root" not in parts:
                 env["forced-light"].update(declared(body))
     light = env["light"]
-    return {"light": light, "auto": {**light, **env["auto"]},
+    # Forced light is what renders under an OS-dark preference with data-theme="light": the
+    # media block still matches, so a token it flips stays dark unless the forced-light block
+    # restates it. Leaving the auto layer out reported such a token with its light value.
+    return {"light": light, "auto": {**light, **env["auto"], **env["auto-not-light"]},
             "manual": {**light, **env["manual"]},
-            "forced-light": {**light, **env["forced-light"]}}
+            "forced-light": {**light, **env["auto"], **env["forced-light"]}}
 
 
 def canonical(value):
@@ -189,14 +200,40 @@ def canonical(value):
     return ("text", re.sub(r"\s*,\s*", ", ", v))
 
 
+def substitute_vars(value, replace):
+    """Replace each innermost-first var(...) call, matching parentheses by depth.
+
+    A regex that forbids parentheses inside the call cannot see `var(--a, rgba(0,0,0,.5))`,
+    which then survives as text and compares equal to itself whatever --a holds.
+    """
+    out, i = "", 0
+    while True:
+        start = value.find("var(", i)
+        if start < 0:
+            return out + value[i:]
+        depth, j = 0, start + 3
+        while j < len(value):
+            if value[j] == "(":
+                depth += 1
+            elif value[j] == ")":
+                depth -= 1
+                if depth == 0:
+                    break
+            j += 1
+        if j >= len(value):
+            return out + value[i:]
+        out += value[i:start] + replace(value[start + 4:j])
+        i = j + 1
+
+
 def resolve_token(name, env, depth=0):
     """Follow var() references (honouring fallbacks) to a canonical value, or None."""
     value = env.get(name)
     if value is None or depth > 24:
         return None
 
-    def substitute(match):
-        head, _, fallback = match.group(1).partition(",")
+    def substitute(inner):
+        head, _, fallback = inner.partition(",")
         inner = resolve_text(head.strip(), env, depth + 1)
         if inner is None:
             return fallback.strip() if fallback.strip() else "unresolved(" + head.strip() + ")"
@@ -205,7 +242,7 @@ def resolve_token(name, env, depth=0):
     previous = None
     while previous != value and "var(" in value:
         previous = value
-        value = VAR.sub(substitute, value)
+        value = substitute_vars(value, substitute)
     return value
 
 
@@ -237,10 +274,16 @@ def theme_findings(files):
             if got != f"var({mirror})":
                 out.append(f"THEME    {theme} must be var({mirror}) in the {label} dark block "
                            f"(found {got or 'nothing'}) — the name would stay light in dark mode")
-        forced = dark["forced-light"].get(mirror, "")
-        if not (forced.startswith("#") or forced.startswith("rgb")):
-            out.append(f"THEME    forced-light must state {mirror} as a literal so {theme} "
-                       "resolves light under an OS-dark preference")
+    # The auto-dark re-points must not reach a forced light theme: the media block still
+    # matches there, and a re-point left active makes `--accent: var(--theme-accent)` a cycle.
+    for selector, body in flat_blocks(files["colors-dark.css"]):
+        parts = selector.split(" >> ")
+        leaf = parts[-1].replace(" ", "").split(",")
+        if (len(parts) > 1 and "prefers-color-scheme:dark" in parts[0].replace(" ", "")
+                and ":root" in leaf):
+            for theme in sorted(set(THEME_MIRRORS) & set(declared(body))):
+                out.append(f"THEME    {theme} is re-pointed under a bare :root in the auto-dark "
+                           f"block; move it under {AUTO_NOT_LIGHT} so forced light keeps the literal")
     return out
 
 
