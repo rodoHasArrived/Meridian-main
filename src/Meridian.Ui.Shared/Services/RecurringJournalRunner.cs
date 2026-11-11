@@ -87,6 +87,8 @@ public sealed class RecurringJournalRunner(
                     AutomatedJournalDraft? calculated = null;
                     if (claim.TemplateDefinition.Template.Calculation is { } calculation && existing is null)
                     {
+                        if (index > 0 && _calculations.TryGetValue(calculation.Kind, out var dependent) && dependent.DependsOnPostedHistory)
+                            await RequirePreviousOccurrenceSettledAsync(session, definition, schedule.EffectiveDateFor(index - 1), ct).ConfigureAwait(false);
                         var outcome = await CalculateAsync(calculation, claim, period,
                             index == 0 ? period.StartDate : schedule.EffectiveDateFor(index - 1).AddDays(1), ct).ConfigureAwait(false);
                         if (outcome.Draft is null)
@@ -146,6 +148,36 @@ public sealed class RecurringJournalRunner(
         return results;
     }
 
+    /// <summary>
+    /// A calculation that reads posted balances must not run while the previous occurrence's draft
+    /// is still open: its amount is not in the ledger yet, so this occurrence would repeat it.
+    /// </summary>
+    private async Task RequirePreviousOccurrenceSettledAsync(IRecurringJournalSession session,
+        RecurringScheduleDefinition definition, DateOnly previousDate, CancellationToken ct)
+    {
+        var previousKey = RecurringJournalIdentity.OccurrenceKey(definition.ScheduleId, previousDate);
+        var previous = session.Occurrences.SingleOrDefault(item => item.OccurrenceKey == previousKey);
+        if (previous?.State == RecurringOccurrenceState.NoDraftRequired)
+            return;
+        string status;
+        if (previous is null || previous.State != RecurringOccurrenceState.Drafted)
+        {
+            status = previous is null ? "not yet processed" : previous.State.ToString();
+        }
+        else
+        {
+            var draft = await drafts.GetAsync(definition.Scope.FundProfileId, previous.DraftId, ct,
+                definition.Scope.TenantId, definition.Scope.CompanyId).ConfigureAwait(false);
+            if (draft?.Status is ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked
+                or ManualJournalEntryStatusDto.Rejected or ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked)
+                return;
+            status = draft is null ? "missing its retained draft" : $"a {draft.Status} draft";
+        }
+
+        throw new InvalidOperationException(
+            $"The {previousDate:yyyy-MM-dd} occurrence is {status}. This amount depends on what it posts; post or reject it first.");
+    }
+
     private async Task<RecurringJournalCalculationResult> CalculateAsync(JournalTemplateCalculation calculation,
         RecurringOccurrenceRecord claim, RecurringJournalPeriodState period, DateOnly? windowStart, CancellationToken ct)
     {
@@ -161,7 +193,8 @@ public sealed class RecurringJournalRunner(
         {
             outcome = await implementation.CalculateAsync(context, ct).ConfigureAwait(false);
         }
-        catch (Exception ex) when (ex is LedgerValidationException or NotSupportedException or FormatException or OverflowException)
+        catch (Exception ex) when (ex is LedgerValidationException or NotSupportedException or FormatException or OverflowException
+                                       or JsonException)
         {
             // Input and domain failures block this occurrence with their reason; they never stop
             // the remaining schedules from running.

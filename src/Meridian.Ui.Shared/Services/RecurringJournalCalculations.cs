@@ -79,6 +79,14 @@ public interface IRecurringJournalCalculation
 {
     string Kind { get; }
 
+    /// <summary>
+    /// True when the amount depends on what earlier occurrences posted (a balance, net assets or a
+    /// carrying value). The runner then calculates an occurrence only after the previous one is
+    /// posted, rejected or needed no draft, so two periods that come due together cannot both be
+    /// measured against a ledger that holds neither.
+    /// </summary>
+    bool DependsOnPostedHistory => false;
+
     Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);
 }
 
@@ -88,19 +96,41 @@ public interface IRecurringJournalCalculationInputs
     /// <summary>The scope's ledger book including everything recorded through the end of <paramref name="asOf"/>.</summary>
     Task<IReadOnlyLedger> HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct);
 
-    /// <summary>Open tax lots held in <paramref name="account"/> and acquired on or before <paramref name="asOf"/>.</summary>
-    Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, DateOnly asOf, CancellationToken ct);
+    /// <summary>
+    /// Face-value lots of <paramref name="securityId"/> open at the end of <paramref name="asOf"/>.
+    /// With a book position the quantities are reconstructed for that date; without one only
+    /// today's lot state is known, so a date in the past is refused.
+    /// </summary>
+    Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId,
+        Guid? bookPositionId, DateOnly asOf, CancellationToken ct);
 }
 
 /// <summary>Reads calculation inputs from the durable ledger journal store.</summary>
-public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore? journalStore = null) : IRecurringJournalCalculationInputs
+public sealed class LedgerRecurringJournalCalculationInputs(ILedgerJournalStore? journalStore = null, TimeProvider? timeProvider = null)
+    : IRecurringJournalCalculationInputs
 {
     public async Task<IReadOnlyLedger> HydrateLedgerAsOfAsync(RecurringJournalScope scope, DateOnly asOf, CancellationToken ct)
         => await Store().HydrateLedgerAsOfAsync(scope.LedgerBookId, RecurringJournalCalculationMath.EndOfDay(asOf), ct: ct).ConfigureAwait(false);
 
-    public async Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, DateOnly asOf, CancellationToken ct)
+    public async Task<IReadOnlyList<LedgerTaxLot>> ListOpenLotsAsync(RecurringJournalScope scope, LedgerAccount account, Guid securityId,
+        Guid? bookPositionId, DateOnly asOf, CancellationToken ct)
     {
-        var records = await Store().ListOpenTaxLotsAsync(scope.LedgerBookId, account, ct).ConfigureAwait(false);
+        IReadOnlyList<LedgerTaxLotRecord> records;
+        if (bookPositionId is { } position)
+        {
+            // Reconstructs open quantity at the end of the date and fails closed without evidence.
+            records = await Store().ListOpenTaxLotsByAssetScopeAsync(scope.LedgerBookId, securityId, position, asOf, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            var today = DateOnly.FromDateTime((timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime);
+            if (asOf < today.AddDays(-1))
+                throw new InvalidOperationException(
+                    $"Lots held on {asOf:yyyy-MM-dd} cannot be established from today's lot state. Add the 'bookPositionId' input so the holding is reconstructed for that date.");
+            records = (await Store().ListOpenTaxLotsAsync(scope.LedgerBookId, account, ct).ConfigureAwait(false))
+                .Where(record => record.SecurityId == securityId).ToArray();
+        }
+
         return records
             .Where(record => record.OpenQuantity > 0m && record.AcquiredDate <= asOf)
             // Only face-value lots (quantity in units of 100 par, unit cost as a price per 100)
@@ -149,6 +179,8 @@ public sealed class ManagementFeeAccrualCalculation(IRecurringJournalCalculation
 
     public string Kind => CalculationKind;
 
+    public bool DependsOnPostedHistory => true;
+
     public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
     {
         var annualRate = context.RequireParameter("annualRate");
@@ -182,6 +214,8 @@ public sealed class PerformanceFeeAccrualCalculation(IRecurringJournalCalculatio
     public const string CalculationKind = "performance-fee-accrual";
 
     public string Kind => CalculationKind;
+
+    public bool DependsOnPostedHistory => true;
 
     public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
     {
@@ -330,10 +364,22 @@ public sealed class FixedIncomeAccrualCalculation(
             throw new InvalidOperationException($"The cash-flow projection for {ticker} cannot be posted: {blocked}");
 
         var amortizedThrough = windowStart.AddDays(-1);
+        Guid? bookPositionId = null;
+        if (context.OptionalInput("bookPositionId") is { } positionText)
+            bookPositionId = Guid.TryParse(positionText, out var parsedPosition) && parsedPosition != Guid.Empty
+                ? parsedPosition
+                : throw new InvalidOperationException("The calculated template input 'bookPositionId' must be a book position identifier.");
         var lots = (await inputs.ListOpenLotsAsync(context.Scope, LedgerAccounts.Securities(ticker, financialAccountId),
-                context.EffectiveDate, ct).ConfigureAwait(false))
+                securityId, bookPositionId, context.EffectiveDate, ct).ConfigureAwait(false))
             .Where(lot => lot.SecurityId == securityId)
             .ToArray();
+        if (lots.Length == 0)
+            return RecurringJournalCalculationResult.NothingDue(
+                $"The fund book holds no open lot of {ticker} at {context.EffectiveDate:yyyy-MM-dd}; no coupon or amortization accrues.");
+        // Projected interest is for the security's whole principal face; the fund earns its share.
+        if (projection.TermsUsed?.PrincipalFace is not { } principalFace || principalFace <= 0m)
+            throw new InvalidOperationException(
+                $"The cash-flow projection for {ticker} states no principal face, so its interest cannot be scaled to the position held.");
 
         // The bridge posts to a scratch ledger that is never persisted; its journals are the
         // calculation result and reach the real ledger only through the approved draft.
@@ -341,7 +387,8 @@ public sealed class FixedIncomeAccrualCalculation(
         await bridge.PostProjectedCashFlowsAsync(securityId, ticker, scratch, new AmortizationLedgerPostingContext(
             lots, financialAccountId, StructuredCashFlowScenario.Base, ProjectionAsOf: projectionAsOf,
             AmortizedThrough: amortizedThrough,
-            AccrualWindow: new AmortizationAccrualWindow(windowStart, context.EffectiveDate)), ct).ConfigureAwait(false);
+            AccrualWindow: new AmortizationAccrualWindow(windowStart, context.EffectiveDate),
+            CouponPrincipalBasis: principalFace), ct).ConfigureAwait(false);
         var journals = scratch.Journal
             .Where(journal => journal.Metadata.ActivityType == AmortizationActivity &&
                 journal.Metadata.EffectiveDate is { } date && InWindow(date, windowStart, context.EffectiveDate))
@@ -388,6 +435,8 @@ public sealed class FxRevaluationCalculation(
     public const string CalculationKind = "fx-revaluation";
 
     public string Kind => CalculationKind;
+
+    public bool DependsOnPostedHistory => true;
 
     public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
     {

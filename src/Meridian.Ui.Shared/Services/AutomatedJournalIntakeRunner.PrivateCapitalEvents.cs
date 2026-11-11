@@ -82,7 +82,8 @@ public sealed partial class AutomatedJournalIntakeRunner
             var key = DistributionDeclarationDraftProducer.DraftKey(record.FundProfileId, record.InvestorId, record.DistributionId);
             if (!draftIdByKey.TryGetValue(key, out var journalEntryId))
                 throw new InvalidOperationException($"Distribution '{record.DistributionId}' for investor '{record.InvestorId}' produced no retained draft.");
-            await _distributionRegister.RecordAsync(record with { JournalEntryId = journalEntryId }, ct).ConfigureAwait(false);
+            // The draft is already admitted; a disconnecting caller must not stop its record.
+            await _distributionRegister.RecordAsync(record with { JournalEntryId = journalEntryId }, CancellationToken.None).ConfigureAwait(false);
         }
 
         return result;

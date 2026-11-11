@@ -1178,7 +1178,7 @@ public static class WorkstationServiceCollectionExtensions
         // Posting calculations a calculated recurring template can name. Each reads authoritative
         // inputs and yields one approval draft per occurrence; none submits, approves or posts.
         services.TryAddSingleton<IRecurringJournalCalculationInputs>(sp =>
-            new LedgerRecurringJournalCalculationInputs(sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>()));
+            new LedgerRecurringJournalCalculationInputs(sp.GetService<Meridian.Storage.Ledger.ILedgerJournalStore>(), sp.GetService<TimeProvider>()));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, ManagementFeeAccrualCalculation>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, PerformanceFeeAccrualCalculation>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FundExpenseAccrualCalculation>());

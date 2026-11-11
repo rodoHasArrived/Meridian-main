@@ -174,6 +174,31 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         });
     }
 
+    [Fact]
+    public async Task Distribution_DraftAdmittedWithoutItsTierRecord_BlocksTheNextDeclarationUntilRestored()
+    {
+        var first = await CreateFixtureAsync([], []);
+        var declared = await first.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+        await first.Drafts.SaveAsync(declared.Intake.Created.Single() with { Status = ManualJournalEntryStatusDto.Posted, PostedAtUtc = AsOf, PostedBy = "controller" });
+        // Simulate the interruption: the draft exists and is posted, its register record does not.
+        File.Delete(Path.Combine(_root, "registers", "distribution-register.json"));
+
+        var fixture = await CreateFixtureAsync([], []);
+        var next = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+
+        next.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        next.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("no retained waterfall record");
+        next.Intake.Created.Should().BeEmpty();
+
+        // Repeating the first declaration restores its record against the same draft.
+        var restored = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)));
+        restored.Intake.Created.Should().BeEmpty();
+        (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle()
+            .Which.JournalEntryId.Should().Be(declared.Intake.Created.Single().JournalEntryId);
+        var second = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)));
+        second.Intake.Created.Should().ContainSingle().Which.Lines.Should().Contain(line => line.AccountPath == "Equity:Carried Interest Allocation");
+    }
+
     private static IEnumerable<(string, AccountingTemplateLineSideDto, decimal)> Lines(ManualJournalEntryDraftDto draft)
         => draft.Lines.Select(line => (line.AccountPath, line.Side, line.Amount));
 

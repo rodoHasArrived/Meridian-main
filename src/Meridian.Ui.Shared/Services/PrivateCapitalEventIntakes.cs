@@ -313,6 +313,20 @@ internal static class DistributionDeclarationDraftProducer
             }
 
             var registered = registeredByInvestor.GetValueOrDefault(investorId) ?? [];
+            // A draft admitted without its register record (an interrupted earlier request) holds
+            // tiers this split cannot see. Retrying that declaration restores the record.
+            var investorKeyPrefix = DraftKey(fund, investorId, string.Empty);
+            var unregistered = queueDrafts.FirstOrDefault(draft =>
+                draft.Status != ManualJournalEntryStatusDto.Rejected &&
+                draft.TreasuryContext?.IdempotencyKey is { } draftKey &&
+                draftKey.StartsWith(investorKeyPrefix, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(draftKey, DraftKey(fund, investorId, distributionId), StringComparison.OrdinalIgnoreCase) &&
+                !registered.Any(record => string.Equals(DraftKey(fund, investorId, record.DistributionId), draftKey, StringComparison.OrdinalIgnoreCase)));
+            if (unregistered is not null)
+            {
+                blockers.Add($"Distribution draft '{unregistered.TreasuryContext!.IdempotencyKey}' for investor '{investorId}' has no retained waterfall record; repeat that declaration to restore it before declaring another.");
+                continue;
+            }
             var same = registered.FirstOrDefault(record => string.Equals(record.DistributionId, distributionId, StringComparison.OrdinalIgnoreCase));
             var priors = new List<DistributionDeclarationRecord>();
             var blocked = false;

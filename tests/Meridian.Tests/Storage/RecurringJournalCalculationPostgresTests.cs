@@ -159,7 +159,7 @@ public sealed class RecurringJournalCalculationPostgresTests
                         { AccrualStart = new DateOnly(2025, 12, 31), AccrualEnd = new DateOnly(2026, 6, 30) }],
                         Meridian.Contracts.SecurityMaster.StructuredCashFlowStaleness.Fresh, asOf,
                         TermsUsed: Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms.Empty with
-                        { MaturityDate = new DateOnly(2026, 12, 31), DayCountConvention = "ACT/365" }));
+                        { MaturityDate = new DateOnly(2026, 12, 31), DayCountConvention = "ACT/365", PrincipalFace = 1_000_000m }));
 
             var fixture = await CreateFixtureAsync(root, database, book, recurring, inputs => new FixedIncomeAccrualCalculation(inputs,
                 new Meridian.Application.SecurityMaster.SecurityMasterAmortizationLedgerBridge(cashFlows.Object,
@@ -250,7 +250,8 @@ public sealed class RecurringJournalCalculationPostgresTests
         var tenancy = new Mock<IFundProfileTenancyRegistry>(MockBehavior.Strict);
         tenancy.Setup(registry => registry.ResolveAsync(Fund, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new FundProfileOwnership(Fund, Tenant, Company));
-        var inputs = new LedgerRecurringJournalCalculationInputs(journalStore);
+        // The lot read runs "on" the accrual date; a later run without a book position is refused.
+        var inputs = new LedgerRecurringJournalCalculationInputs(journalStore, new FixedClock(At(JanuaryEnd)));
         var runner = new RecurringJournalRunner(recurring, intake, drafts,
             new RecurringJournalPeriodAuthority(journalStore, tenancy.Object, new VerifiedSubject()),
         [
@@ -306,6 +307,11 @@ public sealed class RecurringJournalCalculationPostgresTests
 
     private sealed record Fixture(RecurringJournalRunner Runner, FileManualJournalEntryDraftStore Drafts,
         ManualJournalEntryWorkbenchService Workbench);
+
+    private sealed class FixedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
 
     private sealed class VerifiedSubject : IRecurringJournalSubjectAuthority
     {

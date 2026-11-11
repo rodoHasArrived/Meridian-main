@@ -64,11 +64,15 @@ flow. Its memo states the inputs the amount came from.
 | `performance-fee-accrual` | Ledger net assets and the performance fee already payable at the effective date | `performanceFeeRate`, `highWaterMark`, `hurdleAmount`, `crystallize` (0 or 1) |
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
 | `fixed-asset-depreciation` | The fixed-asset register for the fund book | none |
-| `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId` |
+| `fixed-income-accrual` | Security Master cash-flow projection and the position's open face-value lots | inputs `securityId`, `ticker`, optional `financialAccountId`, optional `bookPositionId` |
 | `fx-revaluation` | Foreign-currency journal legs, book-currency balances and the dated FX rate for the effective date | `maxRateAgeDays` |
 
 Rules that keep an amount from being drafted twice:
 
+- **Posted history first.** Management fee, performance fee and FX revaluation read balances
+  that earlier occurrences post. Such an occurrence is calculated only after the previous one is
+  posted, rejected or needed no draft; until then it is blocked. Two periods that come due
+  together therefore cannot both be measured against a ledger that holds neither.
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
@@ -85,7 +89,11 @@ Rules that keep an amount from being drafted twice:
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
   coupon period sum to the coupon exactly. A period without accrual dates is recognized whole in
-  the window containing its period date.
+  the window containing its period date. Coupon accrues only on the lots the book holds: each
+  lot earns its face share of the projection's interest from the day it was acquired, and a book
+  with no open lot drafts nothing. Lot quantities for a past date are reconstructed when the
+  template names a `bookPositionId`; without one a backdated occurrence is blocked, because only
+  today's lot state is known.
 
 Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
 non-postable cash-flow projection, or an FX rate that is missing, has no quote date and source, or
@@ -129,7 +137,9 @@ intakes that admit approval drafts the same way:
   investor's distribution is split by the European waterfall. The tiers already paid come from
   the distribution register for posted distributions, so return of capital, preferred return and
   GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
-  a rejected one is ignored.
+  a rejected one is ignored. A distribution draft found without its register record (an
+  interrupted request) also blocks further declarations until that declaration is repeated,
+  which restores the record against the same draft.
 
 ## Definition correction and recovery
 
