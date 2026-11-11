@@ -142,7 +142,17 @@ public sealed class BondConsistencyTests
         var ladder = PortfolioCashLadderEngine.Build(Inputs(security, projection), PortfolioCashLadderEngine.RatesDownScenarioId);
         ladder.IsDecisionReady.Should().Be(supported);
         if (!supported)
-        { ladder.BlockingReasons.Should().Contain(reason => reason.Contains("Negative floating")); ladder.Buckets.Should().BeEmpty(); }
+        {
+            ladder.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+            ladder.BlockingReasons.Should().Contain(SecurityInterestSupport.NegativeInterestReason);
+            ladder.Buckets.Should().BeEmpty();
+            ladder.Contributions.Should().BeEmpty();
+        }
+        else
+        {
+            ladder.Blocker.Should().BeNull();
+            ladder.BlockingReasons.Should().BeEmpty();
+        }
     }
 
     [Theory]
@@ -349,7 +359,7 @@ public sealed class BondConsistencyTests
             .Returns(call => Task.FromResult(retained.GetValueOrDefault(call.Arg<string>())));
         var service = CashFlows(security, receipts: receipts);
         var current = (await service.CaptureProjectionAsync(security.SecurityId, StructuredCashFlowScenario.Base, new(date)))!;
-        current.ModelVersion.Should().Be("bond-cash-flow-context-v2");
+        current.ModelVersion.Should().Be("bond-cash-flow-context-v3");
         current.Projection.Schedule[0].InterestAmount.Should().Be(0.4212m);
         var legacyMethod = typeof(SecurityMasterCashFlowService).GetMethod("BuildCalculatedProjection",
             System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;

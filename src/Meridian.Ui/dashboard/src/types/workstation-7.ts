@@ -10,6 +10,7 @@ import type {
   SecurityMasterScheduleEvent,
   SecurityMasterScheduleProvenance,
   SecurityMasterScheduleSummary,
+  SecurityMasterScheduleBlocker,
 } from "../types";
 
 export interface SecurityMasterScheduleBook {
@@ -118,6 +119,19 @@ export interface SecurityMasterTrustSnapshot {
   scheduleBook?: SecurityMasterScheduleBook | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
   corporateActionDescriptors?: CorporateActionDescriptor[] | null;
+  governance?: SecurityMasterGovernance | null;
+  cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
+}
+
+/** Effective host requirements; absent means unavailable, never a Standard-profile assumption. */
+export interface SecurityMasterGovernance {
+  profile: string;
+  profileSource: string;
+  isProfileLatched: boolean;
+  requireGovernedTermAmendments: boolean;
+  requireIndependentReviewer: boolean;
+  requireIndependentProfileApprover: boolean;
+  contradictedKeys: string[];
 }
 
 export interface OperatorOverridesDto {

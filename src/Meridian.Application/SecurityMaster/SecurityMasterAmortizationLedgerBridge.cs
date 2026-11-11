@@ -135,7 +135,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             var premiumDiscountShare = cumulativeTarget - allocatedPremiumDiscount;
             allocatedPremiumDiscount = cumulativeTarget;
 
-            var couponAccrual = Math.Max(0m, RoundCash(entry.InterestAmount));
+            var couponAccrual = RoundCash(entry.InterestAmount);
             var premiumAmortization = premiumDiscountShare > 0m ? premiumDiscountShare : 0m;
             var discountAccretion = premiumDiscountShare < 0m ? -premiumDiscountShare : 0m;
 

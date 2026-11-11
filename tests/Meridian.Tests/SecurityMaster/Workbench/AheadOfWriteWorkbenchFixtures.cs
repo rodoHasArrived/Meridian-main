@@ -142,7 +142,9 @@ internal static class AheadOfWriteFixtures
     public const string StrayCallSchedule = """[{"callDate":"2028-01-01","callPrice":101}]""";
 
     public static string NotYetWritableReason(string assetClass, string path, int sinceVersion, int writes)
-        => $"'{path}' is an asset-class terms version {sinceVersion} term of '{assetClass}'. This node reads it but writes " +
+        => assetClass == "Swap"
+            ? $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms."
+            : $"'{path}' is an asset-class terms version {sinceVersion} term of '{assetClass}'. This node reads it but writes " +
            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. Leave it absent, " +
            "null or empty (ADR-024).";
 

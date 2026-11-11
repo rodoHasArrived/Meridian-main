@@ -66,4 +66,5 @@ export interface PortfolioCashLadder {
   generatedAt: string;
   securitiesEvaluated: number;
   securitiesWithFlows: number;
+  blocker?: { code: string; reason: string } | null;
 }

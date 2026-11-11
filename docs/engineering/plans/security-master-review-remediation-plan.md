@@ -529,3 +529,45 @@ Remaining work, none of it started:
   where the field permits negatives, and never floor.
 - **D10, StructuredNote:** fair value through profit or loss from valuation marks, with no accrual
   posting, when its accounting template is added.
+
+
+## Follow-through implementation — 2026-11-11
+
+The follow-through replaces per-class scalar storage across all 32 `SecurityKind` payloads with
+shared typed modules. Separate replay cases cover exercise/multipliers, currency pairs, notionals,
+profile envelopes, credit protection, structured payoffs, private valuations, listing details,
+coupon structures, principal, swap legs, covenants, maturity, scalar rates, issuers, pool detail,
+financing, sweep/fund terms, equity capital, tranche contracts, debt/redemption facts, exact raw
+rate/cadence terms, underlying swaps, rate conventions, commodity contracts, digital networks,
+underlying exposure, settlement, classification labels, reference sources and fund shares.
+Complete declared schedules retain every convention, exercise window and notice rule; the older
+Call/Accrual modules remain compatible summaries. Conflicting populated summaries and malformed
+complete-module documents are refused.
+
+Computed compatibility getters preserve existing codec/read APIs without duplicated scalar
+storage. A global reflection check requires every field of every per-class payload to use a
+registered canonical module type. The permanent legacy upcaster and historical retained-document
+fold remain; source events and historical refusal/rebuild outputs are not rewritten. Current
+new-event output gains the explicit module homes. Old economic-only Equity documents without a
+complete capital module retain their historical refusal; new complete capital documents recover
+exactly, including preferred/convertible terms.
+
+The new `rateUnit` term is an explicit per-record repair for scalar-rate classes without usable
+schedule anchors. It has no default, is version-gated, survives economic replay and uses the
+existing governed draft/review/approve/publish lifecycle. Raising this field's authoring version
+does not authorize the calculation-only companion or swap-leg schedule blocks.
+
+Current readers that cannot model signed interest return `NegativeInterestUnsupported` and no
+partial output rather than applying an implicit zero floor. Contractual calculations that support
+signed interest and frozen historical replay retain their own semantics.
+
+The browser and WPF schedule books show typed declared-schedule results and blockers, plus the
+effective governance profile, its source/latch, enforced requirements and ignored configuration.
+Both consume the shared trust snapshot. Browser row labels distinguish puts and notice deadlines.
+
+Pending migration 062 now checks the authorized apply conditions in the runner. Upgrades require
+explicit stopped-writer and retired-legacy-writer attestations, acquire parent then child exclusive
+locks without waiting, and refuse a backfill above one million identifier rows unless the command
+timeout exceeds thirty seconds (or is unlimited). The locks last through commit/rollback; the
+attestations describe deployment facts the database cannot infer. An already-applied 062 is not
+rechecked. The shipped SQL and checksum are unchanged. See the governed-edit rollout for settings.

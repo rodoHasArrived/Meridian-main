@@ -1,6 +1,7 @@
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Instruments.AssetOperations;
 
 namespace Meridian.Tests.AssetOperations;
@@ -303,6 +304,21 @@ public sealed class PortfolioCashLadderEngineTests
         ladder.Contributions.Should().BeEmpty();
         ladder.Buckets.Should().OnlyContain(static bucket => !bucket.BreachesMinimumBalance);
         ladder.Warnings.Should().ContainMatch("*settles after the 30-day notice period*");
+    }
+
+    [Fact]
+    public void Build_RateShiftBelowZero_BlocksInsteadOfApplyingAnUndeclaredFloor()
+    {
+        var position = BuildPosition("Low floating coupon", "Bond", [("Coupon", AsOf.AddDays(10), 50m)],
+            termsPayload: new { rateTypeKind = "Floating" }, annualRate: 0.005m);
+
+        var result = PortfolioCashLadderEngine.Build(BuildInputs(positions: [position]),
+            PortfolioCashLadderEngine.RatesDownScenarioId);
+
+        result.IsDecisionReady.Should().BeFalse();
+        result.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        result.Contributions.Should().BeEmpty();
+        result.Buckets.Should().BeEmpty();
     }
 
     [Fact]
