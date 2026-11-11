@@ -401,6 +401,14 @@ nothing. Replacement keeps the stored `source`, `confidence` and `manual_overrid
 already held instead of resetting them to `SecurityMaster`/null/false; new rows still get those
 defaults. Pre-existing rows become `Baseline` revisions available only from the migration
 (`history_available_from`), so earlier cutoffs report unknown history, not an absence.
+Every revision one replacement appends carries one recorded time, placed after everything the
+security already holds, so a recorded-as-of read never returns part of a replacement. A populated
+through-060 upgrade test runs the migration's own Baseline backfill across failure, retry and
+restart. Apply conditions from the 2026-11-10 review: stop Security Master writers while 062 runs
+(the backfill can deadlock with a writer holding a `securities` row lock), and let no pre-062 binary
+write afterwards, because it would change identifiers without recording a revision. The stored
+`listing_mic` is resolved by `SecurityListingIdentity.ResolvePrimaryListingMic`, the contract-level
+rule the data-quality scan's listing checks share.
 `ISecurityIdentifierHistoryStore` (implemented by `PostgresSecurityMasterStore`) reads every
 revision at a recorded cutoff and the recorded view of held identifiers with an optional
 valid-time filter. Recorded timestamps are transaction-start times kept monotonic per identity;

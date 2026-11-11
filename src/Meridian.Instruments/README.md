@@ -136,6 +136,12 @@ effective, cutover policy, then the watch) and `DeclaredExerciseRows` (an exerci
 a notice-deadline row where bounds are stated). The Security Master workbench schedule book in
 `Meridian.Ui.Shared` reads through the same two members, so one outcome gives both the same dates
 (ADR-025 lists where a published projection, a blocked run or a fault makes them differ).
+Since ADR-025 increment 8f the declaring classes are the ones whose terms schema declares the arrays:
+a CertificateOfDeposit or StructuredCredit row that declares a schedule its stamp decodes gets the
+same events. Those classes have no coupon schedule, so their exercise dates are the declared dates
+under Bond's entry and notice rules; a populated `scheduleConventions` block, business-day notice or
+an unsupported entry is a blocked outcome. Rows of either class that declare no schedule keep the
+scalar probe.
 `AssetOperationsEngineVersions` names the stamps: the legacy bond loop writes
 `fixed-income-cash-flow-projection-v2` (stored `-v1` runs are read as they are), and declared runs
 and flows keep `asset-obligation-declared-v3` / `-v2`.

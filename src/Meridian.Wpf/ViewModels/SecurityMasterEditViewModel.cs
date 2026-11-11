@@ -322,7 +322,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
         {
             StatusText = governedRefusal;
             _notificationService.ShowNotification("Security Master", governedRefusal, NotificationType.Error);
-            _loggingService.LogWarning("Security Master direct amendment refused: RequireGovernedTermAmendments is enabled.");
+            _loggingService.LogWarning("Security Master direct amendment refused: governed term amendments are required.");
             return null;
         }
 
@@ -355,7 +355,7 @@ public sealed partial class SecurityMasterEditViewModel : BindableBase
             // (or whose setting changed after the check above) still cannot write directly.
             StatusText = refusal.Message;
             _notificationService.ShowNotification("Security Master", refusal.Message, NotificationType.Error);
-            _loggingService.LogWarning("Security Master direct amendment refused by the service: RequireGovernedTermAmendments is enabled.");
+            _loggingService.LogWarning("Security Master direct amendment refused by the service: governed term amendments are required.");
             return null;
         }
     }

@@ -105,6 +105,43 @@ public sealed class BacktestMetricsEngineTests
             "only initial capital and terminal equity cross the portfolio boundary");
     }
 
+    [Theory]
+    [InlineData(137, 0.28907973649159313)]
+    [InlineData(538, 0.06679850382265506)]
+    public void Compute_Xirr_AnnualizesIrregularDurationWithoutCountingInternalCashFlows(
+        int elapsedDays,
+        double expectedAnnualRate)
+    {
+        // A 10% holding-period gain annualizes to (1.1)^(365 / elapsedDays) - 1.
+        // Intermediate snapshots and internal cash movements are not investor contributions.
+        var startDate = new DateOnly(2023, 1, 3);
+        var offsets = new[] { 0, 17, 83, elapsedDays };
+        var snapshots = BuildSnapshots([100_000m, 99_000m, 104_000m, 110_000m], startDate)
+            .Select((snapshot, i) => snapshot with
+            {
+                Date = startDate.AddDays(offsets[i]),
+                Timestamp = new DateTimeOffset(
+                    startDate.AddDays(offsets[i]).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)
+            }).ToArray();
+        var ts = snapshots[0].Timestamp;
+        var cashFlows = new List<CashFlowEntry>
+        {
+            new TradeCashFlow(ts.AddDays(1), -50_000m, "AAPL", 500L, 100m),
+            new CommissionCashFlow(ts.AddDays(1), -10m, "AAPL",
+                Guid.Parse("11111111-1111-1111-1111-111111111111")),
+            new DividendCashFlow(ts.AddDays(83), 250m, "AAPL", 500L, 0.5m),
+            new MarginInterestCashFlow(ts.AddDays(100), -40m, MarginBalance: 20_000m, AnnualRate: 0.06),
+            new ShortRebateCashFlow(ts.AddDays(101), 15m, "SPY", ShortShares: 100, AnnualRebateRate: 0.01)
+        };
+        var request = new BacktestRequest(
+            From: startDate, To: startDate.AddDays(elapsedDays), InitialCash: 100_000m);
+
+        var metrics = BacktestMetricsEngine.Compute(snapshots, cashFlows, [], request);
+
+        metrics.Xirr.Should().BeApproximately(expectedAnnualRate, 1e-9,
+            "annualization uses actual elapsed days and terminal equity already includes internal cash flows");
+    }
+
     [Fact]
     public void Compute_LargeGainOverOneDay_CapsAnnualisedReturnInsteadOfOverflowing()
     {

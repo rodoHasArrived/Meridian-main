@@ -1451,7 +1451,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "f3f95c78754949a093b82b0c37614409a15c20efb40b4b113ca89f5df78e2996",
+  "fingerprint": "72b0375e28b5ef0ca15d6866d0d0154e648217041f22600a340455da0c338629",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1887,7 +1887,7 @@
     {
       "category": "destructive_changes",
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
-      "reason": "Requires independent human schema/storage review; no owner authorization is recorded for this waiver yet. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated, and the migration only creates the table, appends Baseline revisions for existing security_identifiers rows and installs the refusal triggers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests) attempts update, delete and truncate and verifies refusal and retention.",
+      "reason": "Requires independent human schema/storage review. Authorized by the repository owner on 2026-11-11, who stated they had reviewed the migration and the findings of the agent-run technical review of 2026-11-10 (recorded in docs/architecture/security-master-extensibility-review.md). It found the DDL, the Baseline contents and the append-only guards sound and set three apply conditions: stop every Security Master writer while the migration runs, because the Baseline backfill can deadlock with a writer that holds a securities row lock; let no pre-062 binary write after it commits, because such a writer changes security_identifiers without recording a revision; and above about one million identifier rows raise the command timeout for that start. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated. The migration creates the table, one index, three comments, the rejection function and two triggers, and appends Baseline revisions for existing security_identifiers rows; it changes nothing in security_identifiers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests, SecurityMasterIdentifierRevisionMigrationTests) attempts update, delete and truncate, runs the backfill on a populated pre-062 schema across failure, retry and restart, and verifies refusal and retention.",
       "review_after": "2027-05-04",
       "rule_id": "migration-truncate"
     },
