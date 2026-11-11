@@ -1,4 +1,5 @@
 import { DetailFields } from "@/components/meridian/detail-pane";
+import { StrategyRunParityPanel } from "./strategy-screen.parity";
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
 import { useEffect, useMemo, useRef } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
@@ -39,6 +40,7 @@ import type { StrategyWorkspaceResponse } from "@/types";
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface StrategyScreenProps {
+  fundAccountId?: string | null;
   data: StrategyWorkspaceResponse | null;
 }
 
@@ -227,7 +229,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
   }
 };
 
-export function StrategyScreen({ data }: StrategyScreenProps) {
+export function StrategyScreen({ data, fundAccountId }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
   const { pathname, search } = useLocation();
@@ -1051,6 +1053,8 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
                 </div>
               ))}
             </section>
+
+            <StrategyRunParityPanel accountId={fundAccountId} runId={vm.selectedRunDetail.runId} />
 
             <section className="mt-4 rounded-md border border-border/70 bg-secondary/20 px-4 py-3">
               <div className={eyebrowClassName(vm.selectedRunDetail.acceptanceCriteriaLabel)}>{vm.selectedRunDetail.acceptanceCriteriaLabel}</div>

@@ -102,6 +102,8 @@ public sealed record OrderRequest
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
     public IReadOnlyDictionary<string, string>? Metadata { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
 }
 
 /// <summary>One leg in a multi-leg options order.</summary>
@@ -328,6 +330,8 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public OrderSessionIntent? SessionIntent { get; init; }
     public required string OrderId { get; init; }
     public required string Symbol { get; init; }
     public required OrderSide Side { get; init; }

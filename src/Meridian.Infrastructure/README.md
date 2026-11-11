@@ -155,6 +155,10 @@ This layer owns external integration details while depending on lower contracts 
 
 ## Important workflows
 
+### Alpaca execution workflow evidence
+
+Alpaca maps explicit equity session intent to `extended_hours`, exposes broker `last_equity` as nullable prior-close evidence, and supplies activity completeness cursors only after successful pagination. Canonical activity metadata distinguishes day precision from an exact transaction time. Existing execution envelope hashes remain unchanged. See [execution workflows](../../docs/engineering/execution-workflows.md) for reconciliation and the separately enabled paper probe.
+
 Provider construction preserves the credential resolver's selected record, including missing,
 removed and deleted fields. Stored records cannot be overlaid by module settings; selected module
 sidecars cannot borrow missing fields from environment mappings. Alpaca historical, streaming,

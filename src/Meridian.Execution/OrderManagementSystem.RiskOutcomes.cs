@@ -270,6 +270,10 @@ public sealed partial class OrderManagementSystem
         CancellationToken ct)
     {
         var amendmentProbe = BuildAmendmentProbe(state, modification);
+        if (await _admissionPolicy.EvaluateSessionAsync(amendmentProbe, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new AmendmentGateResult(null, session.Message, null, null);
+        if (await _admissionPolicy.EvaluateMarketReferenceAsync(amendmentProbe, ct).ConfigureAwait(false) is { } reference)
+            return new AmendmentGateResult(null, reference.Reason, null, null);
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 

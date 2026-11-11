@@ -907,6 +907,8 @@ export interface ReplayStatus {
 }
 
 export interface OrderSubmitRequest {
+  clientOrderId?: string;
+  sessionIntent?: "RegularOnly" | "QueueNextSession" | "ExtendedHours";
   symbol: string;
   side: "Buy" | "Sell";
   type: "Market" | "Limit" | "Stop";

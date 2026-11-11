@@ -13,6 +13,16 @@ const paperPromotionEvidenceReferences = [
   "RISK_CONTROLS_REVIEWED:evidence://evidence-vault/ev-0123456789abcdef01234567"
 ];
 
+vi.mock("@/lib/api/execution-workflows.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/execution-workflows.api")>("@/lib/api/execution-workflows.api");
+  return { ...actual,
+    previewExecutionOrder: vi.fn().mockImplementation(async () => ({ fingerprint: "test", canSubmit: true, requiresApproval: false,
+      evaluatedAt: new Date().toISOString(), expiresAt: new Date(Date.now() + 30_000).toISOString(), checks: [] })),
+    getJournal: vi.fn().mockResolvedValue([]),
+    getJournalSummary: vi.fn().mockResolvedValue({ orders: 0, fills: 0, coverage: "incomplete", method: "FIFO operational attribution" })
+  };
+});
+
 vi.mock("@/lib/api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api")>("@/lib/api");
   return {
@@ -886,7 +896,7 @@ describe("TradingScreen", () => {
 
   it("refreshes execution controls after control-affecting actions", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(1));
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
@@ -894,6 +904,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     const submitButton = screen.getByRole("button", { name: /submit order/i });
     expect(submitButton).toBeDisabled();
     expect(submitButton).toHaveAttribute("title", "Review the order preview and acknowledge before submitting.");
@@ -914,6 +925,7 @@ describe("TradingScreen", () => {
     const quantityInput = screen.getAllByRole("spinbutton")[0];
     await user.clear(quantityInput);
     await user.type(quantityInput, "10");
+    await waitFor(() => expect(screen.getByText("Checked; submission will revalidate.")).toBeVisible());
     await user.click(screen.getByRole("checkbox", { name: /i reviewed the order preview and risk warnings/i }));
     await user.click(screen.getByRole("button", { name: /submit order/i }));
 

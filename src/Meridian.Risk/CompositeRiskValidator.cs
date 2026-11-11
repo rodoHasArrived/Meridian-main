@@ -25,7 +25,7 @@ namespace Meridian.Risk;
 /// Rules evaluate by priority; warning flags accumulate across rules and are carried on the
 /// final result whether approved or not.
 /// </summary>
-public sealed class CompositeRiskValidator : IRiskValidator
+public sealed class CompositeRiskValidator : IRiskValidator, IRiskPreviewValidator
 {
     private readonly IReadOnlyList<IRiskRule> _rules;
     private readonly ILogger<CompositeRiskValidator> _logger;
@@ -93,12 +93,20 @@ public sealed class CompositeRiskValidator : IRiskValidator
     }
 
     /// <inheritdoc />
-    public async Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default)
+    public Task<RiskValidationResult> ValidateOrderAsync(OrderRequest request, CancellationToken ct = default) =>
+        EvaluateCoreAsync(request, observationOnly: false, ct);
+
+    public Task<RiskValidationResult> PreviewResolvedOrderAsync(GatewayResolvedOrder order, CancellationToken ct = default) =>
+        EvaluateCoreAsync(order.ToRiskRequest(), observationOnly: true, ct);
+
+    private async Task<RiskValidationResult> EvaluateCoreAsync(OrderRequest request, bool observationOnly, CancellationToken ct)
     {
         List<string>? warnings = null;
 
         if (_breakerTripPending)
         {
+            if (observationOnly)
+                return RiskValidationResult.Rejected("A critical execution halt is pending.");
             // A critical halt is owed but not yet durably applied: reject everything and
             // keep retrying the trip until it lands.
             await TryApplyPendingBreakerTripAsync(ct).ConfigureAwait(false);
@@ -122,7 +130,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
         // authorized rather than surviving for replay against a later identical order.
         // The consumed entry's rule identity scopes the bypass, and a rejection later in
         // this evaluation re-arms the approval because no order routed.
-        var releasedEntries = _escalationQueue?.TryConsumeApprovals(request) ?? [];
+        IReadOnlyList<RiskEscalationEntry> releasedEntries = observationOnly ? [] : _escalationQueue?.TryConsumeApprovals(request) ?? [];
         foreach (var released in releasedEntries)
         {
             _logger.LogInformation(
@@ -152,7 +160,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
             foreach (var rule in _rules)
             {
                 ct.ThrowIfCancellationRequested();
-                var result = await EvaluateRuleAsync(rule, request, reservations, ct).ConfigureAwait(false);
+                var result = await EvaluateRuleAsync(rule, request, reservations, ct, observationOnly).ConfigureAwait(false);
                 evaluated.Add((rule, result));
 
                 // Acted on here rather than in a later pass. Waiting until every rule had been
@@ -161,7 +169,7 @@ public sealed class CompositeRiskValidator : IRiskValidator
                 // breach that has already been established. This is also why the trip does not
                 // live in the decision pass: an earlier Error rule owning the returned rejection
                 // must not skip a later rule's Critical halt.
-                if (!result.IsApproved
+                if (!observationOnly && !result.IsApproved
                     && !result.IsUnmeasurable
                     && rule.Severity == RiskRuleSeverity.Critical
                     && !IsEvaluationFailure(result))
@@ -301,7 +309,9 @@ public sealed class CompositeRiskValidator : IRiskValidator
                     }
 
                     return Block(RestoreOnFailure(
-                        Escalate(rule, request, reason, warnings, releasedEntries),
+                        observationOnly
+                            ? WithWarnings(RiskValidationResult.Escalated(reason, escalationId: null), warnings)
+                            : Escalate(rule, request, reason, warnings, releasedEntries),
                         releasedEntries));
                 }
 
@@ -476,14 +486,15 @@ public sealed class CompositeRiskValidator : IRiskValidator
         IRiskRule rule,
         OrderRequest request,
         List<IRiskReservation> reservations,
-        CancellationToken ct)
+        CancellationToken ct,
+        bool observationOnly = false)
     {
         using var timeout = CreateTimeoutSource(ct);
 
         try
         {
             // Checked before the sync fast path so a reserving rule cannot be bypassed by one.
-            if (rule is IReservingRiskRule reserving)
+            if (!observationOnly && rule is IReservingRiskRule reserving)
             {
                 var reservation = reserving.EvaluateAndReserveAsync(request, timeout?.Token ?? ct);
 

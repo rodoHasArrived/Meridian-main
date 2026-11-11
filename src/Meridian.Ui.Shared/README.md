@@ -723,6 +723,10 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 
 ## Important workflows
 
+### Account-scoped execution workflows
+
+The shared host composes equity session/coverage policies, authoritative previews, a durable operational journal, reconciliation/notification workers, an independent disabled-by-default webhook outbox, and retained strategy comparison. Browser Orders, Settings and Strategy reuse these authenticated services. Unavailable baseline, activity or cost evidence remains unassessed. See [execution workflows](../../docs/engineering/execution-workflows.md).
+
 The seeded development launcher identifies its host through the `/readyz`
 `x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`
 at route registration only when `MERIDIAN_DEMO=true`; ordinary hosts and unmarked demos omit

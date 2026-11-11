@@ -20,10 +20,11 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// REST endpoints for the paper-trading cockpit and execution dashboard.
 /// Exposes positions, orders, portfolio state, and gateway controls.
 /// </summary>
-public static class ExecutionEndpoints
+public static partial class ExecutionEndpoints
 {
     public static void MapExecutionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        MapExecutionWorkflowEndpoints(app, jsonOptions);
         var group = app.MapGroup("/api/execution").WithTags("Execution");
         group.AddEndpointFilter(async (invocation, next) =>
         {

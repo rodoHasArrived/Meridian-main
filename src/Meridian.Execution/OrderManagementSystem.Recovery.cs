@@ -92,9 +92,10 @@ public sealed partial class OrderManagementSystem
     // Serial admission keeps both from booking the same missing increment concurrently.
     private readonly SemaphoreSlim _brokerageRecoveryReportGate = new(1, 1);
 
-    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null)
+    private async Task ProcessGatewayReportAsync(ExecutionReport report, CancellationToken ct, decimal? authorizedQuantity = null,
+        bool completeAcceptedReport = false)
     {
-        await _brokerageRecoveryReportGate.WaitAsync(ct).ConfigureAwait(false);
+        await _brokerageRecoveryReportGate.WaitAsync(completeAcceptedReport ? CancellationToken.None : ct).ConfigureAwait(false);
         try
         {
             await ProcessGatewayReportCoreAsync(report, ct, authorizedQuantity).ConfigureAwait(false);

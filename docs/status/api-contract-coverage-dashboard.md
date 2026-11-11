@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 20.0% |
-| Endpoint coverage | 30.6% |
+| Weighted score | 19.8% |
+| Endpoint coverage | 30.3% |
 | Workstation contract coverage | 4.0% |
-| Endpoints documented | 227 / 742 |
+| Endpoints documented | 227 / 748 |
 | Workstation contracts documented | 39 / 974 |
 
 ## Endpoint Coverage
@@ -201,6 +201,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/diagnostics/validate-credentials` | Gap | `src/Meridian.Ui.Shared/Endpoints/DiagnosticsEndpoints.cs:413` |
 | `GET` | `/api/errors` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:145` |
 | `GET` | `/api/events/stream` | Documented | `src/Meridian.Ui.Shared/Endpoints/StatusEndpoints.cs:251` |
+| `GET` | `/api/execution/alert-settings` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:116` |
+| `POST` | `/api/execution/alert-settings` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:126` |
+| `GET` | `/api/execution/notifications` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:74` |
+| `GET` | `/api/execution/notifications/stream` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:84` |
+| `POST` | `/api/execution/orders/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:18` |
+| `GET` | `/api/execution/strategy-parity` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Workflows.cs:36` |
 | `POST` | `/api/export/analysis` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:82` |
 | `GET` | `/api/export/formats` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:159` |
 | `POST` | `/api/export/integrity` | Gap | `src/Meridian.Ui.Shared/Endpoints/ExportEndpoints.cs:302` |
@@ -755,10 +761,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/symbols/{symbol}/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:99` |
 | `GET` | `/api/symbols/{symbol}/trades` | Documented | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:202` |
 | `POST` | `/api/symbols/{symbol}/update` | Gap | `src/Meridian.Ui.Shared/Endpoints/SymbolEndpoints.cs:506` |
-| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:664` |
-| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:698` |
-| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:773` |
-| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:752` |
+| `GET` | `/api/system/lifecycle` | Documented | `src/Meridian/UiServer.cs:668` |
+| `POST` | `/api/system/shutdown` | Documented | `src/Meridian/UiServer.cs:702` |
+| `GET` | `/api/system/shutdown/receipts/latest` | Documented | `src/Meridian/UiServer.cs:777` |
+| `GET` | `/api/system/shutdown/{operationId}` | Documented | `src/Meridian/UiServer.cs:756` |
 | `POST` | `/api/workstation/desktop/launch` | Gap | `src/Meridian.Ui.Shared/Endpoints/FirstRunEndpoints.cs:33` |
 | `GET` | `/health` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:60` |
 | `GET` | `/live` | Documented | `src/Meridian.Application/Composition/HostAdapters.cs:73` |
@@ -1745,7 +1751,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 515 mapped endpoint gap(s).
+- Document or intentionally suppress 521 mapped endpoint gap(s).
 - Document or intentionally suppress 935 workstation contract gap(s).
 
 ---

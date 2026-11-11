@@ -2740,7 +2740,9 @@ export function getPromotionHistory() {
 // --- Order management ---
 
 export function submitOrder(request: OrderSubmitRequest) {
-  return postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, request);
+  return postJson<OrderResult>(EXECUTION_API_ENDPOINTS.ordersSubmit, { ...request,
+    type: request.type === "Stop" ? "StopMarket" : request.type,
+    ...(request.type === "Stop" ? { stopPrice: request.limitPrice, limitPrice: null } : {}) });
 }
 
 export function cancelOrder(orderId: string) {

@@ -1,3 +1,4 @@
+import { ExecutionAlertSettingsPanel } from "./settings-screen.execution-alerts";
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
@@ -176,6 +177,7 @@ import type {
 import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 interface SettingsScreenProps {
+  fundAccountId?: string | null;
   session: SessionInfo | null;
   overview: SystemOverviewResponse | null;
   strategy?: StrategyWorkspaceResponse | null;
@@ -586,6 +588,7 @@ function inferSettingsTaskView({
 }
 
 export function SettingsScreen({
+  fundAccountId,
   session,
   overview,
   strategy = null,
@@ -2440,6 +2443,7 @@ export function SettingsScreen({
       <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
 
       {showChooserSection ? <SettingsTaskChooser /> : null}
+      {showPreferencesSection ? <ExecutionAlertSettingsPanel accountId={fundAccountId} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">

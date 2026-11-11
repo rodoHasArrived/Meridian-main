@@ -740,6 +740,7 @@ function AppShell({
   );
   const settingsRouteElement = (
     <SettingsScreen
+      fundAccountId={operatingScopeInput.fundAccountId}
       session={session}
       overview={overview}
       strategy={strategy}
@@ -980,7 +981,7 @@ function AppShell({
                   <Route path="/strategy/formula-workbench" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
-                  <Route path="/strategy/*" element={<StrategyScreen data={strategy} />} />
+                  <Route path="/strategy/*" element={<StrategyScreen data={strategy} fundAccountId={operatingScopeInput.fundAccountId} />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />

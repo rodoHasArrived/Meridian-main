@@ -7,6 +7,7 @@ import {
   buildOrderTicketSubmitDisabledReason
 } from "./trading-screen.order-ticket-text";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { getJournalOrder, previewExecutionOrder, type ServerOrderPreview, type SessionIntent } from "@/lib/api/execution-workflows.api";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { formatCurrency, formatMoney as formatMoneyValue, formatQuantity as formatQuantityValue, formatUtcTimestamp, pluralizeCount } from "@/lib/format";
@@ -3128,6 +3129,7 @@ export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | 
 
 export interface OrderTicketServices {
   submitOrder: (request: OrderSubmitRequest) => Promise<OrderResult>;
+  previewOrder?: (request: OrderSubmitRequest, signal?: AbortSignal) => Promise<ServerOrderPreview>;
 }
 
 export interface OrderTicketFieldControl {
@@ -3218,6 +3220,7 @@ export const emptyOrderTicketForm: OrderSubmitRequest = {
 };
 
 const defaultOrderTicketServices: OrderTicketServices = {
+  previewOrder: previewExecutionOrder,
   submitOrder: (request) => workstationApi.submitOrder(request)
 };
 
@@ -3243,6 +3246,39 @@ export function useOrderTicketViewModel({
   const [errorText, setErrorText] = useState<string | null>(null);
   const [acknowledged, setAcknowledged] = useState(false);
   const submittingRef = useRef(false);
+  const [unconfirmedSubmission, setUnconfirmedSubmission] = useState<{ account: string; id: string } | null>(null);
+  const [serverPreview, setServerPreview] = useState<ServerOrderPreview | null>(null);
+  const [serverPreviewError, setServerPreviewError] = useState<string | null>(null);
+  const [serverPreviewLoading, setServerPreviewLoading] = useState(false);
+  const [sessionIntent, setSessionIntent] = useState<SessionIntent>("RegularOnly");
+  const [previewRevision, setPreviewRevision] = useState(0);
+  const [previewNow, setPreviewNow] = useState(Date.now());
+  const draftClientId = useRef<string | null>(null);
+  const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
+  const serverPreviewBlocked = Boolean(services.previewOrder) && (unconfirmedSubmission !== null || serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired);
+  useEffect(() => {
+    setServerPreview(null); setServerPreviewError(null);
+    if (services.previewOrder) setAcknowledged(false);
+    draftClientId.current = null;
+  }, [form, fundAccountId, sessionIntent, services.previewOrder]);
+  useEffect(() => {
+    if (!open || !services.previewOrder || validateOrderTicketForm(form) || !normalizeFundAccountGuid(fundAccountId)) return;
+    const controller = new AbortController();
+    setServerPreviewLoading(true); setServerPreviewError(null);
+    const timer = window.setTimeout(() => {
+      draftClientId.current ??= `meridian-${crypto.randomUUID()}`;
+      void services.previewOrder!({ ...buildOrderSubmitRequest(form, fundAccountId), sessionIntent, clientOrderId: draftClientId.current }, controller.signal)
+        .then((result) => { if (!controller.signal.aborted) { setServerPreview(result); setAcknowledged(false); setPreviewNow(Date.now()); } })
+        .catch((error: unknown) => { if (!controller.signal.aborted) { setServerPreview(null); setServerPreviewError(toErrorMessage(error, "Authoritative preview is unavailable.")); } })
+        .finally(() => { if (!controller.signal.aborted) setServerPreviewLoading(false); });
+    }, 250);
+    return () => { controller.abort(); window.clearTimeout(timer); };
+  }, [form, fundAccountId, open, services, sessionIntent, previewRevision]);
+  useEffect(() => {
+    if (!open || !services.previewOrder) return;
+    const timer = window.setInterval(() => setPreviewNow(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [open, services.previewOrder]);
 
   const state = useMemo(
     () => buildOrderTicketState({ form, open, phase, orderId, errorText, escalationId, riskWarnings, acknowledged }),
@@ -3336,6 +3372,12 @@ export function useOrderTicketViewModel({
     }
 
     submittingRef.current = true;
+    if (services.previewOrder && (serverPreviewBlocked || !serverPreview || Date.parse(serverPreview.expiresAt) <= Date.now())) {
+      submittingRef.current = false;
+      setErrorText("Refresh and review the authoritative order checks before submitting.");
+      setAcknowledged(false);
+      return;
+    }
     setPhase("submitting");
     setOrderId(null);
     setEscalationId(null);
@@ -3343,7 +3385,8 @@ export function useOrderTicketViewModel({
     setErrorText(null);
 
     try {
-      const result = await services.submitOrder(buildOrderSubmitRequest(form, fundAccountId));
+      const result = await services.submitOrder({ ...buildOrderSubmitRequest(form, fundAccountId),
+        ...(services.previewOrder ? { sessionIntent, clientOrderId: draftClientId.current ?? undefined } : {}) });
       if (result.success) {
         setPhase("submitted");
         setOrderId(result.orderId);
@@ -3379,15 +3422,33 @@ export function useOrderTicketViewModel({
       setErrorText(result.errorMessage ?? result.reason ?? "Order failed.");
     } catch (err) {
       setPhase("error");
-      setErrorText(toErrorMessage(err, "Order submission failed."));
+      if (services.previewOrder && draftClientId.current && fundAccountId) {
+        setUnconfirmedSubmission({ account: fundAccountId, id: draftClientId.current });
+        setErrorText(`Submission outcome is unconfirmed for ${draftClientId.current}. Inspect the journal and use Refresh checks before another submission.`);
+      } else setErrorText(toErrorMessage(err, "Order submission failed."));
     } finally {
       submittingRef.current = false;
     }
-  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services]);
+  }, [acknowledged, form, fundAccountId, refreshAfterSettledOutcome, phase, services, serverPreviewBlocked, serverPreview, sessionIntent]);
 
   return {
     ...state,
     preview,
+    serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Refresh checks to inspect its retained outcome; do not resubmit.` : serverPreviewError,
+    serverPreviewLoading, serverPreviewExpired, sessionIntent,
+    setSessionIntent,
+    refreshServerPreview: () => {
+      if (!unconfirmedSubmission) { setPreviewRevision((value) => value + 1); return; }
+      void getJournalOrder(unconfirmedSubmission.account, unconfirmedSubmission.id).then((order) => {
+        if (!["Filled", "Cancelled", "Rejected", "Expired"].includes(order.status)) return;
+        setUnconfirmedSubmission(null); setForm(emptyOrderTicketForm); setAcknowledged(false);
+        setOrderId(order.orderId); setPhase(order.status === "Filled" ? "submitted" : "error");
+        setErrorText(`Retained outcome for ${order.orderId}: ${order.status}. Review its journal before creating a new order.`);
+        void refreshAfterSettledOutcome();
+      }).catch(() => { /* Absence is not proof that nothing reached the broker. */ });
+    },
+    canSubmit: state.canSubmit && !serverPreviewBlocked,
+    submitDisabledReason: serverPreviewBlocked ? "Current authoritative order checks are required." : state.submitDisabledReason,
     openTicket,
     closeTicket,
     toggleTicket,

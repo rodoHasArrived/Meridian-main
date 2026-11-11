@@ -32,6 +32,36 @@ public sealed class ExecutionGovernanceEndpointsTests
     private static readonly Guid LiveFundAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     [Fact]
+    public async Task Preview_RequiresAccountAccessBeforeCallingObservationService()
+    {
+        var preview = Substitute.For<IOrderPreviewService>();
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(preview);
+        });
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        { fundAccountId = Guid.NewGuid(), symbol = "SPY", type = 1, side = 0, quantity = 1, clientOrderId = "preview-test" }));
+        response.IsSuccessStatusCode.Should().BeFalse();
+        await preview.DidNotReceive().PreviewAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+        var missingAccount = await app.GetTestClient().PostAsync("/api/execution/orders/preview", JsonContent(new
+        { symbol = "SPY", type = 1, side = 0, quantity = 1 }));
+        missingAccount.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [InlineData("/api/execution/journal/orders")]
+    [InlineData("/api/execution/journal/summary")]
+    [InlineData("/api/execution/notifications")]
+    public async Task WorkflowReads_RejectUnauthorizedAccountsBeforeResolvingJournal(string path)
+    {
+        await using var app = await CreateAppAsync(services => RegisterFundAccountScope(services, LiveFundAccountId));
+        var response = await app.GetTestClient().GetAsync($"{path}?accountId={Guid.NewGuid():D}");
+        response.IsSuccessStatusCode.Should().BeFalse();
+        response.StatusCode.Should().NotBe(HttpStatusCode.InternalServerError);
+    }
+
+    [Fact]
     public async Task ControlsEndpoints_UpdateCircuitBreakerAndExposeAuditTrail()
     {
         var tempRoot = CreateTempRoot();

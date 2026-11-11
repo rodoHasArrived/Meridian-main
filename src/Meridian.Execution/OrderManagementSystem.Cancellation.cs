@@ -48,7 +48,16 @@ public sealed partial class OrderManagementSystem
         // OMS still knows a retained amendment may have a live successor. Cancel it explicitly.
         var unresolvedCandidate = await ReconcileRetainedReplacementReferenceAsync(orderId, ct).ConfigureAwait(false)
             ?? await CancelRetainedReplacementCandidateAsync(orderId, gatewayOrderId, ct).ConfigureAwait(false);
-        var report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false);
+        await RecordJournalOperationAsync(state, "CancelIntent", ct).ConfigureAwait(false);
+        ExecutionReport report;
+        try
+        { report = await CancelAtGatewayAsync(cancellationIdentifier, ct).ConfigureAwait(false); }
+        catch (Exception)
+        {
+            await RecordJournalOperationAsync(state, "CancelOutcomeUnconfirmed", CancellationToken.None,
+                detail: "Cancellation acknowledgement unavailable. Reconcile the retained broker identity before retrying.").ConfigureAwait(false);
+            throw;
+        }
         if (unresolvedCandidate is not null
             && report.OrderStatus is OrderStatus.Cancelled && report.ReportType is not ExecutionReportType.CancelRejected)
         {

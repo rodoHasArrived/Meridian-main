@@ -156,6 +156,10 @@ service.
 
 ## Important workflows
 
+### Execution preview and operational evidence
+
+`OrderPreviewService` observes the shared admission/risk path without reservations or side effects. `ExecutionJournal` retains scoped intent, dispatch, operation, raw report and confirmed state evidence in a synchronous WAL. FIFO operational attribution uses ledger lot helpers and preserves unknown cost/basis as unavailable. `ExecutionAlertService` supplies persistent alerts and outbox selection. See [execution workflows](../../docs/engineering/execution-workflows.md) for API, recovery, limits and verification details.
+
 All new OMS orders undergo structural validation after the duplicate-client-ID guard and before
 gateway sizing or governance preflight. Invalid requests are rejected through the existing audit
 path with `ORDER_REQUEST_INVALID` and structured `validationErrors` metadata, including when no

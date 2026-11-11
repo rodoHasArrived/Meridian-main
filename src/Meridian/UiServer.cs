@@ -406,7 +406,11 @@ public sealed class UiServer : IAsyncDisposable
                     tradeFillHandoffFailureStore: sp.GetService<ITradeFillHandoffFailureStore>(),
                     escalationQueue: sp.GetService<RiskEscalationQueueService>(),
                     recoveryStore: gateway is IBrokerageGateway
-                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null);
+                        ? sp.GetRequiredService<FileBrokerageOrderRecoveryStore>() : null,
+                    sessionPolicy: sp.GetService<IOrderSessionPolicy>(),
+                    journal: sp.GetService<ExecutionJournal>(),
+                    marketReferences: sp.GetService<IOrderMarketReferenceSource>(),
+                    instrumentCoverage: sp.GetService<IOrderInstrumentCoverageSource>());
             });
             if (usesPaperGateway)
             {
