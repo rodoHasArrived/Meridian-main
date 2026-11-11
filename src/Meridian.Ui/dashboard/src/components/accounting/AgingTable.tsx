@@ -23,13 +23,15 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.agt-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:-2px;}
+.agt__empty{padding:16px 12px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .agt-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .agt{width:100%;min-width:720px;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
 .agt th,.agt td{text-align:right;white-space:nowrap;}
 .agt th.agt--l,.agt td.agt--l{text-align:left;}
-.agt thead th{padding:9px 12px;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#DAD8D3);}
+.agt thead th{padding:9px 12px;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .agt thead th:last-child,.agt td:last-child{border-right:none;}
-.agt td{padding:10px 12px;color:var(--text-primary,#20252B);border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#DAD8D3);vertical-align:top;}
+.agt td{padding:10px 12px;color:var(--text-primary,#20252B);border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);vertical-align:top;}
 .agt tbody tr:first-child td{border-top:none;}
 .agt__name{font-family:var(--font-body,inherit);font-weight:600;}
 .agt__ref{color:var(--text-secondary,#535C65);}
@@ -73,7 +75,7 @@ export function AgingTable({
   };
 
   return (
-    <div className="agt-wrap" role="region" aria-label={caption}>
+    <div className="agt-wrap" tabIndex={0} role="region" aria-label={caption || "Aging schedule"}>
       <table className="agt">
         <thead>
           <tr>
@@ -84,6 +86,11 @@ export function AgingTable({
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 ? (
+            <tr>
+              <td className="agt__empty" colSpan={(showRef ? 2 : 1) + buckets.length + 1}>No open items</td>
+            </tr>
+          ) : null}
           {rows.map((row) => {
             const selected = row.id === selectedRowId;
             return (

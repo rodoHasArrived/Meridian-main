@@ -81,7 +81,7 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-grid{width:100%;background:var(--bg-surface, #FCFBF8);border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:auto;}
+.mds-grid{width:100%;background:var(--bg-surface, #F8F7F3);border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:auto;}
 .mds-grid table{width:100%;border-collapse:collapse;font-family:var(--font-data,ui-monospace);font-variant-numeric:tabular-nums;}
 .mds-grid:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px;}
 .mds-grid th{position:sticky;top:0;z-index:2;background:var(--bg-light,#F8F7F3);text-align:left;
@@ -92,13 +92,13 @@ function inject() {
 .mds-grid tbody tr[data-clickable] td{cursor:pointer;}
 .mds-grid th.r,.mds-grid td.r{text-align:right;}
 .mds-grid td{padding:0 10px;font-size:var(--type-body,13px);color:var(--text-primary,#20252B);
-  border-bottom:1px solid var(--border-divider,#E4E0D8);white-space:nowrap;}
-.mds-grid tbody tr:hover td{background:var(--bg-hover,#F1EEE7);}
+  border-bottom:1px solid var(--border-divider,#E2DED5);white-space:nowrap;}
+.mds-grid tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .mds-grid tr[data-selected="true"] td{background:var(--ws-row-selected, #E7EDF2);}
 .mds-grid__grp td{background:var(--surface-recessed, #EBE8E1);font-family:var(--font-body,system-ui);font-size:11px;
   font-weight:var(--weight-medium,500);color:var(--text-secondary,#535C65);}
 .mds-grid__grp td.r{font-family:var(--font-data,ui-monospace);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B);}
-.mds-grid__grp[data-depth] td{background:var(--bg-medium, #F1EEE7);}
+.mds-grid__grp[data-depth] td{background:var(--bg-medium, #EBE8E1);}
 .mds-grid__grp span[role="button"]{outline-offset:2px;}
 .mds-grid__grp span[role="button"]:focus-visible{outline:2px solid var(--focus,#2D6FB3);}
 .mds-grid__exp{width:22px;text-align:center;color:var(--text-muted,#606870);cursor:pointer;user-select:none;}
@@ -112,7 +112,7 @@ function inject() {
 .mds-grid__proof--ok{color:var(--green, #2E7655);}
 .mds-grid__proof--bad{color:var(--red, #B54B42);}
 .mds-grid__cellin{width:100%;box-sizing:border-box;font:inherit;text-align:inherit;border:1px solid var(--focus,#2D6FB3);
-  border-radius:2px;padding:1px 4px;background:var(--bg-surface, #FCFBF8);color:inherit;outline:none;}
+  border-radius:2px;padding:1px 4px;background:var(--bg-surface, #F8F7F3);color:inherit;outline:none;}
 .mds-grid__sel{width:26px;text-align:center;}
 .mds-grid th{position:relative;}
 .mds-grid th.mds-grid__pin,.mds-grid td.mds-grid__pin{position:sticky;z-index:1;background:var(--bg-light,#F8F7F3);box-shadow:1px 0 0 var(--border-strong,#AAA49A);}
@@ -123,14 +123,14 @@ function inject() {
 .mds-grid__cap{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
 .mds-grid tbody tr[data-clickable]:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px;}
 .mds-grid__drill{width:26px;text-align:center;color:var(--text-muted,#606870);cursor:pointer;user-select:none;font-family:var(--font-body,system-ui);}
-.mds-grid tbody tr:hover .mds-grid__drill{color:var(--link,#2D6FB3);}
+.mds-grid tbody tr:hover .mds-grid__drill{color:var(--link,#2A5F96);}
 .mds-grid__drill:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px;}
 .mds-grid__withheld{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:6px 10px;
-  border-top:1px solid var(--border-divider,#E4E0D8);background:var(--bg-light,#F8F7F3);
+  border-top:1px solid var(--border-divider,#E2DED5);background:var(--bg-light,#F8F7F3);
   font-family:var(--font-body,system-ui);font-size:11px;color:var(--text-muted,#606870);}
 .mds-grid__withheld button{padding:0;background:transparent;border:0;font:inherit;font-weight:var(--weight-medium,500);
-  color:var(--link,#2D6FB3);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
-.mds-grid__withheld button:hover{color:var(--link-hover,#1F5285);}`;
+  color:var(--link,#2A5F96);cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+.mds-grid__withheld button:hover{color:var(--link-hover,#1F4A76);}`;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "data-grid");
   el.textContent = css;

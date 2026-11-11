@@ -66,21 +66,21 @@ function inject() {
 .mds-env__mark{color:var(--text-muted,#606870);}
 .mds-env__mark--bad{color:var(--red, #B54B42);}
 .mds-env__pop{display:none;position:absolute;z-index:40;top:calc(100% + 4px);right:0;min-width:232px;
-  background:var(--bg-surface, #FCFBF8);border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-overlay,6px);
+  background:var(--bg-surface, #F8F7F3);border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-overlay,6px);
   box-shadow:0 2px 6px rgba(20,24,28,.18);padding:8px 10px;text-align:left;}
 .mds-env:hover .mds-env__pop,.mds-env:focus-within .mds-env__pop{display:block;}
 .mds-env__row{display:flex;gap:10px;justify-content:space-between;align-items:baseline;padding:2px 0;
   font-family:var(--font-body,system-ui);font-size:11px;color:var(--text-secondary,#535C65);white-space:nowrap;}
 .mds-env__row b{font-weight:var(--weight-medium,500);color:var(--text-primary,#20252B);font-family:var(--font-data,ui-monospace);}
 .mds-env__k{font-size:10px;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870);}
-.mds-env__viol{margin-top:5px;padding-top:5px;border-top:1px solid var(--border-divider,#E4E0D8);
+.mds-env__viol{margin-top:5px;padding-top:5px;border-top:1px solid var(--border-divider,#E2DED5);
   font-family:var(--font-body,system-ui);font-size:11px;color:var(--red, #B54B42);}
 .mds-envp{display:flex;flex-direction:column;background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);border-radius:2px;}
 .mds-envp__hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:8px 10px;
   border-bottom:1px solid var(--border-strong,#AAA49A);}
 .mds-envp__title{font-family:var(--font-body,system-ui);font-size:12px;color:var(--text-secondary,#535C65);}
 .mds-envp__val{font-family:var(--font-data,ui-monospace);font-variant-numeric:tabular-nums;font-size:16px;color:var(--text-primary,#20252B);}
-.mds-envp__grp{padding:6px 10px;border-bottom:1px solid var(--border-divider,#E4E0D8);}
+.mds-envp__grp{padding:6px 10px;border-bottom:1px solid var(--border-divider,#E2DED5);}
 .mds-envp__grp:last-child{border-bottom:0;}
 .mds-envp__lb{font-size:10px;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted,#606870);
   font-family:var(--font-body,system-ui);margin-bottom:3px;}

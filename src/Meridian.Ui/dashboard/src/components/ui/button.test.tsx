@@ -162,8 +162,8 @@ describe("Button", () => {
   });
 
   it.each([
-    ["light", "#EDEAE4", "#5E666F", "#85807A", ["#F2F0EC", "#FBFAF8", "#F6F4F0", "#EDEAE4", "#FFFFFF"]],
-    ["dark", "#292520", "#9A9289", "#857D71", ["#14120F", "#201D19", "#252119", "#292520"]]
+    ["light", "#EDEAE4", "#5E666F", "#85807A", ["#F2F0EB", "#F8F7F3", "#EBE8E1", "#EDEAE4", "#FCFBF8"]],
+    ["dark", "#222B34", "#929CA6", "#77828D", ["#11171D", "#171E25", "#1D252D", "#1F2831", "#222B34"]]
   ])("meets contrast for the %s disabled tokens", (_theme, fill, label, edge, surfaces) => {
     const css = readFileSync(resolve(process.cwd(), "src/styles/index.css"), "utf8");
     for (const value of [fill, label, edge]) {

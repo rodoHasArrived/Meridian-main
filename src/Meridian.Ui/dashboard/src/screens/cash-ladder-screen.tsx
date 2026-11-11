@@ -37,7 +37,7 @@ const SOURCE_PALETTE = [
   "var(--chart-series-7, #606870)"
 ] as const;
 
-const GRID = "var(--chart-grid, #D2CDC3)";
+const GRID = "var(--chart-grid, #E2DED5)";
 const AXIS = "var(--chart-axis, #606870)";
 const BORDER = "var(--chart-border, #AAA49A)";
 const CUMULATIVE = "var(--chart-equity, #2E7655)";

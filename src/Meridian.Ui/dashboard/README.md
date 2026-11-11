@@ -2027,9 +2027,16 @@ the package through copied `src/assets/` files and the `src/design-system/assets
 and runtime CSS alignment under test.
 Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
 is the primary action and chrome color, terracotta (`#C56343`) is the brand/attention signal only,
-and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
-surface). Light, auto-dark, manual-dark, and forced-light scopes take their values from the package's
-`tokens/` files.
+and focus and selection use the interaction blue family (`#2D6FB3` ring via `--ws-focus`, `#E7EDF2`
+selected surface). Paper mode is the Field slate (`--brand-field`), pending is the warm taupe
+(`--pending`), and terracotta text uses `--accent-ink`; chip text always reads a `-dim`/`-ink`
+variant because the raw hues are under 4.5:1 on their own wash. Light, auto-dark, manual-dark, and
+forced-light scopes take their values from the package's `tokens/` files. From the package
+directory, `python3 scripts/check_token_parity.py` fails when any token name declared on both sides
+resolves to a different value in any of the four scopes, and `python3 scripts/check_contrast.py`
+checks chip and button contrast, fallback literals, brand art and the WPF runtime palette. Three
+differences are deliberate and listed in `tokens/parity-manifest.json`: the unified 2px radii,
+the locally installed type faces, and the categorical chart-comparison hues.
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected

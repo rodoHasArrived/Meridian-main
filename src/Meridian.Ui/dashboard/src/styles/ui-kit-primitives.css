@@ -73,6 +73,11 @@
   background: rgba(20, 18, 15, 0.55);
 }
 
+.dense-data-table-wrap:focus-visible {
+  outline: var(--focus-ring, 2px solid var(--ws-focus, #2D6FB3));
+  outline-offset: -2px;
+}
+
 .dense-data-table {
   --dense-head-py: 0.4375rem;
   --dense-cell-py: 0.4375rem;

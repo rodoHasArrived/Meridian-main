@@ -341,7 +341,7 @@ describe("dashboard design-system contract", () => {
     expect(styles).toContain("--ws-shadow: none");
     expect(styles).toContain("--shadow-workstation: var(--ws-shadow)");
     expect(styles).toContain("--shadow-panel: var(--ws-shadow)");
-    expect(styles).toContain("--shadow-menu: 0 2px 6px rgba(0, 0, 0, 0.18)");
+    expect(styles).toContain("--shadow-menu: 0 2px 8px rgba(17, 23, 29, 0.16)");
     expect(styles).toContain("--shadow-float: var(--shadow-menu)");
     expect(styles).not.toContain("3px 3px 0 rgba(0, 0, 0, 0.72)");
   });
@@ -356,7 +356,8 @@ describe("dashboard design-system contract", () => {
   it("uses the high-contrast focus token for translucent primary focus rings", () => {
     const styles = readDashboardStyles();
 
-    expect(styles).toContain("--cyan-focus: var(--ws-accent)");
+    expect(styles).toContain("--ws-focus: #2D6FB3");
+    expect(styles).toContain("--cyan-focus: var(--ws-focus)");
     expect(styles).toContain(".focus-visible\\:ring-primary\\/40:focus-visible");
     expect(styles).toContain("--tw-ring-color: var(--cyan-focus)");
   });
@@ -410,12 +411,16 @@ describe("dashboard design-system contract", () => {
     const navStyles = readWorkspaceNavStyles();
     const tailwindConfig = readTailwindConfig();
 
-    // Concrete rail: band #EBEFF4 → 213 29% 94%; border #CBD3DC → 212 20% 83%.
+    // Rail band #EBE8E1 · label #535C65 · active indicator = terracotta signal #C56343 ·
+    // border #D2CDC3 · focus ring = interaction blue #2D6FB3 (never the signal).
     expect(styles).toContain("--sidebar: 42 20% 90%");
-    expect(styles).toContain("--sidebar-foreground: 216 6% 33%");
-    expect(styles).toContain("--sidebar-primary: 16 51% 44%");
-    expect(styles).toContain("--sidebar-border: 50 10% 88%");
-    expect(styles).toContain("--sidebar-ring: 16 51% 44%");
+    expect(styles).toContain("--sidebar-foreground: 210 9.8% 36.1%");
+    expect(styles).toContain("--sidebar-primary: 15 53% 52%");
+    expect(styles).toContain("--sidebar-border: 40 14% 79%");
+    expect(styles).toContain("--sidebar-ring: 210 60% 44%");
+    // One rail band in every light scope: :root used to say 40 20% 91% while the
+    // [data-appearance] and forced-light blocks said 42 20% 90%.
+    expect(styles).not.toContain("--sidebar: 40 20% 91%");
     expect(styles).toContain("[data-appearance=\"light\"]");
     expect(navStyles).toContain("--mds-nav-rail-bg: var(--theme-bg-hover, var(--ws-rail-bg))");
     expect(navStyles).toContain("--mds-nav-rail-accent: var(--theme-accent, var(--ws-accent))");
@@ -434,11 +439,11 @@ describe("dashboard design-system contract", () => {
     const tailwindConfig = readTailwindConfig();
 
     // terracotta #C56343 · forest #2E7655 · brick #B54B42 · ochre #986717 · slate #8C918F
-    expect(styles).toContain("--chart-1: 16 51% 44%");
-    expect(styles).toContain("--chart-2: 146 36% 35%");
-    expect(styles).toContain("--chart-3: 4 47% 45%");
-    expect(styles).toContain("--chart-4: 37 77% 31%");
-    expect(styles).toContain("--chart-5: 40 5% 47%");
+    expect(styles).toContain("--chart-1: 15 53% 52%");
+    expect(styles).toContain("--chart-2: 152 44% 32%");
+    expect(styles).toContain("--chart-3: 5 47% 48%");
+    expect(styles).toContain("--chart-4: 37 74% 34%");
+    expect(styles).toContain("--chart-5: 156 2.2% 55.9%");
 
     // Tailwind color registrations present
     expect(tailwindConfig).toContain("chart: {");
@@ -469,7 +474,9 @@ describe("dashboard design-system contract", () => {
 
     // Environment modes derive from the semantic palette (Live·Paper·Fixture).
     expect(styles).toContain("--mode-live: var(--red)");
-    expect(styles).toContain("--mode-paper: var(--ws-accent)");
+    // Paper is the Field slate, not the signal: a simulated session must not read as the brand.
+    expect(styles).toContain("--brand-field: #5D7286");
+    expect(styles).toContain("--mode-paper: var(--brand-field)");
     expect(styles).toContain("--mode-fixture: var(--orange)");
   });
 
@@ -481,7 +488,7 @@ describe("dashboard design-system contract", () => {
     // hue, and measured against that wash the raw hue gave 4.32-4.41:1 for ready/review —
     // under AA. The -dim variants measure 5.9-8.1:1. check_contrast.py now pins every chip.
     expect(styles).toContain("--severity-ready-fg: var(--green-dim)");
-    expect(styles).toContain("--severity-review-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--severity-review-fg: var(--accent-ink)");
     expect(styles).toContain("--severity-action-fg: var(--orange-dim)");
     expect(styles).toContain("--severity-blocked-fg: var(--red-dim)");
     expect(styles).toContain(
@@ -490,9 +497,9 @@ describe("dashboard design-system contract", () => {
 
     // State layer (healthy/warn/danger/paper/strategy/live/pending) derives too.
     expect(styles).toContain("--state-live-fg: var(--red-dim)");
-    expect(styles).toContain("--state-paper-fg: var(--ws-accent-pressed)");
+    expect(styles).toContain("--state-paper-fg: var(--brand-field-dim)");
     expect(styles).toContain("--state-strategy-fg: var(--purple-dim)");
-    expect(styles).toContain("--state-pending-fg: var(--purple-dim)");
+    expect(styles).toContain("--state-pending-fg: var(--pending-dim)");
     expect(styles).toContain(
       "--state-strategy-bg: color-mix(in srgb, var(--purple) 10%, transparent)"
     );

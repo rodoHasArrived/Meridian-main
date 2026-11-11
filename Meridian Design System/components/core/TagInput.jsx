@@ -17,7 +17,7 @@ function inject() {
   background:var(--bg-medium,#EBE8E1);font-family:var(--font-data);font-size:11px;
   color:var(--text-primary,#20252B);white-space:nowrap;}
 .mds-tags__x{appearance:none;border:none;background:transparent;cursor:pointer;padding:0;margin:-5px -3px -5px 0;
-  width:24px;height:24px;line-height:1;font-size:12px;color:var(--text-muted,#6B737B);
+  width:24px;height:24px;line-height:1;font-size:12px;color:var(--text-muted,#606870);
   display:inline-flex;align-items:center;justify-content:center;}
 .mds-tags__x:hover{color:var(--red,#B54B42);}
 .mds-tags__x:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:0;}

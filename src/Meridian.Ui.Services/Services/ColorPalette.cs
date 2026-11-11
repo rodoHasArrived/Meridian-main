@@ -20,20 +20,20 @@ public static class ColorPalette
     public readonly record struct ArgbColor(byte A, byte R, byte G, byte B);
 
 
-    /// <summary>Success/Active state (muted forest) — ConsoleAccentGreen #3A7A56.</summary>
-    public static readonly ArgbColor Success = new(255, 58, 122, 86);
+    /// <summary>Success/Active state (forest) — ConsoleAccentGreen #2E7655.</summary>
+    public static readonly ArgbColor Success = new(255, 46, 118, 85);
 
-    /// <summary>Warning state (amber ochre) — ConsoleAccentOrange #8A5C12.</summary>
-    public static readonly ArgbColor Warning = new(255, 138, 92, 18);
+    /// <summary>Warning state (amber ochre) — ConsoleAccentOrange #986717.</summary>
+    public static readonly ArgbColor Warning = new(255, 152, 103, 23);
 
-    /// <summary>Error/Danger state (brick) — ConsoleAccentRed #A8443C.</summary>
-    public static readonly ArgbColor Error = new(255, 168, 68, 60);
+    /// <summary>Error/Danger state (brick) — ConsoleAccentRed #B54B42.</summary>
+    public static readonly ArgbColor Error = new(255, 181, 75, 66);
 
-    /// <summary>Informational state (copper, the single accent) — ConsoleAccentBlue #A85436.</summary>
-    public static readonly ArgbColor Info = new(255, 168, 84, 54);
+    /// <summary>Informational state (interaction blue) — ConsoleAccentBlue #2D6FB3.</summary>
+    public static readonly ArgbColor Info = new(255, 45, 111, 179);
 
-    /// <summary>Inactive/Disabled state (flat warm gray) — ConsoleTextDisabled #94999F.</summary>
-    public static readonly ArgbColor Inactive = new(255, 148, 153, 159);
+    /// <summary>Inactive/Disabled state (cool gray) — ConsoleTextDisabled #A4ABB2.</summary>
+    public static readonly ArgbColor Inactive = new(255, 164, 171, 178);
 
     /// <summary>Critical severity (coral).</summary>
     public static readonly ArgbColor Critical = Error;
@@ -43,35 +43,35 @@ public static class ColorPalette
 
 
 
-    /// <summary>Primary chart line color (copper) — ChartPrimaryLineColor #A85436.</summary>
-    public static readonly ArgbColor ChartPrimary = new(255, 168, 84, 54);
+    /// <summary>Primary chart line color (terracotta signal) — ChartPrimaryLineColor #C56343.</summary>
+    public static readonly ArgbColor ChartPrimary = new(255, 197, 99, 67);
 
-    /// <summary>Secondary chart line color (warm gray) — ChartSecondaryLineColor #7E7A72.</summary>
-    public static readonly ArgbColor ChartSecondary = new(255, 126, 122, 114);
+    /// <summary>Secondary chart line color (neutral gray) — ChartSecondaryLineColor #8C918F.</summary>
+    public static readonly ArgbColor ChartSecondary = new(255, 140, 145, 143);
 
-    /// <summary>Tertiary chart line color (amber ochre) — ChartWarningLineColor #8A5C12.</summary>
-    public static readonly ArgbColor ChartTertiary = new(255, 138, 92, 18);
+    /// <summary>Tertiary chart line color (amber ochre) — ChartWarningLineColor #986717.</summary>
+    public static readonly ArgbColor ChartTertiary = new(255, 152, 103, 23);
 
-    /// <summary>Chart positive/up color (muted forest) — ChartEquityColor #3A7A56.</summary>
+    /// <summary>Chart positive/up color (muted forest) — ChartEquityColor #2E7655.</summary>
     public static readonly ArgbColor ChartPositive = Success;
 
-    /// <summary>Chart negative/down color (brick) — ChartDrawdownColor #A8443C.</summary>
+    /// <summary>Chart negative/down color (brick) — ChartDrawdownColor #B54B42.</summary>
     public static readonly ArgbColor ChartNegative = Error;
 
-    /// <summary>Chart card background (Architect White) — ChartSurfaceColor #FBFAF8.</summary>
-    public static readonly ArgbColor ChartBackground = new(255, 251, 250, 248);
+    /// <summary>Chart card background (panel paper) — ChartSurfaceColor #F8F7F3.</summary>
+    public static readonly ArgbColor ChartBackground = new(255, 248, 247, 243);
 
-    /// <summary>Chart plot-area background — ChartPlotAreaColor #F9F7F3.</summary>
-    public static readonly ArgbColor ChartDataBackground = new(255, 249, 247, 243);
+    /// <summary>Chart plot-area background — ChartPlotAreaColor #FCFBF8.</summary>
+    public static readonly ArgbColor ChartDataBackground = new(255, 252, 251, 248);
 
-    /// <summary>Chart grid line color (hairline rule) — ChartGridLineColor #E4E3DE.</summary>
-    public static readonly ArgbColor ChartGrid = new(255, 228, 227, 222);
+    /// <summary>Chart grid line color (hairline rule) — ChartGridLineColor #E2DED5.</summary>
+    public static readonly ArgbColor ChartGrid = new(255, 226, 222, 213);
 
-    /// <summary>Chart axis and tick-label color (Slate) — ChartAxisLabelColor #5E666F.</summary>
-    public static readonly ArgbColor ChartAxis = new(255, 94, 102, 111);
+    /// <summary>Chart axis and tick-label color (Slate) — ChartAxisLabelColor #606870.</summary>
+    public static readonly ArgbColor ChartAxis = new(255, 96, 104, 112);
 
-    /// <summary>Chart border color — ChartBorderColor #D3D0C9.</summary>
-    public static readonly ArgbColor ChartBorder = new(255, 211, 208, 201);
+    /// <summary>Chart border color — ChartBorderColor #D2CDC3.</summary>
+    public static readonly ArgbColor ChartBorder = new(255, 210, 205, 195);
 
 
 
@@ -95,24 +95,24 @@ public static class ColorPalette
     /// <summary>Muted text color.</summary>
     public static readonly ArgbColor MutedText = ChartAxis;
 
-    /// <summary>Light text on the near-black chrome bars — TopBarText #F4F2ED.
+    /// <summary>Light text on the near-black chrome bars — TopBarText #F1EFEA.
     /// Only for ink over <c>TopBarBackground</c>/<c>StatusBarBackground</c>; the workstation
     /// itself is a light canvas, so this is unreadable on a card or a plot area.</summary>
-    public static readonly ArgbColor LightText = new(255, 244, 242, 237);
+    public static readonly ArgbColor LightText = new(255, 241, 239, 234);
 
 
 
     /// <summary>Semi-transparent success background — mirrors ConsoleAccentGreenAlpha.</summary>
-    public static readonly ArgbColor SuccessBackground = new(40, 58, 122, 86);
+    public static readonly ArgbColor SuccessBackground = new(40, 46, 118, 85);
 
     /// <summary>Semi-transparent warning background — mirrors ConsoleAccentOrangeAlpha.</summary>
-    public static readonly ArgbColor WarningBackground = new(40, 138, 92, 18);
+    public static readonly ArgbColor WarningBackground = new(40, 152, 103, 23);
 
     /// <summary>Semi-transparent error background — mirrors ConsoleAccentRedAlpha.</summary>
-    public static readonly ArgbColor ErrorBackground = new(40, 168, 68, 60);
+    public static readonly ArgbColor ErrorBackground = new(40, 181, 75, 66);
 
     /// <summary>Semi-transparent info background — mirrors ConsoleAccentBlueAlpha.</summary>
-    public static readonly ArgbColor InfoBackground = new(40, 168, 84, 54);
+    public static readonly ArgbColor InfoBackground = new(40, 45, 111, 179);
 
 
 

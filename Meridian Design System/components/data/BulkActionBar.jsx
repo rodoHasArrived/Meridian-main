@@ -5,7 +5,7 @@
 const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
   const css = `
 .mds-bulk-bar{position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
-  background:var(--brand-signal,#C56343);color:var(--text-on-accent,#fff);border-radius:var(--radius-button,2px);padding:12px 16px;
+  background:var(--brand-signal,#C56343);color:var(--text-on-accent,#0D1217);border-radius:var(--radius-button,2px);padding:12px 16px;
   box-shadow:var(--shadow-menu);display:flex;align-items:center;gap:16px;
   z-index:1000;font-size:13px;animation:bulk-slide-up .2s ease;}
 @keyframes bulk-slide-up{from{opacity:0;transform:translateX(-50%) translateY(12px);}}
@@ -14,12 +14,12 @@ const BulkActionBar = ({ selectedCount = 0, onAction, actions = [] }) => {
 .mds-bulk-bar-actions{display:flex;align-items:center;gap:8px;}
 .mds-bulk-action-btn{appearance:none;border:1px solid color-mix(in srgb, currentColor 30%, transparent);
   background:color-mix(in srgb, currentColor 10%, transparent);
-  color:var(--text-on-accent,#fff);cursor:pointer;font-family:var(--font-body);font-size:12px;padding:6px 12px;
+  color:var(--text-on-accent,#0D1217);cursor:pointer;font-family:var(--font-body);font-size:12px;padding:6px 12px;
   border-radius:var(--radius-chip,2px);transition:background-color 120ms cubic-bezier(.2,0,0,1),border-color 120ms cubic-bezier(.2,0,0,1);}
 .mds-bulk-action-btn:hover{background:color-mix(in srgb, currentColor 20%, transparent);border-color:color-mix(in srgb, currentColor 40%, transparent);}
 .mds-bulk-action-btn:active{background:color-mix(in srgb, currentColor 30%, transparent);}
-.mds-bulk-action-btn--danger{border-color:var(--red,#B54B42);background:var(--red,#B54B42);color:var(--text-on-accent,#fff);}
-.mds-bulk-action-btn--danger:hover{background:var(--red-dim,#7D322F);border-color:var(--red-dim,#7D322F);}
+.mds-bulk-action-btn--danger{border-color:var(--red,#B54B42);background:var(--red,#B54B42);color:var(--text-on-accent,#0D1217);}
+.mds-bulk-action-btn--danger:hover{background:var(--red-dim,#883832);border-color:var(--red-dim,#883832);}
 `;
   if (!document.getElementById("mds-bulk-bar-css")) {
     const el = document.createElement("style");
@@ -82,7 +82,7 @@ const ContextMenu = ({ x, y, items, onClose }) => {
   color:var(--text-primary);transition:background .12s;}
 .mds-context-item:hover{background:var(--bg-hover);}
 .mds-context-item--danger{color:var(--red);}
-.mds-context-item--danger:hover{background:var(--red-a10,rgba(166,67,63,.10));}
+.mds-context-item--danger:hover{background:var(--red-a10,rgba(181,75,66,.10));}
 `;
   if (!document.getElementById("mds-context-menu-css")) {
     const el = document.createElement("style");

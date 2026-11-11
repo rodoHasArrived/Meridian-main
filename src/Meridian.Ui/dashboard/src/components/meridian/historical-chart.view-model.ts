@@ -1015,8 +1015,8 @@ const SMA_OVERLAY_DEFINITIONS: ReadonlyArray<{
   label: string;
   stroke: string;
 }> = [
-  { period: 20, label: "SMA 20", stroke: "var(--chart-sma-20, #2F648A)" },
-  { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #986717)" }
+  { period: 20, label: "SMA 20", stroke: "var(--chart-sma-20, #5D7286)" },
+  { period: 50, label: "SMA 50", stroke: "var(--chart-sma-50, #2E4B6E)" }
 ];
 
 function buildSmaOverlays({ closes, midXs, yForPrice, precomputed }: BuildSmaOverlaysInput): CandlestickSmaOverlay[] {
@@ -1086,7 +1086,7 @@ function buildBollingerOverlay({ closes, midXs, yForPrice, precomputedBands }: B
     multiplier,
     label: `Bollinger (${period}, ${multiplier})`,
     ariaLabel: `${period}-period Bollinger Bands with ${multiplier} standard deviations`,
-    stroke: "var(--chart-bollinger, #7E7A72)",
+    stroke: "var(--chart-bollinger, #8C918F)",
     upperPoints: upperPts.join(" "),
     lowerPoints: lowerPts.join(" "),
     middlePoints: middlePts.join(" "),

@@ -18,8 +18,8 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-post__checks{display:grid;border-bottom:1px solid var(--border-divider,#E2DED5)}
 .mds-post__check{display:grid;grid-template-columns:16px 1fr auto;gap:8px;align-items:baseline;padding:6px 12px;border-bottom:1px solid var(--border-divider,#E2DED5);font-size:11px}
 .mds-post__check:last-child{border-bottom:0}
-.mds-post__check[data-tone="stop"]{background:var(--red-surface,rgba(181,75,66,.1));color:var(--red-dim,#873832)}
-.mds-post__check[data-tone="warn"]{background:var(--orange-surface,rgba(152,103,23,.1));color:var(--orange-dim,#725012)}
+.mds-post__check[data-tone="stop"]{background:var(--red-surface,rgba(245,229,226,.1));color:var(--red-dim,#873832)}
+.mds-post__check[data-tone="warn"]{background:var(--orange-surface,rgba(242,234,216,.1));color:var(--orange-dim,#724D11)}
 .mds-post__check small{display:block;font:9px/13px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-post__class{font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em}
 .mds-post table{width:100%;border-collapse:collapse}
@@ -33,7 +33,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-post__effect small{display:block;font:9px var(--font-data,monospace);color:var(--text-muted,#606870);text-align:left}
 .mds-post__list{margin:0;padding:2px 12px 8px;list-style:none;display:grid;gap:2px}
 .mds-post__list li{font:10px/15px var(--font-data,monospace);color:var(--text-secondary,#535C65)}
-.mds-post__ack{display:flex;gap:8px;align-items:flex-start;margin:0;padding:9px 12px;border-top:1px solid var(--orange,#986717);background:var(--orange-surface,rgba(152,103,23,.1));font-size:11px;color:var(--orange-dim,#725012)}
+.mds-post__ack{display:flex;gap:8px;align-items:flex-start;margin:0;padding:9px 12px;border-top:1px solid var(--orange,#986717);background:var(--orange-surface,rgba(242,234,216,.1));font-size:11px;color:var(--orange-dim,#724D11)}
 .mds-post__ack input{margin-top:2px}
 .mds-post__foot{display:flex;align-items:center;gap:10px;padding:9px 12px;border-top:2px solid var(--border-strong,#AAA49A);font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
 .mds-post__actions{margin-left:auto;display:flex;gap:6px}

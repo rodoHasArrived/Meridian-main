@@ -529,6 +529,11 @@ function DenseDataTableComponent<T>({
   const wrapElement = (
     <div
       className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
+      // The wrap is the scroll container, so it is a tab stop: a keyboard operator can focus it and
+      // scroll a clipped table with the arrow keys even when the table has no focusable rows.
+      tabIndex={0}
+      role="region"
+      aria-label={`${ariaLabel} (scrollable table)`}
       data-empty={rows.length === 0 ? "true" : undefined}
       data-density={density}
       ref={wrapRef}

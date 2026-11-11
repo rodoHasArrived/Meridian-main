@@ -79,7 +79,7 @@ export function RegistryTable({ vocabulary, className = "", ...rest }) {
                 const label = typeof meta === "string" ? meta : meta.label;
                 const aliases = typeof meta === "object" && meta.aliases ? meta.aliases : [];
                 return (
-                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0", borderBottom: "1px solid var(--border-divider,#E4E0D8)", fontSize: 11, fontFamily: "var(--font-body,system-ui)", color: "var(--text-secondary,#535C65)" }}>
+                  <div key={k} style={{ display: "flex", justifyContent: "space-between", gap: 12, padding: "3px 0", borderBottom: "1px solid var(--border-divider,#E2DED5)", fontSize: 11, fontFamily: "var(--font-body,system-ui)", color: "var(--text-secondary,#535C65)" }}>
                     <span style={{ fontFamily: "var(--font-data,ui-monospace)", color: "var(--text-primary,#20252B)" }}>{k}</span>
                     <span>{label}{aliases.length ? ` \u00B7 ${aliases.join(", ")}` : ""}</span>
                   </div>

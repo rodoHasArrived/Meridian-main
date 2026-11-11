@@ -21,12 +21,13 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.tbl-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:-2px;}
 .tbl-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .tbl{width:100%;min-width:760px;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
-.tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#DAD8D3);}
+.tbl thead th{padding:9px 12px;text-align:left;white-space:nowrap;position:sticky;top:0;background:var(--bg-medium,#EBE8E1);z-index:1;font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .tbl thead th:last-child,.tbl td:last-child{border-right:none;}
 .tbl th.tbl--r,.tbl td.tbl--r{text-align:right;}
-.tbl td{padding:10px 12px;white-space:nowrap;color:var(--text-primary,#20252B);border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#DAD8D3);vertical-align:top;}
+.tbl td{padding:10px 12px;white-space:nowrap;color:var(--text-primary,#20252B);border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);vertical-align:top;}
 .tbl tbody tr:first-child td{border-top:none;}
 .tbl__sec td{background:var(--bg-medium,#EBE8E1);font-family:var(--font-body,inherit);font-size:11px;font-weight:700;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-secondary,#535C65);}
 .tbl__acct{font-family:var(--font-body,inherit);white-space:normal;min-width:210px;}
@@ -96,7 +97,7 @@ export function TrialBalanceTable({
     : [{ section: null, rows: computedRows }];
 
   return (
-    <div className="tbl-wrap" role="region" aria-label={caption}>
+    <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
         <thead>
           <tr>

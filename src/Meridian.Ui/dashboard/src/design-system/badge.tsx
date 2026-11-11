@@ -33,7 +33,7 @@ const badgeVariantClasses: Record<NonNullable<DesignSystemBadgeProps["variant"]>
   success: "mds-badge--success border-success/35 text-success",
   warning: "mds-badge--warning border-warning/35 text-warning",
   danger: "mds-badge--danger border-danger/35 text-danger",
-  paper: "mds-badge--paper border-paper/35 text-paper",
+  paper: "mds-badge--paper border-paper/35 text-[var(--state-paper-fg)]",
   // "live" variant = LIVE environment (real-money alarm). Uses --live-env (alarm red),
   // not --live (cyan data-posture). Workspace status "live" maps to "success" in view-models.
   live: "mds-badge--live border-live-env/40 text-live-env",

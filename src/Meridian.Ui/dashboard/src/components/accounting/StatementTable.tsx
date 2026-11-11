@@ -48,6 +48,8 @@ function inject(): void {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
+.stm-wrap:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:-2px;}
+.stm__empty{padding:16px 14px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .stm-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .stm{width:100%;border-collapse:separate;border-spacing:0;font-family:var(--font-data,monospace);font-size:12px;}
@@ -93,17 +95,22 @@ export function StatementTable({ sections, total, columns, currency = "USD", par
   };
 
   return (
-    <div className="stm-wrap" role="region" aria-label="Financial statement">
+    <div className="stm-wrap" tabIndex={0} role="region" aria-label="Financial statement">
       <table className="stm">
         <thead>
           <tr>
-            <th className="stm--l">&nbsp;</th>
+            <th className="stm--l" scope="col" aria-label="Line item">&nbsp;</th>
             {cols.map((c) => (
               <th key={c.key}>{c.label}</th>
             ))}
           </tr>
         </thead>
         <tbody>
+          {sections.length === 0 && (
+            <tr>
+              <td className="stm__empty" colSpan={cols.length + 1}>No line items</td>
+            </tr>
+          )}
           {sections.map((sec, si) => (
             <Fragment key={si}>
               {sec.label && (
@@ -119,7 +126,7 @@ export function StatementTable({ sections, total, columns, currency = "USD", par
                   {valuesOf(row).map((v, vi) => (
                     <td key={vi} className="stm--num">
                       {v == null || v === "" ? (
-                        <span style={{ color: "var(--text-disabled, #94999F)" }}>—</span>
+                        <span style={{ color: "var(--text-disabled, #A4ABB2)" }}>—</span>
                       ) : (
                         <AmountCell value={v} currency={currency} parens={parens} mode={pnl ? "pnl" : "plain"} />
                       )}

@@ -100,9 +100,10 @@ function inject(): void {
 .rec__counts{display:flex;gap:6px;}
 .rec__chip{font-family:var(--font-body,inherit);font-size:10px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.02em;border:1px solid;border-radius:var(--radius-chip,2px);padding:1px 6px;line-height:1.4;white-space:nowrap;}
-.rec__chip--ok{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#2C5C40);}
-.rec__chip--open{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#68450E);}
+.rec__chip--ok{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.rec__chip--open{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
 .rec__tablewrap{overflow-x:auto;}
+.rec__tablewrap:focus-visible{outline:var(--focus-ring,2px solid var(--ws-focus,#2D6FB3));outline-offset:-2px;}
 .rec__table{width:100%;border-collapse:collapse;table-layout:auto;}
 .rec__table th{position:sticky;top:0;background:var(--bg-light,#F8F7F3);text-align:left;
   font-family:var(--font-body,inherit);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;
@@ -119,8 +120,8 @@ function inject(): void {
 .rec__table td.mono{font-family:var(--font-data,monospace);font-size:11px;font-variant-numeric:tabular-nums;color:var(--text-muted,#606870);}
 .rec__table td.memo{white-space:normal;max-width:0;width:99%;}
 .rec__table td.num{text-align:right;}
-.rec__table tr.matched td{background:var(--green-a10,rgba(58,122,86,.06));}
-.rec__table tr.open td{background:var(--orange-a10,rgba(138,92,18,.06));}
+.rec__table tr.matched td{background:var(--green-a10,rgba(46,118,85,.06));}
+.rec__table tr.open td{background:var(--orange-a10,rgba(152,103,23,.06));}
 .rec__empty{padding:16px 12px;font-family:var(--font-body,inherit);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .rec__summary{display:grid;grid-template-columns:1fr 1fr auto;gap:12px;align-items:center;
   padding:10px 14px;border-top:2px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1);}
@@ -130,8 +131,8 @@ function inject(): void {
 .rec__statusbox{display:flex;align-items:center;gap:7px;justify-self:end;
   font-family:var(--font-body,inherit);font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;border:1px solid;border-radius:var(--radius-chip,2px);padding:4px 10px;}
-.rec__statusbox--bal{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#2C5C40);}
-.rec__statusbox--out{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#7E332D);}
+.rec__statusbox--bal{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.rec__statusbox--out{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .rec__dot{height:6px;width:6px;border-radius:50%;background:currentColor;}
 `;
   const el = document.createElement("style");
@@ -220,7 +221,7 @@ function Side({ side, columns, currency, status, query, sort, onSort, onToggleIt
           {open > 0 && <span className="rec__chip rec__chip--open">{open} open</span>}
         </span>
       </div>
-      <div className="rec__tablewrap">
+      <div className="rec__tablewrap" tabIndex={0} role="region" aria-label={`${side.title} items`}>
         <table className="rec__table">
           <thead>
             <tr>

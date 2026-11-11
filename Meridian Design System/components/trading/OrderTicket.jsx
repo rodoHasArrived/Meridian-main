@@ -18,17 +18,17 @@ function inject() {
   background:var(--bg-light,#F8F7F3);padding:14px;font-family:var(--font-body);box-sizing:border-box;}
 .mds-ticket__hd{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 .mds-ticket__sym{font:600 14px var(--font-data);color:var(--text-primary,#20252B);letter-spacing:.02em;}
-.mds-ticket__last{font:11px var(--font-data);color:var(--text-muted,#6B737B);font-variant-numeric:tabular-nums;}
+.mds-ticket__last{font:11px var(--font-data);color:var(--text-muted,#606870);font-variant-numeric:tabular-nums;}
 .mds-ticket__side{display:grid;grid-template-columns:1fr 1fr;}
 .mds-ticket__sbtn{appearance:none;cursor:pointer;padding:7px 0;font-family:var(--font-body);font-size:12px;
   font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border:1px solid var(--border,#D2CDC3);
   background:var(--bg-light,#F8F7F3);color:var(--text-secondary,#535C65);}
 .mds-ticket__sbtn+.mds-ticket__sbtn{border-left:none;}
 .mds-ticket__sbtn:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px;}
-.mds-ticket__sbtn--buy[aria-pressed="true"]{background:var(--green-a10,rgba(74,124,94,.10));
-  border-color:var(--green,#2E7655);color:var(--green-dim,#375D46);}
-.mds-ticket__sbtn--sell[aria-pressed="true"]{background:var(--red-a10,rgba(166,67,63,.10));
-  border-color:var(--red,#B54B42);color:var(--red-dim,#7D322F);}
+.mds-ticket__sbtn--buy[aria-pressed="true"]{background:var(--green-a10,rgba(46,118,85,.10));
+  border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.mds-ticket__sbtn--sell[aria-pressed="true"]{background:var(--red-a10,rgba(181,75,66,.10));
+  border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 .mds-ticket__grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:start;}
 /* Converge on the form primitives; only right-align the numeric fields. */
 .mds-ticket__num input{text-align:right;font-variant-numeric:tabular-nums;}
@@ -36,10 +36,10 @@ function inject() {
   border:1px solid var(--border-divider,#E2DED5);background:var(--card-surface-raised,#FCFBF8);
   font:12px var(--font-data);font-variant-numeric:tabular-nums;color:var(--text-primary,#20252B);}
 .mds-ticket__sum-label{font-family:var(--font-body);font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#6B737B);}
+  font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted,#606870);}
 .mds-ticket__gate{display:flex;gap:7px;align-items:flex-start;padding:8px 10px;
-  border:1px solid var(--red,#B54B42);background:var(--red-a10,rgba(166,67,63,.10));
-  font-size:11px;line-height:1.4;color:var(--red-dim,#7D322F);}
+  border:1px solid var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.10));
+  font-size:11px;line-height:1.4;color:var(--red-dim,#883832);}
 .mds-ticket__gate input{margin:1px 0 0;accent-color:var(--red,#B54B42);}
 `;
   const el = document.createElement("style");
@@ -179,7 +179,7 @@ export function OrderTicket({
         {dirty && <Button variant="ghost" onClick={clear}>Clear</Button>}
       </div>
       {guardSummary.blocked && (
-        <div style={{ font: "11px var(--font-body)", color: "var(--red-dim,#7D322F)", lineHeight: 1.4 }}>
+        <div style={{ font: "11px var(--font-body)", color: "var(--red-dim,#883832)", lineHeight: 1.4 }}>
           Blocked — {guardSummary.firstBlocking?.reason || guardSummary.firstBlocking?.label}
         </div>
       )}

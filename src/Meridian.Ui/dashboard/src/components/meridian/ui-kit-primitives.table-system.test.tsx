@@ -185,6 +185,21 @@ describe("DenseDataTable table system", () => {
     expect(container.querySelector(".dense-data-table-wrap")).toHaveAttribute("data-density", "compact");
   });
 
+  it("makes the scroll wrap a named, keyboard-focusable region with a visible focus ring", () => {
+    render(
+      <DenseDataTable ariaLabel="Positions" emptyText="No positions" columns={columns.slice(0, 1)} rows={rows} getRowId={(row) => row.id} />
+    );
+    const region = screen.getByRole("region", { name: "Positions (scrollable table)" });
+    expect(region).toHaveClass("dense-data-table-wrap");
+    expect(region).toHaveAttribute("tabindex", "0");
+    // The table keeps its own exact name, so existing label lookups still resolve to one element.
+    expect(screen.getByLabelText("Positions")).toBe(screen.getByRole("table", { name: "Positions" }));
+
+    const css = readFileSync(resolve(process.cwd(), "src/styles/ui-kit-primitives.css"), "utf8");
+    const rule = css.match(/\.dense-data-table-wrap:focus-visible\s*\{([^}]*)\}/);
+    expect(rule?.[1]).toContain("outline: var(--focus-ring, 2px solid var(--ws-focus, #2D6FB3))");
+  });
+
   it("keeps virtualized tables within their fixed row height when spacious density is chosen", () => {
     // Windowing assumes every row is exactly rowHeight tall; spacious padding must not apply there.
     const css = readFileSync(resolve(process.cwd(), "src/styles/ui-kit-primitives.css"), "utf8");

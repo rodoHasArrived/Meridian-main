@@ -14,12 +14,12 @@ function inject() {
   font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text-primary,#20252B);}
 .mds-acc-hd:hover{background:var(--bg-hover,#EDEFF0);}
 .mds-acc-hd:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
-.mds-acc-caret{flex:0 0 auto;color:var(--text-muted,#6B737B);font-size:11px;
+.mds-acc-caret{flex:0 0 auto;color:var(--text-muted,#606870);font-size:11px;
   transition:transform 120ms ease;}
 .mds-acc-caret--open{transform:rotate(90deg);}
 .mds-acc-title{flex:1;}
 .mds-acc-badge{flex:0 0 auto;font-family:var(--font-data);font-size:11px;font-weight:500;
-  color:var(--text-muted,#6B737B);font-variant-numeric:tabular-nums;}
+  color:var(--text-muted,#606870);font-variant-numeric:tabular-nums;}
 .mds-acc-body{padding:0 14px 14px 34px;font-family:var(--font-body);font-size:13px;
   line-height:20px;color:var(--text-secondary,#535C65);}
 @media (prefers-reduced-motion: reduce){.mds-acc-caret{transition:none;}}

@@ -484,7 +484,7 @@
 }
 
 .workflow-continuity-operator-flow summary:focus-visible {
-  outline: 2px solid rgba(217, 138, 100, 0.45);
+  outline: 2px solid var(--ws-focus);
   outline-offset: 2px;
 }
 
