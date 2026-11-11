@@ -72,7 +72,9 @@ Rules that keep an amount from being drafted twice:
 - **Posted history first.** Management fee, performance fee and FX revaluation read balances
   that earlier occurrences post. Such an occurrence is calculated only after the previous one is
   posted, rejected or needed no draft; until then it is blocked. Two periods that come due
-  together therefore cannot both be measured against a ledger that holds neither.
+  together therefore cannot both be measured against a ledger that holds neither. The previous
+  occurrence's retained draft decides, so one that was posted and whose period has since closed
+  still counts as settled.
 - **One accrual window per occurrence.** The window ends on the effective date and starts the day
   after the previous occurrence; the first window starts at the covering period's start date.
 - **Calculated once.** A retained draft is never recalculated. An occurrence that correctly has
@@ -129,7 +131,8 @@ intakes that admit approval drafts the same way:
 
 - **Capital-call default interest**
   (`/api/ledger/journal-automation/capital-call-default-interest-intake`). The called amount and
-  receipts come from posted ledger lines. The due date, rate, day-count convention and grace days
+  receipts come from posted ledger lines, each receipt dated by its own funding journal. The due
+  date, rate, day-count convention and grace days
   are operator-attested with retained evidence. Interest is accrued to its cumulative amount
   through the requested date and only the part not already posted is drafted; an earlier
   default-interest draft still awaiting approval blocks a further accrual.
@@ -139,7 +142,8 @@ intakes that admit approval drafts the same way:
   GP catch-up are each paid once. An earlier distribution that is not yet posted blocks the next;
   a rejected one is ignored. A distribution draft found without its register record (an
   interrupted request) also blocks further declarations until that declaration is repeated,
-  which restores the record against the same draft.
+  which restores the record against the same draft. Declarations are handled one at a time on a
+  host, so two overlapping requests cannot both read the same earlier tiers.
 
 ## Definition correction and recovery
 

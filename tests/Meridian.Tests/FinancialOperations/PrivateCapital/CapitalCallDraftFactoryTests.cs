@@ -59,6 +59,30 @@ public sealed class CapitalCallDraftFactoryTests
     }
 
     [Fact]
+    public void LateFunding_KeepsItsOwnDateInTheProjectedLedgerImpact()
+    {
+        var commitment = Commitment();
+        var ledger = new Meridian.Ledger.Ledger();
+        var call = CapitalCallDraftFactory.BuildCapitalCallDraft(
+            commitment, "inst-1", 2_500_000m, new DateOnly(2026, 3, 31), OccurredAt, [Evidence()]);
+        var funding = CapitalCallDraftFactory.BuildCapitalCallFundingDraft(
+            commitment, "inst-1", 2_500_000m, new DateOnly(2026, 5, 15), OccurredAt.AddDays(45), evidenceReferences: [Evidence()]);
+        foreach (var draft in new[] { call, funding })
+        {
+            AutomatedJournalApproval.Submit(draft, "ops-controller", draft.Event.Timestamp, "submit", ["evidence-1"])
+                .Approve("cfo", draft.Event.Timestamp, "approve", ["evidence-1"])
+                .PostTo(ledger, "cfo", draft.Event.Timestamp, "post", ["evidence-1"]);
+        }
+
+        var fundEvent = PrivateCapitalFundEventLedgerProjector.Project(ledger).Events.Should().ContainSingle().Subject;
+
+        // Both journals share the call's fund event; default interest needs the receipt's own date.
+        fundEvent.EffectiveDate.Should().Be(new DateOnly(2026, 3, 31));
+        fundEvent.LedgerImpacts.Select(static impact => impact.EffectiveDate).Should()
+            .BeEquivalentTo(new DateOnly?[] { new DateOnly(2026, 3, 31), new DateOnly(2026, 5, 15) });
+    }
+
+    [Fact]
     public void DefaultInterestDraft_CreditsIncomeNotEquity()
     {
         var commitment = Commitment();

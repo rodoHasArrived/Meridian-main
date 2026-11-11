@@ -5,6 +5,10 @@ namespace Meridian.Ui.Shared.Services;
 
 public sealed partial class AutomatedJournalIntakeRunner
 {
+    // Two overlapping declarations would both read the same earlier tiers before either is
+    // admitted. Declarations are rare, so one at a time per host is enough.
+    private static readonly SemaphoreSlim DistributionDeclarationGate = new(1, 1);
+
     /// <summary>
     /// Admits default-interest drafts for the unfunded part of a posted capital call into the
     /// approval queue. Nothing is posted; a blocked run admits nothing.
@@ -49,44 +53,52 @@ public sealed partial class AutomatedJournalIntakeRunner
             return BuildBlockedCapitalCallResult(runKey, code, lane, "The distribution register is unavailable, so earlier waterfall tiers cannot be read.");
         if (string.IsNullOrWhiteSpace(request.TenantId) || string.IsNullOrWhiteSpace(request.CompanyId))
             return BuildBlockedCapitalCallResult(runKey, code, lane, "A distribution needs its tenant and company scope.");
-        var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
-            request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
-        if (workbench is null)
-            return BuildBlockedCapitalCallResult(runKey, code, lane, blocker ?? "The journal queue is unavailable.");
-
-        var registered = new Dictionary<string, IReadOnlyList<DistributionDeclarationRecord>>(StringComparer.OrdinalIgnoreCase);
-        foreach (var investorId in (request.Investors ?? []).Where(static line => line is not null && !string.IsNullOrWhiteSpace(line.InvestorId))
-                     .Select(static line => line.InvestorId.Trim()).Distinct(StringComparer.OrdinalIgnoreCase))
+        await DistributionDeclarationGate.WaitAsync(ct).ConfigureAwait(false);
+        try
         {
-            registered[investorId] = request.LedgerBookId is { } book
-                ? await _distributionRegister.ListAsync(request.TenantId, request.CompanyId, request.FundProfileId, book, investorId, ct).ConfigureAwait(false)
-                : [];
-        }
+            var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
+                request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+            if (workbench is null)
+                return BuildBlockedCapitalCallResult(runKey, code, lane, blocker ?? "The journal queue is unavailable.");
 
-        var (production, records) = DistributionDeclarationDraftProducer.Produce(request, registered, workbench.Value.Drafts, evaluatedAtUtc);
-        var result = await AdmitPrivateCapitalEventDraftsAsync(production, runKey, code, lane, request.FundProfileId, request.Currency,
-            request.Actor, request.LedgerBookId, request.PeriodId, request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
-        if (result.Readiness != AutomatedJournalIntakeReadiness.Ready)
+            var registered = new Dictionary<string, IReadOnlyList<DistributionDeclarationRecord>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var investorId in (request.Investors ?? []).Where(static line => line is not null && !string.IsNullOrWhiteSpace(line.InvestorId))
+                         .Select(static line => line.InvestorId.Trim()).Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                registered[investorId] = request.LedgerBookId is { } book
+                    ? await _distributionRegister.ListAsync(request.TenantId, request.CompanyId, request.FundProfileId, book, investorId, ct).ConfigureAwait(false)
+                    : [];
+            }
+
+            var (production, records) = DistributionDeclarationDraftProducer.Produce(request, registered, workbench.Value.Drafts, evaluatedAtUtc);
+            var result = await AdmitPrivateCapitalEventDraftsAsync(production, runKey, code, lane, request.FundProfileId, request.Currency,
+                request.Actor, request.LedgerBookId, request.PeriodId, request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+            if (result.Readiness != AutomatedJournalIntakeReadiness.Ready)
+                return result;
+
+            // Retain each declaration against the draft that carries it. A retry after an interruption
+            // finds the same draft and records the same declaration.
+            var draftIdByKey = result.Intake.Created
+                .Where(static draft => draft.TreasuryContext?.IdempotencyKey is not null)
+                .Select(static draft => (Key: draft.TreasuryContext!.IdempotencyKey!, draft.JournalEntryId))
+                .Concat(result.Intake.Skipped.Select(static skip => (Key: skip.IdempotencyKey, skip.JournalEntryId)))
+                .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(static group => group.Key, static group => group.First().JournalEntryId, StringComparer.OrdinalIgnoreCase);
+            foreach (var record in records)
+            {
+                var key = DistributionDeclarationDraftProducer.DraftKey(record.FundProfileId, record.InvestorId, record.DistributionId);
+                if (!draftIdByKey.TryGetValue(key, out var journalEntryId))
+                    throw new InvalidOperationException($"Distribution '{record.DistributionId}' for investor '{record.InvestorId}' produced no retained draft.");
+                // The draft is already admitted; a disconnecting caller must not stop its record.
+                await _distributionRegister.RecordAsync(record with { JournalEntryId = journalEntryId }, CancellationToken.None).ConfigureAwait(false);
+            }
+
             return result;
-
-        // Retain each declaration against the draft that carries it. A retry after an interruption
-        // finds the same draft and records the same declaration.
-        var draftIdByKey = result.Intake.Created
-            .Where(static draft => draft.TreasuryContext?.IdempotencyKey is not null)
-            .Select(static draft => (Key: draft.TreasuryContext!.IdempotencyKey!, draft.JournalEntryId))
-            .Concat(result.Intake.Skipped.Select(static skip => (Key: skip.IdempotencyKey, skip.JournalEntryId)))
-            .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
-            .ToDictionary(static group => group.Key, static group => group.First().JournalEntryId, StringComparer.OrdinalIgnoreCase);
-        foreach (var record in records)
-        {
-            var key = DistributionDeclarationDraftProducer.DraftKey(record.FundProfileId, record.InvestorId, record.DistributionId);
-            if (!draftIdByKey.TryGetValue(key, out var journalEntryId))
-                throw new InvalidOperationException($"Distribution '{record.DistributionId}' for investor '{record.InvestorId}' produced no retained draft.");
-            // The draft is already admitted; a disconnecting caller must not stop its record.
-            await _distributionRegister.RecordAsync(record with { JournalEntryId = journalEntryId }, CancellationToken.None).ConfigureAwait(false);
         }
-
-        return result;
+        finally
+        {
+            DistributionDeclarationGate.Release();
+        }
     }
 
     private async Task<((IReadOnlyList<ManualJournalEntryDraftDto> Drafts, PrivateCapitalActivityProjectionDto Activity)? Workbench, string? Blocker)> LoadPrivateCapitalWorkbenchAsync(

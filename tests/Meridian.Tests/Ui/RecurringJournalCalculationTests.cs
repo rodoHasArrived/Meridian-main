@@ -42,6 +42,8 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private readonly DomainLedger _ledger = new();
     private int _ledgerReads;
 
+    private readonly HashSet<int> _closedMonths = [];
+
     [Fact]
     public async Task ManagementFee_DraftsDayWeightedFeeOnOpeningNetAssets_OncePerWindow()
     {
@@ -387,6 +389,37 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task PerformanceFee_PreviousPeriodPostedThenClosed_NextPeriodStillAccrues()
+    {
+        Capitalize(10_000_000m);
+        Post(new(2026, 1, 20), (LedgerAccounts.Cash, 1_000_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 1_000_000m));
+        await SeedAsync(PerformanceFeeAccrualCalculation.CalculationKind, new()
+        {
+            ["performanceFeeRate"] = 0.20m,
+            ["highWaterMark"] = 10_000_000m,
+            ["hurdleAmount"] = 0m,
+            ["crystallize"] = 0m
+        });
+        var fixture = await CreateFixtureAsync();
+        await fixture.Runner.RunDueAsync(At(JanuaryEnd));
+        var january = (await fixture.Drafts.ListAsync(Fund, Book)).Should().ContainSingle().Subject;
+        await fixture.Drafts.SaveAsync(january with { Status = ManualJournalEntryStatusDto.Posted });
+        Post(JanuaryEnd, (new LedgerAccount("Performance Fee Expense", LedgerAccountType.Expense), 200_000m, 0m),
+            (new LedgerAccount("Performance Fee Payable", LedgerAccountType.Liability), 0m, 200_000m));
+        Post(new(2026, 2, 10), (LedgerAccounts.Cash, 500_000m, 0m), (LedgerAccounts.RealizedGain, 0m, 500_000m));
+
+        // Closing January marks its occurrence blocked; its posted draft still settles it.
+        _closedMonths.Add(1);
+        var results = await (await CreateFixtureAsync()).Runner.RunDueAsync(At(FebruaryEnd));
+
+        results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, JanuaryEnd))
+            .State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        results.Single(result => result.RunKey == RecurringJournalIdentity.OccurrenceKey(ScheduleId, FebruaryEnd))
+            .State.Should().Be(AutomatedJournalScheduleStateDto.DraftReady);
+        (await fixture.Drafts.ListAsync(Fund, Book)).Should().Contain(item => item.AccountingDate == FebruaryEnd);
+    }
+
+    [Fact]
     public async Task Depreciation_CorruptRegister_BlocksThatOccurrenceWithoutStoppingTheRun()
     {
         Directory.CreateDirectory(Path.Combine(_root, "registers"));
@@ -504,7 +537,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         var intake = new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService);
         var inputs = new LedgerInputs(_ledger, lots ?? [], () => _ledgerReads++);
         var cashFlowService = cashFlows ?? MonthlyCouponCashFlows();
-        var runner = new RecurringJournalRunner(store, intake, drafts, new Periods(),
+        var runner = new RecurringJournalRunner(store, intake, drafts, new Periods(_closedMonths),
         [
             new ManagementFeeAccrualCalculation(inputs),
             new PerformanceFeeAccrualCalculation(inputs),
@@ -530,13 +563,14 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private sealed record Fixture(RecurringJournalRunner Runner, FileManualJournalEntryDraftStore Drafts,
         ManualJournalEntryWorkbenchService Workbench, LedgerInputs Inputs);
 
-    private sealed class Periods : IRecurringJournalPeriodAuthority
+    private sealed class Periods(HashSet<int> closedMonths) : IRecurringJournalPeriodAuthority
     {
         public Task<RecurringJournalPeriodState> ResolveAsync(RecurringJournalScope scope, DateOnly date, CancellationToken ct)
         {
             var id = date.Month == 1 ? January : February;
             var start = new DateOnly(date.Year, date.Month, 1);
-            return Task.FromResult(new RecurringJournalPeriodState(id.ToString("D"), 1, true, null, null, null,
+            var closed = closedMonths.Contains(date.Month);
+            return Task.FromResult(new RecurringJournalPeriodState(id.ToString("D"), 1, !closed, null, null, closed ? "The period is closed." : null,
                 start, start.AddMonths(1).AddDays(-1)));
         }
     }

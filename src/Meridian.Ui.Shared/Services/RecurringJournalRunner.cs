@@ -160,7 +160,10 @@ public sealed class RecurringJournalRunner(
         if (previous?.State == RecurringOccurrenceState.NoDraftRequired)
             return;
         string status;
-        if (previous is null || previous.State != RecurringOccurrenceState.Drafted)
+        // A posted occurrence is marked Blocked once its period closes, so the retained draft's
+        // own status decides, not the occurrence's current state.
+        if (previous is null || (previous.State != RecurringOccurrenceState.Drafted &&
+                                 !previous.History.Any(static item => item.State == RecurringOccurrenceState.Drafted)))
         {
             status = previous is null ? "not yet processed" : previous.State.ToString();
         }

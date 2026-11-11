@@ -175,6 +175,22 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     }
 
     [Fact]
+    public async Task Distribution_TwoDeclarationsAtOnce_OnlyOneIsAdmitted()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+
+        var results = await Task.WhenAll(
+            Task.Run(() => fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-1", new(2026, 4, 30)))),
+            Task.Run(() => fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31)))));
+
+        // Whichever runs second sees the first one's unposted draft and is refused.
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Ready)
+            .Which.Intake.Created.Should().ContainSingle();
+        results.Should().ContainSingle(result => result.Readiness == AutomatedJournalIntakeReadiness.Blocked);
+        (await fixture.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+    }
+
+    [Fact]
     public async Task Distribution_DraftAdmittedWithoutItsTierRecord_BlocksTheNextDeclarationUntilRestored()
     {
         var first = await CreateFixtureAsync([], []);

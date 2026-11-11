@@ -87,7 +87,8 @@ public sealed record PrivateCapitalFundEventLedgerImpact(
     decimal TotalCredits,
     decimal Imbalance,
     bool IsBalanced,
-    IReadOnlyList<PrivateCapitalFundEventLedgerLine> Lines);
+    IReadOnlyList<PrivateCapitalFundEventLedgerLine> Lines,
+    DateOnly? EffectiveDate = null);
 
 public sealed record PrivateCapitalFundEventLedgerLine(
     Guid LedgerEntryId,
@@ -230,7 +231,8 @@ public static class PrivateCapitalFundEventLedgerProjector
                     line.Debit,
                     line.Credit,
                     Ledger.CalculateNetBalance(line.Account.AccountType, line.Debit, line.Credit)))
-                .ToArray());
+                .ToArray(),
+            entry.Metadata.EffectiveDate);
     }
 
     private static IReadOnlyList<PrivateCapitalFundEventCapitalAccountImpact> BuildCapitalAccountImpacts(

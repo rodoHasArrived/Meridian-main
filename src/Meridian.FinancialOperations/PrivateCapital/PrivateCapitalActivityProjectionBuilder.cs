@@ -1150,7 +1150,8 @@ public static class PrivateCapitalActivityProjectionBuilder
                 capitalAccountImpact?.CapitalAccountId ?? capitalAccountId,
                 NormalizeOptional(capitalAccountImpact?.InvestorId) ?? NormalizeOptional(fundEvent.InvestorId),
                 approvalState,
-                effectiveDate,
+                // A later journal on the same fund event (a call's funding) keeps its own date.
+                impact.EffectiveDate ?? effectiveDate,
                 currency,
                 impact.TotalDebits,
                 impact.TotalCredits,
