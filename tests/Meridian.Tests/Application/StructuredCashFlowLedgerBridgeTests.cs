@@ -27,6 +27,17 @@ public sealed class StructuredCashFlowLedgerBridgeTests
             staleness);
 
     [Fact]
+    public void NegativeInterest_BlocksTheWholeScheduleWithATypedReason()
+    {
+        var result = new StructuredCashFlowLedgerBridge().BuildCouponAccrualPostings(
+            BuildProjection(firstInterest: 5m, secondInterest: -1m), "ABC");
+
+        result.IsPostable.Should().BeFalse();
+        result.Blocker.Should().Be(SecurityInterestSupport.NegativeInterestBlocker);
+        result.Postings.Should().BeEmpty("an earlier positive period cannot post from an unsupported signed schedule");
+    }
+
+    [Fact]
     public void NormalizedSchedule_RemainsBlockedEvenWithoutTextReason()
     {
         var result = new StructuredCashFlowLedgerBridge().BuildCouponAccrualPostings(

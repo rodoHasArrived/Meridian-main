@@ -37,6 +37,10 @@ public sealed record StructuredCashFlowTerms(
     [JsonIgnore]
     public SecurityCouponRateUnit CouponRateUnit { get; init; }
 
+    /// <summary>Explicit scalar rate-unit declaration, independent of schedule conventions.</summary>
+    [JsonIgnore]
+    public RateUnit? RecordRateUnit { get; init; }
+
     [JsonIgnore]
     public decimal? CapRate { get; init; }
 

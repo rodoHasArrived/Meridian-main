@@ -6,10 +6,19 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui.Shared
+
+Security Master trust snapshots include read-only `Governance` evidence from the effective
+`ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
+requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
+an unavailable requirements seam remains unavailable rather than implying Standard defaults.
+The snapshot also carries the selected terms' Base cash-flow calculation blocker at the snapshot's
+evaluation time through `GetProjectionBlockerAsync`, a passive read that retains no receipt. Typed
+signed-interest refusals remain visible to both clients and prevent payment, cash-flow, ledger and
+close readiness; current reads never recalculate a legacy receipt to obtain it.
 
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
@@ -546,7 +555,10 @@ health or fallback evidence for that scoped result, including after its credenti
 The shared lifecycle resolves its retained tenant, provider, external account and environment against
 the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
 connections are refused. Scoped Alpaca verification requires the returned account to match retained
-ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+ownership. The Alpaca brokerage routes (`/api/brokerage-connections/alpaca*`) have no provider-wide
+path: `AlpacaBrokerageConnectionService` binds connect, status and revoke to the connection named by
+`?connectionId=`, or to the tenant's single owned paper connection when the query is omitted, and
+verifies submitted keys against the retained account and environment before storing them. Other scoped providers remain unverified until a connection-bound live verifier exists;
 provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
 the legacy path during the unfinished workstation/default-runtime cutover.
 
@@ -1991,7 +2003,17 @@ previews can display the same audit trace as retained exports. Template governan
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
 approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
+`basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
+`IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
+`ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
+period-close schedule's as-of date; the schedule service never derives a period selector from a
+calendar date. Its `ResolveNextClosePeriodAsync` names the next period to close (the following
+period for monthly, the fiscal quarter-end or year-end period by ledger period number for
+quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
+When that lookup fails at advance time the schedule moves on by calendar and records
+`UnresolvedPeriodCloseAfter`; `RealignPeriodCloseToLedgerAsync` repeats the lookup before the next
+run, corrects the date and persists it under the execution lease before the run starts (lease
+renewal matches the stored payload), deferring a due run that is not yet due on the corrected date.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

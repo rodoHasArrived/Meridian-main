@@ -354,9 +354,10 @@ public static class SecurityAssetTermsFieldEditValidator
     {
         error = null;
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
-        if (field.SinceTermsVersion > writes)
+        if (!field.AuthoringEnabled || field.SinceTermsVersion > writes)
         {
-            error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, field.Key, field.SinceTermsVersion);
+            error = !field.AuthoringEnabled ? SecurityTermsEnvelope.DescribeAuthoringDisabled(field.Key)
+                : SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, field.Key, field.SinceTermsVersion);
             return true;
         }
 
@@ -374,9 +375,11 @@ public static class SecurityAssetTermsFieldEditValidator
                     string.Equals(inner.Key, segment, StringComparison.OrdinalIgnoreCase)
                     || inner.Aliases.Any(alias => string.Equals(alias, segment, StringComparison.OrdinalIgnoreCase)))
                 is { } innerField
-            && innerField.SinceTermsVersion > writes)
+            && (!innerField.AuthoringEnabled || innerField.SinceTermsVersion > writes))
         {
-            error = SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, $"{field.Key}.{nestedPath}", innerField.SinceTermsVersion);
+            error = !innerField.AuthoringEnabled
+                ? SecurityTermsEnvelope.DescribeAuthoringDisabled($"{field.Key}.{nestedPath}")
+                : SecurityTermsEnvelope.DescribeNotYetWritable(assetClass, $"{field.Key}.{nestedPath}", innerField.SinceTermsVersion);
             return true;
         }
 
@@ -402,6 +405,14 @@ public static class SecurityAssetTermsFieldEditValidator
             }
 
             var container = JsonSerializer.SerializeToElement(new Dictionary<string, JsonElement> { [field.Key] = value });
+            var unavailable = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, container, 1)
+                .FirstOrDefault(term => !term.Field.AuthoringEnabled);
+            if (unavailable.Field is not null)
+            {
+                var path = indexDepth == 0 ? unavailable.Path : $"{field.Key}.{nestedPath}.{unavailable.Field.Key}";
+                error = SecurityTermsEnvelope.DescribeAuthoringDisabled(path);
+                return true;
+            }
             var populated = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, container, writes);
             if (populated.Count > 0)
             {

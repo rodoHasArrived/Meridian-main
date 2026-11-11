@@ -11,6 +11,13 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Contracts
 
+`SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
+classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
+absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`
+economic module preserves the declaration on replay. An invalid retained declaration refuses
+normalization instead of reviving a field default. New unit versions keep calculation-only
+companions and swap leg conventions read-only through the schema's authoring flag.
+
 `LedgerCurrencyRounding.RoundCurrency(amount, currency)` rounds to the currency's minor units via `CurrencyMinorUnits` (0 for JPY, 3 for KWD/BHD, 2 otherwise).
 
 `BondAnalyticsCashFlow.FloatingCoupon` carries v3-only reset evidence: reset date, observed/forecast
@@ -19,6 +26,15 @@ The optional field and `BondAnalyticsResult.SpreadDv01` are omitted from fixed/z
 These are calculation display contracts; they do not introduce discount margin or posting authority.
 
 `BondContractualEconomics` owns declared per-100 coupon cash, reference-period stub fractions, accrued interest and discounting time. `BondExerciseEconomics` shares fixed-price whole-redemption dates and cash across analytics and cash forecasts. `BondExerciseNoticeWatch` reads the same scenarios' notice bounds into dated notice windows for the workstation notice watch, refusing every structure fixed analytics refuses; `EvaluateToMaturity` is the same read without the horizon, used by the asset-operations obligation timeline. `BondFloatingRateEvidence` freezes each observed or forecast reset with explicit units, source, spread, cap/floor, principal and accrual fraction. New declared lot previews use `canonical-lot-amortization-v5`; v1–v3 retain their original arithmetic and dispatch. The interim v4 declared model was removed before any instruction was produced and is refused as an unsupported version.
+
+`SecurityInterestSupport` supplies the typed `NegativeInterestUnsupported` capability blocker for
+unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
+negative fixings and spreads can still produce a supported positive coupon after contractual floors.
+
+Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
+underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share
+behavior and operational pricing/fixing sources. These homes recover class-owned flat fields without
+converting their labels or units; operational source names grant no calculation authority.
 
 `CashFlows/` owns the versioned calculation-only cash-flow contracts, exercise/notice resolution, standard make-whole formulas, structured coupon/principal walks, deterministic CPR/SMM/PSA prepayments, and replay verification. The `cashFlowContract` companion reads ahead of existing write ceilings; undeclared terms and existing call/put element shapes remain unchanged. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
@@ -1061,6 +1077,9 @@ dataset powered a no-code report-writer output.
 contract. `WorkstationReportingPayload` and `FundReportingSummaryDto` carry the available kits and
 selected starter state, while `ReportingScheduleStateDto.Draft` represents schedule stubs that were
 seeded for review but should not run until an operator activates them.
+`ReportingScheduleStateDto.Disabled` is set by the schedule `disable` route and cleared by `resume`.
+Both schedule DTOs carry an optional IANA `TimeZoneId` for cron evaluation (null means UTC; it is
+omitted from JSON when null so previously retained payloads keep their content hash).
 `ReportingScheduleUpsertRequestDto` and `ReportingScheduleRecordDto` can also retain a
 `BrandingThemeId` or `BrandingThemeOverride`, and the generic Reporting manifest carries the
 resolved theme into scheduled generated-run packages so recurring report-writer deliveries preserve

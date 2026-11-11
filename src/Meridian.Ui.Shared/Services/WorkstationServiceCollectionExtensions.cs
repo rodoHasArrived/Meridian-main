@@ -909,7 +909,13 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ReportingRunCertificationService>(),
                 sp.GetService<IReportingGovernanceEndpointCoordinator>(),
                 sp.GetService<IReportingRecipientDestinationResolver>(),
-                sp.GetRequiredService<IReportingDeploymentReadinessService>()));
+                sp.GetRequiredService<IReportingDeploymentReadinessService>())
+            {
+                // Period-close schedules take their accounting period from the durable ledger.
+                PeriodResolver = sp.GetService<ILedgerJournalStore>() is { } journalStore
+                    ? new LedgerReportingSchedulePeriodResolver(journalStore)
+                    : null
+            });
         services.TryAddSingleton(ReportingScheduleWorkerOptions.Default);
         services.TryAddSingleton<ReportingScheduleWorkerReadinessState>();
         services.TryAddEnumerable(

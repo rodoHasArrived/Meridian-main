@@ -16,6 +16,52 @@ public sealed class BondCalculationReplayTests
 {
     private static readonly DateTimeOffset AsOf = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData(5, false)]
+    [InlineData(-0.5, true)]
+    public async Task PassiveCapabilityReads_DoNotRetainReceipts_WhileExplicitCaptureStillRetains(double coupon, bool blocked)
+    {
+        // Fixed Bond coupons forbid negatives. Swap fixed-leg rates permit them as retained facts,
+        // so this case reaches the unsigned-interest capability refusal rather than rate validation.
+        var selected = blocked ? SignedFixedSwap((decimal)coupon / 100m) : Bond((decimal)coupon);
+        var query = Substitute.For<ISecurityMasterQueryService>();
+        query.GetByIdAsync(selected.SecurityId, Arg.Any<CancellationToken>()).Returns(Bond(9m) with { Version = 2 });
+        var receipts = Substitute.For<ISecurityCashFlowReceiptStore>();
+        var service = Service(query, receipts: receipts);
+        var context = new BondCalculationContext(AsOf, SecurityVersion: selected.Version);
+
+        var first = await service.GetProjectionBlockerAsync(selected, context);
+        var second = await service.GetProjectionBlockerAsync(selected, context with { AsOf = AsOf.AddHours(1) });
+
+        first.Should().Be(blocked ? SecurityInterestSupport.NegativeInterestBlocker : null);
+        second.Should().Be(first);
+        await receipts.DidNotReceive().RetainAsync(Arg.Any<SecurityCashFlowCalculationReceipt>(), Arg.Any<CancellationToken>());
+        await query.DidNotReceive().GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+
+        query.GetByIdAsync(selected.SecurityId, Arg.Any<CancellationToken>()).Returns(selected);
+        var captured = await service.CaptureProjectionAsync(selected.SecurityId, StructuredCashFlowScenario.Base, context);
+
+        captured.Should().NotBeNull();
+        captured!.ModelVersion.Should().Be(SecurityMasterCashFlowService.ContextCalculationVersion);
+        captured.ContentSha256.Should().HaveLength(64);
+        captured.Projection.Blocker.Should().Be(first);
+        await receipts.Received(1).RetainAsync(Arg.Is<SecurityCashFlowCalculationReceipt>(receipt =>
+            receipt.ContentSha256 == captured.ContentSha256 && receipt.Security.Version == selected.Version), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task PassiveCapabilityRead_PreservesCutoffRefusals_WithoutRetainingReceipt()
+    {
+        var selected = Bond(5m);
+        var receipts = Substitute.For<ISecurityCashFlowReceiptStore>();
+        var blocker = await Service(Substitute.For<ISecurityMasterQueryService>(), receipts: receipts)
+            .GetProjectionBlockerAsync(selected, new BondCalculationContext(AsOf, SecurityVersion: selected.Version + 1));
+
+        blocker!.Code.Should().Be("CashFlowProjectionBlocked");
+        blocker.Reason.Should().Contain("does not match");
+        await receipts.DidNotReceive().RetainAsync(Arg.Any<SecurityCashFlowCalculationReceipt>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task RecordedCutoffUsesRetainedTermsAndNeverReloadsCurrentTerms()
     {
@@ -191,6 +237,26 @@ public sealed class BondCalculationReplayTests
         return new SecurityMasterCashFlowService(calendars ?? new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]),
             store, [], query, NullLogger<SecurityMasterCashFlowService>.Instance, receiptStore: receipts);
     }
+
+    private static SecurityDetailDto SignedFixedSwap(decimal rate) => Bond(5m) with
+    {
+        AssetClass = "Swap",
+        AssetSpecificTerms = JsonSerializer.SerializeToElement(new
+        {
+            assetClassTermsVersion = 4,
+            rateUnit = "Fraction",
+            effectiveDate = "2026-01-01",
+            issueDate = "2026-01-01",
+            maturityDate = "2028-01-01",
+            maturity = "2028-01-01",
+            legs = new[] { new
+            {
+                legId = "signed-fixed", legType = "Fixed", currency = "USD", direction = "Receive",
+                fixedRate = rate, notional = 100m, paymentFrequency = "Annual", dayCount = "30/360",
+                exchangesPrincipal = false
+            } }
+        })
+    };
 
     private static SecurityDetailDto Bond(decimal coupon) => new(
         Guid.Parse("172d94fe-0000-4000-8000-000000000001"), "Bond", SecurityStatusDto.Active, "Replay bond", "USD",
