@@ -9,8 +9,8 @@
       "id": "SRC-APP",
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
-      "readme_hash": "a282397be3630845de721f87941c462451c683b346c55134279af771dbfb7988",
-      "source_hash": "f6348439585709cc316a04fc9920d85ddc13734fd1639ab0798894b27a054bb3"
+      "readme_hash": "c7709e97a1f880bebec23a46de952feca93d92e9476ae2f4df4d29c3c8a49912",
+      "source_hash": "e1e0d3502bd28adb316cb810fdb71201811084252d19253c388ad8742cb684d2"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -163,8 +163,8 @@
       "id": "SRC-FSHARP-LEDGER",
       "path": "src/Meridian.FSharp.Ledger",
       "readme": "src/Meridian.FSharp.Ledger/README.md",
-      "readme_hash": "da13a9a548ed9415b1baf45a1f88e5b7086f175d16b33338f55544d001fec5fa",
-      "source_hash": "c70fedae39744c856887d10f846e3296f9cf3eb1326b96d5acb0dc16ce716d23"
+      "readme_hash": "d223ef0b7037aa981a170644c73c6481dae4d81c709e9f94f1e7bef4a821f49e",
+      "source_hash": "ba38d93e136202b136fabb62ae42625d386fd46d4675b11e0db59c9c7d4aba7a"
     },
     {
       "id": "SRC-FSHARP-TRADING",
@@ -247,8 +247,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "fed4ff2b8bd42fa5c63eeee1364c79a93ff42eefd48e806d93402ab315d8a3de",
-      "source_hash": "8db66260ab4008c4945f525ff0811ace6bb0522cf485c6c8c870e44f1f5f7653"
+      "readme_hash": "1e5738ecbba118961460011a87562cabecc556a7538a20177fbed1aff3502c51",
+      "source_hash": "2a1ee27d234abb833c5aecf0b429505f495fce651f1901f3404d3ae5401fa2be"
     },
     {
       "id": "SRC-STRATEGIES",
