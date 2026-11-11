@@ -26,6 +26,12 @@ change the source checkpoint even when period activity rows are unchanged. Legac
 retained population cannot expose verified generated amount proof and require fresh certification.
 `ReportingRetainedLedgerPopulationValidation` verifies the same payload, scoped journals, counts,
 certified dataset, and source digest at every retained-manifest and artifact-production boundary.
+Canonical parameter serialization repeats certification's ordinal external-dimension key ordering
+on read-back, so PostgreSQL JSONB property ordering cannot change retained parameter bindings.
+The existing normalized parameter bytes and hashes remain unchanged.
+Retained validation also accepts the exact previous raw-dictionary serialization of the same
+parameter DTO. It preserves the original frozen JSON and validates its original parameter and
+snapshot hashes; changed keys, values, flags, casing or other fields do not match.
 
 ## Layer responsibility
 
@@ -161,6 +167,38 @@ existing governed reconciliation queue. Its retained JSON/CSV artifacts are not 
 governed artifact package, approval, release, or delivery receipt. Only a separately started,
 readiness-approved run enters this module's certification and governance lifecycle, followed by the
 shared client-document renderer and secure distribution after independent release.
+
+The `capital-call-notice` template consumes only the exact investor's posted issuance journal.
+Its generation operation uses one caller-supplied UUID, bound by the server to the authenticated
+actor and exact tenant/company/entity/fund/book/currency/call/investor/selected-commitment scope. Replaying that
+operation recovers the original certified manifest and retained package, including after restart
+or a lost response, before querying current accounting inputs. A deliberate regeneration requires
+a new UUID. PostgreSQL run-store create claims fence competing hosts; file-backed compatibility
+stores cannot run this operation. Each notice addresses one complete posted commitment installment;
+an investor with multiple commitments in one call receives separate notices. An omitted legacy
+selector is accepted for new generation only when the investor has one call installment, and a
+retained omitted-selector operation keeps its original request hash for recovery.
+UI Shared resolves the frozen call plan, approved commitment revision, and atomic posting receipt;
+the authoritative source then filters by investor, capital account, call ID, commitment ID, and issuance kind and
+checks journal identity and balanced call amount. Notice certification retains the call plan hash,
+installment, dates, commitment revision and posted journal bindings. A deployment-owned
+`PrivateCapital:NoticeRecipients` mapping explicitly connects tenant/company/fund/investor to a
+Reporting user principal; investor IDs are never assumed to be user identities. Missing or
+ambiguous bindings block generation. The same binding must declare `ReviewGroupPrincipalId`, an
+internal Reporting group whose members can independently review and release the notice without
+making the investor its approver. Each immutable notice audience is restricted to that one
+recipient, the configured review group, and its operator owner, while the existing destination directory independently checks
+delivery addresses. The existing Documents renderer produces the notice's PDF/XLSX pair. Generation
+retains an actual reconciliation of the frozen installment to the posted journal, then returns a
+governed Draft. This receipt makes no accounting-close claim and is independent of unrelated
+mutable close casework. Its source branch verifies exact notice, investor, commitment and posted
+source bindings. The named
+operational-notice template can proceed through normal independent review, approval and release
+while its accounting period is open; release rechecks its exact posted source, reconciliation,
+recipient binding and immutable bytes under the existing period consistency fence. Other report
+templates continue to require Final-certified parameters and committed-close evidence. Revocation
+and delivery receipts remain authoritative. A call plan, posted issuance, generated notice,
+released notice and delivered notice are distinct states.
 
 ## Diagrams
 

@@ -201,7 +201,12 @@ public sealed record ReportingJobContract(
     ReportingAccessScope? ImmutableAccessScope = null,
     ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
     ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
-    string? GovernedRunSeriesId = null);
+    string? GovernedRunSeriesId = null)
+{
+    /// <summary>Server-resolved durable operation identity; never supplied by the generic reporting HTTP contract.</summary>
+    public string? DurableOperationId { get; init; }
+    public string? OperationRequestHash { get; init; }
+}
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,
@@ -260,6 +265,8 @@ public sealed class ReportingRunCreateClaimException : InvalidOperationException
 /// <summary>Stores reporting run manifests and audit trails, including tenant-scoped reads and creation claims.</summary>
 public interface IReportingRunStore
 {
+    /// <summary>True only when create leases and fencing are durable across independent processes.</summary>
+    bool SupportsDurableCreateClaims => false;
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
     IReadOnlyList<ReportingRunSnapshot> ListRuns(string tenantId, int limit = 25)
     {

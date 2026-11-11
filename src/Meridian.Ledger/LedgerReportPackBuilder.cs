@@ -432,10 +432,14 @@ public static class LedgerReportPackBuilder
         LedgerFinancialStatements statements,
         string? financialAccountId)
     {
-        var allRows = statements.TrialBalanceRows
-            .Concat(statements.IncomeStatementRows)
-            .Concat(statements.BalanceSheetRows)
-            .DistinctBy(static row => row.Path, StringComparer.Ordinal)
+        // Statement rows roll together accounts sharing a chart path, including different
+        // investors and symbols. Their summary account is not an actual posting identity.
+        var postedAccounts = ledger.Accounts
+            .Select(static account => new
+            {
+                Account = account,
+                Path = string.Join(':', account.Name.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            })
             .ToArray();
 
         return BuildProvenanceForArtifact("trial-balance.csv", statements.TrialBalanceRows)
@@ -447,9 +451,10 @@ public static class LedgerReportPackBuilder
         {
             foreach (var row in rows.OrderBy(static item => item.Path, StringComparer.Ordinal))
             {
-                var descendants = allRows
-                    .Where(candidate => string.Equals(candidate.Path, row.Path, StringComparison.Ordinal)
-                        || candidate.Path.StartsWith($"{row.Path}:", StringComparison.Ordinal))
+                var descendants = postedAccounts
+                    .Where(candidate => candidate.Account.AccountType == row.Account.AccountType
+                        && (string.Equals(candidate.Path, row.Path, StringComparison.OrdinalIgnoreCase)
+                            || candidate.Path.StartsWith($"{row.Path}:", StringComparison.OrdinalIgnoreCase)))
                     .Select(static candidate => candidate.Account)
                     .Distinct()
                     .ToArray();

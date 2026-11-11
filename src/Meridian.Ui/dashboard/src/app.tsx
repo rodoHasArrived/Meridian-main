@@ -960,7 +960,7 @@ function AppShell({
                   <Route path="/accounting/journal-entries/detail" element={<JournalEntryDetailScreen />} />
                   <Route path="/accounting/reconciliation/match" element={<ReconciliationMatchWorkbenchScreen data={accounting} />} />
                   <Route path="/accounting/statement-import" element={<StatementImportScreen />} />
-                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen />} />
+                  <Route path="/accounting/capital-calls" element={<CapitalCallIssuanceScreen session={session} />} />
                   <Route path="/accounting/margin-control" element={<MarginControlCenterScreen />} />
                   <Route path="/accounting/close-calendar" element={<CloseCalendarScreen data={accounting} />} />
                   <Route path="/accounting/approvals/inbox" element={<ApprovalInboxScreen data={accounting} />} />
