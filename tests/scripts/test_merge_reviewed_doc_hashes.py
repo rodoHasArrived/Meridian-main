@@ -110,7 +110,7 @@ class ReviewedHashMergeTests(unittest.TestCase):
 
 class ReviewedHashCheckoutTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
         self.git("init", "--initial-branch=main")

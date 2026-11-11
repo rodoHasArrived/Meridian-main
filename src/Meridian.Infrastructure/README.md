@@ -6,10 +6,16 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.Infrastructure
+
+The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
+
+`BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
+
+Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
 
 The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
 
@@ -38,9 +44,14 @@ the broker's `replaced_by` links to the live successor and stays pending, cancel
 link cannot be verified. A multi-leg package parent is returned with an empty symbol and side: REST
 reconciliation and the trade-update client leave it unnormalized (its legs are separate orders) so it
 cannot fail the durable inbox for other orders, and recovering or amending one is refused.
+The Alpaca gateway identifies the account by its account number, the identifier operators see and
+verification records; the internal UUID from the same response is accepted as an alias on requests,
+answered under the name the caller used, declared as an alias on the catalog entry, and still
+forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
 Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
 dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
-nothing rather than a partial history. Alpaca historical quotes, trades and auctions always use the
+nothing rather than a partial history. The provider is review-only: its records are staged for
+review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
 auction range ends on the requested date, which Alpaca treats as inclusive. Order and
@@ -95,7 +106,14 @@ and outage classifications for failed batches.
 Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
-Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+Alpaca symbol search initializes authentication after credentials are assigned. Alpaca asset
+search and option contract discovery are Trading API resources and follow the selected credential
+record's paper or live Trading API host, then `ALPACA_TRADING_ENVIRONMENT`; with neither, a paper
+key ID goes to paper and anything else stays on the live host, because a paper key pair is refused
+there. Contract discovery states its expiration horizon and follows page tokens, and returns
+nothing rather than a partial chain when a page cannot be read. Option chain snapshots and quotes
+read the underlying's latest trade first, because the snapshot payload has no underlying price,
+and join open interest from the contract listing. OpenFIGI resolution
 learns canonical identities only from complete, unambiguous exchange and instrument evidence;
 broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
 discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.

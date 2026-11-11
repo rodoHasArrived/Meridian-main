@@ -455,3 +455,37 @@ and S2-B4 (codec single-purpose) land. Planned increments:
   dependency is module homes for the codec-only field complement (strikes, currency pairs,
   notionals, envelopes) — field-by-field expand/contract the owner sequences, in a successor
   PR, with the census as its starting evidence.
+  - **S3-E1 — strikes (implemented 2026-11-10).** New `exercise` term module
+    (`ExerciseTerms`: option right, strike price, strike rate, exercise style, underlying
+    security, premium amount) homes the Option, Warrant, Swaption and CapFloor strike fields;
+    Option and Future contract multipliers join `tradingParameters`. Fourteen rules moved from
+    the codec-only validator to the definition surface (ledger and mutation table extended);
+    the class-aware flattening recovers the fields on economic-only replay. The identity gate
+    now tolerates exactly one difference — a module key added after the gate shipped
+    (`ModulesAddedAfterIdentityGate`) that an image predates and the rebuild emits null — so
+    serializer growth does not re-age stored images into carrying their retained document.
+  - **S3-E2 — currency pairs (implemented 2026-11-10).** New `currencyPair` term module
+    (`CurrencyPairTerms`: base, quote and settlement currencies, forward rate) homes the pair
+    fields of FxSpot, CryptoCurrency, FxForward and NonDeliverableForward. Fifteen rules moved
+    to the definition surface; FxSpot and CryptoCurrency keep no codec-only rule and gained
+    class-aware flattenings, so their economic-only replays recover both required keys.
+  - **S3-E3 — notionals (implemented 2026-11-10).** New `notional` term module
+    (`NotionalTerms`: notional, denomination, committed, funded and unfunded amounts) homes
+    the contract notionals of FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption and
+    CapFloor, the StructuredNote denomination, and the commitment amounts of
+    PrivateFundInterest and CommitmentGuarantee. Eleven rules moved to the definition surface;
+    FxForward, NonDeliverableForward and CapFloor keep no codec-only rule. Swap leg notionals
+    stay with the structural leg decode.
+  - **S3-E4 — the profile envelope (implemented 2026-11-10).** New `profileEnvelope` term
+    module (`ProfileEnvelopeTerms`: profile id, profile version and the governed terms
+    document) homes the three `CustomAssetTerms` fields; the economic document embeds the
+    document as JSON. All seven CustomAsset envelope rules moved to the definition surface.
+    An economic-only CustomAsset replay now returns the stored profile document whole (no
+    marker, no retained carry) instead of reading as the OtherSecurity salvage; a document
+    written before the module keeps the former route. The profile pin of a profile-backed
+    row that resolves to a first-class class is not a record field and stays document-level.
+  - **Remaining for S3-E.** The record-field contraction itself (removing per-class record
+    fields now that they have homes) and the residual codec-only complement listed in the
+    review record (structural decodes — bond coupon structures and principal schedules, swap
+    legs, covenant entries — plus the scalar remainder: CDS reference terms, structured-note
+    payoff terms, private-asset valuations, listing detail). Both wait on owner sequencing.

@@ -168,7 +168,7 @@ class MetadataTests(unittest.TestCase):
 
 class GitBoundaryTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.repo = Path(self.temp.name)
         self.git("init", "-b", "main")
@@ -550,7 +550,7 @@ class InspectIntegrationTests(unittest.TestCase):
             ("repair.patch", self.patch), ("report.json", json.dumps(self.report).encode())])
 
     def with_blob(self, before, path, content):
-        with tempfile.TemporaryDirectory() as temp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp:
             env = {"GIT_INDEX_FILE": str(Path(temp) / "index")}
             repair.git(self.repo, "read-tree", before, env=env)
             blob = repair.git(self.repo, "hash-object", "-w", "--stdin", data=content).decode().strip()

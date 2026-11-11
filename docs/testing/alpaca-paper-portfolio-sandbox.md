@@ -78,8 +78,56 @@ Requirements and limits:
 - Alpaca refuses to replace an order it has only queued, such as a regular-session order submitted
   while the market is closed. The replacement test accepts either outcome and always verifies that
   no order is left working.
-- The OMS admission path is not exercised: live routing through `OrderManagementSystem` requires
-  a W7-approved run, which this suite does not fabricate.
+- The OMS admission path is not exercised by this suite: live routing through
+  `OrderManagementSystem` requires a W7-approved run, which it does not fabricate. The governed
+  order-path check below drives that path.
+
+## Run the governed order-path check
+
+`AlpacaPaperSandboxOrderLifecycleTests` places the same kind of one-share paper orders, but
+through the production `OrderManagementSystem`, recovery journal and portfolio synchronization
+rather than the gateway alone:
+
+- An order manager without brokerage configuration, without a readiness gate, or outside the
+  approved run refuses to route, and nothing reaches the broker.
+- A resting order is submitted, found by its client order ID, refused when dispatched twice
+  (locally and by the broker), amended into a replacement chain and cancelled, with the order
+  manager holding exactly the terms the broker holds at each step.
+- A submission whose acknowledgement is dropped after the broker accepted it stays retained,
+  blocks further orders, cannot be dispatched again, and is recovered by lookup with exactly one
+  submission.
+- A marketable order fills; the exact `FILL` activity, holdings, activity snapshot and retained
+  order state agree; a new gateway and order manager over the same recovery journal restore the
+  order without booking the fill twice or submitting anything; a closing order returns holdings
+  to where the run found them.
+
+The order manager classifies every Alpaca route, the paper environment included, as live routing
+(`AlpacaBrokerageGateway` does not report an execution mode, so the placement gate does not treat
+it as a paper gateway). This check therefore states the production admission evidence explicitly
+for the paper gateway — brokerage configuration, a run id, and a readiness gate that approves
+only that one-share run — rather than bypassing the gate. The lost acknowledgement is produced by
+dropping one real response in the test transport, not by a network-level disconnect.
+
+Set `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` and `MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS=1` with
+the same three credential variables, then run:
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+  --filter 'FullyQualifiedName~AlpacaPaperSandboxOrderLifecycleTests' \
+  --logger 'console;verbosity=normal' \
+  --logger 'trx;LogFileName=alpaca-paper-governed-orders.trx'
+```
+
+Its transport guard allows `GET` requests and single-order submit, replace and cancel requests on
+`paper-api.alpaca.markets` for at most two shares sized by quantity; cancel-all, close-position
+and dollar-sized orders are refused. Orders carry a per-run `meridian-sandbox-` client order ID
+prefix and trade a different symbol from the gateway check. Cleanup is measured from the broker's
+record of the run's own orders, and a run that otherwise passed fails if an order or position of
+its own could not be cleared. It tolerates open orders it does not own: readiness is then reported
+as withheld by foreign orders instead of asserted. That exception is narrow. Every reconciliation
+break must be a broker order the order manager does not track, with identifiers that are not the
+run's, and it must be the only reason readiness is withheld; a broker book that could not be read,
+or any other blocker, fails the run.
 
 ## Run the real market-data check
 
@@ -104,7 +152,32 @@ dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
 ```
 
 The account's market-data plan decides the feed; the default `iex` feed is enough for this check.
-Option snapshots, symbol search and the market-data WebSocket are outside it.
+Option snapshots and symbol search have their own check below; the market-data WebSocket is
+outside all of them.
+
+## Run the reference-data and options checks
+
+`AlpacaPaperSandboxReferenceDataTests` is read-only on `paper-api.alpaca.markets` and runs with
+`MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1` alone:
+
+- Symbol search and asset details for an equity and a crypto pair, through
+  `AlpacaSymbolSearchProvider`.
+- Option contract discovery through `AlpacaOptionsChainProvider`: expirations across the forward
+  horizon and the strikes of one expiration.
+
+`AlpacaOptionsMarketDataSandboxTests` additionally reads the market-data host and needs
+`MERIDIAN_RUN_ALPACA_MARKET_DATA=1` as well. It builds an option chain snapshot for one
+expiration — an underlying price from the latest trade, calls and puts classified by the right in
+their symbols, open interest joined from the contract listing, greeks, and the near-the-money
+strike filter — and then reads one contract's quote from the single-contract route. The free
+indicative options feed is enough.
+
+```bash
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj \
+  --filter 'FullyQualifiedName~AlpacaPaperSandboxReferenceDataTests|FullyQualifiedName~AlpacaOptionsMarketDataSandboxTests' \
+  --logger 'console;verbosity=normal' \
+  --logger 'trx;LogFileName=alpaca-reference-options.trx'
+```
 
 ### Credentials held outside the test process
 
@@ -129,6 +202,12 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
   nonterminal so the order remains in cancellation sweeps.
 - **422 does not distinguish its causes.** A reused client order ID and an unknown asset return
   the same status and code, so both stay uncertain until recovery reads the client order ID.
+- **An account has two identifiers.** `/v2/account` returns the account number shown in Alpaca's
+  dashboard and an internal UUID shown nowhere else. The gateway used to identify the account by
+  the UUID while credential verification recorded the account number, so a link made with the
+  visible account number was refused. The account number is now the account's identity; the UUID
+  is still accepted as an alias. The read-only check asserts that verification and the gateway
+  name the account the same way.
 - **Corporate actions come from the Market Data API.** The provider previously called a
   `/v2/corporate-actions/announcements` path that does not exist and expected a response shape
   the broker never sends, so it returned nothing. It now reads
@@ -142,6 +221,21 @@ Observed against the paper Trading API on 2026-11-10 and now covered by determin
 - **Auctions exist only on SIP.** Alpaca rejects an auctions request that names another feed, so
   none is sent. A date-only end is inclusive; asking for the following day reaches into today
   when the range ends yesterday, which plans without recent SIP data refuse.
+- **Paper and live keys each authenticate against one Trading host.** Asset search and option
+  contract discovery previously always called the live host, which answers a paper key pair with
+  401, so both returned nothing for paper credentials. They now follow the selected credential
+  record's environment, then `ALPACA_TRADING_ENVIRONMENT`; with neither, a paper key ID (`PK…`)
+  goes to paper and anything else stays on the live host.
+- **Option contracts are a Trading API resource.** The provider previously asked the Market Data
+  API for a contracts path that does not exist. `strike_price` and `open_interest` arrive as
+  strings, the crypto asset increments likewise, and without an expiration bound the listing
+  stops at the upcoming weekend, so the forward horizon is stated and page tokens are followed.
+- **Option snapshots carry no underlying price and no open interest.** The chain snapshot and
+  option quote previously passed an underlying price of zero, which the domain records reject, so
+  both returned nothing. The underlying's latest trade is read first, and open interest is joined
+  from the contract listing. That join is best effort: a listing that cannot be read leaves open
+  interest unknown and the chain is still returned. The per-underlying chain route refuses a
+  `symbols` filter; single contracts are read from their own route.
 - **Listings trail lookups.** The open-order listing can still show an order for a moment after
   its own lookup reports it cancelled, and a `FILL` activity can appear a moment after the order
   reports filled. Until the activity lands, the order snapshot carries the fill at its average
@@ -158,8 +252,10 @@ identifiers.
 
 ## Evidence boundary
 
-These tests provide real paper-broker REST evidence: account state, the order lifecycle, complete
-fills, REST fill recovery into the durable inbox, and historical and corporate-action market data.
+These tests provide real paper-broker REST evidence: account state, the order lifecycle through
+the gateway and through the order manager's admission, recovery and restart path, complete fills,
+REST fill recovery into the durable inbox, asset search, option contracts, option chain snapshots
+and quotes, and historical and corporate-action market data.
 They do not establish live-money readiness, trade-update or market-data WebSocket continuity, an
 actual post-acceptance disconnect, real-broker partial fills, or filled multi-leg packages.
 The deterministic `BrokerageOrderRecoveryTests`, `LiveBrokeragePortfolioSyncServiceTests`,

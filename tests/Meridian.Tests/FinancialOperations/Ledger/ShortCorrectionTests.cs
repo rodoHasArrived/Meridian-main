@@ -60,6 +60,102 @@ public sealed class ShortCorrectionTests
     }
 
     [Fact]
+    public void Reversal_RejectsBalancedDuplicateLineSubstitution_WithoutChangingPostedJournal()
+    {
+        // Two distinct posted liability credits have the same economics. The old count-based
+        // check incorrectly reused one reversal liability debit to satisfy both credits.
+        var cash = LedgerAccounts.CashFor("broker-1");
+        var posted = Entry([(Liability, 0m, 100m), (Liability, 0m, 100m), (cash, 200m, 0m)]);
+        var originalLines = posted.Lines.ToArray();
+        var receipt = Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId);
+        var wrong = Entry([
+            (Liability, 100m, 0m),
+            (LedgerAccounts.Securities("ACME", "broker-1"), 100m, 0m),
+            (cash, 0m, 200m)
+        ]);
+
+        posted.IsBalanced.Should().BeTrue();
+        wrong.IsBalanced.Should().BeTrue();
+        var attempt = () => ShortCorrectionGuard.RequireReversal(receipt, posted, wrong);
+        attempt.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+        posted.Lines.Should().Equal(originalLines);
+    }
+
+    [Fact]
+    public void Reversal_AcceptsBalancedReorderedDistinctInversesOfDuplicateLines()
+    {
+        var cash = LedgerAccounts.CashFor("broker-1");
+        var posted = Entry([(Liability, 0m, 100m), (Liability, 0m, 100m), (cash, 200m, 0m)]);
+        var originalLines = posted.Lines.ToArray();
+        var inverse = ShortLotJournalProjector.Reverse(posted.Lines);
+        var reordered = Entry([inverse[2], inverse[1], inverse[0]]);
+
+        posted.IsBalanced.Should().BeTrue();
+        reordered.IsBalanced.Should().BeTrue();
+        ShortCorrectionGuard.RequireReversal(Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId), posted, reordered);
+        posted.Lines.Should().Equal(originalLines);
+    }
+
+    [Fact]
+    public void Reversal_RefusesUnmatchedAmountsAndIncorrectAccountsEvenWhenBalanced()
+    {
+        var cash = LedgerAccounts.CashFor("broker-1");
+        var posted = Entry([(Liability, 0m, 100m), (Liability, 0m, 150m), (cash, 250m, 0m)]);
+        var receipt = Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId);
+        var unmatched = Entry([(Liability, 100m, 0m), (Liability, 140m, 0m), (cash, 0m, 240m)]);
+        var wrongAccount = Entry([
+            (Liability, 100m, 0m),
+            (LedgerAccounts.Securities("ACME", "broker-1"), 150m, 0m),
+            (cash, 0m, 250m)
+        ]);
+
+        posted.IsBalanced.Should().BeTrue();
+        unmatched.IsBalanced.Should().BeTrue();
+        wrongAccount.IsBalanced.Should().BeTrue();
+        Action unmatchedAttempt = () => ShortCorrectionGuard.RequireReversal(receipt, posted, unmatched);
+        Action wrongAccountAttempt = () => ShortCorrectionGuard.RequireReversal(receipt, posted, wrongAccount);
+        unmatchedAttempt.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+        wrongAccountAttempt.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+    }
+
+    [Fact]
+    public void Reversal_RequiresIdenticalTransactionCurrencyAmountsFxAndDimensions()
+    {
+        var cash = LedgerAccounts.CashFor("broker-1");
+        var dimensions = new LedgerLineDimensionSet { PositionId = PositionId };
+        var lines = new[] { (Liability, 0m, 120m), (cash, 120m, 0m) };
+        var posted = Entry(lines, dimensions: dimensions,
+            currency: line => new LedgerEntryCurrency("EUR", "USD", line.debit / 1.2m, line.credit / 1.2m, 1.2m));
+        var receipt = Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId);
+        var inverse = ShortLotJournalProjector.Reverse(posted.Lines);
+        var correct = Entry(inverse, dimensions: dimensions,
+            currency: line => new LedgerEntryCurrency("EUR", "USD", line.debit / 1.2m, line.credit / 1.2m, 1.2m));
+        ShortCorrectionGuard.RequireReversal(receipt, posted, correct);
+
+        var wrongCurrency = Entry(inverse, dimensions: dimensions,
+            currency: line => new LedgerEntryCurrency("GBP", "USD", line.debit / 1.2m, line.credit / 1.2m, 1.2m));
+        // Small FX and transaction-amount drifts are within the ledger's functional rounding
+        // tolerance; a reversal must still reject them because the evidence is not identical.
+        var wrongFx = Entry(inverse, dimensions: dimensions,
+            currency: line => new LedgerEntryCurrency("EUR", "USD", line.debit / 1.2m, line.credit / 1.2m, 1.20001m));
+        var wrongTransactionAmount = Entry(inverse, dimensions: dimensions,
+            currency: line => new LedgerEntryCurrency("EUR", "USD",
+                line.debit > 0m ? line.debit / 1.2m + 0.001m : 0m,
+                line.credit > 0m ? line.credit / 1.2m + 0.001m : 0m, 1.2m));
+        var wrongPosition = Entry(inverse, dimensions: new LedgerLineDimensionSet { PositionId = Guid.NewGuid() },
+            currency: line => new LedgerEntryCurrency("EUR", "USD", line.debit / 1.2m, line.credit / 1.2m, 1.2m));
+
+        posted.IsBalanced.Should().BeTrue();
+        correct.IsBalanced.Should().BeTrue();
+        foreach (var invalid in new[] { wrongCurrency, wrongFx, wrongTransactionAmount, wrongPosition })
+        {
+            invalid.IsBalanced.Should().BeTrue();
+            Action attempt = () => ShortCorrectionGuard.RequireReversal(receipt, posted, invalid);
+            attempt.Should().Throw<ArgumentException>().WithMessage("*exact inverse*");
+        }
+    }
+
+    [Fact]
     public void Receipts_RequireAValidRestoredLot()
     {
         var receipt = Receipt(ShortCorrectionKind.Reversal, Guid.NewGuid());

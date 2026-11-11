@@ -587,7 +587,7 @@ Provider catalog responses expose capability flags such as `supportsOptionsChain
 | GET | `/api/execution/account` | Account-level execution snapshot |
 | GET | `/api/execution/positions` | Legacy paper-trading positions list |
 | GET | `/api/execution/positions/blotter` | Broker-aware blotter snapshot used by desktop position views |
-| POST | `/api/execution/positions/actions/close` | Submit a keyed close action for a blotter position |
+| POST | `/api/execution/positions/actions/close` | Submit a keyed close action for a blotter position; rejects a `lotSelection` the close order cannot honour |
 | POST | `/api/execution/positions/actions/upsize` | Submit a keyed upsize action for a blotter position |
 | POST | `/api/execution/positions/{symbol}/close` | Legacy symbol-based close action; rejects ambiguous matches |
 | GET | `/api/execution/orders` | Open orders |

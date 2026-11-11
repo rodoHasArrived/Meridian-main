@@ -57,7 +57,7 @@ class WorkstationCockpitAcceptanceMatrixValidatorTests(unittest.TestCase):
         self.assertTrue(any("artifacts" in error and "path" in error for error in errors))
 
     def test_main_accepts_explicit_matrix_path(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             matrix_path = Path(tmp) / "matrix.json"
             matrix_path.write_text(
                 '{"schemaVersion":1,"criteria":[{"id":"criterion-one","routeOwnership":[{"route":"/api/example"}],"automatedTests":[{"project":"tests/Meridian.Tests","filterableName":"Example"}],"artifacts":[{"path":"artifacts/example.json"}]}]}',

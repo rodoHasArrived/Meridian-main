@@ -174,7 +174,12 @@ export function ArchiveMaintenanceOperations() {
               ))}
             </select>
           </label>
-          <Button size="sm" disabled={!runnableTaskType || busy === "execute"} onClick={() => void runMaintenance()}>
+          <Button
+            size="sm"
+            disabled={!runnableTaskType || busy === "execute"}
+            disabledReason={!runnableTaskType ? "No maintenance task types are available to run." : "A maintenance run is starting."}
+            onClick={() => void runMaintenance()}
+          >
             <Wrench className="mr-2 h-4 w-4" />
             {busy === "execute" ? "Starting…" : "Run maintenance now"}
           </Button>

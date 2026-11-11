@@ -1,3 +1,4 @@
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Activity, Power, RefreshCcw, RotateCcw } from "lucide-react";
 import {
@@ -17,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
@@ -55,12 +57,11 @@ export function LifecycleControlPanel() {
   useEffect(() => {
     const controller = new AbortController();
     void refresh(controller.signal);
-    const interval = window.setInterval(() => void refresh(controller.signal), 5_000);
-    return () => {
-      controller.abort();
-      window.clearInterval(interval);
-    };
+    return () => controller.abort();
   }, [refresh]);
+
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(() => refresh(), 5_000);
 
   useEffect(() => {
     if (
@@ -253,7 +254,7 @@ function LifecycleCheckRow({ check }: { check: RuntimeLifecycleCheck }) {
 }
 
 function ReceiptFact({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium text-foreground">{value}</dd></div>;
+  return <DetailFieldItem label={label} value={value} />;
 }
 
 function lifecycleTone(readiness?: string) {

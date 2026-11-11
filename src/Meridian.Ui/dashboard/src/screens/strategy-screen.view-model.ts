@@ -1825,18 +1825,18 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
     label: "No marker",
     xValueText: "N/A",
     yValueText: "N/A",
-    detail: "Connect a governed PlotTool payload before inspecting scatter observations."
+    detail: "Connect strategy analytics before inspecting scatter observations."
   };
 
   return {
     studies: [],
     workspace: {
-      eyebrow: "Strategy Lane · PlotTool",
+      eyebrow: "Strategy · PlotTool",
       title: "PlotTool catalog not connected",
-      description: "No Strategy PlotTool payload is available. Connect a governed strategy analytics endpoint before inspecting notebooks, scatter analysis, or statistics.",
+      description: "Strategy analytics are not connected. Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
       statusBadgeLabel: "NOT CONNECTED",
       statusBadgeVariant: "outline",
-      expression: "Connect strategy PlotTool API payload",
+      expression: "Strategy analytics not connected",
       toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
       notebookToolbarAriaLabel: "Strategy notebook filters",
       notebookToolbarItems: [],
@@ -1875,7 +1875,7 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
           id: "connection",
           label: "Connection",
           value: "Unavailable",
-          detail: "Strategy analytics endpoint has not returned a PlotTool payload.",
+          detail: "Strategy analytics have not returned any data.",
           tone: "warning"
         }
       ],
@@ -1884,8 +1884,8 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
       overlayTitle: "Meridian overlays",
       overlayItems: [
         "Notebook coverage: no retained PlotTool studies.",
-        "Evidence posture: unavailable until a PlotTool payload is connected.",
-        "Diff posture: unavailable until a PlotTool payload is connected."
+        "Evidence posture: unavailable until strategy analytics are connected.",
+        "Diff posture: unavailable until strategy analytics are connected."
       ]
     },
     statistics: {
@@ -1895,13 +1895,13 @@ function buildEmptyPlotToolState(): StrategyPlotToolState {
       summaryTiles: [],
       distributionBars: [],
       distributionChart: buildPlotToolDistributionChartState([]),
-      distributionSummary: "Connect a PlotTool payload before reviewing residual distributions.",
+      distributionSummary: "Connect strategy analytics before reviewing residual distributions.",
       distributionFootnote: "No latest observation is available.",
       moments: [],
       momentsTable: buildPlotToolMomentsTable([]),
       regression: {
         equation: "Unavailable",
-        detailItems: ["Connect a governed PlotTool payload before reviewing regression output."]
+        detailItems: ["Connect strategy analytics before reviewing regression output."]
       },
       sampleRows: [],
       sampleTable: buildPlotToolSampleTable([])
@@ -1986,7 +1986,7 @@ export function buildPlotToolState({
   return {
     studies: studyRows,
     workspace: {
-      eyebrow: "Strategy Lane · PlotTool",
+      eyebrow: "Strategy · PlotTool",
       title: `${chartStudyLabel} workstation`,
       description: "Meridian notebooks, evidence cues, and factor scatter analysis folded into the Strategy route.",
       statusBadgeLabel: formatText(activeRun?.mode ?? "Strategy").toUpperCase(),
@@ -2073,7 +2073,7 @@ export function buildPlotToolState({
       consoleTitle: "Expression editor",
       consoleBody: companionName
         ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion posture stay aligned with the selected run pair.`
-        : "Select a second run to promote this notebook into pair analysis. The Strategy lane keeps compare, diff, and promotion evidence attached to the PlotTool console.",
+        : "Select a second run to promote this notebook into pair analysis. Strategy keeps compare, diff, and promotion evidence attached to the PlotTool console.",
       overlayTitle: "Meridian overlays",
       overlayItems: [
         `Notebook coverage: ${runs.length} retained ${runs.length === 1 ? "study" : "studies"} in Strategy.`,
@@ -2159,7 +2159,7 @@ export function buildPlotToolState({
       regression: {
         equation: "y = 0.48x + 39.31",
         detailItems: [
-          `${chartStudyLabel} stays inside Meridian's evidence-backed strategy lane.`,
+          `${chartStudyLabel} stays inside Meridian's evidence-backed strategy workspace.`,
           `Queued studies: ${queuedMetric} · Review required: ${reviewMetric}.`,
           diffCue
         ]
@@ -2229,7 +2229,7 @@ export function buildPlotNotebookToolbarItems(
   return [
     { id: "count", label: "Notebook set", value: `${studies.length} retained` },
     { id: "selected", label: "Selected", value: selectedStudy ? formatText(selectedStudy.title) : "None", active: selectedStudy !== null },
-    { id: "lane", label: "Lane", value: "Strategy" }
+    { id: "lane", label: "Workspace", value: "Strategy" }
   ];
 }
 
