@@ -3900,9 +3900,6 @@ Meridian-main
 │   │   │   ├── TimeAndSalesTape.prompt.md
 │   │   │   └── trading.card.html
 │   │   └── README.md
-│   ├── dist
-│   │   ├── meridian-design-system-4.3.0.zip
-│   │   └── meridian-design-system-4.3.0.zip.sha256
 │   ├── docs
 │   │   ├── changelog
 │   │   │   ├── README.md
