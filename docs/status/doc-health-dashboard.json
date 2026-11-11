@@ -1,11 +1,11 @@
 {
-  "total_files": 951,
+  "total_files": 952,
   "orphaned_count": 391,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:2af1ecf5c1344438d8ae3d8512998a8129c3ec1b565eb52ccfa4685571a39ae0",
+  "signal_digest": "sha256:4ef7b6038557b224f2fcad7a459a468b35e5a9d467886783227439cbc7b5e10f",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -7132,6 +7132,13 @@
     },
     {
       "path": "tests/fixtures/corporate-actions/golden/KNOWN-DEFECTS.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "tests/fixtures/recurring-journal/golden/README.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
