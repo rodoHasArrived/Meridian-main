@@ -154,6 +154,26 @@ public sealed class HistoricalDataQueryServiceTests : IDisposable
         }
     }
 
+    [Fact]
+    public void IsInsideDataRoot_AcceptsFilesBelowAFilesystemRootDataRoot()
+    {
+        // A dedicated data drive or a container whose data root is "/" keeps its trailing separator.
+        var filesystemRoot = Path.GetPathRoot(Path.GetFullPath(_root))!;
+        var file = Path.Combine(filesystemRoot, "SPY", "2026-05-15.jsonl");
+
+        HistoricalDataQueryService.IsInsideDataRoot(filesystemRoot, file).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsInsideDataRoot_RefusesASiblingThatOnlySharesThePrefix()
+    {
+        var root = Path.GetFullPath(_root);
+
+        HistoricalDataQueryService.IsInsideDataRoot(root, Path.Combine(root, "SPY", "a.jsonl")).Should().BeTrue();
+        HistoricalDataQueryService.IsInsideDataRoot(root, root + "-outside" + Path.DirectorySeparatorChar + "a.jsonl").Should().BeFalse();
+        HistoricalDataQueryService.IsInsideDataRoot(root, root).Should().BeFalse();
+    }
+
     [Theory]
     [InlineData("BRK.B")]
     [InlineData("ES=F")]

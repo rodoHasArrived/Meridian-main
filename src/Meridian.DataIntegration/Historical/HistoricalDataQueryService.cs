@@ -730,17 +730,44 @@ public sealed class HistoricalDataQueryService
     /// </summary>
     private void RequireInsideDataRootWithoutLinks(string file)
     {
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(_dataRoot));
+        var root = Path.GetFullPath(_dataRoot);
         var fullPath = Path.GetFullPath(file);
-        if (!fullPath.StartsWith(root + Path.DirectorySeparatorChar, comparison))
+        if (!IsInsideDataRoot(root, fullPath))
             throw new UnauthorizedAccessException("Historical data file is outside the configured data root.");
 
-        for (var current = fullPath; current is not null && !string.Equals(current, root, comparison); current = Path.GetDirectoryName(current))
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var trimmedRoot = Path.TrimEndingDirectorySeparator(root);
+        for (var current = fullPath;
+             current is not null && !string.Equals(Path.TrimEndingDirectorySeparator(current), trimmedRoot, comparison);
+             current = Path.GetDirectoryName(current))
         {
-            if ((File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+            FileAttributes attributes;
+            try
+            {
+                attributes = File.GetAttributes(current);
+            }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            {
+                // Retention or compression removed it after discovery. It is not a link to refuse;
+                // the per-file read reports the missing file without failing the whole request.
+                return;
+            }
+
+            if ((attributes & FileAttributes.ReparsePoint) != 0)
                 throw new UnauthorizedAccessException("Historical data cannot be read through a symbolic link.");
         }
+    }
+
+    /// <summary>
+    /// Whether <paramref name="fullPath"/> lies strictly below <paramref name="dataRoot"/>. Both are
+    /// full paths. A filesystem root such as <c>/</c> or <c>D:\\</c> keeps its trailing separator,
+    /// so the separator is appended only when the root does not already end with one.
+    /// </summary>
+    public static bool IsInsideDataRoot(string dataRoot, string fullPath)
+    {
+        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+        var prefix = Path.EndsInDirectorySeparator(dataRoot) ? dataRoot : dataRoot + Path.DirectorySeparatorChar;
+        return fullPath.Length > prefix.Length && fullPath.StartsWith(prefix, comparison);
     }
 
     private async Task<List<HistoricalDataRecord>> ReadDataFileAsync(
