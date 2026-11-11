@@ -7,7 +7,8 @@ Gates (all static; no network, no browser):
   no-important    no !important in component source
   manifest        every manifest component's sourcePath exists; every PascalCase jsx pairs into it
   template        template contract — entry name, @template first comment, $preview + the four
-                  standard tweaks, DataStateSwitch, h1, ds-base.js sibling
+                  standard tweaks, DataStateSwitch (in the entry, or in every sibling view
+                  the entry hands its dataState to), h1, ds-base.js sibling
   routes          every ../<slug>/<File>.dc.html referenced by a template resolves to a file
   aria-refs       static aria-controls/aria-labelledby/aria-activedescendant values must be
                   computed (template literal / expression), never a hard-coded string id
@@ -103,6 +104,24 @@ def check_manifest():
                 if e not in names:
                     warn("manifest", f"{jsx.relative_to(ROOT)} export {e} not in manifest (stale — recompiles at end of turn)")
 
+DC_IMPORT = re.compile(r'<dc-import\b[^>]*\bname="(\w+)"[^>]*>')
+
+def views_own_data_state(folder, src):
+    """An entry that only switches between sibling views satisfies the data-state rule through
+    them: wrapping it in a second DataStateSwitch would nest two ladders. That holds only when
+    the entry hands its dataState to every view it imports and each of those views uses the
+    switch itself; one view without it, or one import that drops the prop, is still a finding."""
+    imports = list(DC_IMPORT.finditer(src))
+    if not imports:
+        return False
+    for m in imports:
+        view = folder / f"{m.group(1)}.dc.html"
+        if "data-state=" not in m.group(0) or not view.exists():
+            return False
+        if "DataStateSwitch" not in view.read_text(encoding="utf-8"):
+            return False
+    return True
+
 def check_templates():
     for folder in sorted(p for p in (ROOT / "templates").iterdir() if p.is_dir() and not p.name.startswith("_")):
         slug = folder.name
@@ -121,7 +140,7 @@ def check_templates():
         for tweak in ("density", "theme", "environment", "dataState"):
             if f"&quot;{tweak}&quot;" not in src and f'"{tweak}"' not in src:
                 fail("template", f"{slug}: standard tweak '{tweak}' missing")
-        if "DataStateSwitch" not in src:
+        if "DataStateSwitch" not in src and not views_own_data_state(folder, src):
             fail("template", f"{slug}: DataStateSwitch not used")
         if "<h1" not in src:
             warn("template", f"{slug}: no literal <h1> (may live in an imported sibling)")

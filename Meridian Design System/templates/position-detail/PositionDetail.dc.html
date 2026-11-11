@@ -30,6 +30,7 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.EmptyState" icon="table" title="No position fixture loaded" detail="This template reads positions-data.js from its own folder. Copy the whole templates/position-detail folder and the holdings appear." hint-size="100%,160px"></x-import>
 </div>
 <div data-screen-label="Position Detail" data-pd-show="{{ bodyShow }}" style="display:flex;flex-direction:column;gap:14px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Position" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,700px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectScopeProvider" scope="{{ scopeId }}" object="{{ posCode }}" label="{{ posLabel }}" hint-size="100%,700px">
 <div style="display:flex;flex-direction:column;gap:14px">
 <div style="display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap">
@@ -526,12 +527,13 @@
 </div>
 </div>
 </x-import>
+</x-import>
 </div>
 </main>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;previewPosition&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ga-fi-07&quot;,&quot;options&quot;:[&quot;ga-fi-07&quot;,&quot;sa-vul-02&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;position&quot;,&quot;options&quot;:[&quot;position&quot;,&quot;compare&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;previewPosition&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ga-fi-07&quot;,&quot;options&quot;:[&quot;ga-fi-07&quot;,&quot;sa-vul-02&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;position&quot;,&quot;options&quot;:[&quot;position&quot;,&quot;compare&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Navigation&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;compact&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
   state = { posId: null, view: null, copied: false };
   ds() { return window.MeridianDesignSystem_205d17 || {}; }
@@ -541,6 +543,8 @@ class Component extends DCLogic {
     const html = document.documentElement;
     html.setAttribute("data-theme", (window.MeridianPrefs ? window.MeridianPrefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light")));
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs ? window.MeridianPrefs.density(this.props.density ?? "compact") : (this.props.density ?? "compact")));
+    const env = String(this.props.environment ?? "FIXTURE").toUpperCase();
+    html.setAttribute("data-environment", (window.MeridianPrefs ? window.MeridianPrefs.environment(env) : env));
   }
   componentDidMount() { this.applyChrome(); }
   componentDidUpdate() { this.applyChrome(); }
@@ -569,6 +573,7 @@ class Component extends DCLogic {
     const money = (n) => (n < 0 ? "−$" : "$") + Math.abs(n).toLocaleString("en-US");
     return {
       emptyShow: "off", bodyShow: "on",
+      dataState: this.props.dataState ?? "ready", onRetry: () => window.location.reload(),
       posShow: compare ? "off" : "on", cmpShow: compare ? "on" : "off",
       backHref: this.backHref(), backLabel: this.backLabel(),
       registryHref: this.backHref(),

@@ -13,6 +13,13 @@ Semver from here forward: **MAJOR** = breaking component API or token removal ·
 - **`BRAND_GUIDELINES.md`** — no longer says `data-brand="steel"` is selectable (4.3.0 has no such preset), and its colour, type and usage guidance state the 4.3.0 values instead of the v2.0 copper palette.
 - **`VISUAL_FOUNDATIONS.md`** · **`guidelines/VISUAL_FOUNDATIONS.md`** — one text in both copies, matching the 4.3.0 tokens. The root copy still described the v2.0 copper identity; the guidelines copy had the palette but named the wrong pending colour, primary-button states, chart ink and type ramp.
 
+### Fixed — governance gate findings
+- **`Modal`** — the dialog was named through a fixed `id="mdl-title"`, so two mounted modals named each other. The title id is generated per instance and shared with `ModalHeader` through context.
+- **`BooksLoop`** template — gains the `$preview` size and the `density`, `theme` and `dataState` tweaks; theme and density are applied to the document and `dataState` drives the existing `DataStateSwitch`.
+- **`PositionDetail`** template — gains the `environment` and `dataState` tweaks; the environment drives the document badge and the work plane sits in a `DataStateSwitch`.
+- **`NavRail`** · **`StatusBar`** · **`WorkstationTopbar`** — header comments name the token instead of quoting its hex.
+- **`scripts/check_design_system_governance.py`** — an entry that only switches between sibling views satisfies the data-state rule when it hands `dataState` to every view it imports and each of those views uses `DataStateSwitch`. `StrategyRuns` and `StrategyFormation` were reported although all six of their views carry the switch.
+
 ### Fixed — consuming-workstation component review
 - **`ScenarioSelector`** — native button radios support Space/Enter; arrows and Home/End move focus with selection. A missing saved selection leaves a reachable first option without changing the caller's value; read-only choices remain disabled.
 - **`OptimisticProvider`** — observer exceptions no longer reinterpret successful writes or compensating writes as transport failures, interrupt dispatch, or stop subsequent batch notifications. Observer errors remain visible in the console. Source-level Chromium regressions cover both repairs.

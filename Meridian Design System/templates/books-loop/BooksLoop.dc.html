@@ -193,7 +193,7 @@ tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,
 </x-import>
 </x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;confirms&quot;,&quot;refuses&quot;,&quot;never answers&quot;],&quot;default&quot;:&quot;confirms&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapter&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;FIXTURE&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tieout&quot;,&quot;journal&quot;,&quot;ledger&quot;,&quot;trial&quot;,&quot;account&quot;],&quot;default&quot;:&quot;tieout&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;confirms&quot;,&quot;refuses&quot;,&quot;never answers&quot;],&quot;default&quot;:&quot;confirms&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapter&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;FIXTURE&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tieout&quot;,&quot;journal&quot;,&quot;ledger&quot;,&quot;trial&quot;,&quot;account&quot;],&quot;default&quot;:&quot;tieout&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -212,11 +212,14 @@ class Component extends DCLogic {
     this.syncEnv();
     this.nameCrumbs();
   }
-  componentDidUpdate(prev) { if (prev.environment !== this.props.environment) this.syncEnv(); }
+  componentDidUpdate() { this.syncEnv(); }
   componentWillUnmount() { if (this.unsub) this.unsub(); if (this.timer) clearTimeout(this.timer); }
 
   syncEnv() {
-    document.documentElement.setAttribute("data-environment", String(this.props.environment || "FIXTURE").toUpperCase());
+    const html = document.documentElement, P = window.MeridianPrefs;
+    html.setAttribute("data-environment", String(this.props.environment || "FIXTURE").toUpperCase());
+    html.setAttribute("data-theme", P ? P.theme(this.props.theme ?? "light") : (this.props.theme ?? "light"));
+    if (document.body) document.body.setAttribute("data-theme-density", P ? P.density(this.props.density ?? "default") : (this.props.density ?? "default"));
   }
   nameCrumbs() {
     const M = window.MeridianAppMap, m = this.model();
@@ -384,7 +387,7 @@ class Component extends DCLogic {
     }
 
     return {
-      dataState: "ready", noop: noop,
+      dataState: this.props.dataState ?? "ready", noop: noop,
       envLabel: String(this.props.environment || "FIXTURE").toUpperCase(),
       nav: M ? M.sections("accounting") : [],
       onNav: (id) => M && M.go(id),
