@@ -3899,9 +3899,6 @@ Meridian-main
 │   │   │   ├── TimeAndSalesTape.prompt.md
 │   │   │   └── trading.card.html
 │   │   └── README.md
-│   ├── dist
-│   │   ├── meridian-design-system-4.3.0.zip
-│   │   └── meridian-design-system-4.3.0.zip.sha256
 │   ├── docs
 │   │   ├── changelog
 │   │   │   ├── README.md
@@ -4423,6 +4420,7 @@ Meridian-main
 │   │   ├── conformance.html
 │   │   ├── decision-preview.html
 │   │   ├── gallery.html
+│   │   ├── interaction-depth-regression.mjs
 │   │   ├── mock-transport.js
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
@@ -7874,6 +7872,10 @@ Meridian-main
 │   │   └── README.md
 │   ├── Meridian.Ui
 │   │   ├── dashboard
+│   │   │   ├── public
+│   │   │   │   └── notices
+│   │   │   │       ├── OFL-IBMPlexMono.txt
+│   │   │   │       └── OFL-IBMPlexSans.txt
 │   │   │   ├── scripts
 │   │   │   │   ├── eslint-rules
 │   │   │   │   │   └── kebab-filename.mjs
@@ -9145,6 +9147,7 @@ Meridian-main
 │   │   │   │   ├── startup-appearance.test.ts
 │   │   │   │   ├── tailwind-build.test.ts
 │   │   │   │   ├── types.ts
+│   │   │   │   ├── vite-config.font-licenses.test.ts
 │   │   │   │   ├── vite-config.scenarios.test.ts
 │   │   │   │   ├── vite-config.test.ts
 │   │   │   │   └── vite-env.d.ts

@@ -688,6 +688,8 @@ describe("dashboard design-system contract", () => {
     for (const filename of ["OFL-IBMPlexSans.txt", "OFL-IBMPlexMono.txt"]) {
       expect(readFileSync(resolve(process.cwd(), "public/licenses", filename)))
         .toEqual(readFileSync(resolve(process.cwd(), "../../../Meridian Design System/assets/fonts", filename)));
+      expect(readFileSync(resolve(process.cwd(), "public/notices", filename)))
+        .toEqual(readFileSync(resolveDashboardAsset(`fonts/${filename}`)));
     }
   });
 

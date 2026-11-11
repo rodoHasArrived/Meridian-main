@@ -91,20 +91,27 @@ async function ready(page, workspace) {
   assert.equal(await page.locator("vite-error-overlay").count(), 0, "No Vite overlay");
 }
 async function tokens(page, expectedTheme) {
-  await page.waitForFunction(theme => {
-    const expected = theme === "dark" ? "brightness(0) invert(1)" : "none";
-    return [...document.querySelectorAll("img.operator-nav-item__icon")].every(element => getComputedStyle(element).filter === expected);
-  }, expectedTheme);
+  await page.waitForFunction(() => {
+    const icons = [...document.querySelectorAll(".operator-nav-item__asset")];
+    return icons.length === 7 && icons.every(element => {
+      const style = getComputedStyle(element);
+      const link = element.closest("a");
+      return style.maskImage !== "none" && style.maskImage !== "" && link && style.backgroundColor === getComputedStyle(link).color;
+    });
+  });
   const actual = await page.evaluate(() => {
     const style = getComputedStyle(document.documentElement);
     const read = name => style.getPropertyValue(name).trim().toUpperCase();
     return { canvas: read("--ws-page-bg"), panel: read("--ws-surface"), border: read("--ws-border"), signal: read("--brand-signal"), axis: read("--brand-axis"), focus: read("--interaction-focus") };
   });
   assert.deepEqual(actual, themes[expectedTheme], `${expectedTheme}: computed 4.3 roles`);
-  const icons = await page.locator("img.operator-nav-item__icon").evaluateAll(elements => elements.map(element => ({ filter: getComputedStyle(element).filter, loaded: element.complete && element.naturalWidth > 0 })));
-  assert.equal(icons.length, 7, "Seven workspace icon assets are rendered");
-  assert(icons.every(icon => icon.loaded), "Workspace icon assets load");
-  assert(icons.every(icon => expectedTheme === "dark" ? icon.filter === "brightness(0) invert(1)" : icon.filter === "none"), "Workspace icons remain legible in manual and automatic appearances");
+  const icons = await page.locator(".operator-nav-item__asset").evaluateAll(elements => elements.map(element => {
+    const style = getComputedStyle(element);
+    return { mask: style.maskImage, fill: style.backgroundColor, rowColor: getComputedStyle(element.closest("a")).color };
+  }));
+  assert.equal(icons.length, 7, "Seven workspace icon masks are rendered");
+  assert(icons.every(icon => icon.mask !== "none" && icon.mask !== ""), "Canonical SVG masks are declared; network monitoring rejects missing assets");
+  assert(icons.every(icon => icon.fill === icon.rowColor), "Workspace masks inherit each navigation row's currentColor in manual and automatic appearances");
   return actual;
 }
 async function fonts(page) {

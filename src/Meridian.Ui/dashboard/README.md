@@ -2057,6 +2057,13 @@ popovers, and shell fields use the active `--ws-*` / chrome surfaces so appearan
 changes do not reveal hardcoded legacy panels. Financial and permission states
 retain their own severity roles and visible labels.
 
+Primary hover/pressed states remain structural. The Paper environment uses Field
+slate, and chart observations/comparisons use graphite/slate/neutral roles. The
+host-served distribution also preserves OFL notices under `notices/`, alongside
+the compatible `licenses/` path. Canonical workspace SVGs serve as masks so
+navigation color remains legible in dark and forced-color modes. Startup and
+chart labels use the shared font roles; density remains operator-controlled.
+
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected

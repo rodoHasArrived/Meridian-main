@@ -167,7 +167,7 @@
       "components/data/BulkActionBar.jsx": "5c7834de4fdd0dee35d8b2efdd13b6f48214f08c689840e0e697ac5a863e1d09",
       "components/data/ColumnChooser.jsx": "6a24f6de6900cfb344772e58fe8a75d2fae319e1139150c630cec7048b709725",
       "components/data/ColumnManager.jsx": "f4cdd3bc7e9be238340eb57a400657e8ba5bae980408b1b28ca16d784d4a97d8",
-      "components/data/DataGrid.jsx": "066c3a31d2db1f4a123d7b24924514c731eb49494dfe671c67182594f5456679",
+      "components/data/DataGrid.jsx": "2117c98ccb3906a4fe885a5ca558a4e29764853dcad6fff71d5e920def6030ad",
       "components/data/DataStateSwitch.jsx": "6f4a7e6f0b15f3a1f0e28624297194f90444c08f199af8113553aaced6ef0a9c",
       "components/data/DenseDataTable.jsx": "749924157a0f9b84ad94f653cb6375e43e63af6162dc4ad6b3c2df95964b1961",
       "components/data/EditableCell.jsx": "316c28dd53cf97090f6ce5cb3533d3a1bdd9a94690b296e4c70602ba39bf0bd7",
@@ -255,8 +255,8 @@
   },
   "assets": {
     "_ds_bundle.js": {
-      "sha256": "d948f9ccc33e6781c5a71c790e2971df74eedba860571afefc9458f506d6ea5b",
-      "bytes": 1674464
+      "sha256": "90bfd72b7d15681734244cfe96a6aab65235bb25da9af483896fe9667ed3c65a",
+      "bytes": 1674495
     },
     "_preview_runtime.js": {
       "sha256": "27807359b502e418026483c5e5857c68d666fefbbac236e0405a57062bf74df8",

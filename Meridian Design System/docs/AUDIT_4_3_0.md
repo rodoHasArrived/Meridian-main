@@ -78,7 +78,7 @@ The following checks were exercised during this export task on the expanded tree
 | Dashboard design-system contract | `vitest run src/design-system-contract.test.ts`: 28/28 passed after preserving concurrent commit `a81d7afb45` |
 | Skill packages | `python build/scripts/docs/validate-skill-packages.py`: validated 13 packages |
 | Broad retained Python suite | 30 tests ran with one failure and 14 errors from obsolete checker API expectations and legacy contrast checks; the whole suite is not green |
-| Extracted archive | All 1,321 payload/inventory checksums verified; repeat export matched byte-for-byte. The extracted reference passed the same 22 accessibility states and desktop interaction checks over loopback HTTP |
+| Archive integrity | Payload/inventory checksums verified and repeat export matched byte-for-byte; exact file counts are recorded in the delivered inventory. The earlier extracted reference passed 22 accessibility states and desktop interaction checks over loopback HTTP |
 | Ordinary HTML state reference | 11 conditions in two themes, four desktop widths from 1280 to 1920, and 200% zoom passed the exercised checks; no remote requests or runtime errors |
 | Automated accessibility on the reference | Zero reported violations in the tested condition/theme combinations; color-contrast checks marked incomplete still require manual review |
 | Landing page | Chromium at 1366 × 768: canonical identity, 351/30/680/135 census, README/preview/audit/export links, no script errors, no horizontal overflow |
@@ -222,3 +222,32 @@ These Chromium checks do not claim
 Windows/Edge rendering, browser zoom coverage, screen-reader conformance, or
 whole-product production certification. They do not change the package's
 retained governance and Python-suite failures recorded above.
+
+## PR review repairs
+
+The follow-up on `0cc7555bd5` preserves the concurrent workstation foundation
+integration. Interaction Depth now keeps its grid component identity across
+query, selection and model updates, and row context actions use the actual
+right-clicked row key. Header context menus cannot reuse an earlier selection.
+`tests/interaction-depth-regression.mjs` exercises typing/focus, keyboard
+selection, virtualized scroll continuity and the resulting row mutation receipt
+in Chromium. The incoming `324b439b9f` tree passed this Chromium regression and
+the package's `build:check`; the refreshed archive includes the rebuilt source
+bundle and these repairs.
+
+The eight earlier action-bridge, action-envelope, settings-key, continuity,
+formatting and date findings were verified against their existing fixes;
+their source behavior was preserved. The CI secret finding was an independently
+verified SHA-256 of `components/data/KeyValueGrid.jsx` in the two build-provenance
+files. Its scanner exception matches only that complete digest in those exact
+paths. Negative controls confirm that other content in those files and the same
+digest elsewhere remain detectable. Remaining release/governance limitations
+above still apply.
+
+The merge retained incoming generated diagrams and documentation, font notices,
+and mask/currentColor workspace icons alongside the expanded browser integration.
+Forty-two targeted navigation, font-output, and design-system contract tests
+passed on the merged source, and the combined TypeScript/Vite production build
+passed. This incoming-review evidence is separate from the
+`5e9f5b6801` production matrix above; the original full-suite and package
+governance scopes are retained rather than silently reassigned to another tree.

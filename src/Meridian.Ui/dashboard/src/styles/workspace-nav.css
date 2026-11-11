@@ -11,24 +11,6 @@
   --mds-nav-rail-text: var(--theme-secondary-text, var(--nav-item));
   --mds-nav-rail-text-active: var(--theme-primary-text, var(--nav-item-active));
   --mds-nav-rail-text-muted: var(--theme-muted-text, var(--ws-text-muted));
-  --mds-nav-icon-filter: none;
-}
-
-/* External SVG images cannot inherit the row's currentColor. Preserve their
-   light artwork and render an opaque light silhouette on the dark rail. */
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --mds-nav-icon-filter: brightness(0) invert(1);
-  }
-}
-
-:root[data-theme="dark"] {
-  --mds-nav-icon-filter: brightness(0) invert(1);
-}
-
-:root[data-theme="light"],
-[data-appearance="light"] {
-  --mds-nav-icon-filter: none;
 }
 
 .operator-rail {
@@ -147,8 +129,14 @@
   opacity: 0.7;
 }
 
-img.operator-nav-item__icon {
-  filter: var(--mds-nav-icon-filter);
+/* External SVGs supply a mask; navigation text supplies the theme and system color. */
+.operator-nav-item__asset {
+  display: block;
+  background-color: currentColor;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  forced-color-adjust: preserve-parent-color;
 }
 
 .operator-nav-item:hover {
