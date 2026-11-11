@@ -706,6 +706,31 @@ public sealed class ReportWriterGridEngineTests
     }
 
     [Fact]
+    public void RenderGrids_HyphenatedRowFieldDoesNotCreateAFalseCycle()
+    {
+        var rows = new[]
+        {
+            Row(("net-pnl", "15"))
+        };
+        var grids = new[]
+        {
+            new ReportWriterGridDefinitionDto(
+                "detail-dimension-grid",
+                "Detail Dimension Grid",
+                ReportWriterGridKindDto.Detail,
+                RowFields: ["net-pnl"],
+                Formulas: [new ReportWriterFormulaDefinitionDto("net", "net-pnl")])
+        };
+
+        var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
+
+        rendered.Warnings.Should().NotContain(w => w.Contains("circular", StringComparison.OrdinalIgnoreCase));
+        rendered.Rows.Single().Values["net"].Should().Be("15");
+        rendered.Lineage!.Formulas.Single(formula => formula.Name == "net").SourceFields
+            .Should().Equal("net-pnl");
+    }
+
+    [Fact]
     public void RenderGrids_DoesNotSplitAHyphenatedFieldWhoseValueIsBlank()
     {
         var rows = new[]

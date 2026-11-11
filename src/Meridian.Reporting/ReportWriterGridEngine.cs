@@ -35,7 +35,10 @@ public static class ReportWriterGridEngine
             .ToArray();
         var metrics = NormalizeMetrics(grid.Metrics);
         var formulas = NormalizeFormulas(grid.Formulas);
-        var circularFormulas = DetectCircularFormulas(grid, formulas, warnings);
+        // Built once from the normalized definition so cycle detection and lineage split
+        // hyphenated references against exactly the same names the rendered rows will carry.
+        var formulaReferenceNames = BuildFormulaReferenceNames(grid.Kind, metrics, formulas, dimensions);
+        var circularFormulas = DetectCircularFormulas(grid, formulas, formulaReferenceNames, warnings);
         var filters = NormalizeFilters(grid.Filters);
 
         if (rows.Count == 0)
@@ -63,7 +66,7 @@ public static class ReportWriterGridEngine
         renderedRows = ApplyFormatRules(grid, renderedRows, warnings);
         var chart = BuildChart(grid, columnList, renderedRows);
 
-        var lineage = BuildLineage(grid.Kind, rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
+        var lineage = BuildLineage(formulaReferenceNames, rows.Count, filteredRows.Count, renderedRows.Count, dimensions, metrics, formulas, filters);
 
         var dataDictionary = BuildDataDictionary(columnList, renderedRows, lineage);
         var validationChecks = BuildValidationChecks(columnList, renderedRows, warnings, lineage, dataDictionary);
@@ -424,7 +427,7 @@ public static class ReportWriterGridEngine
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
     private static ReportWriterGridLineageDto BuildLineage(
-        ReportWriterGridKindDto kind,
+        IReadOnlySet<string> knownReferences,
         int inputRowCount,
         int filteredInputRowCount,
         int outputRowCount,
@@ -433,7 +436,6 @@ public static class ReportWriterGridEngine
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
         IReadOnlyList<ReportWriterFilterDefinitionDto> filters)
     {
-        var knownReferences = BuildFormulaReferenceNames(kind, metrics, formulas, dimensions);
         var formulaLineage = formulas
             .Select(formula => new ReportWriterFormulaLineageDto(
                 formula.Name,
@@ -752,6 +754,7 @@ public static class ReportWriterGridEngine
     private static IReadOnlySet<string> DetectCircularFormulas(
         ReportWriterGridDefinitionDto grid,
         IReadOnlyList<ReportWriterFormulaDefinitionDto> formulas,
+        IReadOnlySet<string> knownReferences,
         ISet<string> warnings)
     {
         if (formulas.Count == 0)
@@ -763,7 +766,6 @@ public static class ReportWriterGridEngine
             .Select(static formula => formula.Name)
             .ToHashSet(StringComparer.OrdinalIgnoreCase);
 
-        var knownReferences = BuildFormulaReferenceNames(grid.Kind, grid.Metrics ?? [], formulas, []);
 
         // Edges point from a formula to the sibling formulas it references (self-references included).
         // Duplicate formula names are tolerated the same way the rest of the engine tolerates them
