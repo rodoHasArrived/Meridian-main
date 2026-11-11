@@ -126,7 +126,7 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   approvals: {
     id: "approvals",
     label: "Approvals",
-    title: "Approval queue",
+    title: "Pending close approvals",
     description: "Review exactly what is awaiting approval, why it is ready, its retained evidence, and the effect of each decision.",
     routeLabel: "Approvals",
     href: WORKSTATION_ROUTE_CATALOG.accountingApprovals

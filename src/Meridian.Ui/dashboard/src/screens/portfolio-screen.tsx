@@ -332,7 +332,7 @@ const portfolioRouteViewCopy: Record<PortfolioRouteViewId, { title: string; desc
     description: "Run-linked equity evidence: comparison signals, drill-ins, and per-run attribution detail."
   },
   "brokerage-sync": {
-    title: "Live brokerage portfolio",
+    title: "Brokerage connection and coverage",
     description: "Live brokerage portfolio, connection trust, and multi-asset coverage posture."
   }
 };

@@ -4465,7 +4465,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/approvals?approvalId=approval-close-1");
 
     expect(await screen.findByRole("heading", { name: "Approval queue and audit gate" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Approval queue", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Pending close approvals", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Primary trial balance lines for the selected ledger run" })).not.toBeInTheDocument();
     const approvalQueue = screen.getByRole("region", { name: "Accounting approval queue" });
     expect(approvalQueue).toHaveTextContent("2026-05");

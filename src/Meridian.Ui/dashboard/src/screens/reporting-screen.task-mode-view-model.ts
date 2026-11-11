@@ -40,7 +40,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   schedules: {
     id: "schedules",
     label: "Scheduled Reports",
-    title: "Report schedules",
+    title: "Scheduled report delivery",
     description: "Create, pause, resume, and run governed report schedules with their recipient delivery plans.",
     routeLabel: "Scheduled Reports",
     ariaLabel: "Reporting task mode scheduled reports"
@@ -80,7 +80,7 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   "report-pack-approval": {
     id: "report-pack-approval",
     label: "Report packs",
-    title: "Report pack approval",
+    title: "Report packs awaiting approval",
     description: "Review governed report packs, resolve recipient blockers, and complete server-authorized approval or publication actions.",
     routeLabel: "Report packs",
     ariaLabel: "Reporting task mode report packs"
