@@ -95,6 +95,9 @@ public interface IRecurringJournalCalculation
     /// </summary>
     bool ReadsClosingState => DependsOnPostedHistory;
 
+    /// <summary>Template inputs this calculation cannot run without; checked when a schedule is registered.</summary>
+    IReadOnlyList<string> RequiredInputs => [];
+
     Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);
 }
 
@@ -365,6 +368,10 @@ public sealed class FixedIncomeAccrualCalculation(
 
     public bool ReadsClosingState => true;
 
+    // The accrual runs after its effective day has ended, when only a book position lets the
+    // holding be read for that day, so the position is not optional.
+    public IReadOnlyList<string> RequiredInputs => ["securityId", "ticker", "bookPositionId"];
+
     public async Task<RecurringJournalCalculationResult> CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct)
     {
         if (bridge is null || cashFlows is null)
@@ -391,15 +398,12 @@ public sealed class FixedIncomeAccrualCalculation(
                 $"{ticker} is denominated in {security.Currency}, not the book currency {context.Scope.Currency}; cross-currency bond accruals are not supported.");
         // Without its accrual interval a coupon could only be recognized whole on its payment date.
         if (projection.Schedule.Any(static entry => entry.InterestAmount > 0m &&
-                (entry.AccrualStart is not { } start || entry.AccrualEnd is not { } end || end <= start)))
+                (entry.InterestAccrualStart is not { } start || entry.InterestAccrualEnd is not { } end || end <= start)))
             throw new InvalidOperationException(
                 $"The cash-flow projection for {ticker} states no accrual interval for a coupon period, so its interest cannot be accrued by day.");
 
-        Guid? bookPositionId = null;
-        if (context.OptionalInput("bookPositionId") is { } positionText)
-            bookPositionId = Guid.TryParse(positionText, out var parsedPosition) && parsedPosition != Guid.Empty
-                ? parsedPosition
-                : throw new InvalidOperationException("The calculated template input 'bookPositionId' must be a book position identifier.");
+        if (!Guid.TryParse(context.RequireInput("bookPositionId"), out var bookPositionId) || bookPositionId == Guid.Empty)
+            throw new InvalidOperationException("The calculated template input 'bookPositionId' must be a book position identifier.");
         var securitiesAccount = LedgerAccounts.Securities(ticker, financialAccountId);
         async Task<LedgerTaxLot[]> LotsHeldAsync(DateOnly date)
             => (await inputs.ListOpenLotsAsync(context.Scope, securitiesAccount, securityId, bookPositionId, date, ct).ConfigureAwait(false))
@@ -408,15 +412,9 @@ public sealed class FixedIncomeAccrualCalculation(
                 .ToArray();
 
         // A holding can be sold or reduced inside the window, so the lots open at its end do not
-        // say what was held on each day. With a book position the holding is read for every day
-        // and the window is split wherever it changes; a lot accrues through the last day it is
-        // still open at the close. Without a book position only the closing lots are known.
+        // say what was held on each day. The holding is read for every day and the window is
+        // split wherever it changes; a lot accrues through the last day it is still open at the close.
         var holdings = new List<(DateOnly Start, DateOnly End, LedgerTaxLot[] Lots)>();
-        if (bookPositionId is null)
-        {
-            holdings.Add((windowStart, context.EffectiveDate, await LotsHeldAsync(context.EffectiveDate).ConfigureAwait(false)));
-        }
-        else
         {
             var from = windowStart;
             LedgerTaxLot[]? held = null;

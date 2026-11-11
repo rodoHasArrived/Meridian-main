@@ -519,9 +519,10 @@ public sealed partial class SecurityMasterCashFlowService : ISecurityMasterCashF
                 interest,
                 principalBasis == 0m ? 0m : RoundCash(outstanding / principalBasis))
             {
-                // The interval the interest was measured over, so it can be accrued by day.
-                AccrualStart = accrualStart,
-                AccrualEnd = date
+                // The interval the interest was measured over, so it can be accrued by day. Kept
+                // off the wire: this row shape is retained in calculation receipts.
+                InterestMeasuredFrom = accrualStart,
+                InterestMeasuredTo = date
             });
         }
 

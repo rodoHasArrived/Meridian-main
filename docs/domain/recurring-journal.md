@@ -103,18 +103,20 @@ Rules that keep an amount from being drafted twice:
 - **A coupon accrues across windows, once.** The bond calculation drafts the day-count share of
   each coupon period that falls inside the window and the premium or discount amortized over the
   same days. Each share is a difference of rounded cumulative amounts, so the windows covering a
-  coupon period sum to the coupon exactly. The calculated bullet and sinker projection states the
-  interval each coupon was measured over. A projection that states no accrual interval for a
-  coupon period blocks the occurrence instead of recognizing the coupon whole on its payment
+  coupon period sum to the coupon exactly. The calculated bullet and sinker projection carries
+  the interval each coupon was measured over as working data that is not serialized, so
+  retained calculation receipts still replay. A projection that states no accrual interval for
+  a coupon period blocks the occurrence instead of recognizing the coupon whole on its payment
   date, and a bond whose Security Master currency is not the book currency is blocked, because
   its amounts would be drafted unconverted. Coupon accrues only on the lots the book holds: each
   lot earns its face share of the projection's interest from the day it was acquired, and a book
-  with no open lot drafts nothing. A lot carried at a pool factor other than 1 is refused, because
-  its share of a factor-adjusted coupon cannot be read from its face quantity. When the template names a `bookPositionId`, the holding is
-  read for every day of the window and the accrual is split wherever it changes, so a lot sold
-  or reduced mid-window accrues through the last day it is still open at the close. The runner uses the template's `bookPositionId` to reconstruct
-  the lots held at the effective date. Scheduled bond accruals run the following day or later,
-  so a template without a book position is blocked.
+  with no lot in the window drafts nothing. A lot carried at a pool factor other than 1 is
+  refused, because its share of a factor-adjusted coupon cannot be read from its face quantity.
+  The template must name a `bookPositionId`: the accrual runs after its effective day has
+  ended, and only a book position lets the holding be read for a past day. Registration rejects
+  a template without it. The holding is read for every day of the window and the accrual is
+  split wherever it changes, so a lot sold or reduced mid-window accrues through the last day
+  it is still open at the close.
 
 Terms are never defaulted. A missing term, an unknown kind, an unavailable ledger, a stale or
 non-postable cash-flow projection, or an FX rate that is missing, has no quote date and source, or

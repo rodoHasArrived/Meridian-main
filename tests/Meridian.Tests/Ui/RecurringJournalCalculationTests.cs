@@ -32,6 +32,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     private static readonly Guid Book = Guid.Parse("5d0d6c0b-2a7e-4a0f-9a55-0f6f0a3a1c01");
     private static readonly Guid January = Guid.Parse("11111111-aaaa-4bbb-8ccc-000000000001");
     private static readonly Guid February = Guid.Parse("11111111-aaaa-4bbb-8ccc-000000000002");
+    private static readonly string Position = Guid.Parse("9a1b2c3d-0000-4000-8000-00000000b00c").ToString("D");
     private static readonly Guid SecurityId = Guid.Parse("7c3f9f2e-91d4-4a3b-8f65-2f0c5a9d7e10");
     private static readonly DateOnly JanuaryEnd = new(2026, 1, 31);
     private static readonly DateOnly FebruaryEnd = new(2026, 2, 28);
@@ -496,7 +497,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
         var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 101.20m, SecurityId)
         { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
-            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
         var fixture = await CreateFixtureAsync(lots: [lot], cashFlows: MonthlyCouponCashFlows());
 
         await fixture.Runner.RunDueAsync(Due(JanuaryEnd));
@@ -525,7 +526,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     public async Task FixedIncome_AccruesOnlyTheShareOfTheBondTheFundHolds_AndNothingOnceItIsSold()
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
-            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
         // 250,000 of the 1,000,000 issue, bought at par on 16 January: a quarter of 5,000 for 15 of 31 days.
         var quarter = new LedgerTaxLot("lot-q", new(2026, 1, 16), 2_500m, 100m, SecurityId)
         { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
@@ -646,7 +647,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     public async Task FixedIncome_StaleProjection_BlocksWithTheGateReason()
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
-            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
         var fixture = await CreateFixtureAsync(cashFlows: MonthlyCouponCashFlows(StructuredCashFlowStaleness.Stale));
 
         var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
@@ -678,10 +679,27 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     }
 
     [Fact]
+    public async Task FixedIncome_WithoutABookPosition_IsBlockedAndReportedAsAMissingInput()
+    {
+        await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker }, endsOn: JanuaryEnd);
+        var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
+        var fixture = await CreateFixtureAsync(lots: [lot]);
+
+        var result = (await fixture.Runner.RunDueAsync(Due(JanuaryEnd))).Should().ContainSingle().Subject;
+
+        result.State.Should().Be(AutomatedJournalScheduleStateDto.Blocked);
+        result.Blockers.Should().ContainSingle().Which.Should().Contain("bookPositionId");
+        fixture.Runner.MissingCalculationInputs(new JournalTemplateCalculation(FixedIncomeAccrualCalculation.CalculationKind,
+            new Dictionary<string, string> { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker }))
+            .Should().Equal("bookPositionId");
+    }
+
+    [Fact]
     public async Task FixedIncome_BondInAnotherCurrency_BlocksInsteadOfDraftingUnconvertedAmounts()
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
-            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
         var lot = new LedgerTaxLot("lot-1", new(2025, 12, 31), 10_000m, 100m, SecurityId) { UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 100m };
         var fixture = await CreateFixtureAsync(lots: [lot], bondCurrency: "EUR");
 
@@ -696,7 +714,7 @@ public sealed class RecurringJournalCalculationTests : IDisposable
     public async Task FixedIncome_CouponWithoutAnAccrualInterval_BlocksInsteadOfRecognizingItWhole()
     {
         await SeedAsync(FixedIncomeAccrualCalculation.CalculationKind, new(),
-            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker });
+            new() { ["securityId"] = SecurityId.ToString("D"), ["ticker"] = Ticker, ["bookPositionId"] = Position });
         var service = new Mock<ISecurityMasterCashFlowService>(MockBehavior.Strict);
         service.Setup(value => value.GetProjectionAsOfAsync(SecurityId, StructuredCashFlowScenario.Base,
                 It.IsAny<DateTimeOffset>(), It.IsAny<CancellationToken>()))

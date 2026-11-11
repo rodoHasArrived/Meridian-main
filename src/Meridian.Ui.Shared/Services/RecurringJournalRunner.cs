@@ -23,6 +23,12 @@ public sealed class RecurringJournalRunner(
     /// <summary>Whether a calculated template of this kind can be run by this host.</summary>
     public bool SupportsCalculation(string kind) => _calculations.ContainsKey(kind);
 
+    /// <summary>The inputs a calculated template of this kind must state and does not.</summary>
+    public IReadOnlyList<string> MissingCalculationInputs(JournalTemplateCalculation calculation)
+        => _calculations.TryGetValue(calculation.Kind, out var implementation)
+            ? implementation.RequiredInputs.Where(input => !calculation.Inputs.TryGetValue(input, out var value) || string.IsNullOrWhiteSpace(value)).ToArray()
+            : [];
+
     public async Task<IReadOnlyList<AutomatedJournalScheduledRunResult>> RunDueAsync(
         DateTimeOffset now, string? tenant = null, string? company = null,
         bool scopeSpecified = false, CancellationToken ct = default)

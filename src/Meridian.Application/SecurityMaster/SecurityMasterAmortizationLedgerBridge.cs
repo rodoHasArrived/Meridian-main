@@ -287,7 +287,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         if (interest == 0m)
             return 0m;
 
-        if (entry.AccrualStart is not { } accrualStart || entry.AccrualEnd is not { } accrualEnd || accrualEnd <= accrualStart)
+        if (entry.InterestAccrualStart is not { } accrualStart || entry.InterestAccrualEnd is not { } accrualEnd || accrualEnd <= accrualStart)
         {
             var periodDate = DateOnly.FromDateTime(entry.PeriodDate.UtcDateTime.Date);
             return periodDate >= window.Start && periodDate <= window.End && (heldFrom is null || heldFrom <= periodDate) ? interest : 0m;

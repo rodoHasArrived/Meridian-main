@@ -154,6 +154,9 @@ public static partial class LedgerEndpoints
                 if (request.Template.Calculation is { } calculation &&
                     context.RequestServices.GetService<RecurringJournalRunner>()?.SupportsCalculation(calculation.Kind) != true)
                     return Results.BadRequest(new { error = $"Posting calculation '{calculation.Kind}' is not available on this host." });
+                if (request.Template.Calculation is { } stated &&
+                    context.RequestServices.GetService<RecurringJournalRunner>()?.MissingCalculationInputs(stated) is { Count: > 0 } missing)
+                    return Results.BadRequest(new { error = $"Posting calculation '{stated.Kind}' needs the template input(s): {string.Join(", ", missing)}." });
                 var now = (context.RequestServices.GetService<TimeProvider>() ?? TimeProvider.System).GetUtcNow();
                 var schedule = request.Schedule with
                 {
