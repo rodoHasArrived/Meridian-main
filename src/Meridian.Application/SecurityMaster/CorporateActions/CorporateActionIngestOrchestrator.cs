@@ -131,8 +131,26 @@ public sealed class CorporateActionIngestOrchestrator
             {
                 try
                 {
-                    var fetched = await provider.FetchAsync(ticker!, record.SecurityId, ct).ConfigureAwait(false);
-                    foreach (var command in fetched)
+                    var fetch = await provider.FetchWithOutcomeAsync(ticker!, record.SecurityId, ct)
+                        .ConfigureAwait(false);
+                    if (!fetch.IsComplete)
+                    {
+                        // A fetch that failed or was cut short is not "no actions": it is reported
+                        // with the other fetch errors, and nothing from it is staged as if it were
+                        // the provider's whole history.
+                        var outcome = fetch.Status == CorporateActionFetchStatus.Unavailable
+                            ? "unavailable"
+                            : "incomplete";
+                        errors.Add(
+                            $"{provider.ProviderId}/{ticker}: corporate-action fetch {outcome}: {fetch.Reason} " +
+                            $"{fetch.WithheldObservationCount.ToString(CultureInfo.InvariantCulture)} observation(s) withheld.");
+                        _logger.LogWarning(
+                            "Corporate action fetch {FetchStatus} for {Ticker} from {ProviderId}: {Reason} {WithheldObservations} observation(s) withheld",
+                            fetch.Status, ticker, provider.ProviderId, fetch.Reason, fetch.WithheldObservationCount);
+                        continue;
+                    }
+
+                    foreach (var command in fetch.Observations)
                     {
                         if (command.SecurityId != record.SecurityId)
                         {

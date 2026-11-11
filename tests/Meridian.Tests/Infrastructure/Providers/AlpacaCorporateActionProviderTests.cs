@@ -3,6 +3,7 @@ using System.Text;
 using FluentAssertions;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Infrastructure.Adapters.Alpaca;
+using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
@@ -166,6 +167,133 @@ public sealed class AlpacaCorporateActionProviderTests
 
         results.Should().BeEmpty();
         factory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    private const string FirstPageWithNextToken =
+        """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""";
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task FetchWithOutcomeAsync_SecondPageFails_ReportsIncompleteAndWithholdsPartialHistory(
+        bool secondPageThrows)
+    {
+        var handler = new RecordingHandler(request =>
+        {
+            if (!request.RequestUri!.Query.Contains("page_token=next-1", StringComparison.Ordinal))
+                return Json(FirstPageWithNextToken);
+            if (secondPageThrows)
+                throw new HttpRequestException("synthetic connection reset");
+            return new HttpResponseMessage(HttpStatusCode.InternalServerError)
+            {
+                Content = new StringContent("synthetic upstream failure body"),
+            };
+        });
+        var provider = CreateSut(handler);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Incomplete);
+        outcome.IsComplete.Should().BeFalse("a failure after page one must not be reported as a complete result");
+        outcome.Observations.Should().BeEmpty("half a history must not be returned as if it were all of it");
+        outcome.WithheldObservationCount.Should().Be(1);
+        outcome.Reason.Should().NotBeNullOrWhiteSpace();
+        outcome.Reason.Should().Contain("page 2");
+        outcome.Reason.Should().NotContain("test-key").And.NotContain("test-secret")
+            .And.NotContain("synthetic upstream failure body");
+        handler.Requests.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_RepeatedPageToken_StopsAndReportsIncomplete()
+    {
+        // Every page names the same next page, so following the token would never end.
+        var handler = new RecordingHandler(_ => Json(
+            """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"loop"}"""));
+        var provider = CreateSut(handler);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Incomplete);
+        outcome.IsComplete.Should().BeFalse();
+        outcome.Observations.Should().BeEmpty();
+        outcome.WithheldObservationCount.Should().Be(2);
+        outcome.Reason.Should().Contain("next_page_token");
+        handler.Requests.Should().HaveCount(2, "the fetch stops as soon as a page token repeats");
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_EmptySuccessfulResponse_IsCompleteAndEmpty()
+    {
+        var handler = new RecordingHandler(_ => Json("""{"corporate_actions":{},"next_page_token":null}"""));
+        var provider = CreateSut(handler);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Complete);
+        outcome.IsComplete.Should().BeTrue();
+        outcome.Observations.Should().BeEmpty();
+        outcome.Reason.Should().BeNull("an empty history is an answer, not an error");
+        outcome.WithheldObservationCount.Should().Be(0);
+        handler.Requests.Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_CompletePagedHistory_ReturnsReviewOnlyObservations()
+    {
+        var provider = CreateSut(new RecordingHandler(request => Json(
+            request.RequestUri!.Query.Contains("page_token=next-1", StringComparison.Ordinal)
+                ? """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-05-10","id":"second","rate":0.25,"symbol":"AAPL"}]},"next_page_token":null}"""
+                : FirstPageWithNextToken)));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Complete);
+        outcome.Observations.Select(observation => observation.SourceEventId).Should().Equal("first", "second");
+        outcome.Observations.Should().OnlyContain(observation =>
+            observation.ReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_WithoutCredentials_ReportsUnavailableWithoutCreatingClient()
+    {
+        var factory = Substitute.For<IHttpClientFactory>();
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = string.Empty,
+                ["ALPACA_SECRET_KEY"] = string.Empty,
+            })
+            .Build();
+        var provider = new AlpacaCorporateActionProvider(
+            factory,
+            configuration,
+            NullLogger<AlpacaCorporateActionProvider>.Instance);
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Unavailable);
+        outcome.IsComplete.Should().BeFalse("missing credentials are not an empty history");
+        outcome.Observations.Should().BeEmpty();
+        outcome.Reason.Should().Contain("credentials");
+        factory.DidNotReceive().CreateClient(Arg.Any<string>());
+    }
+
+    [Fact]
+    public async Task FetchWithOutcomeAsync_FirstPageRefused_ReportsUnavailable()
+    {
+        var provider = CreateSut(new RecordingHandler(_ => new HttpResponseMessage(HttpStatusCode.Unauthorized)
+        {
+            Content = new StringContent("synthetic refusal body"),
+        }));
+
+        var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
+
+        outcome.Status.Should().Be(CorporateActionFetchStatus.Unavailable);
+        outcome.Observations.Should().BeEmpty();
+        outcome.WithheldObservationCount.Should().Be(0);
+        outcome.Reason.Should().Contain("401");
+        outcome.Reason.Should().NotContain("synthetic refusal body");
     }
 
     private static HttpResponseMessage Json(string body) =>
