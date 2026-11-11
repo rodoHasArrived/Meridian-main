@@ -1,11 +1,12 @@
 import { apiGetJson } from "@/lib/api";
+import { UI_API_ROUTES } from "@/lib/ui-api-routes.generated";
 import {
   WORKSTATION_API_ENDPOINTS,
-  ledgerPeriodAccountRunningBalanceEndpoint,
   ledgerPeriodJournalEntriesEndpoint,
   ledgerPeriodPnlSummaryEndpoint,
   ledgerPeriodsEndpoint,
-  ledgerPeriodTrialBalanceEndpoint
+  ledgerPeriodTrialBalanceEndpoint,
+  routeWithParam
 } from "@/lib/workstation-endpoints";
 import type {
   LedgerAccountRunningBalance,
@@ -40,6 +41,25 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
 
 export function getLedgerPeriodJournalEntries(periodId: string) {
   return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+}
+
+/**
+ * Route for one account's posting history in a ledger period. Lives here rather than in
+ * `workstation-endpoints.ts`, which is at its file-size limit.
+ */
+export function ledgerPeriodAccountRunningBalanceEndpoint(
+  periodId: string,
+  query: { account: string; symbol?: string | null; financialAccountId?: string | null }
+): string {
+  const params = new URLSearchParams({ account: query.account });
+  if (query.symbol) {
+    params.set("symbol", query.symbol);
+  }
+  if (query.financialAccountId) {
+    params.set("financialAccountId", query.financialAccountId);
+  }
+
+  return `${routeWithParam(UI_API_ROUTES.LedgerPeriodAccountRunningBalance, "periodId", periodId)}?${params.toString()}`;
 }
 
 /** Posting history and running balance for one account of a ledger period (durable book of record). */
