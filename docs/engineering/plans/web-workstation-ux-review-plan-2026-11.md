@@ -283,6 +283,35 @@ Still open from P1:
 - WPF still spells "PnL" in its own view models (`RunRiskViewModel`,
   `StrategyRunPortfolioViewModel`, `QuantScriptViewModel`, `StrategyRunBrowserViewModel`).
 
+**2026-11-10 — detail panes (P2).** `DetailPane` is the shared primitive; `EntitySummary` applies
+the same heading and rows, which carries the change to the panels already built on it.
+
+- One heading line (object type, name, one status badge) on Trading positions and the shared
+  order/fill pane, Portfolio holdings and brokerage positions, the Reporting work pane and the task
+  workbench used by Settings, Strategy and Data. The "Selected from …" pill is no longer drawn for
+  any panel, and the "Detail" chips are gone.
+- Values are left-aligned and whole. Rows put the label beside the value and stack below about
+  290px; figures and dates stay on one line. The right-aligned two-column tiles on Trading,
+  Portfolio, Strategy, Reporting, Settings, the journal-entry detail and the readiness console use
+  the shared row. The reconciliation inspector's title is no longer flush against its border.
+- Opaque identifiers in any field list move to a copyable "Technical details" disclosure.
+- Trading orders and fills share one pane keyed to the table selected last, with Cancel order as
+  its next action; panes omit the columns the selected row always shows.
+- Checked at 1440×1100 and 1024px on the Trading, Portfolio, Accounting, Reporting, Settings and
+  Strategy routes: no right-aligned values, wrapped dates or figures in any detail panel; the only
+  values that may wrap mid-token are identifiers.
+
+Still open from P2:
+
+- Panels with bespoke bodies keep their own wrappers and only took the shared rows: Portfolio run
+  evidence and brokerage account, the Security Master panels, the corporate-action case workspace
+  and the control-tower evidence summary.
+- "Show only fields not in the selected row" is applied where the table's always-visible columns
+  are known (Trading, Portfolio). Other panes still repeat row values.
+- Dates arrive preformatted from view models; the panes keep them on one line but do not reformat
+  them, so two routes can still show different date styles.
+- The checked-in screenshot catalog has not been regenerated.
+
 ## Recommended Next Step
 
 Continue with Phase 3 item 1: the strips now say where each number comes from, and the KPI

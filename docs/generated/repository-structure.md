@@ -7405,6 +7405,10 @@ Meridian-main
 │   │   │   │   │   │   ├── degraded-mode-banner.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.test.tsx
 │   │   │   │   │   │   ├── dense-row-detail-accessibility.tsx
+│   │   │   │   │   │   ├── detail-pane.test.tsx
+│   │   │   │   │   │   ├── detail-pane.tsx
+│   │   │   │   │   │   ├── detail-pane.view-model.test.ts
+│   │   │   │   │   │   ├── detail-pane.view-model.ts
 │   │   │   │   │   │   ├── figure-difference-note.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.test.tsx
 │   │   │   │   │   │   ├── financial-record-explorer.tsx
@@ -8293,6 +8297,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.audit-trail.tsx
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.test.ts
 │   │   │   │   │   ├── trading-screen.audit-trail.view-model.ts
+│   │   │   │   │   ├── trading-screen.blotter-details.ts
 │   │   │   │   │   ├── trading-screen.brokerage-recovery-state.ts
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.test.tsx
 │   │   │   │   │   ├── trading-screen.brokerage-recovery.tsx
