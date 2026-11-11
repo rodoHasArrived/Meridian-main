@@ -875,7 +875,11 @@ now follows that focused attribution pattern: the oversized hero is replaced by 
 retained symbol attribution uses the shared dense table, and the selected symbol owns the inspector
 rail plus Security Master lookup readiness.
 The desktop shell visual system now targets a light institutional workstation frame with a
-near-black global app bar, paper page bands, compact filter bars, and dense table chrome. New
+graphite global app bar, paper page bands, compact filter bars, and dense table chrome. Colors in
+`Styles/ThemeTokens.xaml` follow the Meridian Design System 4.3.0 palette shared with the browser
+workstation: graphite (`ConsoleActionPrimary*`) fills primary buttons, `ConsoleAccentBlue` and
+`ConsoleBorderFocus` are the interaction blue for focus and selection, and terracotta
+(`ConsoleAccentCyan`, `ModePaperColor`, chart primary line) is the brand signal only. New
 workspace overhauls should prefer `WorkstationPageBandStyle`, `WorkstationFilterBarStyle`,
 `WorkstationFilterChipStyle`, `WorkstationTablePanelStyle`, `WorkstationInspectorRailStyle`,
 `WorkstationDockStripStyle`, `DenseDataGridControl`, `WorkstationTableInspectorControl`, and
