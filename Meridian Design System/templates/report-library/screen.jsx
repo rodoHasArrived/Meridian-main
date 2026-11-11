@@ -1,15 +1,15 @@
 // Report Library — template screen. Mounted by the DC via <x-import>; reads design-system
-// components from the compiled bundle (window.MeridianDesignSystem_4f61be) and the single
+// components from the compiled bundle (window.MeridianDesignSystem_205d17) and the single
 // global React. A plain report catalog answering "what report do I need to run?" — dense
 // table of reports with readiness, a parameter dialog to run one, and a right rail summarizing
 // readiness + recent runs. Advanced/internal fields (template id, manifest path, provenance,
 // distribution job) stay hidden inside each row's details until opened.
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  Input, Select, SeverityBadge, EmptyState, ExpandableDataTable, EntitySummary,
+  Input, Select, SeverityBadge, EmptyState, DataGrid, EntitySummary,
   Accordion, Checkbox, Callout, EvidenceLink, Dialog, DialogHeader, DialogBody, DialogFooter,
   ToastProvider,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 /* ── screen-level CSS (self-injected once; components inject their own) ── */
@@ -304,18 +304,18 @@ function ReportLibraryScreen() {
   const columns = [
     {
       key: "name", label: "Report",
-      render: (r) => (
+      cell: (r) => (
         <div>
           <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>{r.name}</div>
         </div>
       ),
     },
-    { key: "category", label: "Category", render: (r) => <span style={{ color: "var(--text-secondary)" }}>{r.category}</span> },
-    { key: "lastRun", label: "Last run", render: (r) => r.lastRun || "Never run" },
+    { key: "category", label: "Category", cell: (r) => <span style={{ color: "var(--text-secondary)" }}>{r.category}</span> },
+    { key: "lastRun", label: "Last run", cell: (r) => r.lastRun || "Never run" },
     {
       key: "requiredData", label: "Required inputs", sortable: false,
-      render: (r) => (
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, whiteSpace: "normal" }}>
+      cell: (r) => (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 5, whiteSpace: "normal", padding: "4px 0" }}>
           {r.requiredData.slice(0, 2).map((d) => <span key={d} className="rl-chip">{d}</span>)}
           {r.requiredData.length > 2 && <span className="rl-chip rl-chip--more">+{r.requiredData.length - 2}</span>}
         </div>
@@ -323,11 +323,11 @@ function ReportLibraryScreen() {
     },
     {
       key: "status", label: "Readiness", sortable: false,
-      render: (r) => <SeverityBadge status={r.status} label={STATUS_LABEL[r.status]} />,
+      cell: (r) => <SeverityBadge status={r.status} label={STATUS_LABEL[r.status]} />,
     },
     {
       key: "action", label: "", sortable: false,
-      render: (r) => <Button variant="primary" size="sm" onClick={() => setDialogReport(r)}>Set parameters</Button>,
+      cell: (r) => <Button variant="primary" size="sm" onClick={() => setDialogReport(r)}>Set parameters</Button>,
     },
   ];
 
@@ -379,10 +379,10 @@ function ReportLibraryScreen() {
                   </PanelSurface>
                 )
               ) : (
-                <ExpandableDataTable
+                <DataGrid
                   columns={columns}
                   rows={filtered}
-                  expandable={(r) => <ReportDetail report={r} />}
+                  expand={(r) => <ReportDetail report={r} />}
                 />
               )}
             </div>

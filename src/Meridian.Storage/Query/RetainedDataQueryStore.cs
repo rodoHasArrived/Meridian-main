@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Archival;
 
 namespace Meridian.Storage.Query;
@@ -118,7 +119,7 @@ public sealed class RetainedDataQueryStore
         if (!File.Exists(rowsPath))
             throw new RetainedDataQueryException("Invalid", "The complete retained row population is missing; no export was produced.");
         await using var stream = new FileStream(rowsPath, FileMode.Open, FileAccess.Read, FileShare.Read, 65536, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        if (stream.Length != manifest.ByteCount || Convert.ToHexString(await SHA256.HashDataAsync(stream, ct).ConfigureAwait(false)) != manifest.RowsSha256)
+        if (stream.Length != manifest.ByteCount || !Sha256Digest.FixedEquals(await Sha256Digest.ComputeAsync(stream, ct).ConfigureAwait(false), manifest.RowsSha256))
             throw new RetainedDataQueryException("Invalid", "Retained rows failed integrity verification; no partial export was produced.");
         stream.Position = 0;
         using var reader = new StreamReader(stream, Encoding.UTF8, leaveOpen: true);
@@ -163,7 +164,9 @@ public sealed class RetainedDataQueryStore
         ArgumentException.ThrowIfNullOrWhiteSpace(owner.OperatorId);
         return Digest(JsonSerializer.SerializeToUtf8Bytes(new[] { _sourceHash, owner.TenantId, owner.CompanyId, owner.OperatorId }, RetainedDataQueryJsonContext.Default.StringArray));
     }
-    private static string Digest(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
+    // Retained manifests and owner bindings store uppercase hex and are compared by string equality,
+    // so the stored spelling stays uppercase; the digest itself comes from the canonical primitive.
+    private static string Digest(byte[] bytes) => Sha256Digest.Compute(bytes).ToUpperInvariant();
     private static void ValidateId(string id)
     {
         if (id.Length != 48 || id.Any(character => !char.IsAsciiHexDigitLower(character)))

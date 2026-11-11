@@ -82,7 +82,7 @@ try {
         plane = await (await iframe.elementHandle()).contentFrame();
         assert(plane, `${slug}: retained entry mounts its actual canonical frame`);
       }
-      await plane.getByText(readyText, { exact: false }).first().waitFor();
+      await plane.getByText(readyText, { exact: false }).filter({ visible: true }).first().waitFor();
       assert((await plane.locator('body').innerText()).length > 80, `${slug}: substantive canonical work plane`);
       return plane;
     }

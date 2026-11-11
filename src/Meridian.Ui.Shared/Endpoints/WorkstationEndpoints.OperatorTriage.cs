@@ -39,6 +39,7 @@ public static partial class WorkstationEndpoints
                     items.Add(BuildTriageItem(work, source, state, actor, context, available));
                 }
             }
+            catch (OperationCanceledException) { throw; }
             catch (Exception exception) when (IsTriagePersistenceFailure(exception))
             {
                 // Do not publish empty personal state as a successful persistence read.
@@ -233,6 +234,7 @@ public static partial class WorkstationEndpoints
         }
         catch (OperatorTriageException exception) { return new(exception.Status, workItemId, Error: exception.Message); }
         catch (UnauthorizedAccessException) { return new("Forbidden", workItemId, Error: "The source refused this operator's authority."); }
+        catch (OperationCanceledException) { throw; }
         catch (Exception exception) when (IsTriagePersistenceFailure(exception))
         {
             return new("Unavailable", workItemId, Error: "The retained triage outcome could not be confirmed. Refresh before retrying the same command.");

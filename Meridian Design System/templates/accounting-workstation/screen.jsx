@@ -1,11 +1,11 @@
 // Accounting workstation — template screen. Mounted by the DC via <x-import>; reads design-system
-// components from the compiled bundle (window.MeridianDesignSystem_4f61be) and the single global
+// components from the compiled bundle (window.MeridianDesignSystem_205d17) and the single global
 // React. Functional: posting a journal entry appends to the ledger, reconciliation resolves open
 // items, tax lots switch realized/unrealized, and the ledger filters live.
 const {
   WorkstationTopbar, NavRail, StatusBar, Eyebrow, Button, Badge, MetricCard,
   AmountCell, LedgerTable, AccountTree, StatementTable, ReconciliationPanel, JournalEntryForm, TaxLotTable
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState, useMemo } = React;
 
 /* ── screen-level CSS (self-injected once; components inject their own) ── */
