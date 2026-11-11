@@ -19,7 +19,7 @@ public sealed class DesignSystemResourceTests
     {
         WpfTestThread.Run(() =>
         {
-            var family = (FontFamily)Application.Current.FindResource(resourceKey);
+            var family = (FontFamily)System.Windows.Application.Current.FindResource(resourceKey);
             var faces = new[]
             {
                 (FontStyles.Normal, FontWeights.Normal, "Regular"),
@@ -63,8 +63,8 @@ public sealed class DesignSystemResourceTests
     {
         WpfTestThread.Run(() =>
         {
-            var body = (FontFamily)Application.Current.FindResource("MeridianBodyFontFamily");
-            var data = (FontFamily)Application.Current.FindResource("MeridianDataFontFamily");
+            var body = (FontFamily)System.Windows.Application.Current.FindResource("MeridianBodyFontFamily");
+            var data = (FontFamily)System.Windows.Application.Current.FindResource("MeridianDataFontFamily");
             var page = new KeyboardShortcutsPage();
             page.FontFamily.Should().Be(body);
             TextElement.GetFontFamily((DependencyObject)page.Content).Should().Be(body);
@@ -72,16 +72,16 @@ public sealed class DesignSystemResourceTests
             var amount = new TextBlock
             {
                 Text = "1,234.56",
-                Style = (Style)Application.Current.FindResource("DataValueStyle")
+                Style = (Style)System.Windows.Application.Current.FindResource("DataValueStyle")
             };
             var legacyMono = new TextBlock
             {
                 Text = "1,234.56",
-                Style = (Style)Application.Current.FindResource("MonoTextStyle")
+                Style = (Style)System.Windows.Application.Current.FindResource("MonoTextStyle")
             };
             amount.FontFamily.Should().Be(data);
             legacyMono.FontFamily.Should().Be(data);
-            ((FontFamily)Application.Current.FindResource("SymbolThemeFontFamily")).Source.Should().Be("Segoe MDL2 Assets");
+            ((FontFamily)System.Windows.Application.Current.FindResource("SymbolThemeFontFamily")).Source.Should().Be("Segoe MDL2 Assets");
         });
     }
 
@@ -93,7 +93,7 @@ public sealed class DesignSystemResourceTests
             var button = new Button
             {
                 Content = "Review",
-                Style = (Style)Application.Current.FindResource("PrimaryButtonStyle")
+                Style = (Style)System.Windows.Application.Current.FindResource("PrimaryButtonStyle")
             };
             button.ApplyTemplate();
             var surface = (Border)button.Template.FindName("border", button);
@@ -162,12 +162,12 @@ public sealed class DesignSystemResourceTests
     }
 
     private static Color BrushColor(string key)
-        => ((SolidColorBrush)Application.Current.FindResource(key)).Color;
+        => ((SolidColorBrush)System.Windows.Application.Current.FindResource(key)).Color;
 
     private static void AssertEmbeddedCopyMatchesExport(string filename)
     {
         var expected = File.ReadAllBytes(RunMatUiAutomationFacade.GetRepoFilePath($"Meridian Design System/assets/fonts/{filename}"));
-        var resource = Application.GetResourceStream(new Uri($"pack://application:,,,/Meridian.Desktop;component/Assets/Fonts/{filename}"));
+        var resource = System.Windows.Application.GetResourceStream(new Uri($"pack://application:,,,/Meridian.Desktop;component/Assets/Fonts/{filename}"));
         resource.Should().NotBeNull($"{filename} must be embedded for offline desktop use");
         using var stream = resource!.Stream;
         using var bytes = new MemoryStream();
