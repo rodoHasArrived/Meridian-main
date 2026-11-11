@@ -86,8 +86,9 @@ Rules that keep an amount from being drafted twice:
 - **Performance fee is cumulative.** The fee above the high-water mark and hurdle is compared with
   the performance fee already payable, and only the difference is drafted (a reversal when it has
   fallen). After a fee is crystallized and settled, register a schedule version with the new mark.
-- **FX revaluation covers monetary accounts.** Accounts with a security symbol are excluded
-  because they can include book-currency fair-value marks. Carrying value combines the
+- **FX revaluation covers monetary accounts.** That is accounts with no symbol and
+  currency-scoped cash accounts such as `Cash (EUR)`. Accounts with an instrument symbol are
+  excluded because they can include book-currency fair-value marks. Carrying value combines the
   book-currency amounts of foreign legs with prior posted revaluations for the same account.
   Functional-currency activity on that account is excluded. An account with legs in multiple
   foreign currencies is blocked.
