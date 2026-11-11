@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T07:36:14Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-11T08:21:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | `fb9ade8553` (2026-11-10T23:52:19Z) | 22 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `f11a27bc6f` (2026-11-10T23:51:41Z) | 51 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | `f11a27bc6f` (2026-11-10T23:51:41Z) | 35 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 57 |
-| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts` | Desktop and UI Workflows | `52584db242` (2026-11-10T23:24:20Z) | 2 |
-| `src/Meridian.Application/README.md` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 55 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 50 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `7c25d353c8` (2026-11-10T23:18:00Z) | 26 |
-| `src/Meridian.Ui/dashboard/src/app.tsx` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 24 |
-| `src/Meridian.Ui/README.md` | Unmapped | `7c25d353c8` (2026-11-10T23:18:00Z) | 14 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `7c25d353c8` (2026-11-10T23:18:00Z) | 12 |
-| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 11 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `7c25d353c8` (2026-11-10T23:18:00Z) | 10 |
-| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | `7c25d353c8` (2026-11-10T23:18:00Z) | 6 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 3 |
+| `src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs` | Unmapped | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs` | Domain, Ledger, and F# | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ledger/PrivateCapitalPostingAuthority.cs` | Domain, Ledger, and F# | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs` | Providers and Storage | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs` | Providers and Storage | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-bank-observation-import.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.forms.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/private-capital-presenters.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
 
