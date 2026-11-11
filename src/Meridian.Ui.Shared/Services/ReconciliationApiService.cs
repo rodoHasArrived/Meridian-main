@@ -4,7 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using WorkstationStatementMatchTier = Meridian.Contracts.Workstation.StatementMatchTier;
 
 namespace Meridian.Ui.Shared.Services;
