@@ -11,6 +11,14 @@ last_reviewed: 2026-10-14
 
 # src/Meridian.FinancialOperations
 
+Canonical Operations Continuity commits retain a versioned snapshot of all five required close
+gates in the same audit/state transaction. Snapshot-bearing events use an explicit v1 hash envelope;
+events without snapshots preserve their original canonical hash bytes. Upgraded readers verify
+mixed chains and reject mutated, stripped or unknown snapshot formats. Readers must deploy with
+the new writer; older hash validators intentionally refuse the new envelope. Legacy audit events
+and nontransactional paths remain explicit history gaps, with no reconstructed or backfilled task
+counts. Burndown observations retain workflow versions and break across missing coverage.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an

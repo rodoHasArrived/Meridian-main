@@ -30,6 +30,7 @@ public static partial class LedgerEndpoints
         MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
+        MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,

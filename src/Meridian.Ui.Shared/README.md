@@ -11,6 +11,36 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Workstation chart evidence includes bounded verification histories for exactly owned provider
+connections, projected from the existing credential audit without exposing credentials or actor
+metadata. Pending audit publication or malformed audit data refuses an apparently complete
+history. Retained account balance history uses the unconditional scoped trade-read account guard,
+checks every returned snapshot's account, and returns exact decimal component strings with currency,
+source and recording time. No account equity total or cross-currency aggregation is inferred.
+The maintenance table export adapter reads the full retained execution population beyond the
+browser's 25-row window, applies current failed/search/column filters, and includes execution
+identity and export provenance. Source retention remains explicit.
+
+Operator triage joins durable attention metadata to the permission-filtered ranked inbox. Assignment
+uses the source casework authority where one exists; acknowledgement and snooze are personal and
+never clear readiness gates. Commands retain versions, reasons, actor identity and replay receipts.
+Blocked/critical work cannot be snoozed; observed escalation permanently cancels an existing snooze.
+Production uses PostgreSQL through `MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING` (falling back to the
+ledger connection); missing persistence disables triage actions explicitly. Synthetic hosts use a
+durable file adapter. No notification delivery is implied by assignment or acknowledgement.
+
+Posted-period comparison reads require retained fund ownership for the exact tenant, company and
+ledger book. The shared route recomputes filtered totals from immutable journals with exact decimal
+transport, policy/currency checks and source population identities. An open period compares the
+same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
+unavailable. These comparisons never consume the strategy-run simulated ledger.
+
+Close checklist history projects only versioned snapshots retained by canonical workflow commits.
+Its shared read endpoint uses exact account/book/fund ownership, verifies mixed legacy/new audit
+chains, reports coverage and missing versions, and splits observations across unknown intervals.
+Legacy workflows remain history-unavailable until new committed observations exist; the endpoint
+never turns current gate state into invented historical progress.
+
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -852,9 +882,11 @@ show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
-workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
-id, so operator filters created in one tenant do not appear in another tenant's Financial Record
-Explorer session. Missing projections return empty or blocked DTO state with disabled actions and
+workstation data root. Browser-created views use snapshot v2 ownership keyed by authenticated
+workstation tenant, operator and table/explorer identity. Ownerless v1 views remain read-only
+legacy tenant views with an explicit personal-copy action. All read/write paths validate table
+access; atomic snapshot publication and a cross-host writer lease preserve concurrent updates.
+The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services

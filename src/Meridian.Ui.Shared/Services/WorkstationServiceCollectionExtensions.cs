@@ -111,6 +111,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IBResultQueryService>();
 
         var isProductionComposition = ProductionServiceRegistrationPolicy.IsProductionComposition(services);
+        services.AddOperatorTriageStorage(configuration, isProductionComposition);
 
         services.TryAddSingleton<ConfigStore>(sp =>
         {

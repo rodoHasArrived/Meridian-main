@@ -11,6 +11,26 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+Workstation SQL queries retain a completed result once for export. `DataQuery.MaxRows` limits
+the preview; SQL-authored limits remain part of the result. Retention defaults are 250,000 rows,
+32 MiB per execution, 128 MiB across retained executions and 30 minutes. The optional
+`RetainedResultsRoot` must resolve outside the queryable storage tree. The private default path
+and owner binding include the canonical source identity; tokens also bind tenant, company and
+operator. An incomplete, expired, corrupt, over-quota or foreign result cannot export. Wide decimal
+values retain their exact digits; unsupported complex/time types require an explicit SQL cast.
+
+Corporate-action inbox exports read every actionable provider-economic reference observation and
+the authenticated tenant/company's processing cases within one repeatable-read cut. The normal
+inbox retains its browse limits. The shared export adapter distinguishes global source references
+from scoped cases and includes only fields already exposed by the corresponding browse projection.
+
+`Workstation/` retains operator triage metadata separately from financial source workflows.
+`PostgresOperatorTriageStore` uses the shared migration runner and a tenant/company/item advisory
+lock to commit state, activity and idempotency receipts together. Production triage defaults to the
+`operator_triage` schema (`MERIDIAN_OPERATOR_TRIAGE_SCHEMA` overrides it). `FileOperatorTriageStore`
+supports deterministic synthetic hosts with cross-process writer leases and atomic replacement;
+it is not selected as a production fallback.
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.
