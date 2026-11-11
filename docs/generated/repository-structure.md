@@ -6582,6 +6582,7 @@ Meridian-main
 │   │   ├── ReportingIncomeDecimalJsonConverter.cs
 │   │   ├── ReportingNumberFormat.cs
 │   │   ├── ReportingOperationalStoreContracts.cs
+│   │   ├── ReportingOperationIdentity.cs
 │   │   ├── ReportingOrchestrationService.cs
 │   │   ├── ReportingReconciliationEvidenceContracts.cs
 │   │   ├── ReportingReleaseConsistencyGate.cs
@@ -7852,6 +7853,8 @@ Meridian-main
 │   │   │   │   │   ├── plaid-link.ts
 │   │   │   │   │   ├── portfolio-positions-table.test.ts
 │   │   │   │   │   ├── portfolio-positions-table.ts
+│   │   │   │   │   ├── private-capital-notice-intent.test.ts
+│   │   │   │   │   ├── private-capital-notice-intent.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
 │   │   │   │   │   ├── provider-credential-scope.ts
 │   │   │   │   │   ├── provider-integration-setup-validation.test.ts
@@ -8077,6 +8080,7 @@ Meridian-main
 │   │   │   │   │   ├── capital-call-issuance-screen.tsx
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.ts
+│   │   │   │   │   ├── capital-call-notice-action.tsx
 │   │   │   │   │   ├── cash-ladder-screen.test.tsx
 │   │   │   │   │   ├── cash-ladder-screen.tsx
 │   │   │   │   │   ├── cash-ladder-screen.view-model.test.ts
@@ -9055,6 +9059,7 @@ Meridian-main
 │   │   │   ├── ReportingReconciliationEvidenceStore.cs
 │   │   │   ├── ReportingRunCertificationService.cs
 │   │   │   ├── ReportingRunCommandService.cs
+│   │   │   ├── ReportingRunCommandService.Operations.cs
 │   │   │   ├── ReportingRunReadinessService.cs
 │   │   │   ├── ReportingRunStore.cs
 │   │   │   ├── ReportingScheduleHostedService.cs
@@ -11404,6 +11409,7 @@ Meridian-main
 │   │   │   ├── PeriodReopenTests.cs
 │   │   │   ├── PortfolioPricingRuleTests.cs
 │   │   │   ├── PreferredReturnCalculatorTests.cs
+│   │   │   ├── PrivateCapitalCommitmentTimelineTests.cs
 │   │   │   ├── PrivateCapitalPostingAuthorityTests.cs
 │   │   │   ├── RecurringJournalEvidenceTests.cs
 │   │   │   ├── RecurringJournalScheduleTests.cs
@@ -11525,6 +11531,8 @@ Meridian-main
 │   │   │   ├── InvestmentIncomeComparisonEngineTests.cs
 │   │   │   ├── NavAttributionServiceTests.cs
 │   │   │   ├── ReportGenerationServiceTests.cs
+│   │   │   ├── ReportingDurableOperationCommandTests.cs
+│   │   │   ├── ReportingDurableOperationTests.cs
 │   │   │   ├── ReportingGovernanceCanonicalValidationTests.cs
 │   │   │   ├── ReportingIncomeComparisonSerializationTests.cs
 │   │   │   ├── ReportingOrchestrationServiceTests.cs

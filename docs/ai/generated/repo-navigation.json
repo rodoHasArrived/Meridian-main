@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T08:21:36Z",
+  "generatedAt": "2026-11-11T09:37:24Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2438,28 +2438,252 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Ui/dashboard/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 57
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 53
+    },
+    {
+      "path": "src/Meridian.Storage/README.md",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 28
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 21
+    },
+    {
+      "path": "src/Meridian.Ledger/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 11
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Reporting/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ledger/PrivateCapitalAuthorityRules.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportingContracts.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportingOrchestrationService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.PrivateCapital.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingRunCommandService.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/private-capital.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Reporting/ReportingOperationIdentity.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Reporting/PostgresReportingRunStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/ReportingRunCommandService.Operations.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/private-capital-notice-intent.test.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/private-capital-notice-intent.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-notice-action.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-11T09:36:09Z",
+      "lastCommit": "4153fa54c2",
+      "lastSummary": "Fix capital timeline limits, scoped intake, and durable notice recovery",
+      "touches": 1
+    },
+    {
       "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-11T08:06:54Z",
       "lastCommit": "21a5fb88e4",
       "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
       "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
     },
     {
       "path": "src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs",
@@ -2478,39 +2702,7 @@
       "touches": 2
     },
     {
-      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
       "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-11T08:06:54Z",
       "lastCommit": "21a5fb88e4",
@@ -2542,14 +2734,6 @@
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T08:06:54Z",
-      "lastCommit": "21a5fb88e4",
-      "lastSummary": "Align capital workflow with workstation validation and lifecycle fixtures",
-      "touches": 2
-    },
-    {
       "path": "src/Meridian.Ui/dashboard/src/screens/private-capital-presenters.tsx",
       "subsystem": "Desktop and UI Workflows",
       "lastModified": "2026-11-11T08:06:54Z",
@@ -2558,52 +2742,12 @@
       "touches": 2
     },
     {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-10T23:52:19Z",
-      "lastCommit": "fb9ade8553",
-      "lastSummary": "docs(source): review SRC-DESIGN-FINANCIAL-OPERATIONS after the short-correction fix",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:51:41Z",
-      "lastCommit": "f11a27bc6f",
-      "lastSummary": "docs(source): review SRC-EXECUTION and SRC-UI-SHARED for the lot-selection refusal",
-      "touches": 54
-    },
-    {
       "path": "src/Meridian.Execution/README.md",
       "subsystem": "Execution, Risk, and Strategies",
       "lastModified": "2026-11-10T23:51:41Z",
       "lastCommit": "f11a27bc6f",
       "lastSummary": "docs(source): review SRC-EXECUTION and SRC-UI-SHARED for the lot-selection refusal",
-      "touches": 35
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:24:20Z",
-      "lastCommit": "52584db242",
-      "lastSummary": "Accept canonical capital-call IDs in browser previews",
-      "touches": 58
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:24:20Z",
-      "lastCommit": "52584db242",
-      "lastSummary": "Accept canonical capital-call IDs in browser previews",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:24:20Z",
-      "lastCommit": "52584db242",
-      "lastSummary": "Accept canonical capital-call IDs in browser previews",
-      "touches": 2
+      "touches": 32
     },
     {
       "path": "src/Meridian.Contracts/README.md",
@@ -2611,151 +2755,7 @@
       "lastModified": "2026-11-10T23:18:49Z",
       "lastCommit": "8296d73edd",
       "lastSummary": "docs(security-master): record the 2026-11-10 close-out; refresh generated outputs",
-      "touches": 51
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-10T23:18:49Z",
-      "lastCommit": "8296d73edd",
-      "lastSummary": "docs(security-master): record the 2026-11-10 close-out; refresh generated outputs",
-      "touches": 27
-    },
-    {
-      "path": "src/Meridian.Instruments/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-10T23:18:49Z",
-      "lastCommit": "8296d73edd",
-      "lastSummary": "docs(security-master): record the 2026-11-10 close-out; refresh generated outputs",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Application/README.md",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 57
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/app.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 24
-    },
-    {
-      "path": "src/Meridian.Ui/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 14
-    },
-    {
-      "path": "src/Meridian.Ledger/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.capital-account-workbench-panel.tsx",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Lifecycle.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Reporting/DefaultReportingTemplateCatalog.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Reporting/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Storage/Ledger/LedgerStoreExtensions.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/LedgerReportingAuthoritativeSource.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-10T23:18:00Z",
-      "lastCommit": "7c25d353c8",
-      "lastSummary": "Add governed commitment-to-cash workflow",
-      "touches": 2
+      "touches": 50
     }
   ],
   "recentChangesWindowDays": 14,

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T08:21:36Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-11T09:37:24Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 3 |
-| `src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs` | Unmapped | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ledger/PrivateCapitalCallPlanHash.cs` | Domain, Ledger, and F# | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ledger/PrivateCapitalPostingAuthority.cs` | Domain, Ledger, and F# | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs` | Providers and Storage | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs` | Providers and Storage | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.PrivateCapital.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-bank-observation-import.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.forms.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/private-capital-presenters.tsx` | Desktop and UI Workflows | `21a5fb88e4` (2026-11-11T08:06:54Z) | 2 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 57 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 53 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 28 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 21 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `4153fa54c2` (2026-11-11T09:36:09Z) | 11 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.tsx` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 4 |
+| `src/Meridian.FinancialOperations/PrivateCapital/PrivateCapitalLifecycleService.cs` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Reporting/README.md` | Unmapped | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.PrivateCapital.cs` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Storage/Ledger/PostgresPrivateCapitalStore.cs` | Providers and Storage | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.PrivateCapital.cs` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui.Shared/Services/AutomatedJournalIntakeRunner.cs` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.test.ts` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/lib/api/private-capital.api.ts` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
+| `src/Meridian.Ui/dashboard/src/screens/capital-call-issuance-screen.test.tsx` | Desktop and UI Workflows | `4153fa54c2` (2026-11-11T09:36:09Z) | 3 |
 
