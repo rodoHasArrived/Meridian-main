@@ -48,6 +48,7 @@ public sealed class BrokeragePortfolioSyncService
         Converters = { new JsonStringEnumConverter() }
     };
 
+    private readonly System.Collections.Concurrent.ConcurrentDictionary<Guid, SemaphoreSlim> _activityHistoryGates = new();
     private readonly BrokeragePortfolioSyncOptions _options;
     private readonly IReadOnlyDictionary<string, IBrokerageAccountCatalog> _catalogs;
     private readonly IReadOnlyDictionary<string, IBrokeragePortfolioSync> _portfolioAdapters;
@@ -315,7 +316,18 @@ public sealed class BrokeragePortfolioSyncService
         await PersistProjectionAsync(projection, ct).ConfigureAwait(false);
         if (activity is not null)
         {
-            await AppendActivityHistoryAsync(projection, ct).ConfigureAwait(false);
+            // The merge is read-modify-write; overlapping syncs of one account must not interleave
+            // or the later write would drop rows only the earlier one retained.
+            var historyGate = _activityHistoryGates.GetOrAdd(projection.FundAccountId, static _ => new SemaphoreSlim(1, 1));
+            await historyGate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                await AppendActivityHistoryAsync(projection, ct).ConfigureAwait(false);
+            }
+            finally
+            {
+                historyGate.Release();
+            }
         }
 
         if (portfolio is not null &&

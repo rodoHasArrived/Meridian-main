@@ -205,8 +205,8 @@
       "id": "SRC-LEDGER",
       "path": "src/Meridian.Ledger",
       "readme": "src/Meridian.Ledger/README.md",
-      "readme_hash": "c8584a09eaa49be00f8710261c3b8ccfafa4bb5d19336440117d16ad945f4326",
-      "source_hash": "a4fac5a21ee44c27783ace87155e24cee4ddcb8fe7c4616be6900e41e0054fa3"
+      "readme_hash": "a182dc698e0bc2b7c5876040b5d07fec53b8f32a5ad19606b5f822ad691cc0df",
+      "source_hash": "67d0d75f99f9370d1a34af56ac3f1dac993a4773e932d799f291b1797aa55af5"
     },
     {
       "id": "SRC-LIFECYCLE-SUPERVISOR",
@@ -283,7 +283,7 @@
       "path": "src/Meridian.Ui.Shared",
       "readme": "src/Meridian.Ui.Shared/README.md",
       "readme_hash": "0851acd38ba4743eacd96b06fc47a25deceb13fe6c2064bb83aec4460470abc5",
-      "source_hash": "e3b18c6bcf58aea7f8412ca89da7d7277615f0f4e3714167f4f6d38a67f55244"
+      "source_hash": "906601fcb17b462b6758f14164d35bb424da0e22ee15be26ac89457a153dcc9f"
     },
     {
       "id": "SRC-WPF",

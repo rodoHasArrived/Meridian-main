@@ -31,6 +31,32 @@ public sealed class LedgerReportPackPeriodBoundaryTests
         manifest.Should().Contain("gl-detail-total-debits,50");
     }
 
+    [Fact]
+    public void Build_LeavesClosingTransfersOutOfProfitAndLossAttribution_ButKeepsThemInGlDetail()
+    {
+        var periodStart = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var asOf = new DateTimeOffset(2026, 6, 30, 23, 59, 59, TimeSpan.Zero);
+        var cash = new LedgerAccount("Cash", LedgerAccountType.Asset);
+        var fees = new LedgerAccount("Fee income", LedgerAccountType.Revenue);
+        var retainedEarnings = LedgerAccounts.RetainedEarnings;
+        var ledger = new Meridian.Ledger.Ledger();
+        Post(ledger, periodStart.AddDays(10), "June fee", cash, fees, 100m);
+        // Period close: revenue is transferred to retained earnings.
+        Post(ledger, periodStart.AddDays(29), "Close revenue", fees, retainedEarnings, 100m);
+
+        var pack = LedgerReportPackBuilder.Build(
+            ledger,
+            new LedgerReportPackRequest(
+                "report-1", "fund-1", "2026-06", periodStart, asOf, asOf, "USD", "tests", asOf));
+
+        var attribution = pack.Artifacts.Single(artifact => artifact.Name == "pnl-by-strategy-symbol.csv").Content;
+        attribution.Split('\n', StringSplitOptions.RemoveEmptyEntries).Skip(1)
+            .Sum(row => decimal.Parse(row.Trim().Split(',')[^1], System.Globalization.CultureInfo.InvariantCulture))
+            .Should().Be(100m, "the closing transfer must not net the period's result to zero");
+        pack.Artifacts.Single(artifact => artifact.Name == "gl-detail.csv").Content
+            .Should().Contain("Close revenue");
+    }
+
     private static void Post(
         Meridian.Ledger.Ledger ledger,
         DateTimeOffset timestamp,

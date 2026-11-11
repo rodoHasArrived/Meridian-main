@@ -47,7 +47,11 @@ public static class LedgerReportPackBuilder
 
         var generalLedgerLines = SelectGeneralLedgerLines(ledger, request, financialAccountId);
         artifacts.Add(CreateGeneralLedgerDetailArtifact(generalLedgerLines));
-        artifacts.Add(CreateProfitAndLossAttributionArtifact(generalLedgerLines));
+        artifacts.Add(CreateProfitAndLossAttributionArtifact(
+            generalLedgerLines
+                .Where(item => !LedgerFinancialStatementBuilder.IsPureRetainedEarningsClosingEntry(
+                    item.Entry, financialAccountId, request.LineDimensions))
+                .ToArray()));
 
         var canonicalEvidence = (taxLotReliefProjections ?? [])
             .Where(static projection => projection.CanonicalOpenLots.Count > 0)
@@ -491,8 +495,10 @@ public static class LedgerReportPackBuilder
 
     /// <summary>
     /// Period revenue and expense attributed to the posting strategy and symbol. Lines posted
-    /// without a strategy or symbol are reported under an empty key rather than dropped, so the
-    /// rows always sum to the period's net income for the pack scope.
+    /// without a strategy or symbol are reported under an empty key rather than dropped. Closing
+    /// journals that only transfer revenue and expense to retained earnings are excluded (as the
+    /// partners-capital statement does), so the rows sum to the period's result from activity
+    /// rather than netting to zero once the period is closed; those journals stay in GL detail.
     /// </summary>
     private static LedgerReportPackArtifact CreateProfitAndLossAttributionArtifact(IReadOnlyList<GeneralLedgerLine> lines)
     {

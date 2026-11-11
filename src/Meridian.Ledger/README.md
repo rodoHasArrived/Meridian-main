@@ -178,8 +178,9 @@ account symbols; the currency-aware `Ledger.PostLines` overload and
 `LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
 period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and
 `pnl-by-strategy-symbol.csv` (period revenue and expense grouped by the journal's `StrategyId` and
-the line's symbol; lines without either are kept under an empty key so the rows sum to the pack's
-net income). `manifest.csv` carries control totals over the GL detail: journal-entry count, line
+the line's symbol; lines without either are kept under an empty key, and closing journals that only
+transfer revenue and expense to retained earnings are left out so the rows sum to the period's
+result from activity). `manifest.csv` carries control totals over the GL detail: journal-entry count, line
 count, total debits, total credits, and their variance.
 
 Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
