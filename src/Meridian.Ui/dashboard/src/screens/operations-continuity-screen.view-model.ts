@@ -1126,7 +1126,7 @@ export function buildOperationsContinuityScreenViewModel({
     ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
     : null;
   return {
-    title: "Operations continuity",
+    title: "Period close workflows",
     subtitle: "Track account-period close workflows from broker intake through Security Master coverage, ledger posting, reconciliation, approval, and close evidence.",
     loading,
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),

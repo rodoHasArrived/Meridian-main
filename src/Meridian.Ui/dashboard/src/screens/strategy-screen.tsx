@@ -218,7 +218,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
     description: "Review strategy posture, then open the focused builder, lab, run, and promotion workspaces."
   },
   promotions: {
-    title: "Promotions",
+    title: "Promotion review",
     description: "Retained runs, comparison evidence, and paper-promotion review."
   },
   lab: {

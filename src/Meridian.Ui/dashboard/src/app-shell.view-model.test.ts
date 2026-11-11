@@ -383,8 +383,8 @@ describe("app shell view model", () => {
     });
     expect(state.routeFocus).toMatchObject({
       routeKey: "/trading",
-      announcement: "Trading Workstation loaded.",
-      documentTitle: "Trading Workstation - Meridian",
+      announcement: "Trading loaded.",
+      documentTitle: "Trading - Meridian",
       targetElementId: null,
       fallbackElementId: "workbench-content"
     });
@@ -665,8 +665,8 @@ describe("app shell view model", () => {
 
     expect(state.routeFocus).toEqual({
       routeKey: "/settings#alpaca-provider-setup",
-      announcement: "Settings Workstation loaded. Jumping to alpaca provider setup.",
-      documentTitle: "Settings Workstation - Meridian",
+      announcement: "Settings loaded. Jumping to alpaca provider setup.",
+      documentTitle: "Settings - Meridian",
       targetElementId: "alpaca-provider-setup",
       fallbackElementId: "workbench-content"
     });
@@ -684,8 +684,8 @@ describe("app shell view model", () => {
 
     expect(state.routeFocus).toMatchObject({
       routeKey: "/data/quotes?symbol=AAPL",
-      announcement: "Data Workstation loaded.",
-      documentTitle: "Data Workstation - Meridian",
+      announcement: "Market Data, Data loaded.",
+      documentTitle: "Market Data - Data - Meridian",
       targetElementId: null,
       fallbackElementId: "workbench-content"
     });

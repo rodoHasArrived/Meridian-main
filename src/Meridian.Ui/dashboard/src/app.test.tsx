@@ -1103,9 +1103,9 @@ describe("App", () => {
   it("sets the workstation document title on first direct route load without moving focus", async () => {
     renderWithRouter(<App />, { initialEntries: ["/settings"] });
 
-    await waitFor(() => expect(document.title).toBe("Settings Workstation - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Settings - Meridian"));
     expect(screen.getByRole("main")).not.toHaveFocus();
-    expect(screen.queryByText("Settings Workstation loaded.")).not.toBeInTheDocument();
+    expect(screen.queryByText("Settings loaded.")).not.toBeInTheDocument();
   });
 
   it("redirects the legacy Data Security Master route into Accounting", async () => {
@@ -1143,7 +1143,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/data/security-master"] });
 
-    await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Accounting - Meridian"));
     expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
@@ -1163,13 +1163,13 @@ describe("App", () => {
 
     renderWithRouter(<Harness />, { initialEntries: ["/research/run-library"] });
 
-    await waitFor(() => expect(document.title).toBe("Strategy Workstation - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Strategy - Meridian"));
     expect(screen.getByLabelText("Strategy workspace, active section, Available product maturity")).toBeInTheDocument();
 
     document.title = "Meridian";
     await user.click(screen.getByRole("button", { name: "Open legacy governance" }));
 
-    await waitFor(() => expect(document.title).toBe("Accounting Workstation - Meridian"));
+    await waitFor(() => expect(document.title).toBe("Accounting - Meridian"));
     expect(screen.getByLabelText("Accounting workspace, active section, Available product maturity")).toBeInTheDocument();
   });
 
@@ -1190,7 +1190,7 @@ describe("App", () => {
 
     await user.click(screen.getByRole("button", { name: "Route to portfolio" }));
 
-    expect(await screen.findByText("Portfolio Workstation loaded.")).toBeInTheDocument();
+    expect(await screen.findByText("Portfolio loaded.")).toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("main")).toHaveFocus());
   });
 
@@ -1231,7 +1231,7 @@ describe("App", () => {
 
     renderWithRouter(<App />, { initialEntries: ["/settings#alpaca-provider-setup"] });
 
-    expect(await screen.findByText("Settings Workstation loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
+    expect(await screen.findByText("Settings loaded. Jumping to alpaca provider setup.")).toBeInTheDocument();
     await waitFor(() => expect(document.getElementById("alpaca-provider-setup")).not.toBeNull(), { timeout: 15000 });
     const alpacaSetup = document.getElementById("alpaca-provider-setup");
     await waitFor(() => expect(alpacaSetup).toHaveFocus(), { timeout: 5000 });
