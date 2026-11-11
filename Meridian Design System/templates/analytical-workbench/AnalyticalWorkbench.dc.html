@@ -150,6 +150,11 @@ class Component extends DCLogic {
     const PRIOR = [4.36,4.38,4.36,4.26,4.09,4.05,4.11,4.20,4.34,4.63,4.74];
     const SCENARIO = [4.22,4.27,4.29,4.33,4.36,4.39,4.42,4.50,4.60,4.74,4.88];
     const i = this.state.index;
+    // The snapshot instant the evidence was observed at: taken once from the shared world clock
+    // when the screen first renders, so it does not tick with the masthead. It was read in
+    // three places below and never declared, which threw on every render.
+    if (!this._observedAt) this._observedAt = (window.MeridianWorld && window.MeridianWorld.stamp) ? window.MeridianWorld.stamp() : "2026-08-12 14:32:08Z";
+    const observedAt = this._observedAt;
     const bp = Math.round((CURRENT[i] - PRIOR[i]) * 100);
     const R = React;
     const el = (Name, props) => R.createElement(window.MeridianDesignSystem_205d17[Name], props);

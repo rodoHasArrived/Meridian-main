@@ -22,7 +22,7 @@ authority. Consolidation removes duplicate execution, never a validation purpose
 | Golden Path, schema control, providers and deterministic integrations/recovery | Existing specialist owners; production certification also callable by releases |
 | Workflow syntax, hygiene, manifest, skips and script tests | Meridian CI `verify-workflows` |
 | Design-system package freshness, export integrity, dashboard asset projection and Chromium regressions (previously run by hand) | Design System Package `package-integrity`, path-filtered; not a required check |
-| Design-system whole-release validator and retained Python suite | Design System Package `release-governance`, path-filtered; reports open findings as a failure; not a required check |
+| Design-system whole-release validator and retained Python suite | Design System Package `release-governance`, path-filtered; exits with the gates' real status; not a required check |
 
 The October 15 follow-up keeps the four lanes and both gate identities. Documentation Automation
 now covers PRs, main pushes and merge groups without path filters: any tracked file can affect
@@ -80,13 +80,13 @@ lockfile, installed with up to three attempts and cached by lockfile hash. It ru
 step, so a package-mirror outage cannot fail the job before a test starts.
 
 `release-governance` runs the whole-release validator and the retained Python suite and exits
-with their real status. Both have open findings (issues #3505 and #3506), so this job is
-expected to be red until those close. It carries no `continue-on-error`, baseline or skip:
-a green result there has to mean the gates passed.
+with their real status. It carries no `continue-on-error`, baseline or skip: a green result
+there has to mean the gates passed. Both passed with zero findings when this workflow was
+last revised.
 
 Neither job is a required check. Administrators may add `package-integrity` as a required
-check for design-system paths after human governance review; `release-governance` should stay
-advisory until it is green on `main`. Rollback is deleting the workflow file.
+check for design-system paths after human governance review, and `release-governance` once
+it has stayed green on `main`. Rollback is deleting the workflow file.
 
 ## Local verification execution
 

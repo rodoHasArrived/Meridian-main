@@ -898,7 +898,7 @@ superseded design. Each was re-tested against this one:
 | The same, for a mapping with a flag fallback (the tranche kind) | Reproduces | Fixed with the first |
 | A bond sinking fund's pro-rata flag is reset on replay | Does not arise: principal is homed on `principalSchedule`, so `sinkingFund` is untouched by the rebuild | Pinned by a regression test |
 | An option accepts an exercise style the decode does not read back | Reproduces | Fixed, below |
-| A record accepts a module member its class does not persist | Reproduces | Recorded as a limitation, below |
+| A record accepts a module member its class does not persist | Reproduces | Recorded as a limitation at the time; fixed in the follow-up below |
 
 **Retained-document fold.** `FoldRetainedEconomicTerms` fills any module or field the rebuild
 has empty from a row's retained document, on the reasoning that empty means the flat row could
@@ -924,21 +924,73 @@ as no style. A directly built option with another spelling passed validation and
 style on the next read. `option_exercise_style_invalid` requires one of the three, matched
 exactly because the reader matches exactly.
 
-**Known limitation: members a class does not persist.** A per-class record holds whole term
-modules, so a directly built record can set a member its class's flat row does not write — a
-warrant's exercise style or premium, for example. Validation accepts it, the economic
-definition carries it, the flat writer omits it and the decode reads it back as absent. Every
-in-tree path builds records through the flat decode, which sets only a class's own members, so
-no payload through the codec is affected; the exposure is to code that constructs a record
-directly. Closing it needs, for all 32 classes, the list of members each embedded module
-persists, and a rule that refuses the rest. On the superseded design that was twelve classes
-and three modules; here it is every class and most of 52 modules, which is a design decision
-for this stage's owner rather than a port, so it is recorded and left.
+**Members a class does not persist (limitation at merge, closed below).** A per-class record
+holds whole term modules, so a directly built record can set a member its class's flat row does
+not write — a warrant's exercise style or premium, for example. Validation accepted it, the
+economic definition carried it, the flat writer omitted it and the decode read it back as
+absent. Every in-tree path builds records through the flat decode, which sets only a class's
+own members, so no payload through the codec was affected; the exposure was to code that
+constructs a record directly. This entry merged with that recorded and left; the next
+subsection closes it.
 
 Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
 namespaces — 6,916 passed, 1 skipped; `Meridian.FSharp.Tests` — 637 passed. No golden or corpus
 byte changed. The full local `bash scripts/ci.sh` was not run; GitHub
 `Meridian CI / quality-gate` remains authoritative.
+
+#### Follow-up — a record is refused a member its class does not persist — 2026-11-11
+
+`SecurityKindPersistence` (`src/Meridian.FSharp/Domain/SecurityKindPersistence.fs`) is the list
+the record types stopped being: for each class and each term module its record embeds, the
+members the flat row carries. `validateKind` refuses a record that holds a value anywhere else.
+
+| Code | Refuses | Example |
+| --- | --- | --- |
+| `term_member_not_persisted` | A value in a member the class's row has no key for | A warrant's `Exercise.ExerciseStyle`; a deposit's `Dates.IssueDate`; a bond's `IssuerTerms.LeiCode` |
+| `term_member_value_not_persisted` | A value other than the derived one in a member the row derives instead of storing | A treasury bill's issuer other than `US Treasury`; a swap issued on a date other than its effective date; a certificate of deposit marked callable without a call date |
+
+The message names the class and every offending member as `Field.Member` over the per-class
+record. A derived member left absent is accepted, since the decode fills it.
+
+These are rules over the record and not over the economic definition, so they sit beside
+`day_count_invalid` in `validateKind` and are not in the `definitionExpressibleCodes` ledger. An
+economic document may hold members no flat row has; the row keeps them in its retained
+document, and nothing here touches that path.
+
+**Where the list comes from.** It was not written from the module definitions. A probe set
+every member of every embedded module on each class's fully populated record, wrote the record
+through `SecurityMasterSnapshotWrapper` and read it back through `SecurityMasterMapping`: 245
+members across the classes did not survive, and 11 more came back as a value the class fixes.
+The result was then checked against the decode, which passes a literal `null` for exactly those
+members. Production code is explicit per class and uses no reflection.
+
+**What keeps it true.** `SecurityKindPersistenceTests` repeats the probe as a theory over every
+asset class and requires the list to refuse a member exactly when the round trip does not
+return the value it was given. A member added to a module, or a flat key added to or removed
+from a class, fails there until the list is brought into step. Three things are stated
+explicitly rather than inferred:
+
+- The declared-schedule containers and the rate-unit declaration are read before they are
+  written (ADR-024). The decode sets them from a stored row, so the list does not refuse them,
+  and they are the only members the theory does not walk; the set is asserted.
+- An option's exercise style is persisted; a spelling the decode does not read back is refused
+  by `option_exercise_style_invalid`, not by this list.
+- A cash-sweep frequency and a structured-credit coupon type come back as the open case of
+  their union carrying the same label. The value is carried, so they are not refused.
+
+The theory also requires that a record the flat decode builds holds nothing the list refuses,
+for every class.
+
+**Not covered.** The list is over the members of each embedded module. Members nested inside
+an entry (a swap leg, a covenant, a declared call) are structural documents the row stores
+whole and were not walked.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 6,983 passed, 1 skipped (the 6,916 before, plus this suite's 67);
+`Meridian.FSharp.Tests` — 642 passed. With three errors planted in the list (a member wrongly
+accepted, a persisted member wrongly refused, a derived rule removed) the suite failed on each.
+No golden or corpus byte changed, and no existing test needed a change. The full local
+`bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
 
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 

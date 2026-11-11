@@ -30,9 +30,9 @@ regression that was run against the pre-patch file and failed on it.
 | LP-09 | `docs/eligibility.card.html`, `tests/action-contract.html` | CodeQL findings: an escape helper that left quotes unescaped inside attributes, and result rows built with `innerHTML` from assertion and exception text. | `daa3f512` | `tests/local-patches-regression.mjs` |
 | LP-10 | `components/charts/ScenarioSelector.jsx` | Keyboard operation (arrow/Home/End, Space/Enter), no silent model change for a missing saved selection, and no accidental form submission. | `20f24a1d` | `tests/scenario-selector-regression.mjs` |
 | LP-11 | `components/data/OptimisticCell.jsx` | A throwing settle observer or ledger subscriber could reclassify a confirmed or rejected transport outcome. Observer faults are now isolated and logged. | `20f24a1d` | `tests/optimistic-observer-regression.mjs` |
-| LP-12 | `components/core/Modal.jsx` | Every dialog labelled itself with the shared id `mdl-title`. Each dialog now owns its title id. | `c40a3b00` | `tests/modal-title-id-regression.mjs` |
-| LP-13 | `components/charts/ChartAnnotations.jsx` | Annotations could not be reached by keyboard or read item by item. Adds `ChartAnnotations.List`, an HTML list of the same annotations in time order with arrow/Home/End movement and an Enter/Space detail, and `activeId` to emphasise the matching mark. | `05102d62a4` | `tests/chart-a11y-regression.mjs` |
-| LP-14 | `components/charts/PeerComparisonStrip.jsx` | Peer values were disclosed only through hover titles. Each rail is now a button that opens the named peer values; the table lists them; marks survive forced colours. | `05102d62a4` | `tests/chart-a11y-regression.mjs` |
+| LP-12 | `components/core/Modal.jsx` | Every dialog labelled itself with the shared id `mdl-title`. Each dialog now owns its title id, and the close control is an explicit `type="button"`. | `db7902a8` | `tests/modal-label-regression.mjs` |
+| LP-13 | `components/charts/ChartAnnotations.jsx` | Annotations had no accessible text. The overlay group now carries an image name listing band positions, event explanations and callout values, and each event exposes its `detail` in an SVG title. | `590735c5` | `tests/chart-accessibility-regression.mjs` |
+| LP-14 | `components/charts/PeerComparisonStrip.jsx` | Individual peer values were available only through hover titles. The table emitted with `ariaLabel` now lists them. | `590735c5` | `tests/chart-accessibility-regression.mjs` |
 
 ## Other local changes
 
@@ -41,13 +41,13 @@ checks named here, not by `test:patches`.
 
 | Change | Commit | Verified by |
 | --- | --- | --- |
-| `templates/books-loop` and `templates/position-detail` declare and honour the standard tweaks and data-state switch; three shell component comments name tokens | `c40a3b00` | `scripts/check_design_system_governance.py` (the count rises from 56 if lost) |
-| Token and palette reconciliation with the dashboard and WPF, listed under "Package changed to match the application" in [the audit](AUDIT_4_3_0.md) | `c77ced17`, `9ecec3da`, `2b3822d2` | `scripts/check_contrast.py`, `scripts/check_token_parity.py` |
+| Template contract repairs (`books-loop`, `position-detail` and the retained compatibility templates), shell comment tokens, retired-export declarations | `590735c5`, `db7902a8`, `bd3354f5`, `9ea0b762` | `scripts/check_design_system_governance.py` (zero findings), `tests/retained-template-states-regression.mjs`, `tests/template-preview-regression.mjs` |
+| Token and palette reconciliation with the dashboard and WPF, and white-label brand identities in dark and forced-light, listed in [the audit](AUDIT_4_3_0.md) | `c77ced17`, `9ecec3da`, `2b3822d2`, `bc980e1b`, `004c94b8` | `scripts/check_contrast.py`, `scripts/check_token_parity.py`, `tests/brand-contrast-regression.mjs` |
 | Release tooling: case-correct `README.md` lookups, family classification of 17 exports, build provenance, deterministic export | `de886adb` | `scripts/validate_release.py`, `npm run test:release`, `npm run release:check` |
 
 ## To carry upstream
 
-LP-01 to LP-12 are defects in the design source and should be fixed there, so the
+LP-01 to LP-14 are defects in the design source and should be fixed there, so the
 next export arrives with them. Until then this file is the re-apply list. When a
 patch lands upstream, keep its regression and remove its row.
 

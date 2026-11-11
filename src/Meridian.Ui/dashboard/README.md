@@ -2028,6 +2028,14 @@ component references, patterns, templates, and governance scripts. The browser w
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
+Native adapters use complete workstation color values such as `--border-color` and `--ws-border`.
+Tailwind role variables such as `--border`, `--primary`, `--danger` and `--warning` contain HSL
+channels; direct CSS color values must wrap them in `hsl(...)`. The source contract in
+`src/design-system-color-values.test.ts` prevents raw channel values from reaching native CSS or
+arbitrary utilities. `node scripts/test-native-adapter-colors.mjs` checks computed native borders,
+chart separators, validation colors and keyboard focus in light and dark Chromium appearances.
+Set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium installation.
+
 Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
 is the primary action and chrome color, terracotta (`#C56343`) is the brand/scenario signal only,
 and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
@@ -2456,3 +2464,13 @@ for retry. Journal and report links open the existing review workflows. The seve
 remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
 `private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
 capital-call presentation tests.
+
+### Posted-ledger account drill-down
+
+Selecting a trial-balance account in the Accounting posted-ledger panel renders
+`LedgerAccountRunningBalancePanel`, which lists the account's postings for the selected period
+with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`.
+The panel sends the selected row's symbol, financial account and dimension set, so the postings and
+ending balance are those of that row only. The
+route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
+which is at its file-size limit.

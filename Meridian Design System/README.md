@@ -6,7 +6,7 @@
 > `release.json` declares this package **4.3.0 · stable**. Identity is rendered by `scripts/release_identity.py`. Upstream release evidence: `docs/QA_REPORT_4.3.0.md`; 2 deferred item(s): NVDA + VoiceOver announcement/verbosity journeys (tests/BROWSER_TEST_PLAN.md — every row marked announced/read); Firefox / WebKit half of the browser matrix (Chromium keyboard + ARIA + responsive run: tests/A11Y_RUN_4.3.0.md). These deferrals remain explicit in the declared channel.
 > The declared channel and upstream QA describe that release; they do not certify later working-tree additions or a consuming application. Validate the current export separately.
 
-> **Census** (generated from `_ds_manifest.json`): **351 exports across 210 modules** in 8 domains · 135 specimen cards · 30 templates · 684 tokens · 11 themes · 28 export(s) at release-candidate maturity (`api/families.json`).
+> **Census** (generated from `_ds_manifest.json`): **351 exports across 210 modules** in 8 domains · 135 specimen cards · 30 templates · 743 tokens · 11 themes · 28 export(s) at release-candidate maturity (`api/families.json`).
 <!-- release:generated:end -->
 
 Current-branch evidence and a reproducible distribution handoff:

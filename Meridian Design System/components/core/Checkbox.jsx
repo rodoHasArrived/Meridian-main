@@ -54,8 +54,8 @@ export function Checkbox({ checked = false, indeterminate = false, onChange, lab
   return (
     <label className={`mds-chk-wrap${disabled ? " mds-chk-wrap--disabled" : ""}`}>
       <div className={`mds-chk-box${checked || indeterminate ? " mds-chk-box--on" : ""}`}>
-        <input ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked}
-          aria-label={ariaLabel} onChange={e => onChange?.(e.target.checked)} disabled={disabled} />
+        <input ref={inputRef} type="checkbox" className="mds-hidden-input" checked={checked} aria-label={ariaLabel}
+          onChange={e => onChange?.(e.target.checked)} disabled={disabled} />
         {mark && <span className="mds-chk-check" aria-hidden="true">{mark}</span>}
       </div>
       {(label || hint) && (

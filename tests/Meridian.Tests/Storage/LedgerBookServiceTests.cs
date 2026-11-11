@@ -957,6 +957,30 @@ public sealed class LedgerBookServiceTests
         var journalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
             UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString()),
             ServerJsonOptions);
+        var runningBalanceRoute = UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodAccountRunningBalance, "periodId", period.PeriodId.ToString());
+        var runningBalance = await client.GetFromJsonAsync<LedgerAccountRunningBalanceDto>(
+            $"{runningBalanceRoute}?account=Management%20fees",
+            ServerJsonOptions);
+        runningBalance.Should().NotBeNull();
+        runningBalance!.AccountType.Should().Be("Revenue");
+        runningBalance.Points.Select(point => point.Balance).Should().Equal(100m, 300m);
+        runningBalance.EndingBalance.Should().Be(300m);
+        runningBalance.TotalCredits.Should().Be(300m);
+        (await client.GetAsync(runningBalanceRoute)).StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        // Each trial-balance row drills down to its own postings when its dimension set is sent back.
+        foreach (var revenueRow in trialBalance!.Where(row => row.AccountName == "Management fees"))
+        {
+            var scopedDimensions = Uri.EscapeDataString(JsonSerializer.Serialize(revenueRow.Dimensions, ServerJsonOptions));
+            var scopedRunningBalance = await client.GetFromJsonAsync<LedgerAccountRunningBalanceDto>(
+                $"{runningBalanceRoute}?account=Management%20fees&dimensions={scopedDimensions}",
+                ServerJsonOptions);
+            scopedRunningBalance!.EndingBalance.Should().Be(revenueRow.Balance);
+            scopedRunningBalance.Points.Should().ContainSingle();
+        }
+        (await client.GetAsync($"{runningBalanceRoute}?account=Management%20fees&dimensions=%7Bnot-json"))
+            .StatusCode.Should().Be(System.Net.HttpStatusCode.BadRequest);
+        (await client.GetFromJsonAsync<LedgerAccountRunningBalanceDto>($"{runningBalanceRoute}?account=NoSuchAccount", ServerJsonOptions))!
+            .Points.Should().BeEmpty();
         var filteredJournalEntries = await client.GetFromJsonAsync<IReadOnlyList<LedgerJournalEntryDto>>(
             $"{UiApiRoutes.WithParam(UiApiRoutes.LedgerPeriodJournalEntries, "periodId", period.PeriodId.ToString())}?{investmentOpsDimensionFilter}",
             ServerJsonOptions);

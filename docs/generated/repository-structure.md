@@ -3063,6 +3063,7 @@ Meridian-main
 │   │   ├── legacy.js
 │   │   ├── primitives.js
 │   │   ├── README.md
+│   │   ├── retired-exports.json
 │   │   ├── shell.js
 │   │   ├── template-eligibility.json
 │   │   └── trading.js
@@ -4124,6 +4125,8 @@ Meridian-main
 │   │   ├── README.md
 │   │   ├── release_identity.py
 │   │   ├── sync_catalog.py
+│   │   ├── sync_color_fallbacks.py
+│   │   ├── sync_manifest_metadata.py
 │   │   ├── sync_template_scaffold.py
 │   │   ├── validate_release.py
 │   │   └── visual_diff.py
@@ -4417,30 +4420,45 @@ Meridian-main
 │   │   ├── action-contract.html
 │   │   ├── agency-regression.mjs
 │   │   ├── books-loop.html
+│   │   ├── brand-contrast-regression.mjs
 │   │   ├── BROWSER_TEST_PLAN.md
-│   │   ├── chart-a11y-regression.mjs
+│   │   ├── chart-accessibility-regression.mjs
+│   │   ├── component-hook-regression.mjs
+│   │   ├── conformance-card-regression.mjs
 │   │   ├── conformance-rules.js
+│   │   ├── conformance-settle-regression.mjs
 │   │   ├── conformance.html
 │   │   ├── decision-preview.html
+│   │   ├── form-field-regression.mjs
 │   │   ├── gallery-browser.mjs
 │   │   ├── gallery.css
 │   │   ├── gallery.html
 │   │   ├── gallery.mjs
 │   │   ├── gallery.test.mjs
+│   │   ├── global-search-focus-regression.mjs
 │   │   ├── interaction-depth-regression.mjs
 │   │   ├── local-patches-regression.mjs
 │   │   ├── mock-transport.js
-│   │   ├── modal-title-id-regression.mjs
+│   │   ├── modal-label-regression.mjs
 │   │   ├── optimistic-observer-regression.mjs
+│   │   ├── optimistic-settlement-regression.mjs
 │   │   ├── qa-hifi-pass.html
 │   │   ├── README.md
 │   │   ├── release-browser.mjs
+│   │   ├── retained-template-states-regression.mjs
 │   │   ├── scenario-selector-regression.mjs
+│   │   ├── semantic-role-regression.mjs
 │   │   ├── semantic-safety.html
 │   │   ├── smoke.html
+│   │   ├── specimen-matrix.mjs
+│   │   ├── SPECIMEN_MATRIX.md
+│   │   ├── template-preview-regression.mjs
 │   │   ├── test_contrast.py
 │   │   ├── test_design_system_governance.py
+│   │   ├── test_manifest_metadata.py
 │   │   ├── test_release.py
+│   │   ├── test_sync_color_fallbacks.py
+│   │   ├── test_token_parity.py
 │   │   ├── unit-tests.html
 │   │   ├── unit.html
 │   │   └── verify-new-components.html
@@ -5175,7 +5193,8 @@ Meridian-main
 │   │   ├── ICorporateActionAdjustmentService.cs
 │   │   ├── Meridian.Backtesting.csproj
 │   │   ├── MeridianNativeBacktestStudioEngine.cs
-│   │   └── README.md
+│   │   ├── README.md
+│   │   └── SecurityMasterAssetEventSource.cs
 │   ├── Meridian.Backtesting.Sdk
 │   │   ├── Strategies
 │   │   │   ├── AdvancedCarry
@@ -6392,6 +6411,7 @@ Meridian-main
 │   │   │   ├── SecurityClassification.fs
 │   │   │   ├── SecurityEconomicDefinition.fs
 │   │   │   ├── SecurityIdentifiers.fs
+│   │   │   ├── SecurityKindPersistence.fs
 │   │   │   ├── SecurityMaster.fs
 │   │   │   ├── SecurityMasterCommands.fs
 │   │   │   ├── SecurityMasterEvents.fs
@@ -7910,6 +7930,7 @@ Meridian-main
 │   │   │   │   ├── sync-design-system-assets.d.mts
 │   │   │   │   ├── sync-design-system-assets.mjs
 │   │   │   │   ├── sync-design-system-assets.test.mjs
+│   │   │   │   ├── test-native-adapter-colors.mjs
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   └── vitest-evidence.test.mjs
@@ -8009,6 +8030,8 @@ Meridian-main
 │   │   │   │   │   │   ├── index.ts
 │   │   │   │   │   │   ├── JournalEntryForm.test.tsx
 │   │   │   │   │   │   ├── JournalEntryForm.tsx
+│   │   │   │   │   │   ├── LedgerAccountRunningBalancePanel.test.tsx
+│   │   │   │   │   │   ├── LedgerAccountRunningBalancePanel.tsx
 │   │   │   │   │   │   ├── LedgerTable.test.tsx
 │   │   │   │   │   │   ├── LedgerTable.tsx
 │   │   │   │   │   │   ├── money.test.ts
@@ -8526,6 +8549,7 @@ Meridian-main
 │   │   │   │   │   ├── keymap.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.test.ts
 │   │   │   │   │   ├── ledger-amount-proof-api.ts
+│   │   │   │   │   ├── ledger-reports-api.test.ts
 │   │   │   │   │   ├── ledger-reports-api.ts
 │   │   │   │   │   ├── ledger-tax-results-api.test.ts
 │   │   │   │   │   ├── ledger-tax-results-api.ts
@@ -9185,6 +9209,7 @@ Meridian-main
 │   │   │   │   ├── app-shell.workflow-routing.ts
 │   │   │   │   ├── app.test.tsx
 │   │   │   │   ├── app.tsx
+│   │   │   │   ├── design-system-color-values.test.ts
 │   │   │   │   ├── design-system-contract.test.ts
 │   │   │   │   ├── main.tsx
 │   │   │   │   ├── selected-surface-contrast.test.ts
@@ -9439,6 +9464,7 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.PrivateCapital.cs
 │   │   │   ├── LedgerEndpoints.RecurringJournals.cs
 │   │   │   ├── LedgerEndpoints.Reporting.cs
+│   │   │   ├── LedgerEndpoints.RunningBalance.cs
 │   │   │   ├── LedgerEndpoints.Tax.cs
 │   │   │   ├── LiveDataEndpoints.cs
 │   │   │   ├── LoginSessionMiddleware.cs
@@ -9626,6 +9652,7 @@ Meridian-main
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.cs
+│   │   │   ├── BrokerageSyncActualCashActivitySource.cs
 │   │   │   ├── CapitalAccountWorkbenchService.cs
 │   │   │   ├── CapitalCallFundingIntake.cs
 │   │   │   ├── CapitalCallIssuanceIntake.cs
@@ -10856,6 +10883,7 @@ Meridian-main
 │   │   ├── MultiSymbolMergeEnumeratorTests.cs
 │   │   ├── OptionsOverwriteStrategyTests.cs
 │   │   ├── PortfolioCorporateActionSnapshotTests.cs
+│   │   ├── SecurityMasterAssetEventSourceTests.cs
 │   │   ├── SimulatedPortfolioCacheTests.cs
 │   │   ├── SimulatedPortfolioTests.cs
 │   │   ├── StageTelemetryTests.cs
@@ -11642,6 +11670,7 @@ Meridian-main
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.StrategyAttribution.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.VariationMargin.cs
 │   │   │   │   ├── MarginModelTests.cs
 │   │   │   │   ├── MultiCurrencyTests.cs
@@ -12117,6 +12146,7 @@ Meridian-main
 │   │   │   ├── LedgerReportAccountScopeProvenanceTests.cs
 │   │   │   ├── LedgerReportCsvFormulaGuardTests.cs
 │   │   │   ├── LedgerReportDeterministicExportTests.cs
+│   │   │   ├── LedgerReportPackPeriodBoundaryTests.cs
 │   │   │   ├── LedgerReportPackTestData.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
 │   │   │   ├── LedgerScheduledExportFormatTests.cs
@@ -12452,6 +12482,7 @@ Meridian-main
 │   │   │   ├── SecurityIdentifierNormalizationParityTests.cs
 │   │   │   ├── SecurityIdentifierNormalizerTests.cs
 │   │   │   ├── SecurityIncomeCashFlowProjectorTests.cs
+│   │   │   ├── SecurityKindPersistenceTests.cs
 │   │   │   ├── SecurityLotModelTests.cs
 │   │   │   ├── SecurityMasterAggregateRebuilderTests.cs
 │   │   │   ├── SecurityMasterAliasMigrationTests.cs
@@ -12918,6 +12949,7 @@ Meridian-main
 │   │   │   ├── BrokerageContractMultiplierTests.cs
 │   │   │   ├── BrokeragePortfolioStateTests.cs
 │   │   │   ├── BrokeragePortfolioSyncServiceTests.cs
+│   │   │   ├── BrokerageSyncActualCashActivitySourceTests.cs
 │   │   │   ├── CapitalAccountWorkbenchServiceTests.cs
 │   │   │   ├── CapitalCallFundingIntakeTests.cs
 │   │   │   ├── CapitalCallIssuanceIntakeTests.cs
@@ -12946,6 +12978,7 @@ Meridian-main
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
 │   │   │   ├── DirectLendingServicingScheduleEndpointsTests.cs
+│   │   │   ├── DirectLendingSubledgerTieOutTests.cs
 │   │   │   ├── EdgarReferenceDataEndpointsTests.cs
 │   │   │   ├── EvidenceWorkflowFabricTests.cs
 │   │   │   ├── ExecutionGovernanceEndpointsTests.cs
@@ -12966,6 +12999,7 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
+│   │   │   ├── LedgerAccountRunningBalanceScopeTests.cs
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
 │   │   │   ├── LedgerAmountProvenanceServiceTests.cs
 │   │   │   ├── LedgerAndCompliancePermissionSplitTests.cs

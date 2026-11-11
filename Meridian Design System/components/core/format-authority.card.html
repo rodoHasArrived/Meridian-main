@@ -1,5 +1,5 @@
 <!-- @dsCard group="Core" viewport="1280x900" name="Numeric authority" subtitle="format.js · FormatProvider · useFormat — one surface declaration moves every number on the screen" -->
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numeric authority</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Numeric authority</title><link rel="stylesheet" href="../../styles.css"><script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script><script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script><script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script><script src="../../_ds_bundle.js"></script><style>
 body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}
 .wrap{display:grid;grid-template-columns:270px 1fr;gap:16px;max-width:1240px;align-items:start}
 .rail{display:grid;gap:12px}
@@ -29,6 +29,14 @@ const {useFormat}=FormatHooks;
 
 const LOCALES=[["en-US","1,234.56"],["de-DE","1.234,56"],["fr-FR","1 234,56"],["ja-JP","¥ 0dp"]];
 const CURRENCIES=["USD","EUR","GBP","JPY"];
+// Deterministic sample allocations; the benchmark is synthetic, not provider data.
+const MATURITY_ITEMS=[
+  {id:"0-1",label:"0–1y",primary:12400000,comparison:12000000},
+  {id:"1-3",label:"1–3y",primary:31200000,comparison:30000000},
+  {id:"3-5",label:"3–5y",primary:18600000,comparison:20000000},
+  {id:"5+",label:"5y+",primary:7300000,comparison:8000000},
+  {id:"unknown",label:"Unknown maturity",primary:900000,comparison:400000,unknown:true},
+];
 
 function Readout(){
   const fx=useFormat();
@@ -71,15 +79,15 @@ function Card(){
         <div className="live">
           <div className="panel">
             <h3>VarianceCell — swept in 4.2</h3>
-            <VarianceCell actual={1284120.5} reference={1332330.75} notation="accounting" currency={currency} tolerance={{amount:25000}} label="Custodian vs. ledger" />
-            <VarianceCell actual={0.0412} reference={0.0388} notation="bp" digits={0} label="Yield to benchmark" />
+            <VarianceCell actual={1284120.5} reference={1332330.75} notation="accounting" currency={currency} tolerance={25000} comparisonLabel="Custodian statement" />
+            <VarianceCell actual={412} reference={388} notation="bp" digits={0} comparisonLabel="Yield benchmark" explanation="Yield expressed in basis points: 4.12% versus 3.88%." />
             <p className="note">The component was one of the ten that hardcoded <code>en-US</code>. It now reads the surface.</p>
           </div>
           <div className="panel">
             <h3>CommitmentBar · MaturityLadder</h3>
             <CommitmentBar label="Meridian Credit Opportunities III" vintage="2024" commitment={45000000} called={28350000} distributed={9200000} nav={26800000} currency={currency} />
-            <MaturityLadder mode="amount" buckets={[{id:"0-1",label:"0–1y",amount:12400000},{id:"1-3",label:"1–3y",amount:31200000},{id:"3-5",label:"3–5y",amount:18600000},{id:"5+",label:"5y+",amount:7300000},{id:"unknown",label:"Unknown maturity",amount:900000}]} />
-            <p className="note">Compact notation follows the locale's digits and keeps prefix-symbol metric notation — house style, stated in N-6.</p>
+            <MaturityLadder defaultMode="amount" items={MATURITY_ITEMS} buckets={MATURITY_ITEMS.map(item=>item.label)} currency={currency} comparisonLabel="Synthetic benchmark" source="Deterministic sample allocations" />
+            <p className="note">Compact notation follows the locale's digits. Amount and percent views retain the unknown-maturity allocation; the benchmark is synthetic. Prefix-symbol currency metrics follow house style N-6.</p>
           </div>
         </div>
       </div>

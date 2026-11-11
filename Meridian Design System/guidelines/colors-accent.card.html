@@ -9,8 +9,9 @@
   .group { display: flex; flex-direction: column; gap: 6px; }
   .swrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
   .sw { border-radius: 8px; padding: 10px 10px 8px; height: 64px; display: flex; flex-direction: column; justify-content: flex-end; gap: 2px; }
-  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: #fff; }
-  .v { font-family: var(--font-data); font-size: 8.5px; color: rgba(255,255,255,.8); }
+  .n { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; letter-spacing: .03em; color: var(--text-on-accent); }
+  .v { font-family: var(--font-data); font-size: 8.5px; color: var(--text-on-accent); }
+  .sw--action .n, .sw--action .v { color: var(--ink-inverse); }
   .txt { display: flex; flex-direction: column; gap: 4px; justify-content: center; }
   .tline { font-family: var(--font-data); font-size: 12.5px; }
   .cap { font-size: 9.5px; font-weight: 600; font-variant: all-small-caps; color: var(--text-muted); }
@@ -22,7 +23,7 @@
     <div class="swrow">
       <div class="sw" style="background: var(--brand-signal,#C56343);"><span class="n">accent</span><span class="v">#C56343</span></div>
       <div class="sw" style="background: var(--brand-signal-dim,#CB6E4E);"><span class="n">controlled variant</span><span class="v">#CB6E4E</span></div>
-      <div class="sw" style="background: var(--accent-hover);"><span class="n">vibrant</span><span class="v">#D2795A</span></div>
+      <div class="sw sw--action" style="background: var(--brand-axis);"><span class="n">primary action</span><span class="v">#29323A</span></div>
     </div>
   </div>
   <div class="group">

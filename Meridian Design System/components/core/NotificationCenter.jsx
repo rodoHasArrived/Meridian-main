@@ -27,7 +27,7 @@ function inject() {
 .mds-notif__hd-title{font-size:11px;font-weight:600;font-variant:all-small-caps;
   letter-spacing:.03em;color:var(--text-muted,#606870);}
 .mds-notif__mark{appearance:none;border:none;background:transparent;cursor:pointer;
-  font-size:11px;color:var(--brand-signal,#C56343);padding:0;font-family:var(--font-body);}
+  font-size:11px;color:var(--brand-signal-ink,#944A32);padding:0;font-family:var(--font-body);}
 .mds-notif__mark:hover{text-decoration:underline;}
 .mds-notif__item{display:grid;grid-template-columns:10px 1fr auto;gap:8px;padding:9px 12px;
   border-top:1px solid var(--border-divider,#E2DED5);align-items:start;}

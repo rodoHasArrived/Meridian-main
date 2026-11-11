@@ -48,7 +48,7 @@
 
   // var(--token, #fallback) is the sanctioned way a component names a fallback. Strip those before
   // looking for raw hex, or every conformant component reads as a violation.
-  const stripVarFallbacks = (t) => t.replace(/var\(\s*--[A-Za-z0-9-]+\s*,[^()]*\)/g, "var(--x)");
+  const stripVarFallbacks = (t) => t.replace(/var\(\s*--[A-Za-z0-9-]+\s*,[^()]*\)/g, match => match.replace(/[^\r\n]/g, " "));
 
   const RULES = [
     {
@@ -296,7 +296,23 @@
    * Deliberately conservative: everything here is decidable from the DOM of a loaded card.
    */
   const CARD_ASSERTIONS = [
-    { id: "mounted", label: "card mounts and renders content", run: (doc) => (doc.body && doc.body.textContent.trim().length > 40 && doc.body.querySelectorAll("*").length > 12) ? null : "card rendered (almost) nothing" },
+    { id: "mounted", label: "card mounts and renders content", run: (doc, win = doc.defaultView) => {
+      if (!doc.body) return "card rendered (almost) nothing";
+      // Count rendered content, not inline demo scripts or an arbitrary number
+      // of wrappers. Image/type specimens are intentionally small documents.
+      if (doc.body.innerText.trim().length > 40) return null;
+      const name = (el) => (el.getAttribute("aria-label") ||
+        (el.getAttribute("aria-labelledby") || "").split(/\s+/).map((id) => doc.getElementById(id)?.textContent || "").join(" ").trim() ||
+        el.getAttribute("alt") || el.querySelector("title")?.textContent || "").trim();
+      const rendered = (el) => {
+        const box = el.getBoundingClientRect(), style = win.getComputedStyle(el);
+        return box.width > 0 && box.height > 0 && style.display !== "none" && style.visibility !== "hidden" &&
+          !el.closest('[hidden],[aria-hidden="true"]');
+      };
+      const image = [...doc.images].some((el) => rendered(el) && name(el) && el.complete && el.naturalWidth > 0 && el.naturalHeight > 0);
+      const graphic = [...doc.querySelectorAll("svg")].some((el) => rendered(el) && name(el) && el.querySelector("path,rect,circle,line,polyline,polygon,text,use,image"));
+      return image || graphic ? null : "card rendered (almost) nothing";
+    } },
     { id: "bundle", label: "no component threw while evaluating", run: (doc, win) => { const ns = Object.keys(win).find((k) => /^MeridianDesignSystem_/.test(k)); const errs = ns && win[ns] && win[ns].__errors; return errs && errs.length ? `${errs.length} bundle error(s): ${errs.slice(0, 2).map((e) => e.path).join(", ")}` : null; } },
     { id: "unique-ids", label: "no duplicate DOM id", run: (doc) => { const seen = new Set(), dupes = new Set(); doc.querySelectorAll("[id]").forEach((el) => { if (seen.has(el.id)) dupes.add(el.id); seen.add(el.id); }); return dupes.size ? "duplicate id: " + [...dupes].slice(0, 3).join(", ") : null; } },
     { id: "names", label: "every control has an accessible name", run: (doc) => {
@@ -312,34 +328,124 @@
     } },
     { id: "button-type", label: "every <button> has an explicit type", run: (doc) => { const bad = [...doc.querySelectorAll("button:not([type])")]; return bad.length ? `${bad.length} button(s) without type` : null; } },
     { id: "tabindex", label: "no positive tabindex", run: (doc) => { const bad = [...doc.querySelectorAll("[tabindex]")].filter((el) => Number(el.getAttribute("tabindex")) > 0); return bad.length ? `${bad.length} element(s) with a positive tabindex` : null; } },
-    { id: "transition-all", label: "no computed `transition-property: all`", run: (doc, win) => { const els = [...doc.querySelectorAll("*")].slice(0, 500); const bad = els.filter((el) => win.getComputedStyle(el).transitionProperty === "all"); return bad.length ? `${bad.length} element(s) transition every property` : null; } },
+    { id: "transition-all", label: "no active `transition-property: all`", run: (doc, win) => {
+      const els = [...doc.querySelectorAll("*")].slice(0, 500);
+      const bad = els.filter((el) => {
+        const style = win.getComputedStyle(el);
+        const properties = style.transitionProperty.split(",").map((value) => value.trim());
+        const durations = style.transitionDuration.split(",").map((value) => parseFloat(value));
+        return properties.some((property, i) => property === "all" && durations[i % durations.length] > 0);
+      });
+      return bad.length ? `${bad.length} element(s) transition every property` : null;
+    } },
     { id: "dialog", label: "any dialog is modal and named", run: (doc) => { const bad = [...doc.querySelectorAll('[role=dialog],[role=alertdialog]')].filter((el) => !el.getAttribute("aria-label") && !el.getAttribute("aria-labelledby")); return bad.length ? `${bad.length} unnamed dialog(s)` : null; } },
-    { id: "tokens-resolve", label: "every token a component references exists", run: (doc, win) => {
+    { id: "tokens-resolve", label: "active component token references resolve in their scope", run: (doc, win) => {
       // C-05's own fix string named --row-dense / --control-h for two releases; neither is a token,
       // so components that followed the advice were permanently pinned to their px fallbacks and no
       // static scan noticed. A card has the whole closure loaded — so ask it.
-      const defined = new Set(), referenced = new Map();
-      const sheets = [...doc.styleSheets];
-      for (const sheet of sheets) {
-        let rules;
-        try { rules = sheet.cssRules; } catch (e) { continue; }
-        const walk = (list) => { for (const r of list) {
-          if (r.cssRules) { walk(r.cssRules); continue; }
-          const text = r.cssText || "";
-          for (const m of text.matchAll(/(--[A-Za-z0-9-]+)\s*:/g)) defined.add(m[1]);
-        } };
-        try { walk(rules); } catch (e) { /* keep going */ }
-      }
-      for (const style of doc.querySelectorAll("style[data-mds]")) {
-        const owner = style.getAttribute("data-mds");
-        for (const m of (style.textContent || "").matchAll(/var\(\s*(--[A-Za-z0-9-]+)/g)) {
-          if (!referenced.has(m[1])) referenced.set(m[1], owner);
+      const missing = new Map(), unverifiable = new Set(), computed = new WeakMap();
+      const styleFor = (el, pseudo = "") => {
+        if (!computed.has(el)) computed.set(el, new Map());
+        const styles = computed.get(el);
+        if (!styles.has(pseudo)) styles.set(pseudo, win.getComputedStyle(el, pseudo || null));
+        return styles.get(pseudo);
+      };
+      const selectors = (text) => {
+        const out = []; let start = 0, depth = 0, quote = null, escaped = false;
+        for (let i = 0; i < text.length; i++) {
+          const c = text[i];
+          if (escaped) { escaped = false; continue; }
+          if (c === "\\") { escaped = true; continue; }
+          if (quote) { if (c === quote) quote = null; continue; }
+          if (c === '"' || c === "'") { quote = c; continue; }
+          if (c === "(" || c === "[") depth++;
+          if (c === ")" || c === "]") depth--;
+          if (c === "," && depth === 0) { out.push(text.slice(start, i).trim()); start = i + 1; }
         }
+        out.push(text.slice(start).trim());
+        return out.filter(Boolean);
+      };
+      const nest = (child, parent) => {
+        let out = "", used = false, quote = null, escaped = false;
+        for (const c of child) {
+          if (escaped) { out += c; escaped = false; continue; }
+          if (c === "\\") { out += c; escaped = true; continue; }
+          if (quote) { out += c; if (c === quote) quote = null; continue; }
+          if (c === '"' || c === "'") { out += c; quote = c; continue; }
+          if (c === "&") { out += parent; used = true; } else out += c;
+        }
+        return used ? out : `${parent} ${child}`;
+      };
+      const references = (style, matches, owner, optional) => {
+        if (!style || !matches.length) return;
+        const uses = [];
+        // CSSOM can expose an unresolved shorthand as empty individual
+        // longhands. cssText retains its var() calls; quoted labels are text.
+        const value = style.cssText.replace(/\/\*[\s\S]*?\*\/|"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'/g, " ");
+        for (const m of value.matchAll(/var\(\s*(--[A-Za-z0-9-]+)\s*/g)) {
+          const after = m.index + m[0].length;
+          let end = after, depth = 1;
+          for (; end < value.length; end++) {
+            if (value[end] === "(") depth++;
+            if (value[end] === ")" && --depth === 0) break;
+          }
+          uses.push({ name: m[1], fallback: value[after] === "," && depth === 0 && value.slice(after + 1, end).trim().length > 0 });
+        }
+        for (const { el, pseudo } of matches) for (const { name, fallback } of uses) {
+          // A universal, inherited @property with no initial value explicitly
+          // declares an optional extension point. Its existing fallback remains
+          // mandatory here; a bare required use or an unregistered typo fails.
+          if (!styleFor(el, pseudo).getPropertyValue(name).trim() && !(optional.has(name) && fallback) && !missing.has(name)) missing.set(name, owner);
+        }
+      };
+      const active = (rule) => !(rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) &&
+        !(rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText));
+      const optionalProperties = (list, names = new Set()) => {
+        for (const rule of list) {
+          if (!active(rule)) continue;
+          if (win.CSSPropertyRule && rule instanceof win.CSSPropertyRule && rule.syntax === "*" && rule.inherits && !rule.initialValue) names.add(rule.name);
+          if (rule.cssRules) optionalProperties(rule.cssRules, names);
+          if (rule.styleSheet && (!rule.media.mediaText || win.matchMedia(rule.media.mediaText).matches)) optionalProperties(rule.styleSheet.cssRules, names);
+        }
+        return names;
+      };
+      const walk = (list, owner, optional, parents = []) => { for (const rule of list) {
+        if (rule.type === win.CSSRule.MEDIA_RULE && !win.matchMedia(rule.conditionText).matches) continue;
+        if (rule.type === win.CSSRule.SUPPORTS_RULE && !win.CSS.supports(rule.conditionText)) continue;
+        if (rule.styleSheet) {
+          if (rule.media.mediaText && !win.matchMedia(rule.media.mediaText).matches) continue;
+          try { walk(rule.styleSheet.cssRules, owner, optional, parents); }
+          catch (e) { unverifiable.add(`imported stylesheet (${owner})`); }
+        }
+        if (rule.type === win.CSSRule.KEYFRAMES_RULE) {
+          const animated = [...doc.querySelectorAll("*")].filter((el) => styleFor(el).animationName.split(",").map((name) => name.trim()).includes(rule.name));
+          for (const frame of rule.cssRules) references(frame.style, animated.map((el) => ({ el, pseudo: "" })), owner, optional);
+          continue;
+        }
+        let resolved = parents;
+        if (rule.selectorText) {
+          const own = selectors(rule.selectorText);
+          resolved = parents.length ? own.flatMap((child) => parents.map((parent) => nest(child, parent))) : own;
+          const matches = [];
+          for (const selector of resolved) {
+            const pseudo = selector.match(/::[\w-]+(?:\([^)]*\))?$/)?.[0] || "";
+            const target = (pseudo ? selector.slice(0, -pseudo.length) : selector).trim() || "*";
+            try { doc.querySelectorAll(target).forEach((el) => matches.push({ el, pseudo })); }
+            catch (e) { unverifiable.add(`${selector} (${owner})`); }
+          }
+          references(rule.style, matches, owner, optional);
+        }
+        // Read a style rule before its nested cssRules, which can be empty.
+        if (rule.cssRules) walk(rule.cssRules, owner, optional, resolved);
+      } };
+      for (const style of doc.querySelectorAll("style[data-mds]")) {
+        try { walk(style.sheet.cssRules, style.getAttribute("data-mds"), optionalProperties(style.sheet.cssRules)); }
+        catch (e) { unverifiable.add(`stylesheet (${style.getAttribute("data-mds")})`); }
       }
-      const missing = [...referenced].filter(([name]) => !defined.has(name) && !win.getComputedStyle(doc.body).getPropertyValue(name).trim());
-      return missing.length
-        ? `${missing.length} invented token(s): ` + missing.slice(0, 4).map(([n, o]) => `${n} (${o})`).join(", ")
-        : null;
+      const notes = [];
+      if (missing.size) notes.push(`${missing.size} invented token(s): ` + [...missing].slice(0, 4).map(([name, owner]) => `${name} (${owner})`).join(", "));
+      if (unverifiable.size) notes.push("token scope could not be checked: " + [...unverifiable].slice(0, 2).join(", "));
+      return notes.length ? notes.join("; ") : null;
     } },
     { id: "eligibility", label: "a published adoption figure recomputes from its own rows", run: (doc, win) => {
       // Applies only to a card that publishes the classification it is rendering (window.__eligibility).
@@ -367,12 +473,26 @@
       return bad.length ? bad.slice(0, 3).join(" · ") : null;
     } },
     { id: "focus-visible", label: "focus is visible on the first control", run: (doc, win) => {
-      const el = doc.querySelector("button:not([disabled]),a[href],input:not([type=hidden]),select");
+      const el = [...doc.querySelectorAll("button,[role=button],a[href],input:not([type=hidden]),select,textarea")].find((node) => {
+        const style = win.getComputedStyle(node);
+        return !node.matches(":disabled") && !node.closest("[inert]") && node.tabIndex >= 0 && node.getClientRects().length > 0 && style.visibility === "visible";
+      });
       if (!el) return null;
-      el.focus();
+      if (doc.activeElement === el) el.blur();
+      const nodes = []; for (let node = el; node && node !== doc.body; node = node.parentElement) nodes.push(node);
+      const indicator = (node) => {
+        const s = win.getComputedStyle(node);
+        return { outline: s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0 ? `${s.outlineStyle} ${s.outlineWidth} ${s.outlineColor}` : null, shadow: s.boxShadow };
+      };
+      const before = nodes.map(indicator);
+      // Ask for the keyboard focus appearance, rather than inheriting the mouse
+      // modality of the Run button. Compound fields draw that ring on a wrapper.
+      el.focus({ focusVisible: true });
       if (doc.activeElement !== el) return "first control could not take focus";
-      const s = win.getComputedStyle(el);
-      const has = (s.outlineStyle !== "none" && parseFloat(s.outlineWidth) > 0) || s.boxShadow !== "none" || /inset/.test(s.boxShadow);
+      const has = nodes.some((node, i) => {
+        const after = indicator(node);
+        return (after.outline && after.outline !== before[i].outline) || (after.shadow !== "none" && after.shadow !== before[i].shadow);
+      });
       return has ? null : "no visible focus indicator on the first control";
     } },
   ];

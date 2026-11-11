@@ -17,7 +17,7 @@ let injected=false;function inject(){if(injected||typeof document==="undefined")
 .mds-calc__levels{margin-left:auto;display:flex;border:1px solid var(--border,#D2CDC3);border-radius:2px;overflow:hidden;flex:none}
 .mds-calc__levels button{appearance:none;border:0;border-left:1px solid var(--border,#D2CDC3);background:var(--surface-plate,#F8F7F3);font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.04em;color:var(--text-muted,#606870);padding:3px 8px;cursor:pointer}
 .mds-calc__levels button:first-child{border-left:0}
-.mds-calc__levels button[aria-pressed="true"]{background:var(--selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
+.mds-calc__levels button[aria-pressed="true"]{background:var(--interaction-selected-surface,#E7EDF2);color:var(--text-primary,#20252B);font-weight:600}
 .mds-calc__levels button:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-2px}
 .mds-calc__group{padding:5px 12px 0;font:9px var(--font-data,monospace);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted,#606870)}
 .mds-calc__rows{padding:4px 12px 6px}

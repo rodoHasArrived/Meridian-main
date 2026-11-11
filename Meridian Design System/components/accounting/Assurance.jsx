@@ -72,8 +72,8 @@ function inject() {
   const css = `
 .mds-asr{display:inline-flex;align-items:center;gap:6px;height:20px;padding:0 7px;border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);font:600 9.5px var(--font-data,monospace);letter-spacing:.05em;text-transform:uppercase;color:var(--text-muted,#606870);background:var(--bg-light,#F8F7F3);white-space:nowrap}
 .mds-asr::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.55}
-.mds-asr[data-stage="prepared"]{color:var(--pending-dim,#5C503E);border-color:var(--pending,#7A6B52)}
-.mds-asr[data-stage="reviewed"]{color:var(--purple-dim,#234B68);border-color:var(--purple,#2F648A)}
+.mds-asr[data-stage="prepared"]{color:var(--state-pending-fg,#5C503E);border-color:var(--pending,#7A6B52)}
+.mds-asr[data-stage="reviewed"]{color:var(--purple-dim,#234B68);border-color:var(--color-info,#2F648A)}
 .mds-asr[data-stage="certified"]{color:var(--green-dim,#225840);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.1))}
 .mds-asr[data-voided="true"]{text-decoration:line-through;text-decoration-color:var(--red,#B54B42)}
 .mds-asr__by{text-transform:none;letter-spacing:0;font-weight:500;color:var(--text-secondary,#535C65)}
@@ -88,7 +88,7 @@ function inject() {
 .mds-cert__dot{display:inline-block;width:10px;height:10px;border:1px solid var(--border-strong,#AAA49A);border-radius:50%;background:transparent;vertical-align:middle}
 .mds-cert__dot[data-on="true"]{background:var(--green,#2E7655);border-color:var(--green,#2E7655)}
 .mds-cert__dot[data-void="true"]{background:transparent;border-color:var(--red,#B54B42);border-style:dashed}
-.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--pending-dim,#5C503E);margin-left:6px}
+.mds-cert__mat{font:600 9px var(--font-data,monospace);letter-spacing:.05em;color:var(--state-pending-fg,#5C503E);margin-left:6px}
 .mds-cert__foot{display:flex;gap:14px;align-items:center;padding:8px 10px;border-top:1px solid var(--border,#D2CDC3);font-size:11px;color:var(--text-secondary,#535C65)}
 .mds-cert__foot b{color:var(--text-primary,#20252B);font-weight:600}
 `;

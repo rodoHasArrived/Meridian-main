@@ -50,7 +50,7 @@ changes or modifies repository rules.
 `design-system-package.yml` checks the vendored design-system package when its paths change:
 generated-file freshness, export integrity, the dashboard asset projection and Chromium
 regressions in `package-integrity`, and the whole-release validator plus retained Python suite
-in `release-governance`, which reports its open findings as a failure. Neither job is a
+in `release-governance`, which exits with their real status. Neither job is a
 required check and the canonical lanes are unchanged. Its workflow changes require **human
 governance review**. See [ownership](../../docs/engineering/ci-cd-optimization.md#design-system-package).
 

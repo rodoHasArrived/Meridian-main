@@ -70,6 +70,15 @@ is the controlled signal variant. Primary actions do not use this family. In dar
 roles use `#E5A088` and `#E19479` so signal labels remain legible without turning into focus or
 semantic state. Do not create intermediate shades.
 
+### `--brand-signal-ink` vs signal fills
+Use `--brand-signal-ink` for normal-sized text that retains the signal hue: labels, inline
+references, highlighted matches and retained table ranks. It derives 75% of the signal toward
+`--dim-mix`, producing `#944A32` in the default light theme and `#E2A38C` in dark. Its text
+contrast is checked against workstation surfaces and signal washes in every appearance.
+`--brand-signal`, `--accent-hover` and `--accent-dim` remain fill, border and graphical roles;
+their lighter variants are not text inks. Keep text fully opaque on hover; emphasize it with
+an underline instead of fading an otherwise readable label.
+
 ### `--bg-hover` vs `--bg-active`
 `--bg-hover` (#EDEFF0) is a flat neutral shift for transient hover. `--bg-active` (#E7EDF2) is a
 cool blue wash for *selected/engaged* state (selected row, active nav). Active is a state that

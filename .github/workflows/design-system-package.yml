@@ -147,12 +147,11 @@ jobs:
           retention-days: 14
           compression-level: 1
 
-  # The whole-release validator and the retained Python suite. Both have open, tracked findings
-  # (issues #3505 and #3506), so this job is red until they are closed. It reports the true
-  # result on purpose: no continue-on-error, no baseline, no skipped test. It is not a required
-  # check, so it informs a merge without blocking it.
+  # The whole-release validator (seven gates) and the retained Python suite. The job exits with
+  # their real status: no continue-on-error, no baseline reset, no skipped test. It is not a
+  # required check, so a finding informs a merge without blocking it.
   release-governance:
-    name: release-governance (open findings reported)
+    name: release-governance
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

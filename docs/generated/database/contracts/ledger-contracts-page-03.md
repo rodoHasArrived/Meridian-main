@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 3 of 5
 
-Objects 161-240 of 362. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 364. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -575,6 +575,28 @@ classDiagram
         +DateTimeOffset RequestedAtUtc
         +string RequestedBy
     }
+    class Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto["LedgerAccountRunningBalanceDto"] {
+        +string AccountName
+        +string? AccountType
+        +decimal EndingBalance
+        +string? FinancialAccountId
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +IReadOnlyList~LedgerAccountRunningBalancePointDto~ Points
+        +string? Symbol
+        +decimal TotalCredits
+        +decimal TotalDebits
+    }
+    class Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto["LedgerAccountRunningBalancePointDto"] {
+        +decimal Balance
+        +decimal Credit
+        +decimal Debit
+        +string Description
+        +Guid EntryId
+        +long GlobalSequence
+        +Guid JournalEntryId
+        +DateTimeOffset Timestamp
+    }
     class Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto["LedgerAdjustmentApprovalMetadataDto"] {
         +string ApprovalId
         +DateTimeOffset ApprovedAt
@@ -606,21 +628,6 @@ classDiagram
         +string? FundProfileId
         +Guid? FundStructureNodeId
         +FundStructureNodeKindDto? FundStructureNodeKind
-    }
-    class Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto["LedgerBookRequiredScopeDto"] {
-        +AccountingBasisKindDto AccountingBasis
-        +string? DisplayName
-        +Guid FundStructureNodeId
-        +FundStructureNodeKindDto FundStructureNodeKind
-    }
-    class Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto["LedgerBookRolloutAssessmentDto"] {
-        +AccountingBasisKindDto? AccountingBasis
-        +IReadOnlyList~LedgerBookRolloutBookStatusDto~ Books
-        +string? FundProfileId
-        +Guid? FundStructureNodeId
-        +FundStructureNodeKindDto? FundStructureNodeKind
-        +DateTimeOffset GeneratedAtUtc
-        +IReadOnlyList~LedgerBookRolloutIssueDto~ Issues
     }
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_ClosePlanPreparationLineageDto
     Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto --> Meridian_Contracts_Ledger_CloseTaskConfigurationDto
@@ -667,5 +674,6 @@ classDiagram
     Meridian_Contracts_Ledger_JournalEntryLifecycleActionResultDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto
     Meridian_Contracts_Ledger_JournalEntryLifecycleTransitionDto --> Meridian_Contracts_Ledger_JournalEntryLifecycleActionDto
     Meridian_Contracts_Ledger_JournalEntryTemplateDto --> Meridian_Contracts_Ledger_JournalEntryTemplateLineDto
+    Meridian_Contracts_Ledger_LedgerAccountRunningBalanceDto --> Meridian_Contracts_Ledger_LedgerAccountRunningBalancePointDto
     Meridian_Contracts_Ledger_LedgerAdjustmentApprovalMetadataDto --> Meridian_Contracts_Ledger_LedgerAdjustmentApprovalStatusDto
 ```

@@ -33,7 +33,7 @@ function inject() {
 .mds-date-open:disabled{cursor:not-allowed;color:var(--text-disabled,#A4ABB2);}
 .mds-date-cal{position:absolute;top:calc(100% + 4px);left:0;z-index:var(--z-dropdown,100);
   background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3);padding:10px;
-  box-shadow:var(--shadow-menu,0 4px 12px rgba(0,0,0,.10));border-radius:var(--radius-overlay,6px);}
+  box-shadow:var(--shadow-menu,0 4px 12px rgba(17,23,29,.10));border-radius:var(--radius-overlay,6px);}
 .mds-date-cal--above{top:auto;bottom:calc(100% + 4px);}
 .mds-date-cal--right{left:auto;right:0;}
 .mds-date-header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:10px;}

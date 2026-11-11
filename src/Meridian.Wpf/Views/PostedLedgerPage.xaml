@@ -162,11 +162,14 @@
             <Grid Grid.Column="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
+                    <RowDefinition Height="*" />
                     <RowDefinition Height="2*" />
                 </Grid.RowDefinitions>
             <!-- Aggregate balances remain aggregate; proof belongs to one retained journal amount. -->
             <DataGrid Grid.Row="0"
                       ItemsSource="{Binding TrialBalance}"
+                      SelectedItem="{Binding SelectedTrialBalanceRow, Mode=TwoWay}"
+                      SelectionMode="Single"
                       AutoGenerateColumns="False"
                       IsReadOnly="True"
                       HeadersVisibility="Column"
@@ -182,7 +185,23 @@
                     <DataGridTextColumn Header="Entries" Binding="{Binding EntryCount}" Width="90" />
                 </DataGrid.Columns>
             </DataGrid>
+                <!-- Account drill-down: postings to the selected trial-balance account with a running balance. -->
                 <DockPanel Grid.Row="1" Margin="0,12,0,0">
+                    <TextBlock DockPanel.Dock="Top" Text="Account postings" FontWeight="SemiBold" />
+                    <TextBlock DockPanel.Dock="Top" Text="{Binding AccountPostingsStatusText}" TextWrapping="Wrap" Margin="0,4,0,8"
+                               AutomationProperties.AutomationId="PostedLedgerAccountPostingsStatus" />
+                    <DataGrid ItemsSource="{Binding AccountPostings}" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" AutomationProperties.AutomationId="PostedLedgerAccountPostingsGrid">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Posted" Binding="{Binding PostedLabel}" Width="110" />
+                            <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="*" />
+                            <DataGridTextColumn Header="Debit" Binding="{Binding DebitLabel}" Width="140" />
+                            <DataGridTextColumn Header="Credit" Binding="{Binding CreditLabel}" Width="140" />
+                            <DataGridTextColumn Header="Balance" Binding="{Binding BalanceLabel}" Width="140" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+                <DockPanel Grid.Row="2" Margin="0,12,0,0">
                     <TextBlock DockPanel.Dock="Top" Text="Posted journal amounts" FontWeight="SemiBold" />
                     <TextBlock DockPanel.Dock="Top" Text="{Binding JournalStatusText}" TextWrapping="Wrap" Margin="0,4,0,8"
                                AutomationProperties.AutomationId="PostedLedgerJournalStatus" />
