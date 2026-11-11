@@ -63,6 +63,9 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     public abstract string Name { get; }
 
+    /// <inheritdoc />
+    public virtual string CoverageFeed => "default";
+
     /// <summary>
     /// Human-readable display name.
     /// </summary>

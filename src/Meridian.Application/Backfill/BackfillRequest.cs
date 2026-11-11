@@ -23,10 +23,11 @@ namespace Meridian.Application.Backfill;
 /// </param>
 /// <param name="ResumeFromCheckpoint">
 /// When <c>true</c> and a <see cref="BackfillStatusStore"/> is provided to
-/// <see cref="HistoricalBackfillService"/>, symbols that were successfully checkpointed
-/// in a previous run are skipped. Symbols with a checkpoint have their <see cref="From"/>
-/// date advanced to the day after the last recorded checkpoint date, reducing redundant
-/// work on restart.
+/// <see cref="HistoricalBackfillService"/>, dates already recorded as durably written by the same
+/// provider and feed are not fetched again. Only the uncovered parts of
+/// <see cref="From"/>..<see cref="To"/> are requested (before, inside and after the recorded
+/// coverage), and a symbol is skipped only when the whole range is covered. Date-only checkpoints
+/// from earlier versions are not treated as coverage.
 /// </param>
 public sealed record BackfillRequest(
     string Provider,
