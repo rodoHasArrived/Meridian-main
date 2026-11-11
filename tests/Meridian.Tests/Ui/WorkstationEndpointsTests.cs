@@ -45,11 +45,11 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using IReconciliationApiService = Meridian.Contracts.Reconciliation.IReconciliationApiService;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
-using ReconciliationCaseSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
-using ReconciliationQueueAccountStatusDto = Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
-using StatementImportSummaryDto = Meridian.Ui.Shared.Contracts.Reconciliation.StatementImportSummaryDto;
+using ReconciliationCaseSummaryDto = Meridian.Contracts.Reconciliation.ReconciliationCaseSummaryDto;
+using ReconciliationQueueAccountStatusDto = Meridian.Contracts.Reconciliation.ReconciliationQueueAccountStatusDto;
+using StatementImportSummaryDto = Meridian.Contracts.Reconciliation.StatementImportSummaryDto;
 
 namespace Meridian.Tests.Ui;
 
@@ -907,7 +907,7 @@ public sealed partial class WorkstationEndpointsTests
                 fundAccountId,
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 fundAccountId,
                 "test-fund-profile"));
         statementAuthority
@@ -915,7 +915,7 @@ public sealed partial class WorkstationEndpointsTests
                 "run-ops-1",
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(new Meridian.Ui.Shared.Contracts.Reconciliation.StatementReconciliationRunAuthorization(
+            .Returns(new Meridian.Contracts.Reconciliation.StatementReconciliationRunAuthorization(
                 "run-ops-1",
                 fundAccountId,
                 "test-fund-profile",
