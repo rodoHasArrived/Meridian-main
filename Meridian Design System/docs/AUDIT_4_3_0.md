@@ -1,6 +1,6 @@
 # Current export audit
 
-**Reviewed:** 2026-11-11 · **Source:** PR #3501, including concurrent work through `1f01910387`.
+**Reviewed:** 2026-11-11 · **Source:** PR #3501, including concurrent work through `41787fd4ea` (merged into `6b24478038`).
 
 The full compatibility audit at the end of this report supersedes the earlier
 phase limitations about 67 governance findings, declaration gaps and partial
@@ -643,8 +643,8 @@ The approved follow-up reviews all **351 public exports in 210 modules**, all
 **135 specimen cards**, all **30 published templates**, and the eligibility
 registry's **49 entry points in 40 directories**. The entry classifications are
 30 published, nine companions, eight compatibility routers and two retained
-legacy examples. Browser source review covers **273 surfaces**, including the
-concurrently introduced fixture-only native component workbench. WPF changes
+legacy examples. Browser source review covers **292 surfaces**, including concurrent workstation
+extractions, governed table views and the fixture-only native component workbench. WPF changes
 from concurrent commits are preserved; this audit adds no WPF implementation.
 
 `api/project-compatibility.json` is the machine-checked inventory. Each export
@@ -703,9 +703,11 @@ All original 67 governance findings were investigated individually: 63 source
 defects and four checker/discovery assumptions. The checker now validates every
 declared entry rather than guessing a directory's one conventional filename.
 No allowance was increased. Actual theme/cascade/contrast checks and negative
-controls replace obsolete assumptions about primary action fills and unused
-fallback colors; undefined/cyclic dependencies, source/bundle parity, native
-palette/asset parity and contrast thresholds remain enforced.
+controls replace obsolete assumptions about primary action fills. The default
+gate retains the incoming strict authored-fallback portability/parity check; a
+separate runtime check verifies fallback reachability. Undefined/cyclic
+dependencies, source/bundle parity, native palette/asset parity and contrast
+thresholds remain enforced. No check or allowance was weakened.
 
 Template operator journeys also uncovered mutually exclusive planes left visible
 by inline flex/grid styles. Their authored visibility policies now win, and the

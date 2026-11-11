@@ -79,6 +79,16 @@ def template_paths(eligibility):
                   for entry in item["entries"])
 
 
+def case_references(case):
+    """Normalize individual/grouped recipes; report paths are not test recipes."""
+    evidence = case.get("evidence")
+    values = [case.get("path"), case.get("reference")]
+    values += case.get("paths", []) + case.get("references", [])
+    if isinstance(evidence, dict):
+        values.append(evidence.get("path"))
+    return [value for value in values if isinstance(value, str) and value]
+
+
 def merge_reviews(directory: Path):
     exports, screens, templates = {}, {}, {}
     for filename in ("core-review.json", "domain-review.json"):
@@ -249,7 +259,7 @@ def validate(inventory, root=ROOT, repo=REPO):
                     cases = coverage.get("cases", [])
                     if any(case.get("status") != "passed" for case in cases) or (not contract_only and not cases):
                         errors.append(f"Missing successful export contract cases: {item['name']}")
-                    references = [case.get("path") or case.get("evidence", {}).get("path") or case.get("reference") for case in cases]
+                    references = [reference for case in cases for reference in case_references(case)]
                     if coverage.get("ownsInteraction") and not any(reference and reference != "tests/public-contract-types.mjs" for reference in references):
                         errors.append(f"Type compilation is not interaction proof: {item['name']}")
                     if not contract_only and set(coverage.get("applicableStates", [])) - set(coverage.get("testedStates", [])):

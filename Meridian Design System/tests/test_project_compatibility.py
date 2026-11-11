@@ -80,6 +80,20 @@ class CompatibilityTests(unittest.TestCase):
         self.assertEqual([], self.errors())
         self.assertEqual("reviewed", self.inventory["exports"][0]["review"]["evidence"][0]["status"])
 
+    def test_grouped_recipes_accept_report_strings_without_counting_them_as_tests(self):
+        case = self.inventory["exports"][0]["behaviorCoverage"]["cases"][0]
+        recipe = case.pop("path")
+        case.update({"paths": [recipe], "references": [recipe], "evidence": "/tmp/executed-report.json"})
+        self.assertEqual([], self.errors())
+        case["paths"] = case["references"] = []
+        self.assertTrue(any("not interaction proof" in error for error in self.errors()))
+
+    def test_plural_type_compilation_references_cannot_certify_interaction(self):
+        case = self.inventory["exports"][0]["behaviorCoverage"]["cases"][0]
+        case.pop("path")
+        case["references"] = ["tests/public-contract-types.mjs"]
+        self.assertTrue(any("not interaction proof" in error for error in self.errors()))
+
     def test_missing_and_duplicate_public_exports_fail(self):
         value = copy.deepcopy(self.inventory)
         value["exports"] = []

@@ -99,7 +99,9 @@ describe("ArchiveMaintenanceOperations", () => {
   it("renders source-ordered history with keyboard scroll and cancellation access", async () => {
     const user = userEvent.setup();
     primeReads();
-    render(<ArchiveMaintenanceOperations />);
+    // JSDOM omits the browser's closed-details visibility rule. Match that native
+    // behavior so userEvent's Tab traversal does not enter hidden menu controls.
+    render(<><style>{"details:not([open]) > :not(summary) { display: none; }"}</style><ArchiveMaintenanceOperations /></>);
 
     const posture = await screen.findByLabelText("Archive maintenance posture");
     expect(within(posture).getByText("Running")).toBeInTheDocument();
@@ -114,11 +116,31 @@ describe("ArchiveMaintenanceOperations", () => {
     expect(within(historyRows[2]).getByText("HealthCheck")).toBeInTheDocument();
     expect(within(historyRows[0]).queryAllByRole("button")).toHaveLength(0);
     expect(api.getMaintenanceExecutions).toHaveBeenCalledWith(25);
-    screen.getByRole("button", { name: "Show failed only" }).focus();
+    const toolbar = screen.getByRole("group", { name: "Maintenance execution history table controls" });
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true }).closest("details")).not.toHaveAttribute("open");
+    screen.getByRole("combobox", { name: "Maintenance task type", exact: true }).focus();
     await user.tab();
-    expect(screen.getByRole("region", { name: "Maintenance execution history scroll area" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Run maintenance now", exact: true })).toHaveFocus();
     await user.tab();
-    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    expect(screen.getByRole("button", { name: "Show failed only", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("searchbox", { name: "Search", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByText("Columns", { selector: "summary", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("combobox", { name: "Maintenance execution history density", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByRole("button", { name: "Export CSV", exact: true })).toHaveFocus();
+    await user.tab();
+    expect(within(toolbar).getByText("Save view", { selector: "summary", exact: true })).toHaveFocus();
+    await user.tab();
+    const scrollArea = screen.getByRole("region", { name: "Maintenance execution history scroll area", exact: true });
+    expect(scrollArea).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Cancel", exact: true })).toHaveFocus();
+    await user.tab({ shift: true });
+    expect(scrollArea).toHaveFocus();
     expect(api.cancelMaintenanceExecution).not.toHaveBeenCalled();
   });
 
