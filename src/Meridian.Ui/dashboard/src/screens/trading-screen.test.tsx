@@ -376,6 +376,38 @@ describe("TradingScreen", () => {
     expect(screen.queryByRole("region", { name: "Workflow control strip" })).not.toBeInTheDocument();
   });
 
+  it("filters and sorts loaded positions without replacing the selected inspector", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen({ ...data, positions: [
+      ...data.positions,
+      { symbol: "MSFT", side: "Short", quantity: "40", averagePrice: "414.20", markPrice: "410.00", dayPnl: "+$60", unrealizedPnl: "+$168", exposure: "$16,400" }
+    ] }, "/trading/positions?fundAccount=retained-scope");
+    await user.click(screen.getByRole("row", { name: /inspect msft short position/i }));
+    await user.type(screen.getByRole("searchbox", { name: "Search positions" }), "AAPL");
+    expect(screen.queryByRole("row", { name: /inspect msft short position/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /position detail for msft/i })).toBeInTheDocument();
+    expect(screen.getByText(/Selected record is outside these results/)).toBeInTheDocument();
+    expect(screen.getByText("1 of 2 loaded positions")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
+    const table = screen.getByRole("treegrid", { name: "Live positions evidence" });
+    await user.click(within(table).getByRole("button", { name: /Symbol sorted ascending/ }));
+    expect(within(table).getAllByRole("row")[1]).toHaveTextContent("MSFT");
+    expect(screen.getByRole("row", { name: /inspect msft short position/i })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("keeps order cancellation scope explicit when a filter excludes working orders", async () => {
+    const user = userEvent.setup();
+    await renderTradingScreen({ ...data, openOrders: [
+      ...data.openOrders,
+      { orderId: "PO-2", symbol: "MSFT", side: "Sell", type: "Market", quantity: "10", limitPrice: "", status: "Pending Routing", submittedAt: "09:44:00 ET" }
+    ] }, "/trading/orders");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "Pending Routing");
+    expect(screen.getByText("1 of 2 loaded orders")).toBeInTheDocument();
+    expect(screen.getByText(/Cancel all applies to the account’s open orders/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Cancel all 2 open orders" })).toBeInTheDocument();
+    expect(vi.mocked(api.cancelAllOrders)).not.toHaveBeenCalled();
+  });
+
   it("resolves route views by exact path segment, not substring", () => {
     expect(resolveTradingRouteView("/trading")).toBe("overview");
     expect(resolveTradingRouteView("/trading/orders")).toBe("orders");

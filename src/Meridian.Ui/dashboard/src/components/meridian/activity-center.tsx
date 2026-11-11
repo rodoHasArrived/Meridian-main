@@ -12,7 +12,7 @@ import {
   SheetTitle
 } from "@/components/ui/sheet";
 import { useActivityLog } from "@/lib/activity-log/store";
-import type { ActivityEntry, ActivityTone } from "@/lib/activity-log/types";
+import type { ActivityEntry, ActivityOperationStatus, ActivityTone } from "@/lib/activity-log/types";
 import { formatRelativeAge } from "@/lib/time";
 import { cn } from "@/lib/utils";
 
@@ -21,6 +21,13 @@ const TONE_DOT: Record<ActivityTone, string> = {
   success: "bg-success",
   warning: "bg-warning",
   danger: "bg-danger"
+};
+
+const OPERATION_LABEL: Record<ActivityOperationStatus, string> = {
+  pending: "Pending confirmation",
+  completed: "Completed",
+  failed: "Failed",
+  uncertain: "Outcome unconfirmed"
 };
 
 /**
@@ -67,18 +74,19 @@ export function ActivityCenter() {
           <SheetHeader>
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <SheetTitle id="activity-center-title">Activity</SheetTitle>
+                <SheetTitle id="activity-center-title">Recent operations</SheetTitle>
                 <SheetDescription id="activity-center-summary">
                   {entries.length === 0
                     ? "Actions you take will show up here."
-                    : `${entries.length} recorded action${entries.length === 1 ? "" : "s"} this session.`}
+                    : `${entries.length} recorded action${entries.length === 1 ? "" : "s"} in this browser session.`}
+                  {" "}Local history is a navigation aid. Open retained records to verify server status and authority.
                 </SheetDescription>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2 pr-9">
                 {entries.length > 0 ? (
                   <Button size="sm" variant="outline" type="button" onClick={() => log.clear()}>
                     <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                    Clear
+                    Clear local history
                   </Button>
                 ) : null}
                 <SheetCloseButton onClick={() => setOpen(false)} />
@@ -88,8 +96,8 @@ export function ActivityCenter() {
           <SheetBody>
             {entries.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                No activity yet. Mutating actions — adding a symbol, backfilling a range, posting an entry — drop in
-                here with an Undo where the operation is reversible.
+                No activity yet. Supported actions appear here with their outcome and record link.
+                Undo appears only when a real compensating operation is available in this session.
               </p>
             ) : (
               <ul className="space-y-2" aria-label="Recorded actions">
@@ -125,7 +133,17 @@ function ActivityRow({ entry, onUndo, onOpenRoute }: ActivityRowProps) {
           <div className="flex items-center gap-2">
             <span className="truncate font-medium">{entry.title}</span>
           </div>
+          {entry.operation ? <p className={cn("mt-1 text-xs font-semibold", entry.operation.status === "uncertain" ? "text-warning" : entry.operation.status === "failed" ? "text-danger" : undefined)}>{OPERATION_LABEL[entry.operation.status]}</p> : null}
           {entry.detail ? <p className="mt-0.5 text-xs leading-5 text-muted-foreground">{entry.detail}</p> : null}
+          {entry.operation ? (
+            <dl className="mt-1.5 grid gap-1 text-xs leading-5">
+              {entry.operation.scope ? <div><dt className="inline text-muted-foreground">Scope: </dt><dd className="inline break-words">{entry.operation.scope}</dd></div> : null}
+              {entry.operation.actor ? <div><dt className="inline text-muted-foreground">Actor: </dt><dd className="inline break-words">{entry.operation.actor}</dd></div> : null}
+              {entry.operation.reference ? <div><dt className="inline text-muted-foreground">Reference: </dt><dd className="inline break-all font-mono">{entry.operation.reference}</dd></div> : null}
+              <div><dt className="inline text-muted-foreground">Updated: </dt><dd className="inline"><time dateTime={entry.operation.updatedAt}>{formatRelativeAge(entry.operation.updatedAt)}</time></dd></div>
+            </dl>
+          ) : null}
+          {entry.operation?.status === "uncertain" ? <p className="mt-1 text-xs leading-5 text-warning">Inspect the retained record before taking another action. This history does not retry commands.</p> : null}
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
             <span>{entry.kind}</span>
             <span aria-hidden="true">·</span>

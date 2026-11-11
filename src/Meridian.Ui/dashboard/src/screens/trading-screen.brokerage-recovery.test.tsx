@@ -33,6 +33,16 @@ function panel(data: TradingOperatorReadiness | null, extra = {}) {
 }
 
 describe("BrokerageRecoveryPanel", () => {
+  it("keeps real blockers and the recovery action visible in the compact orders presentation", () => {
+    render(panel(readiness({ brokerageRecovery: { ...recovery, status: "Blocked", blockingReasons: ["Retained order mismatch requires review"] } }), { compact: true }));
+    expect(screen.getByRole("status")).toHaveTextContent("Live trading blocked");
+    expect(screen.getByRole("list", { name: "Recovery blockers" })).toHaveTextContent("Retained order mismatch requires review");
+    expect(screen.getByRole("button", { name: "Synchronize and reconcile" })).toBeEnabled();
+    expect(screen.getByText("Brokerage recovery evidence")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Brokerage recovery" }).tagName).toBe("SECTION");
+    expect(screen.getByText("Brokerage recovery evidence").closest("details")).not.toHaveAttribute("open");
+  });
+
   it("shows scoped health, timestamp, amounts and currency without claiming overall live readiness", async () => {
     const { container } = render(panel(readiness()));
     expect(screen.getByRole("status")).toHaveTextContent("Brokerage evidence reconciled");

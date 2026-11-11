@@ -7,6 +7,8 @@ import {
 } from "@/components/meridian/command-palette.entity-search";
 import { requirePresent } from "@/test/fixtures";
 import type { SecurityMasterEntry, SymbolRecord } from "@/types";
+import { ApiError } from "@/lib/api-errors";
+import { parseCommandPaletteRecordQuery } from "./command-palette.entity-query";
 
 const symbol: SymbolRecord = {
   symbol: "aapl",
@@ -43,6 +45,103 @@ afterEach(() => {
 });
 
 describe("command palette entity search", () => {
+  const report = {
+    runId: "report-1", templateId: "Trial balance", executionState: "Succeeded", governanceState: "InReview",
+    scope: { tenantId: "tenant", organizationId: "org", companyId: "company", fundId: null, bookId: "book", periodId: "period" }
+  };
+  const statement = {
+    runId: "statement-run-1", importId: "different-import-identity", startedAtUtc: "2026-11-11T12:00:00Z", completedAtUtc: "2026-11-11T12:00:01Z",
+    positionMatches: 1, cashMatches: 1, transactionMatches: 1, openExceptionCount: 2, account: "Account A"
+  };
+  const recordServices = (): CommandPaletteEntitySearchServices => ({
+    searchSymbols: vi.fn().mockResolvedValue([]), searchSecurities: vi.fn().mockResolvedValue([]),
+    getReportRun: vi.fn().mockResolvedValue(report), getStatementRun: vi.fn().mockResolvedValue(statement)
+  });
+
+  it("looks up exactly one governed report and disables fallback without broad search calls", async () => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    const { result } = renderHook(() => useCommandPaletteEntitySearch({ open: true, query: "report: report-1", services }));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(services.getReportRun).toHaveBeenCalledWith("report-1", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false });
+    expect(services.searchSymbols).not.toHaveBeenCalled();
+    expect(services.searchSecurities).not.toHaveBeenCalled();
+    expect(services.getStatementRun).not.toHaveBeenCalled();
+    expect(result.current.items).toEqual([expect.objectContaining({ id: "report:report-1", route: "/reporting/runs/detail?runId=report-1", statusLabel: "InReview" })]);
+  });
+
+  it("keeps statement run and import identities distinct in the selected-run route", async () => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    const { result } = renderHook(() => useCommandPaletteEntitySearch({ open: true, query: "statement: statement-run-1", services }));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.items[0]).toMatchObject({
+      route: "/accounting/reconciliation?reconciliationRun=statement-run-1#statement-runs",
+      description: expect.stringContaining("different-import-identity")
+    });
+    expect(services.getStatementRun).toHaveBeenCalledWith("statement-run-1", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false });
+  });
+
+  it.each([
+    [401, "Sign in again"], [403, "Permission denied"], [404, "No accessible report run matches this exact ID"], [503, "lookup service unavailable"]
+  ])("distinguishes HTTP %s lookup failures from an empty search", async (status, message) => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    vi.mocked(services.getReportRun!).mockRejectedValue(new ApiError({ status: Number(status), path: "/test" }));
+    const { result } = renderHook(() => useCommandPaletteEntitySearch({ open: true, query: "report: report-1", services }));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toContain(message);
+    expect(result.current.items).toEqual([]);
+  });
+
+  it("clears prior records immediately and ignores a delayed result after query changes", async () => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    let complete!: (value: typeof report) => void;
+    vi.mocked(services.getReportRun!).mockResolvedValueOnce(report).mockImplementationOnce(() => new Promise(resolve => { complete = resolve; }));
+    const { result, rerender } = renderHook(({ query, open }) => useCommandPaletteEntitySearch({ open, query, services }), { initialProps: { query: "report: report-1", open: true } });
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.items).toHaveLength(1);
+    rerender({ query: "report: report-2", open: true });
+    expect(result.current.items).toEqual([]);
+    expect(result.current.status).toBe("searching");
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    rerender({ query: "report: report-2", open: false });
+    await act(async () => complete({ ...report, runId: "report-2" }));
+    expect(result.current.items).toEqual([]);
+    expect(result.current.status).toBe("idle");
+  });
+
+  it("rejects a different retained record instead of silently substituting it", async () => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    const { result } = renderHook(() => useCommandPaletteEntitySearch({ open: true, query: "report: not-report-1", services }));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.status).toBe("error");
+    expect(result.current.error).toContain("No alternative record");
+    expect(result.current.items).toEqual([]);
+  });
+
+  it.each(["account: a", "journal: j", "import: imported-1", "report:"])("explains unsupported or incomplete %s without querying unrelated sources", async query => {
+    vi.useFakeTimers();
+    const services = recordServices();
+    const { result } = renderHook(() => useCommandPaletteEntitySearch({ open: true, query, services }));
+    await act(() => vi.advanceTimersByTimeAsync(250));
+    expect(result.current.error).toBeTruthy();
+    expect(result.current.items).toEqual([]);
+    expect(services.searchSymbols).not.toHaveBeenCalled();
+    expect(services.searchSecurities).not.toHaveBeenCalled();
+    expect(services.getReportRun).not.toHaveBeenCalled();
+    expect(services.getStatementRun).not.toHaveBeenCalled();
+  });
+
+  it("parses typed record prefixes without changing opaque IDs", () => {
+    expect(parseCommandPaletteRecordQuery(" REPORT-RUN: AbC/1 ")).toEqual({ kind: "report", value: "AbC/1", guidance: null });
+    expect(parseCommandPaletteRecordQuery("aa").kind).toBe("general");
+    expect(parseCommandPaletteRecordQuery("import: a").guidance).toContain("exact statement reconciliation run ID");
+  });
+
   it("normalizes symbol and security records into palette entity items", () => {
     expect(buildCommandPaletteEntityItems([symbol], [security])).toEqual([
       expect.objectContaining({

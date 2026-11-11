@@ -29,6 +29,21 @@ export interface DataAnalyticsDegradedViewModel {
   retryAll: () => Promise<void>;
 }
 
+/** Availability describes the reads, independently of the financial quality they return. */
+export function buildDataAnalyticsAvailability(panels: DataAnalyticsPanelStatus[]) {
+  const unavailable = panels.filter((panel) => panel.error !== null);
+  const checking = panels.filter((panel) => panel.loading);
+  return {
+    label: unavailable.length
+      ? `${unavailable.length} diagnostic${unavailable.length === 1 ? "" : "s"} unavailable${checking.length ? " · checking" : ""}`
+      : checking.length ? "Checking diagnostics…" : `${panels.length}/${panels.length} diagnostics available`,
+    tone: unavailable.length ? "warning" as const : checking.length ? "outline" as const : "success" as const,
+    detail: unavailable.length
+      ? `Unavailable: ${unavailable.map((panel) => panel.label).join(", ")}. Available reads do not establish healthy data.`
+      : checking.length ? "Waiting for current diagnostic reads. Data quality is shown separately." : "Diagnostic reads are available. Review data quality separately."
+  };
+}
+
 /**
  * One upstream condition renders one state: when two or more of the Data
  * analytics reads fail together, the overview surfaces a single degraded
@@ -48,7 +63,7 @@ export function buildDataAnalyticsDegradedViewModel(
     affectedIds: new Set(affected.map((panel) => panel.id)),
     title: "Data analytics services degraded",
     detail:
-      "The analytics reads behind these panels are unavailable, so their posture is paused. Provider streaming and backfills are unaffected.",
+      "The analytics reads behind these panels are unavailable, so their posture is paused. Provider streaming and backfill status are reported separately.",
     affectsLabel: affected.map((panel) => panel.label).join(" · "),
     retryLabel: "Retry all",
     retryBusyLabel: "Retrying…",

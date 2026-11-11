@@ -1,5 +1,6 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, type AriaAttributes, useId, useState } from "react";
 import { cn } from "@/lib/utils";
+import { useFormFieldProps } from "@/components/ui/form-field-context";
 
 export interface NumberInputProps {
   value?: number;
@@ -15,6 +16,8 @@ export interface NumberInputProps {
   className?: string;
   id?: string;
   "aria-label"?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: AriaAttributes["aria-invalid"];
 }
 
 /**
@@ -35,8 +38,14 @@ export function NumberInput({
   error = false,
   className,
   id,
-  "aria-label": ariaLabel
+  "aria-label": ariaLabel,
+  "aria-describedby": describedBy,
+  "aria-invalid": ariaInvalid
 }: NumberInputProps) {
+  const generatedId = useId();
+  const fieldProps = useFormFieldProps({ id, "aria-describedby": describedBy, "aria-invalid": ariaInvalid }, error);
+  const controlId = fieldProps.id ?? (label ? `number-${generatedId}` : undefined);
+  const invalid = Boolean(fieldProps["aria-invalid"] && fieldProps["aria-invalid"] !== "false");
   const controlled = value !== undefined;
   const [internal, setInternal] = useState(defaultValue);
   const current = controlled ? value! : internal;
@@ -59,15 +68,15 @@ export function NumberInput({
   return (
     <div className={className}>
       {label ? (
-        <label htmlFor={id} className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={controlId} className="form-field-label mb-1.5 block">
           {label}
         </label>
       ) : null}
       <div
         className={cn(
-          "flex h-9 items-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
+          "flex h-[var(--ws-control-height)] items-center rounded-[2px] border bg-[var(--ws-surface-raised)]",
           "focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/40",
-          error ? "border-danger/60" : "border-border",
+          invalid ? "border-danger/60" : "border-border",
           disabled && "cursor-not-allowed opacity-55"
         )}
       >
@@ -81,10 +90,12 @@ export function NumberInput({
           −
         </button>
         <input
-          id={id}
+          id={controlId}
           type="number"
           inputMode="decimal"
           aria-label={ariaLabel}
+          aria-describedby={fieldProps["aria-describedby"]}
+          aria-invalid={fieldProps["aria-invalid"]}
           value={current}
           min={min}
           max={max}

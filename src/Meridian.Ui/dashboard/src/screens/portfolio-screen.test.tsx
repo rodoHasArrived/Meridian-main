@@ -836,6 +836,31 @@ describe("PortfolioScreen", () => {
     expect(within(brokerageTable).queryByText("AAPL")).toBeNull();
   });
 
+  it("sorts native brokerage amounts within currency groups without losing the selected inspector", async () => {
+    const user = userEvent.setup();
+    const nativePortfolio = {
+      ...brokeragePortfolio,
+      positions: [
+        { ...brokeragePortfolio.positions[0], currency: "EUR", unrealizedPnl: -200 },
+        { ...brokeragePortfolio.positions[1], currency: "USD", unrealizedPnl: 9 },
+        { ...brokeragePortfolio.positions[0], symbol: "EUR-GAIN", positionId: "eur-gain", currency: "EUR", unrealizedPnl: 1000 }
+      ]
+    };
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} brokerageConnection={brokerageConnection} brokeragePortfolio={nativePortfolio} />, { initialEntries: ["/portfolio/brokerage-sync"] });
+    const table = screen.getByRole("treegrid", { name: /alpaca paper current positions/i });
+    const orderedSymbols = () => Array.from(table.querySelectorAll("tr[data-dense-row-id]")).map(row => row.getAttribute("data-dense-row-id"));
+    await user.click(within(table).getByRole("row", { name: /inspect msft brokerage live position/i }));
+    await user.click(within(table).getByRole("button", { name: "Sort by Unrealized P&L" }));
+    expect(orderedSymbols()).toEqual(["fund-roth-AAPL-pos-aapl", "fund-roth-EUR-GAIN-eur-gain", "fund-taxable-MSFT-pos-msft"]);
+    await user.click(within(table).getByRole("button", { name: /Unrealized P&L sorted ascending/ }));
+    expect(orderedSymbols()).toEqual(["fund-roth-EUR-GAIN-eur-gain", "fund-roth-AAPL-pos-aapl", "fund-taxable-MSFT-pos-msft"]);
+    expect(screen.getByRole("region", { name: /msft brokerage position detail/i })).toBeInTheDocument();
+    expect(table.querySelector('[data-dense-row-id="fund-taxable-MSFT-pos-msft"]')).toHaveAttribute("aria-selected", "true");
+    expect(within(table).getByRole("columnheader", { name: /Unrealized P&L/ })).toHaveAttribute("aria-sort", "descending");
+    expect(within(table).getByRole("columnheader", { name: /Currency/ })).toBeInTheDocument();
+    expect(within(table).getByText(/no FX conversion is applied/)).toBeInTheDocument();
+  });
+
   it("renders a dedicated brokerage-sync workflow panel on the route", async () => {
     await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting} />, {
       initialEntries: ["/portfolio/brokerage-sync"]

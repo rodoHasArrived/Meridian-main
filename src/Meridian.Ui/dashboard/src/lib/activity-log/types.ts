@@ -5,6 +5,31 @@
 
 export type ActivityTone = "default" | "success" | "warning" | "danger";
 
+export type ActivityOperationStatus = "pending" | "completed" | "failed" | "uncertain";
+
+/** Display-only references. Never a request payload, credential, approval or retry command. */
+export interface ActivityOperation {
+  status: ActivityOperationStatus;
+  actor?: string;
+  scope?: string;
+  reference?: string;
+  updatedAt: string;
+}
+
+export interface ActivityOperationInput extends Omit<ActivityEntryInput, "undo" | "tone"> {
+  actor?: string;
+  scope?: string;
+  reference?: string;
+}
+
+export interface ActivityOperationUpdate {
+  status: ActivityOperationStatus;
+  detail?: string;
+  reference?: string;
+  route?: string;
+  routeLabel?: string;
+}
+
 /**
  * Undo lifecycle for an entry:
  * - `none`     — the action is not reversible (no compensating operation).
@@ -56,4 +81,5 @@ export interface ActivityEntry {
   undoStatus: ActivityUndoStatus;
   /** Last undo failure message, when undoStatus === "failed". */
   undoError?: string;
+  operation?: ActivityOperation;
 }

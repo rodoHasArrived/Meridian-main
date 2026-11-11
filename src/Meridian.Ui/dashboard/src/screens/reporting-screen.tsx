@@ -1,7 +1,10 @@
+import { useActivityLog } from "@/lib/activity-log/store";
 import { type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react";
 import { FileText, Landmark, Network, PencilLine, RotateCcw, XCircle } from "lucide-react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { formatCurrency as formatCurrencyAmount, formatPercent as formatPercentAmount } from "@/lib/format";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -221,10 +224,28 @@ const reportingProfileColumns: DenseDataTableColumn<ReportingProfileRow>[] = [
 ];
 
 export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews }: ReportingScreenProps) {
+  const { beginOperation, updateOperation } = useActivityLog();
   const { pathname, search } = useLocation();
+  const [exportParams, setExportParams] = useSearchParams();
+  const exportSearch = exportParams.get("exportSearch") ?? "";
+  const exportFormat = exportParams.get("exportFormat") ?? "";
+  const exportSort = ["profile", "target", "format"].includes(exportParams.get("exportSort") ?? "") ? exportParams.get("exportSort")! : "profile";
+  const exportDirection = exportParams.get("exportDirection") === "desc" ? "desc" : "asc";
+  const updateExportView = (key: string, value: string) => setExportParams(current => {
+    const next = new URLSearchParams(current);
+    if (value) next.set(key, value); else next.delete(key);
+    return next;
+  }, { replace: key === "exportSearch" });
   const reportingData = normalizeReportingWorkspace(data);
   const accountingData = accounting ?? null;
   const vm = useReportingScreenViewModel(reportingData, undefined, pathname);
+  const exportRows = vm.rows.filter(row => (!exportFormat || row.formatLabel === exportFormat)
+    && `${row.name} ${row.targetLabel} ${row.description} ${row.formatLabel}`.toLowerCase().includes(exportSearch.trim().toLowerCase()))
+    .sort((left, right) => {
+      const field = exportSort === "target" ? "targetLabel" : exportSort === "format" ? "formatLabel" : "name";
+      const result = left[field].localeCompare(right[field], undefined, { numeric: true });
+      return (exportDirection === "asc" ? result : -result) || left.id.localeCompare(right.id);
+    });
   const hubModel = useMemo(
     () => buildReportingHubModel(vm.runStatusRows, vm.templateRows, reportingData?.dailyWork ?? []),
     [reportingData?.dailyWork, vm.runStatusRows, vm.templateRows]
@@ -352,7 +373,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       : vm.templateRows;
   const writerGrids = writerTemplateRows.flatMap((template) => template.writerGrids);
   const governanceScopeUnavailable = isGovernanceTaskMode && !vm.accessAudit.isAvailable;
-  const latestRetainedAsOfDate = vm.runStatusRows.find((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel))?.asOfDateLabel ?? null;
+  const latestRetainedAsOfDate = vm.runStatusRows.filter((run) => hasRetainedReportingAsOfDate(run.asOfDateLabel)).map(run => run.asOfDateLabel).sort().at(-1) ?? null;
   const reportPackWorkflowRecord = [...(reportingData?.workflowRecords ?? [])]
     .sort((left, right) => right.updatedAt.localeCompare(left.updatedAt))[0] ?? null;
   const reportPackPeriodToken = reportPackWorkflowRecord?.period.match(/^\d{4}-\d{2}/)?.[0] ?? null;
@@ -527,6 +548,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       details: []
     });
 
+    const operation = beginOperation({ kind: `reporting.schedule.${action}`, title: action === "run" ? `Submit run request: ${schedule.id}` : label, reference: schedule.id, scope: "Reporting schedule", route: "/reporting/scheduled" });
     try {
       let details: string[] = [];
       if (action === "pause") {
@@ -536,16 +558,19 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       } else {
         const result = await runReportingScheduleNow(schedule.id);
         details = formatReportingScheduleRunDetails(result);
+        updateOperation(operation, { status: "completed", reference: result.run.runId, route: workstationRouteWithQuery("reportingRunDetail", { runId: result.run.runId }), detail: `Run request returned retained status: ${result.run.status}. This does not establish delivery or approval.` });
       }
 
+      if (action !== "run") updateOperation(operation, { status: "completed", detail: "Schedule change confirmed by the service." });
       setScheduleActionStatus({
         id: statusId,
         label,
         state: "success",
-        message: `${label} completed.`,
+        message: action === "run" ? `${label} request acknowledged. Review the retained run status.` : `${label} completed.`,
         details
       });
     } catch (error) {
+      updateOperation(operation, { status: "uncertain", detail: "Outcome unconfirmed. Inspect retained schedule/run status before another command." });
       const display = describeApiError(error, `${label} failed.`);
       setScheduleActionStatus({
         id: statusId,
@@ -572,16 +597,18 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       details: [`Delivery mode: ${plan.deliveryMode}`, `Formats: ${plan.formatsLabel}`]
     });
 
+    const operation = beginOperation({ kind: "reporting.schedule.run", title: `Submit run request: ${plan.scheduleId}`, reference: plan.scheduleId, scope: "Reporting schedule", route: "/reporting/run-status" });
     try {
       const result = await runReportingScheduleNow(plan.scheduleId);
       const recipientAttempts = (result.deliveryAttempts ?? []).filter(
         (attempt) => attempt.distributionId === plan.distributionId || attempt.recipient === plan.recipient
       );
+      updateOperation(operation, { status: "completed", reference: result.run.runId, route: workstationRouteWithQuery("reportingRunDetail", { runId: result.run.runId }), detail: `Run request returned retained status: ${result.run.status}. Review the retained run and delivery outcomes.` });
       setScheduleActionStatus({
         id: statusId,
         label,
         state: "success",
-        message: `${label} completed.`,
+        message: `${label} request acknowledged. Retained run status: ${result.run.status}.`,
         details: [
           ...formatReportingScheduleRunDetails(result),
           `Recipient deliveries: ${recipientAttempts.length}`,
@@ -589,6 +616,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         ]
       });
     } catch (error) {
+      updateOperation(operation, { status: "uncertain", detail: "Outcome unconfirmed. Inspect retained report status before another run." });
       const display = describeApiError(error, `${label} failed.`);
       setScheduleActionStatus({
         id: statusId,
@@ -824,13 +852,13 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
         source={{ value: "Governed Reporting service", tone: "ready" }}
         scope={{ value: vm.taskMode.label, detail: vm.taskMode.description, tone: "ready" }}
         freshness={{
-          value: latestRetainedAsOfDate ? presentReportingAsOfDate(latestRetainedAsOfDate) : "No as-of date retained",
+          value: latestRetainedAsOfDate ? "Input freshness not established" : "No as-of date retained",
           detail: latestRetainedAsOfDate
-            ? "Latest retained reporting period"
+            ? `Latest retained financial period: ${presentReportingAsOfDate(latestRetainedAsOfDate)}. A reporting period does not establish input freshness or release readiness.`
             : vm.runStatusRows.length > 0
               ? "Loaded runs do not retain an as-of date; confirm the reporting period before release"
-              : "Generate a report to establish freshness",
-          tone: latestRetainedAsOfDate ? "ready" : "review"
+              : "No generated reporting evidence is available",
+          tone: "review"
         }}
         completeness={{
           value: `${vm.templateRows.length} templates · ${vm.runStatusRows.length} runs`,
@@ -1292,6 +1320,8 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       ) : null}
 
       {isExportsTaskMode && (reportingData.structuredExports ?? []).length > 0 ? (
+        <details className="border border-border p-3">
+          <summary className="cursor-pointer text-sm font-semibold">Structured export formats and integrity evidence</summary>
         <section role="region" aria-label="Structured reporting exports">
           <Card className="panel-surface">
             <CardHeader>
@@ -1434,6 +1464,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
             </CardContent>
           </Card>
         </section>
+        </details>
       ) : null}
 
       {isReportBuilderTaskMode && (requestedReportBuilderTemplateId || requestedReportBuilderFamily) ? (
@@ -2327,11 +2358,25 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                 <ReportingChip key={chip.label} label={chip.label} value={chip.value} />
               ))}
             </div>
+            <div className="flex flex-wrap items-end gap-3">
+              <label className="grid gap-1 text-xs">Search export profiles<Input type="search" value={exportSearch} onChange={event => updateExportView("exportSearch", event.target.value)} /></label>
+              <label className="grid gap-1 text-xs">Export format<Select value={exportFormat} onChange={event => updateExportView("exportFormat", event.target.value)}><option value="">All formats</option>{[...new Set(vm.rows.map(row => row.formatLabel))].map(format => <option key={format}>{format}</option>)}</Select></label>
+              <p role="status" className="text-xs">{exportRows.length} of {vm.rows.length} loaded profiles</p>
+              {(exportSearch || exportFormat) ? <Button type="button" size="sm" variant="ghost" onClick={() => setExportParams(current => { const next = new URLSearchParams(current); next.delete("exportSearch"); next.delete("exportFormat"); return next; })}>Clear export filters</Button> : null}
+            </div>
+            {vm.selectedProfile && !exportRows.some(row => row.id === vm.selectedProfile?.id) ? <p role="status" className="text-sm">Selected export profile is outside these filters. Its evidence remains in the inspector.</p> : null}
             <div>
               {vm.hasRows ? (
                 <DenseDataTable
-                  columns={reportingProfileColumns}
-                  rows={vm.rows}
+                  columns={reportingProfileColumns.map(column => ({ ...column, sortable: column.id !== "evidence" }))}
+                  rows={exportRows}
+                  sort={{ columnId: exportSort, direction: exportDirection }}
+                  onToggleSort={columnId => setExportParams(current => {
+                    const next = new URLSearchParams(current);
+                    next.set("exportSort", columnId);
+                    next.set("exportDirection", exportSort === columnId && exportDirection === "asc" ? "desc" : "asc");
+                    return next;
+                  })}
                   getRowId={(profile) => profile.id}
                   getRowAriaLabel={(profile) => profile.selectAriaLabel}
                   getRowSelectAriaLabel={(profile) => profile.selectAriaLabel}
@@ -2339,7 +2384,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
                   getRowAriaExpanded={(profile) => profile.isExpanded}
                   onRowSelect={(profile) => vm.selectProfile(profile.id)}
                   selectedRowId={vm.selectedProfile?.id ?? null}
-                  emptyText={vm.emptyText}
+                  emptyText={vm.rows.length ? "No export profiles match these filters." : vm.emptyText}
                   ariaLabel={vm.listLabel}
                   caption={`${vm.listLabel}. Select a row to inspect export evidence and actions.`}
                 />

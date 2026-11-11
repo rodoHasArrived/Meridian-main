@@ -26,4 +26,26 @@ describe("DensityToggle", () => {
     render(<DensityToggle value="spacious" apply={false} />);
     expect(screen.getByRole("radio", { name: "Spacious" })).toHaveAttribute("aria-checked", "true");
   });
+
+  it("keeps one tab stop and supports wrapped arrows, Home and End without shrinking type", async () => {
+    const user = userEvent.setup();
+    render(<DensityToggle showLabels={false} />);
+    const compact = screen.getByRole("radio", { name: "Compact" });
+    const normal = screen.getByRole("radio", { name: "Default" });
+    const spacious = screen.getByRole("radio", { name: "Spacious" });
+    expect(compact).toHaveAttribute("tabindex", "-1");
+    await user.tab();
+    expect(normal).toHaveFocus();
+    await user.keyboard("{ArrowRight}");
+    expect(spacious).toHaveFocus();
+    expect(spacious).toHaveAttribute("aria-checked", "true");
+    await user.keyboard("{ArrowDown}");
+    expect(compact).toHaveFocus();
+    expect(document.body).toHaveAttribute("data-theme-density", "compact");
+    await user.keyboard("{End}");
+    expect(spacious).toHaveFocus();
+    await user.keyboard("{Home}");
+    expect(compact).toHaveFocus();
+    expect(normal).toHaveAttribute("tabindex", "-1");
+  });
 });

@@ -145,7 +145,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
   const [selection, setSelection] = useState<{ requestKey: string; index: number } | null>(null);
-  const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  const [thresholdError, setThresholdError] = useState<string | null>(null);
+  const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash, retryAttempt]);
   const ladder = result?.requestKey === requestKey ? result.ladder : null;
   const status = result?.requestKey === requestKey ? result.status : "loading";
   const selectedBucket = selection?.requestKey === requestKey ? selection.index : null;
@@ -187,6 +189,11 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
 
   function applyMinimumCash() {
     const parsed = Number(minimumCashInput);
+    if (minimumCashInput.trim() && !Number.isFinite(parsed)) {
+      setThresholdError("Enter a finite minimum cash balance, or clear the field to use the service default.");
+      return;
+    }
+    setThresholdError(null);
     minimumCashDirty.current = false;
     setAppliedMinimumCash(minimumCashInput.trim() !== "" && Number.isFinite(parsed) ? parsed : undefined);
   }
@@ -226,7 +233,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Min balance
             <input
-              type="number"
+              type="text"
               inputMode="decimal"
               className="w-28 rounded border bg-background px-2 py-1 text-sm text-foreground"
               placeholder="0"
@@ -241,6 +248,8 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                 }
               }}
               aria-label="Minimum cash balance threshold"
+              aria-invalid={thresholdError ? true : undefined}
+              aria-describedby="cash-threshold-help"
             />
           </label>
           <Button type="button" size="sm" variant="outline" onClick={applyMinimumCash}>
@@ -255,14 +264,20 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         </div>
       </div>
 
+      <p id="cash-threshold-help" className="text-xs text-muted-foreground">
+        {thresholdError ? <span role="alert" className="text-danger">{thresholdError}</span>
+          : appliedMinimumCash === undefined ? "Using the service default minimum balance. Clear the field and apply to restore the default."
+          : `Applied minimum balance: ${ladder ? formatCashLadderThreshold(appliedMinimumCash, ladder.baseCurrency) : appliedMinimumCash}.`}
+      </p>
       {status === "error" ? (
         <Card>
           <CardContent className="py-8">
             <EmptyState
               icon="inbox"
               title="Cash ladder unavailable"
-              detail="The cash ladder request failed. Verify the workstation API is reachable and retry."
+              detail="The cash ladder request failed. Retry the same account, scenario and threshold."
             />
+            <Button type="button" variant="outline" onClick={() => setRetryAttempt(value => value + 1)}>Retry cash ladder</Button>
           </CardContent>
         </Card>
       ) : null}
@@ -321,7 +336,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                 <svg
                   viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
                   className="w-full"
-                  role="img"
+                  role="group"
                   aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
                 >
                   {chart.yTicks.map((tick) => (

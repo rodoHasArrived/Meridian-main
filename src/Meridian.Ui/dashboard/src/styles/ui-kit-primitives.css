@@ -352,20 +352,32 @@
 }
 
 .dense-data-table thead {
-  background: #F4F3EF;
+  background: var(--ws-surface-subtle);
 }
 
 .dense-data-table th {
   border-bottom: 1px solid var(--ws-border-strong);
   color: var(--ws-text-muted);
-  padding: 0.4375rem 0.625rem;
+  padding: var(--ws-table-cell-block) var(--ws-table-cell-inline);
   font-weight: 700;
   letter-spacing: 0;
 }
 
 .dense-data-table td {
   border-top: 1px solid var(--ws-row-border);
-  padding: 0.4375rem 0.625rem;
+  padding: var(--ws-table-cell-block) var(--ws-table-cell-inline);
+  font-size: var(--ws-type-data);
+  line-height: 1.45;
+}
+
+.dense-data-table td.text-right {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.dense-data-table-wrap:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
 }
 
 .dense-data-table tbody tr {
@@ -373,7 +385,7 @@
 }
 
 .dense-data-table tbody tr:nth-child(even) {
-  background: #fbfcfd;
+  background: var(--ws-surface-raised);
 }
 
 .dense-data-table tbody tr:hover {
@@ -415,6 +427,9 @@
 
 .dense-data-table-wrap-virtual .dense-data-table tbody tr.selectable td,
 .dense-data-table-wrap-virtual .dense-data-table tbody tr td {
+  /* Explicit virtual row heights own spacing; density must not change offset math. */
+  padding-block: 0;
+  vertical-align: middle;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

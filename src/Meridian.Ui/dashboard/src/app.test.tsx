@@ -344,7 +344,7 @@ describe("App", () => {
     expect(screen.getByRole("status", { name: "Activation status check" })).toHaveTextContent(
       "Checking activation status"
     );
-    expect(screen.queryByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(screen.queryByRole("button", { name: "Go to route, action, evidence... Ctrl K. Open workstation command palette (Ctrl K)" }))
       .not.toBeInTheDocument();
     expect(mockedUseWorkstationData).not.toHaveBeenCalled();
   });
@@ -375,7 +375,7 @@ describe("App", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Retry activation check" }));
 
-    expect(await screen.findByRole("button", { name: "Open workstation command palette (Ctrl K)" }))
+    expect(await screen.findByRole("button", { name: "Go to route, action, evidence... Ctrl K. Open workstation command palette (Ctrl K)" }))
       .toBeInTheDocument();
     expect(firstRunRequests).toBe(2);
     expect(mockedUseWorkstationData).toHaveBeenCalled();
@@ -453,7 +453,7 @@ describe("App", () => {
   it("opens and closes the command palette with Control+K", async () => {
     const user = userEvent.setup();
     renderWithRouter(<App />, { initialEntries: ["/trading"] });
-    const trigger = screen.getByRole("button", { name: "Open workstation command palette (Ctrl K)" });
+    const trigger = screen.getByRole("button", { name: "Go to route, action, evidence... Ctrl K. Open workstation command palette (Ctrl K)" });
 
     expect(document.querySelector('[data-design-system-component="Masthead"]')).toHaveClass("mds-masthead");
     expect(trigger).toHaveClass("mds-masthead__search");
@@ -466,7 +466,7 @@ describe("App", () => {
     const dialog = screen.getByRole("dialog", { name: "Open workstation command" });
     expect(dialog).toHaveAttribute("id", "command-palette-dialog");
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(trigger).toHaveAccessibleName("Close workstation command palette (Ctrl K)");
+    expect(trigger).toHaveAccessibleName("Go to route, action, evidence... Ctrl K. Close workstation command palette (Ctrl K)");
 
     await user.keyboard("{Control>}k{/Control}");
     expect(screen.queryByRole("dialog", { name: "Open workstation command" })).not.toBeInTheDocument();
@@ -691,7 +691,7 @@ describe("App", () => {
     renderWithRouter(<App />, { initialEntries: ["/data/quotes?symbol=MSFT"] });
 
     expect(screen.getByRole("region", { name: "Market Data To Paper continuity" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change scope: operating context" })).toBeInTheDocument();
     expect(screen.getByLabelText("Operating scope")).toHaveTextContent("MSFT");
     expect(screen.queryByText("/data/quotes?symbol=MSFT")).not.toBeInTheDocument();
     expect(screen.queryByText("Import -> Validate -> Reconcile -> Investigate -> Approve -> Report")).not.toBeInTheDocument();
@@ -719,7 +719,7 @@ describe("App", () => {
       "href",
       "/trading/readiness?symbol=MSFT"
     );
-    expect(screen.getByRole("button", { name: "Change operating scope" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Change scope: operating context" })).toBeInTheDocument();
   });
 
   it("renders and clears the global operating scope across the workstation shell", async () => {
@@ -782,7 +782,7 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: "Change scope: operating context" }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     expect(window.localStorage.getItem("meridian.workstation.operatingContext.v1")).toContain("fund-1");
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
@@ -817,7 +817,7 @@ describe("App", () => {
     expect(JSON.parse(window.localStorage.getItem(storageKey) ?? "{}")).toMatchObject({
       symbol: "MSFT", fundAccountId: "fund-1", provider: "Alpaca"
     });
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: "Change scope: operating context" }));
     await user.clear(screen.getByLabelText("Fund account"));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 
@@ -995,7 +995,7 @@ describe("App", () => {
     );
 
     await user.keyboard("{Escape}");
-    await user.click(screen.getByRole("button", { name: "Change operating scope" }));
+    await user.click(screen.getByRole("button", { name: "Change scope: operating context" }));
     await user.click(screen.getByRole("button", { name: "Clear scope" }));
     await user.click(screen.getByRole("button", { name: "Apply scope" }));
 

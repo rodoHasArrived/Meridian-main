@@ -1,5 +1,6 @@
 import { forwardRef } from "react";
 import { cn } from "@/lib/utils";
+import { useFormFieldProps } from "@/components/ui/form-field-context";
 
 /**
  * Native `<select>` with Meridian styling and a custom chevron overlay.
@@ -25,23 +26,26 @@ export interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElemen
 }
 
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ children, className, error = false, placeholder, ...props }, ref) => (
+  ({ children, className, error = false, placeholder, ...props }, ref) => {
+    const fieldProps = useFormFieldProps(props, error);
+    const invalid = Boolean(fieldProps["aria-invalid"] && fieldProps["aria-invalid"] !== "false");
+    return (
     <div className="relative flex items-center">
       <select
         ref={ref}
         className={cn(
           "w-full appearance-none rounded-[2px] border bg-[var(--ws-surface-raised)] text-sm text-foreground",
-          "min-h-9 py-2 pl-3 pr-8",
+          "min-h-[var(--ws-control-height)] py-[var(--ws-control-block)] pl-3 pr-8",
           "transition-colors duration-150",
           "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           "disabled:cursor-not-allowed disabled:opacity-50",
-          error
+          invalid
             ? "border-danger/60 focus-visible:ring-danger/40"
             : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
           className
         )}
-        aria-invalid={error || undefined}
         {...props}
+        {...fieldProps}
       >
         {placeholder && (
           <option value="" disabled>
@@ -63,7 +67,8 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         </svg>
       </span>
     </div>
-  )
+    );
+  }
 );
 
 Select.displayName = "Select";

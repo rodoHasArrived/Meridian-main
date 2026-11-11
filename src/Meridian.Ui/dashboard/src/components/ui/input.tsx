@@ -1,5 +1,6 @@
 import { forwardRef, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { useFormFieldProps } from "@/components/ui/form-field-context";
 
 /**
  * Single-line text input with Meridian styling. Wraps a native `<input>` in a relative
@@ -31,6 +32,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ className, error = false, leadingIcon, trailingIcon, type = "text", ...props }, ref) => {
     const hasLeading = Boolean(leadingIcon);
     const hasTrailing = Boolean(trailingIcon);
+    const fieldProps = useFormFieldProps(props, error);
+    const invalid = Boolean(fieldProps["aria-invalid"] && fieldProps["aria-invalid"] !== "false");
 
     return (
       <div className="relative flex items-center">
@@ -47,19 +50,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           type={type}
           className={cn(
             "w-full rounded-[2px] border bg-[var(--ws-surface-raised)] text-sm text-foreground placeholder:text-muted-foreground/60",
-            "min-h-9 px-3 py-2",
+            "min-h-[var(--ws-control-height)] px-3 py-[var(--ws-control-block)]",
             "transition-[background-color,border-color] duration-150",
             "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
             "disabled:cursor-not-allowed disabled:opacity-50",
-            error
+            invalid
               ? "border-danger/60 focus-visible:ring-danger/40"
               : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
             hasLeading && "pl-9",
             hasTrailing && "pr-9",
             className
           )}
-          aria-invalid={error || undefined}
           {...props}
+          {...fieldProps}
         />
         {hasTrailing && (
           <span

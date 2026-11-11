@@ -4,6 +4,7 @@ import { assetCapabilitiesMatchScope, assetCommandMatchesScope, postedAssetJourn
 import type { ApiRequestOptions } from "@/lib/api";
 import type { AssetAccountingDraftCapabilities, AssetPostedJournalReceipt, AssetWorkflowScope } from "@/types/asset-accounting-workflow";
 import type { JournalEntryLifecycleActionRequest, JournalEntryLifecycleActionResult, ManualJournalEntryDraft } from "@/types";
+import { useActivityLog } from "@/lib/activity-log/store";
 
 type AssetAction = "Approve" | "Post";
 interface PendingCommand { scopeKey: string; candidateFingerprint: string; request: JournalEntryLifecycleActionRequest }
@@ -32,6 +33,7 @@ function retain(scopeKey: string, pending: PendingCommand | null) {
 }
 
 export function useAssetAccountingWorkflow({ draft, active, sessionIdentity = null, load, execute, onResult, refreshWorkbench }: Options) {
+  const { beginOperation, updateOperation } = useActivityLog();
   const scope: AssetWorkflowScope | null = draft.assetAccountingDraft && draft.ledgerBookId && draft.periodId
     ? { journalEntryId: draft.journalEntryId, fundProfileId: draft.fundProfileId, ledgerBookId: draft.ledgerBookId, periodId: draft.periodId, draftVersion: draft.version, accountingBasis: draft.accountingBasis } : null;
   const scopeKey = scope ? JSON.stringify([sessionIdentity, scope.fundProfileId, scope.ledgerBookId, scope.periodId, scope.journalEntryId]) : "";
@@ -121,6 +123,16 @@ export function useAssetAccountingWorkflow({ draft, active, sessionIdentity = nu
     const retained = currentPending ?? { scopeKey, candidateFingerprint: capability.candidateFingerprint, request };
     pendingRef.current = retained; setPending(retained); retain(scopeKey, retained);
     busy.current = true; setBusyAction(action); setErrorText(null); setStatusText(null);
+    const activityId = beginOperation({
+      id: `asset-command-${request.correlationId}`, kind: `journal.${action.toLowerCase()}`,
+      title: action === "Post" ? "Post asset journal" : "Approve asset journal",
+      actor: capability.authenticatedActor ?? undefined,
+      scope: `Fund ${scope.fundProfileId} · Book ${scope.ledgerBookId} · Period ${scope.periodId}`,
+      reference: request.correlationId ?? undefined,
+      route: `/accounting/journal-entries?${new URLSearchParams({ fundProfileId: scope.fundProfileId, ledgerBookId: scope.ledgerBookId, periodId: scope.periodId, journalEntryId: scope.journalEntryId })}`,
+      routeLabel: "Inspect retained workflow"
+    });
+    let operationConfirmed = false;
     try {
       const result = await execute(request);
       if (!assetCommandMatchesScope(result.journalEntry, scope) || result.journalEntry.periodId?.toLowerCase() !== scope.periodId.toLowerCase()
@@ -129,12 +141,22 @@ export function useAssetAccountingWorkflow({ draft, active, sessionIdentity = nu
       if (!sameAssetPrincipal(result.transition.actor, capability.authenticatedActor)) throw new Error("The command response belongs to a different authenticated operator. Reload retained state.");
       if (action === "Post" && !sameAssetPrincipal(result.transition.actor, capability.approval?.approver)) throw new Error("The posting response does not belong to the retained approver.");
       if (action === "Post" && (!result.postedJournal || !postedAssetJournalMatchesScope(result.postedJournal, scope))) throw new Error("Posting was not confirmed by a canonical journal receipt. Reload the retained workflow.");
+      updateOperation(activityId, {
+        status: "completed", detail: action === "Post" ? "Canonical posting receipt confirmed." : "Retained approval transition confirmed.",
+        reference: result.transition.transitionId,
+        ...(result.postedJournal ? {
+          route: `/accounting/journal-entries/detail?${new URLSearchParams({ journalEntryId: result.postedJournal.journalEntryId, periodId: result.postedJournal.periodId, ledgerBookId: result.postedJournal.ledgerBookId })}`,
+          routeLabel: "Open canonical posted journal"
+        } : {})
+      });
+      operationConfirmed = true;
       if (!current.current.active || current.current.loadKey !== selected.loadKey) return;
       retain(selected.scopeKey, null); pendingRef.current = null; setPending(null); liveCapability.current = null; setSnapshot(null);
       if (result.postedJournal) setPosted({ key: selected.scopeKey, receipt: result.postedJournal });
       setConfirmed(false); setStatusText(`${action} retained for command ${request.correlationId}.`);
       onResult(result);
     } catch (error) {
+      if (!operationConfirmed) updateOperation(activityId, { status: "uncertain", detail: "The command outcome was not confirmed. Open retained workflow to inspect its status." });
       if (current.current.loadKey === selected.loadKey) {
         liveCapability.current = null; setSnapshot(null);
         setErrorText(describeApiError(error, "The command outcome was not confirmed.").summary);

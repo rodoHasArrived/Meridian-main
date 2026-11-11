@@ -1,0 +1,1 @@
+var e=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;function t(t){let n=t?.trim();return n&&e.test(n)?n:void 0}export{t};

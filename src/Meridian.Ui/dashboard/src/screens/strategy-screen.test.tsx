@@ -1,10 +1,10 @@
-import { act, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrategyScreen } from "@/screens/strategy-screen";
 import { buildPlotToolState } from "@/screens/strategy-screen.view-model";
 import * as api from "@/lib/api";
 import { afterEach, beforeEach } from "vitest";
-import { renderWithRouter as renderRouter } from "@/test/render";
+import { renderWithRouter as renderRouter, TestMemoryRouter } from "@/test/render";
 import type { PromotionEvaluationResult, PromotionRecord, StrategyRunReviewPacket, StrategyWorkspaceResponse, RunComparisonRow, RunDiff } from "@/types";
 
 const twoRuns: StrategyWorkspaceResponse = {
@@ -250,6 +250,74 @@ describe("StrategyScreen", () => {
     await user.click(screen.getByText("View observation table"));
     expect(screen.getByText("View observation table").closest("details")).toHaveAttribute("open");
     expect(screen.getByRole("table", { name: "PlotTool scatter observations" })).toBeInTheDocument();
+  });
+
+  it("filters and sorts loaded strategy runs without changing the inspected or comparison selections", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<StrategyScreen data={twoRuns} />);
+    await user.click(screen.getByRole("checkbox", { name: "Select Mean Reversion FX for compare and diff" }));
+    await user.type(screen.getByRole("textbox", { name: "Search loaded runs" }), "Index");
+    expect(screen.getByText("1 of 2 loaded runs")).toBeInTheDocument();
+    expect(screen.getByText(/The inspected run is outside these results/)).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Remove Mean Reversion FX for compare and diff" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear run controls" }));
+    expect(screen.getByRole("checkbox", { name: "Remove Mean Reversion FX for compare and diff" })).toBeChecked();
+    await user.click(screen.getByRole("button", { name: /Sort by Strategy/i }));
+    const rows = within(screen.getByRole("treegrid", { name: "Strategy run library" })).getAllByRole("row");
+    expect(rows[1]).toHaveTextContent("Index Momentum");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Mode" }), "paper");
+    expect(screen.getByText("1 of 2 loaded runs")).toBeInTheDocument();
+    expect(screen.queryByRole("checkbox", { name: "Select Index Momentum for compare and diff" })).not.toBeInTheDocument();
+  });
+
+  it("inspects the same scatter observation through chart keyboard, pointer and table while identifying coordinate-only evidence", async () => {
+    const user = userEvent.setup();
+    const evidence = { ...twoRunsWithPlotTool, plotTool: { ...twoRunsWithPlotTool.plotTool!, workspace: {
+      ...plotToolState.workspace, scatterChart: { ...plotToolState.workspace.scatterChart, points: plotToolState.workspace.scatterChart.points.map((point, index) => index === 0 ? {
+        ...point, observationId: "observation-retained-1", xValueText: "66.84 bps", yValueText: "71.42%", sourceLabel: "Retained analytics source", timestamp: "2026-11-11T12:00:00Z"
+      } : point) }
+    } } };
+    const { rerender } = renderWithRouter(<StrategyScreen data={evidence} />, { initialEntries: ["/strategy/lab"] });
+    const chart = screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" });
+    act(() => chart.focus());
+    const readout = screen.getByRole("region", { name: "Selected scatter observation" });
+    expect(readout).toHaveTextContent("Observation 1");
+    expect(readout).toHaveTextContent("66.84 bps");
+    expect(readout).toHaveTextContent("71.42%");
+    expect(readout).toHaveTextContent("Retained analytics source");
+    await user.keyboard("{ArrowRight}");
+    expect(readout).toHaveTextContent("Observation 2");
+    expect(readout).toHaveTextContent("Source value unavailable");
+    expect(readout).toHaveTextContent("positions are not source amounts or rates");
+    fireEvent.pointerEnter(chart.querySelectorAll("g[data-observation-id]")[2]);
+    expect(readout).toHaveTextContent("Observation 3");
+    await user.click(screen.getByText("View observation table"));
+    await user.click(screen.getByRole("button", { name: "Inspect observation 4" }));
+    expect(readout).toHaveTextContent("Observation 4");
+    expect(screen.getByRole("button", { name: "Inspect observation 4" })).toHaveAttribute("aria-pressed", "true");
+    await user.click(screen.getByRole("button", { name: "Clear observation" }));
+    expect(readout).toHaveTextContent("Select an observation");
+    act(() => chart.focus());
+    await user.keyboard("{Escape}{ArrowRight}");
+    expect(readout).toHaveTextContent("Observation 1");
+    rerender(<TestMemoryRouter initialEntries={["/strategy/lab"]}><StrategyScreen data={twoRunsWithPlotTool} /></TestMemoryRouter>);
+    expect(readout).toHaveTextContent("Select an observation");
+    expect(readout).not.toHaveTextContent("Retained analytics source");
+  });
+
+  it("opens only an explicitly linked observation-sheet record from the scatter readout", async () => {
+    const user = userEvent.setup();
+    const record = plotToolState.statistics.sampleTable.rows[1];
+    const evidence = { ...twoRunsWithPlotTool, plotTool: { ...twoRunsWithPlotTool.plotTool!, workspace: {
+      ...plotToolState.workspace, scatterChart: { ...plotToolState.workspace.scatterChart, points: plotToolState.workspace.scatterChart.points.map((point, index) => index === 0 ? { ...point, observationId: record.id, xValueText: record.spreadText, yValueText: record.impliedVolText } : point) }
+    } } };
+    renderWithRouter(<StrategyScreen data={evidence} />, { initialEntries: ["/strategy/lab"] });
+    act(() => screen.getByRole("img", { name: "Mean Reversion FX vs Index Momentum scatter" }).focus());
+    await user.click(screen.getByRole("button", { name: "Open observation sheet" }));
+    const sheet = screen.getByRole("table", { name: "PlotTool observation sheet" });
+    const row = within(sheet).getByRole("row", { name: new RegExp(record.timestamp) });
+    expect(row).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("heading", { name: "Observation sheet" })).toHaveFocus();
   });
 
   it("links PlotTool notebook rows to the selected study detail panel", async () => {

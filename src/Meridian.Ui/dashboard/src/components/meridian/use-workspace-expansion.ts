@@ -1,32 +1,23 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import type { WorkspaceKey } from "@/types";
 
-/** Keep operator choices until navigation reveals a new active destination. */
+/** One automatic group follows navigation; deliberate opens remain available. */
 export function useWorkspaceExpansion(activeWorkspaceKey: WorkspaceKey | undefined, activeRoute?: string) {
-  const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<WorkspaceKey>>(() =>
-    activeWorkspaceKey ? new Set([activeWorkspaceKey]) : new Set()
-  );
-
-  useEffect(() => {
-    if (!activeWorkspaceKey) {
-      return;
-    }
-
-    setExpandedWorkspaces((current) => {
-      if (current.has(activeWorkspaceKey)) {
-        return current;
-      }
-
-      const next = new Set(current);
-      next.add(activeWorkspaceKey);
-      return next;
-    });
-  }, [activeWorkspaceKey, activeRoute]);
+  const [manualOpen, setManualOpen] = useState<Set<WorkspaceKey>>(() => new Set());
+  const [collapsedDestination, setCollapsedDestination] = useState<string | null>(null);
+  const destination = `${activeWorkspaceKey ?? ""}:${activeRoute ?? ""}`;
+  const expandedWorkspaces = useMemo(() => {
+    const next = new Set(manualOpen);
+    if (activeWorkspaceKey && collapsedDestination !== destination) next.add(activeWorkspaceKey);
+    return next;
+  }, [manualOpen, activeWorkspaceKey, collapsedDestination, destination]);
 
   const toggleWorkspace = (key: WorkspaceKey) => {
-    setExpandedWorkspaces((current) => {
+    const isOpen = expandedWorkspaces.has(key);
+    if (key === activeWorkspaceKey) setCollapsedDestination(isOpen ? destination : null);
+    setManualOpen((current) => {
       const next = new Set(current);
-      if (next.has(key)) {
+      if (isOpen) {
         next.delete(key);
       } else {
         next.add(key);

@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useState } from "react";
+import { type RefObject, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { applyDensity as applyDensityToElement, isDensity, type Density } from "@/lib/density";
 
@@ -83,6 +83,7 @@ export function DensityToggle({
     return defaultValue;
   });
   const value = isControlled ? controlled : internal;
+  const buttons = useRef<Array<HTMLButtonElement | null>>([]);
 
   useEffect(() => {
     if (!apply) {
@@ -111,7 +112,7 @@ export function DensityToggle({
         className
       )}
     >
-      {LEVELS.map((level) => {
+      {LEVELS.map((level, index) => {
         const active = level.value === value;
         return (
           <button
@@ -119,8 +120,22 @@ export function DensityToggle({
             type="button"
             role="radio"
             aria-checked={active}
+            aria-label={level.label}
+            tabIndex={active ? 0 : -1}
+            ref={(element) => { buttons.current[index] = element; }}
             title={level.label}
             onClick={() => select(level.value)}
+            onKeyDown={(event) => {
+              let next: number;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % LEVELS.length;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index + LEVELS.length - 1) % LEVELS.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = LEVELS.length - 1;
+              else return;
+              event.preventDefault();
+              select(LEVELS[next].value);
+              buttons.current[next]?.focus();
+            }}
             className={cn(
               "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[2px] font-medium leading-none transition-colors",
               "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",

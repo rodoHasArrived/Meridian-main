@@ -1,4 +1,5 @@
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
+import "@/styles/trading-orders-workbench.css";
 import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, ClipboardList, FastForward, FlaskConical, Layers, PauseCircle, PlayCircle, PlusCircle, RotateCcw, StopCircle, Trash2, Wallet, XCircle } from "lucide-react";
 import React from "react";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
@@ -78,6 +79,7 @@ import {
 } from "@/screens/trading-screen.view-model";
 import { ExecutionControlsHeader } from "@/screens/trading-screen.execution-controls-header";
 import { BrokerageRecoveryPanel } from "@/screens/trading-screen.brokerage-recovery";
+import { TradingTableToolbar, useTradingTableView } from "@/screens/trading-screen.table-view";
 import { LIVE_GOVERNED_APPROVAL_SERVICES, useGovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { ExecutionAuditEntry, ExecutionControlSnapshot, PaperSessionDetail, PaperSessionReplayVerification, PaperSessionSummary, PromotionEvaluationResult, PromotionRecord, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
@@ -173,12 +175,14 @@ function buildPositionColumns(confirmVm: TradingConfirmViewModel): DenseDataTabl
     {
       id: "symbol",
       label: "Symbol",
+      sortable: true,
       className: "font-mono font-semibold text-foreground",
       render: (position) => position.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortable: true,
       className: "font-mono text-foreground",
       render: (position) => position.side
     },
@@ -255,24 +259,28 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "order",
       label: "Order",
+      sortable: true,
       className: "font-mono font-semibold text-foreground",
       render: (order) => order.orderId
     },
     {
       id: "symbol",
       label: "Symbol",
+      sortable: true,
       className: "font-mono text-foreground",
       render: (order) => order.symbol
     },
     {
       id: "side",
       label: "Side",
+      sortable: true,
       className: "font-mono text-foreground",
       render: (order) => order.side
     },
     {
       id: "type",
       label: "Type",
+      sortable: true,
       className: "font-mono text-foreground",
       render: (order) => order.type
     },
@@ -293,6 +301,7 @@ function buildOrderColumns(confirmVm: TradingConfirmViewModel): DenseDataTableCo
     {
       id: "status",
       label: "Status",
+      sortable: true,
       render: (order) => (
         <span className={cn("font-mono font-semibold", dataToneClass[order.statusTone])}>
           {order.status}
@@ -329,24 +338,28 @@ const fillColumns: DenseDataTableColumn<TradingFillRow>[] = [
   {
     id: "fill",
     label: "Fill",
+    sortable: true,
     className: "font-mono font-semibold text-foreground",
     render: (fill) => fill.fillId
   },
   {
     id: "order",
     label: "Order",
+    sortable: true,
     className: "font-mono text-muted-foreground",
     render: (fill) => fill.orderId
   },
   {
     id: "symbol",
     label: "Symbol",
+    sortable: true,
     className: "font-mono text-foreground",
     render: (fill) => fill.symbol
   },
   {
     id: "side",
     label: "Side",
+    sortable: true,
     className: "font-mono text-foreground",
     render: (fill) => fill.side
   },
@@ -367,6 +380,7 @@ const fillColumns: DenseDataTableColumn<TradingFillRow>[] = [
   {
     id: "venue",
     label: "Venue",
+    sortable: true,
     className: "font-mono text-muted-foreground",
     render: (fill) => fill.venue
   },
@@ -434,6 +448,21 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
   const { pathname, search } = useLocation();
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
   const blotterVm = useTradingBlotterViewModel(data);
+  const positionsView = useTradingTableView({
+    rows: blotterVm.positionRows, prefix: "positions", defaultSort: "symbol", allowedSorts: ["symbol", "side"], selectedId: blotterVm.selectedPositionRowId,
+    searchable: (row) => [row.symbol, row.positionKey, row.side], filterValue: (row) => row.side,
+    sortValue: (row, column) => column === "side" ? row.side : row.symbol
+  });
+  const ordersView = useTradingTableView({
+    rows: blotterVm.orderRows, prefix: "orders", defaultSort: "order", allowedSorts: ["order", "symbol", "side", "type", "status"], selectedId: blotterVm.selectedOrderRowId,
+    searchable: (row) => [row.symbol, row.orderId, row.side, row.type, row.status], filterValue: (row) => row.status,
+    sortValue: (row, column) => column === "symbol" ? row.symbol : column === "side" ? row.side : column === "status" ? row.status : column === "type" ? row.type : row.orderId
+  });
+  const fillsView = useTradingTableView({
+    rows: blotterVm.fillRows, prefix: "fills", defaultSort: "fill", allowedSorts: ["fill", "order", "symbol", "side", "venue"], selectedId: blotterVm.selectedFillRowId,
+    searchable: (row) => [row.symbol, row.fillId, row.orderId, row.side, row.venue], filterValue: (row) => row.side,
+    sortValue: (row, column) => column === "symbol" ? row.symbol : column === "order" ? row.orderId : column === "side" ? row.side : column === "venue" ? row.venue : row.fillId
+  });
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId)
     ?? normalizeFundAccountGuid(data?.brokerage?.account);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
@@ -562,8 +591,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         : "unknown";
 
   return (
-    <div className="space-y-5">
-      <StatStrip metrics={data.metrics} label="Trading headline metrics" />
+    <div className={showOrders ? "trading-orders-focused space-y-3" : "space-y-5"}>
+      {routeView !== "orders" ? <StatStrip metrics={data.metrics} label="Trading headline metrics" /> : null}
 
       <section
         id="trading-overview"
@@ -631,6 +660,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
         busy={tradingReadiness.refreshing}
         error={tradingReadiness.errorText}
         onRecover={tradingReadiness.recoverBrokerage}
+        compact={showOrders}
       />
 
       {showOverview ? (
@@ -789,11 +819,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
+            <TradingTableToolbar label="Positions" filterLabel="Side" total={blotterVm.positionRows.length} view={positionsView} />
             <DenseDataTable
               ariaLabel={blotterVm.positionsTableLabel}
               caption="Select a position to update the position detail status window."
               columns={positionColumns}
-              rows={blotterVm.positionRows}
+              rows={positionsView.rows}
+              sort={positionsView.sort}
+              onToggleSort={positionsView.toggleSort}
               getRowId={(position) => position.id}
               getRowAriaLabel={(position) => position.ariaLabel}
               getRowSelectAriaLabel={(position) => position.selectAriaLabel}
@@ -801,7 +834,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowAriaExpanded={(position) => position.ariaExpanded}
               selectedRowId={blotterVm.selectedPositionRowId}
               onRowSelect={(position) => blotterVm.selectPosition(position.id)}
-              emptyText={blotterVm.positionEmptyText}
+              emptyText={blotterVm.positionRows.length ? "No positions match these filters." : blotterVm.positionEmptyText}
             />
           </CardContent>
         </Card>
@@ -820,8 +853,8 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
       )}>
 
         <div className="min-w-0 space-y-4">
-        <Card className="panel-surface">
-          <CardHeader>
+        <Card className="panel-surface trading-orders-open-orders">
+          <CardHeader className="trading-orders-card-header">
             <div className="flex items-center justify-between gap-3">
               <CardTitle className="flex items-center gap-2 text-base">
                 <ClipboardList className="h-4 w-4 text-primary" />
@@ -1019,12 +1052,16 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
-          <CardContent className="space-y-3">
+          <CardContent className="trading-orders-table-content space-y-2">
+            <TradingTableToolbar compact label="Orders" filterLabel="Status" total={blotterVm.orderRows.length} view={ordersView} />
+            <p className="text-xs text-muted-foreground">Cancel all applies to the account’s open orders, including rows outside these filters.</p>
             <DenseDataTable
               ariaLabel={blotterVm.ordersTableLabel}
               caption="Select an order to update the order detail status window."
               columns={orderColumns}
-              rows={blotterVm.orderRows}
+              rows={ordersView.rows}
+              sort={ordersView.sort}
+              onToggleSort={ordersView.toggleSort}
               getRowId={(order) => order.id}
               getRowAriaLabel={(order) => order.ariaLabel}
               getRowSelectAriaLabel={(order) => order.selectAriaLabel}
@@ -1032,7 +1069,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowAriaExpanded={(order) => order.ariaExpanded}
               selectedRowId={blotterVm.selectedOrderRowId}
               onRowSelect={(order) => blotterVm.selectOrder(order.id)}
-              emptyText={blotterVm.orderEmptyText}
+              emptyText={blotterVm.orderRows.length ? "No orders match these filters." : blotterVm.orderEmptyText}
             />
           </CardContent>
         </Card>
@@ -1053,11 +1090,14 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
+            <TradingTableToolbar label="Fills" filterLabel="Side" total={blotterVm.fillRows.length} view={fillsView} />
             <DenseDataTable
               ariaLabel={blotterVm.fillsTableLabel}
               caption="Select a fill to update the fill detail status window."
               columns={fillColumns}
-              rows={blotterVm.fillRows}
+              rows={fillsView.rows}
+              sort={fillsView.sort}
+              onToggleSort={fillsView.toggleSort}
               getRowId={(fill) => fill.id}
               getRowAriaLabel={(fill) => fill.ariaLabel}
               getRowSelectAriaLabel={(fill) => fill.selectAriaLabel}
@@ -1065,7 +1105,7 @@ export function TradingScreen({ data, fundAccountId: operatingFundAccountId }: T
               getRowAriaExpanded={(fill) => fill.ariaExpanded}
               selectedRowId={blotterVm.selectedFillRowId}
               onRowSelect={(fill) => blotterVm.selectFill(fill.id)}
-              emptyText={blotterVm.fillEmptyText}
+              emptyText={blotterVm.fillRows.length ? "No fills match these filters." : blotterVm.fillEmptyText}
             />
           </CardContent>
         </Card>

@@ -7,6 +7,7 @@ import {
 } from "@/lib/notification-center/merge";
 import {
   dismissNotification,
+  emptyNotificationReadState,
   loadNotificationReadState,
   markNotificationRead,
   markNotificationsRead,
@@ -22,12 +23,16 @@ const DEFAULT_INBOX_POLL_INTERVAL_MS = 60_000;
 export interface UseNotificationCenterOptions {
   overview: SystemOverviewResponse | null;
   fundAccountId?: string | null;
+  actorKey?: string;
   fetchInbox?: (fundAccountId?: string) => Promise<OperatorInbox>;
   storage?: StorageLike | null;
   pollIntervalMs?: number;
 }
 
 export interface NotificationCenterApi extends NotificationCenterModel {
+  inboxStatus: "loading" | "ready" | "stale" | "unavailable";
+  lastCheckedAt: string | null;
+  retry: () => void;
   markRead: (id: string) => void;
   markAllRead: () => void;
   dismiss: (id: string) => void;
@@ -40,10 +45,25 @@ export interface NotificationCenterApi extends NotificationCenterModel {
  * are non-blocking — the center still surfaces the other feeds.
  */
 export function useNotificationCenter(options: UseNotificationCenterOptions): NotificationCenterApi {
-  const { overview, fundAccountId, fetchInbox = getOperatorInbox, storage, pollIntervalMs = DEFAULT_INBOX_POLL_INTERVAL_MS } = options;
+  const { overview, fundAccountId, actorKey = "", fetchInbox = getOperatorInbox, storage, pollIntervalMs = DEFAULT_INBOX_POLL_INTERVAL_MS } = options;
   const priceAlerts = usePriceAlerts();
-  const [inbox, setInbox] = useState<OperatorInbox | null>(null);
-  const [readState, setReadState] = useState<NotificationReadState>(() => loadNotificationReadState(storage));
+  const contextKey = JSON.stringify([fundAccountId ?? null, actorKey]);
+  const [inboxResult, setInboxResult] = useState<{
+    contextKey: string; inbox: OperatorInbox | null;
+    status: "loading" | "ready" | "stale" | "unavailable"; lastCheckedAt: string | null;
+  } | null>(null);
+  const [retryAttempt, setRetryAttempt] = useState(0);
+  // Scope-gated during render too: a changed account cannot flash old inbox rows.
+  const current = inboxResult?.contextKey === contextKey ? inboxResult : null;
+  const inbox = current?.inbox ?? null;
+  const scopedStorage = useMemo<StorageLike>(() => {
+    const target = () => storage ?? window.localStorage;
+    const key = (name: string) => `${name}:${encodeURIComponent(contextKey)}`;
+    return { getItem: name => target().getItem(key(name)), setItem: (name, value) => target().setItem(key(name), value), removeItem: name => target().removeItem(key(name)) };
+  }, [contextKey, storage]);
+  const [readResult, setReadResult] = useState(() => ({ contextKey, state: loadNotificationReadState(scopedStorage) }));
+  const readState = readResult.contextKey === contextKey ? readResult.state : emptyNotificationReadState();
+  useEffect(() => { setReadResult({ contextKey, state: loadNotificationReadState(scopedStorage) }); }, [contextKey, scopedStorage]);
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -62,15 +82,27 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
   useEffect(() => {
     let cancelled = false;
 
+    let loading = false;
     const load = async () => {
+      if (loading) return;
+      loading = true;
+      setInboxResult(previous => previous?.contextKey === contextKey
+        ? { ...previous, status: "loading" }
+        : { contextKey, inbox: null, status: "loading", lastCheckedAt: null });
       try {
         const next = await fetchInboxRef.current(normalizedFundAccountId);
         if (!cancelled && mountedRef.current) {
-          setInbox(next);
+          setInboxResult({ contextKey, inbox: next, status: "ready", lastCheckedAt: new Date().toISOString() });
         }
       } catch {
-        // Inbox is one of three feeds — a failed fetch must not blank the center.
-      }
+        if (!cancelled && mountedRef.current) {
+          setInboxResult(previous => {
+            const retained = previous?.contextKey === contextKey ? previous : null;
+            return { contextKey, inbox: retained?.inbox ?? null,
+              status: retained?.inbox ? "stale" : "unavailable", lastCheckedAt: retained?.lastCheckedAt ?? null };
+          });
+        }
+      } finally { loading = false; }
     };
 
     void load();
@@ -79,7 +111,8 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [normalizedFundAccountId, pollIntervalMs]);
+  }, [normalizedFundAccountId, contextKey, pollIntervalMs, retryAttempt]);
+  const retry = useCallback(() => setRetryAttempt(value => value + 1), []);
 
   const model = useMemo(
     () =>
@@ -99,15 +132,10 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
 
   const commitReadState = useCallback(
     (next: NotificationReadState) => {
-      setReadState((current) => {
-        if (next === current) {
-          return current;
-        }
-        saveNotificationReadState(next, storage);
-        return next;
-      });
+      saveNotificationReadState(next, scopedStorage);
+      setReadResult({ contextKey, state: next });
     },
-    [storage]
+    [contextKey, scopedStorage]
   );
 
   const markRead = useCallback(
@@ -146,5 +174,5 @@ export function useNotificationCenter(options: UseNotificationCenterOptions): No
     [commitReadState, findEnvelope, readState]
   );
 
-  return { ...model, markRead, markAllRead, dismiss };
+  return { ...model, inboxStatus: current?.status ?? "loading", lastCheckedAt: current?.lastCheckedAt ?? null, retry, markRead, markAllRead, dismiss };
 }

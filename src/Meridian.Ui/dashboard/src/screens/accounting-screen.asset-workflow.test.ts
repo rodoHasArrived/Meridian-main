@@ -5,6 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AssetAccountingDraftCapabilities } from "@/types/asset-accounting-workflow";
 import type { JournalEntryLifecycleActionRequest, JournalEntryLifecycleActionResult, ManualJournalEntryDraft } from "@/types";
 import { useAssetAccountingWorkflow } from "./accounting-screen.asset-workflow";
+import { createElement, type PropsWithChildren } from "react";
+import { ActivityLogProvider, useActivityLog } from "@/lib/activity-log/store";
 const draft = { journalEntryId: "journal-1", fundProfileId: "fund-1", ledgerBookId: "book-1", periodId: "period-1", version: 3, status: "Submitted", assetAccountingDraft: {}, accountingBasis: "Primary" } as ManualJournalEntryDraft;
 const capability = (patch: Partial<AssetAccountingDraftCapabilities> = {}): AssetAccountingDraftCapabilities => ({ protocolVersion: 1, authenticatedActor: "independent-checker", journalEntryId: draft.journalEntryId, fundProfileId: draft.fundProfileId, ledgerBookId: draft.ledgerBookId!, periodId: draft.periodId!, draftVersion: 3, candidateFingerprint: "a".repeat(64), canApprove: true, canPost: false, approveBlockedReason: null, postBlockedReason: "Approval is required.", approval: null, hasPendingPost: false, pendingPostCommand: null, postedJournal: null, ...patch });
 function response(request: JournalEntryLifecycleActionRequest): JournalEntryLifecycleActionResult {
@@ -20,6 +22,36 @@ async function confirm(result: { current: ReturnType<typeof useAssetAccountingWo
 beforeEach(() => { sessionStorage.clear(); vi.stubGlobal("crypto", webcrypto); });
 afterEach(() => vi.unstubAllGlobals());
 describe("Governed asset command state", () => {
+  it("records retained approval evidence without copying review notes or the command payload", async () => {
+    const persisted = new Map<string, string>();
+    const storage = { getItem: (key: string) => persisted.get(key) ?? null, setItem: (key: string, value: string) => { persisted.set(key, value); }, removeItem: (key: string) => { persisted.delete(key); } };
+    const wrapper = ({ children }: PropsWithChildren) => createElement(ActivityLogProvider, { storage, sessionIdentity: "checker-A" }, children);
+    const api = services();
+    const view = renderHook(() => ({ workflow: useAssetAccountingWorkflow({ draft, active: true, ...api }), log: useActivityLog() }), { wrapper });
+    await waitFor(() => expect(view.result.current.workflow.capability).not.toBeNull());
+    act(() => { view.result.current.workflow.setReviewNote("Confidential review rationale"); view.result.current.workflow.setConfirmed(true); });
+    await act(async () => view.result.current.workflow.run("Approve"));
+    expect(view.result.current.log.entries).toHaveLength(1);
+    expect(view.result.current.log.entries[0]).toMatchObject({ undoStatus: "none", operation: { status: "completed", actor: "independent-checker", reference: "transition" } });
+    expect(view.result.current.log.entries[0].route).toContain("journalEntryId=journal-1");
+    expect([...persisted.values()].join(" ")).not.toContain("Confidential review rationale");
+    expect([...persisted.values()].join(" ")).not.toContain("candidateFingerprint");
+  });
+
+  it("keeps an interrupted posting operation unconfirmed and offers only its retained workflow link", async () => {
+    const persisted = new Map<string, string>();
+    const storage = { getItem: (key: string) => persisted.get(key) ?? null, setItem: (key: string, value: string) => { persisted.set(key, value); }, removeItem: (key: string) => { persisted.delete(key); } };
+    const wrapper = ({ children }: PropsWithChildren) => createElement(ActivityLogProvider, { storage, sessionIdentity: "checker-A" }, children);
+    const api = services(); api.execute.mockRejectedValueOnce(new Error("Response interrupted"));
+    const view = renderHook(() => ({ workflow: useAssetAccountingWorkflow({ draft, active: true, ...api }), log: useActivityLog() }), { wrapper });
+    await waitFor(() => expect(view.result.current.workflow.capability).not.toBeNull());
+    act(() => { view.result.current.workflow.setReviewNote("Reviewed"); view.result.current.workflow.setConfirmed(true); });
+    await act(async () => view.result.current.workflow.run("Approve"));
+    expect(view.result.current.log.entries[0]).toMatchObject({ undoStatus: "none", routeLabel: "Inspect retained workflow", operation: { status: "uncertain" } });
+    expect(view.result.current.log.entries[0].route).not.toContain("/detail");
+    expect(api.execute).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps old/missing capability and role denials read-only", async () => {
     const denied = services(capability({ canApprove: false, approveBlockedReason: "Maker cannot approve." }));
     const view = renderHook(() => useAssetAccountingWorkflow({ draft, active: true, ...denied }));

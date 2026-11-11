@@ -493,6 +493,8 @@ describe("data-screen view model", () => {
 
     expect(resolveSelectedBackfill(backfills, "BF-1044")?.jobId).toBe("BF-1044");
     expect(resolveSelectedBackfill(backfills, null)?.jobId).toBe("BF-1042");
+    expect(resolveSelectedBackfill(backfills, "unavailable-job")).toBeNull();
+    expect(buildDataPresentationState({ metrics: [], providers: [], exports: [], backfills }, "unavailable-job").backfillDetailEmptyState?.title).toBe("Selected backfill unavailable");
     expect(buildBackfillNarrative(backfills[1])).toContain("waiting on operator review");
 
     const selectedDetail = buildSelectedBackfillDetail(backfills, "BF-1044");

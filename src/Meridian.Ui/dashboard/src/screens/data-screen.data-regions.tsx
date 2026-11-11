@@ -174,7 +174,7 @@ export function DataQualityRegion({
       <Card>
         <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
           <div>
-            <CardTitle id="data-quality-title">Data quality</CardTitle>
+            <CardTitle id="data-quality-title" tabIndex={-1}>Data quality</CardTitle>
             <CardDescription>
               Unified completeness, freshness, gap, and anomaly posture across tracked symbols.
               {panel.model ? ` ${panel.model.summary}` : null}

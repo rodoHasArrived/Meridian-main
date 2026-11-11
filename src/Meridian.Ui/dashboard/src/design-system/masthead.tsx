@@ -76,13 +76,13 @@ export function DesignSystemMasthead({
         type="button"
         className="workstation-search mds-masthead__search ws-search focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
         onClick={onOpenCommandPalette}
-        aria-label={commandTrigger.label}
+        aria-label={`${commandTrigger.placeholder} ${commandTrigger.shortcutLabel}. ${commandTrigger.label}`}
         aria-controls={commandTrigger.controlsId}
         aria-expanded={commandTrigger.expanded}
         aria-haspopup={commandTrigger.hasPopup}
       >
         <Search className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
-        <span className="workstation-search-placeholder ws-search__txt">{commandTrigger.placeholder}</span>
+        <span className="workstation-search-placeholder ws-search__txt">{commandTrigger.placeholder}</span>{" "}
         <span className="workstation-search-kbd ws-kbd" aria-hidden="true">{commandTrigger.shortcutLabel}</span>
       </button>
 

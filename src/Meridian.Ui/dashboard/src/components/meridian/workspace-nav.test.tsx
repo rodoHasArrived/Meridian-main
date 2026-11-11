@@ -11,6 +11,7 @@ describe("WorkspaceNav", () => {
 
     expect(document.querySelectorAll(".operator-nav-item")).toHaveLength(7);
     expect(document.querySelectorAll(".operator-nav-item.active")).toHaveLength(0);
+    expect(screen.getByRole("link", { name: "Daily Control Tower" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByText("Available · Current")).not.toBeInTheDocument();
     expect(screen.queryByRole("group", { name: "Trading pages" })).not.toBeInTheDocument();
   });
@@ -159,6 +160,20 @@ describe("WorkspaceNav", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByRole("link", { name: "Ingestion operations, current page" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: /Open Trading workspace/ })).toHaveAttribute("title", "Trading");
+  });
+
+  it("follows the active workspace without accumulating automatic expansions", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<WorkspaceNav density="compact" />, { initialEntries: ["/trading"] });
+    await user.click(screen.getByRole("button", { name: "Expand Data pages" }));
+    await user.click(screen.getByRole("link", { name: /Open Portfolio workspace/ }));
+    expect(screen.getByRole("button", { name: "Expand Trading pages" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: "Collapse Portfolio pages" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Collapse Data pages" })).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("link", { name: /Open Reporting workspace/ }));
+    expect(screen.getByRole("button", { name: "Expand Portfolio pages" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.getByRole("button", { name: "Collapse Reporting pages" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Collapse Data pages" })).toHaveAttribute("aria-expanded", "true");
   });
 
 });

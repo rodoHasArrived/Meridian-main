@@ -1,5 +1,6 @@
 import { workspaceForPath } from "@/lib/workspace";
 import { splitContinuityRoute } from "@/app-shell.workflow-continuity";
+import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 
 export interface AppShellOperatingScopeInput {
   symbol?: string | null;
@@ -159,13 +160,39 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
 }
 
 /**
- * The scope dimensions that actually filter data on the given route's workspace.
- * A set dimension not in this list is carried (sticky) but not applied here — the
- * basis for the "not filtered on this workspace" hint in the scope display.
+ * Dimensions consumed by the rendered route, distinct from context carried in links.
+ * Opt in only where a screen reads the dimension into its request or selection.
+ * Unknown routes retain context without claiming that it filters their data.
  */
-export function operatingScopeDimensionsForRoute(route: string): AppShellOperatingScopeQueryKey[] {
-  const keys = operatingScopeKeysForRoute(route);
-  return keys ? [...keys] : [];
+export function operatingScopeDimensionsForRoute(route: string, scope?: AppShellOperatingScopeInput): AppShellOperatingScopeQueryKey[] {
+  const { pathname } = splitContinuityRoute(route);
+  const path = pathname.replace(/\/+$/, "") || "/";
+  const params = new URLSearchParams(route.split("?", 2)[1]?.split("#", 1)[0] ?? "");
+  const appliedQuery = (key: "symbol" | "runId" | "fundAccountId"): AppShellOperatingScopeQueryKey[] => {
+    const explicit = params.get(key)?.trim();
+    if (!explicit) return [];
+    const carried = scope?.[key]?.trim();
+    const matches = key === "symbol" ? explicit.toUpperCase() === carried?.toUpperCase() : explicit === carried;
+    return !scope || matches ? [key] : [];
+  };
+  if (path === "/data/quotes") {
+    // Alerts only seeds a creation form; watchlist does not filter by this symbol.
+    return params.get("view") === "watchlist" || params.get("view") === "alerts" ? [] : appliedQuery("symbol");
+  }
+  if (path === "/portfolio/cash-ladder") return ["fundAccountId"];
+  if (path === "/portfolio/asset-detail" || path === "/accounting/security-master/detail") return params.get("securityId") ? [] : appliedQuery("symbol");
+  if (path === "/strategy/promotions" || path === "/strategy/run-ledger") return appliedQuery("runId");
+  // Manual drafts and posted-period authority can win over a carried run identity.
+  if (path === "/accounting/journal-entries/detail") return [];
+  if (path === "/reporting/preview" || path === "/reporting/runs/detail"
+    || path === "/accounting/accounts/detail") return appliedQuery("runId");
+  if (path === "/accounting" || path === "/accounting/close-calendar") return appliedQuery("fundAccountId");
+  // Trading's shared payload and readiness console explicitly consume the account.
+  if (path === "/trading" || path === "/trading/orders" || path === "/trading/positions"
+    || path === "/trading/risk" || path === "/trading/readiness") {
+    return scope && !normalizeFundAccountGuid(scope.fundAccountId) ? [] : ["fundAccountId"];
+  }
+  return [];
 }
 
 export function summarizeOperatingScopeForRoute(

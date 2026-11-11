@@ -11,6 +11,56 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+## Workstation clarity, evidence and recovery
+
+The shell distinguishes carried operating context from scope consumed by the current route.
+URL-only selectors require matching URL values; cash scenarios apply account scope only, alerts
+use symbol as a form seed, and ambiguous/manual journal detail retains run context. The footer
+reports request activity, not source freshness. Reporting financial periods do not establish
+input freshness or release readiness. Data availability and retained quality posture are separate.
+
+Brokerage presentation uses native ISO currency and retains cents/fractional instrument prices.
+Mixed or missing account currencies suppress unproven household aggregates. Numeric brokerage
+rankings use raw values within currency groups, never displayed amounts or implicit FX. Legacy
+main holdings expose formatted values without authoritative raw money/currency and do not gain
+invented monetary rankings. Existing holdings saved views remain compatible.
+
+Core Trading, Strategy, provider and export lists expose explicit loaded-population controls.
+Backfill handoffs retain exact job identity, filters and history scroll. Ledger preparation tasks
+are named, URL-backed entry points distinct from posted records. Onboarding discovers authorized
+entities/books/accounts with development fallback disabled, offers advanced exact identities,
+and requires a scope review before creating a bounded workspace. Before sending creation, the
+browser retains display-only intent metadata. A lost response blocks another creation across
+navigation/reload until an authorized list is inspected and explicitly acknowledged; no request is
+replayed and unavailable recovery storage prevents dispatch. Server services still validate
+membership, ownership, financial effects and all approval/posting authority.
+
+Settings policy/calendar drafts have before/after review, conflict blocking, discard, and a bounded
+in-memory nonsecret draft cache keyed to the presentation actor and exact record. Session changes
+clear drafts; source revisions require renewed review. These drafts never retain approval authority
+or credentials. Browser-close warnings complement recovery during ordinary SPA navigation.
+
+Notifications retain source health and last successful check, isolate inbox results and read/dismiss
+state by account/presentation actor, and expose retry without blanking other available feeds.
+Recent operations is browser-session history, not the authoritative audit log. Supported onboarding,
+reporting-schedule and asset-workflow operations retain display-only outcomes and durable references;
+uncertain/reloaded pending outcomes require inspection in their original governed workflow and never
+automatically replay commands. Clearing local history does not remove receipts or server audit.
+
+The palette supports exact `report: <runId>` and `statement: <runId>` reads through existing
+authorized APIs, with distinct pending, denied, missing and unavailable states. Statement run IDs
+and import IDs remain separate. Journal/account/import-ID discovery is explicitly unsupported by
+this bounded lookup rather than simulated with invented endpoints.
+
+Shared controls use offline-safe semantic fonts, tabular amounts, density-aware nonvirtual tables,
+keyboard radio/tab patterns and associated form assistance. Fixed-height virtual rows retain their
+windowing geometry. PlotTool observations support pointer/keyboard inspection and exact optional
+source IDs; coordinate-only legacy data is not presented as exact financial values.
+
+Validation includes focused scope, currency, stale-response, draft-conflict, operation-recovery,
+keyboard and accessibility suites plus dashboard build and Chromium desktop/laptop checks.
+Chrome/Edge on Windows and live-provider compatibility require their own environment evidence.
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,

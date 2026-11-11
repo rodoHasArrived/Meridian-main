@@ -2292,7 +2292,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showExternalGl ? (
-      <AccountingOnboardingPanel />
+      <AccountingOnboardingPanel actorKey={session ? JSON.stringify([session.displayName, session.role, session.environment]) : undefined} />
       ) : null}
 
       {sectionVisibility.showExternalGl ? (

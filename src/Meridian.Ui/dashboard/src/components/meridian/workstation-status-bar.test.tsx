@@ -33,18 +33,18 @@ describe("WorkstationStatusBar", () => {
     });
 
     expect(items).toEqual([
-      { key: "sync", status: "err", label: "Sync", value: "attention required" },
+      { key: "sync", status: "err", label: "Workspace requests", value: "attention required" },
       { key: "workspace", label: "Workspace", value: "Reporting", push: true }
     ]);
   });
 
-  it("keeps the footer focused on current sync and workspace context", () => {
+  it("does not infer source freshness from idle workspace requests", () => {
     expect(buildWorkstationStatusItems({
       workspaceLabel: "Portfolio",
       refreshing: false,
       hasError: false
     })).toEqual([
-      { key: "sync", status: "ok", label: "Sync", value: "up to date" },
+      { key: "sync", status: "ok", label: "Workspace requests", value: "idle · check dataset freshness" },
       { key: "workspace", label: "Workspace", value: "Portfolio", push: true }
     ]);
   });

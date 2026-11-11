@@ -202,11 +202,11 @@ describe("CommandPalette", () => {
     const user = userEvent.setup();
     const onOpenChange = vi.fn();
 
-    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} />, { initialEntries: ["/trading"] });
+    renderWithRouter(<CommandPalette open onOpenChange={onOpenChange} entitySearchServices={{ searchSymbols: async () => [], searchSecurities: async () => [] }} />, { initialEntries: ["/trading"] });
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command{Enter}");
 
-    expect(screen.getByText("No matching commands")).toBeInTheDocument();
+    expect(await screen.findByText("No matching commands")).toBeInTheDocument();
     expect(onOpenChange).not.toHaveBeenCalled();
   });
 
@@ -232,7 +232,7 @@ describe("CommandPalette", () => {
   it("shows an empty state when command filtering has no matches", async () => {
     const user = userEvent.setup();
 
-    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} />, { initialEntries: ["/trading"] });
+    renderWithRouter(<CommandPalette open onOpenChange={vi.fn()} entitySearchServices={{ searchSymbols: async () => [], searchSecurities: async () => [] }} />, { initialEntries: ["/trading"] });
 
     await user.type(screen.getByRole("searchbox", { name: "Search command palette" }), "missing command");
 
@@ -240,9 +240,9 @@ describe("CommandPalette", () => {
 
     expect(screen.getByText(`0 of ${commandCount} commands match`)).toBeInTheDocument();
     const search = screen.getByRole("searchbox", { name: "Search command palette" });
-    expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail");
+    expect(search).toHaveAttribute("aria-describedby", "command-palette-filter-count command-palette-empty-state-detail command-palette-record-hint");
+    expect(await screen.findByText("No matching commands")).toBeInTheDocument();
     expect(screen.getByText("Empty")).toBeInTheDocument();
-    expect(screen.getByText("No matching commands")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent(
       'No commands match "missing command". Clear the search to return to all workstation commands.'
     );

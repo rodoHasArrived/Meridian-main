@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { axe } from "jest-axe";
 import { StrategyScreen } from "@/screens/strategy-screen";
+import { buildPlotToolState } from "@/screens/strategy-screen.view-model";
 import { renderWithRouter } from "@/test/render";
 import type { StrategyWorkspaceResponse } from "@/types";
 
@@ -42,6 +43,12 @@ const twoRuns: StrategyWorkspaceResponse = {
 };
 
 describe("StrategyScreen accessibility", () => {
+  it("has no basic accessibility violations with inspectable scatter evidence", async () => {
+    const plotTool = buildPlotToolState({ metrics: twoRuns.metrics, runs: twoRuns.runs, selectedRuns: twoRuns.runs, comparison: [], runDiff: null });
+    const { container } = renderWithRouter(<StrategyScreen data={{ ...twoRuns, plotTool: { ...plotTool, tabs: [] } }} />, { initialEntries: ["/strategy/lab"] });
+    expect((await axe(container)).violations).toHaveLength(0);
+  });
+
   it("has no basic accessibility violations in the loading state", async () => {
     const { container } = renderWithRouter(<StrategyScreen data={null} />);
 

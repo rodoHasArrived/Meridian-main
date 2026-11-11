@@ -6,9 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { readOnboardingCreationIntent, retainOnboardingCreationIntent } from "./onboarding-creation-recovery";
+import { isApiError } from "@/lib/api-errors";
+import { useActivityLog } from "@/lib/activity-log/store";
+import { OnboardingScopeFields } from "./accounting-screen.onboarding-scope";
 import * as api from "@/lib/api/accounting-onboarding.api";
 import type {
-  OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
+  CreateOnboardingWorkspaceRequest, OnboardingComparison, OnboardingCriteria, OnboardingDifference, OnboardingReadinessPacket, OnboardingSourceSelection, OnboardingWorkspace
 } from "@/types/accounting-onboarding";
 
 const split = (value: FormDataEntryValue | null) => String(value ?? "").split(/[,\n]/).map(item => item.trim()).filter(Boolean);
@@ -51,12 +55,21 @@ function criteriaFrom(data: FormData): OnboardingCriteria {
 }
 
 /** Bounded support work stays inside Accounting's existing External GL surface. */
-export function AccountingOnboardingPanel() {
+export function AccountingOnboardingPanel({ actorKey = "unidentified-browser-session" }: { actorKey?: string } = {}) {
+  return <AccountOnboardingPanel key={actorKey} actorKey={actorKey} />;
+}
+
+function AccountOnboardingPanel({ actorKey }: { actorKey: string }) {
+  const { beginOperation, updateOperation } = useActivityLog();
   const [workspaces, setWorkspaces] = useState<OnboardingWorkspace[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  const [unresolvedIntent, setUnresolvedIntent] = useState(() => readOnboardingCreationIntent(actorKey));
+  const [creationUncertain, setCreationUncertain] = useState(() => Boolean(readOnboardingCreationIntent(actorKey)));
+  const [inspectedWorkspaceList, setInspectedWorkspaceList] = useState(false);
+  const [pendingCreation, setPendingCreation] = useState<CreateOnboardingWorkspaceRequest | null>(null);
   const scopeController = useRef<AbortController | null>(null);
   useEffect(() => {
     const controller = new AbortController();
@@ -65,6 +78,7 @@ export function AccountingOnboardingPanel() {
     api.listOnboardingWorkspaces({ signal: controller.signal }).then(next => {
       if (controller.signal.aborted) return;
       setWorkspaces(next);
+      setInspectedWorkspaceList(true);
       setSelectedId(current => next.some(item => item.workspaceId === current) ? current : "");
     }).catch(reason => { if (!controller.signal.aborted) setError(errorText(reason)); })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
@@ -79,17 +93,47 @@ export function AccountingOnboardingPanel() {
   async function create(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
+    if (!field(data, "entityId") || !field(data, "ledgerBookId") || !field(data, "fundProfileId") || split(data.get("accountIds")).length === 0) {
+      setError("Select an entity, compatible ledger book and at least one financial account.");
+      return;
+    }
+    setPendingCreation({
+      name: field(data, "name"),
+      scope: { entityId: field(data, "entityId"), fundProfileId: field(data, "fundProfileId"), ledgerBookId: field(data, "ledgerBookId"),
+        accountIds: split(data.get("accountIds")), startDate: field(data, "startDate"), endDate: field(data, "endDate") },
+      criteria: criteriaFrom(data)
+    });
+  }
+
+  async function confirmCreation() {
+    if (!pendingCreation || loading || creationUncertain) return;
     setLoading(true); setError(null);
     const signal = scopeController.current?.signal;
+    const intent = { intentId: crypto.randomUUID(), name: pendingCreation.name, scope: pendingCreation.scope, requestedAt: new Date().toISOString() };
+    if (!retainOnboardingCreationIntent(actorKey, intent)) {
+      setLoading(false);
+      setError("Browser recovery storage is unavailable. No creation request was sent. Restore session storage before creating a workspace.");
+      return;
+    }
+    setUnresolvedIntent(intent);
+    const operation = beginOperation({ kind: "accounting.onboarding.create", title: `Create onboarding workspace: ${pendingCreation.name}`, scope: `${pendingCreation.scope.entityId} · ${pendingCreation.scope.ledgerBookId}`, route: "/accounting/reconciliation/external-gl#accounting-onboarding" });
     try {
-      const workspace = await api.createOnboardingWorkspace({
-        name: field(data, "name"),
-        scope: { entityId: field(data, "entityId"), fundProfileId: field(data, "fundProfileId"), ledgerBookId: field(data, "ledgerBookId"),
-          accountIds: split(data.get("accountIds")), startDate: field(data, "startDate"), endDate: field(data, "endDate") },
-        criteria: criteriaFrom(data)
-      }, { signal });
-      if (!signal?.aborted) update(workspace);
-    } catch (reason) { if (!signal?.aborted) setError(errorText(reason)); }
+      const workspace = await api.createOnboardingWorkspace(pendingCreation, { signal });
+      retainOnboardingCreationIntent(actorKey, null, intent.intentId);
+      setUnresolvedIntent(null);
+      updateOperation(operation, { status: "completed", reference: workspace.workspaceId, detail: "Bounded workspace retained. No accounting authority changed." });
+      if (!signal?.aborted) { update(workspace); setPendingCreation(null); }
+    } catch (reason) {
+      const uncertain = !isApiError(reason) || reason.status >= 500 || reason.status === 408;
+      updateOperation(operation, { status: uncertain ? "uncertain" : "failed", detail: uncertain ? "Creation outcome unconfirmed. Inspect retained workspaces before trying another creation." : "The service rejected workspace creation." });
+      if (!signal?.aborted) {
+        setCreationUncertain(uncertain);
+        if (!uncertain) { retainOnboardingCreationIntent(actorKey, null, intent.intentId); setUnresolvedIntent(null); }
+        setInspectedWorkspaceList(false);
+        setPendingCreation(null);
+        setError(uncertain ? "Creation outcome unconfirmed. Refresh retained workspaces and inspect them before creating another workspace." : errorText(reason));
+      }
+    }
     finally { if (!signal?.aborted) setLoading(false); }
   }
 
@@ -102,6 +146,12 @@ export function AccountingOnboardingPanel() {
     <CardContent className="space-y-4">
       <p className="text-sm text-muted-foreground">External books remain read-only. A readiness packet supports review; any accounting-authority transition requires the separately governed process.</p>
       {error ? <StatusBanner tone="danger" role="alert" title="Onboarding unavailable" detail={error} /> : null}
+      {creationUncertain && unresolvedIntent ? <section aria-label="Unconfirmed workspace creation" className="space-y-2 border border-warning p-3 text-sm">
+        <h3 className="font-semibold">Inspect the earlier creation before another request</h3>
+        <p>{unresolvedIntent.name} · Entity {unresolvedIntent.scope.entityId} · Book {unresolvedIntent.scope.ledgerBookId} · {unresolvedIntent.scope.accountIds.length} accounts · {unresolvedIntent.scope.startDate} – {unresolvedIntent.scope.endDate}</p>
+        <p>Requested {unresolvedIntent.requestedAt}. Refresh and inspect retained workspaces for this scope. A lost response can mean creation succeeded. This screen will not replay the request.</p>
+        <Button type="button" variant="outline" disabled={loading || !inspectedWorkspaceList} onClick={() => { retainOnboardingCreationIntent(actorKey, null); setUnresolvedIntent(null); setCreationUncertain(false); setError(null); }}>I inspected retained workspaces; allow a new request</Button>
+      </section> : null}
       <div className="flex flex-wrap items-end gap-3">
         <FormRow label="Retained workspace" labelFor="onboarding-workspace" className="min-w-[16rem] flex-1">
           <Select id="onboarding-workspace" value={selectedId} onChange={event => setSelectedId(event.target.value)} disabled={loading}>
@@ -113,18 +163,24 @@ export function AccountingOnboardingPanel() {
       </div>
       {!loading && !error && workspaces.length === 0 ? <p role="status" className="text-sm">No onboarding workspaces retained. Define a bounded scope to begin.</p> : null}
       <TechnicalDetails label="Define onboarding scope">
-        <form onSubmit={event => void create(event)} className="space-y-4" aria-label="Create onboarding workspace">
+        <form onChange={() => setPendingCreation(null)} onSubmit={event => void create(event)} className="space-y-4" aria-label="Create onboarding workspace">
           <FormGrid columns={3}>
             <TextField name="name" label="Workspace name" required />
-            <TextField name="entityId" label="Entity ID" required />
-            <TextField name="fundProfileId" label="Book profile ID" required />
-            <TextField name="ledgerBookId" label="Ledger book ID" required />
-            <TextField name="accountIds" label="Financial account IDs" required hint="Comma-separated financial account GUIDs belonging to the selected entity and book; the scope is fixed after creation." />
+            <OnboardingScopeFields />
             <TextField name="startDate" label="Start date" type="date" required />
             <TextField name="endDate" label="End date" type="date" required />
           </FormGrid>
           <CriteriaFields />
-          <Button type="submit" disabled={loading}>Create workspace</Button>
+          <Button type="submit" disabled={loading || creationUncertain}>Review workspace</Button>
+          {pendingCreation ? <section aria-label="Review onboarding scope" className="space-y-2 border border-border p-3">
+            <h3 className="font-semibold">Review {pendingCreation.name}</h3>
+            <p>Entity {pendingCreation.scope.entityId} · Book {pendingCreation.scope.ledgerBookId} · Profile {pendingCreation.scope.fundProfileId}</p>
+            <p>{pendingCreation.scope.accountIds.length} financial accounts: {pendingCreation.scope.accountIds.join(", ")}</p>
+            <p>{pendingCreation.scope.startDate} – {pendingCreation.scope.endDate} · Required dates: {pendingCreation.criteria.requiredDates.join(", ")}</p>
+            <p className="text-sm">This creates a bounded review workspace. It does not import sources, post journals or change accounting authority.</p>
+            <Button type="button" disabled={loading} onClick={() => void confirmCreation()}>Create workspace</Button>
+            <Button type="button" variant="outline" onClick={() => setPendingCreation(null)}>Back to scope</Button>
+          </section> : null}
         </form>
       </TechnicalDetails>
       {workspace ? <WorkspaceDetail key={workspace.workspaceId} workspace={workspace} onChanged={update} /> : null}
@@ -133,6 +189,7 @@ export function AccountingOnboardingPanel() {
 }
 
 function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorkspace; onChanged: (next: OnboardingWorkspace) => void }) {
+  const { beginOperation, updateOperation } = useActivityLog();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -158,8 +215,15 @@ function WorkspaceDetail({ workspace, onChanged }: { workspace: OnboardingWorksp
   async function mutate(action: (signal: AbortSignal) => Promise<OnboardingWorkspace>, success: string) {
     const signal = controller.current!.signal;
     setBusy(true); setError(null); setMessage(null);
-    try { const result = await action(signal); if (!signal.aborted) { onChanged(result); setMessage(success); } }
-    catch (reason) { if (!signal.aborted) setError(errorText(reason)); }
+    const operation = beginOperation({ kind: "accounting.onboarding.update", title: success, scope: `${workspace.scope.entityId} · ${workspace.workspaceId}`, reference: workspace.workspaceId, route: "/accounting/reconciliation/external-gl#accounting-onboarding" });
+    try {
+      const result = await action(signal);
+      updateOperation(operation, { status: "completed", reference: result.workspaceId, detail: `Retained workspace version ${result.version}.` });
+      if (!signal.aborted) { onChanged(result); setMessage(success); }
+    } catch (reason) {
+      updateOperation(operation, { status: "uncertain", detail: "Outcome unconfirmed. Refresh the retained workspace and inspect its history." });
+      if (!signal.aborted) setError(errorText(reason));
+    }
     finally { if (!signal.aborted) setBusy(false); }
   }
   const selected = workspace.comparisons.find(item => item.comparisonId === comparisonId) ?? workspace.comparisons.at(-1);

@@ -1,3 +1,4 @@
+import { formatBrokerageMoney, formatBrokerageHouseholdMoney, hasComparableHouseholdCurrency, normalizedPortfolioCurrency } from "@/screens/portfolio-screen.money";
 import { useState } from "react";
 import { presentMarkFreshness, markFreshnessFields, type MarkFreshnessPresentation } from "@/lib/mark-freshness";
 import { evidenceWorkbenchPath, WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
@@ -159,6 +160,8 @@ export interface PortfolioBrokeragePositionRow {
   expanded: boolean;
   selectAriaLabel: string;
   ariaLabel: string;
+  currency: string | null;
+  numericValues: Record<string, number | null>;
 }
 
 export interface PortfolioDetailField {
@@ -988,18 +991,18 @@ function buildBrokerageTrustSnapshot({
     title: `${providerLabel} household snapshot`,
     statusLabel,
     statusTone,
-    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatCurrency(portfolio.totalEquity)} equity, ${formatCurrency(portfolio.totalCash)} cash, and ${formatCurrency(portfolio.totalBuyingPower)} buying power.`,
+    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatBrokerageHouseholdMoney(portfolio, "totalEquity")} equity, ${formatBrokerageHouseholdMoney(portfolio, "totalCash")} cash, and ${formatBrokerageHouseholdMoney(portfolio, "totalBuyingPower")} buying power.`,
     chips: [
       { label: "Accounts", value: formatCountLabel(portfolio.accounts.length, "account") },
       { label: "Positions", value: formatCountLabel(portfolio.positions.length, "position") },
-      { label: "Currency", value: portfolio.currency },
+      { label: "Reported household currency", value: portfolio.currency || "Unavailable" },
       { label: "Issues", value: formatCountLabel(issueCount, "issue") }
     ],
     fields: [
       { label: "As of", value: formatDateTime(portfolio.asOf), tone: "muted" },
-      { label: "Total equity", value: formatCurrency(portfolio.totalEquity), tone: "default" },
-      { label: "Cash", value: formatCurrency(portfolio.totalCash), tone: "default" },
-      { label: "Buying power", value: formatCurrency(portfolio.totalBuyingPower), tone: "default" },
+      { label: "Total equity", value: formatBrokerageHouseholdMoney(portfolio, "totalEquity"), tone: "default" },
+      { label: "Cash", value: formatBrokerageHouseholdMoney(portfolio, "totalCash"), tone: "default" },
+      { label: "Buying power", value: formatBrokerageHouseholdMoney(portfolio, "totalBuyingPower"), tone: "default" },
       { label: "Account health", value: accountHealthLabel, tone: unhealthyCount > 0 ? "warning" : "success" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" }
     ]
@@ -1280,8 +1283,8 @@ function buildPortfolioHeaderChips({
   providerLabel: string;
 }): PortfolioHeaderChip[] {
   const chips: PortfolioHeaderChip[] = [
-    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalEquity) : "—" },
-    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatCurrency(brokeragePortfolio.totalCash) : "—" },
+    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatBrokerageHouseholdMoney(brokeragePortfolio, "totalEquity") : "—" },
+    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatBrokerageHouseholdMoney(brokeragePortfolio, "totalCash") : "—" },
     { label: "Open positions", value: String(openPositionCount) },
     { label: "Exposure", value: hasPositions ? formatCurrency(totalExposure) : "—" },
     {
@@ -1550,9 +1553,9 @@ function toBrokerageAccountRow(
     kind,
     health: account.health,
     healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
-    equity: formatCurrency(account.equity),
-    cash: formatCurrency(account.cash),
-    buyingPower: formatCurrency(account.buyingPower),
+    equity: formatBrokerageMoney(account.equity, account.currency),
+    cash: formatBrokerageMoney(account.cash, account.currency),
+    buyingPower: formatBrokerageMoney(account.buyingPower, account.currency),
     syncedAt: formatDateTime(account.syncedAt),
     positionCount: formatCountLabel(account.positionCount, "position"),
     warningCount: formatCountLabel(warningCount, "warning"),
@@ -1563,7 +1566,7 @@ function toBrokerageAccountRow(
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
     selectAriaLabel: `Filter brokerage positions to ${kind} account`,
-    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrency(account.equity)}, cash ${formatCurrency(account.cash)}, ${formatCountLabel(warningCount, "warning")}`
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatBrokerageMoney(account.equity, account.currency)}, cash ${formatBrokerageMoney(account.cash, account.currency)}, ${formatCountLabel(warningCount, "warning")}`
   };
 }
 
@@ -1623,9 +1626,10 @@ function buildSelectedBrokerageAccountDetail(
     fields: [
       { label: "Fund account", value: account.fundAccountId, tone: "muted" },
       { label: "External account", value: account.externalAccountId, tone: "muted" },
-      { label: "Equity", value: formatCurrency(account.equity), tone: "default" },
-      { label: "Cash", value: formatCurrency(account.cash), tone: "default" },
-      { label: "Buying power", value: formatCurrency(account.buyingPower), tone: "default" },
+      { label: "Currency", value: account.currency || "Unavailable", tone: "muted" },
+      { label: "Equity", value: formatBrokerageMoney(account.equity, account.currency), tone: "default" },
+      { label: "Cash", value: formatBrokerageMoney(account.cash, account.currency), tone: "default" },
+      { label: "Buying power", value: formatBrokerageMoney(account.buyingPower, account.currency), tone: "default" },
       { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
       { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
       { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
@@ -1639,7 +1643,8 @@ function buildAllBrokerageAccountsDetail(
   providerLabel: string
 ): PortfolioBrokerageAccountDetail {
   const accountWarningCount = accounts.reduce((sum, account) => sum + account.warnings.length, 0);
-  const warningCount = accountWarningCount + (portfolio?.warnings.length ?? 0);
+  const warningCount = accountWarningCount + (portfolio?.warnings.length ?? 0)
+    + (portfolio && !hasComparableHouseholdCurrency(portfolio) ? 1 : 0);
   const hasAccounts = accounts.length > 0;
   const statusTone: PortfolioBrokerageAccountDetail["statusTone"] = !hasAccounts
     ? "danger"
@@ -1662,9 +1667,9 @@ function buildAllBrokerageAccountsDetail(
     statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
     fields: [
       { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
-      { label: "Equity", value: formatCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity")), tone: "default" },
-      { label: "Cash", value: formatCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash")), tone: "default" },
-      { label: "Buying power", value: formatCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower")), tone: "default" },
+      { label: "Equity", value: formatBrokerageHouseholdMoney(portfolio, "totalEquity"), tone: "default" },
+      { label: "Cash", value: formatBrokerageHouseholdMoney(portfolio, "totalCash"), tone: "default" },
+      { label: "Buying power", value: formatBrokerageHouseholdMoney(portfolio, "totalBuyingPower"), tone: "default" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
       { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
     ]
@@ -1675,13 +1680,6 @@ function brokerageAccountStatusBadgeVariant(
   tone: PortfolioBrokerageAccountDetail["statusTone"]
 ): PortfolioBrokerageAccountDetail["statusBadgeVariant"] {
   return tone === "default" ? "outline" : tone;
-}
-
-function sumAccountValue(
-  accounts: BrokerageHouseholdAccount[],
-  key: "equity" | "cash" | "buyingPower"
-): number {
-  return accounts.reduce((sum, account) => sum + account[key], 0);
 }
 
 function latestAccountSync(accounts: BrokerageHouseholdAccount[]): string {
@@ -1699,20 +1697,25 @@ function toBrokeragePositionRow(
   selectedId: string | null
 ): PortfolioBrokeragePositionRow {
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
-  const pnl = formatSignedCurrency(position.unrealizedPnl);
+  const pnl = formatBrokerageMoney(position.unrealizedPnl, position.currency, { signed: true });
   const id = brokeragePositionId(position);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
   return {
     id,
     accountLabel,
+    currency: normalizedPortfolioCurrency(position.currency),
+    numericValues: {
+      quantity: position.quantity, average: position.averageEntryPrice, mark: position.marketPrice,
+      "market-value": position.marketValue, "unrealized-pnl": position.unrealizedPnl
+    },
     accountKind,
     symbol: position.symbol,
     quantity: formatNumber(position.quantity),
-    averagePrice: formatCurrencyPrecise(position.averageEntryPrice),
-    markPrice: formatCurrencyPrecise(position.marketPrice),
+    averagePrice: formatBrokerageMoney(position.averageEntryPrice, position.currency, { precise: true }),
+    markPrice: formatBrokerageMoney(position.marketPrice, position.currency, { precise: true }),
     markFreshness: presentMarkFreshness(position.markFreshness),
-    marketValue: formatCurrency(position.marketValue),
+    marketValue: formatBrokerageMoney(position.marketValue, position.currency),
     unrealizedPnl: pnl,
     pnlTone: pnlTone(pnl),
     assetClass: position.assetClass,
@@ -1722,7 +1725,7 @@ function toBrokeragePositionRow(
     detailPanelId: "portfolio-brokerage-position-detail",
     expanded: id === selectedId,
     selectAriaLabel: `Inspect ${position.symbol} ${accountKind} live position`,
-    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatCurrency(position.marketValue)}, unrealized P&L ${pnl}`
+    ariaLabel: `${position.symbol} ${accountKind} brokerage position: ${formatNumber(position.quantity)} shares, market value ${formatBrokerageMoney(position.marketValue, position.currency)}, unrealized P&L ${pnl}`
   };
 }
 
@@ -1739,7 +1742,7 @@ function buildSelectedBrokeragePositionDetail(
   const account = accounts.find((candidate) => candidate.fundAccountId === position.fundAccountId);
   const accountKind = accountKindLabel(position.accountKind);
   const accountLabel = account?.displayName ?? accountKind;
-  const pnl = formatSignedCurrency(position.unrealizedPnl);
+  const pnl = formatBrokerageMoney(position.unrealizedPnl, position.currency, { signed: true });
   const pnlStatusTone = numericPnlTone(position.unrealizedPnl);
   const coverageTone: PortfolioBrokeragePositionDetail["statusTone"] = position.security ? "success" : "warning";
   const statusTone = position.security ? pnlStatusTone : "warning";
@@ -1752,7 +1755,7 @@ function buildSelectedBrokeragePositionDetail(
     subtitle: `${providerLabel} / ${accountLabel} / ${position.assetClass}`,
     ariaLabel: `${position.symbol} brokerage position detail`,
     statusTitle: "Brokerage position inspector",
-    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatCurrency(position.marketValue)} market value and ${pnl} unrealized P&L.`,
+    statusDetail: `${mark.label}: ${mark.reason} Recorded ${formatNumber(position.quantity)} ${position.symbol} shares in ${accountLabel} with ${formatBrokerageMoney(position.marketValue, position.currency)} market value and ${pnl} unrealized P&L.`,
     statusTone,
     statusBadgeLabel: coverageLabel,
     statusBadgeVariant,
@@ -1760,10 +1763,10 @@ function buildSelectedBrokeragePositionDetail(
       { label: "Account", value: accountLabel, tone: "default" },
       { label: "Account kind", value: accountKind, tone: "muted" },
       { label: "Quantity", value: formatNumber(position.quantity), tone: "default" },
-      { label: "Average entry", value: formatCurrencyPrecise(position.averageEntryPrice), tone: "muted" },
-      { label: "Recorded mark price", value: formatCurrencyPrecise(position.marketPrice), tone: "muted" },
+      { label: "Average entry", value: formatBrokerageMoney(position.averageEntryPrice, position.currency, { precise: true }), tone: "muted" },
+      { label: "Recorded mark price", value: formatBrokerageMoney(position.marketPrice, position.currency, { precise: true }), tone: "muted" },
       ...markFreshnessFields(mark),
-      { label: "Market value", value: formatCurrency(position.marketValue), tone: "default" },
+      { label: "Market value", value: formatBrokerageMoney(position.marketValue, position.currency), tone: "default" },
       { label: "Unrealized P&L", value: pnl, tone: pnlStatusTone },
       { label: "Security coverage", value: coverageLabel, tone: coverageTone },
       { label: "Currency", value: position.currency ?? "Unavailable", tone: "muted" }
@@ -1809,6 +1812,7 @@ function hasBrokerageWarnings(
 ): boolean {
   return Boolean(
     connection?.warnings.length ||
+      (portfolio && !hasComparableHouseholdCurrency(portfolio)) ||
       portfolio?.warnings.length ||
       portfolio?.accounts.some((account) => account.warnings.length > 0)
   );
@@ -1820,6 +1824,14 @@ function buildBrokerageWarningRows(
   providerLabel: string
 ): PortfolioBrokerageWarningRow[] {
   const rows: PortfolioBrokerageWarningRow[] = [];
+
+  if (portfolio && !hasComparableHouseholdCurrency(portfolio)) {
+    rows.push({
+      id: "household-currency", label: "Household currency",
+      detail: "Household totals are unavailable because account currencies differ or are missing. Inspect native account balances; no FX conversion is retained.",
+      ariaLabel: "Household totals unavailable: account currencies are not comparable"
+    });
+  }
 
   for (const [index, warning] of (connection?.warnings ?? []).entries()) {
     rows.push({
@@ -1860,7 +1872,7 @@ function brokerageConnectionDetail(
   providerLabel: string
 ): string {
   if (connection?.isConnected && portfolio) {
-    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatCurrency(portfolio.totalEquity)} total equity.`;
+    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatBrokerageHouseholdMoney(portfolio, "totalEquity")} total equity.`;
   }
 
   if (connection?.authorizationUrl) {

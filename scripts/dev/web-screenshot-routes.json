@@ -50,7 +50,7 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
+        "Search orders",
         "Open orders",
         "Recent fills"
       ]
@@ -65,7 +65,7 @@
         "/api/workstation/trading"
       ],
       "waitForTexts": [
-        "Net P&L",
+        "Search positions",
         "Live positions",
         "AAPL"
       ]
@@ -82,7 +82,7 @@
         "/api/risk/rules/DrawdownCircuitBreaker/config"
       ],
       "waitForTexts": [
-        "Net P&L",
+        "Risk guardrails",
         "Paper risk cockpit"
       ],
       "waitForAbsentTexts": [

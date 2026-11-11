@@ -1,3 +1,4 @@
+import { sortBrokeragePositions } from "@/screens/portfolio-screen.brokerage-table";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
 import type { KeyboardEvent } from "react";
@@ -19,7 +20,7 @@ import {
   type FinancialRecordExplorerSummaryItem
 } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
-import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { DenseDataTable, type DenseDataTableColumn, type DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { EmptyState } from "@/components/data/concrete";
@@ -251,39 +252,46 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
   },
   {
     id: "symbol",
+    sortable: true,
     label: "Symbol",
     render: (row) => <span className="font-mono font-semibold text-foreground">{row.symbol}</span>
   },
   {
     id: "quantity",
+    sortable: true,
     label: "Qty",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
   },
   {
     id: "average",
+    sortable: true,
     label: "Avg",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.averagePrice}</span>
   },
   {
     id: "mark",
+    sortable: true,
     label: "Mark",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
   },
   {
     id: "market-value",
+    sortable: true,
     label: "Market value",
     align: "right",
     render: (row) => <span className="font-mono text-foreground">{row.marketValue}</span>
   },
   {
     id: "unrealized-pnl",
+    sortable: true,
     label: "Unrealized P&L",
     align: "right",
     render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
   },
+  { id: "currency", label: "Currency", sortable: true, render: row => <span className="font-mono text-xs">{row.currency ?? "Unavailable"}</span> },
   {
     id: "coverage",
     label: "Coverage",
@@ -370,6 +378,8 @@ export function PortfolioScreen({
     pathname: location.pathname
   });
   const positionsTable = usePortfolioPositionsTable();
+  const [brokerageSort, setBrokerageSort] = useState<DenseDataTableSortState | null>(null);
+  const sortedBrokerageRows = useMemo(() => sortBrokeragePositions(vm.brokeragePositionRows, brokerageSort), [vm.brokeragePositionRows, brokerageSort]);
   const visiblePositionRows = useMemo(
     () => selectPortfolioPositionRows(vm.positionRows, positionsTable.state),
     [vm.positionRows, positionsTable.state]
@@ -1090,7 +1100,9 @@ export function PortfolioScreen({
             <div className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
               <DenseDataTable
                 columns={brokeragePositionColumns}
-                rows={vm.brokeragePositionRows}
+                rows={sortedBrokerageRows}
+                sort={brokerageSort}
+                onToggleSort={columnId => setBrokerageSort(current => ({ columnId, direction: current?.columnId === columnId && current.direction === "asc" ? "desc" : "asc" }))}
                 getRowId={(row) => row.id}
                 getRowAriaLabel={(row) => row.ariaLabel}
                 getRowSelectAriaLabel={(row) => row.selectAriaLabel}
@@ -1101,7 +1113,7 @@ export function PortfolioScreen({
                 selectedRowId={vm.selectedBrokeragePositionId}
                 emptyText={vm.brokerageEmptyText}
                 ariaLabel={vm.brokeragePositionsTableLabel}
-                caption="Select a brokerage position row to update the live brokerage position inspector."
+                caption="Select a brokerage position to inspect. Monetary sorts rank native amounts within currency groups; no FX conversion is applied."
               />
               <aside
                 id={vm.brokeragePositionDetailId}

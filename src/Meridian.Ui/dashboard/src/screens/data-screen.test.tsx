@@ -1,5 +1,6 @@
 import { act, fireEvent, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useLocation, useNavigate } from "react-router-dom";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
@@ -11,7 +12,7 @@ import {
   DATA_EXPORT_DETAIL_PANEL_ID,
   DATA_PROVIDER_DETAIL_PANEL_ID
 } from "@/screens/data-screen.view-model";
-import { renderWithRouter } from "@/test/render";
+import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import type {
   BackfillProgressResponse,
   BackfillPreviewResult,
@@ -76,6 +77,12 @@ const data: DataWorkspaceResponse = {
     }
   ]
 };
+
+function DataHistoryProbe() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  return <><button type="button" onClick={() => navigate(-1)}>Previous Data view</button><output aria-label="Current Data address">{location.pathname}{location.search}{location.hash}</output></>;
+}
 
 const polygonConnection: ProviderConnectionRow = {
   providerId: "polygon",
@@ -231,6 +238,75 @@ const providerReadiness: ProviderReadinessSummary = {
 };
 
 describe("DataScreen", () => {
+  it("shows financial quality separately from successful diagnostic reads and opens its evidence", async () => {
+    const qualityFetcher = vi.fn().mockResolvedValue({
+      timestamp: "2026-07-03T14:00:00Z",
+      composite: { version: "quality-v1", observedAt: "2026-07-03T14:00:00Z", compositeScore: 40, status: "Red", isPartial: true, coverageWeight: 0.5, components: [], symbols: [], openGaps: [], anomalyCount: 0 },
+      recentGaps: [], recentAnomalies: []
+    });
+    renderWithRouter(<DataScreen data={data} dataQualityFetcher={qualityFetcher} />, { initialEntries: ["/data"] });
+    const quality = screen.getByRole("status", { name: "Data quality summary" });
+    expect(within(quality).getByText("Checking quality…")).toBeInTheDocument();
+    await waitFor(() => expect(within(quality).getByText("Red · partial evidence")).toBeInTheDocument());
+    const disclosure = screen.getByText("Review data diagnostics").closest("details");
+    expect(disclosure).not.toHaveAttribute("open");
+    await userEvent.setup().click(within(quality).getByRole("button", { name: "Review data quality" }));
+    expect(disclosure).toHaveAttribute("open");
+    await waitFor(() => expect(document.getElementById("data-quality-title")).toHaveFocus());
+    expect(screen.queryByText("Diagnostics ready")).not.toBeInTheDocument();
+  });
+
+  it("opens the exact repair job and restores overview selection and search on Back", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<div className="workbench-scroll" aria-label="Data workspace viewport"><DataScreen data={data} /><DataHistoryProbe /></div>, { initialEntries: ["/data?fundAccount=account-a&dataJob=BF-1044&dataJobSearch=Options#evidence"] });
+    const viewport = screen.getByLabelText("Data workspace viewport");
+    fireEvent.scroll(viewport, { target: { scrollTop: 430 } });
+    const open = screen.getAllByRole("link", { name: "Open Backfill queue: BF-1044" })[0];
+    expect(open).toHaveAttribute("href", expect.stringContaining("backfillJob=BF-1044"));
+    await user.click(open);
+    expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
+    expect(screen.getByLabelText("Current Data address")).toHaveTextContent("fundAccount=account-a");
+    expect(screen.getByLabelText("Current Data address")).toHaveTextContent("#evidence");
+    fireEvent.scroll(viewport, { target: { scrollTop: 40 } });
+    await user.click(screen.getByRole("button", { name: "Previous Data view" }));
+    expect(screen.getByRole("searchbox", { name: "Search historical repair jobs" })).toHaveValue("Options");
+    expect(screen.getByRole("row", { name: "BF-1044" })).toHaveAttribute("aria-selected", "true");
+    expect(viewport.scrollTop).toBe(430);
+  });
+
+  it("retains an explicit unavailable repair selection across asynchronous workspace loading", async () => {
+    const view = renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills?backfillJob=missing-job"] });
+    view.rerender(<TestMemoryRouter initialEntries={["/data/backfills?backfillJob=missing-job"]}><DataScreen data={data} /></TestMemoryRouter>);
+    expect(screen.getByText("Selected backfill unavailable")).toBeInTheDocument();
+    expect(screen.getByText(/Backfill missing-job is not in the current loaded results/)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /backfill detail for BF-1042/i })).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("row", { name: "Inspect backfill BF-1044" }));
+    expect(screen.getByRole("region", { name: /backfill detail for BF-1044/i })).toBeInTheDocument();
+  });
+
+  it("filters loaded providers without replacing the selected inspector", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers?fundAccount=account-a#evidence"] });
+    await user.type(screen.getByRole("searchbox", { name: "Search providers" }), "missing");
+    expect(screen.getByText("0 of 1 loaded providers")).toBeInTheDocument();
+    expect(screen.getByText(/Selected provider is outside the current results/)).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /provider detail for Polygon.io/i })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear provider filters" }));
+    expect(screen.getByRole("row", { name: "Inspect provider Polygon.io" })).toBeInTheDocument();
+  });
+
+  it("sorts provider names categorically and filters by status without losing operating scope", async () => {
+    const user = userEvent.setup();
+    const providers = [...data.providers, { ...data.providers[0], providerId: "alpha", displayName: "Alpha", provider: "Alpha", status: "Warning" as const }];
+    renderWithRouter(<><DataScreen data={{ ...data, providers }} /><DataHistoryProbe /></>, { initialEntries: ["/data/providers?fundAccount=account-a#evidence"] });
+    await user.click(screen.getByRole("button", { name: "Sort by Provider" }));
+    const providerRows = screen.getAllByRole("row").filter((row) => row.getAttribute("aria-label")?.startsWith("Inspect provider"));
+    expect(providerRows[0]).toHaveAccessibleName("Inspect provider Alpha");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Provider status" }), "Warning");
+    expect(screen.getByText("1 of 2 loaded providers")).toBeInTheDocument();
+    expect(screen.getByLabelText("Current Data address")).toHaveTextContent("fundAccount=account-a");
+    expect(screen.getByLabelText("Current Data address")).toHaveTextContent("#evidence");
+  });
   it("renders an accessible route-aware loading panel when bootstrap data is unavailable", () => {
     renderWithRouter(<DataScreen data={null} />, { initialEntries: ["/data/backfills"] });
 

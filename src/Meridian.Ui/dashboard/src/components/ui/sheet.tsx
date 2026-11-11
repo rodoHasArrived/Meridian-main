@@ -151,7 +151,7 @@ export function SheetContent({ className, side = "right", ...props }: SheetConte
       aria-modal="true"
       tabIndex={-1}
       className={cn(
-        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
+        "relative flex h-full w-full max-w-2xl flex-col overflow-y-auto border-border bg-card text-card-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)] focus:outline-hidden",
         side === "left" ? "border-r sheet-slide-left" : "border-l sheet-slide-right",
         className
       )}

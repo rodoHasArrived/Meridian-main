@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, House } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import "@/styles/workspace-nav.css";
 import { useWorkspaceExpansion } from "@/components/meridian/use-workspace-expansion";
@@ -49,6 +49,10 @@ export function WorkspaceNav({
       ariaLabel={`${viewModel.brandTitle} navigation`}
       navAriaLabel="Workspaces"
     >
+      <Link to="/" className="operator-nav-home" aria-current={viewModel.isHome ? "page" : undefined} onClick={onNavigate}>
+        <House size={15} aria-hidden="true" />
+        <span>Daily Control Tower</span>
+      </Link>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
       {!compact && viewModel.operatingScopeLabel ? (
         <div className={designSystemNavRailClasses.scope} aria-label={viewModel.operatingScopeAriaLabel ?? undefined}>

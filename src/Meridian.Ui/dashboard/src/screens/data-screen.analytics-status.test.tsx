@@ -3,6 +3,7 @@ import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   buildDataAnalyticsDegradedViewModel,
+  buildDataAnalyticsAvailability,
   DataAnalyticsDegradedRegion,
   type DataAnalyticsPanelStatus
 } from "@/screens/data-screen.analytics-status";
@@ -18,6 +19,26 @@ function panel(overrides: Partial<DataAnalyticsPanelStatus> = {}): DataAnalytics
     ...overrides
   };
 }
+
+describe("diagnostic availability", () => {
+  it("reports one failed read even when alarm consolidation is unnecessary", () => {
+    const availability = buildDataAnalyticsAvailability([panel({ error: "unavailable" }), panel({ id: "coverage", label: "Coverage" })]);
+    expect(availability.label).toBe("1 diagnostic unavailable");
+    expect(availability.tone).toBe("warning");
+    expect(availability.detail).toContain("Data quality");
+  });
+
+  it("keeps checking explicit and never promotes loading reads to available", () => {
+    expect(buildDataAnalyticsAvailability([panel({ loading: true })])).toMatchObject({ label: "Checking diagnostics…", tone: "outline" });
+    expect(buildDataAnalyticsAvailability([panel({ loading: true, error: "old failure" })])).toMatchObject({ label: "1 diagnostic unavailable · checking", tone: "warning" });
+  });
+
+  it("states read availability without claiming healthy financial data", () => {
+    const availability = buildDataAnalyticsAvailability([panel(), panel({ id: "coverage", label: "Coverage" })]);
+    expect(availability.label).toBe("2/2 diagnostics available");
+    expect(availability.detail).toContain("Review data quality separately");
+  });
+});
 
 describe("buildDataAnalyticsDegradedViewModel", () => {
   it("returns null when no analytics panel is failing", () => {

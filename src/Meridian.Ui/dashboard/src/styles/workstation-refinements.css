@@ -23,3 +23,6 @@
 }
 /* A selected row's copper wash needs the stronger semantic foreground. */
 .workspace-workbench-shell tr[aria-selected="true"] .text-success { color: var(--severity-ready-fg); }
+
+/* Preserve warning meaning with contrast margin on the tinted provenance surface. */
+.workstation-provenance-banner.text-danger > .font-semibold { color: var(--severity-blocked-fg, #8F302A); }

@@ -5,13 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { useDataViewModel, type DataOperationsRouteFocusCardState } from "@/screens/data-screen.view-model";
+import type { buildDataAnalyticsAvailability } from "@/screens/data-screen.analytics-status";
+import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
 
 export function DataOverviewHub({
   vm,
-  degradedPanelCount
+  availability,
+  qualityPanel,
+  onInspectDiagnostics
 }: {
   vm: ReturnType<typeof useDataViewModel>;
-  degradedPanelCount: number;
+  availability: ReturnType<typeof buildDataAnalyticsAvailability>;
+  qualityPanel: DataQualityPanelViewModel;
+  onInspectDiagnostics: () => void;
 }) {
   const routes = [
     {
@@ -63,7 +69,7 @@ export function DataOverviewHub({
     title: row.jobId,
     description: `${row.provider} · ${row.scope}`,
     status: row.status,
-    href: WORKSTATION_ROUTE_CATALOG.dataBackfills,
+    href: `${WORKSTATION_ROUTE_CATALOG.dataBackfills}?backfillJob=${encodeURIComponent(row.jobId)}`,
     actionLabel: "Open Backfill queue",
     facts: [
       { label: "Provider", value: row.provider },
@@ -74,11 +80,19 @@ export function DataOverviewHub({
   }));
   return (
     <section className="space-y-3" aria-label="Data operations workbench">
-      <div role="status" className="workspace-task-health">
-        <strong>Data operations</strong>
-        <Badge variant={degradedPanelCount > 0 ? "warning" : "success"}>
-          {degradedPanelCount > 0 ? `${degradedPanelCount} diagnostics unavailable` : "Diagnostics ready"}
+      <div role="status" aria-label="Diagnostic availability" className="workspace-task-health">
+        <strong>Diagnostic availability</strong>
+        <Badge variant={availability.tone}>{availability.label}</Badge>
+        <span className="text-xs text-muted-foreground">{availability.detail}</span>
+      </div>
+      <div role="status" aria-label="Data quality summary" className="workspace-task-health">
+        <strong>Data quality</strong>
+        <Badge variant={qualityPanel.loading ? "outline" : qualityPanel.error || !qualityPanel.model || qualityPanel.model.overallStatus === "Unavailable" ? "warning" : qualityPanel.model.overallTone}>
+          {qualityPanel.loading ? "Checking quality…" : qualityPanel.error || !qualityPanel.model ? "Quality unavailable" : `${qualityPanel.model.overallStatus}${qualityPanel.model.isPartial ? " · partial evidence" : ""}`}
         </Badge>
+        <span className="text-xs text-muted-foreground">{qualityPanel.error || (qualityPanel.loading ? "Waiting for current quality evidence." : qualityPanel.model?.summary ?? "Current financial data quality is unverified.")}</span>
+        {qualityPanel.model && !qualityPanel.loading && !qualityPanel.error ? <span className="text-xs text-muted-foreground">{qualityPanel.model.openGaps.length} open gaps · {qualityPanel.model.unacknowledgedAnomalies.length} unacknowledged anomalies</span> : null}
+        <Button type="button" size="sm" variant="outline" aria-controls="data-diagnostics-panel" onClick={onInspectDiagnostics}>Review data quality</Button>
       </div>
       <WorkspaceTaskWorkbench title="Historical repair jobs" description="Inspect loaded backfill work and its scope before opening the recovery workstream." items={jobs} stateKey="dataJob" emptyText="No historical repair jobs are loaded. Import data or open Backfill queue to review available work." />
       <details className="workspace-task-disclosure">

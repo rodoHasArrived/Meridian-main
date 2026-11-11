@@ -1,3 +1,4 @@
+import { synchronizeSettingsDraftActor } from "@/screens/settings-screen.draft-review";
 import { Component, lazy, memo, Suspense, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from "react";
 import {
   ArrowRight,
@@ -161,9 +162,7 @@ export function App() {
   return (
     <PriceAlertsProvider>
       <ToastProvider>
-        <ActivityLogProvider>
-          <AppRoot />
-        </ActivityLogProvider>
+        <AppRoot />
       </ToastProvider>
     </PriceAlertsProvider>
   );
@@ -510,7 +509,10 @@ function AppShell({
   };
 
   const scopeFundAccountOptions = useMemo(() => collectScopeFundAccounts(brokeragePortfolio), [brokeragePortfolio]);
-  const scopeDimensionsInEffect = useMemo(() => operatingScopeDimensionsForRoute(pathname), [pathname]);
+  const scopeDimensionsInEffect = useMemo(
+    () => operatingScopeDimensionsForRoute(`${pathname}${search}`, operatingScopeInput),
+    [pathname, search, operatingScopeInput]
+  );
 
   useEffect(() => {
     const handleCommandShortcut = (event: KeyboardEvent) => {
@@ -695,7 +697,13 @@ function AppShell({
     shell.routeFocus.targetElementId
   ]);
 
+  const settingsDraftActorKey = session ? JSON.stringify([session.displayName, session.role, session.environment]) : null;
+  useEffect(() => {
+    synchronizeSettingsDraftActor(settingsDraftActorKey);
+  }, [settingsDraftActorKey]);
+
   return (
+    <ActivityLogProvider sessionIdentity={session ? `${session.displayName}|${session.role}|${session.environment}` : null}>
     <div className="workstation-frame">
       <a className="skip-link" href="#workbench-content">Skip to workbench</a>
       <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
@@ -715,7 +723,8 @@ function AppShell({
             <DecisionBriefPill brief={shell.workflowContinuity.decisionBrief} />
             <ActivationHeaderProgress status={firstRunStatus} />
             <ActivityCenter />
-            <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId} />
+            <NotificationCenter overview={overview} fundAccountId={operatingScopeInput.fundAccountId}
+              actorKey={`${session?.displayName ?? ""}|${session?.role ?? ""}|${session?.environment ?? ""}`} />
           </>
         )}
       />
@@ -934,6 +943,7 @@ function AppShell({
         </SheetContent>
       </Sheet>
     </div>
+    </ActivityLogProvider>
   );
 }
 
@@ -1039,7 +1049,7 @@ function buildWorkspaceBreadcrumbItems(
 
   return [
     {
-      label: "Workstation",
+      label: "Daily Control Tower",
       onClick: () => navigate("/")
     },
     {

@@ -409,6 +409,8 @@ describe("finance standard pages", () => {
     expect(screen.getByLabelText("Ledger book")).toBeInTheDocument();
     expect(screen.getByLabelText("Ledger period")).toBeInTheDocument();
     expect(screen.queryByLabelText("Run / period")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Group consolidation" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Preview consolidation" }));
     expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
     expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
     expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);

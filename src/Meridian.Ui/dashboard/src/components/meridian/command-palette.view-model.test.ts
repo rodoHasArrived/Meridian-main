@@ -243,6 +243,20 @@ describe("command palette view model", () => {
     );
   });
 
+  it("keeps typed report results visible and distinguishes lookup failures and pending reads", () => {
+    const entity = {
+      id: "report:report-1", label: "Trial balance", description: "Governed report", route: "/reporting/runs/detail?runId=report-1",
+      sourceLabel: "Report run" as const, commandLabel: "Inspect report", ariaLabel: "Inspect report"
+    };
+    const ready = buildCommandPaletteViewModel("/reporting", undefined, { entitySearchStatus: "ready", entityItems: [entity] }, "report: report-1");
+    expect(ready.filteredItems.map(item => item.id)).toEqual(["entity:report:report-1"]);
+    const pending = buildCommandPaletteViewModel("/reporting", undefined, { entitySearchStatus: "searching" }, "report: report-2");
+    expect(pending.emptyState?.title).toBe("Searching records");
+    const failed = buildCommandPaletteViewModel("/reporting", undefined, { entitySearchStatus: "error", entitySearchError: "Permission denied for this report record." }, "report: report-2");
+    expect(failed.emptyState?.title).toBe("Record lookup unavailable");
+    expect(failed.emptyState?.detail).toBe("Permission denied for this report record.");
+  });
+
   it("promotes ranked operator focus actions ahead of route navigation", () => {
     const model = buildCommandPaletteViewModel("/data/quotes?symbol=MSFT", undefined, {
       operatorFocusItems: [

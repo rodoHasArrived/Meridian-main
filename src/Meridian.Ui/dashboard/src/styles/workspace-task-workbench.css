@@ -18,7 +18,7 @@
 .workspace-task-inspector dl { display: grid; gap: 0; font-size: .75rem; }
 .workspace-task-inspector dl > div { display: grid; grid-template-columns: minmax(5rem, .7fr) minmax(0, 1fr); gap: .75rem; padding: .5rem 0; border-top: 1px solid var(--ws-border); }
 .workspace-task-inspector dt { color: var(--ws-text-muted); }
-.workspace-task-inspector dd { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.workspace-task-inspector dd { font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-width: 0; }
 .workspace-task-health { display: flex; align-items: center; flex-wrap: wrap; gap: .75rem; padding: .5rem .75rem; border: 1px solid var(--ws-border); background: var(--ws-surface); font-size: .75rem; }
 .workspace-task-disclosure { border: 1px solid var(--ws-border); border-radius: var(--radius-card, 2px); }
 .workspace-task-disclosure > summary { cursor: pointer; padding: .625rem .75rem; font-size: .8125rem; font-weight: 600; }

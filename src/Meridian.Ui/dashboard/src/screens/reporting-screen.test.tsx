@@ -1630,6 +1630,7 @@ describe("ReportingScreen", () => {
     const exportsRender = renderWithRouter(<ReportingScreen data={accounting} />, {
       initialEntries: ["/reporting/exports"]
     });
+    fireEvent.click(screen.getByText("Structured export formats and integrity evidence"));
     expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
     expect(screen.getByText("Governed export queue")).toBeInTheDocument();
     expect(screen.queryByText("Report run audit and lineage")).not.toBeInTheDocument();
@@ -1908,6 +1909,7 @@ describe("ReportingScreen", () => {
   it("keeps governed run controls out of Exports", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
+    fireEvent.click(screen.getByText("Structured export formats and integrity evidence"));
     expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Exports report runner" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Exports report as-of date")).not.toBeInTheDocument();
@@ -1916,6 +1918,7 @@ describe("ReportingScreen", () => {
   it("renders structured exports from the shared reporting payload", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports"] });
 
+    fireEvent.click(screen.getByText("Structured export formats and integrity evidence"));
     expect(screen.getByRole("region", { name: "Structured reporting exports" })).toBeInTheDocument();
     const regulatoryRow = screen.getByRole("listitem", { name: "Regulatory trial balance structured export" });
     expect(within(regulatoryRow).getByText("Regulatory")).toBeInTheDocument();
@@ -4626,7 +4629,7 @@ describe("ReportingScreen", () => {
       expect.objectContaining({ method: "POST" })
     );
     const status = await screen.findByRole("status", { name: "Run sched-investor status" });
-    expect(status).toHaveTextContent("Run sched-investor completed.");
+    expect(status).toHaveTextContent("Run sched-investor request acknowledged. Review the retained run status.");
     expect(status).toHaveTextContent("Run retained for audit review");
     expect(status).not.toHaveTextContent("sched-investor-20260601");
     expect(status).toHaveTextContent("Deliveries: 1");
@@ -4811,7 +4814,7 @@ describe("ReportingScreen", () => {
       expect.objectContaining({ method: "POST" })
     );
     const status = await screen.findByRole("status", { name: "Run sched-investor for Board reporting committee status" });
-    expect(status).toHaveTextContent("Run sched-investor for Board reporting committee completed.");
+    expect(status).toHaveTextContent("Run sched-investor for Board reporting committee request acknowledged. Retained run status:");
     expect(status).toHaveTextContent("Run retained for audit review");
     expect(status).not.toHaveTextContent("sched-investor-20260601");
     expect(status).toHaveTextContent("Deliveries: 1");
@@ -5492,4 +5495,16 @@ describe("ReportingScreen", () => {
     expect(useReportRunStream).toHaveBeenCalledWith("investor-monthly-statement-20260501");
     expect(useReportRunStream).not.toHaveBeenCalledWith("report-pack:11111111-1111-1111-1111-111111111111");
   });
+  it("filters export formats without replacing a selected profile inspector", async () => {
+    const user = userEvent.setup();
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/exports?symbol=AAPL"] });
+    const table = screen.getByRole("treegrid", { name: "Export profiles" });
+    await user.click(within(table).getByRole("row", { name: /Excel export profile/ }));
+    await user.type(screen.getByRole("searchbox", { name: "Search export profiles" }), "no matching export");
+    expect(screen.getByText("0 of 2 loaded profiles")).toBeInTheDocument();
+    expect(screen.getByText("Selected export profile is outside these filters. Its evidence remains in the inspector.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Clear export filters" }));
+    expect(screen.getByText("2 of 2 loaded profiles")).toBeInTheDocument();
+  });
+
 });

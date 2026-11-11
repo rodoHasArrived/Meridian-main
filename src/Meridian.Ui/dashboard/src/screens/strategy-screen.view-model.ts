@@ -569,6 +569,11 @@ export interface StrategyPlotScatterPoint {
   x: number;
   y: number;
   emphasis: boolean;
+  observationId?: string;
+  xValueText?: string;
+  yValueText?: string;
+  timestamp?: string;
+  sourceLabel?: string;
 }
 
 export interface StrategyPlotScatterChartState {
@@ -615,6 +620,12 @@ export interface StrategyPlotScatterPointMark {
   fill: string;
   fillOpacity: number;
   ariaLabel: string;
+  /** Optional source evidence. x/y above are SVG positions, never financial values. */
+  observationId?: string;
+  xValueText?: string;
+  yValueText?: string;
+  timestamp?: string;
+  sourceLabel?: string;
 }
 
 export interface StrategyPlotMarkerState {
@@ -3107,6 +3118,11 @@ function buildPlotToolScatterChartState({
       radius: point.emphasis ? 5 : 3.25,
       fill: point.emphasis ? "var(--chart-up)" : "var(--chart-ma20)",
       fillOpacity: point.emphasis ? 0.95 : 0.65,
+      observationId: point.observationId,
+      xValueText: point.xValueText,
+      yValueText: point.yValueText,
+      timestamp: point.timestamp,
+      sourceLabel: point.sourceLabel,
       ariaLabel: `${point.emphasis ? "Emphasized" : "History"} observation ${index + 1}, x ${point.x}, y ${point.y}`
     })),
     marker: {

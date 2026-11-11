@@ -5,7 +5,6 @@ import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-p
 import { formatNumber as formatNumberAmount } from "@/lib/format";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { StatStrip } from "@/components/meridian/stat-strip";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -103,6 +102,7 @@ import {
   type SettingsMutationConfirmation
 } from "@/screens/settings-mutation-confirm-dialog";
 import { SettingsTaskChooser } from "@/screens/settings-task-chooser";
+import { SettingsDraftReview, settingsDraftSeed, useSettingsDraftReview } from "@/screens/settings-screen.draft-review";
 import {
   buildSettingsScreenViewModel,
   useAlpacaConnectionFormViewModel,
@@ -400,18 +400,6 @@ const diagnosticToneClass = {
   warning: "border-warning/35 bg-warning/10",
   danger: "border-danger/35 bg-danger/10"
 } as const;
-
-// Storage-health headline metric tone — mirrors the view-model's storage tone mapping so the
-// MetricCard accent matches the "Storage health" system item.
-function settingsStorageHealthTone(
-  health: SystemOverviewResponse["storageHealth"] | undefined
-): "default" | "success" | "warning" | "danger" {
-  if (health === "Healthy") return "success";
-  if (health === "Warning") return "warning";
-  if (health === "Critical") return "danger";
-  return "default";
-}
-
 
 const requirementToneClass = {
   success: "border-success/30 bg-success/10 text-success",
@@ -758,27 +746,8 @@ export function SettingsScreen({
   const ledgerMappingDraftSignature = `${ledgerMappingDraft.accountOptions.map((option) => option.value).join("|")}::${ledgerMappingDraft.ledgerGroupOptions.map((option) => option.value).join("|")}`;
   const roleProfileDraftSignature = `${roleProfileDraft.baseRoleOptions.map((option) => option.value).join("|")}::${roleProfileDraft.permissionOptions.map((option) => option.value).join("|")}`;
   const scopedAccessCatalogSignature = `${scopedAccessRoleOptions.map((option) => option.value).join("|")}::${scopedAccessRoleProfileOptions.map((option) => option.value).join("|")}::${roleProfileDraft.permissionOptions.map((option) => option.value).join("|")}`;
-  const approvalPolicyDraftSignature = approvalPolicyDraft.rows.map((row) => [
-    row.policyKey,
-    row.requiredPermission,
-    row.submitterRole,
-    row.reviewerRole,
-    row.requiredDistinctApprovals,
-    row.requiresIndependentReviewer,
-    row.requiresReportPack,
-    row.requiresChecklistControlApprovals,
-    row.evidenceRequirement,
-    row.severity
-  ].join(":")).join("|");
-  const closeCalendarDraftSignature = closeCalendarDraft.items.map((item) => [
-    item.workflowId,
-    item.nextDueTaskId ?? "",
-    item.nextDueDate ?? "",
-    item.nextDueOwner ?? "",
-    item.periodId,
-    item.version
-  ].join(":")).join("|");
   const assetProfileSignature = approvedAssetProfiles.map((profile) => `${profile.profileId}:${profile.version}`).join("|");
+  const settingsDraftActor = session ? JSON.stringify([session.displayName, session.role, session.environment]) : null;
   const [ledgerMappingAssignment, setLedgerMappingAssignment] = useState<LedgerMappingAssignmentState>(() => ({
     accountId: "",
     ledgerGroupId: "",
@@ -838,7 +807,8 @@ export function SettingsScreen({
     busy: false,
     message: null,
     details: [],
-    tone: "default"
+    tone: "default",
+    ...settingsDraftSeed(settingsDraftActor, (operationsApprovalPolicyMatrix?.rows ?? []).map((row) => `policy:${operationsApprovalPolicyMatrix?.policyId}:${row.policyKey}`))
   }));
   const [closeCalendarItem, setCloseCalendarItem] = useState<CloseCalendarItemState>(() => ({
     workflowId: "",
@@ -849,7 +819,8 @@ export function SettingsScreen({
     busy: false,
     message: null,
     details: [],
-    tone: "default"
+    tone: "default",
+    ...settingsDraftSeed(settingsDraftActor, (operationsCloseCalendar?.items ?? []).map((item) => `calendar:${item.fundAccountId}:${item.periodId}:${item.workflowId}`))
   }));
   const [assetProfileDraft, setAssetProfileDraft] = useState<AssetProfileDraftState>(() => (
     createAssetProfileDraftState(firstApprovedAssetProfile)
@@ -880,20 +851,12 @@ export function SettingsScreen({
     [allProviderRows]
   );
   const routeCopy = SETTINGS_ROUTE_VIEW_COPY[activeTaskView];
-  const settingsStatMetrics = [
-    {
-      id: "providers-online",
-      label: "Providers online",
-      value: overview ? `${overview.providersOnline} / ${overview.providersTotal}` : "—",
-      delta: "",
-      tone: overview
-        ? overview.providersOnline === overview.providersTotal ? "success" as const : "warning" as const
-        : "default" as const
-    },
-    { id: "active-runs", label: "Active runs", value: overview ? String(overview.activeRuns) : "—", delta: "", tone: "default" as const },
-    { id: "open-positions", label: "Open positions", value: overview ? String(overview.openPositions) : "—", delta: "", tone: "default" as const },
-    { id: "storage-health", label: "Storage health", value: overview?.storageHealth ?? "—", delta: "", tone: settingsStorageHealthTone(overview?.storageHealth) }
-  ];
+  const settingsScope = activeTaskView === "preferences" ? "Applies only to this browser. Preferences do not change account authority or service configuration."
+    : activeTaskView === "access" ? "Changes apply to the selected principal and explicit authority scope. Existing service permissions remain authoritative."
+      : activeTaskView === "operations" ? "Changes apply to the selected accounting configuration, policy, or close workflow. Review changed fields and audit rationale before saving."
+        : activeTaskView === "providers" || activeTaskView === "provider-setup" || activeTaskView === "provider-advanced" ? "Connection changes apply to the selected owned provider connection and its retained account and environment."
+          : activeTaskView === "diagnostics" || activeTaskView === "diagnostics-advanced" ? "Diagnostics describe current service evidence. An available service does not establish financial or operational readiness."
+            : "Choose a settings task to see its scope, current state, and available actions.";
   const showChooserSection = activeTaskView === "chooser";
   const showPreferencesSection = activeTaskView === "preferences";
   const showAccessSection = activeTaskView === "access";
@@ -911,6 +874,39 @@ export function SettingsScreen({
   const showRuntimeSection = showAdvancedDiagnosticsSection;
   const showBackendCapabilitySection = showAdvancedDiagnosticsSection;
   const visibleDiagnosticLinks = showAdvancedDiagnosticsSection ? vm.diagnosticLinks : vm.diagnosticExceptionLinks;
+  const selectedPolicySource = approvalPolicyDraft.rows.find((row) => row.policyKey === approvalPolicyRule.policyKey) ?? approvalPolicyDraft.rows[0];
+  const approvalFields = {
+    policyKey: approvalPolicyRule.policyKey, requiredPermission: approvalPolicyRule.requiredPermission,
+    submitterRole: approvalPolicyRule.submitterRole, reviewerRole: approvalPolicyRule.reviewerRole,
+    requiredDistinctApprovals: approvalPolicyRule.requiredDistinctApprovals,
+    requiresIndependentReviewer: approvalPolicyRule.requiresIndependentReviewer,
+    requiresReportPack: approvalPolicyRule.requiresReportPack,
+    requiresChecklistControlApprovals: approvalPolicyRule.requiresChecklistControlApprovals,
+    evidenceRequirement: approvalPolicyRule.evidenceRequirement, severity: approvalPolicyRule.severity, rationale: approvalPolicyRule.rationale
+  };
+  const policyReview = useSettingsDraftReview(approvalFields, {
+    policyKey: selectedPolicySource?.policyKey ?? "", requiredPermission: selectedPolicySource?.requiredPermission ?? "",
+    submitterRole: selectedPolicySource?.submitterRole ?? "", reviewerRole: selectedPolicySource?.reviewerRole ?? "",
+    requiredDistinctApprovals: selectedPolicySource?.requiredDistinctApprovals ?? 1,
+    requiresIndependentReviewer: selectedPolicySource?.requiresIndependentReviewer ?? true,
+    requiresReportPack: selectedPolicySource?.requiresReportPack ?? true,
+    requiresChecklistControlApprovals: selectedPolicySource?.requiresChecklistControlApprovals ?? true,
+    evidenceRequirement: selectedPolicySource?.evidenceRequirement ?? "", severity: selectedPolicySource?.severity ?? "Critical",
+    rationale: "Update approval policy for governed fund-operations close control."
+  }, (fields) => setApprovalPolicyRule((current) => ({ ...current, ...fields, message: null, details: [], tone: "default" })), operationsApprovalPolicyMatrix?.version ?? "",
+  { actorKey: settingsDraftActor, scopeKey: selectedPolicySource ? `policy:${operationsApprovalPolicyMatrix?.policyId}:${selectedPolicySource.policyKey}` : "" });
+  const selectedCalendarSource = closeCalendarDraft.items.find((item) => item.workflowId === closeCalendarItem.workflowId) ?? closeCalendarDraft.items[0];
+  const calendarFields = { workflowId: closeCalendarItem.workflowId, taskId: closeCalendarItem.taskId, dueDate: closeCalendarItem.dueDate, owner: closeCalendarItem.owner, rationale: closeCalendarItem.rationale };
+  const calendarReview = useSettingsDraftReview(calendarFields, {
+    workflowId: selectedCalendarSource?.workflowId ?? "", taskId: selectedCalendarSource?.nextDueTaskId ?? "",
+    dueDate: selectedCalendarSource?.nextDueDate ?? "", owner: selectedCalendarSource?.nextDueOwner ?? "",
+    rationale: "Update account close calendar ownership and due-date accounting."
+  }, (fields) => setCloseCalendarItem((current) => ({ ...current, ...fields, message: null, details: [], tone: "default" })), String(selectedCalendarSource?.version ?? ""),
+  { actorKey: settingsDraftActor, scopeKey: selectedCalendarSource ? `calendar:${selectedCalendarSource.fundAccountId}:${selectedCalendarSource.periodId}:${selectedCalendarSource.workflowId}` : "" });
+  const recoverablePolicyDraft = settingsDraftSeed<typeof approvalFields>(settingsDraftActor,
+    (operationsApprovalPolicyMatrix?.rows ?? []).map((row) => `policy:${operationsApprovalPolicyMatrix?.policyId}:${row.policyKey}`));
+  const recoverableCalendarDraft = settingsDraftSeed<typeof calendarFields>(settingsDraftActor,
+    (operationsCloseCalendar?.items ?? []).map((item) => `calendar:${item.fundAccountId}:${item.periodId}:${item.workflowId}`));
 
   useEffect(() => {
     setLedgerMappingAssignment((current) => ({
@@ -1015,69 +1011,6 @@ export function SettingsScreen({
       cancelled = true;
     };
   }, [rolePermissionCatalog, scopedAccess.includeRevoked]);
-
-  useEffect(() => {
-    setApprovalPolicyRule((current) => {
-      const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === current.policyKey) ??
-        approvalPolicyDraft.rows[0];
-      if (!selected) {
-        return {
-          ...current,
-          policyKey: "",
-          message: null,
-          details: [],
-          tone: "default"
-        };
-      }
-
-      return {
-        ...current,
-        policyKey: selected.policyKey,
-        requiredPermission: selected.requiredPermission,
-        submitterRole: selected.submitterRole,
-        reviewerRole: selected.reviewerRole,
-        requiredDistinctApprovals: selected.requiredDistinctApprovals,
-        requiresIndependentReviewer: selected.requiresIndependentReviewer,
-        requiresReportPack: selected.requiresReportPack,
-        requiresChecklistControlApprovals: selected.requiresChecklistControlApprovals,
-        evidenceRequirement: selected.evidenceRequirement,
-        severity: selected.severity,
-        message: null,
-        details: [],
-        tone: "default"
-      };
-    });
-  }, [approvalPolicyDraftSignature]);
-
-  useEffect(() => {
-    setCloseCalendarItem((current) => {
-      const selected = closeCalendarDraft.items.find((item) => item.workflowId === current.workflowId) ??
-        closeCalendarDraft.items[0];
-      if (!selected) {
-        return {
-          ...current,
-          workflowId: "",
-          taskId: "",
-          dueDate: "",
-          owner: "",
-          message: null,
-          details: [],
-          tone: "default"
-        };
-      }
-
-      return {
-        ...current,
-        workflowId: selected.workflowId,
-        taskId: selected.nextDueTaskId ?? "",
-        dueDate: selected.nextDueDate ?? "",
-        owner: selected.nextDueOwner ?? "",
-        message: null,
-        details: [],
-        tone: "default"
-      };
-    });
-  }, [closeCalendarDraftSignature]);
 
   useEffect(() => {
     setAssetProfileDraft((current) => {
@@ -1863,12 +1796,11 @@ export function SettingsScreen({
 
   const selectApprovalPolicyRule = (policyKey: string) => {
     const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === policyKey);
-    if (!selected) {
+    if (!selected || policyReview.dirty || policyReview.conflict) {
       return;
     }
 
-    setApprovalPolicyRule((current) => ({
-      ...current,
+    policyReview.load({
       policyKey: selected.policyKey,
       requiredPermission: selected.requiredPermission,
       submitterRole: selected.submitterRole,
@@ -1879,14 +1811,13 @@ export function SettingsScreen({
       requiresChecklistControlApprovals: selected.requiresChecklistControlApprovals,
       evidenceRequirement: selected.evidenceRequirement,
       severity: selected.severity,
-      message: null,
-      details: [],
-      tone: "default"
-    }));
+      rationale: "Update approval policy for governed fund-operations close control."
+    });
   };
 
   const submitApprovalPolicyRule = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (policyReview.conflict) return;
     const selected = approvalPolicyDraft.rows.find((row) => row.policyKey === approvalPolicyRule.policyKey);
     if (!approvalPolicyDraft.canSave || !selected) {
       setApprovalPolicyRule((current) => ({
@@ -1932,6 +1863,7 @@ export function SettingsScreen({
         rationale: approvalPolicyRule.rationale,
         correlationId: `settings-approval-policy-${Date.now()}`
       });
+      policyReview.markSaved();
       await onRefresh?.();
       setApprovalPolicyRule((current) => ({
         ...current,
@@ -1957,24 +1889,22 @@ export function SettingsScreen({
 
   const selectCloseCalendarItem = (workflowId: string) => {
     const selected = closeCalendarDraft.items.find((item) => item.workflowId === workflowId);
-    if (!selected) {
+    if (!selected || calendarReview.dirty || calendarReview.conflict) {
       return;
     }
 
-    setCloseCalendarItem((current) => ({
-      ...current,
+    calendarReview.load({
       workflowId: selected.workflowId,
       taskId: selected.nextDueTaskId ?? "",
       dueDate: selected.nextDueDate ?? "",
       owner: selected.nextDueOwner ?? "",
-      message: null,
-      details: [],
-      tone: "default"
-    }));
+      rationale: "Update account close calendar ownership and due-date accounting."
+    });
   };
 
   const submitCloseCalendarItem = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (calendarReview.conflict) return;
     const selected = closeCalendarDraft.items.find((item) => item.workflowId === closeCalendarItem.workflowId);
     if (!closeCalendarDraft.canSave || !selected) {
       setCloseCalendarItem((current) => ({
@@ -2014,6 +1944,7 @@ export function SettingsScreen({
         rationale: closeCalendarItem.rationale,
         correlationId: `settings-close-calendar-${Date.now()}`
       });
+      calendarReview.markSaved();
       await onRefresh?.();
       setCloseCalendarItem((current) => ({
         ...current,
@@ -2397,8 +2328,6 @@ export function SettingsScreen({
 
   return (
     <div className="space-y-5">
-      <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" />
-
       <section
         id="settings-overview"
         role="region"
@@ -2412,6 +2341,7 @@ export function SettingsScreen({
           <p className="mt-0.5 max-w-3xl text-xs leading-5 text-muted-foreground">
             {routeCopy.description}
           </p>
+          <p aria-label="Settings change scope" className="mt-2 max-w-3xl text-xs leading-5 text-foreground">{settingsScope}</p>
         </div>
       </section>
 
@@ -3199,6 +3129,13 @@ export function SettingsScreen({
             onSubmit={submitApprovalPolicyRule}
             aria-label="Configure approval policy rule"
           >
+            <SettingsDraftReview label="Policy" review={policyReview} busy={approvalPolicyRule.busy} />
+            {recoverablePolicyDraft.policyKey && recoverablePolicyDraft.policyKey !== approvalPolicyRule.policyKey ? <div className="space-y-1 text-xs">
+              <p>A draft for another rule is retained in this session. Recover it to review against the loaded authoritative source.</p>
+              <Button type="button" size="sm" variant="outline" disabled={policyReview.dirty || policyReview.conflict || approvalPolicyRule.busy}
+                onClick={() => policyReview.load({ ...approvalFields, ...recoverablePolicyDraft })}>Recover policy draft for {recoverablePolicyDraft.policyKey}</Button>
+            </div> : null}
+            <p className="text-xs text-muted-foreground">Policy version {operationsApprovalPolicyMatrix?.version ?? "unavailable"}. Discard unsaved changes before selecting another rule.</p>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-foreground">Configure approval policy</h3>
@@ -3216,7 +3153,7 @@ export function SettingsScreen({
                 value={approvalPolicyRule.policyKey}
                 onChange={selectApprovalPolicyRule}
                 options={approvalPolicyDraft.policyOptions}
-                disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy || policyReview.dirty || policyReview.conflict}
               />
               <FilterSelect
                 label="Required permission"
@@ -3334,10 +3271,10 @@ export function SettingsScreen({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy}
+                  disabled={!approvalPolicyDraft.canSave || approvalPolicyRule.busy || policyReview.conflict}
                   busy={approvalPolicyRule.busy}
                   busyLabel="Saving approval policy"
-                  disabledReason={approvalPolicyDraft.disabledReason}
+                  disabledReason={policyReview.conflict ? "Discard the conflicted draft and review current policy values before saving." : approvalPolicyDraft.disabledReason}
                 >
                   <Save className="h-3.5 w-3.5" aria-hidden="true" />
                   Save policy
@@ -3362,6 +3299,13 @@ export function SettingsScreen({
             onSubmit={submitCloseCalendarItem}
             aria-label="Configure account close calendar"
           >
+            <SettingsDraftReview label="Calendar" review={calendarReview} busy={closeCalendarItem.busy} />
+            {recoverableCalendarDraft.workflowId && recoverableCalendarDraft.workflowId !== closeCalendarItem.workflowId ? <div className="space-y-1 text-xs">
+              <p>A draft for another close workflow is retained in this session. Recover it to review against the loaded authoritative source.</p>
+              <Button type="button" size="sm" variant="outline" disabled={calendarReview.dirty || calendarReview.conflict || closeCalendarItem.busy}
+                onClick={() => calendarReview.load({ ...calendarFields, ...recoverableCalendarDraft })}>Recover calendar draft for {recoverableCalendarDraft.workflowId}</Button>
+            </div> : null}
+            <p className="text-xs text-muted-foreground">Close period {selectedCalendarSource?.periodId ?? "unavailable"} · version {selectedCalendarSource?.version ?? "unavailable"}. Discard unsaved changes before selecting another workflow.</p>
             <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
               <div className="min-w-0">
                 <h3 className="text-sm font-semibold text-foreground">Configure account close calendar</h3>
@@ -3379,7 +3323,7 @@ export function SettingsScreen({
                 value={closeCalendarItem.workflowId}
                 onChange={selectCloseCalendarItem}
                 options={closeCalendarDraft.workflowOptions}
-                disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy || calendarReview.dirty || calendarReview.conflict}
               />
               <label className="grid gap-1 text-xs font-medium text-muted-foreground">
                 Task
@@ -3425,10 +3369,10 @@ export function SettingsScreen({
                 <Button
                   type="submit"
                   size="sm"
-                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy}
+                  disabled={!closeCalendarDraft.canSave || closeCalendarItem.busy || calendarReview.conflict}
                   busy={closeCalendarItem.busy}
                   busyLabel="Saving close calendar"
-                  disabledReason={closeCalendarDraft.disabledReason}
+                  disabledReason={calendarReview.conflict ? "Discard the conflicted draft and review current calendar values before saving." : closeCalendarDraft.disabledReason}
                 >
                   <Save className="h-3.5 w-3.5" aria-hidden="true" />
                   Save calendar

@@ -16,7 +16,7 @@ export function DecisionBriefPill({ brief }: { brief: AppShellDecisionBrief }) {
         "masthead-status-pill focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
         `masthead-status-pill-${brief.statusTone}`
       )}
-      aria-label={`${brief.label}: ${brief.title}. Status ${brief.statusLabel}. ${brief.actionLabel}.`}
+      aria-label={`${brief.statusLabel} ${brief.title}. ${brief.label}. ${brief.actionLabel}.`}
       title={`${brief.title} — ${brief.reason}`}
     >
       <span className="masthead-status-pill-dot" aria-hidden="true" />

@@ -48,8 +48,8 @@ export function buildWorkstationStatusItems({
     {
       key: "sync",
       status: hasError ? "err" : refreshing ? "warn" : "ok",
-      label: "Sync",
-      value: hasError ? "attention required" : refreshing ? "refreshing..." : "up to date"
+      label: "Workspace requests",
+      value: hasError ? "attention required" : refreshing ? "refreshing..." : "idle · check dataset freshness"
     },
     {
       key: "workspace",

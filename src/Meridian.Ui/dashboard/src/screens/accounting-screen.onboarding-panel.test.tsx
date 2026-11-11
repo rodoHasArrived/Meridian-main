@@ -2,10 +2,13 @@ import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { apiGetJson } from "@/lib/api";
 import * as onboarding from "@/lib/api/accounting-onboarding.api";
+import { retainOnboardingCreationIntent } from "./onboarding-creation-recovery";
 import { AccountingOnboardingPanel } from "./accounting-screen.onboarding-panel";
 import type { OnboardingComparison, OnboardingDifference, OnboardingReadinessPacket, OnboardingWorkspace } from "@/types/accounting-onboarding";
 
+vi.mock("@/lib/api", () => ({ apiGetJson: vi.fn() }));
 vi.mock("@/lib/api/accounting-onboarding.api", () => ({
   listOnboardingWorkspaces: vi.fn(), getOnboardingWorkspace: vi.fn(), getOnboardingSources: vi.fn(), createOnboardingWorkspace: vi.fn(),
   updateOnboardingCriteria: vi.fn(), captureOnboardingComparison: vi.fn(), assignOnboardingDifference: vi.fn(),
@@ -47,6 +50,8 @@ async function selectWorkspace() {
 }
 beforeEach(() => {
   vi.resetAllMocks();
+  sessionStorage.clear();
+  vi.mocked(apiGetJson).mockRejectedValue(new Error("Discovery not configured"));
   api.listOnboardingWorkspaces.mockResolvedValue([workspace()]);
   api.getOnboardingSources.mockResolvedValue([source]);
 });
@@ -59,10 +64,13 @@ describe("bounded accounting onboarding", () => {
     await screen.findByText("No onboarding workspaces retained. Define a bounded scope to begin.");
     await userEvent.click(screen.getByText("Define onboarding scope"));
     const form = within(screen.getByRole("form", { name: "Create onboarding workspace" }));
+    await userEvent.click(form.getByLabelText("Advanced: enter exact scope identities"));
     for (const [label, value] of [["Workspace name", "Quarter one onboarding"], ["Entity ID", "entity-1"], ["Book profile ID", "profile-1"], ["Ledger book ID", "book-1"], ["Financial account IDs", "account-1, account-2"], ["Start date", "2026-01-01"], ["End date", "2026-03-31"], ["Required dates", "2026-01-31, 2026-02-28"], ["Review criteria", "Reconcile both month ends."]]) {
       await userEvent.type(form.getByLabelText(label), value);
     }
     expect((await axe(container)).violations).toEqual([]);
+    await userEvent.click(form.getByRole("button", { name: "Review workspace" }));
+    expect(api.createOnboardingWorkspace).not.toHaveBeenCalled();
     await userEvent.click(form.getByRole("button", { name: "Create workspace" }));
     await waitFor(() => expect(api.createOnboardingWorkspace).toHaveBeenCalled());
     const [request] = api.createOnboardingWorkspace.mock.calls[0];
@@ -179,4 +187,39 @@ describe("bounded accounting onboarding", () => {
     expect(screen.getByText("Resolved · Balance · account-1 · USD · owner owner")).toBeInTheDocument();
     expect(screen.getByText("Readiness: Blocked")).toBeInTheDocument();
   });
+  it("requires inspection of retained workspaces after an uncertain creation outcome", async () => {
+    api.listOnboardingWorkspaces.mockResolvedValue([]);
+    api.createOnboardingWorkspace.mockRejectedValue(new Error("Connection interrupted"));
+    const user = userEvent.setup();
+    render(<AccountingOnboardingPanel />);
+    await screen.findByText("No onboarding workspaces retained. Define a bounded scope to begin.");
+    await user.click(screen.getByText("Define onboarding scope"));
+    const form = within(screen.getByRole("form", { name: "Create onboarding workspace" }));
+    await user.click(form.getByLabelText("Advanced: enter exact scope identities"));
+    for (const [label, value] of [["Workspace name", "Review desk"], ["Entity ID", "entity-1"], ["Book profile ID", "profile-1"], ["Ledger book ID", "book-1"], ["Financial account IDs", "account-1"], ["Start date", "2026-01-01"], ["End date", "2026-01-31"], ["Required dates", "2026-01-31"], ["Review criteria", "Review sources."]]) await user.type(form.getByLabelText(label), value);
+    await user.click(form.getByRole("button", { name: "Review workspace" }));
+    await user.click(form.getByRole("button", { name: "Create workspace" }));
+    await screen.findByText("Creation outcome unconfirmed. Refresh retained workspaces and inspect them before creating another workspace.");
+    expect(form.getByRole("button", { name: "Review workspace" })).toBeDisabled();
+    expect(api.createOnboardingWorkspace).toHaveBeenCalledTimes(1);
+    await user.click(screen.getByRole("button", { name: "Refresh workspaces" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "I inspected retained workspaces; allow a new request" })).toBeEnabled());
+    expect(form.getByRole("button", { name: "Review workspace" })).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: "I inspected retained workspaces; allow a new request" }));
+    expect(form.getByRole("button", { name: "Review workspace" })).toBeEnabled();
+    expect(api.createOnboardingWorkspace).toHaveBeenCalledTimes(1);
+  });
+
+  it("retains an unconfirmed intent across remount without replay or automatic clearance", async () => {
+    retainOnboardingCreationIntent("operator-a", { intentId: "intent-a", name: "Earlier request", scope: workspace().scope, requestedAt: "2026-11-11T12:00:00Z" });
+    const first = render(<AccountingOnboardingPanel actorKey="operator-a" />);
+    await screen.findByText(/Earlier request · Entity/);
+    await waitFor(() => expect(screen.getByRole("button", { name: "I inspected retained workspaces; allow a new request" })).toBeEnabled());
+    first.unmount();
+    render(<AccountingOnboardingPanel actorKey="operator-a" />);
+    await screen.findByText(/Earlier request · Entity/);
+    expect(api.createOnboardingWorkspace).not.toHaveBeenCalled();
+    expect(screen.getByRole("region", { name: "Unconfirmed workspace creation" })).toBeInTheDocument();
+  });
+
 });

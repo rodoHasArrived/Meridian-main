@@ -962,11 +962,13 @@ export function useDataViewModel(
   services: BackfillTriggerServices = defaultBackfillServices,
   providerSetupLifecycle: ProviderSetupLifecycleServices = defaultProviderSetupLifecycle,
   providerEvidence: DataOperationsProviderEvidence = {},
-  operatorIdentity: string | null = null
+  operatorIdentity: string | null = null,
+  backfillSelection?: { selectedId: string | null; onSelect: (id: string) => void }
 ) {
   const [selectedProviderId, setSelectedProviderId] = useState<string | null>(null);
   const [selectedProviderTab, setSelectedProviderTab] = useState<DataOperationsProviderTabId>("overview");
-  const [selectedBackfillId, setSelectedBackfillId] = useState<string | null>(null);
+  const [localBackfillId, setSelectedBackfillId] = useState<string | null>(null);
+  const selectedBackfillId = backfillSelection ? backfillSelection.selectedId : localBackfillId;
   const [selectedExportId, setSelectedExportId] = useState<string | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [form, setForm] = useState<BackfillFormState>(defaultBackfillForm);
@@ -1143,7 +1145,7 @@ export function useDataViewModel(
   const presentation = useMemo(
     () => buildDataPresentationState(
       data,
-      selectedBackfill?.jobId ?? null,
+      selectedBackfillId ?? selectedBackfill?.jobId ?? null,
       workstream,
       selectedProviderId,
       selectedExport?.exportId ?? null,
@@ -1163,9 +1165,10 @@ export function useDataViewModel(
       providerVerifyError,
       providerVerifyProviderId,
       providerVerifyResult,
+      selectedBackfillId,
       selectedBackfill?.jobId,
       selectedExport?.exportId,
-      selectedProviderRowId,
+      selectedProviderId,
       selectedProviderTab,
       workstream
     ]
@@ -1876,7 +1879,7 @@ export function useDataViewModel(
     selectedBackfill,
     selectedBackfillId,
     selectedBackfillRowId: selectedBackfill ? buildBackfillRowId(selectedBackfill.jobId) : null,
-    selectBackfill: setSelectedBackfillId,
+    selectBackfill: backfillSelection?.onSelect ?? setSelectedBackfillId,
     selectedExport,
     selectedExportId,
     selectedExportRowId: selectedExport ? buildExportRowId(selectedExport.exportId) : null,
@@ -1954,7 +1957,9 @@ export function buildDataPresentationState(
   const backfills = data?.backfills ?? [];
   const exports = data?.exports ?? [];
   const selectedBackfillDetail = buildSelectedBackfillDetail(backfills, selectedBackfillId);
-  const backfillDetailEmptyState = backfills.length === 0
+  const backfillDetailEmptyState = selectedBackfillId !== null && !selectedBackfillDetail
+    ? { title: "Selected backfill unavailable", description: `Backfill ${selectedBackfillId} is not in the current loaded results. Select another job or refresh the workspace; no other job has been substituted.` }
+    : backfills.length === 0
     ? {
         title: "No backfill activity yet",
         description: "Preview a historical repair or wait for queued jobs to appear before using this detail panel."
@@ -3410,7 +3415,7 @@ export function resolveSelectedBackfill(
   backfills: DataBackfillRecord[],
   selectedBackfillId: string | null
 ): DataBackfillRecord | null {
-  return backfills.find((job) => job.jobId === selectedBackfillId) ?? backfills[0] ?? null;
+  return selectedBackfillId === null ? backfills[0] ?? null : backfills.find((job) => job.jobId === selectedBackfillId) ?? null;
 }
 
 export function resolveSelectedExport(

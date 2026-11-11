@@ -1,5 +1,6 @@
-import { forwardRef, type ReactNode, type TextareaHTMLAttributes } from "react";
+import { forwardRef, useId, type ReactNode, type TextareaHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { useFormFieldProps } from "@/components/ui/form-field-context";
 
 export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: ReactNode;
@@ -12,21 +13,28 @@ export interface TextAreaProps extends TextareaHTMLAttributes<HTMLTextAreaElemen
  */
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ({ label, error, rows = 4, className, id, ...props }, ref) => {
+    const generatedId = useId();
+    const fieldProps = useFormFieldProps({ ...props, id }, Boolean(error));
+    const controlId = fieldProps.id ?? (label || error ? `textarea-${generatedId}` : undefined);
+    const errorId = error ? `${controlId}-textarea-error` : undefined;
+    const describedBy = [fieldProps["aria-describedby"], errorId].filter(Boolean).join(" ") || undefined;
+    const invalid = Boolean(fieldProps["aria-invalid"] && fieldProps["aria-invalid"] !== "false");
     const control = (
       <textarea
         ref={ref}
-        id={id}
+        id={controlId}
         rows={rows}
-        aria-invalid={error ? true : undefined}
         className={cn(
           "w-full rounded-[2px] border bg-[var(--ws-surface-raised)] px-2.5 py-2 text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/70",
           "transition-colors duration-150 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
           "disabled:cursor-not-allowed disabled:opacity-55",
           "resize-y",
-          error ? "border-danger/60 focus-visible:ring-danger/40" : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
+          invalid ? "border-danger/60 focus-visible:ring-danger/40" : "border-border hover:border-[var(--ws-border-hover)] focus-visible:border-primary",
           className
         )}
         {...props}
+        aria-invalid={fieldProps["aria-invalid"]}
+        aria-describedby={describedBy}
       />
     );
 
@@ -35,15 +43,15 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
     }
 
     return (
-      <label className="block">
+      <div className="block">
         {label ? (
-          <span className="mb-1.5 block font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <label htmlFor={controlId} className="form-field-label mb-1.5 block">
             {label}
-          </span>
+          </label>
         ) : null}
         {control}
-        {error ? <span className="mt-1.5 block text-xs leading-5 text-danger">{error}</span> : null}
-      </label>
+        {error ? <span id={errorId} className="mt-1.5 block text-xs leading-5 text-danger">{error}</span> : null}
+      </div>
     );
   }
 );

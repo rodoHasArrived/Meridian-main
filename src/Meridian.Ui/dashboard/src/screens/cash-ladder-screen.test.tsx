@@ -77,13 +77,13 @@ describe("Cash Ladder request scope", () => {
     expect(screen.queryByText("Assumptions A")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Cash ladder bucket values")).not.toBeInTheDocument();
     expect(screen.getByText("Loading cash ladder…")).toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(null);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("");
     expect(getLadder).toHaveBeenLastCalledWith({ scenario: "base", minimumCash: undefined, fundAccountId: "account-b" },
       expect.objectContaining({ signal: expect.any(AbortSignal) }));
 
     await act(async () => next.resolve(ladder("B", 20000)));
     expect(screen.getByText("engine-B")).toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(20000);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("20000");
     expect(screen.queryByText("Bond B")).not.toBeInTheDocument();
     expect(within(screen.getByRole("table", { name: "Cash ladder contributing flows" }))
       .getByText("Select a bucket in the chart to inspect its contributing flows.")).toBeInTheDocument();
@@ -104,7 +104,7 @@ describe("Cash Ladder request scope", () => {
     rerender(view("account-b"));
     await screen.findByText("engine-account-b");
     expect(getLadder).toHaveBeenLastCalledWith({ scenario: "base", minimumCash: undefined, fundAccountId: "account-b" }, expect.any(Object));
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(10000);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("10000");
   });
 
   it("keeps the new account unavailable after failure and ignores a late old-account response", async () => {
@@ -127,7 +127,7 @@ describe("Cash Ladder request scope", () => {
     expect(screen.getByText("Cash ladder unavailable")).toBeInTheDocument();
     expect(screen.queryByText("engine-LATE-A")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Cash ladder bucket values")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(null);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("");
   });
 
   it("invalidates evidence and drills on threshold changes, including failed requests", async () => {
@@ -157,7 +157,7 @@ describe("Cash Ladder request scope", () => {
     await screen.findByText("engine-A");
     rerender(view());
     expect(screen.queryByText("engine-A")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(null);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("");
     expect(getLadder).toHaveBeenLastCalledWith({ scenario: "base", minimumCash: undefined, fundAccountId: undefined }, expect.any(Object));
     await act(async () => aggregate.resolve(ladder("ALL", 30000)));
     expect(screen.getByText("engine-ALL")).toBeInTheDocument();
@@ -174,9 +174,40 @@ describe("Cash Ladder request scope", () => {
     await act(async () => first.resolve(ladder("STALE-A", 99999)));
     expect(screen.getByText("Loading cash ladder…")).toBeInTheDocument();
     expect(screen.queryByText("engine-STALE-A")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(null);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("");
     await act(async () => current.resolve(ladder("CURRENT-A", 30000)));
     expect(screen.getByText("engine-CURRENT-A")).toBeInTheDocument();
-    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue(30000);
+    expect(screen.getByLabelText("Minimum cash balance threshold")).toHaveValue("30000");
+  });
+});
+
+
+describe("Cash Ladder recovery and threshold validation", () => {
+  it("retries a failed read with the identical account, scenario and threshold", async () => {
+    getLadder.mockRejectedValueOnce(new Error("Offline")).mockResolvedValueOnce(ladder("Recovered"));
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await user.click(await screen.findByRole("button", { name: "Retry cash ladder" }));
+    await screen.findByText("engine-Recovered");
+    expect(getLadder).toHaveBeenCalledTimes(2);
+    expect(getLadder.mock.calls[1][0]).toEqual(getLadder.mock.calls[0][0]);
+  });
+
+  it("rejects invalid input without fetching and distinguishes explicit zero from the default", async () => {
+    getLadder.mockImplementation(async params => ({ ...ladder("A"), minimumCashThreshold: params?.minimumCash ?? 10000 }));
+    const user = userEvent.setup();
+    render(view("account-a"));
+    await screen.findByText("engine-A");
+    const input = screen.getByLabelText("Minimum cash balance threshold");
+    await user.clear(input); await user.type(input, "not a number");
+    await user.click(screen.getByRole("button", { name: "Apply threshold" }));
+    expect(screen.getByRole("alert")).toHaveTextContent("Enter a finite minimum cash balance");
+    expect(getLadder).toHaveBeenCalledTimes(1);
+    await user.clear(input); await user.type(input, "0");
+    await user.click(screen.getByRole("button", { name: "Apply threshold" }));
+    await waitFor(() => expect(getLadder).toHaveBeenLastCalledWith(expect.objectContaining({ minimumCash: 0 }), expect.anything()));
+    await user.clear(input);
+    await user.click(screen.getByRole("button", { name: "Apply threshold" }));
+    await waitFor(() => expect(getLadder).toHaveBeenLastCalledWith(expect.objectContaining({ minimumCash: undefined }), expect.anything()));
   });
 });

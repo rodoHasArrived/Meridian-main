@@ -1,20 +1,50 @@
 import { describe, expect, it } from "vitest";
 import {
   buildOperatingScopeFromSearch,
+  appendOperatingScopeToRoute,
   operatingScopeDimensionsForRoute
 } from "@/app-shell.operating-scope";
 
 describe("operatingScopeDimensionsForRoute", () => {
-  it("returns the dimensions each workspace actually filters on", () => {
-    expect(operatingScopeDimensionsForRoute("/data/quotes")).toEqual(["symbol", "provider", "window"]);
-    expect(operatingScopeDimensionsForRoute("/accounting/ledger")).toEqual([
-      "symbol",
-      "fundAccountId",
-      "runId",
-      "provider",
-      "window"
-    ]);
-    expect(operatingScopeDimensionsForRoute("/settings")).toEqual(["fundAccountId", "provider"]);
+  it("claims only dimensions consumed by each rendered route", () => {
+    expect(operatingScopeDimensionsForRoute("/data/quotes?symbol=AAPL")).toEqual(["symbol"]);
+    expect(operatingScopeDimensionsForRoute("/data/quotes?view=watchlist&symbol=AAPL")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/portfolio/cash-ladder")).toEqual(["fundAccountId"]);
+    expect(operatingScopeDimensionsForRoute("/accounting/ledger")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/settings")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/strategy/promotions?runId=r1")).toEqual(["runId"]);
+    expect(operatingScopeDimensionsForRoute("/reporting/runs/detail?runId=r1")).toEqual(["runId"]);
+    expect(operatingScopeDimensionsForRoute("/portfolio/asset-detail?securityId=s1&symbol=AAPL")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/accounting/journal-entries/detail?periodId=p1&runId=r1")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/accounting/journal-entries/detail?runId=r1")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/accounting/operations-continuity?fundAccountId=a1")).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/trading/orders")).toEqual(["fundAccountId"]);
+    expect(operatingScopeDimensionsForRoute("/unknown")).toEqual([]);
+  });
+
+  it("keeps stored-only scope retained on screens that read only URL query values", () => {
+    for (const route of ["/strategy/promotions", "/strategy/run-ledger", "/reporting/preview", "/accounting/close-calendar", "/data/quotes"]) {
+      expect(operatingScopeDimensionsForRoute(route, { runId: "stored-run", symbol: "AAPL", fundAccountId: "stored-account" })).toEqual([]);
+    }
+    expect(operatingScopeDimensionsForRoute("/strategy/promotions?runId=route-run", { runId: "stored-run" })).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/strategy/promotions?runId=route-run", { runId: "route-run" })).toEqual(["runId"]);
+    expect(operatingScopeDimensionsForRoute("/data/quotes?symbol=aapl", { symbol: "AAPL" })).toEqual(["symbol"]);
+    expect(operatingScopeDimensionsForRoute("/data/quotes?view=alerts&symbol=AAPL", { symbol: "AAPL" })).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/portfolio/cash-ladder", { fundAccountId: "stored-account" })).toEqual(["fundAccountId"]);
+  });
+
+  it("retains carried context in navigation without claiming it is applied", () => {
+    const scope = buildOperatingScopeFromSearch("?symbol=AAPL&provider=alpaca&runId=r1&from=2026-01-01&fundAccountId=a1");
+    const route = appendOperatingScopeToRoute("/portfolio/cash-ladder", scope);
+    expect(route).toContain("symbol=AAPL");
+    expect(route).toContain("provider=alpaca");
+    expect(route).toContain("runId=r1");
+    expect(operatingScopeDimensionsForRoute(route)).toEqual(["fundAccountId"]);
+  });
+
+  it("retains unsupported Trading account identifiers instead of claiming a filter that the API drops", () => {
+    expect(operatingScopeDimensionsForRoute("/trading/orders", { fundAccountId: "account-label" })).toEqual([]);
+    expect(operatingScopeDimensionsForRoute("/trading/orders", { fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749" })).toEqual(["fundAccountId"]);
   });
 
   it("keeps report-run identity in deep-link state without exposing the raw run ID in visible scope", () => {

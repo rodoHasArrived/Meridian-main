@@ -18,6 +18,7 @@ import {
   type AppShellOperatingScopeState
 } from "@/app-shell.operating-scope";
 import type { CommandPaletteActionItem } from "@/components/meridian/command-palette.actions";
+import { parseCommandPaletteRecordQuery } from "./command-palette.entity-query";
 import type {
   WorkflowAction,
   WorkflowDefinition,
@@ -110,7 +111,7 @@ export interface CommandPaletteEntityItem {
   label: string;
   description: string;
   route: string;
-  sourceLabel: "Symbol" | "Security";
+  sourceLabel: "Symbol" | "Security" | "Report run" | "Statement run";
   commandLabel: string;
   ariaLabel: string;
   statusLabel?: string | null;
@@ -227,7 +228,8 @@ export function buildCommandPaletteViewModel(
     hasWorkflowBackend,
     workflowData.entitySearchStatus === "error" || workflowData.entitySearchStatus === "degraded"
       ? workflowData.entitySearchError
-      : null
+      : null,
+    workflowData.entitySearchStatus ?? "idle"
   );
 
   const activeWorkspace = workspaceItems.find((item) => item.active);
@@ -334,7 +336,8 @@ function buildCommandPaletteEmptyState(
   filteredCount: number,
   normalizedQuery: string,
   hasWorkflowBackend: boolean,
-  entitySearchError: string | null = null
+  entitySearchError: string | null = null,
+  entitySearchStatus: NonNullable<CommandPaletteWorkflowData["entitySearchStatus"]> = "idle"
 ): CommandPaletteEmptyState | null {
   if (totalCount === 0) {
     return {
@@ -354,16 +357,22 @@ function buildCommandPaletteEmptyState(
   }
 
   if (normalizedQuery && filteredCount === 0) {
+    const typed = parseCommandPaletteRecordQuery(normalizedQuery);
+    const recordLookup = typed.kind !== "general";
     return {
       id: COMMAND_PALETTE_EMPTY_STATE_ID,
       titleId: COMMAND_PALETTE_EMPTY_STATE_TITLE_ID,
       detailId: COMMAND_PALETTE_EMPTY_STATE_DETAIL_ID,
       actionId: COMMAND_PALETTE_CLEAR_SEARCH_ID,
-      title: "No matching commands",
-      detail: entitySearchError
+      title: entitySearchStatus === "searching" ? "Searching records" : recordLookup && typed.guidance && !entitySearchError ? "Enter a record identity" : recordLookup && entitySearchError ? "Record lookup unavailable" : "No matching commands",
+      detail: entitySearchStatus === "searching"
+        ? "Waiting for the current search. Previous record results are cleared."
+        : recordLookup
+          ? entitySearchError ?? typed.guidance ?? "No retained record was returned for this exact identity."
+          : entitySearchError
         ? `No commands match "${normalizedQuery}". Entity search is unavailable; local workstation commands remain available. Clear the search to return to all workstation commands.`
         : `No commands match "${normalizedQuery}". Clear the search to return to all workstation commands.`,
-      statusLabel: "Empty",
+      statusLabel: entitySearchStatus === "searching" ? "Searching" : entitySearchError ? "Unavailable" : "Empty",
       actionLabel: "Clear search",
       actionAriaLabel: `Clear command palette search for ${normalizedQuery}`,
       canClearSearch: true
@@ -386,6 +395,8 @@ function buildEntitySearchStatusLabel(
   if (status === "searching") {
     return "Searching entities";
   }
+
+  if (status === "idle" && error) return error;
 
   if (status === "degraded") {
     return error ? `Entity search degraded: ${error}` : "Entity search degraded";
@@ -818,6 +829,10 @@ function filterCommandItems(items: CommandPaletteItem[], query: string) {
     return items;
   }
 
+  const typed = parseCommandPaletteRecordQuery(query);
+  if (typed.kind !== "general") {
+    return typed.kind === "unsupported" ? [] : items.filter(item => item.id.startsWith(`entity:${typed.kind}:`));
+  }
   const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
   if (terms.length === 0) {
     return items;

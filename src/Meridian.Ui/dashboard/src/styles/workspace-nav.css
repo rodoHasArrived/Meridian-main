@@ -44,6 +44,22 @@
   padding: 0.5rem;
 }
 
+.operator-nav-home {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  margin-bottom: 0.25rem;
+  border-bottom: 1px solid var(--mds-nav-rail-border);
+  color: var(--mds-nav-rail-text-active);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+.operator-nav-home:hover, .operator-nav-home[aria-current="page"] { background: var(--mds-nav-rail-active); }
+.operator-nav-home:focus-visible { outline: 2px solid var(--mds-nav-rail-accent); outline-offset: -2px; }
+.operator-nav-home svg { flex: none; }
+
 /* Section label ---------------------------------------------------------------- */
 .operator-rail-section {
   padding: 0.625rem 0.625rem 0.3125rem;

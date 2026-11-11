@@ -268,10 +268,13 @@ export function CommandPalette({
           spellCheck={false}
           placeholder={viewModel.searchPlaceholder}
           aria-label={viewModel.searchInputLabel}
-          aria-describedby={viewModel.searchDescribedBy}
+          aria-describedby={`${viewModel.searchDescribedBy} command-palette-record-hint`}
           className="mt-3 h-10 w-full rounded-md border border-border/80 bg-background px-3 text-sm text-foreground outline-hidden transition-colors placeholder:text-muted-foreground focus-visible:border-primary/70 focus-visible:ring-2 focus-visible:ring-primary/35"
           onChange={(event) => setQuery(event.target.value)}
         />
+        <p id="command-palette-record-hint" className="mt-2 text-xs text-muted-foreground">
+          Search symbols and securities, or use <span className="font-mono">report: runId</span> and <span className="font-mono">statement: runId</span> for an exact retained record.
+        </p>
         <nav className="command-palette-results mt-3 overflow-y-auto pr-1" aria-label={viewModel.commandListLabel}>
           <div className="flex items-center justify-between gap-3 pb-2">
             <div className="eyebrow-label">{viewModel.itemCountLabel}</div>

@@ -1,5 +1,8 @@
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { FormFieldContext } from "@/components/ui/form-field-context";
+
+export { useFormFieldProps } from "@/components/ui/form-field-context";
 
 type GridColumns = 1 | 2 | 3;
 type GridSpan = 1 | 2 | 3;
@@ -46,6 +49,9 @@ export function FormRow({
   span = 1,
   ...props
 }: FormRowProps) {
+  const generatedId = useId();
+  const controlId = labelFor ?? `field-${generatedId}`;
+  const supportId = error ? `${controlId}-error` : hint ? `${controlId}-hint` : undefined;
   return (
     <div
       className={cn(
@@ -56,13 +62,15 @@ export function FormRow({
       {...props}
     >
       {label ? (
-        <label htmlFor={labelFor} className="pt-1 font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        <label htmlFor={controlId} className="form-field-label">
           {label}
         </label>
       ) : null}
       <div className="min-w-0">
-        {children}
-        {error ? <p className="mt-1 text-xs leading-5 text-danger">{error}</p> : hint ? <p className="mt-1 text-xs leading-5 text-muted-foreground">{hint}</p> : null}
+        <FormFieldContext.Provider value={{ controlId, descriptionId: supportId, invalid: Boolean(error) }}>
+          {children}
+        </FormFieldContext.Provider>
+        {error ? <p id={supportId} className="mt-1 text-xs leading-5 text-danger">{error}</p> : hint ? <p id={supportId} className="mt-1 text-xs leading-5 text-muted-foreground">{hint}</p> : null}
       </div>
     </div>
   );
@@ -75,7 +83,7 @@ export function FormDivider({ className, ...props }: React.HTMLAttributes<HTMLDi
 export function FormSectionLabel({ className, children, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("border-b border-border pb-2 font-mono text-[10px] font-semibold uppercase tracking-[0.16em] text-muted-foreground", className)}
+      className={cn("form-section-label", className)}
       {...props}
     >
       {children}

@@ -462,7 +462,13 @@ export function LedgerExplorerScreen(_props: FinanceStandardScreenProps) {
 function PostedLedgerJournalTab({ active }: { active: boolean }) {
   const [selectedAmount, setSelectedAmount] = useState<LedgerAmountSelection | null>(null);
   const [searchText, setSearchText] = useState("");
-  const [tabSearchParams] = useSearchParams();
+  const [tabSearchParams, setTabSearchParams] = useSearchParams();
+  const ledgerTask = tabSearchParams.get("ledgerTask");
+  const selectLedgerTask = (task: string | null) => setTabSearchParams(current => {
+    const next = new URLSearchParams(current);
+    if (task) next.set("ledgerTask", task); else next.delete("ledgerTask");
+    return next;
+  });
   const postedLedger = useAccountingPostedLedgerViewModel(
     "ledger",
     undefined,
@@ -528,6 +534,19 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
 
   return (
     <div className="space-y-4">
+      <nav aria-label="Ledger tasks" className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" variant={!ledgerTask ? "default" : "outline"} aria-pressed={!ledgerTask} onClick={() => selectLedgerTask(null)}>Posted records</Button>
+        <Button type="button" size="sm" variant={ledgerTask === "factor-paydown" ? "default" : "outline"} aria-pressed={ledgerTask === "factor-paydown"} onClick={() => selectLedgerTask("factor-paydown")}>Prepare factor paydown</Button>
+        <Button type="button" size="sm" variant={ledgerTask === "consolidation" ? "default" : "outline"} aria-pressed={ledgerTask === "consolidation"} onClick={() => selectLedgerTask("consolidation")}>Preview consolidation</Button>
+        <Button asChild size="sm" variant="outline"><Link to={{ pathname: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries, search: tabSearchParams.toString() }}>Prepare journal adjustment</Link></Button>
+      </nav>
+      {ledgerTask ? <p className="text-sm text-muted-foreground">Preparation previews are provisional. Posted records below remain the governed book of record; drafts require the existing review and posting workflow.</p> : null}
+      {ledgerTask === "factor-paydown" ? (
+      <FactorPaydownPanel periodVersion={postedLedger.selectedPeriodVersion} active={active} bookId={selectedBookId} periodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} fundProfileId={selectedFundId} accountingBasis={postedLedger.selectedBook?.accountingBasis} />
+      ) : ledgerTask === "consolidation" ? (
+      <ConsolidationPanel initialBookId={selectedBookId} initialPeriodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} />
+      ) : ledgerTask ? <p role="status">This preparation task is unavailable. Choose Posted records or another named task.</p> : null}
+
       <Card className="panel-surface">
         <CardHeader>
           <CardTitle>Ledger Explorer</CardTitle>
@@ -691,8 +710,7 @@ function PostedLedgerJournalTab({ active }: { active: boolean }) {
         </CardContent>
       </Card>
       <LedgerAmountProofDrawer selection={currentAmount} onClose={() => setSelectedAmount(null)} />
-      <FactorPaydownPanel periodVersion={postedLedger.selectedPeriodVersion} active={active} bookId={selectedBookId} periodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} fundProfileId={selectedFundId} accountingBasis={postedLedger.selectedBook?.accountingBasis} />
-      <ConsolidationPanel initialBookId={selectedBookId} initialPeriodId={postedLedger.periodsSettled ? postedLedger.selectedPeriodId : null} />
+
     </div>
   );
 }

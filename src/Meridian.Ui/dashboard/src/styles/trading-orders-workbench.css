@@ -1,0 +1,50 @@
+/* Focused Orders density: retain financial type size and visible recovery state. */
+.trading-orders-open-orders > .trading-orders-card-header {
+  padding: 0.5rem 0.75rem;
+}
+
+.trading-orders-open-orders > .trading-orders-table-content {
+  padding: 0.5rem 0.75rem 0.75rem;
+}
+
+.trading-orders-table-toolbar input,
+.trading-orders-table-toolbar select {
+  height: 2rem;
+  min-height: 2rem;
+  padding-block: 0.25rem;
+}
+
+.trading-orders-table-toolbar input { min-width: 0; }
+
+.trading-orders-focused .trading-orders-recovery-evidence > summary {
+  min-height: 1.5rem;
+  padding: 0.125rem 0.5rem;
+  font-size: var(--ws-type-label);
+  line-height: 1.25;
+}
+
+.trading-orders-open-orders .dense-data-table th {
+  padding-block: 0.25rem;
+}
+
+.trading-orders-open-orders .dense-data-table td {
+  height: 34px;
+  padding-block: 3px;
+  vertical-align: middle;
+}
+
+.trading-orders-open-orders .dense-data-table td button {
+  height: 26px;
+  min-height: 26px;
+  padding-block: 0;
+}
+
+[data-theme-density="compact"] .trading-orders-open-orders .dense-data-table td {
+  height: 26px;
+  padding-block: 0;
+}
+
+[data-theme-density="compact"] .trading-orders-open-orders .dense-data-table td button {
+  height: 24px;
+  min-height: 24px;
+}

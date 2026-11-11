@@ -39,6 +39,7 @@ const SOURCE_LABELS: Record<NotificationEnvelope["source"], string> = {
 export interface NotificationCenterProps {
   overview: SystemOverviewResponse | null;
   fundAccountId?: string | null;
+  actorKey?: string;
 }
 
 /**
@@ -46,9 +47,9 @@ export interface NotificationCenterProps {
  * and price-alert triggers into one severity-grouped feed with per-item deep links
  * and read/dismiss actions. Replaces the standalone price-alerts bell.
  */
-export function NotificationCenter({ overview, fundAccountId }: NotificationCenterProps) {
+export function NotificationCenter({ overview, fundAccountId, actorKey }: NotificationCenterProps) {
   const [open, setOpen] = useState(false);
-  const center = useNotificationCenter({ overview, fundAccountId });
+  const center = useNotificationCenter({ overview, fundAccountId, actorKey });
   const { notifications, unreadCount } = center;
 
   const bellLabel = unreadCount > 0
@@ -83,7 +84,7 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
                 <SheetTitle id="notification-center-title">Notifications</SheetTitle>
                 <SheetDescription id="notification-center-summary">
                   {notifications.length === 0
-                    ? "You're all caught up."
+                    ? center.inboxStatus === "ready" && overview ? "You're all caught up." : "Notification coverage is incomplete."
                     : `${unreadCount} unread of ${notifications.length}.`}
                 </SheetDescription>
               </div>
@@ -99,8 +100,18 @@ export function NotificationCenter({ overview, fundAccountId }: NotificationCent
             </div>
           </SheetHeader>
           <SheetBody>
+            <div role="status" className="mb-3 space-y-2 border-b border-border pb-3 text-sm">
+              <p>{center.inboxStatus === "loading" ? "Checking operator inbox…"
+                : center.inboxStatus === "unavailable" ? "Operator inbox unavailable. Other available feeds remain visible."
+                : center.inboxStatus === "stale" ? "Operator inbox is stale. Showing the last successful check for this scope."
+                : "Operator inbox checked."}
+                {center.lastCheckedAt ? ` Last successful check: ${formatRelativeAge(center.lastCheckedAt)}.` : ""}</p>
+              {!overview ? <p>System feed unavailable.</p> : null}
+              <p className="text-xs text-muted-foreground">Marking a notification read does not resolve its underlying work.</p>
+              {center.inboxStatus !== "ready" ? <Button type="button" size="sm" variant="outline" disabled={center.inboxStatus === "loading"} onClick={center.retry}>Retry operator inbox</Button> : null}
+            </div>
             {notifications.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No operator, system, or price-alert notifications right now.</p>
+              <p className="text-sm text-muted-foreground">No notifications in the available feeds.</p>
             ) : (
               SEVERITY_ORDER.map((severity) => {
                 const rows = notifications.filter((entry) => entry.severity === severity);

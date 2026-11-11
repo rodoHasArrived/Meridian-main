@@ -478,6 +478,9 @@ function DenseDataTableComponent<T>({
   return (
     <div
       className={cn("dense-data-table-wrap", isVirtual ? "dense-data-table-wrap-virtual" : undefined)}
+      role="region"
+      aria-label={`${ariaLabel} scroll area`}
+      tabIndex={selectableRows ? undefined : 0}
       data-empty={rows.length === 0 ? "true" : undefined}
       ref={wrapRef}
       style={isVirtual ? { maxHeight: viewportHeight } : undefined}

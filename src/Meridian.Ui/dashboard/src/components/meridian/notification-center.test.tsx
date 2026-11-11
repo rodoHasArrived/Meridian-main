@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { NotificationCenter } from "@/components/meridian/notification-center";
@@ -101,4 +101,35 @@ describe("NotificationCenter", () => {
     // The system event feed still produces one unread notification.
     await waitFor(() => expect(screen.getByRole("button", { name: "Notifications — 1 unread" })).toBeInTheDocument());
   });
+  it("does not show a prior account inbox during a failed scope switch", async () => {
+    let rejectNext!: (error: Error) => void;
+    const next = new Promise<OperatorInbox>((_, reject) => { rejectNext = reject; });
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValueOnce(inbox).mockReturnValueOnce(next);
+    const user = userEvent.setup();
+    const tree = (account: string) => <MemoryRouter><PriceAlertsProvider options={{ storage: memoryStorage() }}><NotificationCenter overview={overview} fundAccountId={account} /></PriceAlertsProvider></MemoryRouter>;
+    const { rerender } = render(tree("A"));
+    await user.click(await screen.findByRole("button", { name: "Notifications — 2 unread" }));
+    expect(screen.getByText("Reconciliation break")).toBeInTheDocument();
+    rerender(tree("B"));
+    expect(screen.queryByText("Reconciliation break")).not.toBeInTheDocument();
+    await act(async () => rejectNext(new Error("B unavailable")));
+    expect(await screen.findByText(/Operator inbox unavailable/)).toBeInTheDocument();
+    expect(screen.queryByText("You're all caught up.")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry operator inbox" })).toBeEnabled();
+  });
+
+  it("does not carry read state for a generic warning identity across operators", async () => {
+    vi.spyOn(api, "getOperatorInbox").mockResolvedValue(inbox);
+    const user = userEvent.setup();
+    const tree = (actor: string) => <MemoryRouter><PriceAlertsProvider options={{ storage: memoryStorage() }}><NotificationCenter overview={overview} actorKey={actor} /></PriceAlertsProvider></MemoryRouter>;
+    const { rerender } = render(tree("operator-a"));
+    await user.click(await screen.findByRole("button", { name: "Notifications — 2 unread" }));
+    await user.click(screen.getByRole("button", { name: /Mark all read/ }));
+    await screen.findByRole("button", { name: "Notifications — none unread" });
+    rerender(tree("operator-b"));
+    await screen.findByRole("button", { name: "Notifications — 2 unread" });
+    rerender(tree("operator-a"));
+    await screen.findByRole("button", { name: "Notifications — none unread" });
+  });
+
 });

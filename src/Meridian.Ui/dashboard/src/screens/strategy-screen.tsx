@@ -1,5 +1,5 @@
 import { WorkspaceTaskWorkbench } from "@/components/meridian/workspace-task-workbench";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, BookOpenText, ChartScatter, Network, Sigma, Sparkles } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { BiasDisclosurePanel } from "@/components/meridian/bias-disclosure-panel";
@@ -7,7 +7,7 @@ import { StatStrip } from "@/components/meridian/stat-strip";
 import { WorkspaceTabStrip } from "@/components/meridian/workspace-primitives";
 import { QuantNotebook } from "@/components/meridian/quant-notebook";
 import { useQuantNotebookViewModel } from "@/components/meridian/quant-notebook.view-model";
-import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn, type DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
 import { Histogram } from "@/components/charts";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { TechnicalDetails } from "@/components/ui/technical-details";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { categoricalVariantToSeverityStatus } from "@/lib/shared-tone-mappings";
 import { useStrategyRunLibraryViewModel } from "@/screens/strategy-screen.view-model";
@@ -240,7 +242,7 @@ const strategyRouteViewCopy: Record<StrategyRouteViewId, { title: string; descri
 export function StrategyScreen({ data }: StrategyScreenProps) {
   const vm = useStrategyRunLibraryViewModel(data);
   const navigate = useNavigate();
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const routeView = resolveStrategyRouteView(pathname);
   const routeCopy = strategyRouteViewCopy[routeView];
   const showLab = routeView === "lab";
@@ -253,6 +255,34 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
   }));
   const plotToolTabRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const openedDeepLinkRunId = useRef<string | null>(null);
+  const [sheetSelection, setSheetSelection] = useState<{ signature: string; id: string } | null>(null);
+  const sheetSignature = `${vm.plotTool.workspace.title}\u0000${JSON.stringify(vm.plotTool.statistics.sampleTable.rows)}`;
+  const selectedSheetObservationId = sheetSelection?.signature === sheetSignature ? sheetSelection.id : null;
+  const runParameters = new URLSearchParams(search);
+  const runSearch = runParameters.get("strategySearch") ?? "";
+  const requestedMode = runParameters.get("strategyMode");
+  const requestedStatus = runParameters.get("strategyStatus");
+  const runMode = ["backtest", "paper", "live"].includes(requestedMode ?? "") ? requestedMode! : "all";
+  const runStatus = vm.runTable.rows.some((row) => row.statusText === requestedStatus) ? requestedStatus! : "all";
+  const sortColumn = runParameters.get("strategySort");
+  const runSort: DenseDataTableSortState | null = ["strategy", "mode", "engine", "status"].includes(sortColumn ?? "")
+    ? { columnId: sortColumn!, direction: runParameters.get("strategySortDirection") === "desc" ? "desc" : "asc" }
+    : null;
+  function updateRunControls(updates: Record<string, string | null>, replace = false) {
+    const params = new URLSearchParams(search);
+    Object.entries(updates).forEach(([key, value]) => value && value !== "all" ? params.set(key, value) : params.delete(key));
+    navigate({ pathname, search: params.toString(), hash }, { replace });
+  }
+  const visibleRuns = vm.runTable.rows.filter((row) => {
+    const matchesSearch = `${row.strategyName} ${row.id} ${row.engineText} ${row.raw.dataset}`.toLowerCase().includes(runSearch.trim().toLowerCase());
+    return matchesSearch && (runMode === "all" || row.mode === runMode) && (runStatus === "all" || row.statusText === runStatus);
+  });
+  if (runSort) {
+    const keys = { strategy: "strategyName", mode: "mode", engine: "engineText", status: "statusText" } as const;
+    const key = keys[runSort.columnId as keyof typeof keys];
+    visibleRuns.sort((a, b) => String(a[key]).localeCompare(String(b[key]), "en", { sensitivity: "base" }) * (runSort.direction === "asc" ? 1 : -1));
+  }
+  const inspectedRunOutsideResults = vm.inspectedRunId && !visibleRuns.some((row) => row.id === vm.inspectedRunId);
 
   useEffect(() => {
     if (!showRuns || !requestedRunId) {
@@ -287,21 +317,25 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
     {
       id: "strategy",
       label: "Strategy",
+      sortable: true,
       render: (run) => <span className="font-semibold text-foreground">{run.strategyName}</span>
     },
     {
       id: "mode",
       label: "Mode",
+      sortable: true,
       render: (run) => <Badge variant={run.modeBadgeVariant}>{run.modeLabel}</Badge>
     },
     {
       id: "engine",
       label: "Engine",
+      sortable: true,
       render: (run) => run.engineText
     },
     {
       id: "status",
       label: "Status",
+      sortable: true,
       render: (run) => <SeverityBadge status={strategyRunSeverityStatus(run.statusText)} label={run.statusText} />
     },
     {
@@ -732,9 +766,14 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               selectedStudyDetail={vm.selectedPlotStudyDetail}
               studyDetailPanelId={vm.selectedPlotStudyDetailPanelId}
               onStudySelect={vm.selectPlotStudy}
+              observationIds={vm.plotTool.statistics.sampleTable.rows.map((row) => row.id)}
+              onOpenObservationSheet={(id) => {
+                setSheetSelection({ signature: sheetSignature, id });
+                vm.selectPlotToolView("statistics");
+              }}
             />
           ) : (
-            <PlotToolStatisticsPanel vm={vm.plotTool.statistics} />
+            <PlotToolStatisticsPanel vm={vm.plotTool.statistics} selectedObservationId={selectedSheetObservationId} onObservationSelect={(id) => setSheetSelection({ signature: sheetSignature, id })} />
           )) : null}
         </CardContent>
       </Card>
@@ -748,6 +787,26 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           <CardDescription>Review retained runs, compare candidates, and open promotion history from the web workstation.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3" aria-label="Strategy run filters">
+            <label className="grid min-w-56 flex-1 gap-1 text-xs font-medium">Search loaded runs
+              <Input value={runSearch} onChange={(event) => updateRunControls({ strategySearch: event.target.value }, true)} placeholder="Strategy, run, engine, dataset" />
+            </label>
+            <label className="grid gap-1 text-xs font-medium">Mode
+              <Select value={runMode} onChange={(event) => updateRunControls({ strategyMode: event.target.value })}>
+                <option value="all">All modes</option>
+                <option value="backtest">Backtest</option><option value="paper">Paper</option><option value="live">Live</option>
+              </Select>
+            </label>
+            <label className="grid gap-1 text-xs font-medium">Status
+              <Select value={runStatus} onChange={(event) => updateRunControls({ strategyStatus: event.target.value })}>
+                <option value="all">All statuses</option>
+                {[...new Set(vm.runTable.rows.map((row) => row.statusText))].map((status) => <option key={status}>{status}</option>)}
+              </Select>
+            </label>
+            <Button variant="outline" size="sm" onClick={() => updateRunControls({ strategySearch: null, strategyMode: null, strategyStatus: null, strategySort: null, strategySortDirection: null })}>Clear run controls</Button>
+            <p className="text-xs text-muted-foreground" role="status">{visibleRuns.length} of {vm.runTable.rows.length} loaded runs</p>
+          </div>
+          {inspectedRunOutsideResults ? <p role="status" className="text-sm text-warning">The inspected run is outside these results. Its detail and comparison selection remain available.</p> : null}
           <section aria-label={vm.runHistorySummary.ariaLabel} className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {vm.runHistorySummary.cards.map((card) => (
               <div key={card.id} className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
@@ -769,7 +828,9 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
             <DenseDataTable
               columns={runColumns}
-              rows={vm.runTable.rows}
+              rows={visibleRuns}
+              sort={runSort}
+              onToggleSort={(columnId) => updateRunControls({ strategySort: columnId, strategySortDirection: runSort?.columnId === columnId && runSort.direction === "asc" ? "desc" : "asc" })}
               getRowId={(run) => run.id}
               getRowAriaLabel={(run) => run.rowAriaLabel}
               getRowSelectAriaLabel={(run) => run.rowSelectAriaLabel}
@@ -777,7 +838,7 @@ export function StrategyScreen({ data }: StrategyScreenProps) {
               getRowAriaExpanded={(run) => run.detailExpanded}
               selectedRowId={vm.inspectedRunId}
               onRowSelect={(run) => vm.selectRunDetail(run.id)}
-              emptyText={vm.runTable.emptyText}
+              emptyText={vm.runTable.rows.length ? "No loaded runs match these controls. Clear run controls to restore the list." : vm.runTable.emptyText}
               ariaLabel="Strategy run library"
               caption={vm.runTable.caption}
             />
@@ -1235,7 +1296,9 @@ function PlotToolWorkspacePanel({
   selectedStudyId,
   selectedStudyDetail,
   studyDetailPanelId,
-  onStudySelect
+  onStudySelect,
+  observationIds,
+  onOpenObservationSheet
 }: {
   vm: StrategyPlotWorkspaceState;
   studies: StrategyPlotStudyItem[];
@@ -1243,6 +1306,8 @@ function PlotToolWorkspacePanel({
   selectedStudyDetail: StrategyPlotStudyDetailState | null;
   studyDetailPanelId: string;
   onStudySelect: (id: string) => void;
+  observationIds: string[];
+  onOpenObservationSheet: (id: string) => void;
 }) {
   const notebookVm = useQuantNotebookViewModel();
   const hasPlotToolPayload = studies.length > 0 || vm.scatterChart.points.length > 0;
@@ -1406,38 +1471,7 @@ function PlotToolWorkspacePanel({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="plottool-chart-shell">
-              <PlotToolScatterChart
-                chart={vm.scatterChart}
-              />
-            </div>
-            {vm.scatterChart.points.length > 0 ? (
-              <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                <summary className="cursor-pointer text-sm font-semibold text-foreground">
-                  View observation table
-                </summary>
-                <div className="mt-3 overflow-x-auto">
-                  <table className="w-full text-left text-xs" aria-label="PlotTool scatter observations">
-                    <thead>
-                      <tr className="border-b border-border/60 text-muted-foreground">
-                        <th scope="col" className="px-2 py-2">Observation</th>
-                        <th scope="col" className="px-2 py-2">X position</th>
-                        <th scope="col" className="px-2 py-2">Y position</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {vm.scatterChart.points.map((point, index) => (
-                        <tr key={point.id} className="border-b border-border/40 last:border-0" aria-label={point.ariaLabel}>
-                          <th scope="row" className="px-2 py-2 font-medium">{index + 1}</th>
-                          <td className="px-2 py-2 font-mono">{point.x}</td>
-                          <td className="px-2 py-2 font-mono">{point.y}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </details>
-            ) : null}
+            <PlotToolObservationExplorer chart={vm.scatterChart} context={[`Window: ${vm.toolbarPills[0] ?? "Not supplied"}`, ...vm.metaItems].join(" · ")} source={vm.studySummary.find((field) => field.id === "source")?.value} observationIds={observationIds} onOpenObservationSheet={onOpenObservationSheet} />
             <div className="plottool-chart-legend" aria-label="PlotTool chart legend">
               {vm.legendItems.map((item) => <PlotToolLegendItem key={item.id} item={item} />)}
             </div>
@@ -1563,7 +1597,15 @@ function SelectedPlotStudyDetail({
   );
 }
 
-function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
+function PlotToolStatisticsPanel({ vm, selectedObservationId, onObservationSelect }: { vm: StrategyPlotStatisticsState; selectedObservationId: string | null; onObservationSelect: (id: string) => void }) {
+  const sheetHeading = useRef<HTMLHeadingElement>(null);
+  const focusLinkedObservation = useRef(Boolean(selectedObservationId));
+  useEffect(() => {
+    if (focusLinkedObservation.current) {
+      sheetHeading.current?.focus();
+      focusLinkedObservation.current = false;
+    }
+  }, []);
   return (
     <section
       id="plottool-statistics-panel"
@@ -1665,7 +1707,7 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
 
         <Card className="border-border/70 bg-background/35">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Observation sheet</CardTitle>
+            <CardTitle ref={sheetHeading} id="plottool-observation-sheet-heading" tabIndex={-1} className="text-base focus-visible:outline-2 focus-visible:outline-primary">Observation sheet</CardTitle>
             <CardDescription>Recent records packaged for analyst review without leaving the Strategy lane.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -1673,6 +1715,8 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
               columns={plotToolObservationColumns}
               rows={vm.sampleTable.rows}
               getRowId={(row) => row.id}
+              selectedRowId={selectedObservationId}
+              onRowSelect={(row) => onObservationSelect(row.id)}
               getRowAriaLabel={(row) => `${row.timestamp}: spread ${row.spreadText}, implied volatility ${row.impliedVolText}, z-score ${row.zScoreText}, signal ${row.signalText}.`}
               emptyText={vm.sampleTable.emptyText}
               ariaLabel="PlotTool observation sheet"
@@ -1685,10 +1729,63 @@ function PlotToolStatisticsPanel({ vm }: { vm: StrategyPlotStatisticsState }) {
   );
 }
 
+function PlotToolObservationExplorer({ chart, context, source, observationIds, onOpenObservationSheet }: { chart: StrategyPlotScatterChartState; context: string; source?: string; observationIds: string[]; onOpenObservationSheet: (id: string) => void }) {
+  // Selection belongs to the exact rendered evidence; a replacement payload never reuses an old mark's selection.
+  const signature = `${chart.title}\u0000${JSON.stringify(chart.points)}`;
+  const [selection, setSelection] = useState<{ signature: string; id: string } | null>(null);
+  const selected = selection?.signature === signature ? chart.points.find((point) => point.id === selection.id) ?? null : null;
+  const select = (id: string | null) => setSelection(id ? { signature, id } : null);
+  return (
+    <div className="space-y-3" role="group" aria-label="PlotTool observation inspection">
+      <p id="plottool-observation-instructions" className="text-xs text-muted-foreground">Focus the chart and use arrow keys, Home or End to inspect observations. Escape clears selection. Point to a mark or use its table button.</p>
+      <div className="plottool-chart-shell"><PlotToolScatterChart chart={chart} selectedId={selected?.id ?? null} onSelect={select} /></div>
+      {chart.points.length > 0 ? (
+        <>
+          <section id="plottool-selected-observation" aria-label="Selected scatter observation" aria-live="polite" className="rounded-md border border-border/70 bg-secondary/15 p-3 text-xs">
+            {selected ? (
+              <>
+                <div className="flex items-center justify-between gap-3"><strong>Observation {chart.points.indexOf(selected) + 1}{selected.observationId ? ` · ${selected.observationId}` : ""}</strong><Button size="sm" variant="ghost" onClick={() => select(null)}>Clear observation</Button></div>
+                <dl className="mt-2 grid gap-2 sm:grid-cols-2">
+                  <div><dt>{chart.xAxisLabel}</dt><dd className="font-mono">{selected.xValueText ?? "Source value unavailable"}</dd></div>
+                  <div><dt>{chart.yAxisLabel}</dt><dd className="font-mono">{selected.yValueText ?? "Source value unavailable"}</dd></div>
+                  <div><dt>Source</dt><dd>{selected.sourceLabel ?? source ?? "Source not supplied"}</dd></div>
+                  <div><dt>Observed</dt><dd>{selected.timestamp ?? "Timestamp not supplied"}</dd></div>
+                </dl>
+                {!selected.xValueText || !selected.yValueText ? <p className="mt-2 text-muted-foreground">This source supplies chart positions only. Financial values are unavailable; positions are not source amounts or rates.</p> : null}
+                {selected.observationId && observationIds.includes(selected.observationId) ? <Button className="mt-2" size="sm" variant="outline" onClick={() => onOpenObservationSheet(selected.observationId!)}>Open observation sheet</Button> : <p className="mt-2 text-muted-foreground">No linked observation-sheet record was supplied.</p>}
+              </>
+            ) : <p>Select an observation to inspect its supplied values and evidence.</p>}
+            <p className="mt-2 text-muted-foreground">Study context: {context}</p>
+          </section>
+          <details className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
+            <summary className="cursor-pointer text-sm font-semibold text-foreground">View observation table</summary>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-left text-xs" aria-label="PlotTool scatter observations">
+                <caption className="text-left text-muted-foreground">All {chart.points.length} loaded scatter marks. Values are shown only when supplied by the source.</caption>
+                <thead><tr className="border-b border-border/60 text-muted-foreground">
+                  <th scope="col" className="px-2 py-2">Observation</th><th scope="col" className="px-2 py-2">{chart.xAxisLabel}</th><th scope="col" className="px-2 py-2">{chart.yAxisLabel}</th><th scope="col" className="px-2 py-2">Source / observed</th>
+                </tr></thead>
+                <tbody>{chart.points.map((point, index) => (
+                  <tr key={point.id} aria-current={point.id === selected?.id ? "true" : undefined} className={cn("border-b border-border/40 last:border-0", point.id === selected?.id && "bg-primary/10")}>
+                    <th scope="row" className="px-2 py-2"><Button size="sm" variant="ghost" aria-pressed={point.id === selected?.id} aria-controls="plottool-selected-observation" onClick={() => select(point.id)}>Inspect observation {index + 1}</Button></th>
+                    <td className="px-2 py-2 font-mono">{point.xValueText ?? "Unavailable"}</td><td className="px-2 py-2 font-mono">{point.yValueText ?? "Unavailable"}</td><td className="px-2 py-2">{point.sourceLabel ?? source ?? "Not supplied"} · {point.timestamp ?? "Not supplied"}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            </div>
+          </details>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function PlotToolScatterChart({
-  chart
+  chart, selectedId, onSelect
 }: {
   chart: StrategyPlotScatterChartState;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 }) {
   const hasObservations = chart.points.length > 0;
 
@@ -1716,10 +1813,24 @@ function PlotToolScatterChart({
   return (
     <svg
       viewBox={chart.viewBox}
-      className="h-[320px] w-full"
+      className="h-[320px] w-full rounded-sm focus-visible:outline-2 focus-visible:outline-primary"
       role="img"
+      tabIndex={0}
+      aria-keyshortcuts="ArrowLeft ArrowRight ArrowUp ArrowDown Home End Escape"
+      onFocus={() => { if (!selectedId) onSelect(chart.points[0]?.id ?? null); }}
+      onKeyDown={(event) => {
+        if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "Home", "End", "Escape"].includes(event.key)) return;
+        event.preventDefault();
+        if (event.key === "Escape") { onSelect(null); return; }
+        const current = chart.points.findIndex((point) => point.id === selectedId);
+        const backwards = ["ArrowLeft", "ArrowUp"].includes(event.key);
+        const index = event.key === "Home" ? 0 : event.key === "End" ? chart.points.length - 1
+          : current < 0 ? backwards ? chart.points.length - 1 : 0
+          : Math.max(0, Math.min(chart.points.length - 1, current + (backwards ? -1 : 1)));
+        onSelect(chart.points[index]?.id ?? null);
+      }}
       aria-labelledby={chart.titleId}
-      aria-describedby={chart.descriptionId}
+      aria-describedby={`${chart.descriptionId} plottool-observation-instructions plottool-selected-observation`}
     >
       <title id={chart.titleId}>{chart.title}</title>
       <desc id={chart.descriptionId}>{chart.description}</desc>
@@ -1784,14 +1895,11 @@ function PlotToolScatterChart({
         </>
       ) : null}
       {chart.points.map((point) => (
-        <circle
-          key={point.id}
-          cx={point.x}
-          cy={point.y}
-          r={point.radius}
-          fill={point.fill}
-          fillOpacity={point.fillOpacity}
-        />
+        <g key={point.id} data-observation-id={point.id} onPointerEnter={() => onSelect(point.id)} onClick={() => onSelect(point.id)}>
+          <circle cx={point.x} cy={point.y} r={Math.max(9, point.radius)} fill="transparent" />
+          <circle cx={point.x} cy={point.y} r={point.radius} fill={point.fill} fillOpacity={point.fillOpacity} pointerEvents="none" />
+          {selectedId === point.id ? <circle cx={point.x} cy={point.y} r={point.radius + 4} fill="none" stroke="var(--fg)" strokeWidth="2" strokeDasharray="3 2" pointerEvents="none" /> : null}
+        </g>
       ))}
       {hasObservations ? (
         <>

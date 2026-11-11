@@ -26,7 +26,7 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
   const summaryValue = provider && provider.tone !== "ready"
     ? `${mode} · ${source} · ${provider.value}`
     : `${mode} · ${source}`;
-  const summaryAriaLabel = `Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
+  const summaryAriaLabel = `Trust ${summaryValue}. Environment, provenance, and provider posture. ${viewModel.items.map((item) => item.ariaLabel).join(" ")}`;
 
   return (
     <section
@@ -45,7 +45,7 @@ export function DesignSystemTrustStrip({ viewModel }: { viewModel: AppShellTrust
           )}
           aria-label={summaryAriaLabel}
         >
-          <span className="workstation-trust-label">Trust</span>
+          <span className="workstation-trust-label">Trust</span>{" "}
           <span className="workstation-trust-value">{summaryValue}</span>
           <ChevronDown className="workstation-trust-chevron h-3.5 w-3.5" aria-hidden="true" />
         </summary>

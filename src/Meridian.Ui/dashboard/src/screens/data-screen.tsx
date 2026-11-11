@@ -13,11 +13,11 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
-import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
+import type { DenseDataTableColumn, DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
 import {
   WorkspaceInspectorHost,
   WorkspaceTabStrip
@@ -26,6 +26,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -35,6 +36,7 @@ import { cn } from "@/lib/utils";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildDataAnalyticsDegradedViewModel,
+  buildDataAnalyticsAvailability,
   DataAnalyticsDegradedRegion
 } from "@/screens/data-screen.analytics-status";
 import type { CellActionApi } from "@/screens/data-screen.cell-actions";
@@ -55,6 +57,7 @@ import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-acti
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
+import { useDataViewScroll } from "@/screens/data-screen.view-scroll";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { DATA_ROUTE_TABS, DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
@@ -109,6 +112,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   {
     id: "provider",
     label: "Provider",
+    sortable: true,
     render: (provider) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{provider.provider}</span>
@@ -119,6 +123,7 @@ const providerHealthColumns: DenseDataTableColumn<DataOperationsProviderRow>[] =
   {
     id: "status",
     label: "Status",
+    sortable: true,
     render: (provider) => (
       <Badge
         variant={provider.statusTone === "danger" ? "danger" : provider.statusTone === "warning" ? "warning" : "success"}
@@ -179,8 +184,16 @@ export function DataScreen({
   onProviderSetupConfigured,
   onProviderRoutingRefresh
 }: DataScreenProps) {
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash } = useLocation();
   const navigate = useNavigate();
+  const screenRef = useRef<HTMLDivElement>(null);
+  useDataViewScroll(screenRef, data !== null);
+  const viewParams = new URLSearchParams(search);
+  const updateViewParam = (key: string, value: string, replace = false) => {
+    const next = new URLSearchParams(search);
+    if (value) next.set(key, value); else next.delete(key);
+    navigate({ pathname, search: next.toString(), hash }, { replace });
+  };
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -203,13 +216,39 @@ export function DataScreen({
     providerRoutingTrustSnapshots
   ]);
   const operatorIdentity = session?.displayName.trim() || null;
-  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity, {
+    selectedId: viewParams.get("backfillJob"),
+    onSelect: (id) => updateViewParam("backfillJob", id)
+  });
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
   const capabilityMatrixPanel = useCapabilityMatrixPanel();
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
   const [savedQueryName, setSavedQueryName] = useState("");
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+  const providerSearch = viewParams.get("providerSearch") ?? "";
+  const providerStatusParam = viewParams.get("providerStatus");
+  const providerStatuses = ["Healthy", "Warning", "Degraded", "Blocked"];
+  const providerStatus = providerStatuses.includes(providerStatusParam ?? "") ? providerStatusParam! : "all";
+  const providerSortText = viewParams.get("providerSort") ?? "";
+  const [providerSortColumn, providerSortDirection] = providerSortText.split(":");
+  const providerSort: DenseDataTableSortState | null = (providerSortColumn === "provider" || providerSortColumn === "status") && (providerSortDirection === "asc" || providerSortDirection === "desc")
+    ? { columnId: providerSortColumn, direction: providerSortDirection } : null;
+  const providerRows = vm.providerSection.rows.filter((row) => {
+    const matchesSearch = `${row.provider} ${row.capability} ${row.affectedWorkflowsText} ${row.recommendedActionText}`.toLowerCase().includes(providerSearch.trim().toLowerCase());
+    return matchesSearch && (providerStatus === "all" || row.status === providerStatus);
+  });
+  if (providerSort) {
+    const column = providerSort.columnId === "status" ? "status" : "provider";
+    providerRows.sort((a, b) => a[column].localeCompare(b[column]) * (providerSort.direction === "asc" ? 1 : -1));
+  }
+  const selectedProviderOutsideResults = vm.providerSection.selectedRowId !== null && !providerRows.some((row) => row.rowId === vm.providerSection.selectedRowId);
+  const clearProviderFilters = () => {
+    const next = new URLSearchParams(search);
+    next.delete("providerSearch"); next.delete("providerStatus");
+    navigate({ pathname, search: next.toString(), hash }, { replace: true });
+  };
   const activeWorkstream = vm.workstream;
   const showHealthMonitoring = activeWorkstream === "overview";
   const showProviderWorkstream = activeWorkstream === "providers";
@@ -230,16 +269,18 @@ export function DataScreen({
     label: tab.label,
     selected: tab.workstream === activeWorkstream
   }));
-  const analyticsDegraded = buildDataAnalyticsDegradedViewModel([
+  const analyticsPanels = [
     { id: "data-quality", label: "Data quality", error: qualityPanel.error, loading: qualityPanel.loading, refresh: qualityPanel.refresh },
     { id: "capability-matrix", label: "Provider capability matrix", error: capabilityMatrixPanel.error, loading: capabilityMatrixPanel.loading, refresh: capabilityMatrixPanel.refresh },
     { id: "corporate-actions", label: "Corporate action inbox", error: corporateActionInboxPanel.error, loading: corporateActionInboxPanel.loading, refresh: corporateActionInboxPanel.refresh },
     { id: "coverage-gaps", label: "Security-master coverage", error: coverageGapsPanel.error, loading: coverageGapsPanel.loading, refresh: coverageGapsPanel.refresh }
-  ]);
+  ];
+  const analyticsDegraded = buildDataAnalyticsDegradedViewModel(analyticsPanels);
+  const analyticsAvailability = buildDataAnalyticsAvailability(analyticsPanels);
   const analyticsUnavailable = analyticsDegraded?.affectedIds ?? new Set<string>();
 
   return (
-    <div className="workspace-screen data-workspace-screen">
+    <div ref={screenRef} className="workspace-screen data-workspace-screen">
       <StatStrip metrics={data.metrics} label="Data headline metrics" />
 
       <section
@@ -294,8 +335,15 @@ export function DataScreen({
 
       {showHealthMonitoring ? (
         <div className="space-y-4">
-          <DataOverviewHub vm={vm} degradedPanelCount={analyticsUnavailable.size} />
-          <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+          <DataOverviewHub vm={vm} availability={analyticsAvailability} qualityPanel={qualityPanel} onInspectDiagnostics={() => {
+            setDiagnosticsOpen(true);
+            setTimeout(() => {
+              const target = screenRef.current?.querySelector<HTMLElement>("#data-quality-title");
+              target?.scrollIntoView?.({ block: "start" });
+              target?.focus({ preventScroll: true });
+            }, 0);
+          }} />
+          <details id="data-diagnostics-panel" open={diagnosticsOpen} onToggle={(event) => setDiagnosticsOpen(event.currentTarget.open)} className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
             <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
               Review data diagnostics
             </summary>
@@ -412,6 +460,20 @@ export function DataScreen({
                 </div>
               <div className="data-provider-table-detail-layout workspace-table-stack">
                 <div className="workspace-table-stack">
+                  <div className="flex flex-wrap items-end gap-3" aria-label="Provider list controls">
+                    <label className="grid gap-1 text-xs font-medium">Search providers
+                      <Input type="search" value={providerSearch} onChange={(event) => updateViewParam("providerSearch", event.target.value, true)} placeholder="Name, capability, workflow…" />
+                    </label>
+                    <label className="grid gap-1 text-xs font-medium">Provider status
+                      <select className="h-9 rounded-md border border-border bg-background px-2 text-sm" value={providerStatus} onChange={(event) => updateViewParam("providerStatus", event.target.value)}>
+                        <option value="all">All statuses</option>
+                        {providerStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
+                      </select>
+                    </label>
+                    <p role="status" className="text-xs text-muted-foreground">{providerRows.length} of {vm.providerSection.rows.length} loaded providers</p>
+                    {providerSearch || providerStatus !== "all" ? <Button type="button" size="sm" variant="ghost" onClick={clearProviderFilters}>Clear provider filters</Button> : null}
+                  </div>
+                  {selectedProviderOutsideResults ? <p role="status" className="text-xs text-warning">Selected provider is outside the current results. Its inspector is retained. Clear provider filters to reveal it.</p> : null}
                   <label htmlFor="configured-provider-selector" className="workspace-inline-select">
                     <span>Configured Provider</span>
                     <select
@@ -429,7 +491,9 @@ export function DataScreen({
                   </label>
                 <DenseDataTable
                   columns={providerHealthColumns}
-                  rows={vm.providerSection.rows}
+                  rows={providerRows}
+                  sort={providerSort}
+                  onToggleSort={(columnId) => updateViewParam("providerSort", `${columnId}:${providerSort?.columnId === columnId && providerSort.direction === "asc" ? "desc" : "asc"}`)}
                   getRowId={(provider) => provider.rowId}
                   getRowAriaLabel={(provider) => provider.ariaLabel}
                   getRowSelectAriaLabel={(provider) => provider.selectAriaLabel}
@@ -438,7 +502,7 @@ export function DataScreen({
                   getRowClassName={(provider) => provider.rowClassName}
                   selectedRowId={vm.providerSection.selectedRowId}
                   onRowSelect={(provider) => vm.selectProvider(provider.rowId)}
-                  emptyText={vm.providerSection.emptyState.description}
+                  emptyText="No loaded providers match these filters. Clear provider filters to show all loaded providers."
                   ariaLabel={vm.providerSection.tableLabel}
                   caption={vm.providerSection.description}
                   maxVisibleRows={100}

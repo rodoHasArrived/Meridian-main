@@ -1,9 +1,10 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
-import { renderWithRouter } from "@/test/render";
+import { synchronizeSettingsDraftActor } from "@/screens/settings-screen.draft-review";
+import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
@@ -523,6 +524,7 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
 
 describe("SettingsScreen", () => {
   beforeEach(() => {
+    synchronizeSettingsDraftActor(null);
     apiMocks.approveSecurityAssetProfile.mockReset();
     apiMocks.connectAlpacaConnection.mockReset();
     apiMocks.createSecurityMasterEntry.mockReset();
@@ -791,6 +793,72 @@ describe("SettingsScreen", () => {
     const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Settings change scope")).toHaveTextContent("Applies only to this browser");
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+  });
+
+  it("retains approval and calendar edits across source refresh and blocks conflicted saves until discard", async () => {
+    const user = userEvent.setup();
+    const editor = (policy: OperationsApprovalPolicyMatrix, calendar: OperationsCloseCalendar) => (
+      <TestMemoryRouter initialEntries={["/settings/accounting-systems"]}>
+        <SettingsScreen session={{ ...session, role: "Accounting" }} overview={overview}
+          operationsApprovalPolicyMatrix={policy} operationsCloseCalendar={calendar} />
+      </TestMemoryRouter>
+    );
+    const { rerender } = render(editor(approvalPolicyMatrix, closeCalendar));
+    const policyForm = screen.getByRole("form", { name: "Configure approval policy rule" });
+    const calendarForm = screen.getByRole("form", { name: "Configure account close calendar" });
+    fireEvent.change(within(policyForm).getByLabelText("Approval policy reviewer role"), { target: { value: "My draft reviewer" } });
+    fireEvent.change(within(calendarForm).getByLabelText("Close calendar owner"), { target: { value: "My draft owner" } });
+    const updatedPolicy = { ...approvalPolicyMatrix, version: "next", rows: approvalPolicyMatrix.rows.map((row) => ({ ...row, reviewerRole: "Server reviewer" })) };
+    const updatedCalendar = { ...closeCalendar, items: closeCalendar.items.map((item) => ({ ...item, nextDueOwner: "Server owner", version: item.version + 1 })) };
+    rerender(editor(updatedPolicy, updatedCalendar));
+    expect(within(policyForm).getByLabelText("Approval policy reviewer role")).toHaveValue("My draft reviewer");
+    expect(within(calendarForm).getByLabelText("Close calendar owner")).toHaveValue("My draft owner");
+    expect(within(policyForm).getByRole("alert")).toHaveTextContent("Source changed while editing");
+    expect(within(calendarForm).getByRole("alert")).toHaveTextContent("Source changed while editing");
+    expect(within(policyForm).getByRole("button", { name: "Save policy" })).toBeDisabled();
+    expect(within(calendarForm).getByRole("button", { name: "Save calendar" })).toBeDisabled();
+    expect(apiMocks.upsertOperationsApprovalPolicyRule).not.toHaveBeenCalled();
+    expect(apiMocks.upsertOperationsCloseCalendarItem).not.toHaveBeenCalled();
+    await user.click(within(policyForm).getByRole("button", { name: "Discard policy changes" }));
+    await user.click(within(calendarForm).getByRole("button", { name: "Discard calendar changes" }));
+    expect(within(policyForm).getByLabelText("Approval policy reviewer role")).toHaveValue("Server reviewer");
+    expect(within(calendarForm).getByLabelText("Close calendar owner")).toHaveValue("Server owner");
+    expect(within(policyForm).getByRole("button", { name: "Save policy" })).toBeEnabled();
+    expect(within(calendarForm).getByRole("button", { name: "Save calendar" })).toBeEnabled();
+  });
+
+  it("recovers a nonfirst record draft after leaving Settings and returning before authoritative sources arrive", async () => {
+    const user = userEvent.setup();
+    const policy = { ...approvalPolicyMatrix, rows: [...approvalPolicyMatrix.rows, { ...approvalPolicyMatrix.rows[0], policyKey: "second-policy", action: "Second policy" }] };
+    const calendar = { ...closeCalendar, items: [...closeCalendar.items, { ...closeCalendar.items[0], workflowId: "second-workflow", periodId: "2026-06" }] };
+    const editor = (loaded: boolean) => <TestMemoryRouter initialEntries={["/settings/accounting-systems"]}>
+      <SettingsScreen session={{ ...session, role: "Accounting" }} overview={overview}
+        operationsApprovalPolicyMatrix={loaded ? policy : null} operationsCloseCalendar={loaded ? calendar : null} />
+    </TestMemoryRouter>;
+    const first = render(editor(true));
+    let policyForm = screen.getByRole("form", { name: "Configure approval policy rule" });
+    let calendarForm = screen.getByRole("form", { name: "Configure account close calendar" });
+    await user.selectOptions(within(policyForm).getByRole("combobox", { name: "Policy rule" }), "second-policy");
+    await user.selectOptions(within(calendarForm).getByRole("combobox", { name: "Close workflow" }), "second-workflow");
+    fireEvent.change(within(policyForm).getByLabelText("Approval policy reviewer role"), { target: { value: "Retained reviewer" } });
+    fireEvent.change(within(calendarForm).getByLabelText("Close calendar owner"), { target: { value: "Retained owner" } });
+    first.unmount();
+    const returned = render(editor(false));
+    returned.rerender(editor(true));
+    policyForm = screen.getByRole("form", { name: "Configure approval policy rule" });
+    calendarForm = screen.getByRole("form", { name: "Configure account close calendar" });
+    await user.click(within(policyForm).getByRole("button", { name: "Recover policy draft for second-policy" }));
+    await user.click(within(calendarForm).getByRole("button", { name: "Recover calendar draft for second-workflow" }));
+    expect(within(policyForm).getByRole("combobox", { name: "Policy rule" })).toHaveValue("second-policy");
+    expect(within(calendarForm).getByRole("combobox", { name: "Close workflow" })).toHaveValue("second-workflow");
+    expect(within(policyForm).getByLabelText("Approval policy reviewer role")).toHaveValue("Retained reviewer");
+    expect(within(calendarForm).getByLabelText("Close calendar owner")).toHaveValue("Retained owner");
+    expect(within(policyForm).queryByRole("alert")).not.toBeInTheDocument();
+    expect(within(calendarForm).queryByRole("alert")).not.toBeInTheDocument();
+    expect(apiMocks.upsertOperationsApprovalPolicyRule).not.toHaveBeenCalled();
+    expect(apiMocks.upsertOperationsCloseCalendarItem).not.toHaveBeenCalled();
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {

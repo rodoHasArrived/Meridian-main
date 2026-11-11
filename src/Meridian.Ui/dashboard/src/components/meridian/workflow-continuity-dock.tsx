@@ -44,7 +44,7 @@ export function WorkflowContinuityDock({
               type="button"
               className="workflow-continuity-edit"
               onClick={onEditOperatingContext}
-              aria-label={viewModel.operatingScope.hasScope ? "Change operating scope" : "Set operating scope"}
+              aria-label={viewModel.operatingScope.hasScope ? "Change scope: operating context" : "Set scope: operating context"}
             >
               <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
               {viewModel.operatingScope.hasScope ? "Change scope" : "Set scope"}
@@ -70,8 +70,10 @@ export function WorkflowContinuityDock({
                   title={inEffect ? undefined : "Carried, but not applied on this workspace"}
                 >
                   <dt>{item.label}</dt>
-                  <dd>{item.value}</dd>
-                  <span className="workflow-continuity-scope-applicability">{inEffect ? "Applied here" : "Retained"}</span>
+                  <dd>
+                    <span>{item.value}</span>
+                    <span className="workflow-continuity-scope-applicability">{inEffect ? "Applied here" : "Retained"}</span>
+                  </dd>
                 </div>
               );
             })}
