@@ -86,7 +86,7 @@ export function ThemeToggle({
       role="radiogroup"
       aria-label="Appearance"
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-card p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[var(--radius-button)] border border-border bg-card p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -102,8 +102,8 @@ export function ThemeToggle({
             title={label}
             onClick={() => select(optionValue)}
             className={cn(
-              "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[2px] font-medium leading-none transition-colors",
-              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+              "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-button)] font-medium leading-none transition-colors",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
               size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"

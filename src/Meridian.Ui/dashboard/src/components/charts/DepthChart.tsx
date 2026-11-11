@@ -25,13 +25,13 @@ export interface DepthChartProps extends ChartA11yProps {
   priceTicks?: number;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CROSSHAIR = "var(--chart-crosshair, #6B655C)";
-const UP = "var(--chart-equity, #3A7A56)";
-const DOWN = "var(--chart-drawdown, #A8443C)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CROSSHAIR = "var(--chart-crosshair, #C56343)";
+const UP = "var(--chart-equity, #2E7655)";
+const DOWN = "var(--chart-drawdown, #B54B42)";
 
 export function DepthChart({
   bids = [],

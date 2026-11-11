@@ -9,11 +9,12 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting";
 import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
 import { cn } from "@/lib/utils";
+import { formatNumber } from "@/lib/format";
 import { DENSE_VIRTUALIZATION_THRESHOLD } from "@/lib/dense-table-virtualization";
 import type { FinancialRecordExplorerSavedView } from "@/components/meridian/financial-record-explorer";
 import { useAccountingPostedLedgerViewModel } from "@/screens/accounting-screen.posted-ledger.view-model";
 import type { AccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
-import { formatCurrency, formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
+import { formatCurrencyForCode } from "@/screens/accounting-screen.formatting";
 
 /**
  * Static saved views for the strategy-run ledger explorer that renders below the
@@ -206,13 +207,15 @@ export function AccountingPostedLedgerSection({ workstream }: { workstream: Acco
                   />
                   {selectedTrialBalanceRow && viewModel.selectedPeriodId ? (
                     <LedgerAccountRunningBalancePanel
+                      key={`${viewModel.selectedPeriodId}:${selectedTrialBalanceRow.rowId}`}
                       periodId={viewModel.selectedPeriodId}
                       accountName={selectedTrialBalanceRow.accountName}
+                      accountingBasis={selectedTrialBalanceRow.accountingBasis ?? view.trialBalance.selectedBasis}
                       symbol={selectedTrialBalanceRow.symbol}
                       financialAccountId={selectedTrialBalanceRow.financialAccountId}
                       dimensions={selectedTrialBalanceRow.dimensions ?? null}
                       formatAmount={(value) =>
-                        view.baseCurrency ? formatCurrencyForCode(value, view.baseCurrency) : formatCurrency(value)
+                        view.baseCurrency ? formatCurrencyForCode(value, view.baseCurrency) : `${formatNumber(value)} (currency unavailable)`
                       }
                     />
                   ) : null}

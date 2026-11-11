@@ -1,6 +1,6 @@
 /**
  * FilterBuilder — structured field / operator / value query rows, AND-combined. Where
- * `FilteredDataTable` does free text + facet chips, FilterBuilder composes explicit
+ * `Toolbar` does free text + facet chips, FilterBuilder composes explicit
  * predicates for registry surfaces (security master, run ledgers, report catalogs).
  * Operators follow the field type: text (contains / is / is not / starts with / is empty),
  * number (= ≠ > ≥ < ≤ between), date (on / before / after / between), enum (is / is not).

@@ -1,12 +1,12 @@
-// Meridian useTableColumns — column model for DenseDataTable: resize, reorder, pin, hide.
+// Meridian useTableColumns — column model for DataGrid: resize, reorder, pin, hide.
 // Keeps the presentational table dumb; this hook owns the mutable column geometry and
 // persists it per-user under a key. Returns the ordered, visible, sized column list plus
 // the handlers a header row wires up.
 //
 //   const cols = useTableColumns(baseColumns, { persistKey: "blotter.cols" });
-//   <DenseDataTable columns={cols.visibleColumns}
+//   <DataGrid columns={cols.visibleColumns}
 //     onColumnResize={cols.resize} onColumnReorder={cols.reorder}
-//     onColumnPin={cols.togglePin} pinnedKeys={cols.pinnedKeys} />
+//     onColumnPin={cols.togglePin} />
 import React from "react";
 
 export function useTableColumns(baseColumns, { persistKey = null, defaultWidth = 140 } = {}) {

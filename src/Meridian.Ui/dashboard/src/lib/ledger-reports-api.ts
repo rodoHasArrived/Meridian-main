@@ -9,6 +9,7 @@ import {
   routeWithParam
 } from "@/lib/workstation-endpoints";
 import type {
+  AccountingBasisKind,
   LedgerAccountRunningBalance,
   LedgerBook,
   LedgerDimensionSet,
@@ -46,6 +47,7 @@ export function getLedgerPeriodJournalEntries(periodId: string) {
 
 export interface LedgerAccountRunningBalanceQuery {
   account: string;
+  accountingBasis?: AccountingBasisKind;
   symbol?: string | null;
   financialAccountId?: string | null;
   dimensions?: LedgerDimensionSet | null;
@@ -74,6 +76,9 @@ export function ledgerPeriodAccountRunningBalanceEndpoint(
   // every dimension set of the account.
   if (query.dimensions !== undefined) {
     params.set("dimensions", JSON.stringify(query.dimensions));
+  }
+  if (query.accountingBasis !== undefined) {
+    params.set("accountingBasis", query.accountingBasis);
   }
 
   return `${routeWithParam(UI_API_ROUTES.LedgerPeriodAccountRunningBalance, "periodId", periodId)}?${params.toString()}`;

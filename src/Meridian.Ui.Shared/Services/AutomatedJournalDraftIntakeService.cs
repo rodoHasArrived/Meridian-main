@@ -244,6 +244,8 @@ public sealed class AutomatedJournalDraftIntakeService
                 if ((existing.PrivateCapitalAuthorityJson is not null || incomingCapitalAuthority is not null)
                     && existing.PrivateCapitalAuthorityJson != incomingCapitalAuthority)
                     throw new InvalidOperationException("This capital-call posting identity already retains different approved inputs or funding evidence.");
+                if (existing.DistributionDeclarationJson != draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag))
+                    throw new InvalidOperationException("This distribution identity already retains different declaration terms or waterfall tiers.");
                 var incomingAssessment = request.EvidenceAssessments is not null &&
                                          request.EvidenceAssessments.TryGetValue(idempotencyKey, out var candidateAssessment)
                     ? candidateAssessment
@@ -498,7 +500,8 @@ public sealed class AutomatedJournalDraftIntakeService
             RecurringJournalEvidenceDigest: draft.Metadata.Tags?.GetValueOrDefault(RecurringJournalEvidenceGuard.DigestTag),
             RequiresRecurringJournalEvidence: RecurringJournalEvidenceGuard.IsRecurring(draft.Event.IdempotencyKey))
         {
-            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority")
+            PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority"),
+            DistributionDeclarationJson = draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag)
         };
     }
 
@@ -518,6 +521,9 @@ public sealed class AutomatedJournalDraftIntakeService
             // counts them in the commitment roll-forward; funding stays General (a cash receipt),
             // otherwise it would double-count as a second call.
             AutomatedJournalEventKind.CapitalCallIssued => ManualJournalEntryTypeDto.CapitalCall,
+            // A declared distribution posts as the sanctioned Distribution kind so the
+            // private-capital projection reports it as one.
+            AutomatedJournalEventKind.DistributionDeclared => ManualJournalEntryTypeDto.Distribution,
             _ => ManualJournalEntryTypeDto.General
         };
 

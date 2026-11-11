@@ -5,13 +5,19 @@
  *
  * Each row/subtotal/total carries either a single `value` (one-column statements) or a `values`
  * map keyed by your column keys (comparison statements).
+ *
+ * **Value semantics.** Any amount may instead be an envelope-shaped object —
+ * `{ value, condition, authority, evidence, clocks, materiality }` — and renders through
+ * `ValueEnvelope` with the facets on the figure. Law: `guidelines/VALUE_ENVELOPE.md`.
  */
+import type { EnvelopeValue } from "./AmountCell";
+
 export interface StatementValue {
   label: string;
   /** Single amount (when there's one column). */
-  value?: number | string;
+  value?: number | string | EnvelopeValue;
   /** Per-column amounts, keyed by `columns[].key` (comparison statements). */
-  values?: Record<string, number | string>;
+  values?: Record<string, number | string | EnvelopeValue>;
   /** Indent level for nested line items. @default 0 */
   indent?: number;
   /** Render the label muted (informational sub-lines). */
@@ -36,5 +42,7 @@ export interface StatementTableProps {
   parens?: boolean;
   /** Color amounts as gains/losses (negative red / positive green). @default false */
   pnl?: boolean;
+  /** Accessible caption / region label. */
+  caption?: string;
 }
 export declare function StatementTable(props: StatementTableProps): JSX.Element;

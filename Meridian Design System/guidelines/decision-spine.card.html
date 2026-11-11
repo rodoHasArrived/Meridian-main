@@ -1,0 +1,58 @@
+<!-- @dsCard group="Documentation" viewport="1280x1000" name="Decision spine & public families" subtitle="Context → object → evidence → consequence → decision, the ten public families, and the eligibility rules template migration is measured against" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Decision spine and public families</title><link rel="stylesheet" href="../styles.css"><style>
+body{margin:0;padding:22px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.wrap{display:grid;gap:16px;max-width:1200px}h1{font-size:19px;margin:0 0 4px;letter-spacing:-.01em}.sub{margin:0 0 6px;font:11px/1.6 var(--font-body);color:var(--text-secondary);max-width:82ch;text-wrap:pretty}.panel{border:1px solid var(--border);background:var(--bg-light);padding:15px}.panel h2{margin:0 0 3px;font-size:13px}.panel p{margin:0 0 11px;font:10px/1.6 var(--font-data);color:var(--text-muted);max-width:78ch}.two{display:grid;grid-template-columns:1.1fr .9fr;gap:16px;align-items:start}.spine{display:grid;gap:0;font-size:11px}.spine div{display:grid;grid-template-columns:132px 1fr;gap:12px;padding:8px 0;border-bottom:1px solid var(--border-divider)}.spine div:last-child{border-bottom:0}.spine b{font:600 9px var(--font-data);text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);padding-top:2px}.spine span{line-height:1.55;text-wrap:pretty}.spine code{font:10.5px var(--font-data);color:var(--text-secondary)}table{width:100%;border-collapse:collapse}th{font:600 9px var(--font-data);text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted);text-align:left;padding:5px 9px 5px 0;border-bottom:1px solid var(--border)}td{font:11px/1.55 var(--font-body);padding:6px 9px 6px 0;border-bottom:1px solid var(--border-divider);vertical-align:top}td.n{font-family:var(--font-data);text-align:right;font-variant-numeric:tabular-nums}td code{font:10.5px var(--font-data)}.rule{display:grid;grid-template-columns:150px 1fr;gap:12px;padding:7px 0;border-bottom:1px solid var(--border-divider);font-size:11px}.rule:last-child{border-bottom:0}.rule b{font:600 10.5px var(--font-data);color:var(--text-secondary)}.rule span{line-height:1.55;text-wrap:pretty}.warn{border-left:2px solid var(--orange);padding-left:11px;font:11px/1.6 var(--font-body);color:var(--text-secondary);max-width:80ch;text-wrap:pretty}.four{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.card{border:1px solid var(--border);background:var(--card-surface-raised,#FCFBF8);padding:11px}.card b{display:block;font:600 11px var(--font-body);margin-bottom:3px}.card span{font:10px/1.55 var(--font-body);color:var(--text-muted)}a{color:var(--link)}a:hover{color:var(--link-hover)}@media(max-width:960px){body{padding:13px}.two,.four{grid-template-columns:1fr}}
+</style></head><body><div class="wrap">
+<div><h1>The decision spine</h1><p class="sub">A user should move from a portfolio to a position, from a position to evidence, from evidence to a calculation, from that calculation to an accounting consequence, and from the consequence to a governed decision — without crossing semantic boundaries each workstation invented for itself. Six primitives, four new contracts, one sentence.</p></div>
+<section class="panel"><h2>Context → object → evidence → consequence → decision</h2><p>Each stage names the component that owns it. A screen that re-derives a stage locally has left the operating language.</p>
+<div class="spine">
+<div><b>Workspace context</b><span>Entity · book · basis · period · scenario · currency. <code>WorkspaceContextProvider · WorkspaceContextBar</code></span></div>
+<div><b>Time context</b><span>Twelve roles across world, book and evidence clocks — as-of, posting, valuation, evidence time. <code>TimeContextProvider</code></span></div>
+<div><b>Active object</b><span>Type, identifier, <em>version</em>, condition, as-of. Sixteen object types, one identity contract. <code>ObjectHeader</code></span></div>
+<div><b>Work plane</b><span>The dominant plane — table, figure, reconciliation, journal. Never three equal-weight card grids.</span></div>
+<div><b>Evidence rail</b><span>Coverage → sources → derivation → authority → lineage → audit. <code>SourceCoverageSummary · CalculationTrace · AuthorityStack</code></span></div>
+<div><b>Consequence rail</b><span>Financial effect → records → controls → approvals → reversibility. <code>PostingImpactPreview · ActionGuardList</code></span></div>
+<div><b>Decision flow</b><span>Ordered, guarded, version-aware progression to a committed action. <code>DecisionFlowProvider · DecisionConsequenceBar</code></span></div>
+<div><b>Snapshot</b><span>Object + version + context + evidence set + policy + guards + actor + timestamp — persisted, not reconstructed from UI logs.</span></div>
+<div><b>Audit narrative</b><span>Atomic events stay authoritative; the episode layer and the causal trace are derived views for comprehension.</span></div>
+</div></section>
+<section class="panel"><h2>Four contracts staged this release</h2><p>Each replaces a class of locally reinvented logic. Full definitions in <a href="DECISION_SEMANTICS.md">DECISION_SEMANTICS.md</a>.</p>
+<div class="four">
+<div class="card"><b>ValueAuthority</b><span>Six legitimate versions of one value — source, calculated, override, approved, posted, reported. Names which stage is authoritative here, and why. Never "true".</span></div>
+<div class="card"><b>MaterialityAssessment</b><span>Quantitative benchmark plus a qualitative factor checklist, with its own policy id. Never <code>abs(variance) &gt; tolerance</code>.</span></div>
+<div class="card"><b>ActionGuard</b><span>Satisfied · warning · blocking, each with reason, policy, evidence and a named remediation. Visible before the attempt.</span></div>
+<div class="card"><b>DecisionFlow</b><span>Step order, requirement graph, URL and reload restoration, and invalidation when the object version moves underneath a completed review.</span></div>
+</div></section>
+<div class="two">
+<section class="panel"><h2>Ten public families</h2><p>The family is the public contract; the folders under <code>components/</code> are not. 4.0 turns these into subpath exports — <code>MeridianAPI.evidence</code> keeps working across that change.</p>
+<table><thead><tr><th>Family</th><th class="n">Exports</th><th>Owns</th></tr></thead><tbody>
+<tr><td><code>primitives</code></td><td class="n">76</td><td>Interaction and layout surfaces with no financial semantics</td></tr>
+<tr><td><code>coordination</code></td><td class="n">25</td><td>Context, time, object identity, linked selection, continuity</td></tr>
+<tr><td><code>data</code></td><td class="n">27</td><td>Tables, filters, selection, bulk action, data state</td></tr>
+<tr><td><code>analytics</code></td><td class="n">37</td><td>The figure contract, plate geometry, domain visualizations</td></tr>
+<tr><td><code>evidence</code></td><td class="n">31</td><td>Why the current state is supported</td></tr>
+<tr><td><code>decision</code></td><td class="n">19</td><td>What a proposal would change, and whether it may proceed</td></tr>
+<tr><td><code>accounting</code></td><td class="n">25</td><td>Ledger, basis, period, posting, tie-out</td></tr>
+<tr><td><code>trading</code></td><td class="n">6</td><td>Order, blotter, depth, tape</td></tr>
+<tr><td><code>shell</code></td><td class="n">8</td><td>Workstation chrome</td></tr>
+<tr><td><code>legacy</code></td><td class="n">all</td><td>The flat namespace, unchanged — nobody is forced to migrate in 3.x</td></tr>
+</tbody></table></section>
+<section class="panel"><h2>Eligibility, not blanket adoption</h2><p>Compliance is measured as eligible templates conforming — never as templates referencing. Full table in <a href="TEMPLATE_CONTRACT.md">TEMPLATE_CONTRACT.md</a>.</p>
+<div class="rule"><b>Context bar</b><span>Require where context changes data, meaning or permitted actions — not on a Start screen with no analytical context.</span></div>
+<div class="rule"><b>Linked selection</b><span>Require where two or more surfaces answer to the same committed selection.</span></div>
+<div class="rule"><b>Continuity frame</b><span>Require where remote evidence has a useful last-known-good state. Wrap the plane, not the page.</span></div>
+<div class="rule"><b>Analytical figure</b><span>Require where a visualization supports interpretation, comparison, evidence or a decision.</span></div>
+<div class="rule"><b>Datum</b><span>Require where zero, target, prior period, tolerance or parity carries analytical meaning.</span></div>
+<div class="rule"><b>Capsule</b><span>Only once move and resize actually work, with a keyboard equivalent. Never as decoration.</span></div>
+<p class="warn" style="margin-top:12px">"Put <code>Datum</code> in 31 screens" is a worse system, not a better one. Raw reference counts diagnose; they are not targets. A 250th component would add less value than eliminating ten locally invented ways to represent period context, selection, tolerance, evidence or approval.</p></section>
+</div>
+<section class="panel"><h2>Orthogonal semantic channels</h2><p>Seven questions, seven channels. Collapsing them into one colored pill per row is the failure mode this table exists to prevent.</p>
+<table><thead><tr><th>Channel</th><th>Question</th><th>Carrier</th></tr></thead><tbody>
+<tr><td>Condition</td><td>What state is the value in?</td><td>Marker glyph plus a word — confirmed, provisional, estimated, stale, overridden, missing</td></tr>
+<tr><td>Severity</td><td>How urgent is the issue?</td><td>Semantic color and icon with text</td></tr>
+<tr><td>Confidence</td><td>How reliable is the extraction or match?</td><td>Decomposed detail — extraction, match, verification — not a status color</td></tr>
+<tr><td>Materiality</td><td>How consequential is it?</td><td>Named classification and hierarchy</td></tr>
+<tr><td>Authority</td><td>Which version is in force?</td><td>Named stage in the authority stack</td></tr>
+<tr><td>Selection</td><td>Which object am I operating on?</td><td><code>--interaction-selected</code> rail and surface</td></tr>
+<tr><td>Focus</td><td>Where will keyboard input go?</td><td><code>--interaction-focus</code> ring, always distinct from selection</td></tr>
+</tbody></table></section>
+</div></body></html>

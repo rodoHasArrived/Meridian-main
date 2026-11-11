@@ -5,20 +5,22 @@
   <meta charset="UTF-8" />
   <title>Form Controls</title>
   <link rel="stylesheet" href="../../styles.css" />
+  <script src="../../_preview_runtime.js"></script>
+  <script src="../../_preview_jsx.js"></script>
   <script src="../../_ds_bundle.js"></script>
 </head>
-<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EC);font-family:var(--font-body);">
+<body style="margin:0;padding:20px;background:var(--bg-canvas,#F2F0EB);font-family:var(--font-body);">
 <div id="root"></div>
 <script type="text/babel">
 const {
-  ToastProvider, useToast, Select, Checkbox, Toggle,
+  ToastProvider, Select, Checkbox, Toggle,
   Tooltip, Tabs, TabPanel, FormRow, FormGrid, FormDivider, Breadcrumb, Button, Input
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 function Section({ title, children }) {
   return (
-    <div style={{ background:"white", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
+    <div style={{ background:"var(--surface-well,#FCFBF8)", border:"1px solid var(--border)", borderRadius:8, padding:16 }}>
       <div style={{ fontSize:10, fontWeight:600, fontVariant:"all-small-caps", letterSpacing:".04em",
         color:"var(--text-muted)", marginBottom:12 }}>{title}</div>
       {children}
@@ -27,7 +29,7 @@ function Section({ title, children }) {
 }
 
 function Demo() {
-  const toast = useToast();
+  const toast = window.MeridianToast;
   const [sel, setSel] = useState("aapl");
   const [chk, setChk] = useState(true);
   const [tog, setTog] = useState(true);
@@ -80,7 +82,7 @@ function Demo() {
         <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
           <Tooltip content="Apple Inc. — Common Stock" placement="above">
             <span style={{ fontFamily:"var(--font-data)", fontSize:13, fontWeight:600,
-              color:"var(--accent)", cursor:"default", borderBottom:"1px dashed var(--accent)" }}>
+              color:"var(--brand-signal-ink,#944A32)", cursor:"default", borderBottom:"1px dashed var(--brand-signal,#C56343)" }}>
               AAPL
             </span>
           </Tooltip>

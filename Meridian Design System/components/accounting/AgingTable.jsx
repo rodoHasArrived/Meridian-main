@@ -2,44 +2,48 @@
 // bucket-total footer with share-of-whole, and escalating amber → red washes on late buckets.
 import React from "react";
 import { AmountCell } from "./AmountCell";
-import { toNumber, sumAmounts } from "./money";
+import { toNumber } from "../core/format.js";
+import { sumAmounts } from "./money";
 
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.agt-wrap{overflow-x:auto;border:1px solid var(--border,#E4E3DE);
-  border-radius:var(--radius-chip,2px);background:var(--bg-light,#FBFAF8);}
+.agt-wrap:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.agt-wrap{overflow-x:auto;border:1px solid var(--border,#D2CDC3);
+  border-radius:var(--radius-chip,2px);background:var(--bg-light,#F8F7F3);}
 .agt{width:100%;border-collapse:separate;border-spacing:0;
   font-family:var(--font-data);font-size:12px;}
 .agt thead th{padding:9px 12px;text-align:right;white-space:nowrap;position:sticky;top:0;
-  background:var(--bg-medium,#EDEAE4);z-index:1;
+  background:var(--bg-medium,#EBE8E1);z-index:1;
   font-family:var(--font-body);font-size:10px;font-weight:600;font-variant:all-small-caps;
-  letter-spacing:.03em;color:var(--text-muted,#5E666F);
-  border-bottom:1px solid var(--border-strong,#AFABA1);border-right:1px solid var(--border-divider,#DAD8D3);}
+  letter-spacing:.03em;color:var(--text-muted,#606870);
+  border-bottom:1px solid var(--border-strong,#AAA49A);border-right:1px solid var(--border-divider,#E2DED5);}
 .agt thead th:last-child{border-right:none;}
 .agt thead th.agt--l{text-align:left;}
-.agt td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#22252A);
-  border-top:1px solid var(--border,#E4E3DE);border-right:1px solid var(--border-divider,#DAD8D3);
+.agt td{padding:9px 12px;white-space:nowrap;text-align:right;color:var(--text-primary,#20252B);
+  border-top:1px solid var(--border,#D2CDC3);border-right:1px solid var(--border-divider,#E2DED5);
   vertical-align:baseline;}
 .agt td:last-child{border-right:none;}
 .agt td.agt--l{text-align:left;}
-.agt tbody tr:hover td{background:var(--bg-hover,#F0EEE9);}
+.agt tbody tr:hover td{background:var(--bg-hover,#EDEFF0);}
 .agt tbody tr.agt__row--click{cursor:pointer;}
-.agt tbody tr.agt__row--on td{background:var(--bg-active,#F2E3DB);}
-.agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--accent,#A85436);}
-.agt td.agt--warn{background:var(--orange-a10,rgba(138,92,18,.07));}
-.agt td.agt--late{background:var(--red-a10,rgba(168,68,60,.08));}
-.agt__name{font-family:var(--font-body);color:var(--text-primary,#22252A);}
-.agt__ref{color:var(--text-muted,#5E666F);}
-.agt tfoot td{padding:9px 12px;background:var(--bg-medium,#EDEAE4);font-weight:600;
-  border-top:2px solid var(--border-strong,#AFABA1);color:var(--text-primary,#22252A);text-align:right;}
+.agt tbody tr.agt__row--on td{background:var(--bg-active,#E7EDF2);}
+.agt tbody tr.agt__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
+.agt tbody tr.agt__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
+.agt__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
+.agt td.agt--warn{background:var(--orange-a10,rgba(152,103,23,.07));}
+.agt td.agt--late{background:var(--red-a10,rgba(181,75,66,.08));}
+.agt__name{font-family:var(--font-body);color:var(--text-primary,#20252B);}
+.agt__ref{color:var(--text-muted,#606870);}
+.agt tfoot td{padding:9px 12px;background:var(--bg-medium,#EBE8E1);font-weight:600;
+  border-top:2px solid var(--border-strong,#AAA49A);color:var(--text-primary,#20252B);text-align:right;}
 .agt tfoot td.agt--l{text-align:left;}
 .agt__foot-label{font-family:var(--font-body);font-variant:all-small-caps;letter-spacing:.03em;
-  font-size:11px;color:var(--text-secondary,#4E5258);}
+  font-size:11px;color:var(--text-secondary,#535C65);}
 .agt__share{display:block;font-family:var(--font-body);font-size:10px;font-weight:400;
-  color:var(--text-muted,#5E666F);margin-top:2px;}
+  color:var(--text-muted,#606870);margin-top:2px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "aging");
@@ -48,7 +52,7 @@ function inject() {
 }
 
 export function AgingTable({
-  rows,
+  rows = [],
   buckets = ["Current", "1\u201330", "31\u201360", "61\u201390", "90+"],
   currency = "USD",
   warnFrom = 2,
@@ -72,24 +76,28 @@ export function AgingTable({
   };
 
   return (
-    <div className="agt-wrap" role="region" aria-label={caption || "Aging schedule"}>
+    <div className="agt-wrap" tabIndex={0} role="region" aria-label={caption || "Aging schedule"}>
       <table className="agt">
         <thead>
           <tr>
-            <th className="agt--l">Counterparty</th>
-            {showRef && <th className="agt--l">Ref</th>}
-            {buckets.map((b) => <th key={b}>{b}</th>)}
-            <th>Total</th>
+            <th className="agt--l" scope="col">Counterparty</th>
+            {showRef && <th className="agt--l" scope="col">Ref</th>}
+            {buckets.map((b) => <th key={b} scope="col">{b}</th>)}
+            <th scope="col">Total</th>
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr><td className="agt__empty" colSpan={(showRef ? 2 : 1) + buckets.length + 1}>No open items</td></tr>
+          )}
           {rows.map((r, i) => {
             const cls = [
               onRowClick ? "agt__row--click" : "",
               selectedIndex === i ? "agt__row--on" : "",
             ].filter(Boolean).join(" ") || undefined;
             return (
-              <tr key={i} className={cls}
+              <tr key={i} className={cls} tabIndex={onRowClick ? 0 : undefined}
+                onKeyDown={onRowClick ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onRowClick(r, i); } } : undefined}
                 onClick={onRowClick ? () => onRowClick(r, i) : undefined}>
                 <td className="agt--l agt__name">{r.name}</td>
                 {showRef && <td className="agt--l agt__ref">{r.ref}</td>}

@@ -1,0 +1,69 @@
+<!-- @dsCard group="Operations" viewport="1240x900" name="Adapter diagnostics" subtitle="Outbound posture, retry schedule, verbatim last error, queue age and signing-key clock — the counterpart to inbound connection state" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Adapter diagnostics</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;padding:18px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.wrap{display:grid;gap:14px;max-width:1200px}.bar{display:flex;align-items:center;gap:10px;height:40px;padding:0 12px;background:var(--topbar-bg);color:var(--topbar-text);font-weight:600;letter-spacing:.07em;font-size:11.5px}.bar .sp{flex:1}.two{display:grid;grid-template-columns:1fr 320px;gap:14px;align-items:start}.side{border:1px solid var(--border);background:var(--bg-light);padding:12px}.side h3{margin:0 0 8px;font:600 9px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}.side p{margin:0 0 9px;font-size:11.5px;line-height:1.5;color:var(--text-secondary)}.side p:last-child{margin:0}.side b{color:var(--text-primary);font-weight:650}.side code{font-family:var(--font-data);font-size:10.5px}.legend{display:flex;flex-wrap:wrap;gap:8px 14px;padding:9px 12px;border:1px solid var(--border);background:var(--card-surface-raised,#FCFBF8)}.legend div{display:flex;align-items:baseline;gap:7px;font-size:11px;color:var(--text-secondary);max-width:340px;line-height:1.45}</style></head><body><div id="root"></div><script type="text/babel">
+const {AdapterDiagnostics,AdapterPostureChip,ADAPTER_POSTURES}=window.MeridianDesignSystem_205d17;
+const ROWS=[
+ {id:"ibkr-live",name:"IBKR order adapter",venue:"IBKR",environment:"LIVE",route:"FIX 4.4 · gw-3",posture:"retrying",
+  statement:"Session dropped mid-heartbeat; the adapter holds 14 instructions and is inside its retry ladder.",
+  lastRoundTrip:"6m 12s ago",cadence:"heartbeat 30s",latency:{p50:88,p99:412,budget:250},
+  outbound:{inFlight:2,queued:14,oldest:"6m",onResume:"queue replays oldest first, idempotency keys preserved"},
+  retry:{attempt:4,of:8,backoff:"30s → 60s",nextAt:"14:33:12Z",lastAttemptAt:"14:32:42Z",onExhaustion:"suspend + page the desk"},
+  lastError:{code:"WS-1006",message:"websocket closed abnormally (no close frame received)\nlast seq 88412 acked, 88413 unacknowledged",at:"14:32:42Z",count:4,correlationId:"corr-7f21ab"},
+  key:{id:"oms-sig-2026-07",algorithm:"Ed25519",age:"41d",rotatesAt:"2026-08-20",overdue:false},version:18},
+ {id:"custodian-bny",name:"Custodian submission",venue:"BNY Mellon",environment:"LIVE",route:"SFTP · nightly + intraday",posture:"degraded",
+  statement:"Round trips succeed, but the venue acknowledges outside budget after their 14:00 batch window opened.",
+  lastRoundTrip:"38s ago",latency:{p50:310,p99:690,budget:400},
+  outbound:{inFlight:1,queued:3,oldest:"2m"},
+  retry:{attempt:1,of:5,backoff:"15s",nextAt:"14:33:04Z"},
+  lastError:{code:"ACK-TIMEOUT",message:"acknowledgement not received within 400ms budget; instruction accepted on retry 1",at:"14:29:51Z",count:11},
+  key:{id:"bny-sig-2026-05",algorithm:"RSA-2048",age:"96d",rotatesAt:"2026-08-14",overdue:true},venueStatus:"batch window open",version:7},
+ {id:"reportdelivery",name:"Report delivery",venue:"Sendgrid + S3",environment:"LIVE",route:"HTTPS",posture:"suspended",
+  statement:"Suspended by hand after two packs were delivered with the pre-restatement figures.",
+  lastRoundTrip:"2h 41m ago",latency:{p50:120,p99:180,budget:500},
+  outbound:{inFlight:0,queued:6,oldest:"2h 38m",onResume:"6 packs re-render before delivery"},
+  lastError:{code:"CONTENT-STALE",message:"pack MER-Q3-014 rendered from ledger v41; v42 restated three accounts",at:"11:51:08Z",count:2},
+  key:{id:"delivery-sig-2026-08",algorithm:"Ed25519",age:"9d",rotatesAt:"2026-11-06",overdue:false},
+  suspendedBy:"r.okafor",suspendedAt:"11:53:20Z",version:4},
+ {id:"ibkr-paper",name:"IBKR order adapter",venue:"IBKR",environment:"PAPER",route:"FIX 4.4 · gw-1",posture:"linked",
+  lastRoundTrip:"1.2s ago",cadence:"heartbeat 30s",latency:{p50:74,p99:184,budget:250},
+  outbound:{inFlight:0,queued:0},
+  key:{id:"oms-sig-2026-07",algorithm:"Ed25519",age:"41d",rotatesAt:"2026-08-20",overdue:false},version:18},
+ {id:"posting-export",name:"Posting export",venue:"NetSuite",environment:"LIVE",route:"REST",posture:"retrying",
+  statement:"Failing on authentication, and no next attempt is scheduled — the ladder was never armed.",
+  lastRoundTrip:"51m ago",latency:{p50:210,p99:240,budget:600},
+  outbound:{inFlight:0,queued:41,oldest:"51m"},
+  retry:{attempt:3,of:3,backoff:"exhausted"},
+  lastError:{code:"AUTH-401",message:"invalid_client: signature verification failed for key posting-sig-2026-04",at:"13:41:19Z",count:3},
+  key:{id:"posting-sig-2026-04",algorithm:"RSA-2048",age:"133d",rotatesAt:"2026-07-31",overdue:true},version:11},
+ {id:"webhook-risk",name:"Risk webhook sink",venue:"Internal · risk-svc",environment:"LIVE",posture:"unconfigured",
+  statement:"No route registered for this desk. Nothing is queued and nothing is failing.",version:1}];
+function Demo(){
+ const [sel,setSel]=React.useState("ibkr-live");
+ const [rows,setRows]=React.useState(ROWS);
+ const act=(verb)=>(row)=>setRows(rs=>rs.map(r=>r.id!==row.id?r:
+  verb==="suspend"?{...r,posture:"suspended",suspendedBy:"you",suspendedAt:"14:33:40Z",retry:undefined,statement:"Suspended from this panel. The queue holds; nothing retries until resumed."}
+  :verb==="resume"?{...r,posture:"retrying",suspendedBy:undefined,retry:{attempt:1,of:8,backoff:"30s",nextAt:"14:34:10Z",onExhaustion:"suspend + page the desk"},statement:"Resumed. The queue replays oldest first."}
+  :verb==="retry"?{...r,retry:{...(r.retry||{}),attempt:(r.retry?.attempt??0)+1,nextAt:"14:33:52Z",backoff:"immediate"},statement:"Manual attempt fired ahead of the schedule."}
+  :{...r,key:{...r.key,id:"rotated-2026-08-15",age:"0d",rotatesAt:"2026-11-13",overdue:false},statement:"Signing key rotated; the next attempt signs with the new key."}));
+ return <div className="wrap">
+  <div className="bar"><span>MERIDIAN · ADAPTER OPERATIONS</span><span className="sp"/>
+   <AdapterPostureChip posture="retrying" nextAttempt="14:33:12Z"/><AdapterPostureChip posture="degraded"/><AdapterPostureChip posture="linked"/></div>
+  <div className="legend">{ADAPTER_POSTURES.map(p=><div key={p.id}><AdapterPostureChip posture={p.id}/><span>{p.says}</span></div>)}</div>
+  <div className="two">
+   <AdapterDiagnostics adapters={rows} asOf="14:32:08Z" scope="LIVE + PAPER" budgetNote="acknowledgement budget stated per adapter"
+     selectedId={sel} onSelect={setSel}
+     onRetryNow={act("retry")} onSuspend={act("suspend")} onResume={act("resume")} onRotateKey={act("rotate")}
+     footNote="Suspend and resume are compensatable, not free: a suspension is undone by a resume, but instructions that did not land during it are not. Route all four through ActionGuard."/>
+   <aside className="side">
+    <h3>Why a second vocabulary</h3>
+    <p><b>A stale read makes a figure old. A failed adapter makes an instruction unlanded.</b> Inbound uses <code>live · delayed · partial · offline · error</code>; outbound uses these five. Same harm words would hide the difference.</p>
+    <p><b>Retrying with no next attempt is a suspension.</b> Open <em>Posting export</em>: the panel flags the contradiction instead of spinning. A spinner states only that someone is hoping.</p>
+    <p><b>The error is quoted, with code and clock.</b> Two lines of the adapter's own words beat "connection failed" and a log link the operator may not have.</p>
+    <p><b>Queue depth carries its oldest age.</b> "41 queued" is not a severity; "41 queued, oldest 51m" is.</p>
+    <p><b>Rotation is a clock.</b> Two rows here are past their rotation date — the most common cause of a silent outbound failure.</p>
+    <p><b>PAPER and LIVE are separate rows.</b> Same adapter, two postures, no toggle.</p>
+    <p><b>Unconfigured is not red.</b> It is an absence of intent; colouring it as failure trains operators to ignore failure.</p>
+   </aside>
+  </div>
+ </div>}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

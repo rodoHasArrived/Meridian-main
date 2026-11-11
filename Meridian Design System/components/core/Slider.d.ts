@@ -36,3 +36,6 @@ export interface SliderProps
   disabled?: boolean;
 }
 export declare function Slider(props: SliderProps): JSX.Element;
+
+/** 3.5 · The visible `label` is associated via aria-labelledby, and `valueFmt` output ships as
+ *  aria-valuetext, so "0.35Δ" is announced rather than the bare number. */

@@ -37,7 +37,7 @@ cat > "$PROJECT_DIR/index.html" << 'ENDHTML'
       padding: 0;
       font-family: var(--font-body, "Segoe UI Variable", system-ui, sans-serif);
       background: var(--bg, #F2F0EC);
-      color: var(--text-primary, #22252A);
+      color: var(--text-primary, #20252B);
     }
     main { padding: 16px; }
   </style>
@@ -48,12 +48,14 @@ cat > "$PROJECT_DIR/index.html" << 'ENDHTML'
     <p>Edit <code>index.html</code> or <code>screens/</code> to get started.</p>
   </main>
 
-  <!-- Design system bundle -->
+  <!-- Local runtime (React 19), JSX compiler, then the design system bundle — order matters, all offline -->
+  <script src="_ds/_preview_runtime.js"></script>
+  <script src="_ds/_preview_jsx.js"></script>
   <script src="_ds/_ds_bundle.js"></script>
   <!-- Your app logic -->
   <script>
-    const { Button, Input, Badge, Modal } = window.MeridianDesignSystem_4f61be;
-    console.log("✅ Design system loaded", { Button, Input, Badge, Modal });
+    const { Button, Input, Badge, Dialog } = window.MeridianDesignSystem_205d17;
+    console.log("✅ Design system loaded", { Button, Input, Badge, Dialog });
   </script>
 </body>
 </html>
@@ -74,15 +76,15 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
       padding: 16px;
       font-family: var(--font-body, "Segoe UI Variable", system-ui, sans-serif);
       background: var(--bg, #F2F0EC);
-      color: var(--text-primary, #22252A);
+      color: var(--text-primary, #20252B);
     }
     .container { max-width: 1200px; margin: 0 auto; }
     .section { margin-bottom: 32px; }
     .section h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
     .controls { display: flex; gap: 12px; flex-wrap: wrap; }
-    input, select { padding: 8px 12px; border: 1px solid var(--border, #E4E3DE); background: var(--bg-light, #FBFAF8); font-size: 13px; }
-    input:focus, select:focus { outline: none; border-color: var(--border-focus, #A85436);
-      box-shadow: 0 0 0 2px var(--accent-a10, rgba(168,84,54,.2)); }
+    input, select { padding: 8px 12px; border: 1px solid var(--border, #D2CDC3); background: var(--bg-light, #F8F7F3); font-size: 13px; }
+    input:focus, select:focus { outline: none; border-color: var(--border-focus, #2D6FB3);
+      box-shadow: 0 0 0 2px color-mix(in srgb, var(--interaction-focus, #2D6FB3) 20%, transparent); }
   </style>
 </head>
 <body>
@@ -108,7 +110,7 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     <div class="section">
       <h2>Data Display</h2>
       <table style="width:100%; border:1px solid var(--border); border-collapse:collapse; font-size:13px;">
-        <thead style="background:var(--bg-medium,#EDEAE4);">
+        <thead style="background:var(--bg-medium,#EBE8E1);">
           <tr>
             <th style="padding:9px 12px; text-align:left; border-bottom:1px solid var(--border);">Name</th>
             <th style="padding:9px 12px; text-align:left; border-bottom:1px solid var(--border);">Value</th>
@@ -146,10 +148,12 @@ cat > "$PROJECT_DIR/screens/ExampleScreen.html" << 'ENDSCREEN'
     </div>
   </div>
 
+  <script src="../_ds/_preview_runtime.js"></script>
+  <script src="../_ds/_preview_jsx.js"></script>
   <script src="../_ds/_ds_bundle.js"></script>
   <script>
-    const { Button } = window.MeridianDesignSystem_4f61be;
-    document.getElementById("btn-primary").style.background = "var(--accent, #A85436)";
+    const { Button } = window.MeridianDesignSystem_205d17;
+    document.getElementById("btn-primary").style.background = "var(--accent, #C56343)";
     document.getElementById("btn-primary").style.color = "white";
     document.getElementById("btn-primary").style.border = "none";
     document.getElementById("btn-primary").style.padding = "8px 16px";
@@ -181,7 +185,7 @@ A consuming project built with the Meridian Design System.
    ```bash
    ln -s /path/to/meridian-design-system _ds
    ```
-   Or copy `_ds_bundle.js`, `styles.css`, and fonts manually.
+   Or copy `_preview_runtime.js`, `_preview_jsx.js`, `_ds_bundle.js`, `styles.css`, and fonts manually.
 
 2. **Open `index.html`** in a browser to see the example screen.
 
@@ -189,7 +193,7 @@ A consuming project built with the Meridian Design System.
 
 4. **Use design-system components**:
    ```js
-   const { Button, Input, Modal } = window.MeridianDesignSystem_4f61be;
+   const { Button, Input, Dialog } = window.MeridianDesignSystem_205d17;
    ```
 
 ## Folder Structure
@@ -203,6 +207,8 @@ my-workstation/
 ├── assets/                 # Images, icons, fonts
 └── _ds/                    # Design system (linked or copied)
     ├── styles.css
+    ├── _preview_runtime.js  # React + ReactDOM (load first)
+    ├── _preview_jsx.js      # offline JSX compiler for <script type="text/babel">
     ├── _ds_bundle.js
     └── tokens/
 ```
@@ -215,9 +221,9 @@ Full component documentation is in the Meridian Design System repo under `compon
 - `Button` — primary, secondary, ghost variants
 - `Input` — text field with optional error state
 - `Select` — single-select dropdown
-- `Modal`, `ModalForm` — dialog + form modal
+- `Dialog`, `DialogForm` — dialog + form dialog (width via `size`)
 - `Badge` — status/category badge
-- `DenseDataTable` — institutional data grid
+- `DataGrid` — institutional data grid
 - `Tabs`, `TabPanel` — tabbed interface
 
 ## Theming
@@ -249,13 +255,29 @@ cat > "$PROJECT_DIR/_ds-base.js" << 'ENDDS'
   link.href = base + "/styles.css";
   document.head.appendChild(link);
 
-  // Load bundle
-  const script = document.createElement("script");
-  script.src = base + "/_ds_bundle.js";
-  script.onerror = function() {
-    console.error("Failed to load " + script.src + ". Make sure _ds folder is linked or copied.");
-  };
-  document.head.appendChild(script);
+  // Load the local runtime (React), the JSX compiler, then the bundle — in order
+  ["/_preview_runtime.js", "/_preview_jsx.js", "/_ds_bundle.js"].forEach(function(file) {
+    const script = document.createElement("script");
+    script.src = base + file;
+    script.async = false;  // dynamically inserted scripts must opt in to ordered execution
+    script.onload = function() {
+      // These scripts finish after the page is parsed, so the compiler's own DOMContentLoaded pass
+      // would run before the bundle (or not at all): switch it off and compile the
+      // <script type="text/babel"> blocks once the bundle is in.
+      if (file === "/_preview_jsx.js") window.Babel.disableScriptTags();
+      if (file === "/_ds_bundle.js") {
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", function() { window.Babel.transformScriptTags(); });
+        } else {
+          window.Babel.transformScriptTags();
+        }
+      }
+    };
+    script.onerror = function() {
+      console.error("Failed to load " + script.src + ". Make sure _ds folder is linked or copied.");
+    };
+    document.head.appendChild(script);
+  });
 })();
 ENDDS
 
@@ -296,4 +318,3 @@ echo "  3. Edit screens/ and components/ to build your workstation"
 echo ""
 echo "👉 For a quick preview, open: $PROJECT_DIR/screens/ExampleScreen.html"
 echo ""
-ENDHTML

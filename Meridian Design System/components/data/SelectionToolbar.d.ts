@@ -2,7 +2,7 @@
  * Selection toolbar — a floating action bar that appears when rows are selected in a table.
  * Shows the count of selected items, shortcuts to "Select all" / "Clear", and a primary action
  * plus additional ghost-variant actions. Slides in from the bottom with a subtle animation.
- * Typically placed above a DenseDataTable or ReconciliationPanel.
+ * Typically placed above a DataGrid or ReconciliationPanel.
  */
 export interface SelectionAction {
   /** Button label. */

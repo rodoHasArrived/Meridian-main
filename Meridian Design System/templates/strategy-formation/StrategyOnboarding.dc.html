@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<meta name="dc-template" content="strategy-onboarding">
+<style>html,body{margin:0;padding:0;height:100%}
+.sf-body{display:flex;flex-direction:column;gap:14px;padding:16px 24px 0;max-width:1560px}
+.sf-grid{display:grid;grid-template-columns:236px minmax(0,1fr) 316px;gap:20px;align-items:start}
+.sf-stage{display:flex;flex-direction:column;gap:0;min-width:0}
+.sf-stagebody{background:var(--card-surface,#F8F7F3);border:1px solid var(--border,#D2CDC3);border-bottom:0;padding:16px 18px 20px}
+.sf-panel{display:none}.sf-panel[data-on="true"]{display:grid;gap:16px}
+.sf-two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.sf-three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.sf-blurb{font:12px/1.55 var(--font-body);color:var(--text-secondary,#535C65);margin:0;max-width:70ch;text-wrap:pretty}
+.sf-rail{display:flex;flex-direction:column;gap:16px}
+.sf-chip{display:inline-flex;align-items:center;gap:7px;font:12px var(--font-data);padding:4px 9px;border:1px solid var(--border,#D2CDC3);border-radius:2px;background:var(--card-surface-raised,#FCFBF8);color:var(--text-primary,#20252B)}
+.sf-chip button{border:0;background:none;cursor:pointer;color:var(--text-muted,#606870);font:600 11px var(--font-data);padding:0}
+.sf-chip button:hover{color:var(--red,#B54B42)}
+.sf-cells{display:grid;gap:8px}
+.sf-cell{display:grid;grid-template-columns:34px minmax(0,1fr) 14px;gap:10px;align-items:center}
+.sf-cell .ref{font:600 11px var(--font-data);color:var(--text-muted,#606870)}
+.sf-cell .st{font:600 12px var(--font-data)}
+.sf-cell[data-st="ok"] .st{color:var(--green,#2E7655)}
+.sf-cell[data-st="error"] .st{color:var(--red,#B54B42)}
+.sf-cellmsg{grid-column:2;font:11px var(--font-body);color:var(--red-dim,#873832);margin-top:-4px}
+.sf-proof{display:grid;gap:8px;font:12px var(--font-data);color:var(--text-secondary,#535C65)}
+.sf-proof .mrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.sf-proof .mrow b{font:600 12px var(--font-data);color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums}
+.sf-hist{display:grid;gap:5px;font:11px var(--font-data);color:var(--text-muted,#606870);margin:0;padding:0;list-style:none}
+.sf-lbl{font:600 10px var(--font-body);letter-spacing:.03em;font-variant:all-small-caps;color:var(--text-muted,#606870)}
+.sf-ack{display:flex;align-items:center;gap:12px;border:1px solid var(--border,#D2CDC3);background:var(--card-surface-raised,#FCFBF8);padding:12px 14px}
+.sf-ack .t{font:12px/1.5 var(--font-body);color:var(--text-secondary,#535C65);flex:1}
+.sf-sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.sf-nav{display:flex;align-items:center;gap:8px;border-top:1px solid var(--border-divider,#E2DED5);margin-top:18px;padding-top:12px}
+.sf-nav .sf-count{font:11px var(--font-data);color:var(--text-muted,#606870);margin-right:auto;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+[data-remediating="true"]{outline:2px solid var(--interaction-focus,#2D6FB3);outline-offset:1px}
+@media (max-width:1180px){.sf-grid{grid-template-columns:210px minmax(0,1fr)}.sf-rail{grid-column:1 / -1;flex-direction:row;flex-wrap:wrap}.sf-rail>*{flex:1 1 300px}}
+</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Strategy formation" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,900px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="compose" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,900px">
+<div data-screen-label="Strategy formation">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
+<div class="sf-body">
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,52px"></x-import>
+</sc-if>
+<sc-if value="{{ showConflict }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.VersionConflictNotice" record="{{ conflictRecord }}" base-version="{{ conflictBase }}" latest-version="{{ conflictLatest }}" latest-author="{{ conflictAuthor }}" latest-at="{{ conflictAt }}" fields="{{ conflictFields }}" on-reload="{{ onConflictReload }}" hint-size="100%,120px"></x-import>
+</sc-if>
+<h1 id="workspace-title" class="sf-sr">Strategy formation</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" type="strategy" id="{{ stratId }}" name="{{ stratName }}" version="{{ stratVersion }}" condition="{{ stratCondition }}" as-of="{{ stratAsOf }}" value="{{ stratValue }}" coverage="{{ stratCoverage }}" exceptions="{{ stratExceptions }}" on-open-exceptions="{{ onOpenExceptions }}" hint-size="100%,86px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeContextProvider" value="{{ time }}" hint-size="100%,640px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DecisionFlowProvider" object="{{ flowObject }}" steps="{{ flowSteps }}" url-param="formationStage" persisted-key="{{ flowKey }}" actor-id="j.okafor" on-transition="{{ onFlowTransition }}" hint-size="100%,640px">
+<x-import component="FlowBridge" from="./flow-bridge.jsx" on-flow="{{ onFlow }}" hint-size="0px,0px"></x-import>
+<div class="sf-grid">
+<aside aria-label="Formation stages">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DecisionFlowRail" label="Formation" hint-size="236px,320px"></x-import>
+</aside>
+<section class="sf-stage" aria-label="Current formation stage">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DecisionFlowStage" show-version-notice="{{ false }}" hint-size="100%,480px">
+<div class="sf-stagebody">
+<div class="sf-panel" data-on="{{ onMandate }}">
+<p class="sf-blurb">What this strategy is for. The mandate is the sentence every later gate is judged against — objective, benchmark, capital band, horizon, owner.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="name" label="Strategy name" value="{{ fName }}" on-change="{{ setName }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" data-field="mandate.objective" label="Objective" rows="{{ 2 }}" value="{{ fObjective }}" on-change="{{ setObjective }}" hint-size="100%,74px"></x-import>
+<div class="sf-two">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="mandate.benchmark" label="Benchmark" value="{{ fBenchmark }}" on-change="{{ setBenchmark }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Owner" value="{{ fOwner }}" on-change="{{ setOwner }}" hint-size="100%,54px"></x-import>
+</div>
+<div class="sf-three">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="mandate.capitalBand" label="Capital min ($M)" value="{{ fCapMin }}" min="{{ 0 }}" step="{{ 5 }}" on-change="{{ setCapMin }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" label="Capital max ($M)" value="{{ fCapMax }}" min="{{ 0 }}" step="{{ 5 }}" on-change="{{ setCapMax }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" data-field="mandate.horizon" label="Horizon" value="{{ fHorizon }}" options="{{ horizonOptions }}" on-change="{{ setHorizon }}" hint-size="100%,54px"></x-import>
+</div>
+</div>
+<div class="sf-panel" data-on="{{ onThesis }}">
+<p class="sf-blurb">The edge and why it persists. This is the record a reviewer approves — state it so it can later be wrong.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" data-field="thesis.statement" label="Thesis statement" rows="{{ 4 }}" value="{{ fThesis }}" on-change="{{ setThesis }}" hint-size="100%,110px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="thesis.edge" label="Source of edge" value="{{ fEdge }}" on-change="{{ setEdge }}" hint-size="100%,54px"></x-import>
+<div class="sf-two">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="thesis.decay" label="Expected decay" value="{{ fDecay }}" on-change="{{ setDecay }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" label="Capacity" value="{{ fCapacity }}" on-change="{{ setCapacity }}" hint-size="100%,54px"></x-import>
+</div>
+</div>
+<div class="sf-panel" data-on="{{ onUniverse }}">
+<p class="sf-blurb">What it may trade. The dataset and filters below are material inputs — editing them stales every run proof until the strategy is rerun or reverted.</p>
+<div class="sf-two">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" data-field="universe.datasetId" label="Dataset" value="{{ fDataset }}" options="{{ datasetOptions }}" on-change="{{ setDataset }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" data-field="universe.assetClass" label="Asset class" value="{{ fAssetClass }}" options="{{ assetClassOptions }}" on-change="{{ setAssetClass }}" hint-size="100%,54px"></x-import>
+</div>
+<div>
+<div class="sf-lbl" style="margin-bottom:6px">Universe filters — {{ filterCount }}</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ filterChips }}" as="fc" hint-placeholder-count="3">
+<span class="sf-chip">{{ fc.label }}<button type="button" aria-label="{{ fc.removeLabel }}" onClick="{{ fc.remove }}">✕</button></span>
+</sc-for>
+</div>
+</div>
+<div class="sf-two" style="align-items:end">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="universe.filters" label="Add filter" placeholder="RATING >= BBB-" value="{{ fFilterDraft }}" error="{{ filterError }}" on-change="{{ setFilterDraft }}" hint-size="100%,54px"></x-import>
+<div style="display:flex;gap:8px;align-items:center;padding-bottom:1px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ addFilter }}" hint-size="90px,28px">Add filter</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="universe.minAdv" label="Liquidity floor (ADV $M)" value="{{ fMinAdv }}" min="{{ 0 }}" step="{{ 0.5 }}" on-change="{{ setMinAdv }}" hint-size="180px,54px"></x-import>
+</div>
+</div>
+</div>
+<div class="sf-panel" data-on="{{ onRules }}">
+<p class="sf-blurb">How it trades. Entry, exit, and sizing in words; the worksheet cells are the executable form — Builder and Field &amp; Formula edit the same cells.</p>
+<div class="sf-two">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" data-field="portfolioRules.entry" label="Entry rule" rows="{{ 2 }}" value="{{ fEntry }}" on-change="{{ setEntry }}" hint-size="100%,74px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TextArea" data-field="portfolioRules.exit" label="Exit rule" rows="{{ 2 }}" value="{{ fExit }}" on-change="{{ setExit }}" hint-size="100%,74px"></x-import>
+</div>
+<div class="sf-three">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="portfolioRules.sizing" label="Sizing" value="{{ fSizing }}" on-change="{{ setSizing }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="portfolioRules.maxPositions" label="Max positions" value="{{ fMaxPositions }}" min="{{ 1 }}" step="{{ 1 }}" on-change="{{ setMaxPositions }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="portfolioRules.rebalance" label="Rebalance" value="{{ fRebalance }}" on-change="{{ setRebalance }}" hint-size="100%,54px"></x-import>
+</div>
+<div>
+<div class="sf-lbl" style="margin-bottom:6px">Worksheet cells — shared with Builder</div>
+<div class="sf-cells">
+<sc-for list="{{ cells }}" as="c" hint-placeholder-count="4">
+<div class="sf-cell" data-st="{{ c.status }}">
+<span class="ref">{{ c.ref }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" aria-label="{{ c.aria }}" value="{{ c.formula }}" on-change="{{ c.onChange }}" hint-size="100%,32px"></x-import>
+<span class="st" aria-hidden="true">{{ c.glyph }}</span>
+<sc-if value="{{ c.hasMessage }}" hint-placeholder-val="{{ false }}"><span class="sf-cellmsg">{{ c.message }}</span></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div><a href="{{ builderHref }}" style="font:12px var(--font-body);color:var(--link,#2A5F96)">Open the worksheet in Strategy Builder →</a></div>
+</div>
+<div class="sf-panel" data-on="{{ onRisk }}">
+<p class="sf-blurb">What stops it. Limits are material inputs and the policy the governance screen attests against.</p>
+<div class="sf-three">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="riskGovernance.maxDrawdownPct" label="Max drawdown (%)" value="{{ fMaxDd }}" min="{{ 0 }}" max="{{ 60 }}" step="{{ 1 }}" on-change="{{ setMaxDd }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="riskGovernance.grossExposureMax" label="Gross exposure ×" value="{{ fGross }}" min="{{ 0 }}" step="{{ 0.1 }}" on-change="{{ setGross }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NumberInput" data-field="riskGovernance.perNameMax" label="Per-name max ×" value="{{ fPerName }}" min="{{ 0 }}" step="{{ 0.01 }}" on-change="{{ setPerName }}" hint-size="100%,54px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Input" data-field="riskGovernance.stopPolicy" label="Stop policy" value="{{ fStopPolicy }}" on-change="{{ setStopPolicy }}" hint-size="100%,54px"></x-import>
+<div class="sf-two">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" data-field="riskGovernance.reviewCadence" label="Review cadence" value="{{ fCadence }}" options="{{ cadenceOptions }}" on-change="{{ setCadence }}" hint-size="100%,54px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TagInput" data-field="riskGovernance.approvers" label="Approvers" value="{{ fApprovers }}" on-change="{{ setApprovers }}" placeholder="Add approver…" hint-size="100%,54px"></x-import>
+</div>
+</div>
+<div class="sf-panel" data-on="{{ onReview }}">
+<p class="sf-blurb">Confirm the record. Acknowledgment binds to the exact draft hash — any later edit makes it stale and reopens this gate.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ reviewItems }}" hint-size="100%,150px"></x-import>
+<div class="sf-ack">
+<span class="t">{{ ackText }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ ackDisabled }}" on-click="{{ onAcknowledge }}" hint-size="200px,28px">{{ ackButtonLabel }}</x-import>
+</div>
+<div>
+<div class="sf-lbl" style="margin-bottom:6px">Lifecycle history</div>
+<ul class="sf-hist">
+<sc-for list="{{ historyRows }}" as="h" hint-placeholder-count="3">
+<li>{{ h.line }}</li>
+</sc-for>
+</ul>
+</div>
+</div>
+<div class="sf-nav">
+<span class="sf-count">Stage {{ stepCounter }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" disabled="{{ prevDisabled }}" on-click="{{ onPrev }}" hint-size="110px,28px">{{ prevLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ nextDisabled }}" on-click="{{ onNext }}" hint-size="130px,28px">{{ nextLabel }}</x-import>
+</div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DecisionConsequenceBar" primary-label="{{ primaryLabel }}" on-primary="{{ onPrimary }}" secondary-label="Open Backtest" on-secondary="{{ onSecondary }}" reversibility="supersedable" guards="{{ checkpointGuards }}" require-completion="{{ true }}" hint-size="100%,52px"></x-import>
+</x-import>
+</section>
+<aside class="sf-rail" aria-label="Gates, proof, and time context">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionGuardList" guards="{{ stageGuardList }}" label="{{ guardListLabel }}" on-remediate="{{ onRemediate }}" hint-size="100%,180px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ContinuityFrame" state="{{ proofState }}" subject="{{ proofSubject }}" since="{{ proofSince }}" coverage="{{ proofCoverage }}" on-retry="{{ onRerun }}" retry-label="Re-run backtest" retrying="{{ rerunning }}" hint-size="100%,200px">
+<div class="sf-proof" style="padding:10px 12px">
+<div class="mrow"><span>Total return</span><b>{{ pTotal }}</b></div>
+<div class="mrow"><span>CAGR · ACT/365.2425</span><b>{{ pCagr }}</b></div>
+<div class="mrow"><span>Sharpe · declared</span><b>{{ pSharpe }}</b></div>
+<div class="mrow"><span>Max drawdown</span><b>{{ pMaxDd }}</b></div>
+<div class="mrow"><span>Proof hash</span><b>{{ pHash }}</b></div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeContextPanel" roles="{{ timeRoles }}" sources="{{ timeSources }}" title="Time context" hint-size="100%,170px"></x-import>
+</aside>
+</div>
+</x-import>
+</x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;},&quot;conflictDemo&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, stage: (typeof window !== "undefined" && new URLSearchParams(window.location.search).get("formationStage")) || "mandate", conflict: null, filterDraft: "", filterError: null, rerunning: false };
+  X() { return window.MeridianStrategyExecutor; }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "FIXTURE").toUpperCase()):(String(this.props.environment ?? "FIXTURE").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    this._poll = setInterval(() => { const X = this.X(); if (X && this.ds().StrategyModel && X.ready()) { clearInterval(this._poll); this.boot(); } }, 40);
+    this._deadline = setTimeout(() => { if (!this.state.booted) { clearInterval(this._poll); this.setState({ bootError: "Suite store failed to load — check ../_strategy-executor/executor-store.js" }); } }, 8000);
+    this._onStorage = (e) => { const X = this.X(); if (X && e.key === X.KEY) this.checkConflict(e.newValue); };
+    window.addEventListener("storage", this._onStorage);
+  }
+  componentWillUnmount() { clearInterval(this._poll); clearTimeout(this._deadline); window.removeEventListener("storage", this._onStorage); }
+  componentDidUpdate() { this.applyChrome(); }
+  boot() {
+    const X = this.X(), id = X.resolveIdentity();
+    this.identity = id;
+    X.setUrlState({ strategy: id.strategyId });
+    this.setState({ booted: true, draft: X.getStrategy(id.strategyId) });
+  }
+  checkConflict(newValue) {
+    try {
+      const parsed = JSON.parse(newValue), mine = this.state.draft;
+      const theirs = parsed && parsed.strategies && mine ? parsed.strategies[mine.id] : null;
+      if (theirs && (theirs.version !== mine.version || theirs.updatedAt > mine.updatedAt)) this.setState({ conflict: { latest: theirs } });
+    } catch (e) { /* unreadable external write — ignore */ }
+  }
+  patch(path, value) {
+    const X = this.X();
+    const next = X.updateStrategy(this.state.draft.id, (d) => {
+      const parts = path.split("."), root = { ...d };
+      let o = root;
+      for (let i = 0; i < parts.length - 1; i++) { o[parts[i]] = Array.isArray(o[parts[i]]) ? o[parts[i]].slice() : { ...o[parts[i]] }; o = o[parts[i]]; }
+      o[parts[parts.length - 1]] = value;
+      return root;
+    });
+    this.setState({ draft: next });
+  }
+  set(path) { return (e) => this.patch(path, e && e.target ? e.target.value : e); }
+  stageGuards(stageId) {
+    const SM = this.ds().StrategyModel, d = this.state.draft;
+    const label = (SM.STEPS.find((s) => s.id === stageId) || {}).label || stageId;
+    const issues = SM.validateStage(d, stageId);
+    if (!issues.length) return [{ id: stageId + "-ok", state: "satisfied", label: label + " — all gates satisfied", reason: "Every required field is present and coherent." }];
+    return issues.map((i) => ({ id: i.stage + "-" + i.code, state: i.severity === "blocking" ? "blocking" : "warning", label: i.message, reason: i.path ? "Field · " + i.path : undefined, policyRef: "STRATEGY_FORMATION_STEPS." + i.stage, remediation: i.code === "worksheet-error" ? { label: "Open in Builder", actionId: "builder" } : (i.path ? { label: "Go to field \u2192", actionId: "field:" + i.stage + ":" + i.path } : undefined) }));
+  }
+  nav(route, extra) { const X = this.X(); window.location.href = X.withIdentity(route, extra || {}); }
+  // Every issue that names a field can be acted on, not just worksheet errors: jump to the owning
+  // stage, focus the control, mark it briefly so the eye lands where the guard pointed.
+  onRemediate = (rem) => {
+    if (!rem || !rem.actionId) return;
+    if (rem.actionId === "builder") { this.nav(this.routes.builder); return; }
+    if (rem.actionId.slice(0, 6) !== "field:") return;
+    const rest = rem.actionId.slice(6), sep = rest.indexOf(":");
+    const stageId = rest.slice(0, sep), path = rest.slice(sep + 1);
+    if (this.flow && stageId !== this.state.stage) this.flow.goTo(stageId, { force: true });
+    setTimeout(() => {
+      const exact = document.querySelector('[data-field="' + path + '"]');
+      const target = (exact && exact.focus ? exact : null) || document.querySelector('.sf-panel[data-on="true"] input, .sf-panel[data-on="true"] textarea, .sf-panel[data-on="true"] select');
+      if (!target || !target.focus) return;
+      target.focus();
+      target.setAttribute("data-remediating", "true");
+      setTimeout(() => target.removeAttribute("data-remediating"), 1600);
+    }, 80);
+  };
+  // Routes come from the one address book (_scaffold/app-map.js); this screen only adds the
+  // identity-carrying hop, so a strategy/run id survives the jump.
+  route(id) { const M = window.MeridianAppMap; return M ? M.href(id) : null; }
+  get routes() { const M = window.MeridianAppMap; if (!M) return {}; const out = {}; M.SCREENS.forEach((s) => { out[s.id] = s.href; }); return out; }
+  fmtPct(v, dp) { return v == null ? "—" : ((v >= 0 ? "+" : "") + (v * 100).toFixed(dp == null ? 1 : dp) + "%"); }
+  onCheckpoint = () => {
+    const X = this.X(), SM = this.ds().StrategyModel, t = window.MeridianToast;
+    const res = X.checkpoint(this.state.draft.id);
+    if (!res) return;
+    let cur = res.strategy;
+    if (SM.canTransition(cur.lifecycle, "validating")) {
+      const t1 = X.transition(cur.id, "validating", { actor: "j.okafor", note: "Formation checkpoint v" + cur.version });
+      if (t1.ok) { const ready = SM.formationReady(t1.strategy); const t2 = X.transition(cur.id, ready ? "ready-for-review" : "blocked", { actor: "system" }); cur = t2.ok ? t2.strategy : t1.strategy; }
+    }
+    this.setState({ draft: X.getStrategy(this.state.draft.id) });
+    if (t && t.success) t.success("Checkpointed v" + res.strategy.version, "Snapshot " + res.snapshot.formationHash.slice(0, 8) + " · " + cur.lifecycle);
+  };
+  onRerun = () => {
+    const X = this.X(), t = window.MeridianToast;
+    this.setState({ rerunning: true });
+    setTimeout(() => {
+      const res = X.runBacktest(this.state.draft.id, { env: String(this.props.environment || "fixture").toLowerCase(), seedTag: "formation" });
+      this.setState({ rerunning: false, draft: X.getStrategy(this.state.draft.id) });
+      if (!res) return;
+      if (res.ok) { if (t && t.success) t.success("Run complete · " + res.artifact.id, "Proof " + res.artifact.proof.inputHash.slice(0, 8) + " · current"); }
+      else if (t && t.error) t.error("Run blocked", res.issues[0].message);
+    }, 350);
+  };
+  renderVals() {
+    this.applyChrome();
+    const el = React.createElement, DS = this.ds(), X = this.X();
+    const { WorkstationTopbar, NavRail, StatusBar, StrategyModel: SM, StrategyRunModel: RM } = DS;
+    const env = String(this.props.environment ?? "FIXTURE").toUpperCase();
+    const base = {
+      dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")),
+      onRetry: () => window.location.reload(),
+      topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Strategy Formation", environment: env,  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
+      nav: NavRail && el(NavRail, { activeId: "formation", onSelect: (id) => { const r = this.route(id); if (r) this.nav(r); }, sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("formation") : []) }),
+    };
+    if (!this.state.booted || !SM) {
+      return { ...base, statusBar: StatusBar && el(StatusBar, { items: [{ label: "Formation", value: "Loading" }, { status: "ok", label: "Env", value: env, push: true }] }), context: { entity: "Meridian Capital" }, flowSteps: [], time: {} };
+    }
+    const d = this.state.draft, stage = this.state.stage;
+    const steps = SM.STEPS, stageIdx = Math.max(0, steps.findIndex((s) => s.id === stage));
+    const stageMeta = steps[stageIdx];
+    const issuesAll = SM.formationIssues(d);
+    const blocking = issuesAll.filter((i) => i.severity === "blocking");
+    const warnings = issuesAll.filter((i) => i.severity === "warning");
+    const blockingStages = Array.from(new Set(blocking.map((i) => (steps.find((s) => s.id === i.stage) || {}).label || i.stage)));
+    const runs = X.listRuns(d.id).filter((r) => r.lifecycle === "complete");
+    const latest = runs.find((r) => !r.legacy) || runs[0] || null;
+    const fresh = latest ? X.freshnessFor(latest.id) : { state: "unknown", changed: [] };
+    const currentProofs = runs.filter((r) => X.freshnessFor(r.id).state === "current").length;
+    const storage = X.storageNotice();
+    const conflict = this.props.conflictDemo ? { latest: { version: d.version + 1, updatedAt: Date.now(), universe: { datasetId: "hy-corp" } }, demo: true } : this.state.conflict;
+    const clearBlockers = (stId) => !SM.validateStage(d, stId).some((i) => i.severity === "blocking");
+    const nextStage = steps[stageIdx + 1], prevStage = steps[stageIdx - 1];
+    const cellsSrc = d.portfolioRules.worksheet || [];
+    const ackFresh = d.review.acknowledged && d.review.acknowledgedHash === SM.formationHash(d);
+    const stageGuardList = this.stageGuards(stage);
+    const iso = (t) => (t ? new Date(t).toISOString().replace(".000Z", "Z").replace("T", " ") : "—");
+    return {
+      ...base,
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: blocking.length ? "warn" : "ok", label: "Gates", value: blocking.length ? blocking.length + " blocking \u00b7 " + warnings.length + " warning" : "All clear" },
+        { label: "Draft", value: SM.materialHash(d).slice(0, 8) },
+        { status: storage ? "warn" : "ok", label: "Store", value: storage ? "Session-only" : "Persisted" },
+        { status: "ok", label: "Env", value: env, push: true },
+      ] }),
+      context: { entity: "Meridian Capital", portfolio: "Systematic Credit", asOf: iso(d.updatedAt).slice(0, 10), scenario: null },
+      contextCondition: fresh.state === "stale" ? "stale" : "confirmed",
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      showConflict: !!conflict,
+      conflictRecord: "Strategy " + d.id, conflictBase: "v" + d.version,
+      conflictLatest: conflict ? "v" + (conflict.latest.version ?? "?") : "", conflictAuthor: conflict && conflict.demo ? "another session (demo)" : "another session",
+      conflictAt: conflict ? iso(conflict.latest.updatedAt) : "",
+      conflictFields: conflict ? [{ key: "universe.datasetId", label: "Dataset", base: d.universe.datasetId, latest: (conflict.latest.universe || {}).datasetId || "—", conflict: true }] : [],
+      onConflictReload: () => window.location.reload(),
+      stratId: d.id, stratName: d.name || "Untitled strategy", stratVersion: d.version,
+      stratCondition: { draft: "provisional", validating: "pending", blocked: "exception", "ready-for-review": "pending", "in-review": "pending", approved: "confirmed", active: "confirmed", suspended: "exception", "changes-requested": "overridden", superseded: "stale", retired: "na" }[d.lifecycle] || "provisional",
+      stratAsOf: iso(d.updatedAt),
+      stratValue: { label: "Capital band", amount: d.mandate.capitalBand.min != null && d.mandate.capitalBand.max != null ? "$" + d.mandate.capitalBand.min / 1e6 + "M–$" + d.mandate.capitalBand.max / 1e6 + "M" : "—", secondary: SM.lifecycleMeta(d.lifecycle).label },
+      stratCoverage: { attached: currentProofs, required: runs.length, label: "run proofs current" },
+      stratExceptions: { count: blocking.length, blocking: blocking.length > 0, label: blockingStages.length ? "Blocking \u00b7 " + blockingStages.join(", ") : "Blocking gates" },
+      onOpenExceptions: () => { const first = steps.find((s) => !clearBlockers(s.id)); if (first && this.flow) this.flow.goTo(first.id, { force: true }); },
+      time: { asOf: iso(d.updatedAt), evidenceAt: latest ? iso(latest.completedAt) : null, calculatedAt: latest ? iso(latest.completedAt) : null },
+      timeRoles: ["asOf", "evidenceAt", "calculatedAt"],
+      timeSources: { asOf: "Suite store", evidenceAt: latest ? "Run " + latest.id : "—", calculatedAt: latest ? (latest.request.engine.name + " " + (latest.request.engine.version || "")) : "—" },
+      flowObject: { type: "strategy", id: d.id, version: d.version, label: d.name },
+      flowKey: d.id + ".v" + d.version,
+      flowSteps: steps.map((s) => ({ id: s.id, label: s.label, guards: this.stageGuards(s.id) })),
+      onFlowTransition: (t) => { if (t.to !== this.state.stage) this.setState({ stage: t.to }); },
+      onFlow: (f) => { this.flow = f; if (f && f.stepId !== this.state.stage) this.setState({ stage: f.stepId }); },
+      onMandate: stage === "mandate" ? "true" : "false", onThesis: stage === "thesis" ? "true" : "false", onUniverse: stage === "universe" ? "true" : "false", onRules: stage === "portfolioRules" ? "true" : "false", onRisk: stage === "riskGovernance" ? "true" : "false", onReview: stage === "review" ? "true" : "false",
+      fName: d.name, setName: this.set("name"),
+      fObjective: d.mandate.objective, setObjective: this.set("mandate.objective"),
+      fBenchmark: d.mandate.benchmark, setBenchmark: this.set("mandate.benchmark"),
+      fOwner: d.mandate.owner || "", setOwner: this.set("mandate.owner"),
+      fCapMin: d.mandate.capitalBand.min == null ? 0 : d.mandate.capitalBand.min / 1e6, setCapMin: (v) => this.patch("mandate.capitalBand.min", v * 1e6),
+      fCapMax: d.mandate.capitalBand.max == null ? 0 : d.mandate.capitalBand.max / 1e6, setCapMax: (v) => this.patch("mandate.capitalBand.max", v * 1e6),
+      fHorizon: d.mandate.horizon, setHorizon: (v) => this.patch("mandate.horizon", v),
+      horizonOptions: [{ value: "", label: "—" }, { value: "0–6 months", label: "0–6 months" }, { value: "6–18 months", label: "6–18 months" }, { value: "18+ months", label: "18+ months" }],
+      fThesis: d.thesis.statement, setThesis: this.set("thesis.statement"),
+      fEdge: d.thesis.edge, setEdge: this.set("thesis.edge"),
+      fDecay: d.thesis.decay, setDecay: this.set("thesis.decay"),
+      fCapacity: d.thesis.capacity || "", setCapacity: this.set("thesis.capacity"),
+      fDataset: d.universe.datasetId, setDataset: (v) => this.patch("universe.datasetId", v),
+      datasetOptions: [{ value: "ig-corp", label: "IG Corp Bonds — 1,284 sessions" }, { value: "hy-corp", label: "HY Corp Bonds — 1,284 sessions" }, { value: "util", label: "Utility Sector — 988 sessions" }],
+      fAssetClass: d.universe.assetClass, setAssetClass: (v) => this.patch("universe.assetClass", v),
+      assetClassOptions: [{ value: "fixed-income", label: "Fixed income" }, { value: "equity", label: "Equity" }, { value: "multi-asset", label: "Multi-asset" }],
+      filterCount: String((d.universe.filters || []).length) + " active",
+      filterChips: (d.universe.filters || []).map((f, i) => ({ label: f.field + " " + f.op + " " + (Array.isArray(f.value) ? f.value.join("–") : f.value), removeLabel: "Remove filter " + f.field, remove: () => this.patch("universe.filters", d.universe.filters.filter((_, j) => j !== i)) })),
+      fFilterDraft: this.state.filterDraft, setFilterDraft: (e) => this.setState({ filterDraft: e.target.value, filterError: null }),
+      filterError: this.state.filterError,
+      addFilter: () => {
+        const m = this.state.filterDraft.trim().match(/^([A-Z_]+)\s*(>=|<=|=|between)\s*(.+)$/i);
+        if (!m) { this.setState({ filterError: "Format: FIELD >= value" }); return; }
+        this.patch("universe.filters", [...d.universe.filters, { field: m[1].toUpperCase(), op: m[2].toLowerCase() === "between" ? "between" : m[2], value: m[3].trim() }]);
+        this.setState({ filterDraft: "", filterError: null });
+      },
+      fMinAdv: d.universe.minAdv == null ? 0 : d.universe.minAdv / 1e6, setMinAdv: (v) => this.patch("universe.minAdv", v * 1e6),
+      fEntry: d.portfolioRules.entry, setEntry: this.set("portfolioRules.entry"),
+      fExit: d.portfolioRules.exit, setExit: this.set("portfolioRules.exit"),
+      fSizing: d.portfolioRules.sizing, setSizing: this.set("portfolioRules.sizing"),
+      fMaxPositions: d.portfolioRules.maxPositions == null ? 0 : d.portfolioRules.maxPositions, setMaxPositions: (v) => this.patch("portfolioRules.maxPositions", v),
+      fRebalance: d.portfolioRules.rebalance, setRebalance: this.set("portfolioRules.rebalance"),
+      cells: cellsSrc.map((c) => ({ ref: c.ref, formula: c.formula, status: c.status, glyph: c.status === "ok" ? "✓" : "▲", aria: "Worksheet cell " + c.ref + (c.status === "error" ? " — error" : ""), hasMessage: c.status === "error", message: c.message || "", onChange: (e) => { this.setState({ draft: X.updateWorksheetCell(d.id, c.ref, e.target.value) }); } })),
+      builderHref: X.withIdentity("./StrategyFormation.dc.html?view=builder"),
+      fMaxDd: d.riskGovernance.maxDrawdownPct == null ? 0 : d.riskGovernance.maxDrawdownPct, setMaxDd: (v) => this.patch("riskGovernance.maxDrawdownPct", v),
+      fGross: d.riskGovernance.grossExposureMax == null ? 0 : d.riskGovernance.grossExposureMax, setGross: (v) => this.patch("riskGovernance.grossExposureMax", v),
+      fPerName: d.riskGovernance.perNameMax == null ? 0 : d.riskGovernance.perNameMax, setPerName: (v) => this.patch("riskGovernance.perNameMax", v),
+      fStopPolicy: d.riskGovernance.stopPolicy || "", setStopPolicy: this.set("riskGovernance.stopPolicy"),
+      fCadence: d.riskGovernance.reviewCadence, setCadence: (v) => this.patch("riskGovernance.reviewCadence", v),
+      cadenceOptions: [{ value: "", label: "—" }, { value: "Monthly", label: "Monthly" }, { value: "Quarterly", label: "Quarterly" }, { value: "Semi-annual", label: "Semi-annual" }],
+      fApprovers: d.riskGovernance.approvers || [], setApprovers: (next) => this.patch("riskGovernance.approvers", next),
+      reviewItems: [
+        { label: "Strategy", value: d.name + " · " + d.id + " v" + d.version },
+        { label: "Benchmark", value: d.mandate.benchmark || "—" },
+        { label: "Dataset", value: d.universe.datasetId || "—" },
+        { label: "Filters", value: (d.universe.filters || []).length + " · floor $" + (d.universe.minAdv || 0) / 1e6 + "M ADV" },
+        { label: "Rules", value: "max " + d.portfolioRules.maxPositions + " positions · " + (d.portfolioRules.rebalance || "—") },
+        { label: "Risk", value: "DD " + d.riskGovernance.maxDrawdownPct + "% · gross " + d.riskGovernance.grossExposureMax + "× · per-name " + d.riskGovernance.perNameMax + "×" },
+        { label: "Approvers", value: (d.riskGovernance.approvers || []).join(" · ") || "—" },
+        { label: "Formation hash", value: SM.formationHash(d).slice(0, 12) },
+      ],
+      ackText: ackFresh ? "Acknowledged " + iso(d.review.acknowledgedAt) + " · bound to " + d.review.acknowledgedHash.slice(0, 8) + ". Any edit reopens this gate." : (d.review.acknowledged ? "Acknowledgment is stale — the draft changed after signing. Re-acknowledge against the current values." : "Acknowledge that the formation record above is the strategy as it will be reviewed."),
+      ackDisabled: blocking.filter((i) => i.stage !== "review").length > 0,
+      ackButtonLabel: ackFresh ? "Acknowledged ✓" : (d.review.acknowledged ? "Re-acknowledge current draft" : "Acknowledge formation record"),
+      onAcknowledge: () => { if (ackFresh) return; this.setState({ draft: X.updateStrategy(d.id, (cur) => SM.acknowledgeReview(cur, { actor: "j.okafor" })) }); },
+      historyRows: (d.history || []).slice(-4).reverse().map((h) => ({ line: h.from + " → " + h.to + " · " + iso(h.at).slice(0, 16) + (h.actor ? " · " + h.actor : "") + (h.note ? " · " + h.note : "") })),
+      primaryLabel: "Checkpoint strategy \u2192 v" + (d.version + 1),
+      onPrimary: this.onCheckpoint,
+      onSecondary: () => this.nav(this.routes.backtest),
+      checkpointGuards: blocking.length
+        ? blocking.map((i) => ({ id: "cp-" + i.stage + "-" + i.code, state: "blocking", label: i.message, reason: "Stage \u00b7 " + ((steps.find((s) => s.id === i.stage) || {}).label || i.stage), remediation: i.path ? { label: "Go to field \u2192", actionId: "field:" + i.stage + ":" + i.path } : undefined }))
+        : [{ id: "cp-ok", state: "satisfied", label: "All six stages clear \u2014 checkpoint writes v" + (d.version + 1) + " and moves the strategy to review.", reason: "No blocking gates." }],
+      stepCounter: (stageIdx + 1) + " of " + steps.length + " \u00b7 " + stageMeta.label,
+      prevLabel: prevStage ? "\u2190 " + prevStage.label : "\u2190 Back",
+      prevDisabled: !prevStage,
+      onPrev: () => { if (this.flow && prevStage) this.flow.goTo(prevStage.id, { force: true }); },
+      nextLabel: nextStage ? nextStage.label + " \u2192" : "Review \u2192",
+      nextDisabled: !nextStage,
+      onNext: () => { if (this.flow && nextStage) this.flow.goTo(nextStage.id, { force: true }); },
+      stageGuardList,
+      guardListLabel: blocking.length ? "Gates \u00b7 " + stageMeta.label + " \u00b7 " + stageGuardList.filter((g) => g.state === "blocking").length + " of " + blocking.length + " blocking" : "Gates \u00b7 " + stageMeta.label + " \u00b7 all clear",
+      onRemediate: this.onRemediate,
+      proofState: !latest ? "partial" : (fresh.state === "current" ? "live" : "stale"),
+      proofSubject: latest ? "Run proof · " + latest.id : "Run proof · none yet",
+      proofSince: latest ? latest.completedAt : null,
+      proofCoverage: !latest ? "No completed runs for this strategy." : (fresh.state === "current" ? "Proof current against draft " + SM.materialHash(d).slice(0, 8) : "Stale — changed: " + (fresh.changed.join(", ") || "material inputs")),
+      rerunning: this.state.rerunning,
+      onRerun: this.onRerun,
+      pTotal: latest && latest.metrics ? this.fmtPct(latest.metrics.totalReturn) : "—",
+      pCagr: latest && latest.metrics ? this.fmtPct(latest.metrics.cagr) : "—",
+      pSharpe: latest && latest.metrics && latest.metrics.sharpe != null ? latest.metrics.sharpe.toFixed(2) : "—",
+      pMaxDd: latest && latest.metrics ? this.fmtPct(latest.metrics.maxDrawdown) : "—",
+      pHash: latest && latest.proof ? latest.proof.inputHash.slice(0, 12) : "—",
+    };
+  }
+}
+</script>
+</body>
+</html>

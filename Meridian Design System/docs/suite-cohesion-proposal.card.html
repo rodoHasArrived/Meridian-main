@@ -1,0 +1,170 @@
+<!-- @dsCard group="Documentation" viewport="1280x1040" name="Suite cohesion review · 4.4" subtitle="Twenty-seven deep screens that did not add up to one workstation — the five gaps, and the spine that closed wave one" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Documentation — Suite cohesion review</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}
+a{color:var(--brand-signal-ink,#944A32)}a:hover{color:var(--text-primary)}
+.wrap{max-width:1240px;display:grid;gap:14px}
+.head{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;border-bottom:1px solid var(--border-strong,#AAA49A);padding-bottom:10px}
+h1{font-size:16px;font-weight:650;margin:0;letter-spacing:-.01em}
+.eyebrow{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.eyebrow::before{content:"";width:16px;height:2px;background:var(--accent,#C56343)}
+.headnote{font-family:var(--font-data);font-size:10px;color:var(--text-muted);text-align:right;line-height:1.6;white-space:nowrap}
+.thesis{font-size:12.5px;line-height:1.55;color:var(--text-secondary);max-width:98ch;margin:0}
+.thesis strong{color:var(--text-primary);font-weight:600}
+.counts{display:grid;grid-template-columns:repeat(5,1fr);border:1px solid var(--border);background:var(--bg-light)}
+.count{padding:9px 11px;border-right:1px solid var(--border);display:grid;gap:2px}
+.count:last-child{border-right:0}
+.count .n{font-family:var(--font-data);font-size:19px;font-weight:650;color:var(--text-primary);line-height:1.1;font-variant-numeric:tabular-nums}
+.count .n em{font-style:normal;font-size:12px;color:var(--text-muted);font-weight:600}
+.count .l{font-size:10.5px;line-height:1.35;color:var(--text-secondary)}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:start}
+.panel{border:1px solid var(--border);border-radius:2px;background:var(--bg-light);padding:11px 12px 12px;display:grid;gap:9px}
+.panel--wide{grid-column:span 2}
+.ptitle{display:flex;align-items:baseline;justify-content:space-between;gap:10px;border-bottom:1px solid var(--border);padding-bottom:7px}
+.ptitle h2{font-size:12px;font-weight:650;margin:0}
+.q{font-size:11.5px;line-height:1.45;color:var(--text-secondary);font-style:italic;margin:0}
+.items{display:grid;gap:8px}
+.item{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:start}
+.id{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted);padding-top:1px;min-width:24px}
+.item p{margin:0;font-size:11.5px;line-height:1.45}
+.item p b{font-weight:650}
+.ev{display:block;font-family:var(--font-data);font-size:9.5px;line-height:1.5;color:var(--text-muted);margin-top:3px}
+.pill{display:inline-block;font-family:var(--font-data);font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:1px 5px;border-radius:2px;border:1px solid;white-space:nowrap}
+.pill--dead{color:var(--severity-blocked-fg);border-color:var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.pill--wrong{color:var(--severity-action-fg);border-color:var(--severity-action-bd);background:var(--severity-action-bg)}
+.pill--drift{color:var(--severity-review-fg);border-color:var(--severity-review-bd);background:var(--severity-review-bg)}
+.pill--done{color:var(--severity-ready-fg,#225840);border-color:var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.shipped{border:1px solid var(--border);border-radius:2px;background:var(--surface-well,#FCFBF8);padding:11px 12px;display:grid;gap:8px}
+.shipped h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0}
+.files{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border)}
+.file{padding:9px 11px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:grid;gap:3px}
+.file:nth-child(3n){border-right:0}
+.file:nth-last-child(-n+3){border-bottom:0}
+.file code{font-family:var(--font-data);font-size:10.5px;font-weight:650;color:var(--text-primary)}
+.file span{font-size:10.5px;line-height:1.4;color:var(--text-secondary)}
+.fix{border-top:1px dashed var(--border);padding-top:7px;font-size:11px;line-height:1.45;color:var(--text-secondary);margin:0}
+.fix b{color:var(--text-primary);font-weight:650}
+.fix code,.foot code,.item code{font-family:var(--font-data);font-size:10px}
+.seq{border:1px solid var(--border);border-radius:2px;background:var(--surface-well,#FCFBF8);padding:11px 12px}
+.seq h2{font-family:var(--font-data);font-size:9.5px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted);margin:0 0 8px}
+.waves{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border)}
+.wave{padding:9px 11px;border-right:1px solid var(--border);display:grid;gap:4px}
+.wave:last-child{border-right:0}
+.wave .w{font-family:var(--font-data);font-size:9.5px;font-weight:700;color:var(--text-muted)}
+.wave .ids{font-size:11.5px;font-weight:650;color:var(--text-primary)}
+.wave .why{font-size:10.5px;line-height:1.4;color:var(--text-secondary)}
+.foot{font-size:10.5px;line-height:1.55;color:var(--text-muted);margin:0}
+</style>
+</head>
+<body class="meridian">
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">Review · waves 1–4 shipped · baseline 4.4</div>
+      <h1>Twenty-seven deep screens, one missing product</h1>
+    </div>
+    <div class="headnote">27 templates · 7 archetypes · 20 production<br>read end to end, Sep 2026</div>
+  </div>
+
+  <p class="thesis">Individually the screens are finished work — guarded flows, proof contracts, action envelopes, four data states each. Collectively they were <strong>27 dioramas, not one workstation</strong>. What was missing is not more depth inside a screen; it is the tissue an operator uses all day: <strong>one address book, one clock, one signed-in person, one set of preferences, and loops instead of dead ends</strong>. Every item below is a gap with evidence from the tree; <strong>tracks A, B, C and D are now closed</strong>, and E has its first real loops. Full report, including what is still open: <code>docs/SUITE_COHESION_4_4.md</code>.</p>
+
+  <div class="shipped">
+    <h2>Waves 1–4 · shipped</h2>
+    <div class="files">
+      <div class="file"><code>_scaffold/app-map.js</code><span>One address book: 35 screens under five business domains, every <code>G</code> chord, <code>open(type, id)</code> for 21 object types, and <code>LOOPS</code> — the declared returns for eleven of them.</span></div>
+      <div class="file"><code>_scaffold/world.js</code><span>One <em>ticking</em> instant, one business date (2026-08-12) and close period, one signed-in operator, canonical entity names, feed health derived from the clock.</span></div>
+      <div class="file"><code>_scaffold/prefs.js</code><span>Theme, density and environment that survive a navigation — tweak seeds, operator wins. All 27 <code>applyChrome()</code> bodies resolve through it.</span></div>
+      <div class="file"><code>shell/GlobalSearch</code><span>The masthead field made real — the screen's own objects plus every destination, bound to <code>/</code>.</span></div>
+      <div class="file"><code>shell/ReturnPath</code><span>The way back out of an object. Wired on entry ⇄ break; a loop shows only when the record carries the link.</span></div>
+      <div class="file"><code>shell/WorkstationTopbar</code><span>Now carries the signed-in operator (<code>UserMenu</code> + role) and the display menu, on every screen, with no per-screen work.</span></div>
+    </div>
+  </div>
+
+  <div class="counts">
+    <div class="count"><div class="n">27<em> → 0</em></div><div class="l">screens whose search box did nothing — now one shared surface, bound to <code>/</code></div></div>
+    <div class="count"><div class="n">9<em> → 0</em></div><div class="l">rails with a no-op <code>onSelect</code></div></div>
+    <div class="count"><div class="n">12<em> → 5</em></div><div class="l">screens without a rail — the five left are declared exemptions</div></div>
+    <div class="count"><div class="n">6<em> → 1</em></div><div class="l">wall clocks, and the one left ticks</div></div>
+    <div class="count"><div class="n">1<em> → 1</em></div><div class="l">route table — but now every screen reads it</div></div>
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="ptitle"><h2>A · Navigation was decorative</h2><span class="pill pill--done">Closed</span></div>
+      <p class="q">“I clicked Dashboard. Nothing happened, and nothing told me why.”</p>
+      <div class="items">
+        <div class="item"><span class="id">A-1</span><p><b>Nine rails go nowhere.</b> <code>on-select="{{ noop }}"</code> or <code>() =&gt; {}</code>, with no disabled state to admit it.<span class="ev">reconciliation · ingestion-ops · security-master · basket-builder · trading-desk · report-scheduler · report-library · analytical-workbench · event-ledger</span></p></div>
+        <div class="item"><span class="id">A-2</span><p><b>Twelve screens had no rail.</b> There was no persistent answer to “where am I in the product”. Seven now carry the shared rail; five are declared exemptions in the checker, each with its reason.<span class="ev">exempt: session-start (pre-auth) · ops-wall (wallboard) · interaction-depth (specimen) · report-pack · asset-sheet (print)</span></p></div>
+        <div class="item"><span class="id">A-3</span><p><b>Twelve nav vocabularies.</b> The dashboard is <code>dashboard</code> in five screens and <code>portfolio</code> in a sixth; no two rails list the same destinations.<span class="ev">Operate · Books · Data · Reporting · Analysis · Workspaces · Strategy · Review · Investment accounting</span></p></div>
+        <div class="item"><span class="id">A-4</span><p><b>Routing exists twice.</b> The strategy suite’s <code>ROUTES</code>, and an <code>if</code>-ladder in alerting. Session-start sends <em>every</em> object type to Reconciliation.<span class="ev">session-start → ../reconciliation/Reconciliation.dc.html, whatever you picked</span></p></div>
+      </div>
+      <p class="fix"><b>Shipped · <code>_scaffold/app-map.js</code></b> — one IA: five business domains, every destination, <code>G</code> chords, and <code>open(type,id)</code> for 21 object types. All nine dead rails now navigate; session-start routes each handover and trail object to the screen that owns its type.</p>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>B · The chrome misstated</h2><span class="pill pill--done">Closed</span></div>
+      <p class="q">“The box says Ctrl K. I clicked it. It is a picture.”</p>
+      <div class="items">
+        <div class="item"><span class="id">B-1</span><p><b>The search field is inert on all 27.</b> The masthead’s widest affordance reads “Search symbols, runs, commands…” and has no handler anywhere in the tree.<span class="ev">grep onSearch|on-search across templates/ → 0 matches</span></p></div>
+        <div class="item"><span class="id">B-2</span><p><b>An environment that does not exist.</b> <code>environment="OPS"</code> falls through Badge to <code>neutral</code> — the mandatory Live/Paper/Fixture badge is unmet, and the fallback badge contradicts it in the same corner.<span class="ev">reconciliation, queue view</span></p></div>
+        <div class="item"><span class="id">B-3</span><p><b>Two screens ignore their own tweak.</b> Topbar hardcoded <code>PAPER</code> while the prop still moves <code>&lt;html data-environment&gt;</code> — LIVE scope, PAPER badge, no red hairline.<span class="ev">analytical-workbench · investment-event-ledger</span></p></div>
+        <div class="item"><span class="id">B-4</span><p><b>Module labels drift.</b> Reconciliation’s matcher calls itself “Accounting”; charting is “PlotTool”; ownership is “Entities” — names no rail links to.<span class="ev">retyped per view instead of resolved from the map</span></p></div>
+        <div class="item"><span class="id">B-5</span><p><b>Nobody is signed in.</b> No operator, role or desk in any chrome — yet accounting silently disables posting by role, and session-start establishes an identity no screen mentions again.<span class="ev">SessionControls: exported, used by 0 templates</span></p></div>
+      </div>
+      <p class="fix"><b>Shipped</b> — <code>GlobalSearch</code> mounted once in <code>ds-base.js</code> and bound to <code>/</code>; labels aligned to the map and enforced by the <code>label</code> rule; environments come from the tweak; and the masthead now carries the operator, their role and their desk on all 27 screens, read from the shared world so the person in the chrome is the person in the audit trail.</p>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>C · The world disagreed</h2><span class="pill pill--done">Closed</span></div>
+      <p class="q">“Which day is it, and which fund am I in?”</p>
+      <div class="items">
+        <div class="item"><span class="id">C-1</span><p><b>Six frozen clocks.</b> Each under a green pulse dot claiming a live feed — the fastest tell that a screen is a mock.<span class="ev">14:32:08 · 11:29:42 · 10:45:12 · 16:05:41 · 09:12:05 · 11:48:20</span></p></div>
+        <div class="item"><span class="id">C-2</span><p><b>Three business dates.</b> The same operator cannot be in all of them at once.<span class="ev">Q2 as-of Jun 30 (accounting) · Jul 05 (session-start) · FY2026 July, as-of Jul 31 (rec exception)</span></p></div>
+        <div class="item"><span class="id">C-3</span><p><b>The fund has two names</b> — in two screens that explicitly hand off to each other.<span class="ev">“Meridian Fund I LP” vs “Meridian Capital · Fund I”</span></p></div>
+        <div class="item"><span class="id">C-4</span><p><b>Six actors, none of them you.</b> Post an entry and the audit trail credits a stranger.<span class="ev">k.ito · r.alvarez · E. Torres · A. Rodriguez · D. Kim · M. Alvarez</span></p></div>
+      </div>
+      <p class="fix"><b>Shipped · <code>_scaffold/world.js</code></b> — one ticking <code>NOW</code>, business date 2026-08-12 with July as the open close period, canonical <code>ENTITIES</code>, and <code>r.alvarez</code> as the operator — chosen because the seed trails already credit that id, so past entries become your own work.</p>
+    </div>
+
+    <div class="panel">
+      <div class="ptitle"><h2>D · Preferences did not survive a step</h2><span class="pill pill--done">Closed</span></div>
+      <p class="q">“I set terminal density. Then I clicked through to the desk and it forgot.”</p>
+      <div class="items">
+        <div class="item"><span class="id">D-1</span><p><b>Theme, density and environment were per-screen props</b>, re-applied from each screen’s own default in <code>applyChrome()</code>. Every navigation reset the operator’s choices to whatever the next file happened to declare.<span class="ev">was: 27 × applyChrome, 0 × persistence</span></p></div>
+      </div>
+      <p class="fix"><b>Shipped · <code>_scaffold/prefs.js</code></b> — all 27 <code>applyChrome()</code> bodies (plus <code>screen-kit.js</code> for the strategy seven) resolve through <code>MeridianPrefs</code>. A screen's declared default still shows on a first visit; an operator choice in the masthead menu follows them everywhere until reset.</p>
+    </div>
+
+    <div class="panel panel--wide">
+      <div class="ptitle"><h2>E · Dead ends where operators need loops</h2><span class="pill pill--drift">Part shipped</span></div>
+      <p class="q">“I got to the security detail. Now how do I get back to the break that sent me?”</p>
+      <div class="items">
+        <div class="item"><span class="id">E-1</span><p><b>No way back — now a breadcrumb on every masthead screen.</b> <code>app-map.js</code> declares each drill-in screen’s <code>parent</code>; <code>WorkstationTopbar</code> derives <b>Domain › parent › screen › object</b> from the map and the URL, with a back chevron that appears only when there is real in-suite history or a parent. No per-screen work — the same lever B-5 used for identity. Screens teach it their record’s name, so the crumb reads <code>1100 · Cash &amp; equivalents</code>, not <code>Account 1100</code>. <code>SecurityDetail</code> still hand-rolls its own header and is the remaining hold-out.</p></div>
+        <div class="item"><span class="id">E-2</span><p><b>Handoffs were one-way — now declared both ways.</b> <code>app-map.js</code> › <code>LOOPS</code> holds the returns for eleven object types, <code>ReturnPath</code> renders them, and the flagship loop is wired to real data: <code>JE-1042</code> ↔ <code>CASE-4181</code>, using the break narrative the reconciliation screen already carried. Each remaining loop is now one field on a seed record.</p></div>
+        <div class="item"><span class="id">E-3</span><p><b>Selection died on navigation — fixed on the loop.</b> <code>Reconciliation</code> now reads and writes <code>?break=</code> and accounting <code>?entry=</code>, so arriving from a loop opens the right object and Back, new-tab and deep links keep the operator’s place. The other 25 screens still hold filters, sort and open drawers in component state.</p></div>
+        <div class="item"><span class="id">E-4</span><p><b>In-flight work is unprotected.</b> <code>ActionQueue</code> unmounts on navigation: leave basket-builder mid-commit and the instruction whose entire purpose is to stay visible until it lands is silently dropped. A suite-level queue plus a navigation guard finishes the pattern the system already argues for.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="seq">
+    <h2>Sequence — each wave is a precondition for the next</h2>
+    <div class="waves">
+      <div class="wave"><span class="w">WAVE 1 · SPINE ✓</span><span class="ids">app-map · world · search</span><span class="why">Shipped. Every later fix references one of the three; every screen changed by one or two lines, and the suite now reads as one product.</span></div>
+      <div class="wave"><span class="w">WAVE 2 · CHROME TRUTH ✓</span><span class="ids">B-2 … B-5</span><span class="why">Shipped. Valid environments, labels from the map, and the signed-in operator with their role in the masthead of all 27.</span></div>
+      <div class="wave"><span class="w">WAVE 3 · CONTINUITY ✓</span><span class="ids">D-1 · rail · E-3</span><span class="why">Shipped. Display choices persist, the rail is on every non-exempt screen, and the loop's two screens carry their selection in the URL.</span></div>
+      <div class="wave"><span class="w">WAVE 4 · LOOPS ◧</span><span class="ids">E-1 · E-2 shipped · E-4 open</span><span class="why">Every screen now says where it sits and offers a way back, and the flagship loop is wired end to end. Still open: the nine remaining loops need a field on a seed record, and a suite-level action queue so in-flight work survives a navigation.</span></div>
+    </div>
+  </div>
+
+  <p class="foot">Enforced, not just written: <code>scripts/check_suite_cohesion.py</code> checks nine rules — <code>env</code> · <code>nav</code> · <code>map</code> · <code>label</code> · <code>clock</code> · <code>prefs</code> · <code>operator</code> · <code>search</code> · <code>world</code> — advisory by default, <code>--strict</code> to gate. Still not in scope, deliberately: new screens, new work planes, or more depth inside any single one. The suite never needed a 28th template — it needed the 27 it has to agree with each other.</p>
+</div>
+</body>
+</html>
+</content>
+</invoke>

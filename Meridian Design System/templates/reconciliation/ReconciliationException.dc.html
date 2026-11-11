@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="reconciliation-exception">
+<style>html,body{margin:0;padding:0;height:100%}
+[data-rx-show="off"]{display:none}
+.rx-screen{height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px}
+.rx-frame{flex:1;min-height:0;display:flex}
+.rx-pane{flex:1;min-width:0;min-height:0;display:flex;flex-direction:column}
+.rx-screen>*{grid-column:2;min-width:0}
+.rx-screen>*{min-width:0}
+.rx-panes{flex:1;min-height:0;display:grid;grid-template-columns:300px minmax(0,1fr) 328px}
+.rx-queue{border-right:1px solid var(--border-strong);background:var(--card-surface);display:flex;flex-direction:column;min-height:0;overflow-y:auto}
+.rx-stage{min-width:0;display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:0 16px 16px}
+.rx-rail{border-left:1px solid var(--border-strong);background:var(--card-surface);display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding-bottom:12px}
+.rx-bar{flex:none;border-top:1px solid var(--border-strong);background:var(--card-surface);display:flex;align-items:center;gap:20px;padding:8px 16px;min-height:52px;flex-wrap:wrap}
+.rx-bar span{font:12px var(--font-data);color:var(--text-muted)}
+.rx-bar b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
+.rx-guard{max-width:44ch;color:var(--text-secondary)!important;text-wrap:pretty}
+.rx-h{font:600 11px var(--font-body);letter-spacing:.01em;color:var(--text-muted);margin:0}
+.rx-sec{padding:11px 10px 9px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:7px}
+.rx-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);border-left:2px solid transparent;padding:9px 10px;min-height:44px;cursor:pointer;font-family:var(--font-body)}
+.rx-row:hover{background:var(--interaction-hover,#DDE5EC)}
+.rx-row:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.rx-row[data-sel="on"]{border-left-color:var(--interaction-selected);background:var(--interaction-selected-surface)}
+.rx-row__t{font-size:13px;color:var(--text-primary);font-weight:600;display:block}
+.rx-row__s{display:block;font:11px/16px var(--font-data);color:var(--text-muted);font-weight:400}
+.rx-step{display:grid;grid-template-columns:20px 1fr;gap:9px;align-items:start;width:100%;text-align:left;background:none;border:0;border-left:2px solid transparent;padding:9px 10px;min-height:38px;cursor:pointer;font-family:var(--font-body);color:var(--text-secondary)}
+.rx-step:hover{background:var(--interaction-hover,#DDE5EC)}
+.rx-step:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.rx-step[data-state="active"]{border-left-color:var(--interaction-selected);background:var(--interaction-selected-surface)}
+.rx-step[data-state="done"] .rx-step__n{background:var(--green);border-color:var(--green);color:var(--text-on-fill,#fff)}
+.rx-step[data-state="locked"]{opacity:.55;cursor:not-allowed}
+.rx-step__n{display:flex;align-items:center;justify-content:center;width:19px;height:19px;border:1px solid var(--border-strong);border-radius:50%;font:600 10px var(--font-data);color:var(--text-muted);background:var(--card-surface-raised)}
+.rx-step__t{font-size:12.5px;color:var(--text-primary);font-weight:600}
+.rx-step__d{display:block;font:11px/16px var(--font-data);color:var(--text-muted);font-weight:400;text-wrap:pretty}
+.rx-head{position:sticky;top:0;z-index:3;background:var(--bg);padding:13px 0 9px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.rx-title{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.rx-title h1{font:600 21px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap}
+.rx-state{margin:0;font:14px/21px var(--font-body);color:var(--text-secondary);max-width:92ch;text-wrap:pretty}
+.rx-state b{color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums}
+.rx-facts{display:flex;gap:22px;flex-wrap:wrap;font:12px var(--font-data)}
+.rx-facts div{display:flex;flex-direction:column;gap:2px}
+.rx-facts dt{color:var(--text-muted)}
+.rx-facts dd{margin:0;color:var(--text-primary);font-weight:600;font-variant-numeric:tabular-nums;font-size:13px}
+.rx-panel{display:flex;flex-direction:column;gap:11px;padding-top:12px}
+.rx-note{font:13px/20px var(--font-body);color:var(--text-secondary);margin:0;max-width:78ch;text-wrap:pretty}
+.rx-cells{display:flex;gap:26px;flex-wrap:wrap;padding-top:2px}
+.rx-seg{display:flex;border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.rx-tab{appearance:none;border:0;border-left:1px solid var(--border);background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:8px 12px;cursor:pointer;min-height:36px;flex:1}
+.rx-tab:first-child{border-left:0}
+.rx-tab[data-on="on"]{background:var(--interaction-selected-surface);color:var(--text-primary);font-weight:600;box-shadow:inset 0 -2px 0 var(--interaction-selected)}
+.rx-tab:focus-visible{outline:2px solid var(--interaction-focus);outline-offset:-2px}
+.rx-switch{display:none;padding:8px 12px;border-bottom:1px solid var(--border);background:var(--card-surface)}
+@media (max-width:1180px){.rx-panes{grid-template-columns:1fr}[data-pane="off"]{display:none}.rx-switch{display:block}.rx-queue,.rx-rail{border:0}.rx-bar{position:sticky;bottom:0}}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Reconciliation exceptions" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextProvider" value="{{ context }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LinkedSelectionProvider" scope="exception" value="{{ selection }}" items="{{ exceptionItems }}" url-param="exception" on-change="{{ onSelectionChange }}" hint-size="100%,860px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeContextProvider" value="{{ time }}" hint-size="100%,860px">
+<div data-screen-label="Reconciliation exception" class="rx-screen">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Exception Resolution" environment="{{ environment }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div class="rx-frame">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="exception" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<div class="rx-pane">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
+<div class="rx-switch">
+<div class="rx-seg" role="tablist">
+<button type="button" class="rx-tab" data-on="{{ queuePaneOn }}" onClick="{{ showQueue }}">Queue</button>
+<button type="button" class="rx-tab" data-on="{{ stagePaneOn }}" onClick="{{ showStage }}">Step {{ stepNumber }}</button>
+<button type="button" class="rx-tab" data-on="{{ railPaneOn }}" onClick="{{ showRail }}">Evidence</button>
+</div>
+</div>
+<div class="rx-panes">
+
+<aside class="rx-queue" data-pane="{{ queuePane }}" aria-label="Exception queue and workflow">
+<div class="rx-sec">
+<h2 class="rx-h">Open exceptions</h2>
+</div>
+<sc-for list="{{ exceptions }}" as="x" hint-placeholder-count="3">
+<button type="button" class="rx-row" data-sel="{{ x.sel }}" onClick="{{ x.open }}">
+<span><span class="rx-row__t">{{ x.title }}</span><span class="rx-row__s">{{ x.meta }}</span></span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.VarianceCell" actual="{{ x.actual }}" expected="{{ x.expected }}" tolerance="{{ x.tolerance }}" comparison-label="{{ x.against }}" condition="{{ x.condition }}" layout="stacked" hint-size="140px,58px"></x-import>
+</button>
+</sc-for>
+<nav style="padding:6px 0 12px" aria-label="Workflow">
+<h2 class="rx-h" style="padding:11px 10px 6px">Workflow</h2>
+<sc-for list="{{ steps }}" as="s" hint-placeholder-count="9">
+<button type="button" class="rx-step" data-state="{{ s.state }}" disabled="{{ s.disabled }}" title="{{ s.title }}" onClick="{{ s.go }}">
+<span class="rx-step__n">{{ s.n }}</span>
+<span><span class="rx-step__t">{{ s.label }}</span><span class="rx-step__d">{{ s.detail }}</span></span>
+</button>
+</sc-for>
+</nav>
+<div class="rx-sec">
+<h2 class="rx-h">Reporting period</h2>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AccountingPeriodSelector" periods="{{ periods }}" value="{{ periodValue }}" on-change="{{ onPeriod }}" dates="{{ dateRoles }}" hint-size="100%,300px"></x-import>
+</div>
+</aside>
+
+<main class="rx-stage" data-pane="{{ stagePane }}">
+<div class="rx-head">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ObjectHeader" dc-props="{{ objectHeader }}" on-open-evidence="{{ showEvidence }}" on-open-exceptions="{{ showQueue }}" hint-size="100%,96px"></x-import>
+<div class="rx-title">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ caseSeverity }}" hint-size="86px,18px"></x-import>
+<div style="flex:1"></div>
+<span style="font:11px var(--font-data);color:var(--text-muted)">{{ progressLabel }}</span>
+</div>
+<p class="rx-state"><b>{{ explainedLabel }}</b> of the {{ grossLabel }} difference is explained. The remaining <b>{{ residualLabel }}</b> is measured against a {{ toleranceLabel }} tolerance and still blocks control C-104.</p>
+<dl class="rx-facts">
+<div><dt>Gross difference</dt><dd>{{ grossLabel }}</dd></div>
+<div><dt>Explained</dt><dd>{{ explainedLabel }}</dd></div>
+<div><dt>Tolerance</dt><dd>{{ toleranceLabel }}</dd></div>
+<div><dt>Age</dt><dd>{{ ageLabel }}</dd></div>
+</dl>
+</div>
+
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ContinuityFrame" state="{{ continuity }}" subject="Ledger and custodian feeds" since="{{ snapshotSince }}" snapshot-at="06:14 UTC" coverage="{{ coverageLabel }}" on-retry="{{ onContinuityRetry }}" retry-label="Refresh" hint-size="100%,560px">
+
+<div class="rx-panel" data-rx-show="{{ show1 }}">
+<p class="rx-note">Each side is stated with the tolerance it was measured against and the condition of the data behind it.</p>
+<div class="rx-cells">
+<sc-for list="{{ varianceCells }}" as="c" hint-placeholder-count="4">
+<div><span class="rx-h" style="display:block;margin-bottom:5px">{{ c.label }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.VarianceCell" actual="{{ c.actual }}" expected="{{ c.expected }}" tolerance="{{ c.tolerance }}" notation="{{ c.notation }}" unit="{{ c.unit }}" comparison-label="{{ c.against }}" condition="{{ c.condition }}" show-reference="{{ c.showReference }}" explanation="{{ c.explanation }}" hint-size="210px,96px"></x-import></div>
+</sc-for>
+</div>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show2 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TieOutPanel" title="General ledger to custodian statement" context="Account 408219 · July 2026" type="one-to-one" source-a="{{ tieA }}" source-b="{{ tieB }}" items="{{ tieItems }}" tolerance="{{ 500 }}" currency="USD" default-expanded="{{ true }}" reviewer="M. Okafor" reviewed-at="Aug 1, 2026 09:12 UTC" require-reason="{{ true }}" on-investigate="{{ goEvidence }}" on-link-evidence="{{ goEvidence }}" on-accept="{{ onAcceptTolerance }}" on-escalate="{{ onEscalate }}" hint-size="100%,540px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show3 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidencePreview" dc-props="{{ evidence }}" on-next="{{ onEvidenceNext }}" on-previous="{{ onEvidencePrev }}" on-link="{{ goTrace }}" on-open-original="{{ noop }}" on-copy-citation="{{ noop }}" hint-size="100%,560px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show4 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CalculationTrace" title="Effective-interest income — July 2026" formula="Opening amortized cost × effective periodic yield − coupon cash = discount accretion" technical-formula="accrete(amortized_cost_open, eir_periodic, coupon_cash, rounding=HALF_EVEN, dp=2)" steps="{{ traceSteps }}" result="{{ traceResult }}" rounding="Half-even · 2 decimal places" basis="Statutory" condition="confirmed" as-of="Jul 31, 2026" calculation-version="EIR 4.2.1" calculated-at="Aug 1, 2026 04:02 UTC" executed-by="Valuation engine" engine="meridian-accrual@4.2.1" reproducibility="Regenerating this value with the same inputs and calculation version reproduces it exactly. A difference implies a changed input, a new calculation version, or an override." default-level="expanded" hint-size="100%,540px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show5 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ResolutionDrawer" inline="{{ true }}" title="Custodian balance does not tie to ledger" case-id="{{ caseId }}" version="{{ recordVersion }}" severity="exception" condition="confirmed" object="Account 408219 · CUSIP 912828ZK5" statement="{{ caseStatement }}" fields="{{ resFields }}" evidence-items="{{ resEvidence }}" root-causes="{{ rootCauses }}" root-cause="{{ rootCause }}" on-root-cause-change="{{ onRootCause }}" root-cause-note="{{ rootCauseNote }}" on-root-cause-note-change="{{ onRootCauseNote }}" correction="Create a reconciling item for unsettled cash through August 2, 2026, and stage the coupon-frequency correction that produced the accrual difference." correction-facts="{{ resCorrection }}" impact-items="{{ resImpact }}" ownership="{{ resOwnership }}" require-reason="{{ true }}" reason="{{ resReason }}" on-reason-change="{{ onResReason }}" primary-action="resolve" on-resolve="{{ onResolve }}" on-escalate="{{ onEscalate }}" on-defer="{{ noop }}" on-request-evidence="{{ goEvidence }}" hint-size="100%,720px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show6 }}">
+<p class="rx-note">{{ stagedLabel }}</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ editFrequency }}" hint-size="190px,32px">Set coupon frequency quarterly</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ editMethod }}" hint-size="180px,32px">Switch to straight line</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ editClass }}" hint-size="170px,32px">Reclassify STAT 2.B → 2.C</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" onClick="{{ editOverride }}" hint-size="160px,32px">Apply manual override</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChangeSetProvider" original="{{ csOriginal }}" value="{{ csDraft }}" on-change="{{ onCsChange }}" version="{{ recordVersion }}" id="CS-2026-0418" fields="{{ csFields }}" validate="{{ csValidate }}" hint-size="100%,620px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ChangeSetReview" title="Staged security-master correction" context="Exception {{ caseId }} · Account 408219" change-set-id="CS-2026-0418" scope="CUSIP 912828ZK5 · statutory and GAAP books" affected-records="{{ 21 }}" initiated-by="M. Okafor" based-on-version="{{ recordVersion }}" grouped="{{ true }}" require-reason="{{ true }}" impact="{{ csImpact }}" confirm-discard="{{ true }}" on-submit="{{ onCsSubmit }}" on-review-impact="{{ goPosting }}" submit-label="Submit for posting" hint-size="100%,600px"></x-import>
+</x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show7 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PostingImpactPreview" title="Accretion adjustment — July 2026" subtitle="Generated from change set CS-2026-0418" period="July 2026" period-state="soft-closed" posting-period="2026-07" as-of="Jul 31, 2026" lines="{{ journalLines }}" effects="{{ journalEffects }}" statements="{{ journalStatements }}" positions="{{ journalPositions }}" controls="{{ journalControls }}" reversal="Reverses automatically on August 1, 2026 as a same-account contra entry; the reversal inherits this change-set identifier." require-acknowledgement="{{ true }}" on-post="{{ onPost }}" post-label="Post journal" hint-size="100%,760px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show8 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.VersionConflictNotice" title="This record changed while you were editing it." record="CUSIP 912828ZK5 · Account 408219" fields="{{ conflictFields }}" base-version="{{ 17 }}" latest-version="{{ 18 }}" latest-author="A. Patel" latest-at="Aug 1, 2026 11:42 UTC" choices="{{ conflictChoices }}" on-field-choice="{{ onConflictChoice }}" require-reason="{{ true }}" on-reload="{{ noop }}" on-merge-non-conflicting="{{ onMergeNonConflicting }}" on-reapply="{{ onReapply }}" on-save-draft="{{ noop }}" hint-size="100%,560px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ show9 }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AttestationPanel" title="Reconciliation sign-off" scope="Account 408219 custodian reconciliation" period="July 2026 · statutory" object-id="REC-408219-2026-07" snapshot="snap-2026-08-01T11:52Z" version="{{ attestVersion }}" signatory-role="Controller" role="{{ userRole }}" gates="{{ attestGates }}" evidence="{{ attestEvidence }}" signatories="{{ signatories }}" current-user="M. Okafor" segregation="{{ true }}" certification="I attest that the July 2026 custodian reconciliation for account 408219 is complete, that the residual difference has been classified and corrected, and that the supporting evidence set accurately reflects the approved records for the stated reporting period." require-comment="{{ true }}" comment="{{ attestComment }}" on-comment-change="{{ onAttestComment }}" state="{{ attestState }}" on-approve="{{ onApprove }}" on-request-changes="{{ noop }}" on-reject="{{ noop }}" hint-size="100%,740px"></x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ showBlocked }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="warning" title="{{ blockGuard }}" hint-size="100%,86px">The decision chain stays closed until this evidence arrives. Nothing downstream of the variance can be classified, staged, or posted before then.</x-import>
+</div>
+
+<div class="rx-panel" data-rx-show="{{ showDone }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="positive" title="Exception 00418 resolved and attested" hint-size="100%,86px">Version {{ attestVersion }} carries the classified root cause, the linked evidence set, the committed change set, the posted accretion adjustment, and the controller signature. Close control C-104 is released.</x-import>
+</div>
+</x-import>
+</main>
+
+<aside class="rx-rail" data-pane="{{ railPane }}" aria-label="Evidence and consequence">
+<div class="rx-sec" style="border-bottom:0;padding-bottom:0">
+<div class="rx-seg" role="tablist">
+<button type="button" class="rx-tab" data-on="{{ eviOn }}" onClick="{{ showEvidence }}">Evidence</button>
+<button type="button" class="rx-tab" data-on="{{ traceOn }}" onClick="{{ showTrace }}">Calculation</button>
+<button type="button" class="rx-tab" data-on="{{ auditOn }}" onClick="{{ showAudit }}">Audit</button>
+</div>
+</div>
+<div data-rx-show="{{ eviShow }}">
+<div class="rx-sec">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SourceCoverageSummary" title="Source coverage" sources="{{ coverageSources }}" compact="{{ true }}" freshness-threshold="24 hours" weighting="record" as-of="Aug 1, 2026 06:14 UTC" on-filter="{{ onCoverageFilter }}" selected-category="{{ coverageFilter }}" hint-size="100%,240px"></x-import>
+</div>
+<div class="rx-sec">
+<h2 class="rx-h">Dates in force</h2>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TimeContextPanel" sources="{{ timeSources }}" hint-size="100%,300px"></x-import>
+</div>
+<div class="rx-sec">
+<h2 class="rx-h">Linked evidence</h2>
+<sc-for list="{{ evidenceLinks }}" as="e" hint-placeholder-count="4">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceLink" label="{{ e.label }}" status="{{ e.status }}" route="{{ e.route }}" on-open="{{ e.open }}" hint-size="100%,30px"></x-import>
+</sc-for>
+</div>
+</div>
+<div data-rx-show="{{ traceShow }}">
+<div class="rx-sec">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CalculationTrace" title="Discount accretion" formula="Opening amortized cost × effective periodic yield − coupon cash" steps="{{ traceSteps }}" result="{{ traceResult }}" rounding="Half-even · 2 decimal places" basis="Statutory" condition="confirmed" as-of="Jul 31, 2026" calculation-version="EIR 4.2.1" default-level="summary" hint-size="100%,380px"></x-import>
+</div>
+</div>
+<div data-rx-show="{{ auditShow }}">
+<div class="rx-sec">
+<h2 class="rx-h">Audit history</h2>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EventTimeline" events="{{ auditEvents }}" dense="{{ true }}" group-by-day="{{ false }}" hint-size="100%,420px"></x-import>
+</div>
+</div>
+</aside>
+</div>
+
+<div class="rx-bar">
+<span>Version <b>{{ recordVersion }}</b></span>
+<span>Period <b>{{ periodLabel }}</b></span>
+<span>Residual <b>{{ residualLabel }}</b></span>
+<span>Unresolved gates <b>{{ gateCount }}</b></span>
+<div style="flex:1;min-width:12px"></div>
+<span class="rx-guard" data-rx-show="{{ guardShow }}">{{ primaryGuard }}</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="md" disabled="{{ primaryDisabled }}" title="{{ primaryGuard }}" onClick="{{ primaryAct }}" hint-size="180px,36px">{{ primaryLabel }}</x-import>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+const M=(v)=>v==null?"—":window.MeridianDesignSystem_205d17.Format.money(v,{currency:"USD"});
+
+const EXCEPTIONS=[
+  {id:"00418",title:"00418 · Custodian tie-out",meta:"Account 408219 · C-104 blocked",condition:"confirmed",chain:"full",
+   severity:"Exception",gross:1381.68,explained:1050,residual:331.68,tolerance:500,age:"1d 4h",
+   statement:"$1,050.00 of the $1,381.68 difference is explained by settlement timing and rounding policy. The remaining $331.68 exceeds no materiality threshold but still blocks close control C-104.",
+   cells:[
+     {label:"Ledger versus custodian",actual:12441284.12,expected:12439902.44,tolerance:500,against:"Custodian",condition:"confirmed",showReference:true,explanation:"Settlement timing suspected; not yet classified."},
+     {label:"Position quantity",actual:184200,expected:184200,tolerance:0,notation:"quantity",unit:"units",against:"Statement",condition:"confirmed"},
+     {label:"Accrued income",actual:117256.38,expected:117256.38,tolerance:25,against:"Subledger",condition:"provisional"},
+     {label:"FX revaluation",actual:null,expected:4120.5,tolerance:100,against:"Treasury",condition:"pending"},
+   ]},
+  {id:"00421",title:"00421 · Accrual difference",meta:"Account 408219 · subledger",condition:"provisional",chain:"blocked",
+   severity:"Exception",gross:75.36,explained:0,residual:75.36,tolerance:25,age:"6h",
+   blockGuard:"Coupon frequency confirmation not received",
+   statement:"The subledger accrual is $75.36 below the ledger for account 408219. The coupon-frequency confirmation has not arrived, so the difference cannot be classified.",
+   cells:[{label:"Accrued income",actual:117256.38,expected:117181.02,tolerance:25,against:"Subledger",condition:"provisional",showReference:true,explanation:"Frequency assumption under review."}]},
+  {id:"00426",title:"00426 · FX revaluation",meta:"Account 771003 · awaiting rate",condition:"pending",chain:"blocked",
+   severity:"Pending",gross:null,explained:0,residual:null,tolerance:100,age:"2h",
+   blockGuard:"July closing FX rate not published",
+   statement:"No difference can be measured for account 771003 until Treasury publishes the July closing rate. The position is carried at the June rate and marked provisional.",
+   cells:[{label:"FX revaluation",actual:null,expected:4120.5,tolerance:100,against:"Treasury",condition:"pending",showReference:true,explanation:"Awaiting Treasury rate publication."}]},
+];
+
+const STEPS=[
+  {id:1,label:"Observe the variance",comp:"Variance and tolerance"},
+  {id:2,label:"Tie out the balances",comp:"Explained versus residual"},
+  {id:3,label:"Inspect the evidence",comp:"Source documents"},
+  {id:4,label:"Trace the calculation",comp:"Derivation and inputs"},
+  {id:5,label:"Resolve the exception",comp:"Cause, correction, rationale"},
+  {id:6,label:"Stage the change",comp:"Field-level change set"},
+  {id:7,label:"Preview the posting",comp:"Journal and consequence"},
+  {id:8,label:"Reconcile versions",comp:"Base, proposed, latest"},
+  {id:9,label:"Attest",comp:"Sign-off bound to a version"},
+];
+
+const EVIDENCE=[
+  {title:"Custodian statement — July 2026",type:"statement",source:"Northern Trust",sourceSystem:"Custody feed",documentId:"NT-408219-202607",page:12,section:"Account 408219",before:"Closing positions and cash, account 408219\n\nSecurities at market            ",highlight:"12,439,902.44",after:"\nCash available                       48,110.02\nPending settlement                    1,000.00\nStatement basis                  Trade date\n",statementDate:"Jul 31, 2026",receivedAt:"Aug 1, 2026 06:14 UTC",extraction:"Parsed · 3 of 3 fields matched",condition:"confirmed",citation:"Northern Trust custodian statement, account 408219, page 12, closing market value line.",textEquivalent:"Closing market value of $12,439,902.44 for account 408219 as of July 31, 2026, with $1,000.00 shown as pending settlement.",metadata:[{label:"Retention",value:"7 years"},{label:"Permission",value:"Operations, read"}]},
+  {title:"General ledger extract — 2026-07",type:"extract",source:"Ledger",sourceSystem:"Core accounting",documentId:"GL-EX-202607-0912",section:"Account 408219",before:"Trial balance detail, posting period 2026-07\n\nInvestments at amortized cost   ",highlight:"12,441,284.12",after:"\nAccrued income                      117,256.38\nExtract basis                    Accounting date\n",statementDate:"Jul 31, 2026",receivedAt:"Aug 1, 2026 05:40 UTC",extraction:"Complete",condition:"confirmed",citation:"General ledger extract GL-EX-202607-0912, account 408219 closing balance.",textEquivalent:"General ledger closing balance of $12,441,284.12 for account 408219 in posting period 2026-07."},
+  {title:"Transaction population — settlement pending",type:"snapshot",source:"Settlement queue",sourceSystem:"Operations",documentId:"SETL-Q-20260731",section:"Unsettled, trade date ≤ Jul 31",before:"Unsettled trades affecting account 408219\n\n2026-07-30  Purchase  912828ZK5   ",highlight:"1,000.00",after:"\nExpected settlement              2026-08-02\n",statementDate:"Jul 31, 2026",receivedAt:"Aug 1, 2026 06:02 UTC",extraction:"Parsed · 1 record",condition:"provisional",citation:"Settlement queue snapshot SETL-Q-20260731, one unsettled purchase of $1,000.00.",textEquivalent:"One unsettled purchase of $1,000.00 on CUSIP 912828ZK5, trade dated July 30, 2026, expected to settle August 2, 2026.",redacted:"Counterparty identifiers withheld"},
+];
+
+const COVERAGE=(()=>{const out=[];const push=(n,condition,label)=>{for(let i=0;i<n;i++)out.push({id:`${condition}-${i}`,condition,label:`${label} ${i+1}`})};push(94,"confirmed","Confirmed source");push(2,"provisional","Provisional source");push(3,"stale","Stale source");push(1,"missing","Missing source");push(4,"na","Not required");return out})();
+const CS_ORIGINAL={couponFrequency:"Semiannual",accountingMethod:"Effective yield",statClassification:"2.B",pricingSource:"ICE Evaluated",sourceOverride:"None"};
+
+class Component extends DCLogic {
+  // Selection is committed through LinkedSelectionProvider; workflow position lives in the URL
+  // so the task resumes. No surface synchronises with another by hand.
+  state={
+    step:1,done:{},selection:{id:"00418",label:"00418 · Custodian tie-out"},
+    pane:"stage",inspector:"evidence",continuity:"live",
+    evidenceIndex:0,coverageFilter:null,periodValue:"2026-07",
+    rootCause:"settlement-timing",rootCauseNote:"",resReason:"",
+    csDraft:{...CS_ORIGINAL},conflictChoices:{pricingSource:"theirs"},conflictResolved:false,
+    attestComment:"",attested:false,
+  };
+
+  applyChrome(){
+    const html=document.documentElement;
+    html.setAttribute("data-theme",(window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme??"light"):(this.props.theme??"light")));
+    html.setAttribute("data-environment",(window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment??"PAPER").toUpperCase()):(String(this.props.environment??"PAPER").toUpperCase())));
+    if(document.body)document.body.setAttribute("data-theme-density",(window.MeridianPrefs?window.MeridianPrefs.density(this.props.density??"default"):(this.props.density??"default")));
+  }
+  componentDidMount(){
+    this.applyChrome();
+    try{
+      const q=new URL(window.location.href).searchParams;
+      const done={};(q.get("done")||"").split(",").filter(Boolean).forEach(n=>{done[Number(n)]=true});
+      const n=Number(q.get("step"));
+      this.setState(s=>({done,step:n>=1&&n<=9?n:s.step}));
+    }catch(e){}
+  }
+  componentDidUpdate(){this.applyChrome()}
+
+  // URL-backed workflow state — the step and its proof set survive a reload or a handoff.
+  syncUrl(step,done){
+    try{
+      const u=new URL(window.location.href);
+      u.searchParams.set("step",String(step));
+      const keys=Object.keys(done||{}).filter(k=>done[k]);
+      if(keys.length)u.searchParams.set("done",keys.join(","));else u.searchParams.delete("done");
+      window.history.replaceState(null,"",u);
+    }catch(e){}
+  }
+  go=(n)=>{if(n<=this.maxStep()){this.setState({step:n,pane:"stage"});this.syncUrl(n,this.state.done)}};
+  complete=(n,next)=>this.setState(s=>{
+    const done={...s.done,[n]:true};const step=next||s.step;
+    this.syncUrl(step,done);return {done,step,pane:"stage"};
+  });
+  maxStep(){let m=1;for(let i=1;i<=9;i++){if(this.state.done[i])m=i+1}return Math.min(9,m)}
+
+  renderVals(){
+    const s=this.state,noop=()=>{};
+    const kase=EXCEPTIONS.find(x=>x.id===(s.selection&&s.selection.id))||EXCEPTIONS[0];
+    const full=kase.chain==="full";
+    const max=full?this.maxStep():1;
+    const ev=EVIDENCE[s.evidenceIndex];
+    const csChanged=Object.keys(CS_ORIGINAL).filter(k=>s.csDraft[k]!==CS_ORIGINAL[k]);
+    const attestState=s.attested?"approved":s.conflictResolved?"ready":"blocked";
+    const step=full?s.step:1;
+
+    const gates=[
+      {id:"g1",label:"Ledger balanced",status:"complete",detail:"Trial balance ties at 2026-07 close"},
+      {id:"g2",label:"Custodian reconciliation signed",status:s.conflictResolved?"complete":"pending",detail:s.conflictResolved?"Residual classified and corrected":"Awaiting version resolution",blocking:!s.conflictResolved},
+      {id:"g3",label:"Pricing exceptions resolved",status:"complete",detail:"Override reviewed by A. Patel"},
+      {id:"g4",label:"Evidence set complete",status:"review",detail:"1 required source missing — coupon frequency confirmation"},
+      {id:"g5",label:"Disclosure reviews",status:"review",detail:"2 pending, non-blocking for this scope"},
+      {id:"g6",label:"Accounting period open",status:"complete",detail:"2026-07 soft closed; controller authority applies"},
+    ];
+    const gateCount=gates.filter(g=>g.status!=="complete").length;
+
+    // Completed steps collapse to their proof; blocked steps name the unmet guard.
+    const proof={
+      1:`Difference ${M(kase.gross)} against ${M(kase.tolerance)} tolerance`,
+      2:`${M(kase.explained)} explained · ${M(kase.residual)} residual`,
+      3:`${EVIDENCE.length} sources linked · 1 required missing`,
+      4:"Accretion $17,256.38 reproduced · EIR 4.2.1",
+      5:"Root cause: settlement timing · owner M. Okafor",
+      6:`CS-2026-0418 staged · ${csChanged.length} field${csChanged.length===1?"":"s"} · 21 records`,
+      7:"Journal posted · statutory income +$17,256.38",
+      8:"Version 19 merged · pricing source taken from latest",
+      9:"Attested by M. Okafor · version 19",
+    };
+    const guardFor=(id)=>{
+      if(!full)return kase.blockGuard;
+      if(id===6)return "Resolution not recorded";
+      if(id===7)return "No change set submitted";
+      if(id===8)return "Journal not posted";
+      if(id===9)return "Version conflict unresolved";
+      return `Step ${id-1} not complete`;
+    };
+
+    // One primary action per screen, in the consequence bar.
+    let primaryLabel="Tie out the balances",primaryGuard="",primaryAct=()=>this.complete(1,2),primaryDisabled=false;
+    if(!full){primaryLabel="Open the chain";primaryGuard=kase.blockGuard;primaryDisabled=true;primaryAct=noop}
+    else if(s.attested){primaryLabel="Open next exception";primaryAct=()=>this.setState({selection:{id:"00421",label:"00421 · Accrual difference"},step:1,done:{}})}
+    else if(step===2){primaryLabel="Inspect the evidence";primaryAct=()=>this.complete(2,3)}
+    else if(step===3){primaryLabel="Trace the calculation";primaryAct=()=>this.complete(3,4)}
+    else if(step===4){primaryLabel="Open resolution";primaryAct=()=>this.complete(4,5)}
+    else if(step===5){primaryLabel="Stage the correction";primaryDisabled=!s.done[5];primaryGuard=s.done[5]?"":"Record a root cause and rationale in the resolution before staging a correction.";primaryAct=()=>this.complete(5,6)}
+    else if(step===6){primaryLabel="Preview the posting";primaryDisabled=!csChanged.length;primaryGuard=csChanged.length?"":"No fields staged in CS-2026-0418.";primaryAct=()=>this.complete(6,7)}
+    else if(step===7){primaryLabel="Reconcile versions";primaryDisabled=!s.done[7];primaryGuard=s.done[7]?"":"Acknowledge and post the journal before reconciling versions.";primaryAct=()=>this.complete(7,8)}
+    else if(step===8){primaryLabel="Go to attestation";primaryDisabled=!s.conflictResolved;primaryGuard=s.conflictResolved?"":"Choose a value for each conflicting field, then reapply.";primaryAct=()=>this.complete(8,9)}
+    else if(step===9){primaryLabel="Sign attestation";primaryDisabled=attestState!=="ready";primaryGuard=attestState==="ready"?"":`${gateCount} gates unresolved — custodian reconciliation is still blocking.`;primaryAct=()=>this.setState(p=>({attested:true,done:{...p.done,9:true}}))}
+
+    const pane=(v)=>s.pane===v?"on":"off";
+    const insp=(v)=>s.inspector===v?"on":"off";
+    const shown=(n)=>full&&!s.attested&&step===n?"on":"off";
+
+    return {
+      noop,
+      dataState:this.props.dataState??"ready",
+      navSections:(window.MeridianAppMap?window.MeridianAppMap.sections("exception"):[]),
+      onNav:(id)=>window.MeridianAppMap&&window.MeridianAppMap.go(id),
+      environment:String(this.props.environment??"PAPER").toUpperCase(),
+      onRetry:()=>this.setState({continuity:"live"}),
+      continuity:s.continuity,
+      onContinuityRetry:s.continuity==="live"?null:()=>this.setState({continuity:"live"}),
+      snapshotSince:Date.now()-11*60*1000,
+      coverageLabel:"99 of 100 required sources",
+
+      // Analytical context, declared once for the screen.
+      context:{entity:{type:"Legal entity",label:(window.MeridianWorld?window.MeridianWorld.entityLabel():"Meridian Fund I LP")},book:"Statutory",
+        basis:"Accounting date",period:"FY2026 · July",asOf:"Jul 31, 2026",currency:"USD",
+        condition:kase.condition,locked:false},
+      contextCondition:kase.condition,
+
+      // The temporal contract, declared once. Every rail, gate and readout reads these roles
+      // rather than carrying its own date prop.
+      time:{trade:"2026-07-30",settlement:"2026-08-02",effective:"2026-07-01",
+        received:"2026-08-01T06:14:00Z",posting:"2026-07-31",valuation:"2026-07-31",
+        reportingPeriod:"2026-07",fiscalPeriod:"FY2026 · P07",closeDeadline:"2026-08-05T18:00:00Z",
+        asOf:"2026-07-31T23:59:00Z",evidenceAt:"2026-08-01T06:14:00Z",calculatedAt:"2026-08-01T09:02:00Z"},
+      timeSources:{settlement:"Northern Trust",posting:"Core accounting",evidenceAt:"Custody feed",
+        calculatedAt:"meridian-accrual@4.2.1",closeDeadline:"Close calendar"},
+
+
+      // Provider-owned selection.
+      selection:s.selection,
+      exceptionItems:EXCEPTIONS.map(x=>({id:x.id,label:x.title})),
+      onSelectionChange:(v)=>{if(v&&v.id&&v.id!==kase.id)this.setState({selection:{id:v.id,label:v.label},step:1,pane:"stage"})},
+
+      exceptions:EXCEPTIONS.map(x=>({
+        title:x.title,meta:x.meta,actual:x.cells[0].actual,expected:x.cells[0].expected,
+        tolerance:x.cells[0].tolerance,against:x.cells[0].against,condition:x.condition,
+        sel:x.id===kase.id?"on":"off",
+        open:()=>this.setState({selection:{id:x.id,label:x.title},step:1,pane:"stage"}),
+      })),
+
+      steps:STEPS.map(st=>{
+        const state=step===st.id?"active":s.done[st.id]?"done":st.id>max?"locked":"idle";
+        return {n:st.id,label:st.label,
+          detail:state==="done"?proof[st.id]:state==="locked"?guardFor(st.id):st.comp,
+          title:state==="locked"?guardFor(st.id):st.label,
+          state,disabled:st.id>max,go:()=>this.go(st.id)};
+      }),
+
+      // Identity is stated once, through the object contract — the screen does not invent a header.
+      objectHeader:{
+        type:"exception",id:kase.id,name:kase.title.replace(/^\d+\s*·\s*/,""),
+        context:{entity:"Meridian Life",book:"STAT",owner:"M. Okafor"},
+        value:{label:"Residual",amount:M(kase.residual),secondary:`of ${M(kase.gross)} difference`},
+        condition:s.attested?"reconciled":"exception",asOf:"2026-07-31",
+        version:s.conflictResolved?19:17,
+        coverage:{attached:99,required:100,label:"sources"},
+        exceptions:{count:gateCount,blocking:gateCount>0,label:"Unresolved gates"},
+      },
+      caseId:kase.id,
+      caseSeverity:s.attested?"Resolved":kase.severity,
+      caseStatement:kase.statement,
+      recordVersion:s.conflictResolved?19:17,
+      attestVersion:s.conflictResolved?19:18,
+      userRole:"Controller",
+      progressLabel:full?`Step ${step} of 9 · ${Object.keys(s.done).length} complete`:"Chain not open",
+      residualLabel:M(kase.residual),grossLabel:M(kase.gross),
+      explainedLabel:M(kase.explained),toleranceLabel:M(kase.tolerance),ageLabel:kase.age,
+      periodLabel:"July 2026 · soft closed",
+      gateCount,
+      varianceCells:kase.cells,
+
+      show1:shown(1),show2:shown(2),show3:shown(3),show4:shown(4),show5:shown(5),
+      show6:shown(6),show7:shown(7),show8:shown(8),show9:shown(9),
+      showBlocked:full?"off":"on",
+      showDone:s.attested?"on":"off",
+      blockGuard:kase.blockGuard||"",
+      stepNumber:step,
+
+      queuePane:pane("queue"),stagePane:pane("stage"),railPane:pane("rail"),
+      queuePaneOn:pane("queue"),stagePaneOn:pane("stage"),railPaneOn:pane("rail"),
+      showQueue:()=>this.setState({pane:"queue"}),
+      showStage:()=>this.setState({pane:"stage"}),
+      showRail:()=>this.setState({pane:"rail"}),
+
+      eviOn:insp("evidence"),traceOn:insp("trace"),auditOn:insp("audit"),
+      eviShow:insp("evidence"),traceShow:insp("trace"),auditShow:insp("audit"),
+      showEvidence:()=>this.setState({inspector:"evidence"}),
+      showTrace:()=>this.setState({inspector:"trace"}),
+      showAudit:()=>this.setState({inspector:"audit"}),
+
+      primaryLabel,primaryGuard,primaryDisabled,primaryAct,
+      guardShow:primaryGuard?"on":"off",
+
+      periods:[
+        {value:"2026-06",label:"June 2026",state:"hard-closed",fiscalYear:"FY2026",reportingPeriod:"June 2026",postingPeriod:"2026-06",lockedAfter:"Jul 6, 2026 18:00 UTC",permission:"Read only"},
+        {value:"2026-07",label:"July 2026",state:"soft-closed",fiscalYear:"FY2026",reportingPeriod:"July 2026",postingPeriod:"2026-07",asOf:"Jul 31, 2026",lockedAfter:"Aug 5, 2026 18:00 UTC",lateEntryPolicy:"Controller approval required",permission:"Post with approval"},
+        {value:"2026-08",label:"August 2026",state:"open",fiscalYear:"FY2026",reportingPeriod:"August 2026",postingPeriod:"2026-08",permission:"Post"},
+        {value:"2026-07-adj",label:"July 2026 · adjustment",state:"adjustment",fiscalYear:"FY2026",reportingPeriod:"July 2026",postingPeriod:"2026-07-ADJ",lateEntryPolicy:"Adjusting entries only",permission:"Post with approval"},
+      ],
+      periodValue:s.periodValue,
+      onPeriod:v=>this.setState({periodValue:v}),
+      dateRoles:{trade:"Jul 30, 2026",settlement:"Aug 2, 2026",accounting:"Jul 31, 2026",posting:"2026-07",asOf:"Jul 31, 2026"},
+
+      coverageSources:COVERAGE,
+      coverageFilter:s.coverageFilter,
+      onCoverageFilter:cat=>this.setState(p=>({coverageFilter:p.coverageFilter===cat?null:cat})),
+      evidenceLinks:[
+        {label:"General ledger extract",status:"Ready",route:"GL-EX-202607-0912",open:()=>this.setState({evidenceIndex:1,pane:"stage",step:full?3:1})},
+        {label:"Custodian statement, page 12",status:"Ready",route:"NT-408219-202607",open:()=>this.setState({evidenceIndex:0,pane:"stage",step:full?3:1})},
+        {label:"Transaction population",status:"ReviewRequired",route:"SETL-Q-20260731",open:()=>this.setState({evidenceIndex:2,pane:"stage",step:full?3:1})},
+        {label:"Coupon frequency confirmation",status:"Missing",route:"not received",open:noop},
+      ],
+      auditEvents:[
+        {id:"a5",ts:"2026-08-01T11:44:00Z",action:"Pricing source challenged",actor:"a.patel",severity:"warning",detail:"Internal override applied at version 18"},
+        {id:"a4",ts:"2026-08-01T11:20:00Z",action:"Resolution prepared",actor:"m.okafor",detail:"Root cause: settlement timing"},
+        {id:"a3",ts:"2026-08-01T09:12:00Z",action:"Tie-out reviewed",actor:"m.okafor",detail:"$1,050.00 explained · $331.68 residual"},
+        {id:"a2",ts:"2026-08-01T06:14:00Z",action:"Custodian statement received",actor:"custody feed",severity:"success",detail:"3 of 3 fields matched",evidence:{label:"NT-408219-202607",status:"Ready"}},
+        {id:"a1",ts:"2026-08-01T05:40:00Z",action:"Ledger extract loaded",actor:"scheduler",severity:"success",detail:"Posting period 2026-07"},
+      ],
+
+      tieA:{label:"General ledger",value:12441284.12,source:"Core accounting · GL-EX-202607-0912",condition:"confirmed"},
+      tieB:{label:"Custodian statement",value:12439902.44,source:"Northern Trust · page 12",condition:"confirmed"},
+      tieItems:[
+        {id:"timing",label:"Pending cash settlement",value:1000,condition:"confirmed",explained:true,evidence:"Custodian activity · settles Aug 2"},
+        {id:"rounding",label:"Rounding policy difference",value:50,condition:"confirmed",explained:true,evidence:"Calculation policy · half-even"},
+        {id:"residual",label:"Unclassified residual",value:331.68,condition:"exception",explained:false,evidence:"No evidence linked"},
+      ],
+      onAcceptTolerance:()=>this.complete(2,3),
+      onEscalate:noop,
+      goEvidence:()=>this.complete(2,3),
+      goTrace:()=>this.complete(3,4),
+      goPosting:()=>this.complete(6,7),
+
+      evidence:{...ev,index:s.evidenceIndex,total:EVIDENCE.length},
+      onEvidenceNext:()=>this.setState(p=>({evidenceIndex:Math.min(EVIDENCE.length-1,p.evidenceIndex+1)})),
+      onEvidencePrev:()=>this.setState(p=>({evidenceIndex:Math.max(0,p.evidenceIndex-1)})),
+
+      traceSteps:[
+        {id:"open",label:"Opening amortized cost",value:M(9874221.14),operator:"",source:"Ledger · 2026-06 close",sourceId:"GL-408219-0630",asOf:"Jun 30, 2026",condition:"confirmed",summary:true},
+        {id:"eir",label:"Effective periodic yield",value:"1.1875",unit:"%",operator:"×",source:"Security master · EIR schedule",sourceId:"SM-912828ZK5-EIR",asOf:"Jul 1, 2026",condition:"confirmed",summary:true},
+        {id:"calc",label:"Calculated interest",value:M(117256.38),kind:"intermediate",condition:"confirmed"},
+        {id:"coupon",label:"Coupon cash received",value:M(100000),operator:"−",source:"Custodian activity",sourceId:"NT-CPN-20260715",asOf:"Jul 15, 2026",condition:"confirmed",summary:true},
+        {id:"accr",label:"Discount accretion",value:M(17256.38),kind:"intermediate",condition:"confirmed"},
+        {id:"freq",label:"Coupon frequency assumption",value:"Semiannual",source:"Security master",sourceId:"SM-912828ZK5",condition:"overridden",detail:"Under review — quarterly frequency proposed",changedBy:"M. Okafor",changedAt:"Aug 1, 2026 10:31 UTC"},
+      ],
+      traceResult:{label:"Discount accretion — July 2026",value:M(17256.38)},
+
+      resFields:[
+        {label:"Residual difference",value:M(kase.residual),flag:true},
+        {label:"Gross difference",value:M(kase.gross)},
+        {label:"Explained",value:M(kase.explained)},
+        {label:"Tolerance",value:M(kase.tolerance)},
+        {label:"Condition",value:"Exception · confirmed sources"},
+        {label:"Age",value:kase.age},
+      ],
+      resEvidence:[
+        {id:"e1",label:"General ledger extract",detail:"GL-EX-202607-0912",href:"#evidence"},
+        {id:"e2",label:"Custodian statement, page 12",detail:"NT-408219-202607",href:"#evidence"},
+        {id:"e3",label:"Transaction population",detail:"SETL-Q-20260731 · provisional",href:"#evidence"},
+        {id:"e4",label:"Coupon frequency confirmation",detail:"Not received",missing:true},
+      ],
+      rootCauses:[
+        {value:"settlement-timing",label:"Settlement timing — unclassified"},
+        {value:"pricing-source",label:"Pricing source disagreement"},
+        {value:"security-terms",label:"Incorrect security terms"},
+        {value:"mapping",label:"Account mapping error"},
+        {value:"missing-evidence",label:"Missing supporting evidence"},
+        {value:"policy",label:"Policy or rounding difference"},
+      ],
+      rootCause:s.rootCause,
+      onRootCause:v=>this.setState({rootCause:v}),
+      rootCauseNote:s.rootCauseNote,
+      onRootCauseNote:v=>this.setState({rootCauseNote:v}),
+      resCorrection:[
+        {label:"Journal required",value:"Yes · accretion adjustment"},
+        {label:"Source record updated",value:"Yes · security master terms"},
+        {label:"Permanent or temporary",value:"Permanent"},
+        {label:"Other controls affected",value:"C-204 interest accrual reruns"},
+      ],
+      resImpact:[
+        {label:"Statutory income",value:"+$17,256.38"},
+        {label:"GAAP income",value:"No change"},
+        {label:"Close control C-104",value:"Released on resolution",flag:true},
+        {label:"Affected records",value:"21"},
+      ],
+      resOwnership:{assignee:"M. Okafor",team:"Fund accounting",due:"Aug 2, 2026 12:00 UTC",age:kase.age,escalation:"None",handoffs:"Data operations → Fund accounting"},
+      resReason:s.resReason,
+      onResReason:v=>this.setState({resReason:v}),
+      onResolve:()=>this.complete(5,6),
+
+      stagedLabel:csChanged.length?`${csChanged.length} field${csChanged.length===1?"":"s"} staged in CS-2026-0418 · nothing is committed until the change set is submitted.`:"No fields staged yet. Staging edits a change set, not the record.",
+      csOriginal:CS_ORIGINAL,
+      csDraft:s.csDraft,
+      onCsChange:d=>this.setState({csDraft:d}),
+      csFields:{
+        couponFrequency:{label:"Coupon frequency",group:"Security terms",impact:"Recalculates 18 future accrual periods"},
+        accountingMethod:{label:"Accounting method",group:"Accounting classification",impact:"Replaces 3 provisional entries"},
+        statClassification:{label:"STAT classification",group:"Accounting classification",impact:"Changes statutory schedule D presentation"},
+        pricingSource:{label:"Pricing source",group:"Pricing source",impact:"Revalues the position at the next pricing run"},
+        sourceOverride:{label:"Source override",group:"Pricing source",impact:"Creates an audit event and requires rationale"},
+      },
+      csValidate:(draft,changes)=>{
+        const out=[];
+        if(draft.accountingMethod!==CS_ORIGINAL.accountingMethod)out.push({key:"accountingMethod",severity:"warning",message:"Changing the accounting method will recalculate 18 future periods and replace 3 provisional entries."});
+        if(draft.sourceOverride!=="None")out.push({key:"sourceOverride",severity:"warning",message:"A manual source override requires controller rationale and creates an audit event."});
+        if(draft.pricingSource!==CS_ORIGINAL.pricingSource&&draft.sourceOverride==="None")out.push({key:"pricingSource",severity:"error",message:"A pricing-source change outside the approved vendor list requires an accompanying source override."});
+        if(!changes.length)out.push({severity:"info",message:"No fields staged yet — use the controls above to stage a correction."});
+        return out;
+      },
+      csImpact:{records:21,recalculations:"18 future accrual periods",reports:"Schedule D · Statutory income statement",controls:"C-204 interest accrual · C-418 ledger reconciliation",lockedPeriod:"July 2026 is soft closed — controller approval required",invalidatesApprovals:"Prior July pricing approval becomes invalid",auditEvent:true},
+      onCsSubmit:()=>this.complete(6,7),
+      editFrequency:()=>this.setState(p=>({csDraft:{...p.csDraft,couponFrequency:p.csDraft.couponFrequency==="Quarterly"?"Semiannual":"Quarterly"}})),
+      editMethod:()=>this.setState(p=>({csDraft:{...p.csDraft,accountingMethod:p.csDraft.accountingMethod==="Straight line"?"Effective yield":"Straight line"}})),
+      editClass:()=>this.setState(p=>({csDraft:{...p.csDraft,statClassification:p.csDraft.statClassification==="2.C"?"2.B":"2.C"}})),
+      editOverride:()=>this.setState(p=>({csDraft:{...p.csDraft,sourceOverride:p.csDraft.sourceOverride==="Manual"?"None":"Manual"}})),
+
+      journalLines:[
+        {account:"1420 · Investment income receivable",description:"Accretion adjustment, account 408219",debit:17256.38},
+        {account:"4100 · Interest income",description:"Effective-interest accretion, July 2026",credit:17256.38},
+      ],
+      journalEffects:[
+        {label:"Statutory income",basis:"STAT",before:2884110.22,after:2901366.6},
+        {label:"GAAP income",basis:"GAAP",before:2901366.6,after:2901366.6},
+        {label:"Tax income",basis:"Tax",before:2790044.18,after:2790044.18},
+        {label:"Carrying value",basis:"STAT",before:12441284.12,after:12441284.12},
+      ],
+      journalStatements:["Statutory income statement — interest income line increases by $17,256.38","Schedule D Part 1 — accretion column restates for CUSIP 912828ZK5","GAAP income statement — no change; already recognized under effective yield"],
+      journalPositions:["CUSIP 912828ZK5 — amortized cost unchanged; accrual schedule restated for 18 future periods","No lot-level reallocation required"],
+      journalControls:[
+        {label:"C-204 Interest accrual",value:"Must rerun after posting"},
+        {label:"C-418 Ledger reconciliation",value:"Will reopen and require re-signature"},
+        {label:"C-104 Custodian tie-out",value:"Released once the residual is classified"},
+      ],
+      onPost:()=>this.complete(7,8),
+
+      conflictFields:[
+        {key:"pricingSource",label:"Pricing source",base:"ICE Evaluated",proposed:"ICE Evaluated",latest:"Internal override",conflict:true},
+        {key:"couponFrequency",label:"Coupon frequency",base:"Semiannual",proposed:s.csDraft.couponFrequency,latest:"Semiannual",conflict:false},
+        {key:"statClassification",label:"STAT classification",base:"2.B",proposed:s.csDraft.statClassification,latest:"2.B",conflict:false},
+        {key:"reviewNote",label:"Reviewer note",base:"—",proposed:"Residual classified as settlement timing",latest:"Pricing challenged by A. Patel",conflict:true},
+      ],
+      conflictChoices:s.conflictChoices,
+      onConflictChoice:(key,side)=>this.setState(p=>({conflictChoices:{...p.conflictChoices,[key]:side}})),
+      onMergeNonConflicting:()=>this.setState(p=>({conflictChoices:{...p.conflictChoices,couponFrequency:"mine",statClassification:"mine"}})),
+      onReapply:()=>this.setState(p=>{const done={...p.done,8:true};this.syncUrl(9,done);return {conflictResolved:true,done,step:9}}),
+
+      attestGates:gates,
+      attestEvidence:{attached:99,required:100,label:"Linked evidence"},
+      signatories:[
+        {role:"Prepared by",name:"M. Okafor",at:"Aug 1, 2026 11:20 UTC",status:"complete"},
+        {role:"Reviewed by",name:"A. Patel",at:"Aug 1, 2026 11:44 UTC",status:"complete"},
+        {role:"Approved by",name:s.attested?"M. Okafor":"",at:s.attested?"Aug 1, 2026 11:58 UTC":"",status:s.attested?"complete":"pending"},
+      ],
+      attestComment:s.attestComment,
+      onAttestComment:v=>this.setState({attestComment:v}),
+      attestState,
+      onApprove:()=>this.setState(p=>({attested:true,done:{...p.done,9:true}})),
+    };
+  }
+}
+</script>
+</body>
+</html>

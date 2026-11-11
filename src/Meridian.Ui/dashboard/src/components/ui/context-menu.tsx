@@ -89,7 +89,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
         role="menu"
         aria-label={label}
         className={cn(
-          "fixed z-[60] min-w-44 overflow-hidden rounded-[2px] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
+          "fixed z-[60] min-w-44 overflow-hidden rounded-[var(--radius-overlay)] border border-border bg-popover py-1 text-sm text-popover-foreground shadow-[0_2px_6px_rgba(0,0,0,0.18)]",
           className
         )}
         onKeyDown={handleMenuKeyDown}
@@ -105,7 +105,7 @@ export function ContextMenu({ className, items, label = "Context menu", onClose,
             disabled={item.disabled}
             className={cn(
               "flex w-full items-center gap-2 px-3 py-2 text-left transition-colors [outline-offset:-2px]",
-              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
               item.disabled
                 ? "cursor-not-allowed text-muted-foreground"
                 : item.danger ? "text-danger hover:bg-danger/10" : "hover:bg-[var(--ws-row-hover)]"
