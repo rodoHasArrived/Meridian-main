@@ -105,8 +105,14 @@ public sealed partial class ManualJournalEntryWorkbenchService
         var inverseIds = draft.Lines.Where(line => correction is null || correction.ReverseSides || line.LineId.StartsWith("rebook-inverse-", StringComparison.Ordinal))
             .Select(line => CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString())).ToHashSet();
         var inverse = lines.Where(line => inverseIds.Contains(line.EntryId)).ToArray();
-        var unmatched = predecessors[0].Entry.Lines.ToList();
-        if (inverse.Length != unmatched.Count)
+        EnsureExactMaterializedCorrectionInverse(predecessors[0].Entry.Lines, inverse);
+    }
+
+    private static void EnsureExactMaterializedCorrectionInverse(IReadOnlyList<LedgerEntry> predecessor,
+        IReadOnlyList<LedgerEntry> inverse)
+    {
+        var unmatched = predecessor.ToList();
+        if (inverse.Count != unmatched.Count)
             throw new InvalidOperationException("The materialized correction must retain every predecessor inverse leg.");
         foreach (var candidate in inverse)
         {

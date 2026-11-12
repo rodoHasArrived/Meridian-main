@@ -11,24 +11,24 @@ public sealed partial class PostgresLedgerJournalStore
     private static readonly IReadOnlyDictionary<string, string> EmptyPriorPeriodDimensions =
         new Dictionary<string, string>();
 
-    private static bool IsMixedPriorPeriodAdjustment(LedgerJournalEntryWrite write)
-        => write.Entry.Metadata.Tags?.GetValueOrDefault("securityMaster.lineageMode") == "per-line"
-           && write.Entry.Metadata.IdempotencyKey?.StartsWith("prior-period|", StringComparison.Ordinal) == true;
+    private static bool IsPriorPeriodAdjustment(LedgerJournalEntryWrite write)
+        => write.Entry.Metadata.IdempotencyKey?.StartsWith("prior-period|", StringComparison.Ordinal) == true;
 
     /// <summary>
     /// Establishes mixed-security correction authority from immutable books, never a caller's
     /// prefix alone. The root period stays locked until append commits, before the audit fence.
     /// A rebook contains a complete inverse and a separately balanced replacement.
     /// </summary>
-    private async Task<bool> VerifyMixedPriorPeriodAdjustmentAsync(
+    private async Task<bool> VerifyPriorPeriodAdjustmentAsync(
         NpgsqlConnection connection, NpgsqlTransaction transaction, LedgerJournalEntryWrite write,
         LedgerAccountingPeriod target, CancellationToken ct)
     {
         var metadata = write.Entry.Metadata;
-        if (!IsMixedPriorPeriodAdjustment(write))
+        if (!IsPriorPeriodAdjustment(write))
             return false;
 
-        var tags = metadata.Tags!;
+        var tags = metadata.Tags
+            ?? throw new LedgerValidationException("Prior-period posting requires retained source lineage metadata.");
         var command = write.PostingCommand;
         if (target.LedgerBookId is not { } bookId || target.Status != "Open"
             || write.LedgerBookId != bookId || command is null || command.LedgerBookId != bookId

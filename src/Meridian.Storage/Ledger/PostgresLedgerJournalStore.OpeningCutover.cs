@@ -22,11 +22,16 @@ public sealed partial class PostgresLedgerJournalStore
         LedgerAccountingPeriod period,
         CancellationToken ct)
     {
-        if (period.LedgerBookId is not { } bookId || write.PostingKind != LedgerPostingKindDto.Originating)
+        if (period.LedgerBookId is not { } bookId)
             return;
 
         var key = write.Entry.Metadata.IdempotencyKey;
         var isOpening = key?.StartsWith(PortfolioOpeningKeyPrefix, StringComparison.OrdinalIgnoreCase) == true;
+        if (isOpening && (write.PostingKind != LedgerPostingKindDto.Originating || write.SourceJournalEntryId is not null
+            || write.PostingCommand is { Intent: not AccountingPostingIntentDto.Originating }))
+            throw new LedgerValidationException("An imported opening must be an originating journal without correction source linkage.");
+        if (write.PostingKind != LedgerPostingKindDto.Originating)
+            return;
         var effectiveDate = write.Entry.Metadata.EffectiveDate
             ?? DateOnly.FromDateTime(write.Entry.Timestamp.UtcDateTime);
 

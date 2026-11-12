@@ -17,7 +17,7 @@ using NSubstitute;
 
 namespace Meridian.Tests.Ui;
 
-public sealed class PortfolioOpeningBalancePostingTests
+public sealed partial class PortfolioOpeningBalancePostingTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
@@ -40,7 +40,7 @@ public sealed class PortfolioOpeningBalancePostingTests
         => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax, JournalEntryLifecycleActionDto.Rebook);
 
     private static async Task PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto basis,
-        JournalEntryLifecycleActionDto? correctionAction = null)
+        JournalEntryLifecycleActionDto? correctionAction = null, OpeningRebookScenario? openRebook = null)
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var root = Path.Combine(Path.GetTempPath(), "meridian-opening-post-" + Guid.NewGuid().ToString("N"));
@@ -92,8 +92,10 @@ public sealed class PortfolioOpeningBalancePostingTests
             var queue = new PortfolioOpeningBalanceQueue(intake, new ConfigStore(configPath), database.JournalStore, securities, accountAuthority);
             var request = new PortfolioImportRunRequest(Guid.NewGuid(), "alpaca", new(BrokerAccountId: "synthetic-account"),
                 new(tenant, company, fund, account, book, period, new(2026, 11, 12), "import-preparer", entity), true);
-            var snapshot = new PortfolioSummary("alpaca", "synthetic-account", 375m, 25m, null,
-                [new("AAPL", 2m, 200m, 100m, null, "us_equity", null),
+            var cashOnly = openRebook == OpeningRebookScenario.CashUnchanged;
+            var openingTotal = cashOnly ? 100m : 375m;
+            var snapshot = new PortfolioSummary("alpaca", "synthetic-account", openingTotal, cashOnly ? 100m : 25m, null,
+                cashOnly ? [] : [new("AAPL", 2m, 200m, 100m, null, "us_equity", null),
                  new("MSFT", 3m, 150m, 50m, null, "us_equity", null)], at);
             var run = new PortfolioImportRun(request, "synthetic-command-hash", PortfolioImportRunStatus.Partial, at, at,
                 snapshot, PortfolioImportRunService.SnapshotHash(snapshot));
@@ -104,6 +106,8 @@ public sealed class PortfolioOpeningBalancePostingTests
             var differentBasis = basis == AccountingBasisKindDto.Primary ? AccountingBasisKindDto.Tax : AccountingBasisKindDto.Primary;
             Assert.Throws<InvalidOperationException>(() => ManualJournalEntryWorkbenchService.EnsureOpeningBalanceSaveAuthority(
                 draft with { AccountingBasis = differentBasis }, draft, trustedAutomatedIntake: false));
+            Assert.Throws<InvalidOperationException>(() => ManualJournalEntryWorkbenchService.EnsureOpeningBalanceSaveAuthority(
+                draft with { RebookedFromJournalEntryId = Guid.NewGuid() }, draft, trustedAutomatedIntake: false));
             var validated = await workbench.ValidateDraftAsync(new(draft, "import-preparer", LedgerBookId: book, TenantId: tenant, CompanyId: company));
             validated.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
             draft.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -126,14 +130,18 @@ public sealed class PortfolioOpeningBalancePostingTests
             record.AccountingPolicyId.Should().Be("broker-opening-policy");
             record.AccountingPolicyVersion.Should().Be("v2");
             var retained = record.Entry;
-            retained.Lines.Sum(line => line.Debit).Should().Be(375m);
-            retained.Lines.Sum(line => line.Credit).Should().Be(375m);
-            retained.Lines.Where(line => line.Account.Symbol is not null).Should().HaveCount(2)
+            retained.Lines.Sum(line => line.Debit).Should().Be(openingTotal);
+            retained.Lines.Sum(line => line.Credit).Should().Be(openingTotal);
+            retained.Lines.Where(line => line.Account.Symbol is not null).Should().HaveCount(cashOnly ? 0 : 2)
                 .And.OnlyContain(line => line.Dimensions!.InstrumentId.HasValue);
             retained.Metadata.SecurityId.Should().BeNull("mixed journals use the proven per-line identities");
-            retained.Metadata.Tags!["securityMaster.lineageMode"].Should().Be("per-line");
+            if (!cashOnly)
+                retained.Metadata.Tags!["securityMaster.lineageMode"].Should().Be("per-line");
             (await queue.QueueAsync(run)).Should().Be(id, "receipt recovery cannot create another opening");
             (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle();
+            if (openRebook is { } scenario)
+                await ExerciseOpenOpeningRebooksAsync(new(database, workbench, drafts, configuration, capturingTarget,
+                    posted.JournalEntry, retained, fund, tenant, company, book, period), scenario);
             if (correctionAction is { } action)
             {
                 var originalPeriod = (await database.JournalStore.GetPeriodAsync(period))!;

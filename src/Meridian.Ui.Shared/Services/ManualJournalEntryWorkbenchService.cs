@@ -337,7 +337,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
-                 IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null)
+                 IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing))
                 ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
                     ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
                     : existing.TreasuryContext
@@ -348,10 +348,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             RecurringJournalEvidenceDigest = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
                 : existing.RecurringJournalEvidenceDigest,
-            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
-            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
-            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.Reversal : request.Draft.Reversal,
-            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.Rebook : request.Draft.Rebook,
+            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
+            Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
+            Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null || IsOpeningCorrectionDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
             RequiresRecurringJournalEvidence = existing?.RequiresRecurringJournalEvidence == true ||
                 existing?.RecurringJournalEvidenceJson is not null || request.Draft.RequiresRecurringJournalEvidence ||
                 RecurringJournalEvidenceGuard.IsRecurring(existing?.TreasuryContext?.IdempotencyKey) ||
@@ -1030,6 +1030,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         // Compare the final materialized accounts as well: the chart can change between
         // draft validation and this independently loaded posting configuration.
         await EnsureMaterializedPriorPeriodInverseAsync(draft, lines, ct).ConfigureAwait(false);
+        await EnsureMaterializedOpeningInverseAsync(draft, lines, ct).ConfigureAwait(false);
         var entry = new JournalEntry(
             draft.JournalEntryId,
             timestamp,
@@ -1235,8 +1236,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         var verifiedPriorPeriodAdjustment = securityIds.Length > 1
             && draft.PriorPeriodAdjustmentSource is not null
             && await ValidatePriorPeriodAdjustmentAsync(draft, ct).ConfigureAwait(false) is null;
-        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) || verifiedPriorPeriodAdjustment ||
-                draft.TreasuryContext?.IdempotencyKey?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) == true))
+        var verifiedOpeningCorrection = securityIds.Length > 1 && IsOpeningCorrectionDraft(draft)
+            && await ValidateOpeningCorrectionAsync(draft, chartByPath, ct).ConfigureAwait(false) is null;
+        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) || verifiedPriorPeriodAdjustment || verifiedOpeningCorrection))
         {
             var perLine = new Dictionary<string, ManualJournalSecurityMasterLineage>(StringComparer.Ordinal);
             foreach (var group in instrumentLines.GroupBy(item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId))
@@ -1548,9 +1550,10 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                     EvidenceLink = line.EvidenceLink ?? request.EvidenceLinks.FirstOrDefault()
                 })
                 .ToArray();
-        if (!reverseSides && posted.PriorPeriodAdjustmentSource is not null)
+        var openingCorrection = IsOpeningBalanceDraft(posted) || IsOpeningCorrectionDraft(posted);
+        if (!reverseSides && (posted.PriorPeriodAdjustmentSource is not null || openingCorrection))
         {
-            // A prior-period rebook replaces the already posted adjustment. Retain its exact
+            // An opening or prior-period rebook replaces the already posted journal. Retain its exact
             // inverse and the reviewed replacement in one balanced draft; appending replacement
             // lines alone would count the earlier adjustment twice. Unchanged terms net to zero.
             var inverse = posted.Lines.Select((line, index) => line with
@@ -1629,7 +1632,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 { IdempotencyKey = $"prior-period|book={posted.LedgerBookId:N}|source={priorPeriodSource.SourceJournalEntryId:N}|intent={Uri.EscapeDataString(priorPeriodSource.IntentId)}|correction={correctionId:N}" }
             };
         }
-        if (IsOpeningBalanceDraft(posted))
+        if (openingCorrection)
         {
             correction = correction with
             {
@@ -1647,7 +1650,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 { IdempotencyKey = RecurringJournalEvidenceGuard.CorrectionKey(evidence.OccurrenceKey, correctionId) }
             };
         }
-        correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct).ConfigureAwait(false);
+        correction = await NormalizeAndValidateAsync(correction, allowIncomplete: false, ct,
+            prospectiveOpeningCorrectionParent: openingCorrection ? corrected : null).ConfigureAwait(false);
         if (correction.ValidationIssues.Any(static issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical))
         {
             throw new InvalidOperationException("Manual journal reversal and rebook actions cannot transition the posted entry while the generated correction draft has critical validation issues.");
