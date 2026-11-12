@@ -2,6 +2,7 @@ using System.Text.Json;
 using System.Text;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Ui.Shared.Endpoints;
+using Meridian.Ui.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +76,7 @@ public sealed class FixedIncomeHttpPrecisionTests
             await next();
         });
         app.MapBondAnalyticsEndpoints(canonicalOptions);
+        app.MapGet("/precision-legacy", () => Microsoft.AspNetCore.Http.Results.Json(result, canonicalOptions));
         await app.StartAsync();
 
         var response = await app.GetTestClient().GetAsync(
@@ -85,6 +87,24 @@ public sealed class FixedIncomeHttpPrecisionTests
         Assert.Equal("98.50000000000000000000000001", json.RootElement.GetProperty("cleanPrice").GetString());
         Assert.Equal("0.0500000000000000000000000001", json.RootElement.GetProperty("yieldToMaturity").GetString());
         Assert.Equal("0.0500000000000000000000000001", json.RootElement.GetProperty("cashFlows")[0].GetProperty("interest").GetString());
+        // Exercise the actual shared typed client used by desktop hosts against both wire forms.
+        var factory = Substitute.For<IHttpClientFactory>();
+        factory.CreateClient(Arg.Any<string>()).Returns(_ => app.GetTestClient());
+        using var sharedClient = new ApiClientService(factory);
+        foreach (var path in new[]
+        {
+            $"/api/reference-data/bonds/{securityId}/analytics?asOf=2026-11-12T00:00:00Z&settlementDate=2026-11-13&cleanPrice=98.50000000000000000000000001",
+            "/precision-legacy"
+        })
+        {
+            var typed = await sharedClient.GetWithResponseAsync<BondAnalyticsResult>(path);
+            Assert.True(typed.Success, typed.ErrorMessage);
+            Assert.Equal(price, typed.Data!.CleanPrice);
+            Assert.Equal(rate, typed.Data.YieldToMaturity);
+            Assert.Equal(rate, typed.Data.CashFlows[0].Interest);
+            Assert.Null(typed.Data.Dv01);
+        }
+        Assert.Equal(before, JsonSerializer.Serialize(result, DesktopJsonOptions.Api));
         Assert.Equal(before, JsonSerializer.Serialize(result, canonicalOptions));
         using var canonical = JsonDocument.Parse(before);
         Assert.Equal(JsonValueKind.Number, canonical.RootElement.GetProperty("cleanPrice").ValueKind);
