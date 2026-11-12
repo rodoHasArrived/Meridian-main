@@ -50,3 +50,14 @@ Follow-ups:
 - Done: the index above; a python consistency check for the fund-economics worked examples (`tests/scripts/test_fund_economics_golden_consistency.py`).
 - Blocked on dotnet: a C# end-to-end test over the mixed-credit set with expected recon differences and close balances (no C# test loads it today); a bank/custodian/broker/administrator scenario with close balances; multi-account corporate-action and fund-close assertions.
 - Open, no tooling needed: a uniform seed and as-of convention for scenario manifests (many entries are "not recorded" in the index).
+
+## Retained upstream evidence links
+
+The [WAL checksum packet](evidence/wal-checksum-2026-10-07/README.md) retains third-party diagnostic
+source and original Markdown under a checksum-bound manifest. The copied
+`components/native/doc_benchmarks.md` contains an unresolved upstream-relative `../readme.md` link;
+it is historical source context, not navigation to a maintained Meridian guide. The link checker
+continues to report it rather than claiming it resolves. Use the packet's
+[third-party notices](evidence/wal-checksum-2026-10-07/third-party-notices/README.md) and
+[native component context](evidence/wal-checksum-2026-10-07/components/native/README.md) for provenance
+and navigation. Do not repair links inside that immutable snapshot by changing its original bytes.
