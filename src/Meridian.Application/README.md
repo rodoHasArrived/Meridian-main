@@ -43,6 +43,11 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+`SecurityMasterAmortizationLedgerBridge` reads held face from each lot's shared quantity and
+multiplier, and derives premium or discount as native cost less that face. Non-face lot units
+are refused rather than treated as units of 100. Blocked projections are diagnosed before an
+empty schedule is treated as having nothing to post.
+
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration

@@ -171,11 +171,11 @@
     "format": "meridian.schema-control.v1",
     "postgres_image": "postgres:16.14-alpine"
   },
-  "migration_reservations": "database/migration-reservations.json",
   "migration_search_roots": [
     "src/Meridian.Storage",
     "src/Meridian.Identity"
   ],
+  "migration_reservations": "database/migration-reservations.json",
   "migration_sets": [
     {
       "connection_variables": [

@@ -1,9 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import * as workstationApi from "@/lib/api";
 import type { ApprovePromotionRequest } from "@/lib/api";
-import { describeApiError, isApiError } from "@/lib/api-errors";
-import { rebaseToFirst, sampleEvenly } from "@/components/charts/compare-series";
-import type { CompareItem, CompareSeriesState } from "@/components/charts/SelectionCompare";
 import { appendRouteQuery, evidenceWorkbenchPath, workspacePath } from "@/lib/workspace";
 import {
   countBy,
@@ -18,25 +15,10 @@ import {
   formatSignedPercent,
   formatText,
   isLiveAdjacentMode,
-  badgeVariantForMode,
-  buildComparisonEvidenceText,
-  sanitizeDomId
+  parseDecimalToken,
+  parsePercentToken
 } from "@/screens/strategy-screen.formatters";
 import { buildStrategyStatusAnnouncement } from "@/screens/strategy-screen.status-announcement";
-import {
-  STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID,
-  buildPlotNotebookToolbarItems,
-  buildPlotStudyDetail,
-  buildPlotStudyRows,
-  buildPlotToolMomentsTable,
-  buildPlotToolSampleTable,
-  buildPlotToolState,
-  buildPlotToolStateFromApiOrFallback,
-  buildPlotToolTabs,
-  nextPlotToolViewForKey,
-  plotToolTabIdForView,
-  resolveSelectedPlotStudyId
-} from "@/screens/strategy-screen.plot-tool";
 import type {
   EquityCurveSummary,
   MetricSnapshot,
@@ -55,20 +37,8 @@ import type {
   RunComparisonRow,
   RunDiff
 } from "@/types";
-import { formatCount as formatCountValue, formatNumber } from "@/lib/format";
-
-export {
-  STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID,
-  buildPlotNotebookToolbarItems,
-  buildPlotStudyDetail,
-  buildPlotStudyRows,
-  buildPlotToolMomentsTable,
-  buildPlotToolSampleTable,
-  buildPlotToolState,
-  buildPlotToolTabs,
-  nextPlotToolViewForKey,
-  plotToolTabIdForView
-};
+import { formatCount as formatCountValue } from "@/lib/format";
+import { defaultGetRunEquityCurve } from "@/screens/strategy-screen.equity-paths.view-model";
 
 export type StrategyCommand = "compare" | "diff" | "history";
 export type StrategyPlotToolView = "workspace" | "statistics";
@@ -92,6 +62,7 @@ export type PromoteState = "idle" | "evaluating" | "evaluated" | "approving" | "
 export const STRATEGY_RUN_DETAIL_PANEL_ID = "strategy-run-library-selected-run-detail";
 export const STRATEGY_COMPARISON_DETAIL_PANEL_ID = "strategy-run-comparison-selected-detail";
 export const STRATEGY_PROMOTION_HISTORY_DETAIL_PANEL_ID = "strategy-promotion-history-selected-detail";
+export const STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID = "plottool-selected-study-detail";
 export const STRATEGY_DIFF_POSITION_DETAIL_PANEL_ID = "strategy-run-diff-selected-position-detail";
 export const STRATEGY_DIFF_PARAMETER_DETAIL_PANEL_ID = "strategy-run-diff-selected-parameter-detail";
 
@@ -747,11 +718,6 @@ export interface StrategyPlotSampleRow {
   tone: "default" | "success" | "warning" | "danger";
 }
 
-// The existing equity-curve client (already used by the Portfolio drill-in); no new endpoint.
-function defaultGetRunEquityCurve(runId: string): Promise<EquityCurveSummary> {
-  return workstationApi.getRunEquityCurve(runId);
-}
-
 const defaultStrategyServices: StrategyRunLibraryServices = {
   compareRuns: (runIds) => workstationApi.compareRuns(runIds),
   diffRuns: (baseRunId, targetRunId) => workstationApi.diffRuns(baseRunId, targetRunId),
@@ -1168,326 +1134,7 @@ export function useStrategyRunLibraryViewModel(
   };
 }
 
-// --- Equity paths on one scale (SelectionCompare) ---
-//
-// A visual-only set of up to six runs whose published equity curves are drawn on one shared
-// scale. It is deliberately SEPARATE from `selectedIds`, the two-run selection that drives
-// Compare, Diff and Promote: it never reads or changes that selection, and nothing in it is sent
-// to or derived from the comparison API. Curves are read from the existing equity-curve endpoint
-// only when the operator opens the chart.
-
-export const STRATEGY_EQUITY_PATH_COMPARE_MAX = 6;
-export const STRATEGY_EQUITY_PATH_POINT_COUNT = 8;
-/** Plot categories: the ends are named, the six samples between them are positional. */
-export const STRATEGY_EQUITY_PATH_CATEGORIES: readonly string[] = ["start", "", "", "", "", "", "", "end"];
-/** Column headers for the plotted-values table, where every sample needs a name. */
-export const STRATEGY_EQUITY_PATH_CATEGORY_LABELS: readonly string[] = [
-  "Start",
-  "Sample 2",
-  "Sample 3",
-  "Sample 4",
-  "Sample 5",
-  "Sample 6",
-  "Sample 7",
-  "End"
-];
-export const STRATEGY_EQUITY_PATH_BASIS_TEXT = {
-  value: "Y-axis: each path is rebased to 100 at that run's first curve point, so runs that started with different equity share one scale.",
-  category: "X-axis: position within each run's own recorded span, start to end, as eight evenly spaced curve points (the nearest recorded point for each). Runs cover different dates; each run's dates are in the plotted values table.",
-  footer: "Total return is the figure reported on the run record. It is not recalculated from the plotted path.",
-  asOf: "Each curve is as read when the chart was opened or the run joined it, and is read again when the run's status changes. Close and reopen the chart to read every curve again."
-} as const;
-
-export type StrategyEquityPathLoadState =
-  | { status: "loading" }
-  | { status: "ready"; curve: EquityCurveSummary }
-  /** `reason` is the cause only. The run's status is added when the view is built, from the current record. */
-  | { status: "unavailable"; reason: string };
-
-export interface StrategyEquityPathView {
-  /** What the compare sheet draws, or the words it shows instead. */
-  series: CompareSeriesState;
-  curveDatesText: string;
-  curvePointsText: string;
-  initialEquityText: string;
-  finalEquityText: string;
-}
-
-const EQUITY_PATH_NO_DETAIL = "—";
-
-/** The compare-set entry for one run. Runs that share a strategy name are told apart by run id. */
-export function buildStrategyEquityPathCompareItem(run: StrategyRunRecord, runs: readonly StrategyRunRecord[]): CompareItem {
-  const strategyName = formatText(run.strategyName);
-  const sharesName = runs.some((candidate) => candidate.id !== run.id && formatText(candidate.strategyName) === strategyName);
-  return {
-    id: run.id,
-    title: sharesName ? `${strategyName} (${run.id})` : strategyName,
-    tag: formatText(run.mode).toUpperCase()
-  };
-}
-
-/** Why a run's equity curve could not be read, in operator words. Says nothing about the run itself. */
-export function describeStrategyEquityPathFailureCause(error: unknown): string {
-  if (isApiError(error) && error.status === 404) {
-    return "No equity curve is published for this run.";
-  }
-
-  const summary = describeApiError(error, "The equity curve request failed.").summary.trim();
-  return /[.!?]$/.test(summary) ? summary : `${summary}.`;
-}
-
-/** A reason a curve is not drawn, with the run's status alongside when the run record is known. */
-export function withStrategyEquityPathRunStatus(reason: string, run: StrategyRunRecord | undefined): string {
-  return run ? `${reason} Run status: ${formatText(run.status)}.` : reason;
-}
-
-/** Why a run's equity curve could not be read, in operator words, with the run's status alongside. */
-export function describeStrategyEquityPathFailure(error: unknown, run: StrategyRunRecord | undefined): string {
-  return withStrategyEquityPathRunStatus(describeStrategyEquityPathFailureCause(error), run);
-}
-
-const EQUITY_PATH_INDEX_MIN_FRACTION_DIGITS = 1;
-const EQUITY_PATH_INDEX_MAX_FRACTION_DIGITS = 6;
-
-/**
- * Fraction digits that tell adjacent ticks of the shared scale apart: one by default, more when
- * the ticks step by less than a tenth of an index point (runs that barely moved).
- */
-export function strategyEquityPathIndexFractionDigits(step: number | null | undefined): number {
-  if (typeof step !== "number" || !Number.isFinite(step) || step <= 0) {
-    return EQUITY_PATH_INDEX_MIN_FRACTION_DIGITS;
-  }
-
-  // 0.5 -> 1, 0.05 -> 2, 0.01 -> 2, 0.002 -> 3. The epsilon keeps exact powers of ten exact.
-  const needed = Math.ceil(-Math.log10(step) - 1e-9);
-  return Math.min(EQUITY_PATH_INDEX_MAX_FRACTION_DIGITS, Math.max(EQUITY_PATH_INDEX_MIN_FRACTION_DIGITS, needed));
-}
-
-/**
- * Index value on the rebased scale ("100", "104.2"). Given the chart's shared scale, precision
- * follows its tick step ("100.02" on a 0.01 scale) so two gridlines never carry the same label and
- * the plotted-values table reads the same move the picture shows.
- */
-export function formatStrategyEquityPathIndex(value: number, scale?: { step: number | null }): string {
-  return formatNumber(value, { maximumFractionDigits: strategyEquityPathIndexFractionDigits(scale?.step) });
-}
-
-/** Total return exactly as the run record reports it; never derived from the plotted path. */
-export function formatStrategyEquityPathTotalReturn(run: StrategyRunRecord | undefined): string {
-  return typeof run?.totalReturn === "number" && Number.isFinite(run.totalReturn)
-    ? formatSignedPercent(run.totalReturn)
-    : "Not reported";
-}
-
-/**
- * What the sheet shows for one run. `run` is the CURRENT run record: the status quoted beside a
- * failed read comes from it at build time, so it follows a workspace refresh instead of freezing
- * the status the run had when the request settled.
- */
-export function buildStrategyEquityPathView(
-  load: StrategyEquityPathLoadState | undefined,
-  run?: StrategyRunRecord
-): StrategyEquityPathView {
-  const noDetail = {
-    curveDatesText: EQUITY_PATH_NO_DETAIL,
-    curvePointsText: EQUITY_PATH_NO_DETAIL,
-    initialEquityText: EQUITY_PATH_NO_DETAIL,
-    finalEquityText: EQUITY_PATH_NO_DETAIL
-  };
-  if (!load || load.status === "loading") {
-    return { series: { status: "loading", text: "Loading equity curve…" }, ...noDetail };
-  }
-
-  if (load.status === "unavailable") {
-    return { series: { status: "unavailable", reason: withStrategyEquityPathRunStatus(load.reason, run) }, ...noDetail };
-  }
-
-  const points = Array.isArray(load.curve.points) ? load.curve.points : [];
-  const detail = {
-    curveDatesText: points.length > 0 ? `${points[0].date} to ${points[points.length - 1].date}` : EQUITY_PATH_NO_DETAIL,
-    curvePointsText: formatCountValue(points.length),
-    initialEquityText: formatMoney(load.curve.initialEquity),
-    finalEquityText: formatMoney(load.curve.finalEquity)
-  };
-  const sampled = sampleEvenly(points, STRATEGY_EQUITY_PATH_POINT_COUNT).map((point) => point.totalEquity);
-  if (sampled.length === 0) {
-    return {
-      series: { status: "unavailable", reason: "The published equity curve has fewer than two points, so there is no path to draw." },
-      ...detail
-    };
-  }
-
-  const rebased = rebaseToFirst(sampled);
-  if (!rebased) {
-    return {
-      series: { status: "unavailable", reason: "The published equity curve cannot be rebased to 100: its first point is not a positive equity value, or a sampled point is not a number." },
-      ...detail
-    };
-  }
-
-  return { series: { status: "ready", values: rebased }, ...detail };
-}
-
-/**
- * State for the Strategy run library's equity-path chart. The compare set itself lives in the
- * SelectionCompare provider; this hook only follows it (`onCompareSetChange`, `onSheetOpenChange`)
- * and must be mounted and unmounted together with that provider. It reads the curves the chart
- * needs:
- *  - nothing is requested until the chart is showing (open, with two or more runs);
- *  - every showing starts from fresh curves; while it stays showing only newly added runs are
- *    read, plus any run whose record status changed since its curve was read (a run that finished
- *    may have published or extended its curve);
- *  - requests settle together (`Promise.allSettled`) and a superseded request is discarded;
- *  - a run whose curve cannot be read keeps its place with the reason and its CURRENT status.
- */
-export function useStrategyEquityPathCompare(
-  runs: readonly StrategyRunRecord[],
-  services: Pick<StrategyRunLibraryServices, "getRunEquityCurve"> = defaultStrategyServices
-) {
-  const [loads, setLoads] = useState<Record<string, StrategyEquityPathLoadState>>({});
-  const loadsRef = useRef(loads);
-  const runsRef = useRef(runs);
-  runsRef.current = runs;
-  const getRunEquityCurve = services.getRunEquityCurve ?? defaultGetRunEquityCurve;
-  const getRunEquityCurveRef = useRef(getRunEquityCurve);
-  getRunEquityCurveRef.current = getRunEquityCurve;
-  const compareIdsRef = useRef<string[]>([]);
-  const sheetOpenRef = useRef(false);
-  const showingRef = useRef(false);
-  const requestIdRef = useRef(0);
-  // Record status each run had when its curve was last requested, to notice a later change.
-  const requestedStatusRef = useRef<Record<string, string | undefined>>({});
-
-  const commitLoads = useCallback((next: Record<string, StrategyEquityPathLoadState>) => {
-    loadsRef.current = next;
-    setLoads(next);
-  }, []);
-
-  const syncEquityPaths = useCallback((rereadRunIds: readonly string[] = []) => {
-    const runIds = compareIdsRef.current;
-    const showing = sheetOpenRef.current && runIds.length >= 2;
-    const wasShowing = showingRef.current;
-    showingRef.current = showing;
-    // Any change supersedes whatever is in flight.
-    const requestId = requestIdRef.current + 1;
-    requestIdRef.current = requestId;
-
-    if (!showing) {
-      requestedStatusRef.current = {};
-      if (Object.keys(loadsRef.current).length > 0) {
-        commitLoads({});
-      }
-      return;
-    }
-
-    const current = loadsRef.current;
-    const pendingRunIds = runIds.filter((runId) => {
-      const known = wasShowing ? current[runId] : undefined;
-      return !known || known.status === "loading" || rereadRunIds.includes(runId);
-    });
-    const next: Record<string, StrategyEquityPathLoadState> = {};
-    const requestedStatus: Record<string, string | undefined> = {};
-    for (const runId of runIds) {
-      const pending = pendingRunIds.includes(runId);
-      next[runId] = pending ? { status: "loading" } : current[runId];
-      requestedStatus[runId] = pending
-        ? runsRef.current.find((candidate) => candidate.id === runId)?.status
-        : requestedStatusRef.current[runId];
-    }
-    requestedStatusRef.current = requestedStatus;
-    commitLoads(next);
-    if (pendingRunIds.length === 0) {
-      return;
-    }
-
-    void Promise.allSettled(
-      pendingRunIds.map((runId) => {
-        try {
-          return Promise.resolve(getRunEquityCurveRef.current(runId));
-        } catch (error) {
-          // A client that throws before returning a promise is one more unavailable curve.
-          return Promise.reject(error);
-        }
-      })
-    ).then((results) => {
-      if (requestIdRef.current !== requestId) {
-        return;
-      }
-
-      const resolved = { ...loadsRef.current };
-      results.forEach((result, index) => {
-        const runId = pendingRunIds[index];
-        resolved[runId] = result.status === "fulfilled"
-          ? { status: "ready", curve: result.value }
-          : { status: "unavailable", reason: describeStrategyEquityPathFailureCause(result.reason) };
-      });
-      commitLoads(resolved);
-    });
-  }, [commitLoads]);
-
-  const onCompareSetChange = useCallback((items: readonly CompareItem[]) => {
-    compareIdsRef.current = items.map((item) => item.id);
-    syncEquityPaths();
-  }, [syncEquityPaths]);
-
-  const onSheetOpenChange = useCallback((open: boolean) => {
-    sheetOpenRef.current = open;
-    syncEquityPaths();
-  }, [syncEquityPaths]);
-
-  // A workspace refresh can change a charted run's status (Running -> Completed) while the chart
-  // stays open. The curve read under the old status may be missing or shorter than what is now
-  // published, so it is read again rather than left standing beside the new status.
-  useEffect(() => {
-    if (!showingRef.current) {
-      return;
-    }
-
-    // A run that left the library is not re-read here: the screen drops it from the set.
-    const changedRunIds = compareIdsRef.current.filter((runId) => {
-      const run = runs.find((candidate) => candidate.id === runId);
-      return run !== undefined
-        && runId in requestedStatusRef.current
-        && requestedStatusRef.current[runId] !== run.status;
-    });
-    if (changedRunIds.length > 0) {
-      syncEquityPaths(changedRunIds);
-    }
-  }, [runs, syncEquityPaths]);
-
-  const views = useMemo(() => {
-    const byRunId: Record<string, StrategyEquityPathView> = {};
-    for (const [runId, load] of Object.entries(loads)) {
-      byRunId[runId] = buildStrategyEquityPathView(load, runs.find((candidate) => candidate.id === runId));
-    }
-    return byRunId;
-  }, [loads, runs]);
-
-  const viewFor = useCallback(
-    (runId: string) => views[runId] ?? buildStrategyEquityPathView(undefined),
-    [views]
-  );
-
-  const seriesFor = useCallback((item: CompareItem) => viewFor(item.id).series, [viewFor]);
-
-  const totalReturnFor = useCallback(
-    (item: CompareItem) => formatStrategyEquityPathTotalReturn(runs.find((candidate) => candidate.id === item.id)),
-    [runs]
-  );
-
-  return {
-    maxRuns: STRATEGY_EQUITY_PATH_COMPARE_MAX,
-    categories: STRATEGY_EQUITY_PATH_CATEGORIES,
-    categoryLabels: STRATEGY_EQUITY_PATH_CATEGORY_LABELS,
-    basisText: STRATEGY_EQUITY_PATH_BASIS_TEXT,
-    formatIndex: formatStrategyEquityPathIndex,
-    seriesFor,
-    viewFor,
-    totalReturnFor,
-    onCompareSetChange,
-    onSheetOpenChange
-  };
-}
+export * from "@/screens/strategy-screen.equity-paths.view-model";
 
 export function buildStrategyRunLibraryState({
   runs,
@@ -2063,6 +1710,62 @@ function isCanonicalEvidenceVaultReference(reference: string): boolean {
   return /^evidence:\/\/evidence-vault\/ev-[0-9a-f]{24}$/i.test(reference);
 }
 
+export function buildPlotToolTabs(activeView: StrategyPlotToolView): StrategyPlotToolTab[] {
+  const tabs: Array<Pick<StrategyPlotToolTab, "id" | "label" | "tabId" | "panelId">> = [
+    {
+      id: "workspace",
+      label: "Workstation",
+      tabId: "plottool-workspace-tab",
+      panelId: "plottool-workspace-panel"
+    },
+    {
+      id: "statistics",
+      label: "Statistics",
+      tabId: "plottool-statistics-tab",
+      panelId: "plottool-statistics-panel"
+    }
+  ];
+
+  return tabs.map((tab) => {
+    const selected = tab.id === activeView;
+
+    return {
+      ...tab,
+      selected,
+      buttonVariant: selected ? "secondary" : "ghost",
+      tabIndex: selected ? 0 : -1,
+      ariaLabel: tab.label
+    };
+  });
+}
+
+export function plotToolTabIdForView(view: StrategyPlotToolView): string {
+  return `plottool-${view}-tab`;
+}
+
+export function nextPlotToolViewForKey(
+  currentView: StrategyPlotToolView,
+  key: string
+): StrategyPlotToolView | null {
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return currentView === "workspace" ? "statistics" : "workspace";
+  }
+
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return currentView === "workspace" ? "statistics" : "workspace";
+  }
+
+  if (key === "Home") {
+    return "workspace";
+  }
+
+  if (key === "End") {
+    return "statistics";
+  }
+
+  return null;
+}
+
 export function buildRunTable(
   runs: StrategyRunRecord[],
   options: {
@@ -2107,6 +1810,492 @@ export function buildRunTable(
     hasRows: runs.length > 0,
     caption: "Strategy runs available for compare, diff, and detail review.",
     emptyText: "No strategy runs available. Start a backtest or paper session, then refresh Strategy."
+  };
+}
+
+function buildPlotToolStateFromApiOrFallback(
+  plotToolFromApi: StrategyPlotToolPayload | null | undefined
+): StrategyPlotToolState {
+  if (plotToolFromApi?.workspace && plotToolFromApi.statistics) {
+    const workspace = plotToolFromApi.workspace as StrategyPlotWorkspaceState;
+    const statistics = plotToolFromApi.statistics as StrategyPlotStatisticsState;
+    const status = plotToolFromApi.analyticsEvidenceStatus;
+    if (status !== "Retained" && status !== "Illustrative") {
+      const empty = buildEmptyPlotToolState();
+      const detail = "No retained statistical observations are connected. Run metadata does not establish a scatter history, distribution or regression.";
+      return {
+        ...empty,
+        analyticsEvidenceStatus: status === "Unavailable" ? "Unavailable" : "Unverified",
+        studies: Array.isArray(plotToolFromApi.studies) ? plotToolFromApi.studies as StrategyPlotStudyItem[] : [],
+        workspace: { ...empty.workspace, title: "Statistical observations unavailable", description: detail,
+          studyTableEmptyText: detail, statusBadgeLabel: "ANALYTICS UNAVAILABLE", metaItems: ["Statistical evidence unavailable"] },
+        statistics: { ...empty.statistics, title: "Statistical evidence unavailable", description: detail }
+      };
+    }
+
+    return {
+      analyticsEvidenceStatus: status,
+      studies: (plotToolFromApi.studies as StrategyPlotStudyItem[]) ?? [],
+      workspace: ensurePlotToolWorkspaceChartState(workspace),
+      statistics: ensurePlotToolStatisticsChartState(statistics)
+    };
+  }
+
+  return buildEmptyPlotToolState();
+}
+
+function buildEmptyPlotToolState(): StrategyPlotToolState {
+  const xAxisLabel = "Spread";
+  const yAxisLabel = "Implied volatility";
+  const focusPoint: StrategyPlotFocusPointState = {
+    label: "No marker",
+    xValueText: "N/A",
+    yValueText: "N/A",
+    detail: "Connect strategy analytics before inspecting scatter observations."
+  };
+
+  return {
+    analyticsEvidenceStatus: "Unavailable",
+    studies: [],
+    workspace: {
+      eyebrow: "Strategy · PlotTool",
+      title: "PlotTool catalog not connected",
+      description: "Strategy analytics are not connected. Connect a strategy analytics source to inspect notebooks, scatter analysis, or statistics.",
+      statusBadgeLabel: "NOT CONNECTED",
+      statusBadgeVariant: "outline",
+      expression: "Strategy analytics not connected",
+      toolbarPills: ["No catalog", "No samples", "No overlay", "No diff"],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: [],
+      studyTableEmptyText: "No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.",
+      studyTableCaption: "PlotTool notebooks are available after the Strategy endpoint returns retained studies.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
+      metaItems: ["Catalog not connected", "0 obs"],
+      xAxisLabel,
+      yAxisLabel,
+      xTicks: [],
+      yTicks: [],
+      points: [],
+      scatterChart: buildPlotToolScatterChartState({
+        points: [],
+        xTicks: [],
+        yTicks: [],
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: { x: 0, y: 0, emphasis: false },
+        focusPoint,
+        chartStudyLabel: "Unconnected PlotTool"
+      }),
+      studySummary: [
+        { id: "source", label: "Source", value: "Not connected" },
+        { id: "catalog", label: "Formula catalog", value: "Unavailable" },
+        { id: "samples", label: "Samples", value: "0" }
+      ],
+      legendItems: [
+        { id: "history", label: "History", detail: "No observations", tone: "muted" },
+        { id: "current", label: "Current", detail: "No marker", tone: "muted" },
+        { id: "trend", label: "OLS fit", detail: "Unavailable", tone: "muted" }
+      ],
+      focusPoint,
+      signalCards: [
+        {
+          id: "connection",
+          label: "Connection",
+          value: "Unavailable",
+          detail: "Strategy analytics have not returned any data.",
+          tone: "warning"
+        }
+      ],
+      consoleTitle: "Expression editor unavailable",
+      consoleBody: "Connect a governed formula catalog before authoring or previewing PlotTool expressions here.",
+      overlayTitle: "Meridian overlays",
+      overlayItems: [
+        "Notebook coverage: no retained PlotTool studies.",
+        "Evidence posture: unavailable until strategy analytics are connected.",
+        "Diff posture: unavailable until strategy analytics are connected."
+      ]
+    },
+    statistics: {
+      eyebrow: "Statistics view",
+      title: "PlotTool statistics not connected",
+      description: "No PlotTool distribution, regression, or observation sheet is available from the Strategy endpoint.",
+      summaryTiles: [],
+      distributionBars: [],
+      distributionChart: buildPlotToolDistributionChartState([]),
+      distributionSummary: "Connect strategy analytics before reviewing residual distributions.",
+      distributionFootnote: "No latest observation is available.",
+      moments: [],
+      momentsTable: buildPlotToolMomentsTable([]),
+      regression: {
+        equation: "Unavailable",
+        detailItems: ["Connect strategy analytics before reviewing regression output."]
+      },
+      sampleRows: [],
+      sampleTable: buildPlotToolSampleTable([])
+    }
+  };
+}
+
+export function buildPlotToolState({
+  metrics,
+  runs,
+  selectedRuns,
+  comparison,
+  runDiff
+}: {
+  metrics: MetricSnapshot[];
+  runs: StrategyRunRecord[];
+  selectedRuns: StrategyRunRecord[];
+  comparison: RunComparisonRow[];
+  runDiff: RunDiff | null;
+}): StrategyPlotToolState {
+  const activeRun = selectedRuns[0] ?? runs[0] ?? null;
+  const companionRun = selectedRuns[1] ?? runs[1] ?? null;
+  const studyName = formatText(activeRun?.strategyName ?? "Meridian PlotTool");
+  const companionName = companionRun ? formatText(companionRun.strategyName) : null;
+  const datasetName = formatText(activeRun?.dataset ?? "Cross-asset sandbox");
+  const windowName = formatText(activeRun?.window ?? "MAX");
+  const observationCount = 2184 + (runs.length * 9);
+  const correlation = 0.84;
+  const rSquared = 0.71;
+  const beta = 0.48;
+  const meanX = 66.84;
+  const meanY = 71.42;
+  // Run-linked metrics never fall back to invented literals: a missing value
+  // renders "Unavailable" so the PlotTool never shows fabricated performance.
+  const parsedSharpe = parseDecimalToken(activeRun?.sharpe);
+  const parsedReturn = activeRun?.totalReturn ?? parsePercentToken(activeRun?.pnl);
+  const maxDrawdown = comparison[0]?.maxDrawdown ?? null;
+  const netPnl = comparison[0]?.netPnl ?? activeRun?.netPnl ?? null;
+  const queuedMetric = metrics.find((metric) => /queue/i.test(metric.label))?.value ?? `${runs.filter((run) => run.status === "Queued").length}`;
+  const reviewMetric = metrics.find((metric) => /review/i.test(metric.label))?.value ?? `${runs.filter((run) => /review/i.test(run.status)).length}`;
+  const promotionCue = formatPromotionState(activeRun?.promotionState ?? comparison[0]?.promotionState ?? null);
+  const evidenceCue = comparison[0] ? buildComparisonEvidenceText(comparison[0]) : "Compare a pair to attach ledger and audit evidence.";
+  const diffCue = runDiff
+    ? `${runDiff.parameterChanges.length} parameter changes and ${runDiff.addedPositions.length + runDiff.removedPositions.length + runDiff.modifiedPositions.length} position changes linked.`
+    : "Load a diff to attach position and parameter drift.";
+  const chartStudyLabel = companionName ? `${studyName} vs ${companionName}` : studyName;
+  const latestObservation = plotToolSampleRows[0];
+  const focusPoint = findLastPlotPoint(plotToolScatterPoints, (point) => point.emphasis) ?? plotToolScatterPoints[plotToolScatterPoints.length - 1];
+  const xAxisLabel = "Spread (bps)";
+  const yAxisLabel = "3m implied vol";
+  const focusPointState: StrategyPlotFocusPointState = {
+    label: "Current marker",
+    xValueText: latestObservation.spreadText,
+    yValueText: latestObservation.impliedVolText,
+    detail: `${latestObservation.signalText} · highlighted at ${formatText(activeRun?.lastUpdated ?? "2m ago")} · x ${focusPoint.x}, y ${focusPoint.y}`
+  };
+  const momentRows: StrategyPlotMomentRow[] = [
+    { id: "net-pnl", label: "Net P&L", value: formatMoney(netPnl, true), benchmark: "Pair summary" },
+    { id: "return", label: "Total return", value: formatSignedPercent(parsedReturn), benchmark: "Run linked" },
+    { id: "sharpe", label: "Sharpe ratio", value: formatNullableNumber(parsedSharpe, 3), benchmark: "Operator review" },
+    { id: "drawdown", label: "Max drawdown", value: formatSignedPercent(maxDrawdown), benchmark: "Distribution tail" },
+    { id: "promotion", label: "Promotion state", value: promotionCue, benchmark: "Strategy posture" },
+    { id: "evidence", label: "Evidence pack", value: evidenceCue, benchmark: "Ledger / audit" }
+  ];
+  const sampleRows = plotToolSampleRows;
+  const studyRows: StrategyPlotStudyItem[] = runs.map((run, index) => ({
+    id: run.id,
+    title: formatText(run.strategyName),
+    subtitle: `${formatText(run.dataset)} · ${formatText(run.window)} · ${formatText(run.engine)}`,
+    statusText: formatText(run.status),
+    statusBadgeLabel: formatText(run.mode).toUpperCase(),
+    statusBadgeVariant: badgeVariantForMode(run.mode),
+    metricText: `${formatText(run.pnl)} · Sharpe ${formatText(run.sharpe)}`,
+    noteText: formatOptionalNotes(run.notes),
+    isActive: activeRun ? run.id === activeRun.id : index === 0,
+    detailPanelId: STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID,
+    detailExpanded: false,
+    ariaLabel: `${formatText(run.strategyName)} PlotTool study. ${formatText(run.status)} ${formatText(run.mode)}. ${formatText(run.pnl)} and Sharpe ${formatText(run.sharpe)}.`,
+    rowSelectAriaLabel: `Inspect ${formatText(run.strategyName)} PlotTool study detail`
+  }));
+
+  return {
+    analyticsEvidenceStatus: "Illustrative",
+    studies: studyRows,
+    workspace: {
+      eyebrow: "Strategy · PlotTool",
+      title: `${chartStudyLabel} workstation`,
+      description: "Meridian notebooks, evidence cues, and factor scatter analysis folded into the Strategy route.",
+      statusBadgeLabel: formatText(activeRun?.mode ?? "Strategy").toUpperCase(),
+      statusBadgeVariant: badgeVariantForMode(activeRun?.mode ?? "Strategy"),
+      expression: buildPlotExpression(activeRun, companionRun),
+      toolbarPills: [
+        windowName,
+        `Daily (${windowName})`,
+        companionName ? "Pair overlay" : "Single study",
+        runDiff ? "Diff linked" : "0d lag"
+      ],
+      notebookToolbarAriaLabel: "Strategy notebook filters",
+      notebookToolbarItems: buildPlotNotebookToolbarItems(studyRows, activeRun?.id ?? runs[0]?.id ?? null),
+      studyTableEmptyText: "No retained PlotTool studies are available.",
+      studyTableCaption: "Retained strategy notebooks aligned to the active PlotTool workspace. Select a row to inspect the notebook detail.",
+      selectedStudyEmptyText: "No PlotTool study is selected.",
+      metaItems: [
+        datasetName,
+        `${formatCountValue(observationCount)} obs`,
+        `β ${beta.toFixed(2)}`,
+        `R² ${rSquared.toFixed(2)}`,
+        `ρ ${correlation.toFixed(2)}`
+      ],
+      xAxisLabel,
+      yAxisLabel,
+      xTicks: plotToolXTicks,
+      yTicks: plotToolYTicks,
+      points: plotToolScatterPoints,
+      scatterChart: buildPlotToolScatterChartState({
+        points: plotToolScatterPoints,
+        illustrative: true,
+        xTicks: plotToolXTicks,
+        yTicks: plotToolYTicks,
+        xAxisLabel,
+        yAxisLabel,
+        markerPoint: focusPoint,
+        focusPoint: focusPointState,
+        chartStudyLabel
+      }),
+      studySummary: [
+        { id: "primary", label: "Primary notebook", value: studyName },
+        { id: "companion", label: "Pair target", value: companionName ?? "Select a second run" },
+        { id: "promotion", label: "Promotion posture", value: promotionCue },
+        { id: "evidence", label: "Evidence pack", value: evidenceCue },
+        { id: "diff", label: "Diff posture", value: diffCue },
+        { id: "refresh", label: "Last refresh", value: formatText(activeRun?.lastUpdated ?? latestObservation.timestamp) }
+      ],
+      legendItems: [
+        { id: "history", label: "History", detail: `${formatCountValue(observationCount)} observations`, tone: "history" },
+        { id: "current", label: "Current", detail: `${latestObservation.spreadText} / ${latestObservation.impliedVolText}`, tone: "current" },
+        { id: "trend", label: "OLS fit", detail: "y = 0.48x + 39.31", tone: "trend" },
+        { id: "refresh", label: "Refresh", detail: formatText(activeRun?.lastUpdated ?? "2m ago"), tone: "muted" }
+      ],
+      focusPoint: focusPointState,
+      signalCards: [
+        {
+          id: "correlation",
+          label: "Correlation",
+          value: correlation.toFixed(2),
+          detail: `${studyName} paired with ${datasetName}`,
+          tone: "success"
+        },
+        {
+          id: "regression",
+          label: "Regression beta",
+          value: beta.toFixed(2),
+          detail: "OLS slope on the active notebook",
+          tone: "default"
+        },
+        {
+          id: "queued",
+          label: "Queued studies",
+          value: queuedMetric,
+          detail: "Run-library backlog still attached to Strategy",
+          tone: Number.parseInt(queuedMetric, 10) > 0 ? "warning" : "default"
+        },
+        {
+          id: "review",
+          label: "Review queue",
+          value: reviewMetric,
+          detail: promotionCue === "Unavailable" ? "Promotion posture pending." : promotionCue,
+          tone: reviewMetric === "0" ? "success" : "warning"
+        }
+      ],
+      consoleTitle: "Expression editor",
+      consoleBody: companionName
+        ? `Meridian is staging ${chartStudyLabel} for comparison. Pair evidence, diff results, and promotion posture stay aligned with the selected run pair.`
+        : "Select a second run to promote this notebook into pair analysis. Strategy keeps compare, diff, and promotion evidence attached to the PlotTool console.",
+      overlayTitle: "Meridian overlays",
+      overlayItems: [
+        `Notebook coverage: ${runs.length} retained ${runs.length === 1 ? "study" : "studies"} in Strategy.`,
+        `Evidence posture: ${evidenceCue}`,
+        `Diff posture: ${diffCue}`
+      ]
+    },
+    statistics: {
+      eyebrow: "Statistics view",
+      title: `${chartStudyLabel} analysis`,
+      description: `${datasetName} · ${windowName} · refreshed ${formatText(activeRun?.lastUpdated ?? "2m ago")}`,
+      summaryTiles: [
+        {
+          id: "observations",
+          label: "N obs",
+          value: formatCountValue(observationCount),
+          detail: "99.7% complete",
+          tone: "default"
+        },
+        {
+          id: "mean-y",
+          label: "Mean (Y)",
+          value: meanY.toFixed(2),
+          detail: "σ̂ ±18.30",
+          tone: "default"
+        },
+        {
+          id: "mean-x",
+          label: "Mean (X)",
+          value: meanX.toFixed(2),
+          detail: "σ̂ ±32.41",
+          tone: "default"
+        },
+        {
+          id: "correlation",
+          label: "Correlation",
+          value: correlation.toFixed(2),
+          detail: "Pearson ρ",
+          tone: "success"
+        },
+        {
+          id: "r-squared",
+          label: "R²",
+          value: rSquared.toFixed(2),
+          detail: "OLS fit",
+          tone: "success"
+        },
+        {
+          id: "beta",
+          label: "β (slope)",
+          value: beta.toFixed(2),
+          detail: "SE 0.014",
+          tone: "success"
+        },
+        {
+          id: "hit-rate",
+          label: "Hit rate",
+          value: "62.3%",
+          detail: "5d horizon",
+          tone: "success"
+        },
+        {
+          id: "sharpe",
+          label: "Sharpe (5d)",
+          value: formatNullableNumber(parsedSharpe, 2),
+          detail: "Run-linked",
+          tone: parsedSharpe === null ? "default" : parsedSharpe >= 1 ? "success" : "warning"
+        },
+        {
+          id: "drawdown",
+          label: "Max DD",
+          value: formatSignedPercent(maxDrawdown),
+          detail: "Recent window",
+          tone: maxDrawdown === null ? "default" : maxDrawdown < -0.1 ? "danger" : "warning"
+        }
+      ],
+      distributionBars: plotToolDistributionBars,
+      distributionChart: buildPlotToolDistributionChartState(plotToolDistributionBars),
+      distributionSummary: `${formatCountValue(observationCount)} samples centered on spread ${meanX.toFixed(2)} and IV ${meanY.toFixed(2)}.`,
+      distributionFootnote: `Latest observation ${latestObservation.timestamp} · ${latestObservation.signalText} · z-score ${latestObservation.zScoreText}.`,
+      moments: momentRows,
+      momentsTable: buildPlotToolMomentsTable(momentRows),
+      regression: {
+        equation: "y = 0.48x + 39.31",
+        detailItems: [
+          `${chartStudyLabel} stays inside Meridian's evidence-backed strategy workspace.`,
+          `Queued studies: ${queuedMetric} · Review required: ${reviewMetric}.`,
+          diffCue
+        ]
+      },
+      sampleRows,
+      sampleTable: buildPlotToolSampleTable(sampleRows)
+    }
+  };
+}
+
+export function buildPlotStudyRows(
+  studies: StrategyPlotStudyItem[],
+  selectedStudyId: string | null = resolveSelectedPlotStudyId(studies, null)
+): StrategyPlotStudyItem[] {
+  return studies.map((study) => {
+    const title = formatText(study.title);
+    const statusText = formatText(study.statusText);
+    const metricText = formatText(study.metricText);
+    const detailExpanded = study.id === selectedStudyId;
+
+    return {
+      ...study,
+      title,
+      subtitle: formatText(study.subtitle),
+      statusText,
+      statusBadgeLabel: formatText(study.statusBadgeLabel).toUpperCase(),
+      statusBadgeVariant: study.statusBadgeVariant ?? badgeVariantForMode(study.statusBadgeLabel),
+      metricText,
+      noteText: formatOptionalNotes(study.noteText),
+      detailPanelId: STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID,
+      detailExpanded,
+      ariaLabel: `${title} PlotTool study. ${statusText}. ${metricText}.`,
+      rowSelectAriaLabel: `Inspect ${title} PlotTool study detail`
+    };
+  });
+}
+
+export function buildPlotStudyDetail(study: StrategyPlotStudyItem): StrategyPlotStudyDetailState {
+  return {
+    id: study.id,
+    panelId: STRATEGY_PLOT_STUDY_DETAIL_PANEL_ID,
+    ariaLabel: `Selected PlotTool study detail for ${study.title}`,
+    eyebrow: "Selected notebook",
+    title: study.title,
+    subtitle: study.subtitle,
+    description: `${study.statusText} study retained in the PlotTool workstation. ${study.noteText}`,
+    statusLabel: study.statusBadgeLabel,
+    statusVariant: study.statusBadgeVariant,
+    fields: [
+      { label: "Study ID", value: study.id },
+      { label: "Status", value: study.statusText },
+      { label: "Metric", value: study.metricText },
+      { label: "Notebook", value: study.isActive ? "Active PlotTool notebook" : "Retained notebook" },
+      { label: "Operator note", value: study.noteText }
+    ]
+  };
+}
+
+export function buildPlotNotebookToolbarItems(
+  studies: StrategyPlotStudyItem[],
+  selectedStudyId: string | null = resolveSelectedPlotStudyId(studies, null)
+): StrategyToolbarItem[] {
+  const selectedStudy = selectedStudyId
+    ? studies.find((study) => study.id === selectedStudyId) ?? null
+    : null;
+
+  return [
+    { id: "count", label: "Notebook set", value: `${studies.length} retained` },
+    { id: "selected", label: "Selected", value: selectedStudy ? formatText(selectedStudy.title) : "None", active: selectedStudy !== null },
+    { id: "lane", label: "Workspace", value: "Strategy" }
+  ];
+}
+
+function resolveSelectedPlotStudyId(
+  studies: StrategyPlotStudyItem[],
+  selectedStudyId: string | null
+): string | null {
+  if (studies.length === 0) {
+    return null;
+  }
+
+  if (selectedStudyId && studies.some((study) => study.id === selectedStudyId)) {
+    return selectedStudyId;
+  }
+
+  return studies.find((study) => study.isActive)?.id ?? studies[0].id;
+}
+
+export function buildPlotToolMomentsTable(
+  moments: StrategyPlotMomentRow[]
+): StrategyResultTableState<StrategyPlotMomentRow> {
+  return {
+    rows: moments,
+    hasRows: moments.length > 0,
+    caption: "PlotTool moments for the active strategy pair.",
+    emptyText: "No PlotTool moments are available for the active strategy context."
+  };
+}
+
+export function buildPlotToolSampleTable(
+  samples: StrategyPlotSampleRow[]
+): StrategyResultTableState<StrategyPlotSampleRow> {
+  return {
+    rows: samples,
+    hasRows: samples.length > 0,
+    caption: "Recent PlotTool observations with spread, implied volatility, z-score, and signal.",
+    emptyText: "No PlotTool observation rows are available for the active strategy context."
   };
 }
 
@@ -2785,6 +2974,28 @@ function buildSelectionText(selectedRuns: StrategyRunRecord[]): string {
   return `${selectedRuns[0].strategyName} vs ${selectedRuns[1].strategyName}`;
 }
 
+function buildPlotExpression(
+  activeRun: StrategyRunRecord | null,
+  companionRun: StrategyRunRecord | null
+): string {
+  const primaryKey = sanitizeDomId(activeRun?.strategyName ?? "plottool").replace(/-/g, "_");
+  const companionKey = companionRun
+    ? sanitizeDomId(companionRun.strategyName).replace(/-/g, "_")
+    : null;
+
+  if (companionKey) {
+    return `${primaryKey}.spread() vs ${companionKey}.implied_volatility(3m, forward, 100)`;
+  }
+
+  return `${primaryKey}.spread() vs ${primaryKey}.implied_volatility(3m, forward, 100)`;
+}
+
+function buildComparisonEvidenceText(row: RunComparisonRow): string {
+  const ledgerText = row.hasLedger ? "Ledger linked" : "Ledger missing";
+  const auditText = row.hasAuditTrail ? "Audit linked" : "Audit missing";
+  return `${ledgerText}; ${auditText}`;
+}
+
 function formatArtifactCompleteness(completeness: RunComparisonRow["artifactCompleteness"]): string {
   if (!completeness) {
     return "Artifact completeness unavailable";
@@ -2830,6 +3041,301 @@ function buildRunDiffMetadataSummary(runDiff: RunDiff): string {
     `Base ${baseStrategy}`,
     `Target ${targetStrategy}`
   ].join(" | ");
+}
+
+function ensurePlotToolWorkspaceChartState(workspace: StrategyPlotWorkspaceState): StrategyPlotWorkspaceState {
+  if (workspace.scatterChart) {
+    return workspace;
+  }
+
+  const points = workspace.points ?? [];
+  const markerPoint = findLastPlotPoint(points, (point) => point.emphasis) ?? points[points.length - 1] ?? { x: 0, y: 0, emphasis: false };
+  const focusPoint = workspace.focusPoint ?? {
+    label: "Current marker",
+    xValueText: "Unavailable",
+    yValueText: "Unavailable",
+    detail: `Selected PlotTool marker at x ${markerPoint.x}, y ${markerPoint.y}.`
+  };
+
+  return {
+    ...workspace,
+    xTicks: workspace.xTicks ?? [],
+    yTicks: workspace.yTicks ?? [],
+    xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+    yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+    points,
+    focusPoint,
+    scatterChart: buildPlotToolScatterChartState({
+      points,
+      xTicks: workspace.xTicks ?? [],
+      yTicks: workspace.yTicks ?? [],
+      xAxisLabel: workspace.xAxisLabel ?? "Spread (bps)",
+      yAxisLabel: workspace.yAxisLabel ?? "3m implied vol",
+      markerPoint,
+      focusPoint,
+      chartStudyLabel: workspace.title ?? "PlotTool"
+    })
+  };
+}
+
+function ensurePlotToolStatisticsChartState(statistics: StrategyPlotStatisticsState): StrategyPlotStatisticsState {
+  if (statistics.distributionChart) {
+    return statistics;
+  }
+
+  const distributionBars = statistics.distributionBars ?? [];
+
+  return {
+    ...statistics,
+    distributionBars,
+    distributionChart: buildPlotToolDistributionChartState(distributionBars)
+  };
+}
+
+function buildPlotToolScatterChartState({
+  points,
+  xTicks,
+  yTicks,
+  xAxisLabel,
+  yAxisLabel,
+  markerPoint,
+  focusPoint,
+  chartStudyLabel,
+  illustrative = false
+}: {
+  points: StrategyPlotScatterPoint[];
+  xTicks: StrategyPlotAxisTick[];
+  yTicks: StrategyPlotAxisTick[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+  markerPoint: StrategyPlotScatterPoint;
+  focusPoint: StrategyPlotFocusPointState;
+  chartStudyLabel: string;
+  illustrative?: boolean;
+}): StrategyPlotScatterChartState {
+  const labelX = Math.min(markerPoint.x + 10, 512);
+  const labelY = Math.max(markerPoint.y - 26, 52);
+  const labelText = `${focusPoint.xValueText}, ${focusPoint.yValueText}`;
+
+  return {
+    ariaLabel: `${chartStudyLabel} PlotTool scatter chart. Current marker ${labelText}.`,
+    titleId: "plottool-scatter-title",
+    descriptionId: "plottool-scatter-description",
+    title: `${chartStudyLabel} scatter`,
+    description: `${xAxisLabel} against ${yAxisLabel}. ${focusPoint.detail}`,
+    viewBox: "0 0 640 320",
+    gridLines: buildPlotToolGridLines(),
+    xTicks,
+    yTicks,
+    xAxisLabel,
+    yAxisLabel,
+    trendLine: {
+      points: illustrative ? "90,250 150,222 210,198 270,170 330,142 390,114 450,88 510,66 564,54" : "",
+      stroke: "var(--chart-up)",
+      strokeWidth: 2,
+      strokeDasharray: "5 4"
+    },
+    points: points.map((point, index) => ({
+      id: `plot-point-${index}`,
+      x: point.x,
+      y: point.y,
+      radius: point.emphasis ? 5 : 3.25,
+      fill: point.emphasis ? "var(--chart-up)" : "var(--chart-ma20)",
+      fillOpacity: point.emphasis ? 0.95 : 0.65,
+      ariaLabel: `${point.emphasis ? "Emphasized" : "History"} observation ${index + 1}, x ${point.x}, y ${point.y}`
+    })),
+    marker: {
+      x: markerPoint.x,
+      y: markerPoint.y,
+      radius: 6,
+      fill: "var(--state-warn-fg)",
+      stroke: "var(--surface-topbar)",
+      strokeWidth: 2,
+      labelX,
+      labelY,
+      labelTextX: labelX + 8,
+      labelTextY: labelY + 14,
+      labelWidth: 96,
+      labelHeight: 22,
+      labelRadius: 4,
+      labelFill: "var(--surface-input)",
+      labelStroke: "var(--state-warn-fg)",
+      labelText,
+      verticalGuide: {
+        id: "current-marker-x",
+        x1: markerPoint.x,
+        y1: 40,
+        x2: markerPoint.x,
+        y2: 290,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      },
+      horizontalGuide: {
+        id: "current-marker-y",
+        x1: 50,
+        y1: markerPoint.y,
+        x2: 610,
+        y2: markerPoint.y,
+        stroke: "var(--state-warn-fg)",
+        strokeWidth: 1,
+        strokeDasharray: "4 4",
+        opacity: 0.55
+      }
+    }
+  };
+}
+
+function buildPlotToolGridLines(): StrategyPlotChartLine[] {
+  const horizontal = [40, 90, 140, 190, 240, 290].map((y) => ({
+    id: `h-${y}`,
+    x1: 50,
+    y1: y,
+    x2: 610,
+    y2: y,
+    stroke: y === 290 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+  const vertical = [50, 130, 210, 290, 370, 450, 530, 610].map((x) => ({
+    id: `v-${x}`,
+    x1: x,
+    y1: 40,
+    x2: x,
+    y2: 290,
+    stroke: x === 50 ? "var(--chart-grid-major)" : "var(--chart-grid)",
+    strokeWidth: 1
+  }));
+
+  return [...horizontal, ...vertical];
+}
+
+function buildPlotToolDistributionChartState(bars: number[]): StrategyPlotDistributionChartState {
+  return {
+    ariaLabel: "PlotTool residual distribution chart",
+    bars: bars.map((bar, index) => ({
+      id: `distribution-bar-${index}`,
+      heightPercent: Math.max(bar, 4),
+      tone: index >= 8 && index <= 14 ? "selected" : "base",
+      ariaLabel: `Distribution bucket ${index + 1}: ${bar}% density`
+    }))
+  };
+}
+
+const plotToolXTicks: StrategyPlotAxisTick[] = [
+  { value: 40, label: "20" },
+  { value: 120, label: "40" },
+  { value: 200, label: "60" },
+  { value: 280, label: "80" },
+  { value: 360, label: "100" },
+  { value: 440, label: "140" },
+  { value: 520, label: "180" },
+  { value: 600, label: "200" }
+];
+
+const plotToolYTicks: StrategyPlotAxisTick[] = [
+  { value: 44, label: "120" },
+  { value: 98, label: "100" },
+  { value: 152, label: "80" },
+  { value: 206, label: "60" },
+  { value: 260, label: "40" }
+];
+
+const plotToolScatterPoints: StrategyPlotScatterPoint[] = [
+  { x: 90, y: 250, emphasis: false },
+  { x: 105, y: 244, emphasis: false },
+  { x: 118, y: 238, emphasis: false },
+  { x: 132, y: 232, emphasis: true },
+  { x: 148, y: 224, emphasis: false },
+  { x: 164, y: 216, emphasis: false },
+  { x: 180, y: 208, emphasis: false },
+  { x: 196, y: 200, emphasis: false },
+  { x: 214, y: 192, emphasis: true },
+  { x: 230, y: 184, emphasis: false },
+  { x: 246, y: 176, emphasis: false },
+  { x: 264, y: 168, emphasis: false },
+  { x: 282, y: 160, emphasis: false },
+  { x: 300, y: 152, emphasis: true },
+  { x: 318, y: 144, emphasis: false },
+  { x: 336, y: 136, emphasis: false },
+  { x: 356, y: 128, emphasis: false },
+  { x: 374, y: 120, emphasis: false },
+  { x: 394, y: 112, emphasis: true },
+  { x: 414, y: 104, emphasis: false },
+  { x: 434, y: 96, emphasis: false },
+  { x: 456, y: 88, emphasis: false },
+  { x: 478, y: 80, emphasis: false },
+  { x: 500, y: 74, emphasis: true },
+  { x: 520, y: 68, emphasis: false },
+  { x: 542, y: 62, emphasis: false },
+  { x: 564, y: 56, emphasis: false }
+];
+
+const plotToolDistributionBars = [12, 20, 28, 39, 50, 64, 75, 86, 94, 100, 96, 89, 80, 69, 57, 46, 36, 28, 22, 18, 14, 11, 8, 5];
+
+const plotToolSampleRows: StrategyPlotSampleRow[] = [
+  {
+    id: "row-1",
+    timestamp: "2026-04-25",
+    spreadText: "88.40",
+    impliedVolText: "73.80",
+    zScoreText: "+1.14",
+    signalText: "Crowded vol",
+    tone: "warning"
+  },
+  {
+    id: "row-2",
+    timestamp: "2026-04-24",
+    spreadText: "82.10",
+    impliedVolText: "69.20",
+    zScoreText: "+0.74",
+    signalText: "Carry stable",
+    tone: "success"
+  },
+  {
+    id: "row-3",
+    timestamp: "2026-04-23",
+    spreadText: "77.40",
+    impliedVolText: "64.50",
+    zScoreText: "+0.32",
+    signalText: "Neutral",
+    tone: "default"
+  },
+  {
+    id: "row-4",
+    timestamp: "2026-04-22",
+    spreadText: "69.90",
+    impliedVolText: "59.10",
+    zScoreText: "-0.18",
+    signalText: "Compression",
+    tone: "default"
+  },
+  {
+    id: "row-5",
+    timestamp: "2026-04-21",
+    spreadText: "62.80",
+    impliedVolText: "53.40",
+    zScoreText: "-0.74",
+    signalText: "Mean reversion",
+    tone: "success"
+  }
+];
+
+function badgeVariantForMode(mode: string | null | undefined): StrategyComparisonBadgeVariant {
+  const normalized = mode?.trim().toLowerCase();
+  if (normalized === "paper") {
+    return "paper";
+  }
+
+  if (normalized === "live") {
+    return "live";
+  }
+
+  if (normalized === "backtest" || normalized === "research") {
+    return "research";
+  }
+
+  return "outline";
 }
 
 function badgeVariantForStatus(status: string | null | undefined): StrategyComparisonBadgeVariant {
@@ -2897,3 +3403,17 @@ function modeBadgeVariantFor(mode: StrategyRunRecord["mode"]): StrategyRunDetail
   return "research";
 }
 
+function sanitizeDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "run";
+}
+
+function findLastPlotPoint<T>(items: T[], predicate: (item: T) => boolean): T | undefined {
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    if (predicate(items[index])) {
+      return items[index];
+    }
+  }
+
+  return undefined;
+}

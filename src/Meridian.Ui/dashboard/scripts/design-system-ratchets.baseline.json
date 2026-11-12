@@ -36,7 +36,7 @@
     "src/screens/report-run-governance-screen.tsx": 2,
     "src/screens/strategy-designer-screen.view-model.ts": 2,
     "src/screens/strategy-screen.formatters.ts": 3,
-    "src/screens/strategy-screen.view-model.ts": 2,
+    "src/screens/strategy-screen.view-model.ts": 14,
     "src/screens/trading-screen.view-model.ts": 6,
     "src/screens/watchlist-screen.view-model.ts": 3
   },

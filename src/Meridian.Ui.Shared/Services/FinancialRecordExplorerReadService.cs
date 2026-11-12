@@ -1021,7 +1021,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 .Where(static text => !string.IsNullOrWhiteSpace(text))
                 .Select(static text => text!.Trim()));
 
-        if (selectedView is null && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
+        if (selectedView is null && string.IsNullOrWhiteSpace(requestedViewId) &&
+            string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
         {
             return (savedViews, summaryItems, rows);
         }
@@ -1239,7 +1240,7 @@ public sealed partial class FinancialRecordExplorerReadService
                 ColumnIds: [])
         ];
 
-    internal static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
+    private static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
         IReadOnlyList<FinancialRecordExplorerFilterDto?>? filters)
         => filters?
             .Where(static filter =>
@@ -1259,7 +1260,7 @@ public sealed partial class FinancialRecordExplorerReadService
             .ToArray()
             ?? [];
 
-    internal static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
+    private static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
         => columnIds?
             .Where(static columnId => !string.IsNullOrWhiteSpace(columnId))
             .Select(static columnId => columnId!.Trim())
