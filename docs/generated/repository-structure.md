@@ -3112,7 +3112,7 @@ Meridian-main
 │   │   │   │   │       ├── HexDedupLedger.cs
 │   │   │   │   │       ├── HexDedupLedger.original.cs
 │   │   │   │   │       ├── measurements.csv
-│   │   │   │   │       ├── Profile.csproj
+│   │   │   │   │       ├── Profile.csproj.gz
 │   │   │   │   │       ├── Program.cs
 │   │   │   │   │       ├── README.md
 │   │   │   │   │       ├── ReuseDedupLedger.cs
@@ -3121,13 +3121,13 @@ Meridian-main
 │   │   │   │   │       └── summary.csv
 │   │   │   │   ├── components
 │   │   │   │   │   ├── before
-│   │   │   │   │   │   ├── Profile.csproj
+│   │   │   │   │   │   ├── Profile.csproj.gz
 │   │   │   │   │   │   └── Program.cs
 │   │   │   │   │   ├── candidates
 │   │   │   │   │   │   ├── managed
-│   │   │   │   │   │   │   └── Profile.csproj
+│   │   │   │   │   │   │   └── Profile.csproj.gz
 │   │   │   │   │   │   ├── native
-│   │   │   │   │   │   │   └── Profile.csproj
+│   │   │   │   │   │   │   └── Profile.csproj.gz
 │   │   │   │   │   │   ├── LLxx.cs
 │   │   │   │   │   │   ├── LZ4Codec.cs
 │   │   │   │   │   │   ├── managed-measurements.csv
@@ -3139,7 +3139,7 @@ Meridian-main
 │   │   │   │   │   │   └── summary.csv
 │   │   │   │   │   ├── compression
 │   │   │   │   │   │   ├── measurements.csv
-│   │   │   │   │   │   ├── Profile.csproj
+│   │   │   │   │   │   ├── Profile.csproj.gz
 │   │   │   │   │   │   ├── Program.cs
 │   │   │   │   │   │   ├── README.md
 │   │   │   │   │   │   └── summary.csv
@@ -3157,7 +3157,7 @@ Meridian-main
 │   │   │   │   │   │   └── summary.csv
 │   │   │   │   │   └── packbits
 │   │   │   │   │       ├── measurements.csv
-│   │   │   │   │       ├── Profile.csproj
+│   │   │   │   │       ├── Profile.csproj.gz
 │   │   │   │   │       ├── Program.cs
 │   │   │   │   │       ├── README.md
 │   │   │   │   │       ├── run-environment.json
@@ -3182,6 +3182,7 @@ Meridian-main
 │   │   │   │   ├── receipts
 │   │   │   │   │   ├── current-main-integration.json
 │   │   │   │   │   ├── current-main-provider-integration.json
+│   │   │   │   │   ├── diagnostic-project-packaging.json
 │   │   │   │   │   ├── initial-committed-packet-verification.json
 │   │   │   │   │   ├── native-upstream-project-packaging.json
 │   │   │   │   │   ├── optimized-interrupted-budget-evidence.json
