@@ -122,6 +122,44 @@ public sealed class FactoredAmortizationLedgerBridgeTests
         ledger.Journal.Should().BeEmpty();
     }
 
+    [Fact]
+    public async Task NonTerminatingBalanceRatio_DoesNotRejectAValidPrincipalSegment()
+    {
+        var ratio = 2m / 3m;
+        var projection = Projection();
+        var row = projection.Schedule.Single() with
+        {
+            InterestAmount = 0.25m,
+            Factor = ratio,
+            InterestSegments =
+            [
+                new(Start, Start.AddDays(5), 3m, 0.15m, 1m, Start, End) { FactorAfter = ratio },
+                new(Start.AddDays(5), End, 2m, 0.10m, ratio, Start, End) { FactorAfter = ratio }
+            ]
+        };
+        projection = projection with { Schedule = [row], TermsUsed = projection.TermsUsed! with { PrincipalFace = 3m } };
+        var history = Enumerable.Range(0, 11).Select(offset => new FaceValueAccrualHolding(Start.AddDays(offset),
+            new FaceValueLot("thirds", Security, Start.AddDays(-1), 3m, 100m,
+                currentFactor: offset < 5 ? 1m : ratio), 1m, offset <= 5 ? 1m : ratio)).ToArray();
+        var ledger = new DomainLedger();
+        await Bridge(projection).PostProjectedCashFlowsAsync(Security, Ticker, ledger, Context(history, Start, End));
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(0.25m);
+    }
+
+    [Fact]
+    public async Task SelectedProjection_IsUsedWithoutRereadingTheSource()
+    {
+        var source = Substitute.For<ISecurityMasterCashFlowService>();
+        var projection = Projection();
+        var bridge = new SecurityMasterAmortizationLedgerBridge(source,
+            NullLogger<SecurityMasterAmortizationLedgerBridge>.Instance);
+        var ledger = new DomainLedger();
+        await bridge.PostProjectedCashFlowsAsync(Security, Ticker, ledger,
+            Context(History(100), Start, End) with { RetainedProjection = projection });
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(Ticker)).Should().Be(70m);
+        source.ReceivedCalls().Should().BeEmpty();
+    }
+
     private static AmortizationLedgerPostingContext Context(IReadOnlyList<FaceValueAccrualHolding> history, DateOnly from, DateOnly through)
         => new(AccrualWindow: new(from, through), AccrualHoldings: history);
 
