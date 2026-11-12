@@ -74,7 +74,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     /// </summary>
     public static IReadOnlyList<string> ModulesAddedAfterIdentityGate { get; } =
         ["exercise", "currencyPair", "notional", ProfileEnvelopeModule, "creditProtection", "structuredPayoff", "privateAssetValuation", "listingDetail",
-         "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "rateConvention", "contractualRate", "underlyingSwap", "debtClassification", "bondRedemption", "commodityContract", "digitalAsset", "underlyingExposure", "settlement", "classificationDetail", "fundShare", "referenceDataSource", "equityCapital", "trancheContract", "declaredSchedule"];
+         "bondCoupon", "principalSchedule", "swapLegs", "loanCovenants", "rateConvention", "contractualRate", "underlyingSwap", "debtClassification", "bondRedemption", "commodityContract", "digitalAsset", "underlyingExposure", "settlement", "classificationDetail", "fundShare", "referenceDataSource", "equityCapital", "trancheContract", "declaredSchedule", "bondWorkflow"];
 
     /// <summary>
     /// The economic-terms modules the serializer emits that this conversion does not read. Listed
@@ -309,6 +309,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
             accrualConventionsRecoverable: conventionsSince is not null);
 
         var exactDeclaredSchedule = ReadExactDeclaredSchedule(economicTerms, assetClass!);
+        var exactBondWorkflow = ReadExactBondWorkflow(economicTerms, assetClass!);
         var callModule = GetObject(economicTerms, "call");
         IReadOnlyList<JsonElement> callEntries = [];
         IReadOnlyList<JsonElement> putEntries = [];
@@ -341,6 +342,8 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
         using (var writer = new Utf8JsonWriter(buffer))
         {
             var stamp = SecurityAssetClassCatalog.GetStampFloor(assetClass);
+            if (exactBondWorkflow is not null)
+                stamp = Math.Max(stamp, SecurityAssetTermsSchema.Field("Bond", "bondWorkflow")!.SinceTermsVersion);
             if (writeSchedules)
             {
                 stamp = Math.Max(stamp, callScheduleSince!.Value);
@@ -415,6 +418,12 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
             // Structural module fields supersede the scalar compatibility mappings. Only a
             // class-declared flat key may cross this codec boundary.
             var structuralKeys = new HashSet<string>(StringComparer.Ordinal);
+            if (exactBondWorkflow is { } workflow)
+            {
+                writer.WritePropertyName("bondWorkflow");
+                workflow.WriteTo(writer);
+                structuralKeys.Add("bondWorkflow");
+            }
             foreach (var moduleName in StructuralModules)
             {
                 var declarations = economicTerms.EnumerateObject().Where(property => property.NameEquals(moduleName)).ToArray();
@@ -1198,7 +1207,10 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
                                      && mapping.Scale is null
                                      && ModulesAddedAfterIdentityGate.Contains(mapping.Sources[0].Module, StringComparer.Ordinal))
             .Select(static mapping => mapping.Sources[0]);
-        return structural.Concat(copied).Distinct().ToArray();
+        var workflowFields = assetClass == "Bond"
+            ? SecurityAssetTermsSchema.ElementFields("Bond", "bondWorkflow").Select(field => ("bondWorkflow", field.Key))
+            : [];
+        return structural.Concat(copied).Concat(workflowFields).Distinct().ToArray();
     }
 
     private static IReadOnlyList<string> StructuralModuleKeys(string assetClass, string module) => (assetClass, module) switch
@@ -1218,7 +1230,7 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
 
     private static IReadOnlyList<string> StructuralKeys(string assetClass) => assetClass switch
     {
-        "Bond" => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount", "principalSchedule"],
+        "Bond" => ["couponType", "couponRate", "floatingIndex", "spreadBps", "capRate", "floorRate", "stepSchedule", "inflationIndex", "inflationBaseIndexValue", "inflationIndexRatio", "dayCount", "principalSchedule", "bondWorkflow"],
         "DirectLoan" => ["principalSchedule", "covenants"],
         "Swap" => ["legs"],
         "CommitmentGuarantee" => ["covenants", "feeRate"],

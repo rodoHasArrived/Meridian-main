@@ -27,6 +27,11 @@ populations. Account revision authority and curve-policy migrations preserve ear
 recognition receipts participate in the existing governed journal/lot transaction. Restore retained
 evidence on corruption rather than recreating empty history. See [bond operations](../../docs/operators/bond-workflows.md).
 
+Coupon and terminal-principal writers take a history lock before any authority read. Ordinary
+journal writers take the compatible writer mode, so unrelated ordinary writes can proceed while
+coupon history remains stable through its validation and commit. Both ordinary and atomic entry
+paths select the lock mode before reading; stale serializable snapshots still fail explicitly.
+
 Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
 column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
 compatibility mirror, including its limit of eighteen integer digits; new values outside that
@@ -121,6 +126,10 @@ history projector continues to refuse an inferred opening-age character.
 V3 remaining-face amortization verifies each immutable paydown receipt before walking prior
 partial-disposal/amortization history. The current/booked factor scales surviving face once;
 booked durable quantity and acquisition FX stay retained. V1/v2 keep the historical paydown gate.
+The separately adopted US GAAP income model walks only exact scheduled-principal receipts through
+that history, without enabling the legacy remaining-face election. Missing, altered or legacy
+paydown authority blocks the next income posting; scheduled repayments continue to relieve basis
+through their principal workflow.
 
 The Security Master store also answers the ADR-024 decision-5 retirement-gate count
 (`CountUntaggedAssetSpecificTermsAsync`): one SQL aggregate over `securities` for rows whose

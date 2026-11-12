@@ -21,6 +21,12 @@ curve-definition opt-in; omitted policy retains legacy nonnegative admission and
 analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
 See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
 
+Terminal principal retains exact earned-coupon receipts or an actual acquisition-opening authority
+for separately purchased interest. Later signed cash clears those frozen rights without accruing
+on a closed lot. Accounting yield certificates distinguish the declared period recurrence from
+market cash-flow yields; the purchased-coupon tail admits only the evidenced nonaccreting par case.
+New optional proof fields omit null values so legacy contract bytes remain unchanged.
+
 `BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
 for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
 `BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual

@@ -26,6 +26,7 @@ export interface BondWorkflowResult {
   originalFace: BondDecimal;
   currentFace: BondDecimal | null;
   accruedInterest: BondDecimal | null;
+  contractualAccruedInterest?: BondDecimal | null;
   cleanConsideration: BondDecimal | null;
   dirtyConsideration: BondDecimal | null;
   fees: BondDecimal;
@@ -116,7 +117,7 @@ export interface BondPortfolioRiskRequest { context: BondCalculationContext; par
 export interface BondPortfolioRiskResult {
   context?: BondCalculationContext; runId?: string | null;
   scope: BondAccountScope; holdingsBatchId: string | null; holdingsContentHash: string | null;
-  positions: Array<{ securityId: string; issuer: string | null; currency: string; maturity: string | null; signedOriginalFace: BondDecimal; presentValue: BondDecimal | null; dv01: BondDecimal | null; cs01: BondDecimal | null; scenarios: Array<{ scenario: string; presentValue: BondDecimal | null; change: BondDecimal | null }>; issues: string[] }>;
+  positions: Array<{ securityId: string; issuer: string | null; currency: string; maturity: string | null; signedOriginalFace: BondDecimal; presentValue: BondDecimal | null; dv01: BondDecimal | null; cs01: BondDecimal | null; scenarios: Array<{ scenario: string; presentValue: BondDecimal | null; change: BondDecimal | null }>; issues: string[]; calculationRequest?: BondWorkflowRequest | null; quoteAuthority?: BondCalculationInput | null }>;
   buckets: Array<{ dimension: string; key: string; currency: string; holdings: number; coveredHoldings: number; knownPresentValue: BondDecimal; knownDv01: BondDecimal; knownCs01: BondDecimal }>;
   issues: string[]; isComplete: boolean;
 }

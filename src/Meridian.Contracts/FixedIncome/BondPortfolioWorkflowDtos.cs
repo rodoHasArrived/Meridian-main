@@ -16,7 +16,13 @@ public sealed record BondPortfolioRiskRequest(BondCalculationContext Context,
 }
 public sealed record BondPortfolioRiskPosition(Guid SecurityId, string? Issuer, string Currency,
     DateOnly? Maturity, decimal SignedOriginalFace, decimal? PresentValue, decimal? Dv01, decimal? Cs01,
-    IReadOnlyList<BondPortfolioScenarioValue> Scenarios, IReadOnlyList<string> Issues);
+    IReadOnlyList<BondPortfolioScenarioValue> Scenarios, IReadOnlyList<string> Issues)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public BondWorkflowRequest? CalculationRequest { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public BondCalculationInput? QuoteAuthority { get; init; }
+}
 public sealed record BondPortfolioScenarioValue(string Scenario, decimal? PresentValue, decimal? Change);
 public sealed record BondPortfolioRiskBucket(string Dimension, string Key, string Currency, int Holdings,
     int CoveredHoldings, decimal KnownPresentValue, decimal KnownDv01, decimal KnownCs01);

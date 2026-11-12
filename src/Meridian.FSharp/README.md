@@ -34,6 +34,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 
 ## API contract notes
 
+- Bond workflow conventions use the registered optional `BondWorkflowTerms` economic module.
+  Typed overnight, indexation and coupon-entitlement fields retain explicit zero and false values.
+  The v5 flat codec and economic-only replay share admission and serialization; historical records
+  without the module keep their prior flat bytes and omit the additive economic field.
+
 - Flat Security Master day-count fields, including bond coupon structures and swap legs, use the
   shared `Meridian.Contracts.SecurityMaster.DayCountConvention` enum. JSON accepts declared market
   spellings and enum names, writes canonical market labels, and refuses unsupported supplied values

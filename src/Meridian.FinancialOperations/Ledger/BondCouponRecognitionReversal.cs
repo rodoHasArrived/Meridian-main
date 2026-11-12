@@ -55,6 +55,13 @@ internal static class BondCouponRecognitionReversal
             ?? throw new InvalidOperationException("The reversal book position is unavailable.");
         if (position.SecurityId != current.SecurityId || position.BookContext.LedgerBookId != book.LedgerBookId)
             throw new InvalidOperationException("Coupon reversal position no longer belongs to the original security/book.");
+        var terminal = current.OpenQuantity == 0m
+            ? await BondCouponClosedLotAuthority.ResolveAsync(ledger, receipts, positions, scope, request,
+                current, latest, ct).ConfigureAwait(false) : null;
+        await BondCouponRecognitionOpeningGuard.ValidateRecognizedHistoryAsync(ledger, receipts, scope,
+            current.ToOpenLot(), latest.Instruction.AccountMappings
+                ?? throw new InvalidOperationException("Coupon reversal requires explicit retained account mappings and opening reconciliation."),
+            latest.Instruction.Accounts, latest, terminal, request.KnownAt, ct).ConfigureAwait(false);
         var identity = Sha256Digest.ComputeBytesUtf8($"{scope.TenantId}/{scope.CompanyId}/{scope.BookId}/{scope.AccountId}/{request.TaxLotRecordId:D}/{request.RunId}");
         var source = target.Instruction;
         if (source.BookedTargets is not { PolicyVersion: BondIncomeBookedPrecision.PolicyVersion } precision
@@ -72,13 +79,17 @@ internal static class BondCouponRecognitionReversal
             PreviousPayableEarned = latest.Instruction.CumulativePayableEarned,
             PriorReceivableSettled = source.PriorReceivableSettled,
             PriorPayableSettled = source.PriorPayableSettled,
+            AccountMappings = source.AccountMappings,
             ReversalTarget = target,
             BookedTargets = new(BondIncomeBookedPrecision.PolicyVersion,
                 precision.PreviousRawReceivableEarned, source.PreviousReceivableEarned,
                 precision.PreviousRawReceivableEarned - source.PreviousReceivableEarned,
                 precision.PreviousRawPayableEarned, source.PreviousPayableEarned,
                 precision.PreviousRawPayableEarned - source.PreviousPayableEarned,
-                latestPrecision.RawReceivableEarned, latestPrecision.RawPayableEarned)
+                latestPrecision.RawReceivableEarned, latestPrecision.RawPayableEarned),
+            TerminalCashAuthority = terminal is not null && (source.CumulativeReceivableEarned != source.PreviousReceivableEarned
+                || source.CumulativePayableEarned != source.PreviousPayableEarned)
+                ? terminal with { Mode = "ReverseFrozenEarnings" } : terminal
         };
         return BondCouponRecognitionService.BuildPreview(instruction);
     }

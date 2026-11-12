@@ -303,6 +303,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             }
             var flows = BondWorkflowProjection.Project(schedule, projectionTerms, first, Fixing, Inflation);
             var accrued = BondWorkflowProjection.Accrued(schedule, ProjectionTerms(settlement), settlement, Fixing, Inflation);
+            var contractualAccrued = accrued;
             var quoteAccrued = BondWorkflowProjection.Accrued(schedule, ProjectionTerms(quoteDate), quoteDate, Fixing, Inflation);
             var currentFace = request.OriginalFace * Factor(settlement);
             var quoteFace = request.OriginalFace * Factor(quoteDate);
@@ -525,6 +526,7 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                 ExerciseScenarios = exerciseResults,
                 SettlementIndexRatio = settlementIndex.Value,
                 SettlementIndexIsObserved = settlementIndex.IsObserved,
+                ContractualAccruedInterest = Round(contractualAccrued),
                 ProviderYield = selectedQuote?.Input.Quote?.ProviderYield,
                 ProviderYieldConvention = selectedQuote?.Input.Quote?.ProviderYieldConvention,
                 YieldBasis = kind is "Floating" or "InflationLinked" ? "NominalForecastCashFlowAnnualEffective" : "AnnualEffective",

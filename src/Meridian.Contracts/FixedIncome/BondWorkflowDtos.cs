@@ -56,6 +56,8 @@ public sealed record BondWorkflowResult(Guid SecurityId, string Currency, string
     public IReadOnlyList<BondWorkflowExerciseResult> ExerciseScenarios { get; init; } = [];
     public decimal? SettlementIndexRatio { get; init; }
     public bool SettlementIndexIsObserved { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? ContractualAccruedInterest { get; init; }
     public string YieldBasis { get; init; } = "AnnualEffective";
     public string? QuoteSource { get; init; }
     public BondQuoteCategory? QuoteCategory { get; init; }

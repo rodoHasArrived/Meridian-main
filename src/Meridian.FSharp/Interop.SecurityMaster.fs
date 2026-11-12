@@ -81,7 +81,7 @@ module internal SecurityTermsWriteVersion =
             | SecurityKind.Bond terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
                   holdsSchedules terms.CallPutSchedules, schedulesSince kind
-                  terms.WorkflowJson.IsSome, fieldSince "Bond" "bondWorkflow" ]
+                  terms.Workflow.IsSome, fieldSince "Bond" "bondWorkflow" ]
             | SecurityKind.CertificateOfDeposit terms ->
                 [ declares terms.ScheduleConventions, blockSince kind
                   holdsSchedules terms.CallPutSchedules, schedulesSince kind ]
@@ -569,9 +569,9 @@ type SecurityMasterSnapshotWrapper(record: SecurityMasterRecord) =
                 let version = SecurityAssetTermsSchema.Field(assetClass, "rateUnit").SinceTermsVersion
                 SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, max version termsVersion)
         match record.Kind with
-        | SecurityKind.Bond terms when terms.WorkflowJson.IsSome ->
+        | SecurityKind.Bond terms when terms.Workflow.IsSome ->
             let document = System.Text.Json.Nodes.JsonNode.Parse(withRate).AsObject()
-            document["bondWorkflow"] <- System.Text.Json.Nodes.JsonNode.Parse(terms.WorkflowJson.Value)
+            document["bondWorkflow"] <- System.Text.Json.Nodes.JsonNode.Parse(BondWorkflowTermsJson.write(terms.Workflow.Value).GetRawText())
             SecurityTermsEnvelope.StampFlat(document.ToJsonString(), assetClass, termsVersion)
         | _ -> withRate
 

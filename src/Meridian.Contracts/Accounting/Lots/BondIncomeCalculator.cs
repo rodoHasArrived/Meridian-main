@@ -82,8 +82,15 @@ public static class BondIncomeCalculator
         var share = lot.OpenQuantity / lot.OriginalQuantity;
         var originalCost = lot.Acquisition.TransactionCostBasis;
         var initialClean = originalCost;
-        var yield = BondIncomePeriodMath.Solve(CalibrationFlows(instruction, instruction.AcquisitionProjection.CashFlows,
-            lot.AcquiredDate, initialClean, lot.OriginalQuantity), lot.AcquiredDate, initialClean,
+        if (instruction.PurchasedCouponTail is { } purchasedTail
+            && (lot.OpenQuantity != lot.OriginalQuantity || instruction.AcquisitionAccruedInterest != BondIncomeCouponRounding.AllocatedCash(
+                    lot.TaxLotRecordId, instruction, purchasedTail.PaymentDate, purchasedTail.AccrualStart)))
+            throw new ArgumentException("Purchased coupon separation requires an unreduced lot and exact signed native purchased entitlement.");
+        var calibration = CalibrationFlows(instruction, instruction.AcquisitionProjection.CashFlows,
+            lot.AcquiredDate, initialClean, lot.OriginalQuantity);
+        var yield = BondIncomePeriodMath.Solve(calibration, lot.AcquiredDate, initialClean,
+            instruction.AcquisitionAccruedInterest, instruction.AcquisitionProjection, instruction);
+        var certificate = BondIncomePeriodMath.Certificate(calibration, lot.AcquiredDate, initialClean,
             instruction.AcquisitionAccruedInterest, instruction.AcquisitionProjection, instruction);
         var currentYield = yield;
         var activeFlows = instruction.AcquisitionProjection.CashFlows;
@@ -108,6 +115,7 @@ public static class BondIncomeCalculator
             {
                 Context = opening.Context with { SettlementDate = item.Date },
                 AccruedInterest = 0m,
+                ContractualAccruedInterest = 0m,
                 SettlementAccrualFraction = 0m,
                 SettlementAccrualPeriodUnits = 0m
             };
@@ -115,10 +123,11 @@ public static class BondIncomeCalculator
                 openingAccrued, opening, resetProjection, instruction);
             activeFlows = item.Reset?.Projection.CashFlows ?? activeFlows;
             opening = resetProjection;
-            openingAccrued = resetProjection.AccruedInterest
+            openingAccrued = resetProjection.ContractualAccruedInterest ?? resetProjection.AccruedInterest
                 ?? throw new ArgumentException("Observed reset accrual is unavailable.");
-            currentYield = BondIncomePeriodMath.Solve(CalibrationFlows(instruction, activeFlows, item.Date, clean,
-                lot.OriginalQuantity), item.Date, clean, openingAccrued, opening, instruction);
+            calibration = CalibrationFlows(instruction, activeFlows, item.Date, clean, lot.OriginalQuantity);
+            currentYield = BondIncomePeriodMath.Solve(calibration, item.Date, clean, openingAccrued, opening, instruction);
+            certificate = BondIncomePeriodMath.Certificate(calibration, item.Date, clean, openingAccrued, opening, instruction);
             previousDate = item.Date;
         }
         clean = BondIncomePeriodMath.Roll(activeFlows, previousDate, instruction.ThroughDate, clean, currentYield,
@@ -141,17 +150,20 @@ public static class BondIncomeCalculator
         var closing = Round(baseline + carryingIndexation);
         if (closing < 0m)
             throw new ArgumentException("Bond amortized carrying basis cannot be negative.");
-        var completedRawCoupon = instruction.CurrentProjection.CashFlows
-            .Where(f => f.PaymentDate > lot.AcquiredDate && f.PaymentDate <= instruction.ThroughDate)
-            .Sum(f => f.Interest) * share;
+        var completedRawCoupon = (instruction.TerminalEntitlement is null
+            ? instruction.CurrentProjection.CashFlows.Where(f => f.PaymentDate > lot.AcquiredDate && f.PaymentDate <= instruction.ThroughDate)
+            : BondIncomeCouponRounding.EarnedFlows(instruction)).Sum(f => f.Interest) * share;
         var completedCoupon = instruction.CouponCashAllocations is null ? completedRawCoupon
             : BondIncomeCouponRounding.CompletedCash(lot.TaxLotRecordId, instruction);
-        var coupon = completedCoupon + (instruction.CurrentAccruedInterest - instruction.AcquisitionAccruedInterest) * share;
+        var coupon = completedCoupon + ((instruction.TerminalEntitlement is null ? instruction.CurrentAccruedInterest : 0m)
+            - instruction.AcquisitionAccruedInterest) * share;
         var amortization = Round(baseline - (originalCost - postedPrincipal) * share);
         var capitalized = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.EligibleDirectAcquisitionCost).Sum(f => f.Amount) * share;
         var expense = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.Expense).Sum(f => f.Amount) * share;
         var tax = instruction.Fees.Where(f => f.Treatment == BondIncomeFeeTreatment.WithholdingTax).Sum(f => f.Amount) * share;
         var accrued = Round(instruction.CurrentAccruedInterest * share);
+        if (instruction.AccountingYieldCertificate is { } retainedCertificate && retainedCertificate != certificate)
+            throw new ArgumentException("The retained accounting yield certificate differs from canonical recomputation.");
         var components = new List<BondIncomeJournalComponentDto>();
         AddSigned(components, accrued >= 0m ? "InterestReceivable" : "InterestPayable", accrued, true);
         AddSigned(components, "CouponIncome", -accrued, true);
@@ -164,6 +176,7 @@ public static class BondIncomeCalculator
             Round(capitalized), Round(expense), Round(tax), Math.Max(accrued, 0m), Math.Max(-accrued, 0m), components)
         {
             CumulativeIncomeFromDate = lot.AcquiredDate,
+            AccountingYieldCertificate = certificate,
             CouponCashRoundingAdjustment = Round(completedCoupon - completedRawCoupon),
             BookedTarget = BondIncomeBookedPrecision.Targets(closing, Round(closing * lot.Acquisition.AcquisitionFxRateToFunctional))
         };

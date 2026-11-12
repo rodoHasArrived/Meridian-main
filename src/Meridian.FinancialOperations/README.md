@@ -18,6 +18,12 @@ signed receivable/payable and source-verified cash clearing through the canonica
 atomic posting boundary. Raw model economics remain separate from versioned ten-decimal booked
 targets and their retained rounding residuals. Native cash retains its currency minor units. See [policy adoption and review](../../docs/operators/bond-workflows.md).
 
+Held coupon accrual uses contractual earned interest rather than a new purchaser's ex-coupon
+invoice adjustment. Terminal principal pins earned rights independently of bank cash timing;
+later cash and typed reversals verify the original entitlement, source allocation and complete
+native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
+canonical noncash amortization remains distinct from coupon recognition and cash consumption.
+
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when

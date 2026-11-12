@@ -55,7 +55,8 @@ public sealed class BondIncomePreparationService(IBondIncomeService income, ILed
             FundId = book.FundProfileId,
             InstrumentId = instruction.Security.SecurityId,
             PositionId = position.PositionId,
-            AccountId = request.Request.AccountId.ToString("D")
+            AccountId = request.Request.AccountId.ToString("D"),
+            TaxLotId = instruction.ExpectedLot.LotId
         };
         var scope = new AssetAccountingEventScopeDto(instruction.Security.SecurityId, instruction.Security.Version,
             position.PositionId, instruction.ExpectedBookPositionVersion, book.LedgerBookId, currentPeriod.PeriodId,

@@ -36,8 +36,7 @@ public sealed class BondCouponRecognitionServiceTests
     {
         using var f = new Fixture();
         var first = await f.Service.PreviewAsync(f.Scope, f.Request);
-        f.Receipts.GetLatestCouponRecognitionAsync(f.Scope, f.Lot.TaxLotRecordId, Arg.Any<CancellationToken>())
-            .Returns(new BondCouponRecognitionReceiptDto(first.Fingerprint, Guid.NewGuid(), f.At, first.Instruction));
+        f.Record(first);
         f.Earned = -1.5m;
         var next = await f.Service.PreviewAsync(f.Scope, f.Request with { RunId = "next", ThroughDate = f.Request.ThroughDate.AddDays(1) });
         Assert.Equal(-.5m, next.EarnedDelta);
@@ -197,6 +196,228 @@ public sealed class BondCouponRecognitionServiceTests
         Assert.Contains("reversal/rebook", error.Message);
     }
 
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
+    public async Task FinalPrincipalCanCloseBeforeSignedCouponCashWithoutAccruingOnZeroHoldings(int sign)
+    {
+        using var f = new Fixture();
+        f.Earned = sign;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, sign) with { Principal = 100m, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.ClosePrincipal(earned);
+        f.Income.ClearReceivedCalls();
+        var cashRequest = f.AddObservedPayment(sign, 0m, cashDate: f.Request.ThroughDate.AddDays(1)) with
+        { RunId = "cash-after-principal", ThroughDate = f.Request.ThroughDate.AddDays(1) };
+        var cash = await f.Service.PreviewAsync(f.Scope, cashRequest);
+        Assert.Equal(0m, cash.EarnedDelta);
+        Assert.Equal(0m, cash.RemainingSignedBalance);
+        Assert.Equal("CashOnly", cash.Instruction.TerminalCashAuthority!.Mode);
+        Assert.Equal(earned.ReceiptId, cash.Instruction.TerminalCashAuthority.EarnedReceipt.ReceiptId);
+        Assert.Equal(0m, cash.Instruction.IncomeInstruction.ExpectedLot.OpenQuantity);
+        Assert.DoesNotContain(cash.Instruction.Lines, line => line.AccountId == "Income");
+        await f.Income.DidNotReceive().PreviewAsync(Arg.Any<BondIncomePreviewRequestDto>(), Arg.Any<CancellationToken>());
+        var postedCash = f.Record(cash);
+        var reverse = await f.Service.PreviewAsync(f.Scope, cashRequest with { RunId = "reverse-terminal-cash", CashAllocations = [],
+            ReversesReceiptId = postedCash.ReceiptId, CorrectionRationale = "Correct the observed cash allocation" });
+        Assert.Equal(0m, reverse.EarnedDelta);
+        Assert.Equal(cash.Instruction.Lines.Select(line => (line.AccountId, line.Debit, line.Credit)),
+            reverse.Instruction.Lines.Select(line => (line.AccountId, line.Credit, line.Debit)));
+        var reversed = f.Record(reverse);
+        var rebook = await f.Service.PreviewAsync(f.Scope, cashRequest with { RunId = "rebook-terminal-cash" });
+        Assert.Equal(reversed.ReceiptId, rebook.Instruction.PreviousReceiptId);
+        Assert.Equal(0m, rebook.EarnedDelta);
+        Assert.Equal(0m, rebook.RemainingSignedBalance);
+        Assert.Equal(2, f.Physical.Version);
+        Assert.Equal(0m, f.Physical.OpenQuantity);
+    }
+
+    [Fact]
+    public async Task ClosedGenericDisposalCannotBorrowTheTerminalPrincipalCashPath()
+    {
+        using var f = new Fixture();
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, -1m) with { Principal = 100m, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.ClosePrincipal(earned);
+        f.Physical = f.Physical with { CurrentFactor = 1m };
+        await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope,
+            f.Request with { RunId = "disposed-lot" }));
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
+    public async Task PurchasedAccruedOnlyCanClearAfterPrincipalWithoutInventingAZeroIncomeJournal(int sign)
+    {
+        using var f = new Fixture(sign);
+        f.Earned = 0m;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, sign) with { Principal = 100m, OutstandingPrincipal = 0m,
+            AccrualStart = f.Lot.AcquiredDate.AddMonths(-6), AccrualEnd = f.Lot.AcquiredDate });
+        var zero = await f.Service.PreviewAsync(f.Scope, f.Request);
+        Assert.False(zero.HasChanges);
+        Assert.Empty(zero.Instruction.Lines);
+        var openingInputs = zero.Instruction.IncomeInstruction;
+        var opening = BondIncomeTerminalCoupon.Opening(openingInputs,
+            f.Physical.OriginatingMutationBatchId!.Value, f.Physical.SourceJournalEntryId!.Value);
+        await f.Service.VerifyTerminalOpeningAsync(f.Scope, openingInputs, opening, f.Request.PeriodId);
+        Assert.Empty(f.Ledger.ReceivedCalls().Where(call => call.GetMethodInfo().Name.StartsWith("Append", StringComparison.Ordinal)));
+        f.ClosePrincipal(null, openingInputs: openingInputs);
+        var cashRequest = f.AddObservedPayment(sign, 0m, cashDate: f.Request.ThroughDate.AddDays(1)) with
+        { RunId = "purchased-cash-after-principal", ThroughDate = f.Request.ThroughDate.AddDays(1) };
+        var cash = await f.Service.PreviewAsync(f.Scope, cashRequest);
+        Assert.Null(cash.Instruction.TerminalCashAuthority!.EarnedReceipt);
+        Assert.Equal(opening, cash.Instruction.TerminalCashAuthority.Opening);
+        Assert.Equal(0m, cash.EarnedDelta);
+        Assert.Equal(0m, cash.RemainingSignedBalance);
+        Assert.DoesNotContain(cash.Instruction.Lines, line => line.AccountId == "Income");
+        var posted = f.Record(cash);
+        var inverse = await f.Service.PreviewAsync(f.Scope, cashRequest with
+        { RunId = "inverse-purchased-terminal", CashAllocations = [], ReversesReceiptId = posted.ReceiptId,
+            CorrectionRationale = "Correct the purchased coupon cash allocation" });
+        Assert.Equal(cash.Instruction.Lines.Select(line => (line.AccountId, line.Debit, line.Credit)),
+            inverse.Instruction.Lines.Select(line => (line.AccountId, line.Credit, line.Debit)));
+        f.Record(inverse);
+        var rebook = await f.Service.PreviewAsync(f.Scope, cashRequest with { RunId = "rebook-purchased-terminal" });
+        Assert.Equal(0m, rebook.EarnedDelta);
+        Assert.Equal(0m, rebook.RemainingSignedBalance);
+    }
+
+    [Theory]
+    [InlineData(1)]
+    [InlineData(-1)]
+    public async Task ObservedCouponCrossingFinalPrincipalClearsItsFrozenEarnedEntitlement(int sign)
+    {
+        using var f = new Fixture();
+        f.Earned = sign;
+        f.UseTerminalEntitlement = true;
+        var principalDate = f.Request.ThroughDate;
+        var due = principalDate.AddDays(2);
+        f.Flows.Add(f.Flow(principalDate, 0m) with { Principal = 100m, OutstandingPrincipal = 0m });
+        f.Flows.Add(f.Flow(due, sign) with
+        { AccrualStart = principalDate.AddDays(-2), AccrualEnd = due, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.ClosePrincipal(earned);
+        var request = f.AddObservedPayment(sign, 0m, due, due.AddDays(1), f.At.AddDays(2)) with
+        { RunId = "deferred-crossing-coupon", ThroughDate = due.AddDays(1) };
+        var cash = await f.Service.PreviewAsync(f.Scope, request);
+        Assert.Equal(0m, cash.EarnedDelta);
+        Assert.Equal(0m, cash.RemainingSignedBalance);
+        Assert.Single(cash.Instruction.Cash);
+        Assert.DoesNotContain(cash.Instruction.Lines, line => line.AccountId == "Income");
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task FirstClosedPurchasedCashRefusesInterveningManualOrUnscopedJournal(bool scoped)
+    {
+        using var f = new Fixture(1m);
+        f.Earned = 0m;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, 1m) with { Principal = 100m, OutstandingPrincipal = 0m,
+            AccrualStart = f.Lot.AcquiredDate.AddMonths(-6), AccrualEnd = f.Lot.AcquiredDate });
+        var zero = await f.Service.PreviewAsync(f.Scope, f.Request);
+        f.ClosePrincipal(null, openingInputs: zero.Instruction.IncomeInstruction);
+        f.AddManualCouponJournal(scoped);
+        var request = f.AddObservedPayment(1m, 0m, cashDate: f.Request.ThroughDate.AddDays(1)) with
+        { RunId = "already-cleared-purchased-cash", ThroughDate = f.Request.ThroughDate.AddDays(1) };
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope, request));
+        Assert.Contains("explicit retained opening reconciliation", error.Message);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    public async Task NativeEarnedReceiptDoesNotExemptLaterManualCouponHistory(bool closed, bool scoped)
+    {
+        using var f = new Fixture();
+        f.Earned = 1m;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, 1m) with { Principal = 100m, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        if (closed) f.ClosePrincipal(earned);
+        f.AddManualCouponJournal(scoped);
+        var request = f.AddObservedPayment(1m, 0m, cashDate: f.Request.ThroughDate.AddDays(1)) with
+        { RunId = "manual-coupon-after-earned", ThroughDate = f.Request.ThroughDate.AddDays(1) };
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope, request));
+        Assert.Contains("explicit retained opening reconciliation", error.Message);
+        await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope, request with
+        { RunId = "inverse-after-manual", CashAllocations = [], ReversesReceiptId = earned.ReceiptId,
+            CorrectionRationale = "A manual clearing already changed the retained coupon balance" }));
+    }
+
+    [Fact]
+    public async Task NativeHistoryProvesExactDifferentLotCouponJournalUnrelated()
+    {
+        using var f = new Fixture();
+        f.Earned = 1m;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, 1m));
+        f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.AddManualCouponJournal(true, "another-proven-lot");
+        var cash = await f.Service.PreviewAsync(f.Scope, f.AddObservedPayment(1m, 0m) with { RunId = "unrelated-lot-history" });
+        Assert.Equal(0m, cash.RemainingSignedBalance);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task NextPeriodCashRequiresTheExactCanonicalIncomeClose(bool canonical)
+    {
+        using var f = new Fixture();
+        f.Earned = 1m;
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, 1m));
+        f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        var period = f.CloseIncomeAndOpenFollowingPeriod(canonical);
+        var cashDate = new DateOnly(2026, 2, 1);
+        var request = f.AddObservedPayment(1m, 0m, cashDate: cashDate, recordedAt: f.At.AddDays(17)) with
+        { RunId = "cash-after-income-close", ThroughDate = cashDate, PeriodId = period };
+        if (!canonical)
+        {
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope, request));
+            Assert.Contains("explicit retained opening reconciliation", error.Message);
+            return;
+        }
+        var preview = await f.Service.PreviewAsync(f.Scope, request);
+        Assert.Equal(0m, preview.EarnedDelta);
+        Assert.Equal(0m, preview.RemainingSignedBalance);
+        Assert.DoesNotContain(preview.Instruction.Lines, line => line.AccountId == "Income");
+    }
+
+    [Fact]
+    public async Task BackdatedPrincipalRecordedAfterKnowledgeCutoffCannotAuthorizeClosedCash()
+    {
+        using var f = new Fixture();
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, -1m) with { Principal = 100m, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.ClosePrincipal(earned, f.At.AddMinutes(1));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => f.Service.PreviewAsync(f.Scope,
+            f.Request with { RunId = "before-principal-was-known" }));
+    }
+
+    [Fact]
+    public async Task ClosedLotRebookAfterEarnedInverseRestoresOnlyTheExactFrozenEarnedTarget()
+    {
+        using var f = new Fixture();
+        f.Flows.Add(f.Flow(f.Request.ThroughDate, -1m) with { Principal = 100m, OutstandingPrincipal = 0m });
+        var earned = f.Record(await f.Service.PreviewAsync(f.Scope, f.Request));
+        f.ClosePrincipal(earned);
+        var inverse = await f.Service.PreviewAsync(f.Scope, f.Request with { RunId = "inverse-earned", ReversesReceiptId = earned.ReceiptId,
+            CorrectionRationale = "Reverse the original recognition before exact rebooking" });
+        Assert.Equal("ReverseFrozenEarnings", inverse.Instruction.TerminalCashAuthority!.Mode);
+        f.Record(inverse);
+        f.Income.ClearReceivedCalls();
+        f.Earned = -2m;
+        var cash = f.AddObservedPayment(-1m, 0m, cashDate: f.Request.ThroughDate.AddDays(1)) with
+        { RunId = "restore-frozen-earned", ThroughDate = f.Request.ThroughDate.AddDays(1) };
+        var restored = await f.Service.PreviewAsync(f.Scope, cash);
+        Assert.Equal("RebookFrozenEarnings", restored.Instruction.TerminalCashAuthority!.Mode);
+        Assert.Equal(-1m, restored.EarnedDelta);
+        Assert.Equal(-1m, restored.Instruction.CumulativeEarned);
+        Assert.Equal(0m, restored.RemainingSignedBalance);
+        Assert.Equal(earned.ReceiptId, restored.Instruction.TerminalCashAuthority.EarnedReceipt.ReceiptId);
+        await f.Income.DidNotReceive().PreviewAsync(Arg.Any<BondIncomePreviewRequestDto>(), Arg.Any<CancellationToken>());
+    }
+
     [Fact]
     public async Task ReversalUsesExactInverseAndAllowsCorrectedSameDateRebook()
     {
@@ -253,8 +474,10 @@ public sealed class BondCouponRecognitionServiceTests
         public AccountCashForecastScopeDto Scope { get; }
         public BondCouponRecognitionRequest Request { get; }
         public OpenLotDto Lot { get; }
+        public LedgerTaxLotRecord Physical { get; set; } = null!;
         public List<BondWorkflowCashFlow> Flows { get; } = [];
         public decimal Earned { get; set; } = -1m;
+        public bool UseTerminalEntitlement { get; set; }
         public BondCouponRecognitionService Service { get; }
         private readonly string _evidenceRoot = Path.Combine(Path.GetTempPath(), "meridian-coupon-test-" + Guid.NewGuid().ToString("N"));
         private readonly List<LedgerJournalEntryRecord> _history = [];
@@ -282,6 +505,7 @@ public sealed class BondCouponRecognitionServiceTests
                 1m, 1m, 100m, "USD", At.AddYears(-1), At, birthJournalId, Version: 1,
                 OriginatingMutationBatchId: birthId, LastMutationBatchId: birthId, SecurityId: securityId,
                 BookPositionId: position, OriginalFace: 100m, BookedFactor: 1m, ParBasis: 100m, Acquisition: acq);
+            Physical = physical;
             Lot = physical.ToOpenLot();
             var sec = new SecurityProjectionRecord(securityId, "Bond", SecurityStatusDto.Active, "Synthetic", "USD", "ISIN", "SYNTHETIC",
                 JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
@@ -300,9 +524,10 @@ public sealed class BondCouponRecognitionServiceTests
             Income.PreviewAsync(Arg.Any<BondIncomePreviewRequestDto>(), Arg.Any<CancellationToken>()).Returns(call =>
             {
                 var request = call.ArgAt<BondIncomePreviewRequestDto>(0);
-                var completed = Flows.Where(f => f.PaymentDate <= request.ThroughDate).ToArray();
+                var completed = Flows.Where(f => f.PaymentDate <= request.ThroughDate || UseTerminalEntitlement).ToArray();
                 var couponAllocations = completed.Select(flow => BondIncomeCouponRounding.Allocate(flow.PaymentDate,
-                    flow.AccrualStart, flow.AccrualEnd, "USD", [new(Lot.TaxLotRecordId, Lot.Version, 100m, flow.Interest, 0m)])).ToArray();
+                    flow.AccrualStart, flow.AccrualEnd, "USD", [new(Lot.TaxLotRecordId, Lot.Version, 100m, flow.Interest, 0m)]) with
+                    { HolderSnapshotDate = UseTerminalEntitlement && flow.PaymentDate > request.ThroughDate ? request.ThroughDate : null }).ToArray();
                 var accrued = Earned + purchasedAccrued - couponAllocations.Sum(a => a.Lots.Single().CashAmount);
                 var dynamicInstruction = instruction with
                 {
@@ -312,6 +537,8 @@ public sealed class BondCouponRecognitionServiceTests
                         ThroughDate = request.ThroughDate,
                         CurrentAccruedInterest = accrued,
                         CouponCashAllocations = couponAllocations,
+                        TerminalEntitlement = UseTerminalEntitlement ? new(BondIncomeCouponRounding.TerminalEntitlementModelVersion,
+                            request.ThroughDate) : null,
                         CurrentProjection = projection with
                         { CashFlows = Flows.ToArray(), AccruedInterest = accrued }
                     }
@@ -321,7 +548,7 @@ public sealed class BondCouponRecognitionServiceTests
                     -.01m, 100m, 100m, Earned, 0m, 0m, 0m, 0m, 0m, 0m, 0m, -Earned, []),
                 new(AssetLotMutationIntentDto.Amortize, Amortization: dynamicInstruction));
             });
-            Ledger.GetTaxLotsByIdsAsync(book, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>()).Returns(new[] { physical });
+            Ledger.GetTaxLotsByIdsAsync(book, Arg.Any<IReadOnlyList<Guid>>(), Arg.Any<CancellationToken>()).Returns(_ => new[] { Physical });
             var birthDimensions = new LedgerLineDimensionSet(InstrumentId: securityId, TaxLotId: Lot.LotId,
                 BookId: Scope.BookId, AccountId: Scope.AccountId)
             { PositionId = position };
@@ -334,6 +561,9 @@ public sealed class BondCouponRecognitionServiceTests
             if (purchasedAccrued > 0m)
                 birthLines.Add(new(Guid.NewGuid(), birthJournalId, At.AddYears(-1),
                 new("Receivable", LedgerAccountType.Asset, FinancialAccountId: Scope.AccountId), purchasedAccrued, 0m, "Acquisition", birthDimensions));
+            if (purchasedAccrued < 0m)
+                birthLines.Add(new(Guid.NewGuid(), birthJournalId, At.AddYears(-1),
+                new("Payable", LedgerAccountType.Liability, FinancialAccountId: Scope.AccountId), 0m, -purchasedAccrued, "Acquisition", birthDimensions));
             var birthJournal = new LedgerJournalEntryRecord(new(birthJournalId, At.AddYears(-1), "Acquisition", birthLines),
                 book, period, null, null, 1, At.AddYears(-1), AccountingBasisKindDto.Gaap);
             var mutation = new LedgerTaxLotMutationRecord(Guid.NewGuid(), birthId, AtomicTaxLotMutationKind.Acquisition,
@@ -387,20 +617,112 @@ public sealed class BondCouponRecognitionServiceTests
                 { PositionId = line.Dimensions?.PositionId })).ToArray();
             _history.Add(new(new(journalId, At, "Coupon", lines, new(EffectiveDate: instruction.Request.ThroughDate)),
                 Lot.LedgerBookId, instruction.Request.PeriodId, null, null, _history.Count + 1, At,
-                AccountingBasisKindDto.Gaap, SourceEventId: instruction.EventId));
+                AccountingBasisKindDto.Gaap, SourceEventId: instruction.EventId,
+                SourceJournalEntryId: instruction.ReversalTarget?.JournalEntryId,
+                PostingKind: instruction.ReversalTarget is null ? LedgerPostingKindDto.Originating : LedgerPostingKindDto.Adjustment));
             var receipt = new BondCouponRecognitionReceiptDto(preview.Fingerprint, journalId, At, instruction);
             _posted[receipt.ReceiptId] = receipt;
             Receipts.GetLatestCouponRecognitionAsync(Scope, Lot.TaxLotRecordId, Arg.Any<CancellationToken>()).Returns(receipt);
             return receipt;
         }
 
-        public BondCouponRecognitionRequest AddObservedPayment(decimal gross = -1m, decimal fees = .1m, DateOnly? due = null)
+        public void ClosePrincipal(BondCouponRecognitionReceiptDto? earned, DateTimeOffset? recordedAt = null,
+            OpenLotAmortizationInstructionDto? openingInputs = null)
+        {
+            var before = Physical;
+            var recorded = recordedAt ?? At;
+            var batch = Guid.NewGuid(); var journalId = Guid.NewGuid(); var eventId = Guid.NewGuid();
+            var source = earned?.Instruction.IncomeInstruction ?? openingInputs
+                ?? throw new ArgumentException("Actual earned or opening inputs are required.");
+            var economic = new EconomicEventReferenceDto(eventId, AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction),
+                1, Request.ThroughDate, At, "PrincipalReceipt", "terminal-principal")
+            { SecurityId = Lot.SecurityId, BookPositionId = Lot.BookPositionId, RetainedEvidence = Lot.Acquisition.Evidence };
+            var lineage = new ProjectionLineageDto(eventId, eventId, "terminal-principal", "v1", "v1", "ObservedPrincipal",
+                Request.ThroughDate, At, economic.SourceDomain, economic.SourceEntityId, economic);
+            var principal = new OpenLotFactorPaydownInstructionDto(economic, lineage,
+                new(Lot.SecurityId, source.Security.Version, Lot.BookPositionId, source.ExpectedBookPositionVersion,
+                    Lot.LedgerBookId, Request.PeriodId, AccountingBasisKindDto.Gaap, "org", Scope.TenantId, Scope.CompanyId),
+                1, OpenLotAmortization.SecurityHash(source.Security), 1m, 0m, 100m, "USD", [new(Lot, 1m, 100m, 0m, 0m, 0)])
+            { ScheduledPrincipal = new(BondIncomeScheduledPrincipal.ModelVersion, [source])
+                { TerminalCouponReceipts = earned is null ? null : [new(Lot.TaxLotRecordId, earned.ReceiptId, earned.JournalEntryId,
+                    BondIncomeTerminalCoupon.EntitlementHash(earned.Instruction))],
+                  TerminalCouponOpenings = earned is null ? [BondIncomeTerminalCoupon.Opening(source,
+                      before.OriginatingMutationBatchId!.Value, before.SourceJournalEntryId!.Value)] : null } };
+            Physical = before with { OpenQuantity = 0m, CurrentFactor = 0m, Version = before.Version + 1,
+                LastMutationBatchId = batch, UpdatedAt = recorded,
+                BasisAdjustment = new(batch, OpenLotBasisAdjustmentReasons.FactorPaydown, before.OpenQuantity, 0m, 0m, FactorPaydown: principal) };
+            var dimensions = new LedgerLineDimensionSet(BookId: Scope.BookId, AccountId: Scope.AccountId,
+                InstrumentId: Lot.SecurityId, TaxLotId: Lot.LotId) { PositionId = Lot.BookPositionId };
+            var journal = new LedgerJournalEntryRecord(new(journalId, At, "Principal",
+                [new(Guid.NewGuid(), journalId, At, new("Cash", LedgerAccountType.Asset, FinancialAccountId: Scope.AccountId), 100m, 0m, "Principal", dimensions),
+                 new(Guid.NewGuid(), journalId, At, before.Account, 0m, 100m, "Principal", dimensions)], new(EffectiveDate: Request.ThroughDate)),
+                Lot.LedgerBookId, Request.PeriodId, null, null, _history.Count + 1, recorded, AccountingBasisKindDto.Gaap, SourceEventId: eventId);
+            var mutation = new LedgerTaxLotMutationRecord(Guid.NewGuid(), batch, AtomicTaxLotMutationKind.FactorPaydown,
+                Lot.TaxLotRecordId, Lot.LotId, 0, before.OpenQuantity, -before.OpenQuantity, 0m, before.UnitCost, 100m,
+                before.Version, Physical.Version, "terminal-principal", journalId, eventId, Lot.Acquisition.Evidence, recorded, before, Physical,
+                SecurityId: Lot.SecurityId, BookPositionId: Lot.BookPositionId);
+            Ledger.GetAtomicTaxLotPostingAsync(batch, Arg.Any<CancellationToken>()).Returns(new AtomicTaxLotJournalResult(batch,
+                AtomicTaxLotMutationKind.FactorPaydown, "terminal-principal", false, journal, [Physical], [mutation], Lot.Acquisition.Evidence,
+                FactorPaydown: principal));
+            _history.Add(journal);
+        }
+
+        public void AddManualCouponJournal(bool scoped, string? otherLot = null)
+        {
+            var id = Guid.NewGuid();
+            LedgerLineDimensionSet? dimensions = scoped ? new(BookId: Scope.BookId, AccountId: Scope.AccountId,
+                InstrumentId: Lot.SecurityId, TaxLotId: otherLot ?? Lot.LotId) { PositionId = Lot.BookPositionId } : null;
+            var lines = new LedgerEntry[]
+            {
+                new(Guid.NewGuid(), id, At, new("Cash", LedgerAccountType.Asset, FinancialAccountId: Scope.AccountId),
+                    1m, 0m, "Manual coupon clearing", dimensions),
+                new(Guid.NewGuid(), id, At, new("Receivable", LedgerAccountType.Asset, FinancialAccountId: Scope.AccountId),
+                    0m, 1m, "Manual coupon clearing", dimensions)
+            };
+            _history.Add(new(new(id, At, "Manual coupon clearing", lines, new(EffectiveDate: Request.ThroughDate)),
+                Lot.LedgerBookId, Request.PeriodId, null, null, _history.Count + 1, At, AccountingBasisKindDto.Gaap));
+        }
+
+        public Guid CloseIncomeAndOpenFollowingPeriod(bool canonical)
+        {
+            var closedAt = new DateTimeOffset(new DateOnly(2026, 1, 31).ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+            var balances = _history.SelectMany(row => row.Entry.Lines).GroupBy(line => (line.Account,
+                    Dimensions: line.Dimensions is null ? new LedgerLineDimensionSet(FundId: "org")
+                        : line.Dimensions with { FundId = line.Dimensions.FundId ?? "org" }))
+                .Select(group => new PeriodCloseAccountBalance(group.Key.Account,
+                    group.Sum(line => group.Key.Account.AccountType == LedgerAccountType.Revenue
+                        ? line.Credit - line.Debit : line.Debit - line.Credit), group.Key.Dimensions)).ToArray();
+            var projection = PeriodCloseProjector.Project(new PeriodCloseInput(Request.PeriodId.ToString("D"),
+                closedAt, balances, "period-controller"));
+            var draft = PeriodCloseDraftBuilder.BuildDraft(projection)!;
+            var id = Guid.NewGuid();
+            var multiplier = canonical ? 1m : .5m;
+            var lines = draft.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), id, closedAt, line.account,
+                line.debit * multiplier, line.credit * multiplier, draft.Description, line.dimensions,
+                new("USD", "USD", line.debit * multiplier, line.credit * multiplier, 1m))).ToArray();
+            _history.Add(new(new(id, closedAt, draft.Description, lines,
+                new(ActivityType: "manual", EffectiveDate: new(2026, 1, 31), IdempotencyKey: draft.Metadata.IdempotencyKey)),
+                Lot.LedgerBookId, Request.PeriodId, null, null, _history.Count + 1, closedAt.AddTicks(1),
+                AccountingBasisKindDto.Gaap, SourceEventId: id, PostingKind: LedgerPostingKindDto.ClosingEntry));
+            Ledger.GetPeriodAsync(Request.PeriodId, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(Request.PeriodId,
+                Lot.LedgerBookId, 2026, 1, "January", new(2026, 1, 1), new(2026, 1, 31), "HardClosed", At.AddDays(-15),
+                closedAt.AddTicks(1), 2));
+            var next = Guid.NewGuid();
+            Ledger.GetPeriodAsync(next, Arg.Any<CancellationToken>()).Returns(new LedgerAccountingPeriod(next,
+                Lot.LedgerBookId, 2026, 2, "February", new(2026, 2, 1), new(2026, 2, 28), "Open", closedAt.AddTicks(1), null, 1));
+            return next;
+        }
+
+        public BondCouponRecognitionRequest AddObservedPayment(decimal gross = -1m, decimal fees = .1m, DateOnly? due = null,
+            DateOnly? cashDate = null, DateTimeOffset? recordedAt = null)
         {
             var date = due ?? Request.ThroughDate;
+            var receivedDate = cashDate ?? date;
+            var observedAt = recordedAt ?? At;
             if (!Flows.Any(f => f.PaymentDate == date && Math.Sign(f.Interest) == Math.Sign(gross)))
                 Flows.Add(Flow(date, gross));
             var evidence = new RetainedEvidenceIdentityDto("bank", "urn:synthetic:bank", new string('b', 64), "Synthetic", "bank",
-                "Accepted", "reviewer", At, Request.ThroughDate, 1, At, "reviewer", "AccountCashFlow", "bank-stable");
+                "Accepted", "reviewer", observedAt, receivedDate, 1, observedAt, "reviewer", "AccountCashFlow", "bank-stable");
             var provenance = new AccountCashProvenanceDto("Synthetic", "bank", evidence.ContentHashSha256, AccountCashEvidenceRole.Observation, evidence);
             var deduction = provenance with
             {
@@ -409,14 +731,15 @@ public sealed class BondCouponRecognitionServiceTests
                 { EvidenceId = "deduction", SourceReference = "deduction", SubjectType = "AccountCashAllocation", SubjectId = "allocation" }
             };
             var payment = new AccountCashFlowDto("bank-stable", "bank-v1", Scope.AccountId, Scope.BookId, AccountCashFlowStatus.Actual,
-                "Coupon", gross - fees, "USD", date, date, date, provenance, Lot.SecurityId);
+                "Coupon", gross - fees, "USD", date, receivedDate, receivedDate, provenance, Lot.SecurityId);
             var obligation = Flows.Single(f => f.PaymentDate == date && Math.Sign(f.Interest) == Math.Sign(gross));
             var obligationId = AccountBondIncomePlanningService.ObligationIdentity(Scope, Lot.SecurityId, "Coupon", date, obligation.AccrualStart);
             var allocation = new AccountCashPaymentAllocationDto("allocation", obligationId, "bank-v1", gross - fees, gross, Fees: fees, DeductionEvidence: deduction);
-            var capture = new BondMonitoringCaptureRequest("monitor", Scope, At, [], [payment], [allocation], [], []);
+            var capture = new BondMonitoringCaptureRequest("monitor", Scope, observedAt, [], [payment], [allocation], [], []);
             Monitoring.GetHistoryAsync(Scope, Arg.Any<CancellationToken>()).Returns(new[]
                 { new BondMonitoringSnapshotDto("synthetic", "bond-monitoring-v1", capture, [], [], []) });
-            return Request with { CashAllocations = [new("allocation", "bank-v1", gross - fees, gross, Fees: fees, DeductionEvidence: deduction)] };
+            return Request with { KnownAt = observedAt,
+                CashAllocations = [new("allocation", "bank-v1", gross - fees, gross, Fees: fees, DeductionEvidence: deduction)] };
         }
 
         public void Dispose() { if (Directory.Exists(_evidenceRoot)) Directory.Delete(_evidenceRoot, true); }

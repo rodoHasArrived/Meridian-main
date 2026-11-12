@@ -88,7 +88,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.Serializable, ct).ConfigureAwait(false);
 
-        await LockCouponHistoryBoundaryAsync(connection, transaction, ct).ConfigureAwait(false);
+        await LockCouponHistoryBoundaryAsync(connection, transaction, NeedsCouponHistoryBoundary(entry), ct).ConfigureAwait(false);
         await using var authority = await AcquireConsolidationAuthorityAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendCoreAsync(connection, transaction, entry, ct).ConfigureAwait(false);
 
@@ -169,7 +169,7 @@ public sealed partial class PostgresLedgerJournalStore :
             throw new LedgerValidationException($"Journal entry '{entry.Entry.JournalEntryId}' is not balanced.");
         }
 
-        await LockCouponHistoryBoundaryAsync(connection, transaction, ct).ConfigureAwait(false);
+        await LockCouponHistoryBoundaryAsync(connection, transaction, NeedsCouponHistoryBoundary(entry), ct).ConfigureAwait(false);
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", entry.PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(
                 connection,

@@ -88,6 +88,26 @@ public sealed class BondPortfolioWorkflowServiceTests
         result.Buckets.Where(row => row.Dimension == "maturity").Should().HaveCount(2);
     }
 
+    [Fact]
+    public async Task IndexedAcceptedHoldingBindsNominalCashOnceAndRetainsDatedStatementQuoteAuthority()
+    {
+        var row = Holding(SecurityId, 100m);
+        row = row with { Bond = row.Bond! with { InflationRatio = 1.2m,
+            InvoiceBasis = BondHoldingInvoiceBasis.IndexedPrincipal, Quote = 99m } };
+        var calls = new List<BondWorkflowRequest>();
+        var result = await RiskService([row], calls).CalculateAsync(Scope, new(Context));
+        var position = result.Positions.Should().ContainSingle().Which;
+
+        calls.Should().HaveCount(5);
+        calls.Should().OnlyContain(request => request.CleanPricePer100 == 118.8m
+            && request.PriceBasis == BondWorkflowPriceBasis.NominalClean
+            && request.OriginalFace == 100m && request.QuoteSettlementDate == new DateOnly(2026, 1, 1));
+        position.QuoteAuthority!.Kind.Should().Be("AcceptedHoldingInvoice");
+        position.QuoteAuthority.Key.Should().Be(BatchId.ToString("D"));
+        position.QuoteAuthority.ContentSha256.Should().Be(new string('a', 64));
+        position.CalculationRequest!.CleanPricePer100.Should().Be(118.8m);
+    }
+
     [Theory]
     [InlineData("currency")]
     [InlineData("factor")]
@@ -243,7 +263,8 @@ public sealed class BondPortfolioWorkflowServiceTests
         var pv = current * 1.05m - current * (request.RateShiftBps + request.SpreadShiftBps) / 10000m;
         return new(request.SecurityId, currency, "synthetic-model", request.Context with { SecurityVersion = 7 },
             request.OriginalFace, current, 0m, pv, pv, 0m, pv, pv, 0.04m, 0.01m,
-            current * 0.001m, current * 0.0005m, 1m, [], [], [], [new("Valuation", true)]);
+            current * 0.001m, current * 0.0005m, 1m, [], [], [], [new("Valuation", true)])
+        { OriginalDirtyConsideration = request.CleanPricePer100 * current / 100m };
     }
 
     private static CustodianPositionLineDto Holding(Guid securityId, decimal original, bool isShort = false,

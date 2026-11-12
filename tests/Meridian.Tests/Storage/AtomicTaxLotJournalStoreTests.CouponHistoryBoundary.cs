@@ -1,5 +1,6 @@
 using System.Data;
 using FluentAssertions;
+using Meridian.Contracts.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Npgsql;
@@ -10,7 +11,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public Task CouponHistory_OrdinaryExternalAppendExcludesOtherPeriodsUntilCommit()
+    public Task CouponHistory_OrdinaryExternalAppendExcludesTypedCouponUntilCommit()
         => AssertCouponHistoryWaitAsync(rollback: false);
 
     [LedgerDatabaseFact]
@@ -20,39 +21,58 @@ public sealed partial class AtomicTaxLotJournalStoreTests
 
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task CouponHistory_AtomicWriterWaitsForOrdinaryWriterInAnotherPeriod()
+    public async Task CouponHistory_TypedCouponExternalAppendExcludesOrdinaryWriterInAnotherPeriod()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
+        var ct = timeout.Token;
+        await using var fixture = await CouponSinkFixture.CreateAsync();
+        var june = await fixture.Store.SavePeriodAsync(new(Guid.NewGuid(), fixture.BookId, 2026, 6,
+            "June ordinary publication", new(2026, 6, 1), new(2026, 6, 30), "Open",
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z"), null, 0), 0, ct: ct);
+        var coupon = fixture.Instruction(0, "history-sensitive-coupon", 45m, 50m, 3m, 2m);
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
+        await connection.OpenAsync(ct);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        await fixture.Store.AppendAsync(connection, transaction, fixture.Write(coupon), ct);
+        var application = "coupon-sensitive-history-" + Guid.NewGuid().ToString("N");
+        var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
+        var waiting = competing.AppendAsync(CouponHistoryWrite(june.PeriodId, DateTimeOffset.Parse("2026-06-12T12:00:00Z"), fixture.BookId), ct);
+        await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
+        waiting.IsCompleted.Should().BeFalse();
+        // Readers used by canonical opening validation remain available while publication waits.
+        (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().BeEmpty();
+        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
+        await transaction.CommitAsync(ct);
+        await waiting;
+        (await fixture.Store.GetByPeriodAsync(june.PeriodId, ct)).Should().ContainSingle();
+        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+            coupon.Request.RunId, ct)).Should().NotBeNull();
+        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
+    }
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task CouponHistory_OrdinaryWriterCanPublishWhileAnotherOrdinaryParticipantHoldsItsBoundary()
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         var ct = timeout.Token;
         await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
-        var seed = await PrepareFactFreeAcquisitionAsync(database, face: false);
-        var acquisition = BuildAcquisitionCommand(seed.LedgerBookId, seed.Journal.PeriodId, seed.ExpectedPeriodVersion);
-        var authority = await database.SeedLotReferenceAuthorityAsync(acquisition.LedgerBookId,
-            acquisition.AcquisitionLot!.SecurityId, acquisition.AcquisitionLot.BookPositionId);
-        acquisition = (acquisition with { ReferenceVersions = authority.Versions }).WithComputedFingerprint();
-        var june = await database.JournalStore.SavePeriodAsync(new(Guid.NewGuid(), acquisition.LedgerBookId,
-            2026, 6, "June history lock", new(2026, 6, 1), new(2026, 6, 30), "Open",
-            DateTimeOffset.Parse("2026-06-01T00:00:00Z"), null, 0), 0, ct: ct);
-        var ordinary = CouponHistoryWrite(june.PeriodId, DateTimeOffset.Parse("2026-06-12T12:00:00Z"))
-            with
-        { AggregateId = acquisition.LedgerBookId, LedgerBookId = acquisition.LedgerBookId };
+        var period = await database.SavePeriodAsync(Guid.NewGuid(), "Open", ct);
         await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
         await connection.OpenAsync(ct);
-        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        await database.JournalStore.AppendAsync(connection, transaction, ordinary, ct);
-        var application = "coupon-atomic-history-" + Guid.NewGuid().ToString("N");
-        var atomicStore = new PostgresLedgerJournalStore(CouponHistoryOptions(database.Options, application),
-            backfillSecurityMaster: () => authority.Securities, backfillPositions: () => authority.Positions);
-        var waiting = atomicStore.AppendAssetPostingAsync(acquisition, ct);
-        await WaitForCouponHistoryRelationLockAsync(database.Options.ConnectionString, application, ct);
-        waiting.IsCompleted.Should().BeFalse();
-        // Readers used by canonical opening validation remain available while publication waits.
-        (await database.JournalStore.GetByPeriodAsync(june.PeriodId, ct)).Should().BeEmpty();
-        await transaction.CommitAsync(ct);
-        var posted = await waiting;
-        posted.IsExactReplay.Should().BeFalse();
-        (await database.JournalStore.GetByPeriodAsync(june.PeriodId, ct)).Should().ContainSingle();
-        (await database.JournalStore.GetByPeriodAsync(acquisition.Journal.PeriodId, ct)).Should().ContainSingle();
+        await using var participant = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
+        await using (var boundary = connection.CreateCommand())
+        {
+            boundary.Transaction = participant;
+            boundary.CommandText = $"lock table \"{database.Options.SchemaName}\".journal_entries in row exclusive mode";
+            await boundary.ExecuteNonQueryAsync(ct);
+        }
+        // This participant has not acquired the ledger audit head. Independent ordinary writers
+        // must coexist at the history boundary; consolidation's authority race tests the same seam.
+        await database.JournalStore.AppendAsync(CouponHistoryWrite(period.PeriodId,
+            DateTimeOffset.Parse("2026-05-12T12:00:00Z")), ct);
+        (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().ContainSingle();
+        await participant.RollbackAsync(ct);
     }
 
     [LedgerDatabaseFact]
@@ -96,37 +116,46 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(40));
         var ct = timeout.Token;
-        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
-        var first = await database.SavePeriodAsync(Guid.NewGuid(), "Open", ct);
-        var second = await database.SavePeriodAsync(Guid.NewGuid(), "Open", ct);
-        var at = DateTimeOffset.Parse("2026-05-12T12:00:00Z");
-        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await using var fixture = await CouponSinkFixture.CreateAsync();
+        var first = await fixture.Store.SavePeriodAsync(new(Guid.NewGuid(), fixture.BookId, 2026, 6,
+            "June prior ordinary publication", new(2026, 6, 1), new(2026, 6, 30), "Open",
+            DateTimeOffset.Parse("2026-06-01T00:00:00Z"), null, 0), 0, ct: ct);
+        var at = DateTimeOffset.Parse("2026-06-12T12:00:00Z");
+        await using var connection = new NpgsqlConnection(fixture.Options.ConnectionString);
         await connection.OpenAsync(ct);
         await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        await database.JournalStore.AppendAsync(connection, transaction, CouponHistoryWrite(first.PeriodId, at), ct);
+        await fixture.Store.AppendAsync(connection, transaction, CouponHistoryWrite(first.PeriodId, at, fixture.BookId), ct);
         var application = "coupon-ordinary-history-" + Guid.NewGuid().ToString("N");
-        var competing = new PostgresLedgerJournalStore(CouponHistoryOptions(database.Options, application));
-        var waiting = competing.AppendAsync(CouponHistoryWrite(second.PeriodId, at.AddMinutes(1)), ct);
-        await WaitForCouponHistoryRelationLockAsync(database.Options.ConnectionString, application, ct);
-        waiting.IsCompleted.Should().BeFalse("other periods share the complete-history publication boundary");
+        var competing = fixture.Restart(CouponHistoryOptions(fixture.Options, application));
+        var instruction = fixture.Instruction(0, "typed-coupon-after-ordinary", 45m, 50m, 3m, 2m);
+        var waiting = competing.AppendAsync(fixture.Write(instruction), ct);
+        await WaitForCouponHistoryRelationLockAsync(fixture.Options.ConnectionString, application, ct);
+        waiting.IsCompleted.Should().BeFalse("actual typed coupon validation must exclude ordinary publication across periods");
         (await competing.GetByPeriodAsync(first.PeriodId, ct)).Should().BeEmpty();
+        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+            instruction.Request.RunId, ct)).Should().BeNull();
+        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(0m);
         if (rollback)
             await transaction.RollbackAsync(ct);
         else
             await transaction.CommitAsync(ct);
         await waiting;
         (await competing.GetByPeriodAsync(first.PeriodId, ct)).Count.Should().Be(rollback ? 0 : 1);
-        (await competing.GetByPeriodAsync(second.PeriodId, ct)).Should().ContainSingle();
+        (await fixture.Store.GetCouponRecognitionRunAsync(fixture.Scope, fixture.Lots[0].TaxLotRecordId,
+            instruction.Request.RunId, ct)).Should().NotBeNull();
+        (await fixture.Store.GetConsumedCouponCashAsync(fixture.Scope, "bank-coupon", ct)).Should().Be(45m);
     }
 
-    private static LedgerJournalEntryWrite CouponHistoryWrite(Guid periodId, DateTimeOffset at)
+    private static LedgerJournalEntryWrite CouponHistoryWrite(Guid periodId, DateTimeOffset at, Guid? bookId = null)
     {
         var id = Guid.NewGuid();
         const string description = "Synthetic prior coupon accounting";
         return new(new(id, at, description,
         [new(Guid.NewGuid(), id, at, new("Cash", LedgerAccountType.Asset), 1m, 0m, description),
          new(Guid.NewGuid(), id, at, new("CouponIncome", LedgerAccountType.Revenue), 0m, 1m, description)]),
-            Guid.NewGuid(), periodId);
+            bookId ?? Guid.NewGuid(), periodId, LedgerBookId: bookId,
+            AccountingBasis: bookId is null ? AccountingBasisKindDto.Primary : AccountingBasisKindDto.Gaap,
+            AccountingPolicyId: bookId is null ? "legacy-v1" : "coupon-policy", AccountingPolicyVersion: bookId is null ? "legacy-v1" : "1");
     }
 
     private static LedgerJournalStoreOptions CouponHistoryOptions(LedgerJournalStoreOptions source, string application)

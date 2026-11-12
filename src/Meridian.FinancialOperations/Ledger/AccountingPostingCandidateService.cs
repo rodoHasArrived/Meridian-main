@@ -135,6 +135,7 @@ public sealed partial class AccountingPostingCandidateService :
             return BuildPreDryRunBlockedResult(request, authorityIssues);
         }
         var adoptedOwner = await ResolveAdoptedAcquisitionOwnerAsync(request, authority, ct).ConfigureAwait(false);
+        var adoptedIncomeLot = await ResolveAdoptedIncomeLotAsync(request, authority, ct).ConfigureAwait(false);
 
         var typedProjectionIssues = new List<PostingRuleJournalCandidateIssueDto>();
         var authoritativeEventAmount = await ResolveTypedInstrumentProjectionAsync(
@@ -175,6 +176,16 @@ public sealed partial class AccountingPostingCandidateService :
                     Dimensions = Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionOwnership.StampDimensions(
                 line.Dimensions, owner, request.LedgerBookId!.Value, authority!.SecurityId,
                 authority.BookPositionId, adopted.LotId)
+                }).ToArray()
+            };
+        if (adoptedIncomeLot is { } incomeLot)
+            dryRun = dryRun with
+            {
+                GeneratedPostingLines = dryRun.GeneratedPostingLines.Select(line => line with
+                {
+                    Dimensions = BondIncomeAcquisitionOwnership.StampDimensions(line.Dimensions,
+                        Guid.Parse(incomeLot.Account.FinancialAccountId!), incomeLot.LedgerBookId,
+                        incomeLot.SecurityId, incomeLot.BookPositionId, incomeLot.LotId)
                 }).ToArray()
             };
 
@@ -366,6 +377,11 @@ public sealed partial class AccountingPostingCandidateService :
                 account = account with { FinancialAccountId = acquisitionOwner.ToString("D") };
             if (request.BondCouponRecognition is { } coupon)
                 account = account with { FinancialAccountId = coupon.Scope.AccountId };
+            if (adoptedIncomeLot is not null)
+            {
+                BondIncomeBookedPrecision.RequireRepresentable(amount);
+                account = BindAdoptedIncomeAccount(account, line.AccountPath, request.AssetLotMutation!.AssetAccountId!, adoptedIncomeLot);
+            }
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
             {
                 if (account.Name != predecessorLot.Account.Name || account.AccountType != predecessorLot.Account.AccountType)
@@ -455,7 +471,7 @@ public sealed partial class AccountingPostingCandidateService :
             : draft.Write with
             {
                 Entry = WithSecurityMasterLineage(
-                    WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), authority,
+                    WithAdoptedIncomeCurrency(WithCanonicalCashFlow(draft.Write.Entry, request, authority, dryRun.GeneratedPostingLines), adoptedIncomeLot), authority,
                     request.AssetLotMutation?.CorporateAction?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.CapitalReturn?.ExpectedLot.Acquisition.AcquisitionCurrency
                         ?? request.AssetLotMutation?.FactorPaydown?.Currency ?? request.Currency,

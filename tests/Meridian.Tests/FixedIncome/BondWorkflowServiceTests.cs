@@ -248,6 +248,28 @@ public sealed class BondWorkflowServiceTests
         result.CashFlows.Should().BeEmpty();
     }
 
+    [Theory]
+    [InlineData(5)]
+    [InlineData(-5)]
+    public async Task ExCouponInvoiceAdjustmentRetainsSeparateSignedContractualHeldAccrual(int rate)
+    {
+        var bond = Bond(rate);
+        var terms = JsonSerializer.Deserialize<Dictionary<string, object?>>(bond.AssetSpecificTerms.GetRawText())!;
+        terms["assetClassTermsVersion"] = 5;
+        terms["bondWorkflow"] = new { exCouponBusinessDays = 10 };
+        terms["scheduleConventions"] = new { accrualAdjusted = false, couponRateUnit = "Percent", couponCashBasis = "Level",
+            paymentCalendars = new[] { "WEEKENDS" }, businessDayConvention = "Following" };
+        bond = bond with { AssetSpecificTerms = JsonSerializer.SerializeToElement(terms) };
+        var date = new DateOnly(2026, 12, 28);
+        var result = (await Service(bond).CalculateIncomeScheduleAsync(new(Id,
+            new(new DateTimeOffset(date.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero), date, AsOf)), date))!;
+
+        result.IsBlocked.Should().BeFalse(string.Join("; ", result.Issues.Select(issue => issue.Reason)));
+        result.ContractualAccruedInterest.Should().HaveValue();
+        Math.Sign(result.ContractualAccruedInterest!.Value).Should().Be(Math.Sign(rate));
+        (result.ContractualAccruedInterest - result.AccruedInterest).Should().Be(rate);
+    }
+
     private static BondCalculationContext Context() => new(AsOf, new DateOnly(2026, 1, 1), AsOf);
     private static BondWorkflowService Service(SecurityDetailDto bond, ISecurityCurveStore? curves = null,
         IBondWorkflowQuoteSource? quotes = null, ISecurityMasterPricingService? pricing = null,

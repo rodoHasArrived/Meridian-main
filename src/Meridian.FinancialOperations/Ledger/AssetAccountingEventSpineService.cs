@@ -897,7 +897,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         OpenLotSuccessorInstructionDto? corporateAction = null,
         bool allowRetainedAmortizationCorrection = false)
     {
-        if (source.BondCouponRecognition?.ReversalTarget is not null)
+        if (source.BondCouponRecognition is { } coupon && (coupon.ReversalTarget is not null || coupon.TerminalCashAuthority is not null))
         {
             // Exact inverse of an immutable posted coupon receipt does not reinterpret today's terms.
             await ValidateCouponRecognitionSourceAsync(source, ct).ConfigureAwait(false);
@@ -1154,6 +1154,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                     RequireAssertion(OpenLotAmortization.SameInstruction(inputs, rebuilt.Instruction),
                         "Scheduled principal instruction differs from current book, lot or retained income inputs.");
                 }
+                await BondIncomeTerminalCouponGuard.RequireAsync(_journalStore, factorPaydown, _couponRecognitionAuthority?.Invoke(), ct).ConfigureAwait(false);
             }
             RequireAssertion(!string.IsNullOrWhiteSpace(requested.AssetAccountId)
                 && factorPaydown.Scope.SecurityId == source.Scope.SecurityId
@@ -1452,10 +1453,12 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         RequireAssertion(position.SecurityId == source.Scope.SecurityId, "Resolved book-position security does not match the Projected snapshot.");
         RequireAssertion(position.Version == source.Scope.ExpectedBookPositionVersion, "Resolved book-position version is stale relative to the Projected snapshot.");
         RequireAssertion(position.BookContext.LedgerBookId == source.Scope.LedgerBookId, "Resolved book position belongs to a different ledger book.");
-        RequireAssertion(source.BondCouponRecognition?.ReversalTarget is not null || position.EffectiveFrom <= source.EffectiveDate &&
+        RequireAssertion(source.BondCouponRecognition is { } datedCoupon && (datedCoupon.ReversalTarget is not null || datedCoupon.TerminalCashAuthority is not null)
+                         || position.EffectiveFrom <= source.EffectiveDate &&
                          (position.EffectiveTo is null || source.EffectiveDate <= position.EffectiveTo.Value),
             "Resolved book position is not effective on the asset accounting event date.");
-        RequireAssertion(source.BondCouponRecognition?.ReversalTarget is not null || string.Equals(position.Status, "Active", StringComparison.OrdinalIgnoreCase), "Resolved book position is not active.");
+        RequireAssertion(source.BondCouponRecognition is { } statusCoupon && (statusCoupon.ReversalTarget is not null || statusCoupon.TerminalCashAuthority is not null)
+                         || string.Equals(position.Status, "Active", StringComparison.OrdinalIgnoreCase), "Resolved book position is not active.");
         var authoritativeEvents = new EconomicEventReferenceDto?[]
         {
             position.OriginEvent,

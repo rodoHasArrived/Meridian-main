@@ -1,6 +1,7 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Instruments.FixedIncome;
 
@@ -77,10 +78,27 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                 }
                 var sign = Math.Sign(face);
                 var calculation = new BondWorkflowRequest(group.Key, request.Context, Math.Abs(face)) { AccountId = scope.AccountId };
+                string? quoteIssue = null;
+                BondCalculationInput? quoteAuthority = null;
+                decimal observedDirty = 0m;
+                try { (calculation, quoteAuthority, observedDirty) = BondPortfolioHoldingQuote.Bind(calculation, snapshot, group.ToArray()); }
+                catch (ArgumentException exception) { quoteIssue = exception.Message; }
                 var baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
                 if (baseline is null)
                 { issues.Add($"Security {group.Key} is unavailable."); continue; }
+                if (quoteAuthority is not null && !baseline.IsBlocked
+                    && (baseline.OriginalDirtyConsideration is not { } modeledDirty
+                        || LedgerCurrencyRounding.RoundCurrency(modeledDirty, baseline.Currency)
+                            != LedgerCurrencyRounding.RoundCurrency(observedDirty, baseline.Currency)))
+                {
+                    quoteIssue = "Accepted dirty holding invoice differs from retained contractual accrued interest; quote-calibrated credit risk is unavailable.";
+                    calculation = calculation with { CleanPricePer100 = null, QuoteSettlementDate = null, ConfirmationEvidenceReference = null };
+                    quoteAuthority = null;
+                    baseline = await bonds.CalculateAsync(calculation, ct).ConfigureAwait(false);
+                    if (baseline is null) { issues.Add($"Security {group.Key} is unavailable."); continue; }
+                }
                 var localIssues = baseline.Issues.Select(row => row.Code + ": " + row.Reason).ToList();
+                if (quoteIssue is not null) localIssues.Add(quoteIssue);
                 var refs = await reference.GetReferenceAsOfAsync(group.Key, date, ct).ConfigureAwait(false);
                 if (refs?.Version != baseline.Context.SecurityVersion)
                 {
@@ -119,7 +137,8 @@ public sealed class BondPortfolioRiskService(IAccountBondHoldingsSource holdings
                     scenarioValues = scenarioValues.Select(row => row with { PresentValue = null, Change = null }).ToList();
                 positions.Add(new(group.Key, refs?.IssuerName, baseline.Currency, refs?.Lifecycle?.MaturityDate,
                     face, covered ? baseline.PresentValue * sign : null, covered ? baseline.Dv01 * sign : null,
-                    covered ? baseline.Cs01 * sign : null, scenarioValues, localIssues));
+                    covered ? baseline.Cs01 * sign : null, scenarioValues, localIssues)
+                { CalculationRequest = calculation, QuoteAuthority = quoteAuthority });
             }
         }
         var buckets = new List<BondPortfolioRiskBucket>();

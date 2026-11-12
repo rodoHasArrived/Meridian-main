@@ -352,7 +352,7 @@ internal static partial class SecurityMasterMapping
                 economicSchedules!,
                 new DeclaredScheduleTerms(ReadScheduleConventions(json, assetClass, versionedTerms),
                 ReadCallPutSchedules(json, assetClass, versionedTerms)),
-                ReadBondWorkflowJson(json, versionedTerms, mode))),
+                ReadBondWorkflowTerms(json, versionedTerms))),
             "FxSpot" => DecodeGeneratedFxSpot(bound, mode, assetClass, json),
             "Deposit" => SecurityKind.NewDeposit(new DepositTerms(
                 new MaturityTerms(null, null, ToOption(bound.OptionalDateOnly("maturity"))),
@@ -698,7 +698,7 @@ internal static partial class SecurityMasterMapping
         SecurityKindMappingMode mode,
         SecurityEconomicScheduleValidation economicSchedules,
         DeclaredScheduleTerms declaredSchedule,
-        FSharpOption<string> workflowJson)
+        FSharpOption<BondWorkflowTerms> workflow)
     {
         var couponType = terms.OptionalString("couponType") ?? "Fixed";
         BondCouponStructure coupon = couponType switch
@@ -747,21 +747,32 @@ internal static partial class SecurityMasterMapping
                     ToOption(terms.OptionalDateOnly("mandatoryPutDate"))),
                 new PrincipalScheduleTerms(ToFSharpList(economicSchedules.PrincipalSchedule.SourceEntries.Select(static entry =>
                 new PrincipalPaymentEntry(entry.PaymentDate, entry.Amount)))),
-                declaredSchedule, workflowJson);
+                declaredSchedule, workflow);
     }
 
-    private static FSharpOption<string> ReadBondWorkflowJson(JsonElement payload,
-        SecurityVersionedTermDecoding decoding, SecurityKindMappingMode mode)
+    private static FSharpOption<BondWorkflowTerms> ReadBondWorkflowTerms(JsonElement payload,
+        SecurityVersionedTermDecoding decoding)
     {
         var field = SecurityAssetTermsSchema.Field("Bond", "bondWorkflow");
         if (field is null || !decoding.Decodes(field) || !payload.TryGetProperty("bondWorkflow", out var workflow)
             || !SecurityAssetTermsSchema.IsPopulatedTermValue(workflow))
-            return FSharpOption<string>.None;
-        if (mode == SecurityKindMappingMode.Write
-            && !SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.bondWorkflow",
+            return FSharpOption<BondWorkflowTerms>.None;
+        if (!SecurityAssetTermsFieldEditValidator.TryValidate("Bond", "assetSpecificTerms.bondWorkflow",
                 workflow.GetRawText(), out _, out var reason))
             throw new InvalidOperationException(reason);
-        return FSharpOption<string>.Some(workflow.GetRawText());
+        return FSharpOption<BondWorkflowTerms>.Some(new(
+            Text("floatingMethod"), Text("fixingCalendarId"), Count("lookbackBusinessDays"),
+            Text("observationMethod"), Text("observationWeighting"), Count("lockoutBusinessDays"),
+            Count("lagMonths"), workflow.TryGetProperty("interpolateMonthly", out var flag) && flag.ValueKind != JsonValueKind.Null
+                ? ToOption((bool?)flag.GetBoolean()) : FSharpOption<bool>.None,
+            Ratio("couponFloorRatio"), Ratio("redemptionFloorRatio"), Count("exCouponBusinessDays")));
+
+        FSharpOption<string> Text(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption(value.GetString()) : FSharpOption<string>.None;
+        FSharpOption<int> Count(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption((int?)value.GetInt32()) : FSharpOption<int>.None;
+        FSharpOption<decimal> Ratio(string name) => workflow.TryGetProperty(name, out var value) && value.ValueKind != JsonValueKind.Null
+            ? ToOption((decimal?)value.GetDecimal()) : FSharpOption<decimal>.None;
     }
 
     private const string ScheduleConventionsKey = SecurityVersionedTerms.ScheduleConventionsKey;

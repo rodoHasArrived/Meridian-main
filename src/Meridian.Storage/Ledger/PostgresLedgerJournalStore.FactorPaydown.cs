@@ -191,6 +191,34 @@ public sealed partial class PostgresLedgerJournalStore
                 if (!OpenLotAmortization.SameInstruction(inputs, rebuilt.Instruction))
                     throw new LedgerValidationException("Scheduled principal income, lot or retained input evidence changed after review.");
             }
+            if (instruction.NewFactor == 0m)
+            {
+                var terminal = new List<BondIncomeTerminalCouponReceiptDto>();
+                var openings = new List<BondIncomeTerminalCouponOpeningDto>();
+                foreach (var inputs in scheduled.IncomeInstructions)
+                {
+                    if (!BondIncomeTerminalCoupon.HasCouponEconomics(inputs)) continue;
+                    var couponScope = BondIncomeTerminalCoupon.Scope(instruction, inputs);
+                    var latest = await ReadCouponReceiptAsync(connection, transaction, couponScope,
+                        inputs.ExpectedLot.TaxLotRecordId, null, ct).ConfigureAwait(false);
+                    var targets = BondIncomeTerminalCoupon.EarnedTargets(inputs);
+                    if (latest is null && targets.RawReceivableEarned == 0m && targets.RawPayableEarned == 0m
+                        && BondIncomeTerminalCoupon.HasCashRights(inputs))
+                    {
+                        var lot = before.Single(l => l.TaxLotRecordId == inputs.ExpectedLot.TaxLotRecordId);
+                        var opening = BondIncomeTerminalCoupon.Opening(inputs, lot.OriginatingMutationBatchId ?? Guid.Empty,
+                            lot.SourceJournalEntryId ?? Guid.Empty);
+                        var couponAuthority = _couponRecognitionAuthority?.Invoke()
+                            ?? throw new LedgerValidationException("Terminal purchased-interest opening requires authoritative coupon reconciliation.");
+                        await couponAuthority.VerifyTerminalOpeningAsync(couponScope, inputs, opening, scope.PeriodId, ct).ConfigureAwait(false);
+                        openings.Add(opening);
+                        continue;
+                    }
+                    var reconciled = BondIncomeTerminalCoupon.Reconcile(inputs, couponScope, latest);
+                    if (reconciled is not null) terminal.Add(reconciled);
+                }
+                BondIncomeTerminalCoupon.RequireEvidence(instruction, terminal, openings);
+            }
         }
         ValidateFactorPaydownJournalAccounts(command, instruction, before[0].Account);
 

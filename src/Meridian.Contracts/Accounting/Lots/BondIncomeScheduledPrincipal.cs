@@ -1,11 +1,18 @@
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
 /// <summary>Adopted scheduled repayment; each pinned income instruction proves current carrying basis.</summary>
 public sealed record BondIncomeScheduledPrincipalDto(string ModelVersion,
-    IReadOnlyList<OpenLotAmortizationInstructionDto> IncomeInstructions);
+    IReadOnlyList<OpenLotAmortizationInstructionDto> IncomeInstructions)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BondIncomeTerminalCouponReceiptDto>? TerminalCouponReceipts { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BondIncomeTerminalCouponOpeningDto>? TerminalCouponOpenings { get; init; }
+}
 
 public static class BondIncomeScheduledPrincipal
 {

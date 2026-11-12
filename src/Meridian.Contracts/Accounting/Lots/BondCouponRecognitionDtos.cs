@@ -34,6 +34,26 @@ public sealed record BondCouponBookedTargetsDto(string PolicyVersion,
     decimal RawPayableEarned, decimal BookedPayableEarned, decimal PayableRoundingResidual,
     decimal PreviousRawReceivableEarned, decimal PreviousRawPayableEarned);
 
+/// <summary>Cash clearing uses an immutable earned coupon after governed terminal principal closes its lot.</summary>
+public sealed record BondCouponTerminalCashAuthorityDto(string ModelVersion, string Mode,
+    Guid PrincipalMutationBatchId, Guid PrincipalJournalEntryId, DateOnly PrincipalEffectiveDate,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] BondCouponRecognitionReceiptDto? EarnedReceipt)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomeTerminalCouponOpeningDto? Opening { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public OpenLotAmortizationInstructionDto? OpeningIncomeInstruction { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCouponBookedTargetsDto? OpeningTargets { get; init; }
+
+    [JsonIgnore]
+    public OpenLotAmortizationInstructionDto FrozenIncomeInstruction => EarnedReceipt?.Instruction.IncomeInstruction
+        ?? OpeningIncomeInstruction ?? throw new InvalidOperationException("Frozen terminal income authority is unavailable.");
+    [JsonIgnore]
+    public BondCouponBookedTargetsDto FrozenTargets => EarnedReceipt?.Instruction.BookedTargets
+        ?? OpeningTargets ?? throw new InvalidOperationException("Frozen terminal earned targets are unavailable.");
+}
+
 public interface IBondCouponRecognitionEvidenceVerifier
 {
     Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList<BondCouponRecognizedCashDto> cash,
@@ -55,7 +75,11 @@ public sealed record BondCouponRecognitionInstructionDto(string ModelVersion,
     public decimal PriorReceivableSettled { get; init; }
     public decimal PriorPayableSettled { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCouponBookAccountsDto? AccountMappings { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BondCouponBookedTargetsDto? BookedTargets { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondCouponTerminalCashAuthorityDto? TerminalCashAuthority { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BondCouponRecognitionReceiptDto? ReversalTarget { get; init; }
 }
@@ -97,6 +121,8 @@ public interface IBondCouponRecognitionStore
 
 public interface IBondCouponRecognitionService
 {
+    Task VerifyTerminalOpeningAsync(AccountCashForecastScopeDto scope, OpenLotAmortizationInstructionDto inputs,
+        BondIncomeTerminalCouponOpeningDto opening, Guid periodId, CancellationToken ct = default);
     Task<BondCouponRecognitionPreviewDto> PreviewAsync(AccountCashForecastScopeDto scope,
         BondCouponRecognitionRequest request, CancellationToken ct = default);
     Task<BondCouponRecognitionPreparationDto> PrepareAsync(AccountCashForecastScopeDto scope,

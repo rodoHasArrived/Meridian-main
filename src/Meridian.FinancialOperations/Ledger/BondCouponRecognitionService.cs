@@ -39,16 +39,38 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
             return await BondCouponRecognitionReversal.PreviewAsync(ledger, receipts, positions, scope, request, ct).ConfigureAwait(false);
         if (request.CorrectionRationale is not null)
             throw new ArgumentException("A correction rationale requires an explicit receipt reversal.");
-        var projected = await income.PreviewAsync(new(bookId, request.TaxLotRecordId, request.ThroughDate,
-            request.KnownAt, accountId), ct).ConfigureAwait(false);
-        var lot = projected.Instruction.ExpectedLot;
+        var previous = await receipts.GetLatestCouponRecognitionAsync(scope, request.TaxLotRecordId, ct).ConfigureAwait(false);
+        var physical = (await ledger.GetTaxLotsByIdsAsync(bookId, [request.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault()
+            ?? throw new InvalidOperationException("The authoritative coupon lot is unavailable in this book.");
+        OpenLotAmortizationInstructionDto calculation;
+        decimal rawEarned;
+        BondCouponTerminalCashAuthorityDto? terminal = null;
+        if (physical.OpenQuantity == 0m)
+        {
+            terminal = await BondCouponClosedLotAuthority.ResolveAsync(ledger, receipts, positions, scope, request,
+                physical, previous, ct).ConfigureAwait(false);
+            var closedPosition = await positions.GetBookPositionAsync(physical.BookPositionId, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("The closed coupon position is unavailable.");
+            calculation = terminal.FrozenIncomeInstruction with
+            { ExpectedLot = physical.ToOpenLot(), ExpectedBookPositionVersion = closedPosition.Version };
+            var targets = terminal.FrozenTargets;
+            rawEarned = targets.RawReceivableEarned - targets.RawPayableEarned;
+        }
+        else
+        {
+            var projected = await income.PreviewAsync(new(bookId, request.TaxLotRecordId, request.ThroughDate,
+                request.KnownAt, accountId), ct).ConfigureAwait(false);
+            calculation = projected.Instruction;
+            rawEarned = projected.Income.CouponIncome;
+        }
+        var lot = calculation.ExpectedLot;
         // Historical earned coupons after partial disposal require an entitlement history, never today's share.
-        if (lot.OpenQuantity != lot.OriginalQuantity)
+        if (terminal is null && lot.OpenQuantity != lot.OriginalQuantity)
             throw new InvalidOperationException("Coupon recognition after partial disposal requires a retained lot-entitlement history.");
         var book = await ledger.GetLedgerBookAsync(bookId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The coupon ledger book is unavailable.");
         if (lot.Acquisition.AcquisitionCurrency != book.BaseCurrency
-            || projected.Instruction.BondIncome?.CurrentProjection.Currency != book.BaseCurrency)
+            || calculation.BondIncome?.CurrentProjection.Currency != book.BaseCurrency)
             throw new InvalidOperationException("Coupon posting requires retained dated book FX translation for foreign acquisition currency; native cash forecasts remain available.");
         var period = await ledger.GetPeriodAsync(request.PeriodId, ct).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The coupon accounting period is unavailable.");
@@ -80,20 +102,30 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
         if (new[] { accountPaths.Receivable, accountPaths.Payable, accountPaths.Income, accountPaths.Cash }.Contains(accountPaths.Tax)
             || new[] { accountPaths.Receivable, accountPaths.Payable, accountPaths.Income, accountPaths.Cash }.Contains(accountPaths.Fees))
             throw new InvalidOperationException("Coupon tax and expense mappings must remain distinct from cash, income, receivable and payable accounts.");
-        var previous = await receipts.GetLatestCouponRecognitionAsync(scope, request.TaxLotRecordId, ct).ConfigureAwait(false);
+        if (terminal?.EarnedReceipt is { } terminalEarned && !boundAccounts.SequenceEqual(terminalEarned.Instruction.Accounts))
+            throw new InvalidOperationException("Terminal coupon clearing must retain the original adopted earned-balance accounts; reconcile account-mapping changes first.");
+        if (previous is not null && !boundAccounts.SequenceEqual(previous.Instruction.Accounts))
+            throw new InvalidOperationException("Coupon recognition must retain its prior adopted balance accounts; reconcile account-mapping changes first.");
+        if (terminal?.Opening is { } opening)
+            await BondCouponClosedLotAuthority.VerifyOpeningAccountsAsync(ledger, scope, terminal.FrozenIncomeInstruction,
+                opening, accountPaths, boundAccounts, ct).ConfigureAwait(false);
         if (previous is not null && previous.Instruction.BookedTargets?.PolicyVersion != BondIncomeBookedPrecision.PolicyVersion)
             throw new InvalidOperationException("Prior coupon recognition requires an explicit booked-precision opening reconciliation.");
-        if (previous is null)
+        if (previous is null && terminal is null)
             await BondCouponRecognitionOpeningGuard.ValidateAsync(ledger, scope, lot, accountPaths, boundAccounts, ct).ConfigureAwait(false);
+        if (previous is null && terminal?.Opening is not null)
+            await BondCouponRecognitionOpeningGuard.ValidateTerminalAsync(ledger, scope, lot, accountPaths, boundAccounts,
+                terminal, ct).ConfigureAwait(false);
+        if (previous is not null)
+            await BondCouponRecognitionOpeningGuard.ValidateRecognizedHistoryAsync(ledger, receipts, scope, lot, accountPaths,
+                boundAccounts, previous, terminal, request.KnownAt, ct).ConfigureAwait(false);
         if (previous is not null && request.ThroughDate < previous.Instruction.Request.ThroughDate)
             throw new InvalidOperationException("Earlier coupon periods require the governed correction workflow.");
         var previousEarned = previous?.Instruction.CumulativeEarned ?? 0m;
         var priorSettled = (previous?.Instruction.PriorGrossSettled ?? 0m)
             + (previous?.Instruction.Cash.Sum(c => c.Allocation.GrossAmount) ?? 0m);
-        var rawEarned = projected.Income.CouponIncome;
-        var terms = projected.Instruction.BondIncome!;
-        var payableFlows = terms.CurrentProjection.CashFlows.Where(f => f.PaymentDate > lot.AcquiredDate
-            && f.PaymentDate <= request.ThroughDate && f.Interest != 0m)
+        var terms = calculation.BondIncome!;
+        var payableFlows = BondIncomeCouponRounding.EarnedFlows(terms)
             .GroupBy(f => (f.PaymentDate, f.AccrualStart))
             .Select(group => new
             {
@@ -101,10 +133,11 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
                 Cash = BondIncomeCouponRounding.AllocatedCash(lot.TaxLotRecordId,
                 terms, group.Key.PaymentDate, group.Key.AccrualStart)
             }).ToArray();
-        var rawReceivableEarned = decimal.Round(payableFlows.Sum(f => Math.Max(f.Cash, 0m))
-            + Math.Max(terms.CurrentAccruedInterest, 0m) - Math.Max(terms.AcquisitionAccruedInterest, 0m), 12, MidpointRounding.ToEven);
-        var rawPayableEarned = decimal.Round(payableFlows.Sum(f => Math.Max(-f.Cash, 0m))
-            + Math.Max(-terms.CurrentAccruedInterest, 0m) - Math.Max(-terms.AcquisitionAccruedInterest, 0m), 12, MidpointRounding.ToEven);
+        // Closed cash uses the original earned lot/schedule. Its current quantity is only
+        // concurrency/ownership authority and must never scale the frozen entitlement to zero.
+        var earnedSides = BondIncomeTerminalCoupon.EarnedTargets(terminal?.FrozenIncomeInstruction ?? calculation);
+        var rawReceivableEarned = earnedSides.RawReceivableEarned;
+        var rawPayableEarned = earnedSides.RawPayableEarned;
         var obligationCash = payableFlows.ToDictionary(flow => Meridian.Instruments.FixedIncome.AccountBondIncomePlanningService.ObligationIdentity(
             scope, lot.SecurityId, "Coupon", flow.Flow.PaymentDate, flow.Flow.AccrualStart), flow => flow.Cash, StringComparer.Ordinal);
         var settledObligations = (await receipts.GetConsumedCouponObligationsAsync(scope, lot.TaxLotRecordId, ct).ConfigureAwait(false)
@@ -117,6 +150,9 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
         var receivableEarned = BondIncomeBookedPrecision.RoundTarget(rawReceivableEarned);
         var payableEarned = BondIncomeBookedPrecision.RoundTarget(rawPayableEarned);
         var earned = receivableEarned - payableEarned;
+        if (terminal is not null && (receivableEarned != terminal.FrozenTargets.BookedReceivableEarned
+            || payableEarned != terminal.FrozenTargets.BookedPayableEarned))
+            throw new InvalidOperationException("A closed lot may only clear or rebook its exact retained terminal coupon targets.");
         var priorReceivableSettled = (previous?.Instruction.PriorReceivableSettled ?? 0m)
             + (previous?.Instruction.Cash.Sum(c => Math.Max(c.Allocation.GrossAmount, 0m)) ?? 0m);
         var priorPayableSettled = (previous?.Instruction.PriorPayableSettled ?? 0m)
@@ -182,7 +218,7 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
         { InstrumentId = lot.SecurityId, PositionId = lot.BookPositionId, TaxLotId = lot.LotId, AccountId = scope.AccountId, BookId = scope.BookId };
         var identity = Sha256Digest.ComputeBytesUtf8($"{scope.TenantId}/{scope.CompanyId}/{scope.BookId}/{scope.AccountId}/{lot.TaxLotRecordId:D}/{request.RunId}");
         var instruction = new BondCouponRecognitionInstructionDto(BondCouponRecognitionCalculator.ModelVersion, scope, request,
-            projected.Instruction, new Guid(identity.AsSpan(0, 16)), previous?.ReceiptId, earned, previousEarned,
+            calculation, new Guid(identity.AsSpan(0, 16)), previous?.ReceiptId, earned, previousEarned,
             priorSettled, recognizedCash, boundAccounts, lines.Select(l => l with { Dimensions = dimensions }).ToArray())
         {
             CumulativeReceivableEarned = receivableEarned,
@@ -191,11 +227,13 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
             PreviousPayableEarned = previous?.Instruction.CumulativePayableEarned ?? 0m,
             PriorReceivableSettled = priorReceivableSettled,
             PriorPayableSettled = priorPayableSettled,
+            AccountMappings = accountPaths,
             BookedTargets = new(BondIncomeBookedPrecision.PolicyVersion,
                 rawReceivableEarned, receivableEarned, rawReceivableEarned - receivableEarned,
                 rawPayableEarned, payableEarned, rawPayableEarned - payableEarned,
                 previous?.Instruction.BookedTargets?.RawReceivableEarned ?? 0m,
-                previous?.Instruction.BookedTargets?.RawPayableEarned ?? 0m)
+                previous?.Instruction.BookedTargets?.RawPayableEarned ?? 0m),
+            TerminalCashAuthority = terminal
         };
         return BuildPreview(instruction);
 
@@ -207,6 +245,27 @@ public sealed class BondCouponRecognitionService(IBondIncomeService income, IBon
             if (!boundAccounts.Any(a => a.Path == path))
                 boundAccounts.Add(new(path, rows[0].AccountName, rows[0].AccountType));
         }
+    }
+
+    public async Task VerifyTerminalOpeningAsync(AccountCashForecastScopeDto scope, OpenLotAmortizationInstructionDto inputs,
+        BondIncomeTerminalCouponOpeningDto opening, Guid periodId, CancellationToken ct = default)
+    {
+        var lot = inputs.ExpectedLot;
+        if (periodId == Guid.Empty || lot.OpenQuantity <= 0m || inputs.BondIncome is not { } source
+            || BondIncomeTerminalCoupon.Opening(inputs, opening.AcquisitionMutationBatchId, opening.AcquisitionJournalEntryId) != opening)
+            throw new InvalidOperationException("Terminal opening requires exact still-positive frozen income and actual birth authority.");
+        var physical = (await ledger.GetTaxLotsByIdsAsync(lot.LedgerBookId, [lot.TaxLotRecordId], ct).ConfigureAwait(false)).SingleOrDefault();
+        if (physical is null || !OpenLotAmortization.SameLot(physical.ToOpenLot(), lot)
+            || physical.OriginatingMutationBatchId != opening.AcquisitionMutationBatchId
+            || physical.SourceJournalEntryId != opening.AcquisitionJournalEntryId)
+            throw new InvalidOperationException("The terminal opening lot or original acquisition changed before principal preparation.");
+        var preview = await PreviewAsync(scope, new("terminal-opening-" + opening.EntitlementSha256, lot.TaxLotRecordId,
+            periodId, inputs.AsOfDate, source.KnownAt, []), ct).ConfigureAwait(false);
+        if (preview.HasChanges || preview.Instruction.PreviousReceiptId is not null || preview.Instruction.Cash.Count != 0
+            || preview.Instruction.CumulativeReceivableEarned != 0m || preview.Instruction.CumulativePayableEarned != 0m
+            || !OpenLotAmortization.SameInstruction(preview.Instruction.IncomeInstruction, inputs))
+            throw new InvalidOperationException("Terminal opening requires zero new earned movement, no prior coupon claims and the exact reviewed live inputs.");
+        await BondCouponClosedLotAuthority.VerifyOpeningBirthAsync(ledger, scope, inputs, opening, source.KnownAt, ct).ConfigureAwait(false);
     }
 
     public async Task<BondCouponRecognitionPreparationDto> PrepareAsync(AccountCashForecastScopeDto scope,

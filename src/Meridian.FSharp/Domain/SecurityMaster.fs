@@ -101,7 +101,7 @@ type BondTerms = {
     /// Declared schedule conventions (asset-class terms version 2); empty until declared.
     DeclaredSchedule: DeclaredScheduleTerms
     /// Validated, retained v5 overnight/indexed conventions; absent on every historical record.
-    WorkflowJson: string option
+    Workflow: BondWorkflowTerms option
 
 } with
     member this.ScheduleConventions = this.DeclaredSchedule.Conventions
@@ -131,7 +131,7 @@ module BondTerms =
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
           DeclaredSchedule = DeclaredScheduleTerms.empty
-          WorkflowJson = None }
+          Workflow = None }
 
     let floatingRate maturity index spreadBps issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.Floating(index, spreadBps, None, None, None); PaymentFrequency = None }
@@ -140,7 +140,7 @@ module BondTerms =
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
           DeclaredSchedule = DeclaredScheduleTerms.empty
-          WorkflowJson = None }
+          Workflow = None }
 
     let zeroCoupon maturity issuerName =
         { Dates = { EffectiveDate = None; IssueDate = None; MaturityDate = Some (maturity) }; CouponStructure = { Structure = BondCouponStructure.ZeroCoupon; PaymentFrequency = None }
@@ -149,7 +149,7 @@ module BondTerms =
           RedemptionFacts = BondRedemptionTerms.empty
           Principal = { Payments = [] }
           DeclaredSchedule = DeclaredScheduleTerms.empty
-          WorkflowJson = None }
+          Workflow = None }
 
     let couponRate (terms: BondTerms) =
         match terms.Coupon with

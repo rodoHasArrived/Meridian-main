@@ -56,8 +56,9 @@ internal sealed class LedgerFeatureRegistration : IServiceFeatureRegistration
             sp.GetService<ILedgerJournalStore>(),
             sp.GetService<ISecurityMasterStore>(),
             sp.GetService<IInstrumentPositionProjectionStore>(),
-                sp.GetService<IFactorPaydownProjectionService>(),
-                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>()));
+            sp.GetService<IFactorPaydownProjectionService>(),
+            sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+            () => sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>()));
         services.TryAddSingleton<IAccountingPostingCandidateWriteBuilder, AccountingPostingCandidateService>();
         services.TryAddSingleton<IAccountingPostingCandidateAuthorityBuilder>(sp =>
             sp.GetRequiredService<IAccountingPostingCandidateWriteBuilder>() as IAccountingPostingCandidateAuthorityBuilder

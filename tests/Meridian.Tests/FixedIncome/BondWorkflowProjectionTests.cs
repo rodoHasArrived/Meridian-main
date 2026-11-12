@@ -124,6 +124,36 @@ public sealed class BondWorkflowProjectionTests
         rows.SelectMany(r => r.Observations).Should().OnlyContain(o => o.Rate < 0m);
     }
 
+    [Theory]
+    [InlineData(0.036, 0.02, 2)]
+    [InlineData(-0.01, -0.02, -2)]
+    [InlineData(-0.03, -0.02, -3)]
+    public void SimpleFloatingCapWithoutFloorBindsPositiveAndSignedCouponAndAccrual(double index, double cap, double annualCash)
+    {
+        var schedule = Schedule(new(2026, 1, 1), new(2027, 1, 1));
+        var terms = Terms() with { CouponKind = "Floating", Cap = (decimal)cap, Floor = null };
+        var rows = BondWorkflowProjection.Project(schedule, terms, new(2026, 1, 1), _ => new((decimal)index, true, "observed"));
+        rows.Sum(row => row.Interest).Should().Be((decimal)annualCash);
+        BondWorkflowProjection.Accrued(schedule, terms, new(2026, 7, 1), _ => new((decimal)index, true, "observed"))
+            .Should().Be((decimal)annualCash / 2m);
+    }
+
+    [Theory]
+    [InlineData(0.036, 0.02, true)]
+    [InlineData(-0.01, -0.02, true)]
+    [InlineData(-0.03, -0.02, false)]
+    public void OvernightCapWithoutFloorLimitsCompoundedCouponCashIncludingNegativeCap(double index, double cap, bool binds)
+    {
+        var terms = Terms() with { CouponKind = "Floating", DayCount = DayCountConvention.Actual360,
+            CouponCashBasis = "DayCount", Cap = (decimal)cap, Floor = null,
+            Overnight = new(BusinessDayCalendars.WeekendsOnly, 0, false, true, 0) };
+        var rows = BondWorkflowProjection.Project(Schedule(new(2026, 1, 2), new(2026, 1, 6), true),
+            terms, new(2026, 1, 2), _ => new((decimal)index, true, "observed"));
+        var rawCash = 100m * ((1m + (decimal)index * 3m / 360m) * (1m + (decimal)index / 360m) - 1m);
+        var expected = binds ? 100m * (decimal)cap * 4m / 360m : rawCash;
+        rows.Sum(row => row.Interest).Should().BeApproximately(expected, 0.000000000001m);
+    }
+
     [Fact]
     public void OvernightAmortizationInsideCouponPeriodIsExplicitlyRefused()
     {

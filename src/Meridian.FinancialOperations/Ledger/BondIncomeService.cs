@@ -126,16 +126,31 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var acquired = await Frozen(lot.AcquiredDate, lot.AcquiredDate, acquisition.KnownAt, lot.AcquiredDate).ConfigureAwait(false);
         var current = await Frozen(request.ThroughDate, lot.AcquiredDate, request.KnownAt, request.ThroughDate).ConfigureAwait(false);
         var currentAtDate = await Frozen(request.ThroughDate, request.ThroughDate, request.KnownAt, request.ThroughDate).ConfigureAwait(false);
+        var hasExCoupon = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(security.AssetSpecificTerms) >= 5
+            && security.AssetSpecificTerms.TryGetProperty("bondWorkflow", out var workflowTerms)
+            && SecurityTermReader.ReadDecimal(workflowTerms, "exCouponBusinessDays") is > 0m;
+        if (hasExCoupon && (acquired.ContractualAccruedInterest is null || currentAtDate.ContractualAccruedInterest is null))
+            throw new InvalidOperationException("Held ex-coupon accounting requires retained contractual accrual distinct from purchaser invoice accrual.");
+        if (hasExCoupon && acquired.ContractualAccruedInterest != acquired.AccruedInterest)
+            throw new InvalidOperationException("An acquisition inside its ex-coupon window requires retained opening entitlement reconciliation before accounting-income adoption.");
         await BondIncomeEntitlementHistoryGuard.RequireAsync(lots, security, current, lot, request.AccountId,
             request.ThroughDate, ct).ConfigureAwait(false);
         var cashAllocations = new List<BondIncomeCouponAllocationDto>();
+        var lastPrincipal = current.CashFlows.Where(f => f.Principal > 0m).OrderBy(f => f.PaymentDate).LastOrDefault();
+        var terminalEntitlement = lastPrincipal is { OutstandingPrincipal: 0m } && lastPrincipal.PaymentDate <= request.ThroughDate
+            ? new BondIncomeTerminalEntitlementDto(BondIncomeCouponRounding.TerminalEntitlementModelVersion, lastPrincipal.PaymentDate) : null;
+        if (terminalEntitlement is not null && current.CashFlows.Any(f => f.Interest != 0m && f.PaymentDate > terminalEntitlement.PrincipalDate
+            && (f.IsForecast || f.AccrualStart >= terminalEntitlement.PrincipalDate)))
+            throw new InvalidOperationException("Terminal coupon rights must be fully earned and observed before closing; future unearned or unfixed coupons require retained entitlement authority.");
         var holderEntitlements = new Dictionary<Guid, BondWorkflowResult> { [retained.TaxLotRecordId] = current };
         foreach (var obligation in current.CashFlows.Where(f => f.Interest != 0m && f.PaymentDate > lot.AcquiredDate
-            && f.PaymentDate <= request.ThroughDate).GroupBy(f => (f.PaymentDate, f.AccrualStart, f.AccrualEnd))
+            && (f.PaymentDate <= request.ThroughDate || terminalEntitlement is not null)).GroupBy(f => (f.PaymentDate, f.AccrualStart, f.AccrualEnd))
             .OrderBy(g => g.Key.PaymentDate).ThenBy(g => g.Key.AccrualStart))
         {
+            var holderDate = terminalEntitlement is not null && obligation.Key.PaymentDate > terminalEntitlement.PrincipalDate
+                ? terminalEntitlement.PrincipalDate : obligation.Key.PaymentDate;
             var holderLots = (await lots.ListOpenTaxLotsByAssetScopeAsync(book.LedgerBookId, lot.SecurityId,
-                lot.BookPositionId, obligation.Key.PaymentDate, ct).ConfigureAwait(false))
+                lot.BookPositionId, holderDate, ct).ConfigureAwait(false))
                 .Where(l => Guid.TryParse(l.Account.FinancialAccountId, out var owner) && owner == request.AccountId).ToArray();
             if (!holderLots.Any(l => l.TaxLotRecordId == lot.TaxLotRecordId)
                 || holderLots.Any(l => !l.HasFaceValueTerms || l.BookedFactor is not > 0m || l.OpenQuantity <= 0m
@@ -167,7 +182,7 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
                 { AcquisitionSettlementDate = holderLot.AcquiredDate, EntitlementInputs = entitlement.Inputs });
             }
             cashAllocations.Add(BondIncomeCouponRounding.Allocate(obligation.Key.PaymentDate, obligation.Key.AccrualStart,
-                obligation.Key.AccrualEnd, security.Currency, components));
+                obligation.Key.AccrualEnd, security.Currency, components) with { HolderSnapshotDate = holderDate });
         }
         var resets = new List<BondIncomeResetDto>();
         if (policy.FloaterPolicy == BondIncomeFloaterPolicy.ProspectiveReset)
@@ -194,12 +209,35 @@ public sealed class BondIncomeService(ILedgerJournalStore lots, IInstrumentPosit
         var incomeInputs = new BondIncomeInstructionDto(book.LedgerBookId, book.AccountingPolicyId, book.AccountingPolicyVersion,
             policy, lot.AcquiredDate, request.ThroughDate, request.KnownAt, acquired, current, amortization, resets,
             BondIncomeCalculator.ReadQualifyingCalls(security), acquisition.Fees, acquisition.PurchasedAccruedInterest,
-            currentAtDate.AccruedInterest ?? throw new InvalidOperationException("Observed contractual accrued interest is unavailable."),
+            currentAtDate.ContractualAccruedInterest ?? currentAtDate.AccruedInterest
+                ?? throw new InvalidOperationException("Observed contractual accrued interest is unavailable."),
             acquisition.IndexRatio, indexRatio, originalFace * (lot.CurrentFactor ?? face.BookedFactor), acquisition.Evidence, request.AccountId,
             frequency, conventions.Block.CouponCashBasis == "Level", DayCountConventions.Parse(reference.DayCountConvention), zeroCoupon)
-        { CouponCashAllocations = cashAllocations };
+        { CouponCashAllocations = cashAllocations, TerminalEntitlement = terminalEntitlement };
+        // A coupon already wholly earned by the seller is separately booked purchased interest.
+        // Admit only the exact par, one-obligation tail; actual birth/account/history authority is
+        // revalidated by the terminal opening companion before principal can close the lot.
+        var purchasedCoupons = acquired.CashFlows.Where(f => f.Interest != 0m && f.PaymentDate > lot.AcquiredDate).ToArray();
+        if (!zeroCoupon && terminalEntitlement is not null && purchasedCoupons.Length == 1
+            && purchasedCoupons[0].AccrualEnd <= lot.AcquiredDate && acquisition.PurchasedAccruedInterest != 0m)
+        {
+            var coupon = purchasedCoupons[0];
+            if (retained.OriginatingMutationBatchId is not { } birthId || retained.SourceJournalEntryId is not { } birthJournalId)
+                throw new InvalidOperationException("Purchased coupon separation requires its actual canonical acquisition receipt and journal.");
+            var birth = await lots.GetAtomicTaxLotPostingAsync(birthId, ct).ConfigureAwait(false);
+            if (birth is null || birth.MutationKind != AtomicTaxLotMutationKind.Acquisition || birth.Mutations.Count != 1
+                || birth.Journal.Entry.JournalEntryId != birthJournalId || birth.Journal.AggregateId != book.LedgerBookId
+                || birth.Mutations[0].LotBefore is not null || birth.Mutations[0].TaxLotRecordId != lot.TaxLotRecordId
+                || birth.Mutations[0].LotAfter.SourceJournalEntryId != birthJournalId
+                || birth.Mutations[0].LotAfter.OriginatingMutationBatchId != birthId
+                || JsonSerializer.Serialize(birth.Mutations[0].LotAfter.Acquisition) != JsonSerializer.Serialize(lot.Acquisition)
+                || birth.Journal.CreatedAt > request.KnownAt || birth.Mutations[0].RecordedAt > request.KnownAt)
+                throw new InvalidOperationException("Purchased coupon separation requires exact retained canonical acquisition authority at the calculation cutoff.");
+            incomeInputs = incomeInputs with { PurchasedCouponTail = new(BondIncomePurchasedCouponTail.ModelVersion,
+                birthId, birthJournalId, coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, acquisition.PurchasedAccruedInterest) };
+        }
         var income = BondIncomeCalculator.Project(lot, incomeInputs);
-        incomeInputs = incomeInputs with { BookedTarget = income.BookedTarget };
+        incomeInputs = incomeInputs with { BookedTarget = income.BookedTarget, AccountingYieldCertificate = income.AccountingYieldCertificate };
         var instruction = new OpenLotAmortizationInstructionDto(lot, security, securityEvidence, position.Version,
             request.ThroughDate, BondIncomeCalculator.ModelVersion)
         { BondIncome = incomeInputs };

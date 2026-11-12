@@ -35,10 +35,12 @@ export function AccountBondTools({ bookId, accountId, asOf, calculateRisk = calc
         if (![parallel, spread].every((value) => DECIMAL_LITERAL.test(value.trim()))) throw new Error("Rate and spread shocks must be decimal basis points.");
         const points = pillars.split(/\r?\n/).filter((line) => line.trim()).map((line) => { const [date, shift, ...extra] = line.split(",").map((part) => part.trim()); if (extra.length || !/^\d{4}-\d{2}-\d{2}$/.test(date) || !DECIMAL_LITERAL.test(shift ?? "")) throw new Error("Enter steepening pillars as date, shift in basis points, one per line."); return { date, shiftBps: shift }; });
         const identity = riskRunId.trim() || crypto.randomUUID(); setRiskRunId(identity);
-        const response = await calculateRisk(bookId.trim(), accountId.trim(), { context: riskContext ?? { asOf: `${asOf}T00:00:00Z`, settlementDate: asOf }, parallelShiftBps: parallel.trim(), spreadWideningBps: spread.trim(), steepeningPillars: points.length ? points : undefined, runId: identity }, options);
+        const context = riskContext ?? { asOf: `${asOf}T00:00:00Z`, settlementDate: asOf, knownAt: new Date().toISOString() };
+        setRiskContext(context);
+        const response = await calculateRisk(bookId.trim(), accountId.trim(), { context, parallelShiftBps: parallel.trim(), spreadWideningBps: spread.trim(), steepeningPillars: points.length ? points : undefined, runId: identity }, options);
         if (controller.signal.aborted) return;
         if (response.scope.accountId.toLowerCase() !== accountId.trim().toLowerCase() || response.scope.bookId.toLowerCase() !== bookId.trim().toLowerCase()) throw new Error("Risk calculation returned a different account or book.");
-        setRisk(response); setRiskContext(response.context);
+        setRisk(response); setRiskContext(response.context ?? context);
       }
     } catch (failure) { if (!controller.signal.aborted) setError(describeApiError(failure, "Account bond operation unavailable.").summary); }
     finally { if (!controller.signal.aborted) setPending(false); }

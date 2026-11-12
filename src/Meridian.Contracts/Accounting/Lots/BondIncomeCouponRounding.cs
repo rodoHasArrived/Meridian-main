@@ -1,5 +1,6 @@
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.FixedIncome;
+using System.Text.Json.Serialization;
 
 namespace Meridian.Contracts.Accounting.Lots;
 
@@ -12,12 +13,40 @@ public sealed record BondIncomeCouponLotAllocationDto(Guid TaxLotRecordId, long 
 
 public sealed record BondIncomeCouponAllocationDto(string ModelVersion, DateOnly PaymentDate,
     DateOnly AccrualStart, DateOnly AccrualEnd, string Currency,
-    IReadOnlyList<BondIncomeCouponLotAllocationDto> Lots);
+    IReadOnlyList<BondIncomeCouponLotAllocationDto> Lots)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? HolderSnapshotDate { get; init; }
+}
 
 /// <summary>One native cash boundary for a holder obligation, deterministically allocated to its lots.</summary>
 public static class BondIncomeCouponRounding
 {
     public const string ModelVersion = "bond-income-coupon-allocation-v1";
+    public const string TerminalEntitlementModelVersion = "bond-terminal-entitlement-v1";
+
+    public static IReadOnlyList<BondWorkflowCashFlow> EarnedFlows(BondIncomeInstructionDto income)
+    {
+        var flows = income.CurrentProjection.CashFlows.Where(f => f.PaymentDate > income.AcquisitionDate && f.Interest != 0m).ToArray();
+        if (income.TerminalEntitlement is not { } terminal) return flows.Where(f => f.PaymentDate <= income.ThroughDate).ToArray();
+        var lastPrincipal = income.CurrentProjection.CashFlows.Where(f => f.Principal > 0m).OrderBy(f => f.PaymentDate).LastOrDefault();
+        if (terminal.ModelVersion != TerminalEntitlementModelVersion || terminal.PrincipalDate > income.ThroughDate
+            || lastPrincipal is null || lastPrincipal.PaymentDate != terminal.PrincipalDate || lastPrincipal.OutstandingPrincipal != 0m
+            || flows.Any(f => f.PaymentDate > terminal.PrincipalDate && (f.IsForecast || f.AccrualStart >= terminal.PrincipalDate)))
+            throw new ArgumentException("Terminal coupon entitlement requires observed fully earned rights after all contractual principal is due; future unearned or unfixed rights remain unsupported.");
+        return flows;
+    }
+
+    public static (decimal Receivable, decimal Payable) EarnedSides(Guid lotId, BondIncomeInstructionDto income, decimal openShare = 1m)
+    {
+        var cash = EarnedFlows(income).GroupBy(f => (f.PaymentDate, f.AccrualStart))
+            .Select(g => AllocatedCash(lotId, income, g.Key.PaymentDate, g.Key.AccrualStart)).ToArray();
+        var accrued = income.TerminalEntitlement is null ? income.CurrentAccruedInterest * openShare : 0m;
+        return (decimal.Round(cash.Sum(c => Math.Max(c, 0m)) + Math.Max(accrued, 0m)
+                - Math.Max(income.AcquisitionAccruedInterest, 0m) * openShare, 12, MidpointRounding.ToEven),
+            decimal.Round(cash.Sum(c => Math.Max(-c, 0m)) + Math.Max(-accrued, 0m)
+                - Math.Max(-income.AcquisitionAccruedInterest, 0m) * openShare, 12, MidpointRounding.ToEven));
+    }
 
     public static BondIncomeCouponAllocationDto Allocate(DateOnly paymentDate, DateOnly accrualStart,
         DateOnly accrualEnd, string currency, IReadOnlyList<BondIncomeCouponLotAllocationDto> inputs)
@@ -50,6 +79,9 @@ public static class BondIncomeCouponRounding
         if (row.ModelVersion != ModelVersion || row.Currency != income.CurrentProjection.Currency
             || row.Lots.SingleOrDefault(l => l.TaxLotRecordId == lotId) is not { } selected)
             throw new ArgumentException("Coupon cash allocation does not bind this authoritative lot and currency.");
+        if (income.TerminalEntitlement is { } terminal && row.PaymentDate > terminal.PrincipalDate
+            && row.HolderSnapshotDate != terminal.PrincipalDate)
+            throw new ArgumentException("Deferred terminal coupon cash must retain its actual terminal-date holder pool.");
         var computed = Allocate(row.PaymentDate, row.AccrualStart, row.AccrualEnd, row.Currency, row.Lots);
         if (!computed.Lots.SequenceEqual(row.Lots))
             throw new ArgumentException("Coupon cash allocation differs from the deterministic native boundary.");
@@ -58,8 +90,7 @@ public static class BondIncomeCouponRounding
 
     public static decimal CompletedCash(Guid lotId, BondIncomeInstructionDto income)
     {
-        var flows = income.CurrentProjection.CashFlows.Where(f => f.PaymentDate > income.AcquisitionDate
-            && f.PaymentDate <= income.ThroughDate && f.Interest != 0m)
+        var flows = EarnedFlows(income)
             .GroupBy(f => (f.PaymentDate, f.AccrualStart)).ToArray();
         return flows.Sum(group => AllocatedCash(lotId, income, group.Key.PaymentDate, group.Key.AccrualStart));
     }

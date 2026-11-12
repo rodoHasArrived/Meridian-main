@@ -5,7 +5,7 @@
       "directories": [
         "src/Meridian.Contracts"
       ],
-      "fingerprint": "723b8b500ea221381219832f3bb26d1e9a54923560227fdb47628ebc6f254e4a",
+      "fingerprint": "95e0a321f63bb805666c9aa32858de28ebff45998fecb982a8014e6368ff6d35",
       "id": "all-contracts",
       "namespace_prefixes": [
         "Meridian.Contracts"
@@ -26,6 +26,7 @@
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionRequest",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognizedCashDto",
+        "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionOwnership",
         "Meridian.Contracts.Accounting.Lots.BondIncomeBookedPrecision",
@@ -46,10 +47,16 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomePreparationRequestDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomePreviewDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+        "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeResetDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeResultDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipal",
         "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
         "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
         "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier",
         "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService",
@@ -5028,7 +5035,7 @@
       ]
     }
   ],
-  "fingerprint": "50ac29aaf0b0d8ec627da4fb4a12b91d35175ace9f3d56464991ab9c29303226",
+  "fingerprint": "e0d151490a3f7c91d7af2918bb3081cd5d865b366bef4550bd78cf08fc1f3524",
   "mapping_policy": {
     "level": "module",
     "note": "Schema associations are module-level only; no DTO-to-table or member-to-column structural equivalence is claimed.",
@@ -5039,7 +5046,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "b546c74d6e9a7e79c7d9ed4b5565afe5a3958c1692dc01fda50f8dce1294bc94",
+      "fingerprint": "5fd8c3809b810e069ef5ca61228510618177c23e3462ee07b7ec8904d204c85d",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.Accounting.Lots",
       "object_ids": [
@@ -5058,6 +5065,7 @@
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionRequest",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognizedCashDto",
+        "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionOwnership",
         "Meridian.Contracts.Accounting.Lots.BondIncomeBookedPrecision",
@@ -5078,10 +5086,16 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomePreparationRequestDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomePreviewDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+        "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeResetDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeResultDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipal",
         "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
         "Meridian.Contracts.Accounting.Lots.FaceValueAcquisitionTermsDto",
         "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier",
         "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService",
@@ -6370,7 +6384,7 @@
       "contract_sets": [
         "all-contracts"
       ],
-      "fingerprint": "1f36e918eaee1ae5db08f16bb0e583798fde04404311c674fb4626a709f917ca",
+      "fingerprint": "5966669cc4587f9dca5370c6a0ca1410742c120c3988d6351183f3545cf02e64",
       "mapped_schemas": [],
       "namespace": "Meridian.Contracts.FixedIncome",
       "object_ids": [
@@ -7414,7 +7428,7 @@
         "all-contracts",
         "security-master-contracts"
       ],
-      "fingerprint": "db979fb0b8350ff8e021457b2efb8deda406ede64bb360dfd5aa5ed71b83adfb",
+      "fingerprint": "64e0afaa9ff16e10714b8a91be6f532f2eb684a0b1181f84eb4a5549374a58cf",
       "mapped_schemas": [
         "security_master"
       ],
@@ -10028,7 +10042,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "eda61ccd1cad81aed8d6bd09c39f45e5fef11db7256cdd36826d3ad6c7fc4ff5",
+      "fingerprint": "d0c3cffc136b21331ec421879fbbf5348e6b426f2981de61d2aeaaca16eea1dd",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionCalculator",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionCalculator",
       "kind": "class",
@@ -10040,12 +10054,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionCalculator",
       "references": [],
       "source": {
-        "line": 110,
+        "line": 136,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 110,
+          "line": 136,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10061,12 +10075,26 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6a281f63de295ee59eadce550bfc4053b4bdfe5e328932c725ee8a0960ba453e",
+      "fingerprint": "f3aa3a42d6a0a1f30ef97045c5c57106152d07e98f3a6f7a2b10748626da646a",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
       "kind": "record",
       "mapped_schemas": [],
       "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountMappings",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondCouponBookAccountsDto?",
+          "source_line": 78,
+          "type": "BondCouponBookAccountsDto?"
+        },
         {
           "collection": true,
           "collection_kind": "IReadOnlyList",
@@ -10078,7 +10106,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondCouponRecognitionAccountDto>",
-          "source_line": 48,
+          "source_line": 68,
           "type": "IReadOnlyList<BondCouponRecognitionAccountDto>"
         },
         {
@@ -10092,7 +10120,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondCouponBookedTargetsDto?",
-          "source_line": 58,
+          "source_line": 80,
           "type": "BondCouponBookedTargetsDto?"
         },
         {
@@ -10106,7 +10134,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondCouponRecognizedCashDto>",
-          "source_line": 47,
+          "source_line": 67,
           "type": "IReadOnlyList<BondCouponRecognizedCashDto>"
         },
         {
@@ -10120,7 +10148,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 46,
+          "source_line": 66,
           "type": "decimal"
         },
         {
@@ -10134,7 +10162,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 52,
+          "source_line": 72,
           "type": "decimal"
         },
         {
@@ -10148,7 +10176,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 51,
+          "source_line": 71,
           "type": "decimal"
         },
         {
@@ -10162,7 +10190,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 45,
+          "source_line": 65,
           "type": "Guid"
         },
         {
@@ -10176,7 +10204,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotAmortizationInstructionDto",
-          "source_line": 45,
+          "source_line": 65,
           "type": "OpenLotAmortizationInstructionDto"
         },
         {
@@ -10190,7 +10218,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<ProjectedAccountingEffectLineDto>",
-          "source_line": 49,
+          "source_line": 69,
           "type": "IReadOnlyList<ProjectedAccountingEffectLineDto>"
         },
         {
@@ -10204,7 +10232,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 43,
+          "source_line": 63,
           "type": "string"
         },
         {
@@ -10218,7 +10246,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 46,
+          "source_line": 66,
           "type": "decimal"
         },
         {
@@ -10232,7 +10260,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 54,
+          "source_line": 74,
           "type": "decimal"
         },
         {
@@ -10246,7 +10274,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 45,
+          "source_line": 65,
           "type": "string?"
         },
         {
@@ -10260,7 +10288,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 53,
+          "source_line": 73,
           "type": "decimal"
         },
         {
@@ -10274,7 +10302,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 46,
+          "source_line": 66,
           "type": "decimal"
         },
         {
@@ -10288,7 +10316,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 56,
+          "source_line": 76,
           "type": "decimal"
         },
         {
@@ -10302,7 +10330,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 55,
+          "source_line": 75,
           "type": "decimal"
         },
         {
@@ -10316,7 +10344,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCouponRecognitionRequest",
-          "source_line": 44,
+          "source_line": 64,
           "type": "BondCouponRecognitionRequest"
         },
         {
@@ -10330,7 +10358,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondCouponRecognitionReceiptDto?",
-          "source_line": 60,
+          "source_line": 84,
           "type": "BondCouponRecognitionReceiptDto?"
         },
         {
@@ -10344,8 +10372,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountCashForecastScopeDto",
-          "source_line": 44,
+          "source_line": 64,
           "type": "AccountCashForecastScopeDto"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminalCashAuthority",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondCouponTerminalCashAuthorityDto?",
+          "source_line": 82,
+          "type": "BondCouponTerminalCashAuthorityDto?"
         }
       ],
       "name": "BondCouponRecognitionInstructionDto",
@@ -10353,22 +10395,24 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
       "references": [
+        "Meridian.Contracts.Accounting.Lots.BondCouponBookAccountsDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponBookedTargetsDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionAccountDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionRequest",
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognizedCashDto",
+        "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
         "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto",
         "Meridian.Contracts.AssetOperations.AccountCashForecastScopeDto",
         "Meridian.Contracts.AssetOperations.ProjectedAccountingEffectLineDto"
       ],
       "source": {
-        "line": 43,
+        "line": 63,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 43,
+          "line": 63,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10384,7 +10428,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ae14e494ac8489bb1a493c804f1ebdb439c8818ef209a0a1bef601af53fb243d",
+      "fingerprint": "67c745fa37cde0d16aa7d58df59f28778d292ee1619e1ece481a8cf0928f5c00",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPreparationDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPreparationDto",
       "kind": "record",
@@ -10401,7 +10445,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCouponRecognitionPreviewDto",
-          "source_line": 74,
+          "source_line": 98,
           "type": "BondCouponRecognitionPreviewDto"
         },
         {
@@ -10415,7 +10459,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "ProjectAssetAccountingEventRequestDto",
-          "source_line": 75,
+          "source_line": 99,
           "type": "ProjectAssetAccountingEventRequestDto"
         }
       ],
@@ -10428,12 +10472,12 @@
         "Meridian.Contracts.AssetOperations.ProjectAssetAccountingEventRequestDto"
       ],
       "source": {
-        "line": 74,
+        "line": 98,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 74,
+          "line": 98,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10449,7 +10493,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9c4c22d77e4403959a702d2bec863effa80c99319e61e4199a1af43722255d5e",
+      "fingerprint": "8d3f60b1348b55ff8d070ff72975c9a0cb7c36e424c612050f428b6462a8fccc",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPrepareRequestDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPrepareRequestDto",
       "kind": "record",
@@ -10466,7 +10510,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 78,
+          "source_line": 102,
           "type": "string"
         },
         {
@@ -10480,7 +10524,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCouponRecognitionRequest",
-          "source_line": 77,
+          "source_line": 101,
           "type": "BondCouponRecognitionRequest"
         }
       ],
@@ -10492,12 +10536,12 @@
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionRequest"
       ],
       "source": {
-        "line": 77,
+        "line": 101,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 77,
+          "line": 101,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10513,7 +10557,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "5728e9284fa2e29fdebf3d3025b220cdbec418c412e551e27b5b2571e906587b",
+      "fingerprint": "ed3a95e377002d136e11a64babcc8b519096e9b2f4dccecae762546abee315fc",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPreviewDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionPreviewDto",
       "kind": "record",
@@ -10530,7 +10574,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 66,
+          "source_line": 90,
           "type": "decimal"
         },
         {
@@ -10544,7 +10588,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 66,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -10558,7 +10602,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 67,
+          "source_line": 91,
           "type": "bool"
         },
         {
@@ -10572,7 +10616,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCouponRecognitionInstructionDto",
-          "source_line": 68,
+          "source_line": 92,
           "type": "BondCouponRecognitionInstructionDto"
         },
         {
@@ -10586,7 +10630,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 71,
+          "source_line": 95,
           "type": "decimal"
         },
         {
@@ -10600,7 +10644,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 70,
+          "source_line": 94,
           "type": "decimal"
         },
         {
@@ -10614,7 +10658,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 67,
+          "source_line": 91,
           "type": "decimal"
         },
         {
@@ -10628,7 +10672,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 67,
+          "source_line": 91,
           "type": "decimal"
         }
       ],
@@ -10640,12 +10684,12 @@
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto"
       ],
       "source": {
-        "line": 66,
+        "line": 90,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 66,
+          "line": 90,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10661,7 +10705,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "036b02348a3746fafbe09797dda6034d02b57a73a6e58f157bc42aba553722a4",
+      "fingerprint": "6a60355fdc4cdc48f059722e3516e5bb596a2c86ed7a0d5e8f05ff9e1a090725",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
       "kind": "record",
@@ -10678,7 +10722,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCouponRecognitionInstructionDto",
-          "source_line": 64,
+          "source_line": 88,
           "type": "BondCouponRecognitionInstructionDto"
         },
         {
@@ -10692,7 +10736,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 63,
+          "source_line": 87,
           "type": "Guid"
         },
         {
@@ -10706,7 +10750,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 64,
+          "source_line": 88,
           "type": "DateTimeOffset"
         },
         {
@@ -10720,7 +10764,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 63,
+          "source_line": 87,
           "type": "string"
         }
       ],
@@ -10732,12 +10776,12 @@
         "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto"
       ],
       "source": {
-        "line": 63,
+        "line": 87,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 63,
+          "line": 87,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -10982,6 +11026,171 @@
       "sources": [
         {
           "line": 22,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "5a2b28626a8fc5bcdb36a30d03c8b48d57095c7bd19c13504d0c4d127971a994",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "id": "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "EarnedReceipt",
+          "nullable": true,
+          "origin": "positional_parameter",
+          "raw_type": "BondCouponRecognitionReceiptDto?",
+          "source_line": 40,
+          "type": "BondCouponRecognitionReceiptDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "Mode",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 38,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ModelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 38,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "Opening",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondIncomeTerminalCouponOpeningDto?",
+          "source_line": 43,
+          "type": "BondIncomeTerminalCouponOpeningDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningIncomeInstruction",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "OpenLotAmortizationInstructionDto?",
+          "source_line": 45,
+          "type": "OpenLotAmortizationInstructionDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "OpeningTargets",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondCouponBookedTargetsDto?",
+          "source_line": 47,
+          "type": "BondCouponBookedTargetsDto?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalEffectiveDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 39,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalJournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 39,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalMutationBatchId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 39,
+          "type": "Guid"
+        }
+      ],
+      "name": "BondCouponTerminalCashAuthorityDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "references": [
+        "Meridian.Contracts.Accounting.Lots.BondCouponBookedTargetsDto",
+        "Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+        "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+      ],
+      "source": {
+        "line": 38,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 38,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -11425,7 +11634,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9c4913b1c6c655acd4f194610c29753591c24b3c84c0426c28cad8e4ed5b69f5",
+      "fingerprint": "7533814ea942e8c7cdc342811c20ccbd346dab96adfcf52ab06e171480a369d7",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponAllocationDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponAllocationDto",
       "kind": "record",
@@ -11442,7 +11651,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 14,
+          "source_line": 15,
           "type": "DateOnly"
         },
         {
@@ -11456,7 +11665,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 14,
+          "source_line": 15,
           "type": "DateOnly"
         },
         {
@@ -11470,8 +11679,22 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 14,
+          "source_line": 15,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "HolderSnapshotDate",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "DateOnly?",
+          "source_line": 19,
+          "type": "DateOnly?"
         },
         {
           "collection": true,
@@ -11484,7 +11707,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondIncomeCouponLotAllocationDto>",
-          "source_line": 15,
+          "source_line": 16,
           "type": "IReadOnlyList<BondIncomeCouponLotAllocationDto>"
         },
         {
@@ -11498,7 +11721,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 13,
+          "source_line": 14,
           "type": "string"
         },
         {
@@ -11512,7 +11735,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 13,
+          "source_line": 14,
           "type": "DateOnly"
         }
       ],
@@ -11524,12 +11747,12 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomeCouponLotAllocationDto"
       ],
       "source": {
-        "line": 13,
+        "line": 14,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
       },
       "sources": [
         {
-          "line": 13,
+          "line": 14,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
         }
       ],
@@ -11545,7 +11768,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "21c455e671cc1b5020c088c69198375811e072bd7b98ece7bc6d3a87b5f78f39",
+      "fingerprint": "db912767f8a96358b6f0ff736e0efa39e23942a6f69845c6986450ef89e8c4a9",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponLotAllocationDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponLotAllocationDto",
       "kind": "record",
@@ -11562,7 +11785,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateOnly",
-          "source_line": 9,
+          "source_line": 10,
           "type": "DateOnly"
         },
         {
@@ -11576,7 +11799,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 7,
+          "source_line": 8,
           "type": "decimal"
         },
         {
@@ -11590,7 +11813,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "IReadOnlyList<BondCalculationInput>",
-          "source_line": 10,
+          "source_line": 11,
           "type": "IReadOnlyList<BondCalculationInput>"
         },
         {
@@ -11604,7 +11827,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 6,
+          "source_line": 7,
           "type": "long"
         },
         {
@@ -11618,7 +11841,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 7,
+          "source_line": 8,
           "type": "decimal"
         },
         {
@@ -11632,7 +11855,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 7,
+          "source_line": 8,
           "type": "decimal"
         },
         {
@@ -11646,7 +11869,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 6,
+          "source_line": 7,
           "type": "Guid"
         }
       ],
@@ -11658,12 +11881,12 @@
         "Meridian.Contracts.FixedIncome.BondCalculationInput"
       ],
       "source": {
-        "line": 6,
+        "line": 7,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
       },
       "sources": [
         {
-          "line": 6,
+          "line": 7,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
         }
       ],
@@ -11679,7 +11902,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "2142eb265e878c2a51f6e398e85a36ff2fdd37abbe0df89d15728864c28a94dd",
+      "fingerprint": "2f55f05993f865e8b07170d84bdff51be3ed0f9d5358c3751ebc14c0a6953da2",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponRounding",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponRounding",
       "kind": "class",
@@ -11691,12 +11914,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeCouponRounding",
       "references": [],
       "source": {
-        "line": 18,
+        "line": 23,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
       },
       "sources": [
         {
-          "line": 18,
+          "line": 23,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeCouponRounding.cs"
         }
       ],
@@ -11903,7 +12126,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "9f4d4c4b3ce3908cb5a77c4f06e9d95d3a4dfea6b2359de7af301036e72ca8f1",
+      "fingerprint": "dc2bf1e1598bd97f4a8c7acd4cf967f1ce42807fbc193b7bea211824fc1723b6",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto",
       "kind": "record",
@@ -11951,6 +12174,20 @@
           "raw_type": "string",
           "source_line": 46,
           "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccountingYieldCertificate",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "string?",
+          "source_line": 78,
+          "type": "string?"
         },
         {
           "collection": false,
@@ -12236,6 +12473,20 @@
           "type": "decimal"
         },
         {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "PurchasedCouponTail",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondIncomePurchasedCouponTailDto?",
+          "source_line": 76,
+          "type": "BondIncomePurchasedCouponTailDto?"
+        },
+        {
           "collection": true,
           "collection_kind": "IReadOnlyList",
           "element_type": "BondIncomeResetDto",
@@ -12248,6 +12499,20 @@
           "raw_type": "IReadOnlyList<BondIncomeResetDto>",
           "source_line": 54,
           "type": "IReadOnlyList<BondIncomeResetDto>"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminalEntitlement",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondIncomeTerminalEntitlementDto?",
+          "source_line": 74,
+          "type": "BondIncomeTerminalEntitlementDto?"
         },
         {
           "collection": false,
@@ -12289,7 +12554,9 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomeCouponAllocationDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeFeeDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomePolicyDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
         "Meridian.Contracts.Accounting.Lots.BondIncomeResetDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
         "Meridian.Contracts.AssetOperations.RetainedEvidenceIdentityDto",
         "Meridian.Contracts.FixedIncome.BondWorkflowResult",
         "Meridian.Contracts.SecurityMaster.DayCountConvention"
@@ -12316,7 +12583,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "83fc04e7839d23460453542c3e12a610d383de3240c0eb26f10beffcbb790d66",
+      "fingerprint": "7aa6e2a1d0b547aba638357552c6ff3e83a94d89f536a24554ee9479500b684c",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto",
       "kind": "record",
@@ -12333,7 +12600,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 105,
+          "source_line": 120,
           "type": "string"
         },
         {
@@ -12347,7 +12614,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 105,
+          "source_line": 120,
           "type": "decimal"
         },
         {
@@ -12361,7 +12628,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 105,
+          "source_line": 120,
           "type": "decimal"
         }
       ],
@@ -12371,12 +12638,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto",
       "references": [],
       "source": {
-        "line": 105,
+        "line": 120,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 105,
+          "line": 120,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -12392,7 +12659,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ec4c9eff88cde52bf44e09e9a0daa3eb213bb7fb3e550c1b8ff605b3bb4d2997",
+      "fingerprint": "17bdfc63d00be074eba39081bae7935c74963134e9accbf23c260e43bf5d56fb",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeOperatorFingerprintReviewDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeOperatorFingerprintReviewDto",
       "kind": "record",
@@ -12409,7 +12676,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 131,
+          "source_line": 146,
           "type": "string"
         },
         {
@@ -12423,7 +12690,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 131,
+          "source_line": 146,
           "type": "string"
         },
         {
@@ -12437,7 +12704,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 132,
+          "source_line": 147,
           "type": "DateTimeOffset"
         }
       ],
@@ -12447,12 +12714,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeOperatorFingerprintReviewDto",
       "references": [],
       "source": {
-        "line": 131,
+        "line": 146,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 131,
+          "line": 146,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -12589,7 +12856,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a6f75107617b2987ecff102238d03f6fa84939b595c7648c79699c40a7707213",
+      "fingerprint": "e04900b8eaa5ffcda61b297d7581fd1541f132d20af7090fa6e0230e41b1eab7",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePreparationArtifactDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomePreparationArtifactDto",
       "kind": "record",
@@ -12606,7 +12873,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 121,
+          "source_line": 136,
           "type": "Guid"
         },
         {
@@ -12620,7 +12887,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 121,
+          "source_line": 136,
           "type": "string"
         },
         {
@@ -12634,7 +12901,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondCouponRecognitionInstructionDto?",
-          "source_line": 127,
+          "source_line": 142,
           "type": "BondCouponRecognitionInstructionDto?"
         },
         {
@@ -12648,7 +12915,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 122,
+          "source_line": 137,
           "type": "Guid"
         },
         {
@@ -12662,7 +12929,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "long",
-          "source_line": 122,
+          "source_line": 137,
           "type": "long"
         },
         {
@@ -12676,7 +12943,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotAmortizationInstructionDto",
-          "source_line": 123,
+          "source_line": 138,
           "type": "OpenLotAmortizationInstructionDto"
         },
         {
@@ -12690,7 +12957,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 122,
+          "source_line": 137,
           "type": "Guid"
         },
         {
@@ -12704,7 +12971,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 122,
+          "source_line": 137,
           "type": "Guid"
         },
         {
@@ -12718,7 +12985,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 122,
+          "source_line": 137,
           "type": "string"
         },
         {
@@ -12732,7 +12999,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 121,
+          "source_line": 136,
           "type": "string"
         }
       ],
@@ -12745,12 +13012,12 @@
         "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
       ],
       "source": {
-        "line": 121,
+        "line": 136,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 121,
+          "line": 136,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -12766,7 +13033,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c7e42349968a32a127d85e282c86406b5c713f091e18d451b32b3576eb885908",
+      "fingerprint": "75f508c9980869c5fc3d7f6f81cd2644a5d53961aba1eea08dc6e4b747372362",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePreparationRequestDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomePreparationRequestDto",
       "kind": "record",
@@ -12783,7 +13050,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 119,
+          "source_line": 134,
           "type": "string"
         },
         {
@@ -12798,7 +13065,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 119,
+          "source_line": 134,
           "type": "Guid?"
         },
         {
@@ -12812,7 +13079,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondIncomePreviewRequestDto",
-          "source_line": 118,
+          "source_line": 133,
           "type": "BondIncomePreviewRequestDto"
         }
       ],
@@ -12824,12 +13091,12 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto"
       ],
       "source": {
-        "line": 118,
+        "line": 133,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 118,
+          "line": 133,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -12845,7 +13112,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "fa1a569a1d590f6763ce8f3e1f0123754162f89f8c2fb73159a5f14c0a3c9dc7",
+      "fingerprint": "094f4e603a23679748e6267e922c50f271432722709b20b8820051a2a75dbf8e",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewDto",
       "kind": "record",
@@ -12862,7 +13129,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 111,
+          "source_line": 126,
           "type": "string"
         },
         {
@@ -12876,7 +13143,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondIncomeResultDto",
-          "source_line": 111,
+          "source_line": 126,
           "type": "BondIncomeResultDto"
         },
         {
@@ -12890,7 +13157,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "OpenLotAmortizationInstructionDto",
-          "source_line": 111,
+          "source_line": 126,
           "type": "OpenLotAmortizationInstructionDto"
         },
         {
@@ -12904,7 +13171,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 110,
+          "source_line": 125,
           "type": "Guid"
         },
         {
@@ -12918,7 +13185,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AssetLotMutationInstructionDto",
-          "source_line": 112,
+          "source_line": 127,
           "type": "AssetLotMutationInstructionDto"
         },
         {
@@ -12932,7 +13199,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondIncomePreparationArtifactDto?",
-          "source_line": 115,
+          "source_line": 130,
           "type": "BondIncomePreparationArtifactDto?"
         },
         {
@@ -12946,7 +13213,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "AssetAccountingPostingCandidateDto?",
-          "source_line": 114,
+          "source_line": 129,
           "type": "AssetAccountingPostingCandidateDto?"
         },
         {
@@ -12960,7 +13227,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 110,
+          "source_line": 125,
           "type": "Guid"
         }
       ],
@@ -12976,12 +13243,12 @@
         "Meridian.Contracts.AssetOperations.AssetLotMutationInstructionDto"
       ],
       "source": {
-        "line": 110,
+        "line": 125,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 110,
+          "line": 125,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -12997,7 +13264,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "83ef91543e18f8698c2bc2ba959677ac1f5284edbfe8cc39cdd14a8af804a517",
+      "fingerprint": "698372f1f3d66b07dae4643c8cd62b33dd2e36d049df6637093dff51feea9aa5",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto",
       "kind": "record",
@@ -13015,7 +13282,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 108,
+          "source_line": 123,
           "type": "Guid"
         },
         {
@@ -13029,7 +13296,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 108,
+          "source_line": 123,
           "type": "DateTimeOffset"
         },
         {
@@ -13043,7 +13310,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 107,
+          "source_line": 122,
           "type": "Guid"
         },
         {
@@ -13057,7 +13324,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "Guid",
-          "source_line": 107,
+          "source_line": 122,
           "type": "Guid"
         },
         {
@@ -13071,7 +13338,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 108,
+          "source_line": 123,
           "type": "DateOnly"
         }
       ],
@@ -13081,12 +13348,177 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto",
       "references": [],
       "source": {
-        "line": 107,
+        "line": 122,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 107,
+          "line": 122,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "34f16a34a8539210b095b11b0ff2958a5687bb77d780f97a2f13004bc4ccea4a",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BondIncomePurchasedCouponTail",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+      "references": [],
+      "source": {
+        "line": 6,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomePurchasedCouponTail.cs"
+      },
+      "sources": [
+        {
+          "line": 6,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomePurchasedCouponTail.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "0410ed3578f101add4e585cdd0492a3dd65029d99d6cd0c08e78db7842111fb7",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualEnd",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 85,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AccrualStart",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 85,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionJournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 85,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionMutationBatchId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 84,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ModelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 84,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PaymentDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 85,
+          "type": "DateOnly"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PurchasedCouponCash",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "decimal",
+          "source_line": 86,
+          "type": "decimal"
+        }
+      ],
+      "name": "BondIncomePurchasedCouponTailDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
+      "references": [],
+      "source": {
+        "line": 84,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 84,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -13166,7 +13598,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "402e021672d641eaaafc673946a5a967c909b2161657ea0176babc249245e836",
+      "fingerprint": "8f77f0a2ddda682637198afb3f766534df9dfbcbba4c6a710652cbf6d3bae6a4",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeResultDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeResultDto",
       "kind": "record",
@@ -13179,11 +13611,25 @@
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
+          "name": "AccountingYieldCertificate",
+          "nullable": false,
+          "origin": "property",
+          "raw_type": "string",
+          "source_line": 114,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
           "name": "BookedTarget",
           "nullable": true,
           "origin": "property",
           "raw_type": "BondIncomeBookedTargetDto?",
-          "source_line": 99,
+          "source_line": 112,
           "type": "BondIncomeBookedTargetDto?"
         },
         {
@@ -13197,7 +13643,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 86,
+          "source_line": 99,
           "type": "decimal"
         },
         {
@@ -13211,7 +13657,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 81,
+          "source_line": 94,
           "type": "decimal"
         },
         {
@@ -13225,7 +13671,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "decimal",
-          "source_line": 98,
+          "source_line": 111,
           "type": "decimal"
         },
         {
@@ -13239,7 +13685,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 82,
+          "source_line": 95,
           "type": "decimal"
         },
         {
@@ -13253,7 +13699,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "DateOnly",
-          "source_line": 94,
+          "source_line": 107,
           "type": "DateOnly"
         },
         {
@@ -13267,7 +13713,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 79,
+          "source_line": 92,
           "type": "decimal"
         },
         {
@@ -13281,7 +13727,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 87,
+          "source_line": 100,
           "type": "decimal"
         },
         {
@@ -13295,7 +13741,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondIncomeFloaterPolicy",
-          "source_line": 78,
+          "source_line": 91,
           "type": "BondIncomeFloaterPolicy"
         },
         {
@@ -13309,7 +13755,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 84,
+          "source_line": 97,
           "type": "decimal"
         },
         {
@@ -13323,7 +13769,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 90,
+          "source_line": 103,
           "type": "decimal"
         },
         {
@@ -13337,7 +13783,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 89,
+          "source_line": 102,
           "type": "decimal"
         },
         {
@@ -13351,7 +13797,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondIncomeJournalComponentDto>",
-          "source_line": 91,
+          "source_line": 104,
           "type": "IReadOnlyList<BondIncomeJournalComponentDto>"
         },
         {
@@ -13365,7 +13811,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 77,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -13379,7 +13825,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 80,
+          "source_line": 93,
           "type": "decimal"
         },
         {
@@ -13393,7 +13839,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 83,
+          "source_line": 96,
           "type": "decimal"
         },
         {
@@ -13407,7 +13853,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 85,
+          "source_line": 98,
           "type": "decimal"
         },
         {
@@ -13421,7 +13867,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 88,
+          "source_line": 101,
           "type": "decimal"
         }
       ],
@@ -13435,12 +13881,12 @@
         "Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto"
       ],
       "source": {
-        "line": 76,
+        "line": 89,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 76,
+          "line": 89,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -13456,7 +13902,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "4087486133f128dc2830bfb3fc648ab1b2ad9dc6705c23c42d34807f97688f7e",
+      "fingerprint": "986c1c10f34ebd95a06cab3987ce9f75b830114c11d75811da5e61d0beed8304",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipal",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipal",
       "kind": "class",
@@ -13468,12 +13914,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipal",
       "references": [],
       "source": {
-        "line": 10,
+        "line": 17,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeScheduledPrincipal.cs"
       },
       "sources": [
         {
-          "line": 10,
+          "line": 17,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeScheduledPrincipal.cs"
         }
       ],
@@ -13489,7 +13935,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0f7d3e049cdd07a82bdc6033988c62ac74ab8d1ec1ed1473cde9d0b74910337d",
+      "fingerprint": "947959085974260500154dcc6d12413819d003ddef93fb53057d67c275e5031d",
       "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
       "id": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
       "kind": "record",
@@ -13506,7 +13952,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<OpenLotAmortizationInstructionDto>",
-          "source_line": 8,
+          "source_line": 9,
           "type": "IReadOnlyList<OpenLotAmortizationInstructionDto>"
         },
         {
@@ -13520,8 +13966,36 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 7,
+          "source_line": 8,
           "type": "string"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "BondIncomeTerminalCouponOpeningDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminalCouponOpenings",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<BondIncomeTerminalCouponOpeningDto>?",
+          "source_line": 14,
+          "type": "IReadOnlyList<BondIncomeTerminalCouponOpeningDto>?"
+        },
+        {
+          "collection": true,
+          "collection_kind": "IReadOnlyList",
+          "element_type": "BondIncomeTerminalCouponReceiptDto",
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "TerminalCouponReceipts",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "IReadOnlyList<BondIncomeTerminalCouponReceiptDto>?",
+          "source_line": 12,
+          "type": "IReadOnlyList<BondIncomeTerminalCouponReceiptDto>?"
         }
       ],
       "name": "BondIncomeScheduledPrincipalDto",
@@ -13529,16 +14003,293 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
       "references": [
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+        "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
         "Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
       ],
       "source": {
-        "line": 7,
+        "line": 8,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeScheduledPrincipal.cs"
       },
       "sources": [
         {
-          "line": 7,
+          "line": 8,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeScheduledPrincipal.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "class",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "ee0e44f5072bd0e7698d0ebeb63b89c20f7af09f0b2204b194d53bba68fedcc5",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+      "kind": "class",
+      "mapped_schemas": [],
+      "members": [],
+      "name": "BondIncomeTerminalCoupon",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+      "references": [],
+      "source": {
+        "line": 14,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+      },
+      "sources": [
+        {
+          "line": 14,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "f18a8430fcdfc10b8b801a5d0cacba49876fa4bf8fe614f386045389c1771ebf",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionJournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 11,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "AcquisitionMutationBatchId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 10,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntitlementSha256",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 11,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 10,
+          "type": "Guid"
+        }
+      ],
+      "name": "BondIncomeTerminalCouponOpeningDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+      "references": [],
+      "source": {
+        "line": 10,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+      },
+      "sources": [
+        {
+          "line": 10,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "53a7e5c81eb0cbb1bfb9a00d5cf26dce2456b0cb845ca37eff745b57abc467a7",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "EntitlementSha256",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 8,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "JournalEntryId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 8,
+          "type": "Guid"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ReceiptId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 7,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "TaxLotRecordId",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "Guid",
+          "source_line": 7,
+          "type": "Guid"
+        }
+      ],
+      "name": "BondIncomeTerminalCouponReceiptDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+      "references": [],
+      "source": {
+        "line": 7,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+      },
+      "sources": [
+        {
+          "line": 7,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeTerminalCoupon.cs"
+        }
+      ],
+      "type_parameters": []
+    },
+    {
+      "base_types": [],
+      "classification": "dto",
+      "containing_type": null,
+      "contract_sets": [
+        "all-contracts"
+      ],
+      "diagram": false,
+      "diagram_contract_sets": [],
+      "enum_members": [],
+      "fingerprint": "e6982cdfa60130fd7cc088100ae921fb16e75b6276012b2d043f40b80942f0b1",
+      "full_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
+      "id": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
+      "kind": "record",
+      "mapped_schemas": [],
+      "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "ModelVersion",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "string",
+          "source_line": 81,
+          "type": "string"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": false,
+          "json_name": null,
+          "key_type": null,
+          "name": "PrincipalDate",
+          "nullable": false,
+          "origin": "positional_parameter",
+          "raw_type": "DateOnly",
+          "source_line": 81,
+          "type": "DateOnly"
+        }
+      ],
+      "name": "BondIncomeTerminalEntitlementDto",
+      "namespace": "Meridian.Contracts.Accounting.Lots",
+      "partial": false,
+      "qualified_name": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
+      "references": [],
+      "source": {
+        "line": 81,
+        "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
+      },
+      "sources": [
+        {
+          "line": 81,
+          "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
       "type_parameters": []
@@ -13645,7 +14396,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "c7a51ffee6aaf899db9708a15f9672b18ed6bcbf8154ebd514bb550ddcf0e2ec",
+      "fingerprint": "269360ced1ed91dc4e8d84db85b907e391b51dd4bce4111f897ab49b3b1182ce",
       "full_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier",
       "id": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier",
       "kind": "interface",
@@ -13657,12 +14408,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionEvidenceVerifier",
       "references": [],
       "source": {
-        "line": 37,
+        "line": 57,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 37,
+          "line": 57,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -13678,7 +14429,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "50ad09ebf4693996169b19c92f77367a9fc689056fa0c0c6282b5bf27aa6f352",
+      "fingerprint": "89470b62e52d6d951882caabfeda72ddd76b1c2e061d8951f10ff14d76d723c8",
       "full_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService",
       "id": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService",
       "kind": "interface",
@@ -13690,12 +14441,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService",
       "references": [],
       "source": {
-        "line": 98,
+        "line": 122,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 98,
+          "line": 122,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -13711,7 +14462,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "7748c0339767768ca96fce386adab9f686fce1f55417224d04952db22b2f4b1e",
+      "fingerprint": "dfeb4a822d2a5cb2e75d5941b65b6412db4b1ffae1373014729c0850b89896b7",
       "full_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore",
       "id": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore",
       "kind": "interface",
@@ -13723,12 +14474,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore",
       "references": [],
       "source": {
-        "line": 80,
+        "line": 104,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
       },
       "sources": [
         {
-          "line": 80,
+          "line": 104,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondCouponRecognitionDtos.cs"
         }
       ],
@@ -13744,7 +14495,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "41458e570c97cd7c72ed92c24cfdcbcf4e947c8db2a1f2bcf2c52b031c6f955a",
+      "fingerprint": "e3b9fa20468029388e5e5a38c1a15414fd8e7aef427596f4d842c20aee1d50c6",
       "full_name": "Meridian.Contracts.Accounting.Lots.IBondIncomePreparationEvidenceStore",
       "id": "Meridian.Contracts.Accounting.Lots.IBondIncomePreparationEvidenceStore",
       "kind": "interface",
@@ -13756,12 +14507,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IBondIncomePreparationEvidenceStore",
       "references": [],
       "source": {
-        "line": 134,
+        "line": 149,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 134,
+          "line": 149,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -13777,7 +14528,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "6404aa0623e8b409816a0a21ec480709c85022a32604b8fbfe24d022e5d09321",
+      "fingerprint": "cf0d1ca6e55730e444d3afd3158857e4716e0e0120f99f15b539d607b9d6b290",
       "full_name": "Meridian.Contracts.Accounting.Lots.IBondIncomeService",
       "id": "Meridian.Contracts.Accounting.Lots.IBondIncomeService",
       "kind": "interface",
@@ -13789,12 +14540,12 @@
       "qualified_name": "Meridian.Contracts.Accounting.Lots.IBondIncomeService",
       "references": [],
       "source": {
-        "line": 142,
+        "line": 157,
         "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
       },
       "sources": [
         {
-          "line": 142,
+          "line": 157,
           "path": "src/Meridian.Contracts/Accounting/Lots/BondIncomeDtos.cs"
         }
       ],
@@ -147500,7 +148251,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "fae65bc73553282d6db5213adf653e1524354bd4d90c35ab0a006df110d47ea4",
+      "fingerprint": "c341dbe8b600c51dda4e72179e4fc17e3d2189ae99ea09f5a770954eadff2d0c",
       "full_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskBucket",
       "id": "Meridian.Contracts.FixedIncome.BondPortfolioRiskBucket",
       "kind": "record",
@@ -147517,7 +148268,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 22,
+          "source_line": 28,
           "type": "int"
         },
         {
@@ -147531,7 +148282,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 21,
+          "source_line": 27,
           "type": "string"
         },
         {
@@ -147545,7 +148296,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 21,
+          "source_line": 27,
           "type": "string"
         },
         {
@@ -147559,7 +148310,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "int",
-          "source_line": 21,
+          "source_line": 27,
           "type": "int"
         },
         {
@@ -147573,7 +148324,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 21,
+          "source_line": 27,
           "type": "string"
         },
         {
@@ -147587,7 +148338,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 22,
+          "source_line": 28,
           "type": "decimal"
         },
         {
@@ -147601,7 +148352,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 22,
+          "source_line": 28,
           "type": "decimal"
         },
         {
@@ -147615,7 +148366,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 22,
+          "source_line": 28,
           "type": "decimal"
         }
       ],
@@ -147625,12 +148376,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskBucket",
       "references": [],
       "source": {
-        "line": 21,
+        "line": 27,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 21,
+          "line": 27,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -147646,12 +148397,26 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "8f59548c03bb37c72bc1eb3535f667df144bd96534a1db90f94c3a7ba2736f5f",
+      "fingerprint": "78a708affc61724eed5eceb60de0af07da1e71c269d7059a6e684d0585bdd702",
       "full_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
       "id": "Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
       "kind": "record",
       "mapped_schemas": [],
       "members": [
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "CalculationRequest",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondWorkflowRequest?",
+          "source_line": 22,
+          "type": "BondWorkflowRequest?"
+        },
         {
           "collection": false,
           "collection_kind": null,
@@ -147751,6 +148516,20 @@
           "type": "decimal?"
         },
         {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "QuoteAuthority",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "BondCalculationInput?",
+          "source_line": 24,
+          "type": "BondCalculationInput?"
+        },
+        {
           "collection": true,
           "collection_kind": "IReadOnlyList",
           "element_type": "BondPortfolioScenarioValue",
@@ -147798,7 +148577,9 @@
       "partial": false,
       "qualified_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
       "references": [
-        "Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue"
+        "Meridian.Contracts.FixedIncome.BondCalculationInput",
+        "Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue",
+        "Meridian.Contracts.FixedIncome.BondWorkflowRequest"
       ],
       "source": {
         "line": 17,
@@ -147932,7 +148713,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ea57bc38109c9e0cc7de9024c3a4aa40509c8284b9c4862357da32e8e4a3be07",
+      "fingerprint": "be7c82cb103ed9f9f2d527c58a5f484f79268ec059610f193e24305dbe24d97e",
       "full_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskResult",
       "id": "Meridian.Contracts.FixedIncome.BondPortfolioRiskResult",
       "kind": "record",
@@ -147949,7 +148730,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondPortfolioRiskBucket>",
-          "source_line": 25,
+          "source_line": 31,
           "type": "IReadOnlyList<BondPortfolioRiskBucket>"
         },
         {
@@ -147963,7 +148744,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondCalculationContext",
-          "source_line": 23,
+          "source_line": 29,
           "type": "BondCalculationContext"
         },
         {
@@ -147977,7 +148758,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "Guid?",
-          "source_line": 24,
+          "source_line": 30,
           "type": "Guid?"
         },
         {
@@ -147991,7 +148772,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "string?",
-          "source_line": 24,
+          "source_line": 30,
           "type": "string?"
         },
         {
@@ -148005,7 +148786,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "bool",
-          "source_line": 25,
+          "source_line": 31,
           "type": "bool"
         },
         {
@@ -148019,7 +148800,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<string>",
-          "source_line": 25,
+          "source_line": 31,
           "type": "IReadOnlyList<string>"
         },
         {
@@ -148033,7 +148814,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "IReadOnlyList<BondPortfolioRiskPosition>",
-          "source_line": 24,
+          "source_line": 30,
           "type": "IReadOnlyList<BondPortfolioRiskPosition>"
         },
         {
@@ -148047,7 +148828,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 27,
+          "source_line": 33,
           "type": "string?"
         },
         {
@@ -148061,7 +148842,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "AccountCashForecastScopeDto",
-          "source_line": 23,
+          "source_line": 29,
           "type": "AccountCashForecastScopeDto"
         }
       ],
@@ -148076,12 +148857,12 @@
         "Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition"
       ],
       "source": {
-        "line": 23,
+        "line": 29,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 23,
+          "line": 29,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -148097,7 +148878,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "50d2a774e7824fecf29246fa5b381cddf52da4c40d1f742f9f84a79b2d930119",
+      "fingerprint": "84667708f4119e57e80be8758b8bcc9f32a156e913427cf5d1dc599bce1dabda",
       "full_name": "Meridian.Contracts.FixedIncome.BondPortfolioRiskSnapshotDto",
       "id": "Meridian.Contracts.FixedIncome.BondPortfolioRiskSnapshotDto",
       "kind": "record",
@@ -148114,7 +148895,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondPortfolioRiskRequest",
-          "source_line": 29,
+          "source_line": 35,
           "type": "BondPortfolioRiskRequest"
         },
         {
@@ -148128,7 +148909,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "BondPortfolioRiskResult",
-          "source_line": 29,
+          "source_line": 35,
           "type": "BondPortfolioRiskResult"
         }
       ],
@@ -148141,12 +148922,12 @@
         "Meridian.Contracts.FixedIncome.BondPortfolioRiskResult"
       ],
       "source": {
-        "line": 29,
+        "line": 35,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 29,
+          "line": 35,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -148162,7 +148943,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "0fa5e76863e434aa9ade7ead740e1b8e6e3aa5864035b0380928dfedc25c88b6",
+      "fingerprint": "46ee2c4ec8e08c68949f9bafae3b004fd18fa001da803ec905a6a60ba0ee508d",
       "full_name": "Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue",
       "id": "Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue",
       "kind": "record",
@@ -148179,7 +148960,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 20,
+          "source_line": 26,
           "type": "decimal?"
         },
         {
@@ -148193,7 +148974,7 @@
           "nullable": true,
           "origin": "positional_parameter",
           "raw_type": "decimal?",
-          "source_line": 20,
+          "source_line": 26,
           "type": "decimal?"
         },
         {
@@ -148207,7 +148988,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 20,
+          "source_line": 26,
           "type": "string"
         }
       ],
@@ -148217,12 +148998,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue",
       "references": [],
       "source": {
-        "line": 20,
+        "line": 26,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 20,
+          "line": 26,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -152199,7 +152980,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "394b8e79f2c3c7bfa9e67e0a3bd7f9ffb3ec386480e8a2eb65421f0d3bc902a1",
+      "fingerprint": "a5d4692077daf8da7c0978f2fe4f2a92790592ba6f507e5e460d361ceffaa109",
       "full_name": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "id": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "kind": "record",
@@ -152216,7 +152997,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 88,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -152230,7 +153011,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateOnly",
-          "source_line": 87,
+          "source_line": 89,
           "type": "DateOnly"
         },
         {
@@ -152244,7 +153025,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 87,
+          "source_line": 89,
           "type": "string"
         },
         {
@@ -152258,7 +153039,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 88,
+          "source_line": 90,
           "type": "DateTimeOffset"
         },
         {
@@ -152272,7 +153053,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "DateTimeOffset",
-          "source_line": 88,
+          "source_line": 90,
           "type": "DateTimeOffset"
         },
         {
@@ -152286,7 +153067,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "string",
-          "source_line": 88,
+          "source_line": 90,
           "type": "string"
         },
         {
@@ -152300,7 +153081,7 @@
           "nullable": false,
           "origin": "positional_parameter",
           "raw_type": "decimal",
-          "source_line": 87,
+          "source_line": 89,
           "type": "decimal"
         }
       ],
@@ -152310,12 +153091,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.BondWorkflowRateObservation",
       "references": [],
       "source": {
-        "line": 87,
+        "line": 89,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 87,
+          "line": 89,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -152648,7 +153429,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "943d62fb76ca0165fd095ca0fd0dcdd250ff4855d3315e25f9e13760fade49fe",
+      "fingerprint": "fa0e1d7b568b6a174ffed411ac9e1a16c1f884e95510dc2942ed3269eb85aef9",
       "full_name": "Meridian.Contracts.FixedIncome.BondWorkflowResult",
       "id": "Meridian.Contracts.FixedIncome.BondWorkflowResult",
       "kind": "record",
@@ -152728,6 +153509,20 @@
           "collection": false,
           "collection_kind": null,
           "element_type": null,
+          "json_ignored": true,
+          "json_name": null,
+          "key_type": null,
+          "name": "ContractualAccruedInterest",
+          "nullable": true,
+          "origin": "property",
+          "raw_type": "decimal?",
+          "source_line": 60,
+          "type": "decimal?"
+        },
+        {
+          "collection": false,
+          "collection_kind": null,
+          "element_type": null,
           "json_ignored": false,
           "json_name": null,
           "key_type": null,
@@ -152791,7 +153586,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 72,
+          "source_line": 74,
           "type": "decimal?"
         },
         {
@@ -152805,7 +153600,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 73,
+          "source_line": 75,
           "type": "string?"
         },
         {
@@ -152875,7 +153670,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateOnly?",
-          "source_line": 65,
+          "source_line": 67,
           "type": "DateOnly?"
         },
         {
@@ -152945,7 +153740,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 67,
+          "source_line": 69,
           "type": "decimal?"
         },
         {
@@ -152959,7 +153754,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 68,
+          "source_line": 70,
           "type": "decimal?"
         },
         {
@@ -153043,7 +153838,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondQuoteCategory?",
-          "source_line": 61,
+          "source_line": 63,
           "type": "BondQuoteCategory?"
         },
         {
@@ -153057,7 +153852,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "bool",
-          "source_line": 63,
+          "source_line": 65,
           "type": "bool"
         },
         {
@@ -153085,7 +153880,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateTimeOffset?",
-          "source_line": 62,
+          "source_line": 64,
           "type": "DateTimeOffset?"
         },
         {
@@ -153099,7 +153894,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "DateOnly?",
-          "source_line": 66,
+          "source_line": 68,
           "type": "DateOnly?"
         },
         {
@@ -153113,7 +153908,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 60,
+          "source_line": 62,
           "type": "string?"
         },
         {
@@ -153127,7 +153922,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 70,
+          "source_line": 72,
           "type": "decimal?"
         },
         {
@@ -153141,7 +153936,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "string?",
-          "source_line": 71,
+          "source_line": 73,
           "type": "string?"
         },
         {
@@ -153155,7 +153950,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "BondWorkflowRequest?",
-          "source_line": 64,
+          "source_line": 66,
           "type": "BondWorkflowRequest?"
         },
         {
@@ -153183,7 +153978,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 74,
+          "source_line": 76,
           "type": "decimal?"
         },
         {
@@ -153197,7 +153992,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 76,
+          "source_line": 78,
           "type": "decimal?"
         },
         {
@@ -153211,7 +154006,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 69,
+          "source_line": 71,
           "type": "decimal?"
         },
         {
@@ -153253,7 +154048,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 75,
+          "source_line": 77,
           "type": "decimal?"
         },
         {
@@ -153267,7 +154062,7 @@
           "nullable": true,
           "origin": "property",
           "raw_type": "decimal?",
-          "source_line": 77,
+          "source_line": 79,
           "type": "decimal?"
         },
         {
@@ -153309,7 +154104,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "string",
-          "source_line": 59,
+          "source_line": 61,
           "type": "string"
         },
         {
@@ -153670,7 +154465,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "ad6c276f37a30961768ff580f9927775acd44c8cb2f78720024ca57574638256",
+      "fingerprint": "239a047d11f3a0c2c4b28714b80029d7cf72fe80435d5eb3451781977c1e5f6c",
       "full_name": "Meridian.Contracts.FixedIncome.IBondComparisonService",
       "id": "Meridian.Contracts.FixedIncome.IBondComparisonService",
       "kind": "interface",
@@ -153682,12 +154477,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondComparisonService",
       "references": [],
       "source": {
-        "line": 31,
+        "line": 37,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 31,
+          "line": 37,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -154033,7 +154828,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "a7de48dd5bb5c30ab4ed39fab344de7df519a1fa225fedddf1f58abfadb2b70f",
+      "fingerprint": "a024071281622ac12c66b81709bd3561ec1bf07837a851d691eb4af388928250",
       "full_name": "Meridian.Contracts.FixedIncome.IBondPortfolioRiskService",
       "id": "Meridian.Contracts.FixedIncome.IBondPortfolioRiskService",
       "kind": "interface",
@@ -154045,12 +154840,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondPortfolioRiskService",
       "references": [],
       "source": {
-        "line": 35,
+        "line": 41,
         "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 35,
+          "line": 41,
           "path": "src/Meridian.Contracts/FixedIncome/BondPortfolioWorkflowDtos.cs"
         }
       ],
@@ -154165,7 +154960,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "908a3b819e3a63f0e5c4e7ad49b59c107213985f14bf629623202904505855e4",
+      "fingerprint": "017c377b82c4df34791132d5e07e8a0ee6d9d6953bdee32255c609e3615e43e5",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "kind": "interface",
@@ -154177,12 +154972,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource",
       "references": [],
       "source": {
-        "line": 91,
+        "line": 93,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 91,
+          "line": 93,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -154198,7 +154993,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "eec5e0850dfe36d2cdc765c3be3b76172f305934590ccd6cd7a3c43b58f7caa1",
+      "fingerprint": "172b6c181e7823bb2a536c10e0885c29d562d7c864b0cbe006906161c1a79857",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "kind": "interface",
@@ -154210,12 +155005,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondWorkflowQuoteSource",
       "references": [],
       "source": {
-        "line": 106,
+        "line": 108,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 106,
+          "line": 108,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -154231,7 +155026,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "d6dbec5fdf7db74aa6cfa9533053239d5ddd167ef2dea1c4a0a859fed537a125",
+      "fingerprint": "f2705b7c9fb84e7a30121fbaf296822e93c1ed6b13a9cb23e04cd34ec58a4844",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowService",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowService",
       "kind": "interface",
@@ -154243,12 +155038,12 @@
       "qualified_name": "Meridian.Contracts.FixedIncome.IBondWorkflowService",
       "references": [],
       "source": {
-        "line": 80,
+        "line": 82,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 80,
+          "line": 82,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -154266,7 +155061,7 @@
       "diagram": false,
       "diagram_contract_sets": [],
       "enum_members": [],
-      "fingerprint": "f31fe249dc4f26a38ffbe0cd756f6f39b4a0dbde124f86f47590565454ccee94",
+      "fingerprint": "a7d887d3681dc7c534f8ecfa29c0acdf2dcf20b8c00fff0220d7ccd4ace4ca9f",
       "full_name": "Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource",
       "id": "Meridian.Contracts.FixedIncome.IBondWorkflowTypedObservationSource",
       "kind": "interface",
@@ -154280,12 +155075,12 @@
         "Meridian.Contracts.FixedIncome.IBondWorkflowObservationSource"
       ],
       "source": {
-        "line": 99,
+        "line": 101,
         "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
       },
       "sources": [
         {
-          "line": 99,
+          "line": 101,
           "path": "src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs"
         }
       ],
@@ -290685,7 +291480,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "39d84c1edcfedc31678afc3e1ad70c5b10fe7723154231f9d909aeb9fa35fd3d",
+      "fingerprint": "a2ff1eeef82444feffea39ffe0b979b9b0fe9c01655b918e17d30c23dc3be36e",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "kind": "class",
@@ -290699,12 +291494,12 @@
       "qualified_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterChain",
       "references": [],
       "source": {
-        "line": 1645,
+        "line": 1657,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1645,
+          "line": 1657,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -290725,7 +291520,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "3fa8d3305411546616cb11065dd6cf48b972bb5d6311432b4a9cfc2b38d6eed6",
+      "fingerprint": "8ee821d745edbe09361d154e20c73c6eea6cec69e055de43e916906b8d1f1209",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "id": "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTermsUpcasterPipeline",
       "kind": "class",
@@ -290744,7 +291539,7 @@
           "nullable": false,
           "origin": "property",
           "raw_type": "SecurityAssetSpecificTermsUpcasterPipeline",
-          "source_line": 1700,
+          "source_line": 1712,
           "type": "SecurityAssetSpecificTermsUpcasterPipeline"
         }
       ],
@@ -290757,12 +291552,12 @@
         "Meridian.Contracts.SecurityMaster.SecurityAssetSpecificTerms"
       ],
       "source": {
-        "line": 1697,
+        "line": 1709,
         "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
       },
       "sources": [
         {
-          "line": 1697,
+          "line": 1709,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs"
         }
       ],
@@ -295378,7 +296173,7 @@
         "security-master-contracts"
       ],
       "enum_members": [],
-      "fingerprint": "518feb539fd95e5bffc3a658d74f536530c9004665b87655d36ba8a6d0941ce7",
+      "fingerprint": "72279a406ff96c5521a168b7a62b7abba1a0245db073811130c39bcd9b54338b",
       "full_name": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "id": "Meridian.Contracts.SecurityMaster.SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster",
       "kind": "class",
@@ -295491,6 +296286,10 @@
         {
           "line": 7,
           "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.EquityCapital.cs"
+        },
+        {
+          "line": 5,
+          "path": "src/Meridian.Contracts/SecurityMaster/SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.BondWorkflow.cs"
         },
         {
           "line": 7,

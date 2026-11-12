@@ -13,16 +13,20 @@ public sealed partial class PostgresLedgerJournalStore : IBondCouponRecognitionS
 {
     private static readonly JsonSerializerOptions CouponJson = new(JsonSerializerDefaults.Web);
 
+    private static bool NeedsCouponHistoryBoundary(LedgerJournalEntryWrite entry)
+        => entry.PostingCommand?.BondCouponRecognition is not null
+            || entry.PostingCommand?.LotFactorPaydown is { NewFactor: 0m, ScheduledPrincipal: not null };
+
     private async Task LockCouponHistoryBoundaryAsync(NpgsqlConnection connection, NpgsqlTransaction transaction,
-        CancellationToken ct)
+        bool historySensitive, CancellationToken ct)
     {
-        // Every ordinary and atomic journal writer takes this before period/reference/lot locks.
-        // First-use recognition reads complete posted history on an independent connection; the
-        // boundary must therefore also exclude manual writes in other periods until commit.
-        // LOCK establishes no MVCC read snapshot, preserving existing serializable replay rules.
+        // Select the same highest mode at the outer boundary and AppendCore, before any read.
+        // Ordinary writers coexist; coupon/terminal-principal history scans exclude them until
+        // commit, including manual writes in other periods. No lock upgrade is needed, and LOCK
+        // establishes no MVCC read snapshot, preserving existing serializable replay rules.
         await using var command = connection.CreateCommand();
         command.Transaction = transaction;
-        command.CommandText = $"lock table {Qualified("journal_entries")} in share row exclusive mode";
+        command.CommandText = $"lock table {Qualified("journal_entries")} in {(historySensitive ? "share row exclusive" : "row exclusive")} mode";
         await command.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
     }
 
@@ -224,7 +228,7 @@ public sealed partial class PostgresLedgerJournalStore : IBondCouponRecognitionS
         var security = await securities.LockForLotPostingAsync(connection, transaction, lot.SecurityId, ct).ConfigureAwait(false);
         var position = await positions.LockForLotPostingAsync(connection, transaction, lot.BookPositionId, ct).ConfigureAwait(false);
         var lots = await LoadTaxLotsForUpdateAsync(connection, transaction, lot.LedgerBookId, [lot.TaxLotRecordId], ct).ConfigureAwait(false);
-        if (security is null || instruction.ReversalTarget is null
+        if (security is null || instruction.ReversalTarget is null && instruction.TerminalCashAuthority is null
                 && OpenLotAmortization.SecurityHash(security) != OpenLotAmortization.SecurityHash(instruction.IncomeInstruction.Security)
             || position?.Version != instruction.IncomeInstruction.ExpectedBookPositionVersion
             || lots.Count != 1 || !OpenLotAmortization.SameLot(lots[0].ToOpenLot(), lot))

@@ -8,7 +8,6 @@ using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
-using Meridian.Ledger;
 using Meridian.Storage.AssetOperations;
 using Meridian.Storage.Ledger;
 using Meridian.Storage.SecurityMaster;
@@ -18,6 +17,162 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 
 public sealed class BondIncomeServiceTests
 {
+    [Fact]
+    public async Task AdoptedIncomeCandidateKeepsActualOwnedCarryingAccountAndLotScopeBeforeReview()
+    {
+        var f = new Fixture(initialCost: 101m);
+        var income = await f.Service.PreviewAsync(f.Request);
+        var amount = Math.Abs(income.Income.BookedCarryingBasisMovement!.Value);
+        var at = f.Request.KnownAt;
+        var periodId = Guid.NewGuid();
+        var eventId = Guid.NewGuid();
+        const string pack = "bond-income-test-pack", rule = "bond-income-test-rule";
+        var eventType = AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.DepreciationAmortization);
+        var policyService = new AccountingPolicyService();
+        await policyService.CreatePolicyAsync(new CreateAccountingPolicyRequest(AccountingBasisKindDto.Gaap,
+            f.Book.AccountingPolicyId, "v1", "Adopted income candidate", f.Lot.AcquiredDate,
+            RulePack: new AccountingPolicyRulePackDto(pack, "v1",
+                [new AccountingPolicyRuleDto(rule, AccountingTreatmentKindDto.Amortization, "v1", eventType)])));
+        var book = new LedgerBookDto(f.Book.LedgerBookId, f.Book.FundProfileId, f.AccountId,
+            FundStructureNodeKindDto.Account, "Owned bond book", "USD", at, at,
+            AccountingBasis: AccountingBasisKindDto.Gaap, AccountingPolicyId: f.Book.AccountingPolicyId, AccountingPolicyVersion: "v1");
+        var period = new LedgerPeriodDto(periodId, book.LedgerBookId, 2026, 1, "January", new(2026, 1, 1), new(2026, 1, 31),
+            LedgerPeriodStatusDto.Open, at, null, 1, AccountingBasisKindDto.Gaap, book.AccountingPolicyId, "v1");
+        var books = Substitute.For<ILedgerBookService>();
+        books.GetBookAsync(book.LedgerBookId, Arg.Any<CancellationToken>()).Returns(book);
+        books.ListPeriodsAsync(Arg.Any<LedgerPeriodQuery>(), Arg.Any<CancellationToken>()).Returns([period]);
+        var dimensions = new LedgerDimensionSetDto(FundId: book.FundProfileId, InstrumentId: f.Lot.SecurityId,
+            BookId: book.LedgerBookId.ToString("D")) { PositionId = f.Lot.BookPositionId };
+        var economic = new EconomicEventReferenceDto(eventId, eventType, 1, f.Request.ThroughDate, at,
+            "Meridian.BondIncome", "candidate", SourceContentHash: income.Fingerprint)
+        { SecurityId = f.Lot.SecurityId, BookPositionId = f.Lot.BookPositionId };
+        var evidence = f.Lot.Acquisition!.Evidence;
+        var links = evidence.Select(item => item.EvidenceUri).ToArray();
+        economic = economic with { EvidenceLinks = links, RetainedEvidence = evidence };
+        var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "bond-income-amortization", BondIncomeCalculator.ModelVersion,
+            "1", "AcquisitionIndex", f.Request.ThroughDate, at, "Meridian.BondIncome", "candidate", economic)
+        { BookPositionId = f.Lot.BookPositionId, EvidenceLinks = links, RetainedEvidence = evidence };
+        var generated = new GeneratedPostingLineDto[]
+        {
+            new("carrying", "Assets:Bonds", AccountingTemplateLineSideDto.Credit, "carrying", amount, "USD", dimensions),
+            new("income", "Income:BondAmortization", AccountingTemplateLineSideDto.Debit, "income", amount, "USD", dimensions)
+        };
+        var configuration = Substitute.For<IAccountingConfigurationService>();
+        configuration.DryRunPostingRuleAsync(Arg.Any<RuleDryRunRequestDto>(), Arg.Any<CancellationToken>()).Returns(
+            new RuleDryRunResultDto(book.FundProfileId, book.LedgerBookId, eventType, f.Request.ThroughDate,
+                amount, "USD", true, rule, [new AccountingRuleDryRunMatchDto(rule, "Bond income", "v1", 100, true, [], [])], [], [], generated));
+        configuration.GetWorkspaceAsync(book.FundProfileId, book.LedgerBookId, Arg.Any<CancellationToken>(), null, null).Returns(
+            new AccountingConfigurationWorkspaceDto(book.FundProfileId, book.LedgerBookId, AccountingConfigurationStatusDto.Active,
+                "v1", at, [book], [new("carrying", "Assets:Bonds", "Assets:Bonds", "Asset"),
+                    new("income", "Income:BondAmortization", "Bond amortization", "Revenue")], [], [], [], []));
+        var candidateRequest = new PostingRuleJournalCandidateRequestDto(book.FundProfileId, eventType, amount, "USD",
+            f.Request.ThroughDate, "preparer", book.LedgerBookId, periodId, at, "Adopted bond income",
+            AccountingBasisKindDto.Gaap, book.LedgerBookId, dimensions, SourceEventId: eventId,
+            PolicyId: book.AccountingPolicyId, TreatmentKind: AccountingTreatmentKindDto.Amortization, EvidenceLinks: links)
+        {
+            BookContext = f.Position.BookContext with { PeriodId = periodId }, BookPositionId = f.Lot.BookPositionId,
+            EconomicEvent = economic, ProjectionLineage = lineage, RetainedEvidence = evidence,
+            RulePackReference = new(pack, "v1", rule, "v1"), AssetLotMutation = income.LotMutation
+        };
+        var authority = new AssetAccountingCandidateAuthorityContext(eventId, 1, 2, 3, income.Fingerprint,
+            AssetAccountingEventKindDto.DepreciationAmortization, f.Lot.SecurityId, f.Lot.BookPositionId,
+            f.Position.Version, book.LedgerBookId, periodId, 1, pack, "v1", income.Instruction.Security.Version);
+        var builder = new AccountingPostingCandidateService(configuration,
+            new AccountingJournalDraftService(policyService, new AccountingBasisProjectionService(policyService)),
+            books, policyService, taxLotStore: f.Lots);
+        var built = await builder.BuildAuthoritativeCandidateWriteAsync(candidateRequest, authority);
+        built.Write.Should().NotBeNull(string.Join("; ", built.Candidate.Issues.Select(issue => issue.Code + ":" + issue.Message)));
+        built.Write!.Entry.Lines.Single(line => line.Account.AccountType == LedgerAccountType.Asset).Account.Should().Be(f.Lot.Account);
+        built.Write.Entry.Lines.Should().OnlyContain(line => line.Account.FinancialAccountId == f.AccountId.ToString("D")
+            && line.Dimensions!.AccountId == f.AccountId.ToString("D") && line.Dimensions.BookId == book.LedgerBookId.ToString("D")
+            && line.Dimensions.InstrumentId == f.Lot.SecurityId && line.Dimensions.PositionId == f.Lot.BookPositionId
+            && line.Dimensions.TaxLotId == f.Lot.LotId);
+        built.Candidate.GeneratedPostingLines.Should().OnlyContain(line => line.Dimensions!.TaxLotId == f.Lot.LotId);
+        built.Write.Entry.Lines.Should().OnlyContain(line => line.Currency != null
+            && line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD"
+            && line.Currency.FxRateToFunctional == 1m && line.Currency.TransactionDebit == line.Debit
+            && line.Currency.TransactionCredit == line.Credit);
+    }
+
+    [Fact]
+    public async Task AcquisitionInsideExCouponWindowRequiresActualOpeningEntitlementReconciliation()
+    {
+        var f = new Fixture(exCoupon: true);
+        var seed = (await f.Service.PreviewAsync(f.Request)).Instruction.BondIncome!.AcquisitionProjection;
+        f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(call => seed with { Context = call.Arg<BondWorkflowRequest>().Context,
+                AccruedInterest = -0.1m, ContractualAccruedInterest = 4.9m });
+        var action = () => f.Service.PreviewAsync(f.Request);
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("*acquisition inside its ex-coupon window*opening entitlement reconciliation*");
+        await f.Lots.DidNotReceive().AppendAsync(Arg.Any<LedgerJournalEntryWrite>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("5")]
+    [InlineData("-5")]
+    public async Task ExistingHolderEnteringExCouponWindowUsesHeldAccrual_AndKeepsParBasisThroughPayment(string couponText)
+    {
+        var coupon = decimal.Parse(couponText, System.Globalization.CultureInfo.InvariantCulture);
+        var f = new Fixture(exCoupon: true);
+        var seed = (await f.Service.PreviewAsync(f.Request)).Instruction.BondIncome!.AcquisitionProjection;
+        f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var input = call.Arg<BondWorkflowRequest>();
+                var settlement = input.Context.SettlementDate!.Value;
+                var inFirstPeriod = settlement > new DateOnly(2025, 1, 1) && settlement < new DateOnly(2026, 1, 1);
+                var held = inFirstPeriod ? coupon * (settlement.DayNumber - new DateOnly(2025, 1, 1).DayNumber) / 365m : 0m;
+                var detached = settlement >= new DateOnly(2025, 12, 22) && settlement < new DateOnly(2026, 1, 1);
+                return seed with { Context = input.Context, AccruedInterest = held - (detached ? coupon : 0m),
+                    ContractualAccruedInterest = held,
+                    CashFlows = seed.CashFlows.Where(flow => flow.PaymentDate > settlement).Select(flow => flow with
+                    { Interest = detached && flow.PaymentDate == new DateOnly(2026, 1, 1) ? 0m : coupon }).ToArray() };
+            });
+        var through = new DateOnly(2025, 12, 30);
+        var preview = await f.Service.PreviewAsync(f.Request with { ThroughDate = through });
+        var heldExpected = coupon * 363m / 365m;
+        preview.Income.CouponIncome.Should().BeApproximately(heldExpected, 0.000000000001m);
+        preview.Income.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000001m);
+        preview.Instruction.BondIncome!.CurrentAccruedInterest.Should().Be(heldExpected);
+        preview.Instruction.BondIncome.AmortizationProjection.AccruedInterest.Should().Be(heldExpected - coupon);
+        preview.Instruction.BondIncome.AmortizationProjection.ContractualAccruedInterest.Should().Be(heldExpected);
+        var paid = await f.Service.PreviewAsync(f.Request);
+        paid.Income.CouponIncome.Should().Be(coupon);
+        paid.Income.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000001m);
+        paid.Income.InterestReceivable.Should().Be(0m);
+        paid.Income.InterestPayable.Should().Be(0m);
+    }
+
+    [Theory]
+    [InlineData("1.235")]
+    [InlineData("-1.235")]
+    public async Task DeferredFinalEntitlementFreezesActualHolderPoolAtPrincipalDate_AndDoesNotDoubleAccrual(string rawText)
+    {
+        var raw = decimal.Parse(rawText, System.Globalization.CultureInfo.InvariantCulture);
+        var f = new Fixture();
+        var seed = (await f.Service.PreviewAsync(f.Request)).Instruction.BondIncome!.AcquisitionProjection;
+        var terminal = f.Request.ThroughDate;
+        var due = terminal.AddDays(2);
+        var coupon = seed.CashFlows[0] with { PaymentDate = due, Interest = raw, Principal = 0m, OutstandingPrincipal = 0m };
+        var principal = coupon with { PaymentDate = terminal, AccrualStart = terminal, AccrualEnd = terminal,
+            Interest = 0m, Principal = 100m, PeriodUnits = 0m, AccrualFraction = 0m };
+        f.Workflow.CalculateIncomeScheduleAsync(Arg.Any<BondWorkflowRequest>(), Arg.Any<DateOnly>(), Arg.Any<CancellationToken>())
+            .Returns(call =>
+            {
+                var input = call.Arg<BondWorkflowRequest>();
+                return seed with { Context = input.Context, CashFlows = [principal, coupon],
+                    AccruedInterest = input.Context.SettlementDate == terminal ? raw : 0m,
+                    ContractualAccruedInterest = input.Context.SettlementDate == terminal ? raw : 0m };
+            });
+        var preview = await f.Service.PreviewAsync(f.Request);
+        preview.Income.CouponIncome.Should().Be(raw > 0m ? 1.24m : -1.24m);
+        preview.Instruction.BondIncome!.TerminalEntitlement!.PrincipalDate.Should().Be(terminal);
+        preview.Instruction.BondIncome.CouponCashAllocations!.Single().HolderSnapshotDate.Should().Be(terminal);
+        await f.Lots.Received().ListOpenTaxLotsByAssetScopeAsync(f.Book.LedgerBookId, f.Lot.SecurityId,
+            f.Lot.BookPositionId, terminal, Arg.Any<CancellationToken>());
+        await f.Lots.DidNotReceive().ListOpenTaxLotsByAssetScopeAsync(f.Book.LedgerBookId, f.Lot.SecurityId,
+            f.Lot.BookPositionId, due, Arg.Any<CancellationToken>());
+    }
     [Fact]
     public async Task CanonicalIncomeBooksCumulativeTenDecimalTargets_AndRetainsRawModelResidual()
     {
@@ -298,6 +453,7 @@ public sealed class BondIncomeServiceTests
             draft!.LotMutation.Should().BeEquivalentTo(preview.LotMutation);
             draft.ExpectedSpineVersion.Should().Be(2);
             projected!.ProjectedEffect.Lines.Should().HaveCount(2);
+            projected.ProjectedEffect.Lines.Should().OnlyContain(line => line.Dimensions!.TaxLotId == f.Lot.LotId);
             var source = projected.RetainedEvidence.Single(e => e.SourceSystem == "Meridian.BondIncome");
             source.ReviewedBy.Should().Be("operator");
             await evidence.VerifyAsync(source, preview.Instruction, period.PeriodId,
@@ -376,7 +532,7 @@ public sealed class BondIncomeServiceTests
                      new BondWorkflowCashFlow(new(2027, 1, 1), new(2026, 1, 1), new(2027, 1, 1), 5m, 100m, 0m, 1m, false, [])
                         { AccrualFraction = 1m, PeriodUnits = 1m }],
                     [new("SecurityTerms", securityId.ToString("D"), 1, InputHash)], [], [])
-                { SettlementIndexRatio = 1m, SettlementIndexIsObserved = true });
+                { SettlementIndexRatio = 1m, SettlementIndexIsObserved = true, ContractualAccruedInterest = 0m });
             Request = new(Book.LedgerBookId, lotId, new(2026, 1, 1), new(2026, 1, 2, 0, 0, 0, TimeSpan.Zero), AccountId);
             Service = new(Lots, Positions, Securities, Policies, Workflow);
 

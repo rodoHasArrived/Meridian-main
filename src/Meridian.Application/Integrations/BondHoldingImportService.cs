@@ -56,7 +56,8 @@ public sealed class BondHoldingImportService(IProviderIntegrationManifestStore m
                 || decision.PromotionTarget != "reconciliation-staging"
                 || decision.Issues.Any(i => i.Severity == ProviderIntegrationIssueSeverityDto.Critical)
                 || row.ValidationWarnings.Any(i => i.Severity == ProviderIntegrationIssueSeverityDto.Critical)
-                || row.Status is not (ProviderIntegrationProcessingStatusDto.Loaded or ProviderIntegrationProcessingStatusDto.Published)
+                || row.Status is not (ProviderIntegrationProcessingStatusDto.Validated
+                    or ProviderIntegrationProcessingStatusDto.Loaded or ProviderIntegrationProcessingStatusDto.Published)
                 || !Guid.TryParse(decision.InternalSecurityId, out var securityId))
                 throw new InvalidOperationException("A holding row lacks unique, valid retained review and identity evidence.");
             _ = await store.GetRawPayloadAsync(row.SyncRunId, row.RawPayloadId, ct).ConfigureAwait(false)

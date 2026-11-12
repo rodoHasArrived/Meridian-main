@@ -11,6 +11,103 @@ namespace Meridian.Contracts.UnitTests.Accounting;
 public sealed class BondIncomeCalculatorTests
 {
     [Theory]
+    [InlineData("1.25")]
+    [InlineData("-1.25")]
+    public void FullyPurchasedCouponKeepsActualDeferredCashAndSeparateOpening_WithoutInventingEirOrZeroJournal(string signedText)
+    {
+        var purchased = decimal.Parse(signedText, System.Globalization.CultureInfo.InvariantCulture);
+        var f = new Fixture();
+        var principalDate = new DateOnly(2026, 1, 1);
+        var coupon = f.Flow(new(2026, 1, 3), purchased, 0m) with
+        { AccrualStart = new(2024, 1, 1), AccrualEnd = f.AcquisitionDate, OutstandingPrincipal = 0m };
+        var principal = f.Flow(principalDate, 0m, 100m) with
+        { AccrualStart = principalDate, AccrualEnd = principalDate, PeriodUnits = 0m, AccrualFraction = 0m, OutstandingPrincipal = 0m };
+        var lot = f.Lot with { Acquisition = f.Lot.Acquisition with
+            { BondIncome = f.Lot.Acquisition.BondIncome! with { PurchasedAccruedInterest = purchased } } };
+        var projection = f.Projection([principal, coupon]);
+        var allocation = BondIncomeCouponRounding.Allocate(coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, "USD",
+            [new(lot.TaxLotRecordId, 1, 100m, purchased, 0m)]) with { HolderSnapshotDate = principalDate };
+        var proof = new BondIncomePurchasedCouponTailDto(BondIncomePurchasedCouponTail.ModelVersion, Guid.NewGuid(), Guid.NewGuid(),
+            coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, purchased);
+        var input = f.Instruction with { AcquisitionAccruedInterest = purchased, CurrentAccruedInterest = 0m,
+            AcquisitionProjection = projection, CurrentProjection = projection, AmortizationProjection = projection,
+            CouponCashAllocations = [allocation], PurchasedCouponTail = proof,
+            TerminalEntitlement = new(BondIncomeCouponRounding.TerminalEntitlementModelVersion, principalDate) };
+        var result = BondIncomeCalculator.Project(lot, input);
+        result.EffectiveAnnualYield.Should().Be(0m);
+        result.AccountingYieldCertificate.Should().Be(BondIncomePurchasedCouponTail.ModelVersion);
+        result.ClosingCarryingBasis.Should().Be(100m);
+        result.PremiumDiscountIncome.Should().Be(0m);
+        result.CouponIncome.Should().Be(0m);
+        input.CurrentProjection.CashFlows.Single(flow => flow.Interest != 0m).PaymentDate.Should().Be(coupon.PaymentDate);
+        var canonical = new OpenLotAmortizationInstructionDto(lot, null!, null!, 1, principalDate, BondIncomeCalculator.ModelVersion)
+            { BondIncome = input };
+        BondIncomeTerminalCoupon.HasCashRights(canonical).Should().BeTrue();
+        BondIncomeTerminalCoupon.Opening(canonical, proof.AcquisitionMutationBatchId, proof.AcquisitionJournalEntryId)
+            .EntitlementSha256.Should().Be(BondIncomeTerminalCoupon.EntitlementHash(canonical));
+        var wrongBirth = () => BondIncomeTerminalCoupon.Opening(canonical, Guid.NewGuid(), proof.AcquisitionJournalEntryId);
+        wrongBirth.Should().Throw<ArgumentException>().WithMessage("*exact actual acquisition*");
+        var nonpar = () => BondIncomeCalculator.Project(lot, input with
+        { AcquisitionProjection = projection with { CashFlows = [principal with { Principal = 101m }, coupon] } });
+        nonpar.Should().Throw<ArgumentException>().WithMessage("*nonpar, mixed or unmatched*");
+        var unmatched = () => BondIncomeCalculator.Project(lot, input with
+        { PurchasedCouponTail = proof with { PurchasedCouponCash = purchased + 0.01m } });
+        unmatched.Should().Throw<ArgumentException>().WithMessage("*nonpar, mixed or unmatched*");
+        var noSeparation = () => BondIncomeCalculator.Project(lot, input with { PurchasedCouponTail = null });
+        noSeparation.Should().Throw<ArgumentException>().WithMessage("*explicit purchased-coupon separation*");
+        var mixed = () => BondIncomeCalculator.Project(lot, input with { PurchasedCouponTail = null,
+            AcquisitionProjection = projection with { CashFlows = [principal, coupon, f.Flow(new(2027, 1, 1), 5m, 0m)] } });
+        mixed.Should().Throw<ArgumentException>().WithMessage("*nonpar, mixed or unmatched*");
+    }
+
+    [Fact]
+    public void SinglePeriodAccountingCertificateRejectsNonpositiveAccumulation_WithoutMovingPaymentDates()
+    {
+        var f = new Fixture(coupon: -101m);
+        var coupon = f.Flow(new(2026, 1, 3), -101m, 0m) with { AccrualEnd = new(2026, 1, 1) };
+        var principal = f.Flow(new(2026, 1, 1), 0m, 100m) with
+        { AccrualStart = new(2026, 1, 1), PeriodUnits = 0m, AccrualFraction = 0m };
+        var input = f.Instruction with { AcquisitionProjection = f.Projection([principal, coupon]) };
+        var action = () => BondIncomeCalculator.Project(f.Lot, input);
+        action.Should().Throw<ArgumentException>().WithMessage("*positive accumulation domain*");
+    }
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(true, true)]
+    public void FullyEarnedDeferredTerminalCouponUsesNativeEntitlementOnce_IncludingMidperiodPayoff(bool negative, bool midperiod)
+    {
+        var raw = negative ? -1.235m : 1.235m;
+        var f = new Fixture(coupon: raw);
+        var principalDate = midperiod ? new DateOnly(2025, 7, 2) : new DateOnly(2026, 1, 1);
+        var coupon = f.Flow(new(2026, 1, 3), raw, 0m) with
+        { AccrualStart = new(2025, 1, 1), AccrualEnd = new(2026, 1, 1), OutstandingPrincipal = 0m };
+        var principal = f.Flow(principalDate, 0m, 100m) with
+        { AccrualStart = principalDate, AccrualEnd = principalDate, OutstandingPrincipal = 0m, PeriodUnits = 0m, AccrualFraction = 0m };
+        var projection = f.Projection([principal, coupon]) with { AccruedInterest = raw };
+        var allocation = BondIncomeCouponRounding.Allocate(coupon.PaymentDate, coupon.AccrualStart, coupon.AccrualEnd, "USD",
+            [new(f.Lot.TaxLotRecordId, 1, 100m, raw, 0m)]) with { HolderSnapshotDate = principalDate };
+        var input = f.Instruction with { ThroughDate = principalDate, CurrentAccruedInterest = raw,
+            AcquisitionProjection = projection, CurrentProjection = projection, AmortizationProjection = projection,
+            TerminalEntitlement = new(BondIncomeCouponRounding.TerminalEntitlementModelVersion, principalDate),
+            CouponCashAllocations = [allocation] };
+        var result = BondIncomeCalculator.Project(f.Lot, input);
+        result.CouponIncome.Should().Be(negative ? -1.24m : 1.24m);
+        result.AccountingYieldCertificate.Should().Be("single-period-affine-accounting-v1");
+        result.CouponCashRoundingAdjustment.Should().Be(negative ? -0.005m : 0.005m);
+        result.ClosingCarryingBasis.Should().BeApproximately(100m, 0.00000001m);
+        input.CurrentAccruedInterest.Should().Be(raw, "raw purchaser/contract accrual remains evidence and is not counted twice");
+        var sides = BondIncomeCouponRounding.EarnedSides(f.Lot.TaxLotRecordId, input);
+        (sides.Receivable - sides.Payable).Should().Be(result.CouponIncome);
+        var unknown = input with { CurrentProjection = projection with { CashFlows = [principal, coupon with { IsForecast = true }] } };
+        var action = () => BondIncomeCouponRounding.EarnedFlows(unknown);
+        action.Should().Throw<ArgumentException>().WithMessage("*unearned or unfixed*");
+        var unearned = input with { CurrentProjection = projection with { CashFlows = [principal, coupon with { AccrualStart = principalDate }] } };
+        var future = () => BondIncomeCouponRounding.EarnedFlows(unearned);
+        future.Should().Throw<ArgumentException>().WithMessage("*unearned or unfixed*");
+    }
+    [Theory]
     [InlineData("USD", "0.617", "0.62", "0.61")]
     [InlineData("USD", "-0.617", "-0.62", "-0.61")]
     [InlineData("JPY", "0.6", "1", "0")]

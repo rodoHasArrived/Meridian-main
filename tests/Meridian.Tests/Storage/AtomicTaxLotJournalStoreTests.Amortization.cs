@@ -924,14 +924,17 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         /// </summary>
         public bool FactorPool { get; }
         public decimal? IncomeIndexRatio { get; }
+        public decimal IncomePurchasedAccrued { get; }
         public Guid IncomeAccountId { get; private set; }
         public IBondIncomeService? IncomeAuthority { get; set; }
+        public IBondCouponRecognitionService? CouponAuthority { get; set; }
         public string TransactionCurrency => FactorPool ? "USD" : "EUR";
         public decimal FxRate => FactorPool ? 1m : 1.1m;
 
         private AmortFixture(PostgresTestServer server, LedgerJournalStoreOptions options,
             PostgresSecurityMasterStore securities, PostgresAssetOperationsProjectionStore positions,
-            AccountingBasisKindDto accountingBasis, Guid? organizationId, bool factorPool, decimal? incomeIndexRatio = null)
+            AccountingBasisKindDto accountingBasis, Guid? organizationId, bool factorPool, decimal? incomeIndexRatio = null,
+            decimal incomePurchasedAccrued = 0m)
         {
             _server = server;
             Options = options;
@@ -941,13 +944,14 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             OrganizationId = organizationId;
             FactorPool = factorPool;
             IncomeIndexRatio = incomeIndexRatio;
+            IncomePurchasedAccrued = incomePurchasedAccrued;
             if (incomeIndexRatio is not null)
                 IncomeAuthority = NSubstitute.Substitute.For<IBondIncomeService>();
             Store = Restart();
         }
 
         public PostgresLedgerJournalStore Restart() => new(Options, backfillSecurityMaster: () => Securities, backfillPositions: () => Positions,
-            bondIncomeAuthority: () => IncomeAuthority);
+            bondIncomeAuthority: () => IncomeAuthority, couponRecognitionAuthority: () => CouponAuthority);
 
         public async Task LockPeriodAsync()
             => Period = await Store.SavePeriodAsync(Period with { Status = "HardClosed", ClosedAt = DateTimeOffset.UtcNow }, Period.Version);
@@ -963,7 +967,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public static async Task<AmortFixture> CreateAsync(bool premium,
             AccountingBasisKindDto accountingBasis = AccountingBasisKindDto.Primary, Guid? organizationId = null,
             bool factorPool = false, BondAmortizationMethod factorAmortization = BondAmortizationMethod.NoAmortization,
-            bool declaredEconomics = false, decimal? incomeIndexRatio = null)
+            bool declaredEconomics = false, decimal? incomeIndexRatio = null, decimal incomePurchasedAccrued = 0m)
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
             var options = new LedgerJournalStoreOptions
@@ -985,7 +989,8 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 await new LedgerMigrationRunner(options).EnsureMigratedAsync();
                 await new SecurityMasterMigrationRunner(securityOptions).EnsureMigratedAsync();
                 await new AssetOperationsMigrationRunner(assetOptions).EnsureMigratedAsync();
-                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool, incomeIndexRatio)
+                var fixture = new AmortFixture(server, options, new(securityOptions), new(assetOptions), accountingBasis, organizationId, factorPool,
+                    incomeIndexRatio, incomePurchasedAccrued)
                 { SecuritySchema = securityOptions.Schema };
                 await fixture.SeedAsync(premium, factorAmortization, declaredEconomics);
                 return fixture;
@@ -1102,13 +1107,30 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             if (IncomeIndexRatio is { } ratio)
                 acquisition = acquisition with
                 {
-                    BondIncome = new(source.RetainedAtUtc, basis, 0m, ratio, [],
+                    BondIncome = new(source.RetainedAtUtc, basis, IncomePurchasedAccrued, ratio, [],
                     [source, AmortSecurityEvidence(Security)])
                 };
             var batchId = Guid.NewGuid();
             account ??= IncomeIndexRatio is null ? AmortAccount : AmortAccount with { FinancialAccountId = IncomeAccountId.ToString("D") };
             var journal = Journal(AcquisitionPeriod, acquired, "factor-acquisition:" + id.ToString("N"), basis, basis, assetDebit: true,
                 account, IncomeIndexRatio is null ? null : lotId);
+            if (IncomePurchasedAccrued != 0m)
+            {
+                var old = journal.Entry;
+                var originalCash = old.Lines.Single(line => line.Credit > 0m);
+                var cash = new LedgerEntry(originalCash.EntryId, old.JournalEntryId, at, originalCash.Account,
+                    0m, basis + IncomePurchasedAccrued, originalCash.Description, originalCash.Dimensions,
+                    new("USD", "USD", 0m, basis + IncomePurchasedAccrued, 1m));
+                var purchased = new LedgerEntry(Guid.NewGuid(), old.JournalEntryId, at,
+                    new(IncomePurchasedAccrued > 0m ? "TerminalReceivable" : "TerminalPayable",
+                        IncomePurchasedAccrued > 0m ? LedgerAccountType.Asset : LedgerAccountType.Liability,
+                        FinancialAccountId: IncomeAccountId.ToString("D")),
+                    Math.Max(IncomePurchasedAccrued, 0m), Math.Max(-IncomePurchasedAccrued, 0m),
+                    old.Description, originalCash.Dimensions,
+                    new("USD", "USD", Math.Max(IncomePurchasedAccrued, 0m), Math.Max(-IncomePurchasedAccrued, 0m), 1m));
+                journal = journal with { Entry = new(old.JournalEntryId, old.Timestamp, old.Description,
+                    old.Lines.Where(line => line.EntryId != originalCash.EntryId).Append(cash).Append(purchased).ToArray(), old.Metadata) };
+            }
             var raw = new LedgerTaxLotRecord(id, BookId, account, lotId, acquired, quantity, quantity, pricePercentOfPar,
                 "USD", at, at, journal.Entry.JournalEntryId, source.EvidenceId, 1, batchId, batchId, Security.SecurityId, PositionId,
                 OriginalFace: originalFace, BookedFactor: bookedFactor, ParBasis: 100m, Acquisition: acquisition);
@@ -1122,9 +1144,10 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public AtomicTaxLotJournalCommand Command(decimal amountOffset = 0m, OpenLotDto? expectedLot = null,
             DateOnly? asOf = null, OpenLotAmortizationReversalDto? reversal = null,
             AtomicTaxLotJournalResult? corrects = null, bool remainingFace = false, bool automaticYieldToWorst = false,
-            string calculationVersion = OpenLotAmortization.ModelVersion)
+            string calculationVersion = OpenLotAmortization.ModelVersion,
+            OpenLotAmortizationInstructionDto? adoptedInstruction = null)
         {
-            var instruction = new OpenLotAmortizationInstructionDto(expectedLot ?? Lot.ToOpenLot(), Security,
+            var instruction = adoptedInstruction ?? new OpenLotAmortizationInstructionDto(expectedLot ?? Lot.ToOpenLot(), Security,
                 AmortSecurityEvidence(Security), 1, asOf ?? AmortAsOf,
                 CalculationVersion: calculationVersion, Reversal: reversal);
             if (remainingFace || automaticYieldToWorst)
@@ -1137,7 +1160,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var projection = OpenLotAmortization.Project(instruction);
             var key = "amort-period:" + Guid.NewGuid().ToString("N");
             var journal = Journal(Period, instruction.AsOfDate, key, Math.Abs(projection.TransactionMovement) + amountOffset,
-                Math.Abs(projection.FunctionalMovement) + amountOffset * 1.1m, projection.FunctionalMovement > 0m);
+                Math.Abs(projection.FunctionalMovement) + amountOffset * 1.1m, projection.FunctionalMovement > 0m,
+                assetAccount: instruction.BondIncome is null ? null : Lot.Account,
+                adoptedLotId: instruction.BondIncome is null ? null : instruction.ExpectedLot.LotId);
             var eventId = journal.SourceEventId!.Value;
             var eventEvidence = BuildEvidence("amort-event-" + eventId.ToString("N"), 'c') with
             { EffectiveDate = instruction.AsOfDate, SubjectType = AssetAccountingEvidenceSubjects.Event, SubjectId = eventId.ToString("D") };
@@ -1243,7 +1268,9 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var entry = new JournalEntry(id, at, "Canonical lot movement", [Leg(assetAccount ?? AmortAccount, assetDebit), Leg(offset, !assetDebit)],
                 new(SecurityId: Security.SecurityId, EffectiveDate: date, IdempotencyKey: key, Tags: SecurityMasterLineageTags(Security.SecurityId)));
             var posting = new AccountingPostingCommandDto(Guid.NewGuid(), BookId, period.PeriodId, date, at, key,
-                AccountingPostingIntentDto.Adjustment, sourceId, ExpectedVersion: period.Version,
+                IncomeIndexRatio is not null && key.StartsWith("factor-acquisition:", StringComparison.Ordinal)
+                    ? AccountingPostingIntentDto.Originating : AccountingPostingIntentDto.Adjustment,
+                sourceId, ExpectedVersion: period.Version,
                 ApprovalState: AccountingPostingApprovalStateDto.Approved, ApprovalId: "independent-controller-review",
                 OperatorRationale: "Independently reviewed fixture economics and owned retained evidence.", LedgerBookId: BookId)
             { Actor = "independent-controller" };

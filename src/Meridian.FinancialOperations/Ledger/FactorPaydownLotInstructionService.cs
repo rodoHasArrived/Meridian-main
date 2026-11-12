@@ -62,7 +62,8 @@ public sealed class FactorPaydownLotInstructionService(
     ISecurityMasterStore? securities,
     IInstrumentPositionProjectionStore? positions,
     IFactorPaydownProjectionService? projector,
-    IBondIncomeService? incomeService = null)
+    IBondIncomeService? incomeService = null,
+    Func<IBondCouponRecognitionService?>? couponAuthority = null)
 {
     public Task<FactorPaydownPreparation> PrepareAsync(
         FactorPaydownPreparationRequest request,
@@ -182,6 +183,13 @@ public sealed class FactorPaydownLotInstructionService(
             OpenLotAmortization.SecurityHash(security), request.PriorFactor, request.NewFactor,
             principalAmount, currency, allocated)
         { ScheduledPrincipal = scheduled ? new(BondIncomeScheduledPrincipal.ModelVersion, income) : null };
+        if (scheduled && request.NewFactor == 0m)
+        {
+            var terminal = await BondIncomeTerminalCouponGuard.ResolveAsync(lotStore, instruction, couponAuthority?.Invoke(), ct).ConfigureAwait(false);
+            instruction = instruction with { ScheduledPrincipal = instruction.ScheduledPrincipal! with
+                { TerminalCouponReceipts = terminal.Receipts.Count == 0 ? null : terminal.Receipts,
+                    TerminalCouponOpenings = terminal.Openings.Count == 0 ? null : terminal.Openings } };
+        }
         if (instruction.ScheduledPrincipal is { } adopted)
             instruction = instruction with { Lots = BondIncomeScheduledPrincipal.Allocate(instruction, adopted) };
         OpenLotFactorPaydown.Project(instruction);

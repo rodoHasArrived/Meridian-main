@@ -94,6 +94,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto"
     },
     {
@@ -214,6 +220,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeResetDto"
     },
     {
@@ -233,6 +251,30 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto"
     },
     {
       "kind": "contract-set-member",
@@ -29212,6 +29254,12 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponBookAccountsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponBookedTargetsDto"
     },
     {
@@ -29237,6 +29285,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognizedCashDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognitionInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto"
     },
     {
       "kind": "contract-reference",
@@ -29313,6 +29367,30 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponBookedTargetsDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondCouponRecognitionReceiptDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.OpenLotAmortizationInstructionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeFeeDto"
     },
@@ -29380,7 +29458,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeResetDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeInstructionDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto"
     },
     {
       "kind": "contract-reference",
@@ -29477,6 +29567,18 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeResultDto",
       "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeJournalComponentDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
+      "target": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto"
     },
     {
       "kind": "contract-reference",
@@ -35464,7 +35566,19 @@
       "kind": "contract-reference",
       "label": "",
       "source": "contract:Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationInput"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
       "target": "contract:Meridian.Contracts.FixedIncome.BondPortfolioScenarioValue"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.FixedIncome.BondPortfolioRiskPosition",
+      "target": "contract:Meridian.Contracts.FixedIncome.BondWorkflowRequest"
     },
     {
       "kind": "contract-reference",
@@ -60846,7 +60960,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "11a094b4bc5bdb29183bab1421d54f0c004b58222be0db140d536a804740ffda",
+  "fingerprint": "1f7bb595863c40003c875b467c42091053fab0fed3393919f82de2803d943156",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -60991,6 +61105,12 @@
     },
     {
       "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondCouponTerminalCashAuthorityDto"
+    },
+    {
+      "classification": "dto",
       "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.BondIncomeAcquisitionDto"
@@ -61110,6 +61230,18 @@
       "label": "Meridian.Contracts.Accounting.Lots.BondIncomePreviewRequestDto"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTail"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomePurchasedCouponTailDto"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeResetDto",
       "kind": "contract-type",
@@ -61132,6 +61264,30 @@
       "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Accounting.Lots.BondIncomeScheduledPrincipalDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCoupon"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponOpeningDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalCouponReceiptDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Accounting.Lots.BondIncomeTerminalEntitlementDto"
     },
     {
       "classification": "dto",
@@ -89143,11 +89299,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3888,
-    "contract_set_memberships": 4866,
-    "edges": 10110,
+    "contract_references": 3900,
+    "contract_set_memberships": 4873,
+    "edges": 10129,
     "foreign_keys": 169,
     "logical_references": 6,
-    "nodes": 4903
+    "nodes": 4910
   }
 }

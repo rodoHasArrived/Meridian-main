@@ -157,6 +157,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         public Guid BookId => Guid.Parse(Scope.BookId);
         public AccountCashForecastScopeDto Scope { get; }
         public LedgerAccountingPeriod Period { get; }
+        public LedgerJournalStoreOptions Options => _database.Options;
         public PostgresLedgerJournalStore Store { get; }
         public IBondCouponRecognitionService Authority { get; } = Substitute.For<IBondCouponRecognitionService>();
         private IBondIncomeService IncomeAuthority { get; } = Substitute.For<IBondIncomeService>();
@@ -174,10 +175,13 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 Arg.Any<RetainedEvidenceIdentityDto>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
             IncomeAuthority.RequireAcquisitionPolicyAsync(Arg.Any<Guid>(), Arg.Any<DateOnly>(),
                 Arg.Any<BondIncomeAcquisitionDto>(), Arg.Any<decimal>(), Arg.Any<CancellationToken>()).Returns(Task.CompletedTask);
-            Store = new(database.Options, backfillSecurityMaster: () => reference.Securities,
-                backfillPositions: () => reference.Positions, bondIncomeAuthority: () => IncomeAuthority,
-                couponRecognitionAuthority: () => Authority);
+            Store = Restart(database.Options);
         }
+
+        public PostgresLedgerJournalStore Restart(LedgerJournalStoreOptions options)
+            => new(options, backfillSecurityMaster: () => _reference.Securities,
+                backfillPositions: () => _reference.Positions, bondIncomeAuthority: () => IncomeAuthority,
+                couponRecognitionAuthority: () => Authority);
 
         public static async Task<CouponSinkFixture> CreateAsync(bool negative = false)
         {

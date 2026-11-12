@@ -70,7 +70,20 @@ public sealed record BondIncomeInstructionDto(
     public IReadOnlyList<BondIncomeCouponAllocationDto>? CouponCashAllocations { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BondIncomeBookedTargetDto? BookedTarget { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomeTerminalEntitlementDto? TerminalEntitlement { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondIncomePurchasedCouponTailDto? PurchasedCouponTail { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingYieldCertificate { get; init; }
 }
+
+public sealed record BondIncomeTerminalEntitlementDto(string ModelVersion, DateOnly PrincipalDate);
+
+/// <summary>A separately booked, fully purchased coupon; its actual cash date and rights remain retained.</summary>
+public sealed record BondIncomePurchasedCouponTailDto(string ModelVersion, Guid AcquisitionMutationBatchId,
+    Guid AcquisitionJournalEntryId, DateOnly PaymentDate, DateOnly AccrualStart, DateOnly AccrualEnd,
+    decimal PurchasedCouponCash);
 
 /// <summary>Signed transaction-currency changes, separate from cash settlement or market P&amp;L.</summary>
 public sealed record BondIncomeResultDto(
@@ -97,6 +110,8 @@ public sealed record BondIncomeResultDto(
     /// <summary>Allocated native coupon cash less raw completed coupon economics.</summary>
     public decimal CouponCashRoundingAdjustment { get; init; }
     public BondIncomeBookedTargetDto? BookedTarget { get; init; }
+    /// <summary>Uniqueness certificate for accounting period allocation, distinct from a market cash IRR.</summary>
+    public string AccountingYieldCertificate { get; init; } = "dated-sign-change-bracket-v1";
     public decimal? BookedCarryingBasisMovement => BookedTarget?.BookedTransactionTarget - OpeningCarryingBasis;
     public decimal TotalAccountingIncome => CouponIncome + PremiumDiscountIncome + IndexationIncome;
 }

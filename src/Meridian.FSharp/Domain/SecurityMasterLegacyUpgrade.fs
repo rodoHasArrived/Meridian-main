@@ -259,6 +259,7 @@ module SecurityMasterLegacyUpgrade =
                     DebtClassification = Some terms.DebtClassification
                     BondRedemption = Some terms.RedemptionFacts
                     BondCoupon = Some terms.CouponStructure
+                    BondWorkflow = terms.Workflow
                     PrincipalSchedule = Some terms.Principal
                     Maturity = Some terms.Dates
                     Coupon =

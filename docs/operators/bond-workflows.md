@@ -320,8 +320,24 @@ than outstanding earned/purchased interest.
 
 First recognition also proves the canonical acquisition journal and its exact account/security/lot
 history. Purchased seller accrued interest must already be booked separately. Prior manual coupon
-entries, unscoped history or ambiguous legacy opening balances block first recognition; missing
-history is not a zero recognized balance. Resolve the retained opening authority before activation.
+entries, unscoped history or ambiguous legacy opening balances block recognition or clearing;
+missing history is not a zero recognized balance. Each later posting also verifies the retained
+native receipt chain and current book history. Exact canonical noncash amortization remains separate.
+Resolve ambiguous coupon accounting through retained reconciliation before continuing.
+
+Before final scheduled principal closes a lot, reconcile its final earned coupon target. Principal
+may settle while coupon cash remains unpaid: the closing instruction pins the actual earned receipt,
+journal and frozen native entitlement. Fully earned, observed coupons paid later retain their real
+payment dates and holder allocations at principal payoff; unfixed or unearned rights block closure.
+Later coupon cash and typed reversals use that frozen authority and the actual closed-lot mutation,
+without reopening principal or recognizing new income. Exactly zero earned income with a wholly
+purchased coupon uses the actual acquisition journal and separately booked purchased receivable or
+payable as its anchor, without an artificial zero journal. This bounded separation supports one
+fully purchased coupon and nonaccreting par principal; nonpar, mixed or unmatched tails refuse.
+Single-period signed accounting yields retain an affine recurrence certificate and positive
+accumulation/residual checks; this accounting allocation certificate does not alter contractual
+cash dates or certify a market cash IRR. Existing holders accrue their retained contractual coupon
+through an ex-coupon window; purchaser invoice accrued interest remains a separate settlement input.
 
 Governed carrying-income preparation currently requires the acquisition and functional currencies
 to match. Coupon recognition also requires acquisition/projection currency to match the book's base
