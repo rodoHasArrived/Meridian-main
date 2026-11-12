@@ -1041,7 +1041,7 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
 Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
-operator's view ID still yields no records. Their normalized search/filter values reach the shared
+operator's view ID yields no records. Their normalized search/filter values reach the shared
 read service without an unresolved personal ID, while the response retains that view's active marker.
 Run-filter-only requests preserve the resolved run's active picker entry, including runs beyond the
 bounded candidate list. Explorer save requests trim presentation values and discard null filters or
