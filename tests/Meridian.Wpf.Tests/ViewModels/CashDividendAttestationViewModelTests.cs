@@ -87,6 +87,66 @@ public sealed class CashDividendAttestationViewModelTests
     }
 
     [Fact]
+    public async Task RenewedDeclarationAllowsExplicitReaffirmationOfActiveHistoricalAttestation()
+    {
+        var fixture = new Fixture();
+        fixture.PreparePostingWorkspace();
+        using var vm = await fixture.OpenAsync();
+        vm.Reason = "Earlier confirmation must not authorize a renewed declaration";
+        vm.IsConfirmed = true;
+
+        fixture.PrepareReaffirmationWorkspace();
+        await vm.RefreshWorkspaceAsync();
+        vm.IsConfirmed.Should().BeFalse("renewing the declaration requires a fresh confirmation");
+        vm.Reason = "Reaffirm unchanged entitlement under the renewed declaration";
+        vm.AttestCommand.CanExecute(null).Should().BeFalse();
+        vm.IsConfirmed = true;
+        vm.AttestCommand.CanExecute(null).Should().BeTrue();
+        vm.PostCommand.CanExecute(null).Should().BeFalse("the historical attestation is not bound to the renewed declaration");
+
+        await vm.AttestCommand.ExecuteAsync(null);
+
+        var command = fixture.Attestations.Should().ContainSingle().Which;
+        command.ExpectedVersion.Should().Be(fixture.Workspace.Case.Version);
+        command.ProjectionId.Should().Be(fixture.Attestation.ProjectionId);
+        command.ExpectedDeclarationRevision.Should().Be(5).And.NotBe(fixture.Attestation.DeclarationRevision);
+        command.ExpectedEligibilityHash.Should().Be(fixture.Workspace.EvidenceHash);
+        command.Confirmation.Should().Be(CorporateActionCashDividendAttestationPolicy.Confirmation);
+        command.Authority.Should().BeNull();
+        fixture.Posts.Should().BeEmpty("reaffirmation does not implicitly post the journal");
+        vm.IsConfirmed.Should().BeFalse();
+        vm.Workspace.Should().BeNull("a new attestation requires a fresh authoritative workspace before posting");
+    }
+
+    [Theory]
+    [InlineData("server-denied")]
+    [InlineData("policy-disabled")]
+    [InlineData("withdrawn-declaration")]
+    [InlineData("posted-journal")]
+    [InlineData("missing-evidence")]
+    public async Task HistoricalAttestationCannotBypassCurrentReaffirmationControls(string blocker)
+    {
+        var fixture = new Fixture();
+        fixture.PrepareReaffirmationWorkspace();
+        fixture.Workspace = blocker switch
+        {
+            "server-denied" => fixture.Workspace with { CanAttestAccounting = false },
+            "policy-disabled" => fixture.Workspace with { PolicyEnabled = false },
+            "withdrawn-declaration" => fixture.Workspace with { Declaration = fixture.Workspace.Declaration! with { Enabled = false } },
+            "posted-journal" => fixture.Workspace with { Posting = fixture.Posting },
+            _ => fixture.Workspace with { EvidenceHash = null }
+        };
+        using var vm = await fixture.OpenAsync();
+        vm.Reason = "Inspect renewed declaration and unchanged entitlement";
+        vm.IsConfirmed = true;
+
+        vm.AttestCommand.CanExecute(null).Should().BeFalse();
+        await vm.AttestAsync();
+        fixture.Attestations.Should().BeEmpty();
+        fixture.Posts.Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task UncertainPostingRetriesSameIdentityEvenAfterCommittedCaseVersionAdvances()
     {
         var fixture = new Fixture();
@@ -280,6 +340,17 @@ public sealed class CashDividendAttestationViewModelTests
         }
         public void PreparePostingWorkspace() => Workspace = Workspace with
         { Case = Case with { Version = 8, State = CorporateActionCaseStates.PreparerAttested }, Attestation = Attestation, CanAttestAccounting = false, CanPostAttestedAccounting = true };
+        public void PrepareReaffirmationWorkspace()
+        {
+            PreparePostingWorkspace();
+            Workspace = Workspace with
+            {
+                Declaration = Workspace.Declaration! with { Revision = 5 },
+                Preview = Workspace.Preview! with { Case = Workspace.Case },
+                CanAttestAccounting = true,
+                CanPostAttestedAccounting = false
+            };
+        }
         public async Task<CashDividendAttestationViewModel> OpenAsync()
         {
             var vm = new CashDividendAttestationViewModel(this);

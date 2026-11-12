@@ -1684,7 +1684,8 @@ public sealed partial class WorkstationEndpointsTests
             {
                 return Task.FromResult<AssetAccountingEventSpineDto?>(null);
             }
-            if (OverrideSpine is not null) return Task.FromResult<AssetAccountingEventSpineDto?>(OverrideSpine);
+            if (OverrideSpine is not null)
+                return Task.FromResult<AssetAccountingEventSpineDto?>(OverrideSpine);
 
             var effectiveDate = new DateOnly(2026, 3, 22);
             var sourceHash = new string('a', 64);
@@ -1903,7 +1904,8 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             LastQuery = query;
-            if (OverrideRecords is not null) return Task.FromResult(OverrideRecords);
+            if (OverrideRecords is not null)
+                return Task.FromResult(OverrideRecords);
             var timestamp = DateTimeOffset.Parse("2026-03-22T16:00:00Z");
             var dimensions = new LedgerLineDimensionSet(
                 FundId: "northwind-income",

@@ -22,7 +22,7 @@ public static partial class EvidenceEndpoints
                 var authority = AttestationAuthority(context);
                 var state = await store.GetAsync(scope, authority, context.RequestAborted).ConfigureAwait(false);
                 var receipt = state.Receipts.SingleOrDefault(item => item.ReceiptId == receiptId);
-                if (receipt is null || !CanReadAttestationReceipt(receipt, context))
+                if (receipt is null || !CanReadAttestationSourceSubject(receipt.SourceSubjectKind, receipt.SourceSubjectId, context))
                     return Results.NotFound(Error("attestation_receipt_unavailable", "The scoped receipt was not found."));
                 var proof = await store.GetReceiptExportAsync(scope, authority, receiptId,
                     context.RequestAborted).ConfigureAwait(false);
@@ -82,10 +82,16 @@ public static partial class EvidenceEndpoints
             .Produces(StatusCodes.Status404NotFound);
 
         AttestationReadRoute(group.MapPost("/attestations/declaration", (ChangeSinglePrincipalDeclarationRequestDto request, HttpContext context) =>
-            AttestationResultAsync(context, async () => Results.Json(
-                await context.RequestServices.GetRequiredService<SinglePrincipalAttestationStore>()
-                    .ChangeDeclarationAsync(AttestationScope(context), AttestationAuthority(context, request.Origin), request,
-                        context.RequestAborted).ConfigureAwait(false), jsonOptions))))
+            AttestationResultAsync(context, async () =>
+            {
+                var authority = AttestationAuthority(context) with
+                {
+                    Origin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.Origin)
+                };
+                return Results.Json(await context.RequestServices.GetRequiredService<SinglePrincipalAttestationStore>()
+                    .ChangeDeclarationAsync(AttestationScope(context), authority, request,
+                        context.RequestAborted).ConfigureAwait(false), jsonOptions);
+            })))
             .WithName("ChangeSinglePrincipalDeclaration")
             .Produces<SinglePrincipalDeclarationDto>()
             .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
@@ -95,14 +101,17 @@ public static partial class EvidenceEndpoints
             {
                 // Only exact retained evidence acknowledgments are registered. A body cannot
                 // select an economic effect, impersonate its preparer, or supply source authority.
-                var authority = AttestationAuthority(context, request.Origin);
+                var authority = AttestationAuthority(context) with
+                {
+                    Origin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.Origin)
+                };
                 var store = context.RequestServices.GetRequiredService<SinglePrincipalAttestationStore>();
                 var scope = AttestationScope(context);
                 var state = await store.GetAsync(scope, authority, context.RequestAborted).ConfigureAwait(false);
                 var historical = state.Receipts.FirstOrDefault(item => item.CommandId == request.CommandId);
                 var sourceReadable = historical is not null
-                    ? CanReadAttestationReceipt(historical, context)
-                    : await CanReadNewAttestationSubjectAsync(request, context).ConfigureAwait(false);
+                    ? CanReadAttestationSourceSubject(historical.SourceSubjectKind, historical.SourceSubjectId, context)
+                    : await CanReadNewAttestationSubjectAsync(request.SubjectKind, request.SubjectId, context).ConfigureAwait(false);
                 if (!sourceReadable)
                     return Results.NotFound(Error("attestation_subject_unavailable", "The scoped evidence was not found."));
                 return Results.Json(await store.AttestAsync(scope, authority, request, context.RequestAborted).ConfigureAwait(false), jsonOptions);
@@ -116,10 +125,13 @@ public static partial class EvidenceEndpoints
             {
                 var scope = AttestationScope(context);
                 var store = context.RequestServices.GetRequiredService<SinglePrincipalAttestationStore>();
-                var authority = AttestationAuthority(context, request.Origin);
+                var authority = AttestationAuthority(context) with
+                {
+                    Origin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.Origin)
+                };
                 var state = await store.GetAsync(scope, authority, context.RequestAborted).ConfigureAwait(false);
                 var receipt = state.Receipts.FirstOrDefault(item => item.ReceiptId == request.ReceiptId);
-                if (receipt is null || !CanReadAttestationReceipt(receipt, context))
+                if (receipt is null || !CanReadAttestationSourceSubject(receipt.SourceSubjectKind, receipt.SourceSubjectId, context))
                     return Results.NotFound(Error("attestation_receipt_unavailable", "The scoped receipt was not found."));
                 return Results.Json(await store.RevokeAsync(scope, authority, request, context.RequestAborted).ConfigureAwait(false), jsonOptions);
             })))
@@ -144,32 +156,30 @@ public static partial class EvidenceEndpoints
         return new(scope.TenantId, scope.CompanyId);
     }
 
-    private static SinglePrincipalAttestationAuthority AttestationAuthority(HttpContext context,
-        OperationsActionOriginDto origin = OperationsActionOriginDto.HumanOperator)
+    private static SinglePrincipalAttestationAuthority AttestationAuthority(HttpContext context)
     {
         EndpointAuthorization.TryResolveActor(context, out var actor);
         var canRead = EndpointAuthorization.HasPermission(context, UserPermission.ViewPreparerAttestations)
             && EndpointAuthorization.HasPermission(context, UserPermission.ViewReporting);
         var canAttest = EndpointAuthorization.HasPermission(context, UserPermission.RecordPreparerAttestations);
-        return new(actor ?? string.Empty, EndpointAuthorization.ResolveTrustedActionOrigin(context, origin), canRead,
+        return new(actor ?? string.Empty, EndpointAuthorization.DeriveActionOriginFromPrincipal(context), canRead,
             EndpointAuthorization.HasPermission(context, UserPermission.ManageSinglePrincipalDeclarations),
             canAttest, CanRevoke: false,
             CanModifyTarget: EndpointAuthorization.HasPermission(context, UserPermission.ManageReporting),
             CanModifyDraftTarget: EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster));
     }
 
-    private static async Task<bool> CanReadNewAttestationSubjectAsync(RecordPreparerAttestationRequestDto request,
-        HttpContext context)
+    private static async Task<bool> CanReadNewAttestationSubjectAsync(string subjectKind, string subjectId, HttpContext context)
     {
-        if (string.IsNullOrWhiteSpace(request.SubjectId))
+        if (string.IsNullOrWhiteSpace(subjectId))
             return false;
-        if (request.SubjectKind == ContractualCashFlowDraftAttestationSubjectResolver.SubjectKind)
-            return request.SubjectId.Split('/') is ["Security", var security, var run]
+        if (subjectKind == ContractualCashFlowDraftAttestationSubjectResolver.SubjectKind)
+            return subjectId.Split('/') is ["Security", var security, var run]
                 && Guid.TryParseExact(security, "D", out _)
                 && Guid.TryParseExact(run, "D", out _)
                 && EndpointAuthorization.HasPermission(context, UserPermission.ViewSecurityMaster);
-        return request.SubjectKind == EvidenceAttestationSubjectResolver.SubjectKind
-            && request.SubjectId.Split('/') is [var vaultId, var documentId]
+        return subjectKind == EvidenceAttestationSubjectResolver.SubjectKind
+            && subjectId.Split('/') is [var vaultId, var documentId]
             && !string.IsNullOrWhiteSpace(documentId)
             && await CanReadAttestationSourceAsync(vaultId, context).ConfigureAwait(false);
     }
@@ -187,15 +197,11 @@ public static partial class EvidenceEndpoints
             subject.SourceHash, subject.SourceActor, subject.SourceProvenance, subject.Eligible, subject.Checks,
             subject.SourceSubjectKind, subject.SourceSubjectId, subject.SubjectSnapshotJson);
 
-    private static bool CanReadAttestationReceipt(PreparerAttestationReceiptDto receipt, HttpContext context) =>
-        !string.IsNullOrWhiteSpace(receipt.SourceSubjectKind)
-        && !string.IsNullOrWhiteSpace(receipt.SourceSubjectId)
-        && CanReadAttestationSourceSubject(receipt.SourceSubjectKind, receipt.SourceSubjectId, context);
-
-    private static bool CanReadAttestationSourceSubject(string kind, string id, HttpContext context) =>
-        string.Equals(kind, "contractual-cashflow-security", StringComparison.Ordinal)
+    private static bool CanReadAttestationSourceSubject(string? kind, string? id, HttpContext context) =>
+        !string.IsNullOrWhiteSpace(kind) && !string.IsNullOrWhiteSpace(id)
+        && (string.Equals(kind, "contractual-cashflow-security", StringComparison.Ordinal)
             ? Guid.TryParseExact(id, "D", out _) && EndpointAuthorization.HasPermission(context, UserPermission.ViewSecurityMaster)
-            : CanReadSubject(kind, context, id);
+            : CanReadSubject(kind, context, id));
 
     private static PreparerAttestationEvidenceReadContext BuildPreparerAttestationReadContext(HttpContext context) =>
         new(AttestationScope(context), AttestationAuthority(context),
@@ -204,7 +210,7 @@ public static partial class EvidenceEndpoints
     private static SinglePrincipalAttestationStateDto FilterReadableAttestations(SinglePrincipalAttestationStateDto state,
         HttpContext context)
     {
-        var receipts = state.Receipts.Where(receipt => CanReadAttestationReceipt(receipt, context)).ToArray();
+        var receipts = state.Receipts.Where(receipt => CanReadAttestationSourceSubject(receipt.SourceSubjectKind, receipt.SourceSubjectId, context)).ToArray();
         var visibleIds = receipts.Select(receipt => receipt.ReceiptId).ToHashSet();
         return state with
         {

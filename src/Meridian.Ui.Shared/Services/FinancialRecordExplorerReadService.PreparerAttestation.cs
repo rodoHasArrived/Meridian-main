@@ -31,7 +31,8 @@ public sealed partial class FinancialRecordExplorerReadService
     private static void AppendNativePreparerDecisionField(List<FinancialRecordExplorerSummaryItemDto> fields,
         InstrumentJournalProof proof)
     {
-        if (!TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.PreparerAttested, out var stage)) return;
+        if (!TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.PreparerAttested, out var stage))
+            return;
         fields.Add(new("Attested by preparer (single-principal)", stage.ReferenceId!,
             NativePreparerDecisionDetail(stage, proof.Spine!.PreparerAttestation!), FinancialRecordExplorerTone.Info));
     }
@@ -39,7 +40,8 @@ public sealed partial class FinancialRecordExplorerReadService
     private static void AppendNativePreparerDecisionImpact(List<FinancialRecordExplorerRelationshipDto> impacts,
         InstrumentJournalProof proof, string href)
     {
-        if (!TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.PreparerAttested, out var stage)) return;
+        if (!TryGetAuthoritativeStage(proof, AssetAccountingLifecycleStageDto.PreparerAttested, out var stage))
+            return;
         impacts.Add(new("preparer-attestation", "Attested by preparer (single-principal)",
             NativePreparerDecisionDetail(stage, proof.Spine!.PreparerAttestation!), href, FinancialRecordExplorerTone.Info));
     }

@@ -653,7 +653,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         var scope = new LedgerAmountScopeDto("tenant", "company", "fund", Guid.NewGuid(), Guid.NewGuid());
         var item = new AccountingPreparerAttestationDisclosureDto(1,
             LedgerAmountApprovalClassification.PreparerAttestation, "Attested by preparer", scope, [Guid.NewGuid()], [])
-            { AttestationId = Guid.NewGuid(), EventId = Guid.NewGuid() };
+        { AttestationId = Guid.NewGuid(), EventId = Guid.NewGuid() };
 
         AccountingPreparerAttestationDisclosure.Union([item, item])!.Should().ContainSingle().Which.Should().Be(item);
         var conflicting = item with { EventId = Guid.NewGuid(), JournalEntryIds = [Guid.NewGuid()] };

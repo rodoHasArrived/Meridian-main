@@ -113,7 +113,8 @@ public sealed class PreparerAttestationApprovalBoundaryTests : IDisposable
         var canonicalPayload = JsonSerializer.Serialize(legacySnapshot, options);
         await File.WriteAllTextAsync(path, JsonSerializer.Serialize(new
         {
-            Payload = legacySnapshot, Hash = Sha256Digest.ComputeUtf8(canonicalPayload)
+            Payload = legacySnapshot,
+            Hash = Sha256Digest.ComputeUtf8(canonicalPayload)
         }, options));
         var retainedBytes = await File.ReadAllTextAsync(path);
 
@@ -278,7 +279,8 @@ public sealed class PreparerAttestationApprovalBoundaryTests : IDisposable
             ReconciliationBreakCategory.CashMismatch, ReconciliationBreakQueueStatus.Open, 10m,
             "Retained source differs", null, now, now)
         {
-            TenantId = Scope.TenantId, CompanyId = Scope.CompanyId
+            TenantId = Scope.TenantId,
+            CompanyId = Scope.CompanyId
         };
         await repo.CreateIfMissingAsync(queueScope, item);
         return (repo, queueScope, (await repo.GetByIdAsync(queueScope, item.BreakId))!);

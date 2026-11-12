@@ -31,8 +31,10 @@ public sealed partial class SinglePrincipalAttestationStore
     private IReadOnlyList<string> EnabledActions()
     {
         var actions = new List<string>();
-        if (_policyEnabled) actions.Add(SinglePrincipalAttestationPolicy.EvidenceAcknowledgment);
-        if (_draftChecksEnabled) actions.Add(SinglePrincipalAttestationPolicy.DraftCheck);
+        if (_policyEnabled)
+            actions.Add(SinglePrincipalAttestationPolicy.EvidenceAcknowledgment);
+        if (_draftChecksEnabled)
+            actions.Add(SinglePrincipalAttestationPolicy.DraftCheck);
         return actions;
     }
 
@@ -124,10 +126,10 @@ public sealed partial class SinglePrincipalAttestationStore
 
     private static Snapshot Complete<T>(Snapshot state, Guid commandId, string fingerprint, T result,
         string action, string actor, string reason, DateTimeOffset now, Guid? receiptId = null) => state with
-    {
-        Commands = [.. state.Commands, new(commandId, fingerprint, JsonSerializer.SerializeToElement(result, JsonOptions))],
-        AuditTrail = [.. state.AuditTrail, new(commandId, checked(state.AuditTrail.Length + 1), action, actor.Trim(), now, reason, receiptId)]
-    };
+        {
+            Commands = [.. state.Commands, new(commandId, fingerprint, JsonSerializer.SerializeToElement(result, JsonOptions))],
+            AuditTrail = [.. state.AuditTrail, new(commandId, checked(state.AuditTrail.Length + 1), action, actor.Trim(), now, reason, receiptId)]
+        };
 
     private string StatePath(SinglePrincipalAttestationScopeDto scope)
     {

@@ -205,7 +205,9 @@ public sealed class PreparerAttestationEvidenceProjectionTests : IDisposable
             "source-a", "external-importer", ExtractedFields:
             [new("amount", "100", "100", 1m, "Fixture", EvidenceStatusDto.Ready, null, "account", accountId)])
         {
-            Actor = "external-importer", TenantId = Scope.TenantId, Scope = Scope.CompanyId,
+            Actor = "external-importer",
+            TenantId = Scope.TenantId,
+            Scope = Scope.CompanyId,
             ExtractionStatus = EvidenceExtractionStatusDto.Extracted
         });
 

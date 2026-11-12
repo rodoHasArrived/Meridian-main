@@ -75,13 +75,15 @@ public sealed partial class WorkstationEndpointsTests
         var binding = native.Entry.Metadata.PreparerAttestation! with
         { EventId = spine.EventId, EventVersion = spine.EventVersion, DraftedCandidateFingerprint = fingerprint };
         var tags = new Dictionary<string, string>(journal.Entry.Metadata.Tags!, StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in native.Entry.Metadata.Tags!) tags[pair.Key] = pair.Value;
+        foreach (var pair in native.Entry.Metadata.Tags!)
+            tags[pair.Key] = pair.Value;
         tags["sourceEventId"] = spine.EventId.ToString("D");
         tags["sourceEventVersion"] = spine.EventVersion.ToString(System.Globalization.CultureInfo.InvariantCulture);
         tags["assetAccountingDraftFingerprint"] = fingerprint;
         tags["assetAccountingDraftResultFingerprint"] = spine.DraftedCandidateResultFingerprint!;
         native = AccountingPreparerAttestationTestData.WithMetadata(native,
-            native.Entry.Metadata with { PreparerAttestation = binding, Tags = tags }) with { SourceEventId = spine.EventId };
+            native.Entry.Metadata with { PreparerAttestation = binding, Tags = tags }) with
+        { SourceEventId = spine.EventId };
         var stage = new AssetAccountingStageEvidenceDto(AssetAccountingLifecycleStageDto.PreparerAttested,
             binding.Receipt.AttestedAtUtc, binding.Receipt.AttestedBy, spine.RetainedEvidence,
             PreparerAttestationApprovalBoundary.ReceiptReference(binding.Receipt.AttestationId));
@@ -93,7 +95,9 @@ public sealed partial class WorkstationEndpointsTests
         return (spine with
         {
             Scope = spine.Scope with { TenantId = "tenant-test", CompanyId = "tenant-test" },
-            DraftedCandidate = candidate, DraftedCandidateFingerprint = fingerprint, PreparerAttestation = binding,
+            DraftedCandidate = candidate,
+            DraftedCandidateFingerprint = fingerprint,
+            PreparerAttestation = binding,
             Stages = [.. spine.Stages.Take(3), stage, spine.Stages[^1] with { Evidence = spine.RetainedEvidence }],
             PostedJournalImpact = impact
         }, native);

@@ -32,7 +32,11 @@ public sealed class ContractualCashFlowAttestationBindingEndpointTests
         var runId = Guid.NewGuid();
         var response = await fixture.Client.PostAsJsonAsync(fixture.Route, new
         {
-            runId, projection = fixture.Request, actor = "forged", tenantId = "foreign", companyId = "foreign",
+            runId,
+            projection = fixture.Request,
+            actor = "forged",
+            tenantId = "foreign",
+            companyId = "foreign",
             attestationContext = new { preparedBy = "forged", origin = "HumanOperator" }
         });
         response.EnsureSuccessStatusCode();
@@ -129,9 +133,12 @@ public sealed class ContractualCashFlowAttestationBindingEndpointTests
             {
                 context.Items[LoginSessionMiddleware.CurrentUserKey] = fixture.Actor;
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ModifySecurityMaster | UserPermission.ViewSecurityMaster;
-                if (fixture.Tenant is not null) context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = fixture.Tenant;
-                if (fixture.Company is not null) context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = fixture.Company;
-                if (fixture.ApiCredential) context.Items[ApiKeyMiddleware.ApiKeyPrincipalKey] = new object();
+                if (fixture.Tenant is not null)
+                    context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = fixture.Tenant;
+                if (fixture.Company is not null)
+                    context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = fixture.Company;
+                if (fixture.ApiCredential)
+                    context.Items[ApiKeyMiddleware.ApiKeyPrincipalKey] = new object();
                 await next();
             });
             fixture.App.UseRouting();

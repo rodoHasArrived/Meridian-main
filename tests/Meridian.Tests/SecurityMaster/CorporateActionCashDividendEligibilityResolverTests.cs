@@ -73,8 +73,11 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
             "missing-acquisition" => lot with { Acquisition = null },
             "missing-account" => lot with { Account = lot.Account with { FinancialAccountId = null } },
             "foreign-currency" => lot with { Currency = "EUR" },
-            "wrong-acquisition-subject" => lot with { Acquisition = lot.Acquisition! with
-                { Evidence = [lot.Acquisition.Evidence[0] with { SubjectId = Guid.NewGuid().ToString("D") }] } },
+            "wrong-acquisition-subject" => lot with
+            {
+                Acquisition = lot.Acquisition! with
+                { Evidence = [lot.Acquisition.Evidence[0] with { SubjectId = Guid.NewGuid().ToString("D") }] }
+            },
             _ => lot with { BookPositionId = Guid.Empty }
         };
         await ExcludedAsync(fixture);
@@ -178,8 +181,11 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         fixture.Workspace = problem switch
         {
             "unpromoted" => fixture.Workspace with { PostingRules = [fixture.Workspace.PostingRules[0] with { PromotionApproval = null }] },
-            "self-promoted" => fixture.Workspace with { PostingRules = [fixture.Workspace.PostingRules[0] with
-                { PromotionApproval = fixture.Workspace.PostingRules[0].PromotionApproval! with { ApprovedBy = "maker" } }] },
+            "self-promoted" => fixture.Workspace with
+            {
+                PostingRules = [fixture.Workspace.PostingRules[0] with
+                { PromotionApproval = fixture.Workspace.PostingRules[0].PromotionApproval! with { ApprovedBy = "maker" } }]
+            },
             "archived-account" => fixture.Workspace with { ChartOfAccounts = [fixture.Workspace.ChartOfAccounts[0] with { IsArchived = true }, fixture.Workspace.ChartOfAccounts[1]] },
             "wrong-account-type" => fixture.Workspace with { ChartOfAccounts = [fixture.Workspace.ChartOfAccounts[0], fixture.Workspace.ChartOfAccounts[1] with { AccountType = "Liability" }] },
             _ => fixture.Workspace
@@ -247,12 +253,21 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
     public async Task CashDividendEligibility_AllowsMatchingExplicitChartMappingsAndRetainsCanonicalTicker()
     {
         var fixture = await EntitlementFixture.CreateAsync();
-        var result = fixture.Spine.DraftedCandidateResult! with { GeneratedPostingLines = fixture.Spine.DraftedCandidateResult!.GeneratedPostingLines
-            .Select(line => line with { Dimensions = new LedgerDimensionSetDto(AccountId: "account-a") }).ToArray() };
-        fixture.Spine = fixture.Spine with { DraftedCandidateResult = result,
-            DraftedCandidateResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(result) };
-        fixture.Workspace = fixture.Workspace with { ChartOfAccounts = fixture.Workspace.ChartOfAccounts
-            .Select(node => node with { Symbol = "fix", FinancialAccountId = "account-a" }).ToArray() };
+        var result = fixture.Spine.DraftedCandidateResult! with
+        {
+            GeneratedPostingLines = fixture.Spine.DraftedCandidateResult!.GeneratedPostingLines
+            .Select(line => line with { Dimensions = new LedgerDimensionSetDto(AccountId: "account-a") }).ToArray()
+        };
+        fixture.Spine = fixture.Spine with
+        {
+            DraftedCandidateResult = result,
+            DraftedCandidateResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(result)
+        };
+        fixture.Workspace = fixture.Workspace with
+        {
+            ChartOfAccounts = fixture.Workspace.ChartOfAccounts
+            .Select(node => node with { Symbol = "fix", FinancialAccountId = "account-a" }).ToArray()
+        };
 
         var eligibility = await fixture.ResolveAsync();
 
@@ -266,8 +281,12 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         var fixture = await EntitlementFixture.CreateAsync();
         var first = await fixture.ResolveAsync();
         fixture.Case = fixture.Case with { State = CorporateActionCaseStates.PreparerAttested, Version = fixture.Case.Version + 1 };
-        fixture.Spine = fixture.Spine with { SpineVersion = fixture.Spine.SpineVersion + 1, Stages = [.. fixture.Spine.Stages,
-            new(AssetAccountingLifecycleStageDto.PreparerAttested, DateTimeOffset.UtcNow, "fund-accountant")] };
+        fixture.Spine = fixture.Spine with
+        {
+            SpineVersion = fixture.Spine.SpineVersion + 1,
+            Stages = [.. fixture.Spine.Stages,
+            new(AssetAccountingLifecycleStageDto.PreparerAttested, DateTimeOffset.UtcNow, "fund-accountant")]
+        };
         (await fixture.ResolveAsync()).EntitlementSnapshotHash.Should().Be(first.EntitlementSnapshotHash);
         fixture.Lots[1] = fixture.Lots[1] with { Version = fixture.Lots[1].Version + 1 };
         (await fixture.ResolveAsync()).EntitlementSnapshotHash.Should().NotBe(first.EntitlementSnapshotHash);
@@ -287,8 +306,11 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
             fixture.Spine = fixture.Spine with { RetainedEvidence = [fixture.Spine.RetainedEvidence[0] with { SourceReference = "different-event" }] };
         else if (problem == "candidate-source-evidence")
         {
-            var request = fixture.Spine.DraftedCandidate! with { RetainedEvidence =
-                [fixture.Spine.DraftedCandidate!.RetainedEvidence[0] with { SourceReference = "different-event" }] };
+            var request = fixture.Spine.DraftedCandidate! with
+            {
+                RetainedEvidence =
+                [fixture.Spine.DraftedCandidate!.RetainedEvidence[0] with { SourceReference = "different-event" }]
+            };
             var fingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(request);
             fixture.Spine = fixture.Spine with { DraftedCandidate = request, DraftedCandidateFingerprint = fingerprint };
             fixture.Projection = fixture.Projection with { DraftedCandidateFingerprint = fingerprint };
@@ -366,8 +388,16 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
             canonical.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>())
                 .Returns(CanonicalSource ?? [Action with { CorpActId = Case.CorporateActionId }]);
             var factsStore = Substitute.For<ICorporateActionCashDividendAccountingStore>();
-            var factsJson = JsonSerializer.Serialize(new { schemaVersion = 1, method = "complete-scoped-cash-dividend-case-facts-v1",
-                caseId = CaseId, scope = Case.Scope, complete = true, options = Options, evidence = CaseEvidence }, Json);
+            var factsJson = JsonSerializer.Serialize(new
+            {
+                schemaVersion = 1,
+                method = "complete-scoped-cash-dividend-case-facts-v1",
+                caseId = CaseId,
+                scope = Case.Scope,
+                complete = true,
+                options = Options,
+                evidence = CaseEvidence
+            }, Json);
             factsStore.GetCashDividendCaseFactsAsync(CaseId, "tenant-a", "company-a", Case.Version, Arg.Any<CancellationToken>())
                 .Returns(new CorporateActionCashDividendCaseFactsDto(CaseId, Case.Version, Options, CaseEvidence,
                     factsJson, Sha256Digest.ComputeUtf8(factsJson)));
@@ -379,9 +409,20 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         private LedgerSecurityEntitlementInventorySnapshot Inventory(DateOnly date)
         {
             var held = date >= Action.ExDate ? RecordLots ?? Lots : Lots;
-            var json = JsonSerializer.Serialize(new { schemaVersion = 1, method = "complete-book-journal-effective-lot-inventory-v1",
-                complete = CompleteInventory, tenantId = "tenant-a", companyId = "company-a", securityId = SecurityId,
-                inspectedBookLotCount = held.Length, sourceBookLots = held, heldLots = held, book = Book, asOfDate = date }, Json);
+            var json = JsonSerializer.Serialize(new
+            {
+                schemaVersion = 1,
+                method = "complete-book-journal-effective-lot-inventory-v1",
+                complete = CompleteInventory,
+                tenantId = "tenant-a",
+                companyId = "company-a",
+                securityId = SecurityId,
+                inspectedBookLotCount = held.Length,
+                sourceBookLots = held,
+                heldLots = held,
+                book = Book,
+                asOfDate = date
+            }, Json);
             return new("tenant-a", "company-a", Book, SecurityId, date, held.Length, held, json, Sha256Digest.ComputeUtf8(json));
         }
 
@@ -407,41 +448,57 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
                 var acquiredAt = new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
                 var acquisitionEvidence = existing.Spine.RetainedEvidence[0] with
                 {
-                    EvidenceId = "acquisition:" + lotId.ToString("D"), SubjectType = "OpenLotAcquisition",
-                    SubjectId = lotId.ToString("D"), EffectiveDate = acquiredDate,
-                    ReviewedAtUtc = acquiredAt, RetainedAtUtc = acquiredAt
+                    EvidenceId = "acquisition:" + lotId.ToString("D"),
+                    SubjectType = "OpenLotAcquisition",
+                    SubjectId = lotId.ToString("D"),
+                    EffectiveDate = acquiredDate,
+                    ReviewedAtUtc = acquiredAt,
+                    RetainedAtUtc = acquiredAt
                 };
                 return new(lotId, LedgerBookId, new LedgerAccount("Securities", LedgerAccountType.Asset, "FIX", account),
                     account + "-lot", acquiredDate, units, units, 10m, "USD", acquiredAt, acquiredAt, Guid.NewGuid(), Version: 1,
                     SecurityId: SecurityId, BookPositionId: position, Acquisition: new(LotQuantityBasis.Units, "USD", "USD", 1m,
                         units * 10m, units * 10m, acquiredDate, null, [acquisitionEvidence]));
             }
-            var candidateResult = existing.Spine.DraftedCandidateResult! with { GeneratedPostingLines =
+            var candidateResult = existing.Spine.DraftedCandidateResult! with
+            {
+                GeneratedPostingLines =
             [new("l1", "assets:receivable-selected-by-native-rule", AccountingTemplateLineSideDto.Debit, "amount", 120.50m),
-             new("l2", "revenue:native-dividend-income", AccountingTemplateLineSideDto.Credit, "amount", 120.50m)] };
+             new("l2", "revenue:native-dividend-income", AccountingTemplateLineSideDto.Credit, "amount", 120.50m)]
+            };
             var sourceEvidence = existing.Spine.RetainedEvidence[0] with
             {
-                SourceSystem = "fixture-provider", SourceReference = "fixture-dividend", EvidenceUri = "provider://fixture-dividend/v1",
+                SourceSystem = "fixture-provider",
+                SourceReference = "fixture-dividend",
+                EvidenceUri = "provider://fixture-dividend/v1",
                 ContentHashSha256 = new string('f', 64)
             };
             var request = existing.Spine.DraftedCandidate! with { RetainedEvidence = [sourceEvidence], InstrumentSymbol = "FIX" };
             var requestFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(request);
             projection = projection with { DraftedCandidateFingerprint = requestFingerprint };
-            var spine = existing.Spine with { DraftedCandidateResult = candidateResult,
-                DraftedCandidate = request, DraftedCandidateFingerprint = requestFingerprint,
+            var spine = existing.Spine with
+            {
+                DraftedCandidateResult = candidateResult,
+                DraftedCandidate = request,
+                DraftedCandidateFingerprint = requestFingerprint,
                 DraftedCandidateResultFingerprint = AssetAccountingEventSpineValidator.CanonicalPayloadFingerprint(candidateResult),
                 ProjectedEffect = new(Guid.NewGuid(), "native-dividend", "1", date, 120.50m, 120.50m, "USD"),
-                RetainedEvidence = [sourceEvidence] };
+                RetainedEvidence = [sourceEvidence]
+            };
             var fixture = new EntitlementFixture
             {
-                Case = existing.Case, Projection = projection, Spine = spine, Book = book,
+                Case = existing.Case,
+                Projection = projection,
+                Spine = spine,
+                Book = book,
                 Lots = [Lot(spine.Scope.BookPositionId, 241m, "account-a"), Lot(otherPositionId, otherUnits, "account-b")],
                 Action = new(Guid.NewGuid(), SecurityId, CorporateActionEventTypes.Dividend, date, date.AddDays(14), .5m, "USD",
                     null, null, null, null, null, null, null, RecordDate: date, LifecycleState: CorporateActionLifecycleStates.Confirmed),
                 Provider = new("fixture-provider", "fixture-dividend", "1", DateTimeOffset.UnixEpoch, new string('f', 64),
                     "provider://fixture-dividend/v1", CorporateActionProviderReleaseStatusDto.AcceptanceEligible),
                 PositionSnapshot = new(SecurityId, [role], [Position(spine.Scope.BookPositionId, 241m, "account-a", 11),
-                    Position(otherPositionId, otherUnits, "account-b", 1)], [], []) { LedgerBookId = LedgerBookId, AsOfDate = date.AddDays(-1) },
+                    Position(otherPositionId, otherUnits, "account-b", 1)], [], [])
+                { LedgerBookId = LedgerBookId, AsOfDate = date.AddDays(-1) },
                 Workspace = new("fund-alpha", LedgerBookId, AccountingConfigurationStatusDto.Active, "v1", DateTimeOffset.UnixEpoch,
                     [], [new("receivable", "assets:receivable-selected-by-native-rule", "Existing asset", "Asset"),
                          new("income", "revenue:native-dividend-income", "Existing income", "Revenue")], [],

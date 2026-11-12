@@ -74,7 +74,8 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
     {
         var (fixture, native, _, service, eligibility) = await CashDividendFixtureAsync();
         var action = () => service.AttestCashDividendAsync(CashDividendRequest(fixture.Case, eligibility)
-            with { EvidenceReference = reference });
+            with
+        { EvidenceReference = reference });
         if (invalidRequest)
             await action.Should().ThrowAsync<CorporateActionValidationException>();
         else
@@ -163,9 +164,12 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         var action = new CorporateActionDto(Guid.NewGuid(), SecurityId, CorporateActionEventTypes.Dividend,
             new DateOnly(2026, 8, 14), new DateOnly(2026, 8, 14), 0.01m, "USD", null, null, null,
             null, null, null, null, RecordDate: new DateOnly(2026, 8, 14), LifecycleState: "Confirmed");
-        var processingCase = fixture.Case with { SourceSnapshot = new(action,
+        var processingCase = fixture.Case with
+        {
+            SourceSnapshot = new(action,
             new("fixture-provider", "dividend-20260814", "1", DateTimeOffset.UtcNow, new string('f', 64),
-                "provider://fixture/dividend/v1", CorporateActionProviderReleaseStatusDto.AcceptanceEligible), null) };
+                "provider://fixture/dividend/v1", CorporateActionProviderReleaseStatusDto.AcceptanceEligible), null)
+        };
         fixture.Store.GetCaseAsync(CaseId, "tenant-a", "company-a", Arg.Any<CancellationToken>()).Returns(processingCase);
         var projection = await fixture.Store.GetAccountingProjectionAsync(CaseId, "tenant-a", "company-a");
         const string snapshot = "{\"synthetic\":true,\"population\":\"full-book\"}";
@@ -185,9 +189,14 @@ public sealed partial class CorporateActionCaseAccountingServiceTests
         // Keep the fixture's existing identity/version, but return the source-complete case to C callers.
         var wrapped = new Fixture
         {
-            Store = fixture.Store, SpineStore = fixture.SpineStore, PostingService = fixture.PostingService,
-            LedgerBookService = fixture.LedgerBookService, Service = service, Case = processingCase,
-            Spine = fixture.Spine, DraftedCandidateFingerprint = fixture.DraftedCandidateFingerprint
+            Store = fixture.Store,
+            SpineStore = fixture.SpineStore,
+            PostingService = fixture.PostingService,
+            LedgerBookService = fixture.LedgerBookService,
+            Service = service,
+            Case = processingCase,
+            Spine = fixture.Spine,
+            DraftedCandidateFingerprint = fixture.DraftedCandidateFingerprint
         };
         return (wrapped, native, resolver, service, eligibility);
     }

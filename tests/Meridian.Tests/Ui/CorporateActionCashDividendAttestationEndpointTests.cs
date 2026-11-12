@@ -265,21 +265,31 @@ public sealed class CorporateActionCashDividendAttestationEndpointTests
 
     private static Dictionary<string, object?> AttestBody() => new()
     {
-        ["expectedVersion"] = 7, ["idempotencyKey"] = "synthetic-attest-v7", ["projectionId"] = ProjectionId,
-        ["expectedDeclarationRevision"] = 3, ["expectedEligibilityHash"] = new string('a', 64),
-        ["reason"] = "Inspected the complete synthetic book entitlement", ["evidenceReference"] = "cash-dividend-eligibility:" + new string('a', 64),
-        ["evidenceHash"] = new string('a', 64), ["confirmation"] = CorporateActionCashDividendAttestationPolicy.Confirmation
+        ["expectedVersion"] = 7,
+        ["idempotencyKey"] = "synthetic-attest-v7",
+        ["projectionId"] = ProjectionId,
+        ["expectedDeclarationRevision"] = 3,
+        ["expectedEligibilityHash"] = new string('a', 64),
+        ["reason"] = "Inspected the complete synthetic book entitlement",
+        ["evidenceReference"] = "cash-dividend-eligibility:" + new string('a', 64),
+        ["evidenceHash"] = new string('a', 64),
+        ["confirmation"] = CorporateActionCashDividendAttestationPolicy.Confirmation
     };
 
     private static Dictionary<string, object?> PostBody() => new()
     {
-        ["expectedVersion"] = 8, ["idempotencyKey"] = "synthetic-post-v8", ["projectionId"] = ProjectionId,
-        ["attestationId"] = AttestationId, ["reason"] = "Post the exact retained attested declaration"
+        ["expectedVersion"] = 8,
+        ["idempotencyKey"] = "synthetic-post-v8",
+        ["projectionId"] = ProjectionId,
+        ["attestationId"] = AttestationId,
+        ["reason"] = "Post the exact retained attested declaration"
     };
 
     private static Dictionary<string, object?> DeclarationBody() => new()
     {
-        ["commandId"] = Guid.NewGuid(), ["expectedRevision"] = 3, ["enabled"] = true,
+        ["commandId"] = Guid.NewGuid(),
+        ["expectedRevision"] = 3,
+        ["enabled"] = true,
         ["policyVersion"] = CorporateActionCashDividendAttestationPolicy.Version,
         ["policyHash"] = CorporateActionCashDividendAttestationPolicy.PolicyHash,
         ["reason"] = "Select this synthetic USD book and its existing receivable/income rule",

@@ -57,7 +57,8 @@ public sealed class SecurityEntitlementInventoryPostgresTests
         // The unidentified imported legacy row deliberately has no typed acquisition journal;
         // filtering it away by security would falsely certify the book population as complete.
         await store.SaveTaxLotAsync(Lot(book.LedgerBookId, Guid.Empty, "legacy-account", Guid.NewGuid())
-            with { SourceJournalEntryId = null, BookPositionId = Guid.Empty, Acquisition = null }, ct);
+            with
+        { SourceJournalEntryId = null, BookPositionId = Guid.Empty, Acquisition = null }, ct);
 
         var error = await Assert.ThrowsAsync<LedgerValidationException>(() => store.ReadSecurityEntitlementInventoryAsync(
             "tenant-alpha", "company-alpha", book.LedgerBookId, securityId, new DateOnly(2026, 5, 14), ct));

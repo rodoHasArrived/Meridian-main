@@ -101,17 +101,27 @@ public sealed class SinglePrincipalAttestationEndpointTests
             .StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
-    [Fact]
-    public async Task TrustedSessionScopeAndOriginCannotBeReplacedByBodyAssertions()
+    [Theory]
+    [InlineData(OperationsActionOriginDto.AutomationSuggestion)]
+    [InlineData(OperationsActionOriginDto.AssistantDraft)]
+    [InlineData(OperationsActionOriginDto.AutomationAssistant)]
+    public async Task TrustedSessionScopeAndOriginCannotBeReplacedByBodyAssertions(OperationsActionOriginDto declaredOrigin)
     {
         await using var fixture = await Fixture.CreateAsync();
         var intake = await fixture.IntakeAsync();
         var subject = await fixture.SubjectAsync(intake);
         (await fixture.Client.PostAsJsonAsync(Route + "/declaration",
-            Declaration() with { Origin = OperationsActionOriginDto.AssistantDraft })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            Declaration() with { Origin = declaredOrigin })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
         (await fixture.Client.PostAsJsonAsync(Route + "/declaration", Declaration())).EnsureSuccessStatusCode();
         (await fixture.Client.PostAsJsonAsync(Route + "/receipts",
-            Acknowledgment(subject) with { Origin = OperationsActionOriginDto.AssistantDraft })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+            Acknowledgment(subject) with { Origin = declaredOrigin })).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var accepted = await fixture.Client.PostAsJsonAsync(Route + "/receipts", Acknowledgment(subject));
+        accepted.EnsureSuccessStatusCode();
+        var receipt = (await accepted.Content.ReadFromJsonAsync<PreparerAttestationReceiptDto>(Json))!;
+        (await fixture.Client.PostAsJsonAsync(Route + "/revocations",
+            new RevokePreparerAttestationRequestDto(Guid.NewGuid(), receipt.ReceiptId, 1, "Correcting my assertion", declaredOrigin)))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await fixture.WorkspaceAsync()).State.Revocations.Should().BeEmpty();
         fixture.TenantId = "foreign-tenant";
         (await fixture.Client.GetAsync(Route + $"/subjects?vaultId={intake.VaultIdentity.VaultId}&documentId={intake.Document!.DocumentId}"))
             .StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -279,7 +289,10 @@ public sealed class SinglePrincipalAttestationEndpointTests
                 "external-provider", "source-a", "external-importer",
                 ExtractedFields: [new("amount", "100", "100", 1m, "Manual", EvidenceStatusDto.Ready, null, "account", "account-a")])
             {
-                Actor = "external-importer", TenantId = "tenant-a", Scope = "company-a", ExtractionStatus = EvidenceExtractionStatusDto.Extracted
+                Actor = "external-importer",
+                TenantId = "tenant-a",
+                Scope = "company-a",
+                ExtractionStatus = EvidenceExtractionStatusDto.Extracted
             });
 
         public async Task<SinglePrincipalAttestationSubjectSnapshotDto> SubjectAsync(EvidenceVaultIntakeResponseDto intake) =>

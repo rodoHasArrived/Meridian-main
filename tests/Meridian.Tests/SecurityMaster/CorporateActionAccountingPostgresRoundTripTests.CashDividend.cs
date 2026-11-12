@@ -19,8 +19,12 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
     {
         await using var fixture = await NativeDividendFixture.CreateAsync();
         var disabled = new PostgresCorporateActionOperationsStore(new SecurityMasterOptions
-        { ConnectionString = fixture.Options.ConnectionString, Schema = fixture.Options.Schema,
-            PreloadProjectionCache = false, EnableSinglePrincipalCashDividendAttestations = false });
+        {
+            ConnectionString = fixture.Options.ConnectionString,
+            Schema = fixture.Options.Schema,
+            PreloadProjectionCache = false,
+            EnableSinglePrincipalCashDividendAttestations = false
+        });
         var request = fixture.DeclarationRequest(0, true);
         (await Assert.ThrowsAsync<CorporateActionOperationException>(() => disabled.ChangeCashDividendDeclarationAsync(request)))
             .Code.Should().Be("cash_dividend_policy_disabled");
@@ -37,7 +41,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         await Assert.ThrowsAsync<CorporateActionValidationException>(() => fixture.Store.ChangeCashDividendDeclarationAsync(
             fixture.DeclarationRequest(1, true) with { LedgerBookId = Guid.NewGuid() }));
         var withdrawn = await fixture.Store.ChangeCashDividendDeclarationAsync(fixture.DeclarationRequest(1, false)
-            with { AccountRoleBinding = null, Authority = new(true) });
+            with
+        { AccountRoleBinding = null, Authority = new(true) });
         withdrawn.Declaration.AccountRoleBinding.Should().Be(fixture.Binding);
         (await fixture.Store.GetCashDividendDeclarationStateAsync(Tenant, Company)).History.Should().HaveCount(2);
         (await fixture.Store.GetCashDividendDeclarationAsync("another-tenant", Company)).Should().BeNull();
@@ -59,8 +64,12 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         replay.Replayed.Should().BeTrue();
         await fixture.Store.ChangeCashDividendDeclarationAsync(fixture.DeclarationRequest(1, false));
         var renewed = (await fixture.Store.ChangeCashDividendDeclarationAsync(fixture.DeclarationRequest(2, true))).Declaration;
-        var reaffirmRequest = candidate.Request with { ExpectedVersion = attested.Case.Version,
-            ExpectedDeclarationRevision = renewed.Revision, IdempotencyKey = "reaffirm" };
+        var reaffirmRequest = candidate.Request with
+        {
+            ExpectedVersion = attested.Case.Version,
+            ExpectedDeclarationRevision = renewed.Revision,
+            IdempotencyKey = "reaffirm"
+        };
         var reaffirm = await fixture.Store.AttestCashDividendAsync(reaffirmRequest,
             candidate.Receipt with { AttestationId = PreparerAttestationApprovalBoundary.NewReceiptId(), DeclarationRevision = renewed.Revision },
             Guid.NewGuid(), new string('b', 64));
@@ -92,7 +101,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
             await fixture.Store.AttestCashDividendAsync(seed.Request, seed.Receipt, Guid.NewGuid(), seed.Fingerprint);
         }
         var candidates = new List<NativeDividendCandidate>();
-        for (var i = 0; i < 2; i++) candidates.Add(await fixture.CandidateAsync(Guid.NewGuid(), 10_000m, 10_000m, declaration));
+        for (var i = 0; i < 2; i++)
+            candidates.Add(await fixture.CandidateAsync(Guid.NewGuid(), 10_000m, 10_000m, declaration));
         var results = await Task.WhenAll(candidates.Select(async candidate =>
         {
             try
@@ -130,9 +140,13 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         internal static async Task<NativeDividendFixture> CreateAsync()
         {
             var server = await PostgresTestServer.CreateAsync("MERIDIAN_LEDGER_CONNECTION_STRING");
-            var options = new SecurityMasterOptions { ConnectionString = server.ConnectionString,
-                Schema = server.CreateSchemaName("ca_attest"), PreloadProjectionCache = false,
-                EnableSinglePrincipalCashDividendAttestations = true };
+            var options = new SecurityMasterOptions
+            {
+                ConnectionString = server.ConnectionString,
+                Schema = server.CreateSchemaName("ca_attest"),
+                PreloadProjectionCache = false,
+                EnableSinglePrincipalCashDividendAttestations = true
+            };
             await SecurityMasterTestCapabilityFloor.InitializeAndActivateAsync(server, options);
             return new(server, options);
         }
@@ -145,7 +159,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         internal async Task<NativeDividendCandidate> CandidateAsync(Guid securityId, decimal gross, decimal whole,
             CashDividendAttestationDeclarationDto declaration)
         {
-            if (_securities.Add(securityId)) await CreateSecurityAsync(Options, securityId, default);
+            if (_securities.Add(securityId))
+                await CreateSecurityAsync(Options, securityId, default);
             var preparation = new CorporateActionOperationsService(Store);
             var scope = new CorporateActionCaseScopeDto(Tenant, Company, FundProfileId: Fund,
                 CustodyAccountId: Guid.NewGuid().ToString("D"),

@@ -167,7 +167,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
         command.Parameters.AddWithValue("tenant", tenantId);
         command.Parameters.AddWithValue("company", companyId);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var posting = ReadCashDividendPayload<CorporateActionCashDividendPostingDto>(reader.GetString(0), reader.GetString(1));
         var attestation = ReadCashDividendPayload<CorporateActionCashDividendAttestationDto>(reader.GetString(2), reader.GetString(3));
         var declaration = ReadCashDividendPayload<CashDividendAttestationDeclarationDto>(reader.GetString(4), reader.GetString(5));

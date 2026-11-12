@@ -59,8 +59,13 @@ public sealed partial class PostgresCorporateActionOperationsStore
             // No case State/Version/UpdatedAt: preparer-stage append does not change these facts.
             var json = JsonSerializer.Serialize(new
             {
-                SchemaVersion = 1, Method = "complete-scoped-cash-dividend-case-facts-v1", CaseId = caseId,
-                Scope = processingCase.Scope, Complete = true, Options = options, Evidence = evidence
+                SchemaVersion = 1,
+                Method = "complete-scoped-cash-dividend-case-facts-v1",
+                CaseId = caseId,
+                Scope = processingCase.Scope,
+                Complete = true,
+                Options = options,
+                Evidence = evidence
             }, JsonOptions);
             await transaction.CommitAsync(ct).ConfigureAwait(false);
             return new CorporateActionCashDividendCaseFactsDto(caseId, processingCase.Version, options, evidence,

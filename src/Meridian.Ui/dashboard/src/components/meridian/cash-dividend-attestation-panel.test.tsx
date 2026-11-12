@@ -48,6 +48,33 @@ describe("bounded native cash-dividend preparer attestation", () => {
     expect(api.postAttestedCashDividend).not.toHaveBeenCalled();
   });
 
+  it("requires fresh confirmation to reaffirm an active attestation under the renewed declaration", async () => {
+    const value = cashDividendWorkspace();
+    value.attestation = retainedCashDividendAttestation(value);
+    value.case = { ...value.case, state: "PreparerAttested", version: 6 };
+    value.preview!.case = value.case;
+    value.declaration!.revision = 4;
+    value.canPostAttestedAccounting = true;
+    vi.mocked(api.getCashDividendAttestationWorkspace).mockResolvedValue(value);
+    render(<CashDividendAttestationPanel caseId={cashDividendCaseId} scope={cashDividendScope} />);
+    await loaded();
+    const button = screen.getByRole("button", { name: "Attest this cash-dividend projection" });
+    expect(button).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Post attested cash-dividend journal" })).toBeDisabled();
+    expect(api.attestCashDividend).not.toHaveBeenCalled();
+    fireEvent.change(screen.getByLabelText("Cash-dividend attestation reason"), { target: { value: "Reaffirm the unchanged projection under the renewed declaration" } });
+    expect(button).toBeDisabled();
+    fireEvent.click(screen.getByRole("checkbox", { name: api.CASH_DIVIDEND_ATTESTATION_CONFIRMATION }));
+    fireEvent.click(button);
+    await waitFor(() => expect(api.attestCashDividend).toHaveBeenCalledOnce());
+    expect(api.attestCashDividend).toHaveBeenCalledWith(cashDividendCaseId, {
+      expectedVersion: 6, idempotencyKey: expect.any(String), projectionId: value.preview!.projection.projectionId,
+      expectedDeclarationRevision: 4, expectedEligibilityHash: value.preview!.eligibility.entitlementSnapshotHash,
+      reason: "Reaffirm the unchanged projection under the renewed declaration", evidenceReference: value.evidenceReference,
+      evidenceHash: value.evidenceHash, confirmation: value.confirmation });
+    expect(api.postAttestedCashDividend).not.toHaveBeenCalled();
+  });
+
   it.each(["policy-off", "no-c-grant", "no-preview", "foreign-preparer", "foreign-principal", "withdrawn", "missing-evidence", "unknown-policy"])("does not enable an attestation for %s", async condition => {
     const value = cashDividendWorkspace();
     if (condition === "policy-off") value.policyEnabled = false;
@@ -66,6 +93,26 @@ describe("bounded native cash-dividend preparer attestation", () => {
     if (button) expect(button).toBeDisabled();
     expect(api.attestCashDividend).not.toHaveBeenCalled();
     expect(api.postAttestedCashDividend).not.toHaveBeenCalled();
+  });
+
+  it.each(["policy-off", "no-c-grant", "withdrawn", "posted"])("keeps reaffirmation unavailable for %s", async condition => {
+    const value = cashDividendWorkspace();
+    value.attestation = retainedCashDividendAttestation(value);
+    value.case = { ...value.case, state: "PreparerAttested", version: 6 };
+    value.declaration!.revision = 4;
+    if (condition === "policy-off") value.policyEnabled = false;
+    if (condition === "no-c-grant") value.canAttestAccounting = false;
+    if (condition === "withdrawn") value.declaration!.enabled = false;
+    if (condition === "posted") value.posting = {
+      postingId: "posting-one", caseId: cashDividendCaseId, projectionId: value.attestation.projectionId,
+      attestationId: value.attestation.attestationId, journalEntryId: "journal-one", ledgerBookId: cashDividendScope.ledgerBookId,
+      periodId: cashDividendScope.periodId, accountingBasis: "US-GAAP", currency: "USD", totalDebits: 100, totalCredits: 100,
+      postingStatus: "Posted", postedBy: value.actor, postedAtUtc: "2026-11-12T12:10:00Z" };
+    vi.mocked(api.getCashDividendAttestationWorkspace).mockResolvedValue(value);
+    render(<CashDividendAttestationPanel caseId={cashDividendCaseId} scope={cashDividendScope} />);
+    await screen.findByRole("region", { name: "Retained cash-dividend attestation" });
+    expect(screen.getByRole("button", { name: "Attest this cash-dividend projection" })).toBeDisabled();
+    expect(api.attestCashDividend).not.toHaveBeenCalled();
   });
 
   it("keeps declaration administration separate from economic attestation grants", async () => {

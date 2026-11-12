@@ -49,6 +49,25 @@ public sealed class CashDividendPreparerPostingContractTests
     }
 
     [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void NativeAttestedAppendRejectsMissingOrEmptyLedgerBook(bool missing)
+    {
+        var write = BuildWrite();
+        Guid? bookId = missing ? null : Guid.Empty;
+        write = write with
+        {
+            LedgerBookId = bookId,
+            PostingCommand = write.PostingCommand! with { LedgerBookId = bookId }
+        };
+
+        var append = () => AccountingPostingCommandValidator.NormalizeAndValidate(write,
+            true, true, allowPreparerAttestation: true);
+
+        append.Should().Throw<LedgerValidationException>();
+    }
+
+    [Theory]
     [InlineData(false)]
     [InlineData(true)]
     public void OrdinaryNativeCommandCannotUpcastReservedPreparerReference(bool evidenceReference)
@@ -57,7 +76,8 @@ public sealed class CashDividendPreparerPostingContractTests
         var reserved = PreparerAttestationApprovalBoundary.ReceiptReference(PreparerAttestationApprovalBoundary.NewReceiptId());
         var command = write.PostingCommand! with
         {
-            CashDividendAttestation = null, ApprovalState = AccountingPostingApprovalStateDto.Approved,
+            CashDividendAttestation = null,
+            ApprovalState = AccountingPostingApprovalStateDto.Approved,
             ApprovalId = evidenceReference ? "ordinary-approval" : reserved,
             Evidence = evidenceReference ? [write.PostingCommand!.Evidence[0] with
                 { Kind = AccountingPostingEvidenceKindDto.Approval, Uri = reserved }] : write.PostingCommand!.Evidence
@@ -127,8 +147,10 @@ public sealed class CashDividendPreparerPostingContractTests
         {
             PostingCommand = write.PostingCommand! with
             {
-                Actor = "independent-reviewer", ApprovalState = AccountingPostingApprovalStateDto.Approved,
-                ApprovalId = "ordinary-review", CashDividendAttestation = null
+                Actor = "independent-reviewer",
+                ApprovalState = AccountingPostingApprovalStateDto.Approved,
+                ApprovalId = "ordinary-review",
+                CashDividendAttestation = null
             }
         };
         var result = AccountingPostingCommandValidator.NormalizeAndValidate(write, true, true);
@@ -158,8 +180,11 @@ public sealed class CashDividendPreparerPostingContractTests
             write.AccountingPolicyId, write.AccountingPolicyVersion, write.RuleId, write.RuleVersion, write.SourceEventId);
         var original = write.Entry.Metadata.PreparerAttestation!;
         var changedEntry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
-            write.Entry.Lines, write.Entry.Metadata with { PreparerAttestation = original with
-            { Receipt = original.Receipt with { AttestationId = Guid.NewGuid() } } });
+            write.Entry.Lines, write.Entry.Metadata with
+            {
+                PreparerAttestation = original with
+                { Receipt = original.Receipt with { AttestationId = Guid.NewGuid() } }
+            });
         RetainedPostingEquivalence.Matches(retained, write with { Entry = changedEntry }, out var difference).Should().BeFalse();
         difference.Should().Be("native preparer attestation");
     }
@@ -186,7 +211,9 @@ public sealed class CashDividendPreparerPostingContractTests
         spine.Stages[^1].Evidence.Should().OnlyContain(item => item.SubjectType == AssetAccountingEvidenceSubjects.Event);
         var draft = spine with
         {
-            SpineVersion = spine.SpineVersion - 1, Stages = spine.Stages.Take(3).ToArray(), PreparerAttestation = null
+            SpineVersion = spine.SpineVersion - 1,
+            Stages = spine.Stages.Take(3).ToArray(),
+            PreparerAttestation = null
         };
         var append = () => AssetAccountingEventProjectionRules.ValidateStreamContinuity(draft, spine);
         append.Should().NotThrow();
@@ -230,8 +257,12 @@ public sealed class CashDividendPreparerPostingContractTests
             "solo", BookId, PeriodId, At, "Synthetic regular dividend", AccountingBasisKindDto.Gaap,
             LedgerBookId: BookId, SourceEventId: EventId, TenantId: "tenant-a", CompanyId: "company-a")
         {
-            RetainedEvidence = evidence, BookContext = command.BookContext, BookPositionId = PositionId,
-            EconomicEvent = command.EconomicEvent, ProjectionLineage = command.ProjectionLineage, RulePackReference = command.RulePackReference
+            RetainedEvidence = evidence,
+            BookContext = command.BookContext,
+            BookPositionId = PositionId,
+            EconomicEvent = command.EconomicEvent,
+            ProjectionLineage = command.ProjectionLineage,
+            RulePackReference = command.RulePackReference
         };
         var lines = new GeneratedPostingLineDto[]
         {
@@ -283,7 +314,8 @@ public sealed class CashDividendPreparerPostingContractTests
             1, Date, At, "SyntheticProvider", "synthetic-source-event", SourceContentHash: sourceHash)
         { SecurityId = SecurityId, BookPositionId = PositionId };
         var lineage = new ProjectionLineageDto(Guid.NewGuid(), null, "regular-cash-dividend", "v1", "v1", "synthetic",
-            Date, At, "SyntheticProvider", "synthetic-source-event", economic) { BookPositionId = PositionId };
+            Date, At, "SyntheticProvider", "synthetic-source-event", economic)
+        { BookPositionId = PositionId };
         var dimensions = new LedgerLineDimensionSet(FundId: "fund-a", BookId: BookId.ToString("D"), InstrumentId: SecurityId)
         { PositionId = PositionId };
         var journalId = Guid.NewGuid();
@@ -304,10 +336,15 @@ public sealed class CashDividendPreparerPostingContractTests
             ApprovalState: AccountingPostingApprovalStateDto.PreparerAttested, OperatorRationale: "Synthetic preparer decision",
             Evidence: [evidence], LedgerBookId: BookId)
         {
-            Actor = "solo", CashDividendAttestation = binding, BookPositionId = PositionId, EconomicEvent = economic,
-            ProjectionLineage = lineage, RulePackReference = new("dividend-pack", "v1", "cash-dividend", "v1"),
+            Actor = "solo",
+            CashDividendAttestation = binding,
+            BookPositionId = PositionId,
+            EconomicEvent = economic,
+            ProjectionLineage = lineage,
+            RulePackReference = new("dividend-pack", "v1", "cash-dividend", "v1"),
             BookContext = new(BookId, "fund-a", Guid.NewGuid(), FundStructureNodeKindDto.Fund, "USD synthetic book", "USD",
-                AccountingBasisKindDto.Gaap, "policy-v1", "v1", PeriodId), Provenance = DataProvenance.Simulated
+                AccountingBasisKindDto.Gaap, "policy-v1", "v1", PeriodId),
+            Provenance = DataProvenance.Simulated
         };
         return new(entry, BookId, PeriodId, CommandId: command.CommandId, AccountingBasis: AccountingBasisKindDto.Gaap,
             AccountingPolicyId: "policy-v1", AccountingPolicyVersion: "v1", RuleId: "cash-dividend", RuleVersion: "v1",

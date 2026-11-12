@@ -123,12 +123,19 @@ public sealed class CorporateActionCashDividendReconciliationSupport(
             SchemaVersion = 1,
             Method = "retained-sided-statement-and-unchanged-canonical-entitlement-v1",
             Observation = "stable-double-read;queue-is-retained-as-observed;native-book-write-barrier-required-at-post",
-            scope.TenantId, scope.CompanyId, scope.FundProfileId, LedgerBookId = bookId, SecurityId = securityId,
-            EntitlementCutoff = cutoff, Accounts = accounts, CutoffInventoryHash = cutoffLots.SnapshotHash,
+            scope.TenantId,
+            scope.CompanyId,
+            scope.FundProfileId,
+            LedgerBookId = bookId,
+            SecurityId = securityId,
+            EntitlementCutoff = cutoff,
+            Accounts = accounts,
+            CutoffInventoryHash = cutoffLots.SnapshotHash,
             HeldLotIdentity = JsonSerializer.Deserialize<JsonElement>(held),
             StatementInventories = historicalLots.OrderBy(pair => pair.Key)
                 .Select(pair => new { AsOfDate = pair.Key, pair.Value.SnapshotHash }).ToArray(),
-            Queue = queue, Sources = support
+            Queue = queue,
+            Sources = support
         }, Json);
     }
 
@@ -162,7 +169,8 @@ public sealed class CorporateActionCashDividendReconciliationSupport(
             throw Refuse("The exact authorized source, complete sided comparison and completed recovery hashes are not established.");
 
         var internalBook = await populations!.GetPopulationsAsync(new(import.FundAccountId, import.ExternalAccountId,
-            import.StatementPeriodStart, import.StatementPeriodEnd, "USD") { AccountingScope = accounting }, ct).ConfigureAwait(false);
+            import.StatementPeriodStart, import.StatementPeriodEnd, "USD")
+        { AccountingScope = accounting }, ct).ConfigureAwait(false);
         var positions = internalBook.Positions;
         if (positions.Count == 0 || positions.Any(position => string.IsNullOrWhiteSpace(position.EvidenceReference))
             || positions.Select(position => position.EvidenceReference).Distinct(StringComparer.Ordinal).Count() != positions.Count)
@@ -202,7 +210,7 @@ public sealed class CorporateActionCashDividendReconciliationSupport(
             throw Refuse("The retained sided groups do not cover each exact security source/internal member once with equal quantities.");
 
         var vaults = await evidenceVault!.FindByLinkageAsync(new(null, run.RunId, null, null, null)
-            { TenantId = scope.TenantId, Scope = scope.CompanyId }, ct).ConfigureAwait(false);
+        { TenantId = scope.TenantId, Scope = scope.CompanyId }, ct).ConfigureAwait(false);
         var retained = new List<object>();
         foreach (var vault in vaults.OrderBy(vault => vault.VaultId, StringComparer.Ordinal))
         {
@@ -211,27 +219,43 @@ public sealed class CorporateActionCashDividendReconciliationSupport(
                 continue;
             if (!await evidenceVault!.VerifyRetainedContentAsync(vault.VaultId, scope.TenantId, scope.CompanyId, ct).ConfigureAwait(false))
                 throw Refuse("The source statement's retained Evidence Vault bytes failed verification.");
-            retained.Add(new { vault.VaultId, vault.ManifestRoute, vault.ContentHashSha256,
+            retained.Add(new
+            {
+                vault.VaultId,
+                vault.ManifestRoute,
+                vault.ContentHashSha256,
                 Artifacts = vault.Artifacts.Where(item => Sha256Digest.FixedEquals(item.ContentHashSha256, import.SourceFileHash))
-                    .OrderBy(item => item.ArtifactId, StringComparer.Ordinal).ToArray() });
+                    .OrderBy(item => item.ArtifactId, StringComparer.Ordinal).ToArray()
+            });
         }
         if (retained.Count == 0)
             throw Refuse("The source statement bytes are not retained in this owner scope with the exact source-file digest.");
         return new
         {
-            Authority = authority, CanonicalImportHash = StatementDurabilityHashing.Hash(canonical),
-            MatchArtifactHash = StatementDurabilityHashing.Hash(artifact), Recovery = checkpoint,
-            import.SourceFileHash, Rows = targetRows, InternalPositions = targetPositions.OrderBy(position => position.EvidenceReference, StringComparer.Ordinal).ToArray(),
-            MatchGroups = groups, RecordedIdentities = resolved.OrderBy(pair => pair.Key, StringComparer.Ordinal)
-                .Select(pair => new { Input = pair.Key, pair.Value.SecurityId, pair.Value.Version,
-                    RecordedDefinitionHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(pair.Value, Json)) }).ToArray(),
+            Authority = authority,
+            CanonicalImportHash = StatementDurabilityHashing.Hash(canonical),
+            MatchArtifactHash = StatementDurabilityHashing.Hash(artifact),
+            Recovery = checkpoint,
+            import.SourceFileHash,
+            Rows = targetRows,
+            InternalPositions = targetPositions.OrderBy(position => position.EvidenceReference, StringComparer.Ordinal).ToArray(),
+            MatchGroups = groups,
+            RecordedIdentities = resolved.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                .Select(pair => new
+                {
+                    Input = pair.Key,
+                    pair.Value.SecurityId,
+                    pair.Value.Version,
+                    RecordedDefinitionHash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(pair.Value, Json))
+                }).ToArray(),
             SourceBytes = retained
         };
     }
 
     private async Task<SecurityDetailDto> ResolveIdentityAsync(string input, DateTimeOffset recordedAt, DateOnly effectiveDate, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(input)) throw Refuse("A source/internal position has no authoritative instrument identifier.");
+        if (string.IsNullOrWhiteSpace(input))
+            throw Refuse("A source/internal position has no authoritative instrument identifier.");
         var effectiveAt = new DateTimeOffset(effectiveDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
         var result = Guid.TryParse(input, out var id)
             ? await securities!.GetRecordedByIdAsOfAsync(id, recordedAt, ct).ConfigureAwait(false)
@@ -258,9 +282,18 @@ public sealed class CorporateActionCashDividendReconciliationSupport(
 
     private static string HeldIdentity(LedgerSecurityEntitlementInventorySnapshot value)
         => JsonSerializer.Serialize(value.HeldLots.OrderBy(lot => lot.TaxLotRecordId)
-            .Select(lot => new { lot.TaxLotRecordId, lot.BookPositionId, lot.SecurityId, lot.LedgerBookId,
-                FinancialAccountId = Guid.Parse(lot.Account.FinancialAccountId!), lot.Account.Name,
-                lot.Account.AccountType, lot.LotId, lot.OpenQuantity }).ToArray(), Json);
+            .Select(lot => new
+            {
+                lot.TaxLotRecordId,
+                lot.BookPositionId,
+                lot.SecurityId,
+                lot.LedgerBookId,
+                FinancialAccountId = Guid.Parse(lot.Account.FinancialAccountId!),
+                lot.Account.Name,
+                lot.Account.AccountType,
+                lot.LotId,
+                lot.OpenQuantity
+            }).ToArray(), Json);
 
     private static bool SameReferences(IEnumerable<string> actual, IEnumerable<string> expected)
         => actual.Order(StringComparer.Ordinal).SequenceEqual(expected.Order(StringComparer.Ordinal), StringComparer.Ordinal);

@@ -40,13 +40,15 @@ public sealed partial class AccountingPostingCandidatePostService
         var candidate = request.Candidate;
         var actor = RequireText(request.Actor, nameof(request.Actor));
         var reason = RequireText(request.Reason, nameof(request.Reason));
-        var bookId = candidate.LedgerBookId ?? Guid.Empty;
+        var bookId = candidate.LedgerBookId
+            ?? throw new InvalidOperationException("The native preparer receipt does not authorize this exact regular USD cash-dividend candidate.");
         var eventId = candidate.SourceEventId ?? Guid.Empty;
         var receipt = lease.Attestation;
         var projection = lease.Projection;
         var roleBinding = receipt.AccountRoleBinding
             ?? throw new InvalidOperationException("The native dividend receipt requires an explicit book-owned account-role binding.");
-        if (candidate.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction)
+        if (bookId == Guid.Empty
+            || candidate.SourceEventType != AssetAccountingEventTypeNames.For(AssetAccountingEventKindDto.CorporateAction)
             || candidate.Currency != CorporateActionCashDividendAttestationPolicy.Currency
             || candidate.AssetLotMutation is not null || candidate.EconomicEvent is null
             || candidate.SourceJournalEntryId is not null || candidate.PostingKind != LedgerPostingKindDto.Originating

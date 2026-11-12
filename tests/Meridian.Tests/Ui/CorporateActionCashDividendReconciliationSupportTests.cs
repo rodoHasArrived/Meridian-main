@@ -65,25 +65,64 @@ public sealed class CorporateActionCashDividendReconciliationSupportTests
         var fixture = new Fixture();
         switch (mutation)
         {
-            case "checkpoint-hash": fixture.Checkpoint = fixture.Checkpoint with { MatchArtifact = new(new string('f', 64), 1) }; break;
-            case "checkpoint-running": fixture.Checkpoint = fixture.Checkpoint with { Status = StatementRunRecoveryStatus.Running }; break;
-            case "legacy-groups": fixture.Artifact = fixture.Artifact with { MatchGroups = null }; fixture.Rehash(); break;
-            case "incomplete-population": fixture.Artifact = fixture.Artifact with { SourceComparisonComplete = false }; fixture.Rehash(); break;
-            case "wrong-mapping": fixture.Artifact = fixture.Artifact with { SourceComparisonMappingFingerprint = new string('b', 64) }; fixture.Rehash(); break;
-            case "unmatched-source": fixture.Artifact = fixture.Artifact with { MatchGroups = [], MatchCount = 0 }; fixture.Rehash(); break;
-            case "duplicate-source-member": fixture.Artifact = fixture.Artifact with
-                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { StatementEvidenceReferences = ["run-source:1", "run-source:1"] }] }; fixture.Rehash(); break;
-            case "wrong-internal-member": fixture.Artifact = fixture.Artifact with
-                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { InternalEvidenceReferences = ["unbound-position"] }] }; fixture.Rehash(); break;
-            case "quantity-tolerance": fixture.Artifact = fixture.Artifact with
-                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { QuantityVariance = 0.01m }] }; fixture.Rehash(); break;
-            case "unretained-source-bytes": fixture.Vault.VerifyRetainedContentAsync("vault-source", "tenant-a", "company-a", Arg.Any<CancellationToken>()).Returns(false); break;
-            case "missing-account-authority": fixture.Api.GetAuthorizedFundAccountAsync(Fixture.AccountId, Arg.Any<ReconciliationBreakQueueScope>(), Arg.Any<CancellationToken>()).Returns((ReconciliationFundAccountAuthorization?)null); break;
-            case "unknown-security": fixture.Security.GetRecordedByIdentifierAsOfAsync(Arg.Any<SecurityIdentifierKind>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null); break;
-            case "wrong-security": fixture.Security.GetRecordedByIdentifierAsOfAsync(Arg.Any<SecurityIdentifierKind>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns(Fixture.SecurityDetail(Guid.NewGuid())); break;
-            case "changed-lot-identity": fixture.PastLot = fixture.PastLot with { TaxLotRecordId = Guid.NewGuid() }; break;
-            case "missing-book-account": fixture.Accounts = [new(Fixture.AccountId.ToString("D"), 9m)]; break;
-            case "open-book-break": fixture.QueueItems = [fixture.Break(1)]; break;
+            case "checkpoint-hash":
+                fixture.Checkpoint = fixture.Checkpoint with { MatchArtifact = new(new string('f', 64), 1) };
+                break;
+            case "checkpoint-running":
+                fixture.Checkpoint = fixture.Checkpoint with { Status = StatementRunRecoveryStatus.Running };
+                break;
+            case "legacy-groups":
+                fixture.Artifact = fixture.Artifact with { MatchGroups = null };
+                fixture.Rehash();
+                break;
+            case "incomplete-population":
+                fixture.Artifact = fixture.Artifact with { SourceComparisonComplete = false };
+                fixture.Rehash();
+                break;
+            case "wrong-mapping":
+                fixture.Artifact = fixture.Artifact with { SourceComparisonMappingFingerprint = new string('b', 64) };
+                fixture.Rehash();
+                break;
+            case "unmatched-source":
+                fixture.Artifact = fixture.Artifact with { MatchGroups = [], MatchCount = 0 };
+                fixture.Rehash();
+                break;
+            case "duplicate-source-member":
+                fixture.Artifact = fixture.Artifact with
+                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { StatementEvidenceReferences = ["run-source:1", "run-source:1"] }] };
+                fixture.Rehash();
+                break;
+            case "wrong-internal-member":
+                fixture.Artifact = fixture.Artifact with
+                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { InternalEvidenceReferences = ["unbound-position"] }] };
+                fixture.Rehash();
+                break;
+            case "quantity-tolerance":
+                fixture.Artifact = fixture.Artifact with
+                { MatchGroups = [fixture.Artifact.MatchGroups![0] with { QuantityVariance = 0.01m }] };
+                fixture.Rehash();
+                break;
+            case "unretained-source-bytes":
+                fixture.Vault.VerifyRetainedContentAsync("vault-source", "tenant-a", "company-a", Arg.Any<CancellationToken>()).Returns(false);
+                break;
+            case "missing-account-authority":
+                fixture.Api.GetAuthorizedFundAccountAsync(Fixture.AccountId, Arg.Any<ReconciliationBreakQueueScope>(), Arg.Any<CancellationToken>()).Returns((ReconciliationFundAccountAuthorization?)null);
+                break;
+            case "unknown-security":
+                fixture.Security.GetRecordedByIdentifierAsOfAsync(Arg.Any<SecurityIdentifierKind>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns((SecurityDetailDto?)null);
+                break;
+            case "wrong-security":
+                fixture.Security.GetRecordedByIdentifierAsOfAsync(Arg.Any<SecurityIdentifierKind>(), Arg.Any<string>(), Arg.Any<string?>(), Arg.Any<DateTimeOffset>(), Arg.Any<DateTimeOffset?>(), Arg.Any<CancellationToken>()).Returns(Fixture.SecurityDetail(Guid.NewGuid()));
+                break;
+            case "changed-lot-identity":
+                fixture.PastLot = fixture.PastLot with { TaxLotRecordId = Guid.NewGuid() };
+                break;
+            case "missing-book-account":
+                fixture.Accounts = [new(Fixture.AccountId.ToString("D"), 9m)];
+                break;
+            case "open-book-break":
+                fixture.QueueItems = [fixture.Break(1)];
+                break;
             case "drifting-queue":
                 fixture.Queue.GetAllAsync(Arg.Any<ReconciliationBreakQueueScope>(), null, Arg.Any<CancellationToken>())
                     .Returns(Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>([]), Task.FromResult<IReadOnlyList<ReconciliationBreakQueueItem>>([fixture.Break(2) with { Status = ReconciliationBreakQueueStatus.Resolved }]));
@@ -126,13 +165,19 @@ public sealed class CorporateActionCashDividendReconciliationSupportTests
             var accounting = new StatementAccountingScope("fund-a", BookId, PeriodId, AsOf);
             Import = new(new("run-source", "synthetic-custodian", AsOf, At, "retained-source", hash, 1, 1)
             {
-                FundAccountId = AccountId.ToString("D"), ExternalAccountId = "custody-a", AccountingScope = accounting,
-                StatementPeriodStart = new(2026, 10, 1), StatementPeriodEnd = AsOf, ExecutedMappingFingerprint = mapping
+                FundAccountId = AccountId.ToString("D"),
+                ExternalAccountId = "custody-a",
+                AccountingScope = accounting,
+                StatementPeriodStart = new(2026, 10, 1),
+                StatementPeriodEnd = AsOf,
+                ExecutedMappingFingerprint = mapping
             }, [new("run-source", 1, "custody-a", "XYZ", 10m, 20m, 0m, "position", AsOf, Sha256Digest.ComputeUtf8("source-row-sha"))]);
             Artifact = new("run-source", "run-source", [], [], 1)
             {
-                SourceComparisonComplete = true, SourceComparisonMappingFingerprint = mapping,
-                SourceComparisonPolicyFingerprint = Sha256Digest.ComputeUtf8("executed-policy"), SourceComparisonPopulationKinds = ["position"],
+                SourceComparisonComplete = true,
+                SourceComparisonMappingFingerprint = mapping,
+                SourceComparisonPolicyFingerprint = Sha256Digest.ComputeUtf8("executed-policy"),
+                SourceComparisonPopulationKinds = ["position"],
                 MatchGroups = [new("group-1", "Position", "Exact", ["quantity"], ["run-source:1"], ["native-position-evidence"], 1m) { QuantityVariance = 0m }]
             };
             Checkpoint = new(1, "run-source", "run-source", hash, hash, StatementRunRecoveryStage.Completed,

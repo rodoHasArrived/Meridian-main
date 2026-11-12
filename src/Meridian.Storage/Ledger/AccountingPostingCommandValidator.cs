@@ -70,8 +70,10 @@ public static class AccountingPostingCommandValidator
                 || command.Evidence.Any(item => item.Kind == AccountingPostingEvidenceKindDto.Approval)
                 || command.EconomicEvent is null)
                 throw new LedgerValidationException("Preparer-attested cash dividends require the native lease boundary without ordinary approval, correction or lot authority.");
+            var attestedBookId = command.LedgerBookId ?? write.LedgerBookId
+                ?? throw new LedgerValidationException("Accounting posting command ledger book id is required.");
             var bindingIssues = AssetAccountingPreparerAttestationDto.Validate(binding,
-                command.LedgerBookId ?? write.LedgerBookId ?? Guid.Empty, command.PeriodId,
+                attestedBookId, command.PeriodId,
                 command.EconomicEvent.EventId, command.EconomicEvent.EventVersion,
                 binding.TenantId, binding.CompanyId, command.Actor,
                 command.BookContext?.BaseCurrency ?? string.Empty, write.Entry.Lines.Sum(line => line.Debit));

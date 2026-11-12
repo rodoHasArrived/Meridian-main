@@ -197,7 +197,7 @@ public sealed class CashDividendAttestationViewModel : BindableBase, IDisposable
         && workspace.Preview is { } preview && preview.Case.CaseId == workspace.Case.CaseId && preview.Case.Version == workspace.Case.Version
         && workspace.Declaration is { Enabled: true } declaration && declaration.LedgerBookId == BookId
         && declaration.PolicyVersion == workspace.PolicyVersion && declaration.PolicyHash == workspace.PolicyHash
-        && SameActor(declaration.PrincipalId, workspace.Actor) && workspace.Attestation is not { IsActive: true }
+        && SameActor(declaration.PrincipalId, workspace.Actor) && workspace.Posting is null
         && !string.IsNullOrWhiteSpace(workspace.EvidenceReference) && !string.IsNullOrWhiteSpace(workspace.EvidenceHash)
         && workspace.Blockers is { Count: 0 } && IsConfirmed && HasReason(Reason);
     private bool CanPost() => Available && KnownPolicy && _workspace is { PolicyEnabled: true, CanPostAttestedAccounting: true, Posting: null } workspace

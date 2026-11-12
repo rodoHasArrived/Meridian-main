@@ -40,19 +40,28 @@ internal static class AccountingPreparerAttestationTestData
             scope.TenantId, scope.CompanyId, eventId, 2, new string('b', 64), new string('c', 64));
         var tags = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["approvalState"] = "PreparerAttested", ["decisionKind"] = receipt.DecisionKind,
+            ["approvalState"] = "PreparerAttested",
+            ["decisionKind"] = receipt.DecisionKind,
             ["attestationReceiptRef"] = PreparerAttestationApprovalBoundary.ReceiptReference(receipt.AttestationId),
-            ["attestationId"] = receipt.AttestationId.ToString("D"), ["attestedBy"] = receipt.AttestedBy,
+            ["attestationId"] = receipt.AttestationId.ToString("D"),
+            ["attestedBy"] = receipt.AttestedBy,
             ["declarationId"] = receipt.DeclarationId.ToString("D"),
             ["declarationRevision"] = receipt.DeclarationRevision.ToString(CultureInfo.InvariantCulture),
-            ["policyVersion"] = receipt.PolicyVersion, ["policyHash"] = receipt.PolicyHash,
-            ["postingCommandId"] = commandId.ToString("D"), ["postingCommandFingerprint"] = "sha256:" + new string('d', 64),
-            ["postingActor"] = receipt.AttestedBy, ["postingActorAttribution"] = "command-v1",
-            ["sourceEventId"] = eventId.ToString("D"), ["sourceEventType"] = "AssetAccounting.CorporateAction",
-            ["sourceEventVersion"] = "2", ["assetAccountingDraftFingerprint"] = binding.DraftedCandidateFingerprint,
+            ["policyVersion"] = receipt.PolicyVersion,
+            ["policyHash"] = receipt.PolicyHash,
+            ["postingCommandId"] = commandId.ToString("D"),
+            ["postingCommandFingerprint"] = "sha256:" + new string('d', 64),
+            ["postingActor"] = receipt.AttestedBy,
+            ["postingActorAttribution"] = "command-v1",
+            ["sourceEventId"] = eventId.ToString("D"),
+            ["sourceEventType"] = "AssetAccounting.CorporateAction",
+            ["sourceEventVersion"] = "2",
+            ["assetAccountingDraftFingerprint"] = binding.DraftedCandidateFingerprint,
             ["assetAccountingDraftResultFingerprint"] = new string('e', 64),
-            ["rulePackId"] = roles.RulePackId, ["rulePackVersion"] = roles.RulePackVersion,
-            ["selectedRuleId"] = roles.SelectedRuleId, ["selectedRuleVersion"] = roles.SelectedRuleVersion
+            ["rulePackId"] = roles.RulePackId,
+            ["rulePackVersion"] = roles.RulePackVersion,
+            ["selectedRuleId"] = roles.SelectedRuleId,
+            ["selectedRuleVersion"] = roles.SelectedRuleVersion
         };
         var lines = record.Entry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId,
             line.Timestamp, new LedgerAccount(line.Debit > 0m ? debitName : creditName,
@@ -62,14 +71,26 @@ internal static class AccountingPreparerAttestationTestData
         var entry = new JournalEntry(record.Entry.JournalEntryId, record.Entry.Timestamp, record.Entry.Description,
             lines, record.Entry.Metadata with
             {
-                LedgerBook = scope.LedgerBookId.ToString("D"), EffectiveDate = exDate,
-                Tags = tags, PreparerAttestation = binding
+                LedgerBook = scope.LedgerBookId.ToString("D"),
+                EffectiveDate = exDate,
+                Tags = tags,
+                PreparerAttestation = binding
             });
-        return record with { Entry = entry, AggregateId = scope.LedgerBookId, CommandId = commandId,
-            SourceEventId = eventId, RuleId = roles.SelectedRuleId, RuleVersion = roles.SelectedRuleVersion };
+        return record with
+        {
+            Entry = entry,
+            AggregateId = scope.LedgerBookId,
+            CommandId = commandId,
+            SourceEventId = eventId,
+            RuleId = roles.SelectedRuleId,
+            RuleVersion = roles.SelectedRuleVersion
+        };
     }
 
     public static LedgerJournalEntryRecord WithMetadata(LedgerJournalEntryRecord record, JournalEntryMetadata metadata)
-        => record with { Entry = new JournalEntry(record.Entry.JournalEntryId, record.Entry.Timestamp,
-            record.Entry.Description, record.Entry.Lines, metadata) };
+        => record with
+        {
+            Entry = new JournalEntry(record.Entry.JournalEntryId, record.Entry.Timestamp,
+            record.Entry.Description, record.Entry.Lines, metadata)
+        };
 }

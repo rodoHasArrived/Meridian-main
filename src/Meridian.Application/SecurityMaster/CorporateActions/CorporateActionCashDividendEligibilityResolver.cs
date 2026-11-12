@@ -154,7 +154,8 @@ public sealed class CorporateActionCashDividendEligibilityResolver(
         var groups = before.HeldLots.GroupBy(lot => new { lot.BookPositionId, lot.Account.FinancialAccountId })
             .Select(group => new
             {
-                group.Key.BookPositionId, group.Key.FinancialAccountId,
+                group.Key.BookPositionId,
+                group.Key.FinancialAccountId,
                 Units = group.Sum(lot => lot.OpenQuantity),
                 ExactGross = checked(perShare * group.Sum(lot => lot.OpenQuantity)),
                 RoundedGross = LedgerCurrencyRounding.RoundCurrency(checked(perShare * group.Sum(lot => lot.OpenQuantity)), "USD")
@@ -204,19 +205,32 @@ public sealed class CorporateActionCashDividendEligibilityResolver(
             Source = source,
             CurrentCanonicalSource = canonicalActions[0],
             CurrentRelatedActions = relatedActions,
-            processingCase.ProposalId, processingCase.CorporateActionId,
-            ProcessingCaseFactsHash = facts.SnapshotHash, ProcessingCaseFactsJson = facts.SnapshotJson,
+            processingCase.ProposalId,
+            processingCase.CorporateActionId,
+            ProcessingCaseFactsHash = facts.SnapshotHash,
+            ProcessingCaseFactsJson = facts.SnapshotJson,
             Scope = processingCase.Scope,
-            projection.CaseId, projection.ProjectionId, projection.AccountingEventId,
-            projection.AccountingEventVersion, projection.ProjectionInputHash, projection.PostingIntentHash,
-            projection.DraftedCandidateFingerprint, projection.PolicyDecisionId, projection.PolicyDecisionVersion,
-            projection.RulePackId, projection.RulePackVersion, projection.SelectedRuleId, projection.SelectedRuleVersion,
-            projection.LotSnapshotId, projection.LotSnapshotVersion,
+            projection.CaseId,
+            projection.ProjectionId,
+            projection.AccountingEventId,
+            projection.AccountingEventVersion,
+            projection.ProjectionInputHash,
+            projection.PostingIntentHash,
+            projection.DraftedCandidateFingerprint,
+            projection.PolicyDecisionId,
+            projection.PolicyDecisionVersion,
+            projection.RulePackId,
+            projection.RulePackVersion,
+            projection.SelectedRuleId,
+            projection.SelectedRuleVersion,
+            projection.LotSnapshotId,
+            projection.LotSnapshotVersion,
             GovernedRuleBinding = ruleBinding,
             AccountRoleBinding = accountRoles,
             CanonicalInstrumentSymbol = canonicalSymbol,
             Security = security,
-            EntitlementCutoff = cutoff, RecordOrExCutoff = recordCutoff,
+            EntitlementCutoff = cutoff,
+            RecordOrExCutoff = recordCutoff,
             EntitlementRule = "canonical lots held before ex date; unchanged quantities through record/ex date; no settlement/due-bill inference",
             Completeness = "Complete retained canonical ledger-book population with current retained external reconciliation support for every held account",
             ExternalReconciliationEvidenceHash = reconciliationEvidence!.EvidenceHash,
@@ -280,8 +294,11 @@ public sealed class CorporateActionCashDividendEligibilityResolver(
                 && lot.BookPositionId != Guid.Empty && lot.AcquiredDate <= date && lot.OpenQuantity > 0m
                 && lot.Currency == "USD" && !string.IsNullOrWhiteSpace(lot.Account.FinancialAccountId)
                 && Same(lot.Account.Symbol, canonicalSymbol)
-                && lot.Acquisition is { QuantityBasis: LotQuantityBasis.Units, Direction: OpenLotDirection.Long,
-                    AcquisitionCurrency: "USD", FunctionalCurrency: "USD", AcquisitionFxRateToFunctional: 1m }
+                && lot.Acquisition is
+                {
+                    QuantityBasis: LotQuantityBasis.Units, Direction: OpenLotDirection.Long,
+                    AcquisitionCurrency: "USD", FunctionalCurrency: "USD", AcquisitionFxRateToFunctional: 1m
+                }
                 && lot.Acquisition.Evidence is { Count: > 0 } && lot.Acquisition.Evidence.All(RetainedEvidenceIdentityValidator.IsComplete),
                 "Every related holding needs identified USD unit-lot long-holder acquisition evidence; short netting, missing scope and FX are excluded.");
             try

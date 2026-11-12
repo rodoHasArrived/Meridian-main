@@ -182,12 +182,23 @@ public sealed partial class PostgresCorporateActionOperationsStore
     {
         var economicFingerprint = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
         {
-            processingCase.CaseId, projection.AccountingEventId, projection.AccountingEventVersion,
-            projection.ProjectionInputHash, projection.PostingIntentHash, projection.PostingIdempotencyKey,
-            projection.DraftedCandidateFingerprint, projection.LedgerBookId, projection.PeriodId,
-            projection.Currency, projection.EffectiveDate, attestation.RelatedEventKey,
-            attestation.GrossImpactUsd, attestation.WholeEventGrossUsd, attestation.BudgetMonth,
-            attestation.SourceEvidenceHash, attestation.EntitlementSnapshotHash
+            processingCase.CaseId,
+            projection.AccountingEventId,
+            projection.AccountingEventVersion,
+            projection.ProjectionInputHash,
+            projection.PostingIntentHash,
+            projection.PostingIdempotencyKey,
+            projection.DraftedCandidateFingerprint,
+            projection.LedgerBookId,
+            projection.PeriodId,
+            projection.Currency,
+            projection.EffectiveDate,
+            attestation.RelatedEventKey,
+            attestation.GrossImpactUsd,
+            attestation.WholeEventGrossUsd,
+            attestation.BudgetMonth,
+            attestation.SourceEvidenceHash,
+            attestation.EntitlementSnapshotHash
         }, JsonOptions));
         await using (var existing = connection.CreateCommand())
         {
@@ -278,9 +289,11 @@ public sealed partial class PostgresCorporateActionOperationsStore
         command.Parameters.AddWithValue("tenant", tenantId);
         command.Parameters.AddWithValue("company", companyId);
         await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-        if (!await reader.ReadAsync(ct).ConfigureAwait(false)) return null;
+        if (!await reader.ReadAsync(ct).ConfigureAwait(false))
+            return null;
         var receipt = ReadCashDividendPayload<CorporateActionCashDividendAttestationDto>(reader.GetString(0), reader.GetString(1));
-        if (receipt.CaseId != caseId) throw CashDividendUnavailable("The economic attestation failed its case binding.");
+        if (receipt.CaseId != caseId)
+            throw CashDividendUnavailable("The economic attestation failed its case binding.");
         return receipt with { VoidedAtUtc = reader.IsDBNull(2) ? null : ReadTimestamp(reader, 2), VoidedBy = reader.IsDBNull(3) ? null : reader.GetString(3) };
     }
 

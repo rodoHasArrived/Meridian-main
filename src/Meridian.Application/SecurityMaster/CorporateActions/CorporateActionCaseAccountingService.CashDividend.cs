@@ -254,20 +254,28 @@ public sealed partial class CorporateActionCaseAccountingService
 
     private static AttestCorporateActionCashDividendRequestDto NormalizeCashDividendAttestation(
         AttestCorporateActionCashDividendRequestDto request) => request with
-    {
-        TenantId = request.TenantId.Trim(), CompanyId = request.CompanyId.Trim(), Actor = request.Actor.Trim(),
-        IdempotencyKey = request.IdempotencyKey.Trim(), Reason = request.Reason.Trim(),
-        ExpectedEligibilityHash = request.ExpectedEligibilityHash.Trim().ToLowerInvariant(),
-        EvidenceHash = request.EvidenceHash.Trim().ToLowerInvariant(), EvidenceReference = request.EvidenceReference.Trim(),
-        CorrelationId = request.CorrelationId?.Trim()
-    };
+        {
+            TenantId = request.TenantId.Trim(),
+            CompanyId = request.CompanyId.Trim(),
+            Actor = request.Actor.Trim(),
+            IdempotencyKey = request.IdempotencyKey.Trim(),
+            Reason = request.Reason.Trim(),
+            ExpectedEligibilityHash = request.ExpectedEligibilityHash.Trim().ToLowerInvariant(),
+            EvidenceHash = request.EvidenceHash.Trim().ToLowerInvariant(),
+            EvidenceReference = request.EvidenceReference.Trim(),
+            CorrelationId = request.CorrelationId?.Trim()
+        };
 
     private static PostAttestedCorporateActionCashDividendRequestDto NormalizeCashDividendPosting(
         PostAttestedCorporateActionCashDividendRequestDto request) => request with
-    {
-        TenantId = request.TenantId.Trim(), CompanyId = request.CompanyId.Trim(), Actor = request.Actor.Trim(),
-        IdempotencyKey = request.IdempotencyKey.Trim(), Reason = request.Reason.Trim(), CorrelationId = request.CorrelationId?.Trim()
-    };
+        {
+            TenantId = request.TenantId.Trim(),
+            CompanyId = request.CompanyId.Trim(),
+            Actor = request.Actor.Trim(),
+            IdempotencyKey = request.IdempotencyKey.Trim(),
+            Reason = request.Reason.Trim(),
+            CorrelationId = request.CorrelationId?.Trim()
+        };
 
     // Role grants and request tracing are current context, not command intent. An exact historical
     // retry remains readable after a grant is removed or a new HTTP trace is assigned; actor,

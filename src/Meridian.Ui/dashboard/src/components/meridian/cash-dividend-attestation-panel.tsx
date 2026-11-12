@@ -124,7 +124,7 @@ function CashDividendControls({ caseId, scope, onCommitted }: {
     && preview && canonicalHash(preview.eligibility.entitlementSnapshotHash));
   const canAttest = Boolean(known && !locked && workspace?.policyEnabled && workspace.canAttestAccounting
     && ownsDeclaration && preview && preview.projection.isCurrent && hasEvidence
-    && !attestation?.isActive && !workspace.posting
+    && !workspace.posting
     && declaration?.policyVersion === workspace.policyVersion && declaration.policyHash === workspace.policyHash
     && sameCashDividendActor(preview.projection.preparedBy, workspace.actor));
   const canPost = Boolean(known && !locked && workspace?.policyEnabled && workspace.canPostAttestedAccounting

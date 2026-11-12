@@ -115,8 +115,11 @@ public static partial class SecurityMasterEndpoints
                         EndpointAuthorization.HasPermission(context, UserPermission.ManageLedgerReports));
                     var command = request with
                     {
-                        TenantId = trusted.TenantId, CompanyId = trusted.CompanyId, Actor = trusted.Actor,
-                        LedgerBookId = bookId, Authority = authority
+                        TenantId = trusted.TenantId,
+                        CompanyId = trusted.CompanyId,
+                        Actor = trusted.Actor,
+                        LedgerBookId = bookId,
+                        Authority = authority
                     };
                     if (!authority.CanAdministerDeclaration)
                         throw new CorporateActionPermissionDeniedException("CashDividendDeclaration", "ManageSinglePrincipalDeclarations");
@@ -157,7 +160,10 @@ public static partial class SecurityMasterEndpoints
                         ?? throw new CorporateActionPersistenceUnavailableException("The governed cash-dividend accounting service is unavailable.");
                     return Results.Json(await service.AttestCashDividendAsync(request with
                     {
-                        CaseId = caseId, TenantId = trusted.TenantId, CompanyId = trusted.CompanyId, Actor = trusted.Actor,
+                        CaseId = caseId,
+                        TenantId = trusted.TenantId,
+                        CompanyId = trusted.CompanyId,
+                        Actor = trusted.Actor,
                         ScopeAssertion = processingCase.Scope,
                         CorrelationId = context.TraceIdentifier,
                         Authority = CashDividendAuthority(context, request.Authority?.Origin ?? OperationsActionOriginDto.HumanOperator)
@@ -180,7 +186,10 @@ public static partial class SecurityMasterEndpoints
                         ?? throw new CorporateActionPersistenceUnavailableException("The governed cash-dividend accounting service is unavailable.");
                     return Results.Json(await service.PostAttestedCashDividendAsync(request with
                     {
-                        CaseId = caseId, TenantId = trusted.TenantId, CompanyId = trusted.CompanyId, Actor = trusted.Actor,
+                        CaseId = caseId,
+                        TenantId = trusted.TenantId,
+                        CompanyId = trusted.CompanyId,
+                        Actor = trusted.Actor,
                         ScopeAssertion = processingCase.Scope,
                         CorrelationId = context.TraceIdentifier,
                         Authority = CashDividendAuthority(context, request.Authority?.Origin ?? OperationsActionOriginDto.HumanOperator)
@@ -250,7 +259,8 @@ public static partial class SecurityMasterEndpoints
 
     private static async Task<IResult> CashDividendResultAsync(HttpContext context, Func<Task<IResult>> operation)
     {
-        try { return await operation().ConfigureAwait(false); }
+        try
+        { return await operation().ConfigureAwait(false); }
         catch (CorporateActionOperationException exception) { return CorporateActionProblem(context, exception); }
         catch (Exception exception) when (exception is IOException or Npgsql.NpgsqlException)
         {

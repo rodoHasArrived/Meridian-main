@@ -325,7 +325,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         try
         {
             var enteredOrFailed = await Task.WhenAny(postingHeld.Task, postingTask).WaitAsync(TimeSpan.FromSeconds(15), ct);
-            if (ReferenceEquals(enteredOrFailed, postingTask)) await postingTask;
+            if (ReferenceEquals(enteredOrFailed, postingTask))
+                await postingTask;
             await postingHeld.Task.WaitAsync(TimeSpan.FromSeconds(15), ct);
             // An ordinary lot writer must wait for the complete-book entitlement boundary;
             // updating a sibling quantity cannot slip between preview recheck and journal commit.
@@ -360,7 +361,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         journalEntry.Lines.Should().OnlyContain(line => line.Account.Symbol == drafted.DraftedCandidate!.InstrumentSymbol);
         journalEntry.Metadata.Symbol.Should().Be(drafted.DraftedCandidate.InstrumentSymbol);
         journalEntry.Metadata.PreparerAttestation!.Receipt.AttestationId.Should().Be(attested.Attestation.AttestationId);
-        journalEntry.Metadata.Tags! .Should().NotContainKey("approvalId");
+        journalEntry.Metadata.Tags!.Should().NotContainKey("approvalId");
         var latest = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
         latest.Stages.Select(stage => stage.Stage).Should().Equal(AssetAccountingLifecycleStageDto.Expected,
             AssetAccountingLifecycleStageDto.Projected, AssetAccountingLifecycleStageDto.Drafted,

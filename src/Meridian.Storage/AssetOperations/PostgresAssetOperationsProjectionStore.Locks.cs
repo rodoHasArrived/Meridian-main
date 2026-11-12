@@ -19,7 +19,8 @@ public sealed partial class PostgresAssetOperationsProjectionStore
             command.CommandText = $"select distinct ledger_book_id from {Qualified("book_position_projections")} where security_id=@security";
             command.Parameters.AddWithValue("security", securityId);
             await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-            while (await reader.ReadAsync(ct).ConfigureAwait(false)) books.Add(reader.GetGuid(0));
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                books.Add(reader.GetGuid(0));
         }
         foreach (var bookId in books.Order())
             await Meridian.Storage.Ledger.CashDividendEntitlementLock.AcquireAsync(connection, transaction, bookId, false, ct).ConfigureAwait(false);

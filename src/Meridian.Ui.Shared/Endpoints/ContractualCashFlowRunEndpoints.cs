@@ -55,8 +55,11 @@ internal static class ContractualCashFlowRunEndpoints
                     return Results.Json(result, json);
                 var run = new ContractualCashFlowRun(request.RunId, kind, subjectId, DateTimeOffset.UtcNow, result.ResolvedContract, request.Projection, result, actor);
                 if (bindDraft)
-                    run = run with { AttestationContext = new(scope.TenantId!, scope.CompanyId!, actor,
-                        EndpointAuthorization.DeriveActionOriginFromPrincipal(context)) };
+                    run = run with
+                    {
+                        AttestationContext = new(scope.TenantId!, scope.CompanyId!, actor,
+                        EndpointAuthorization.DeriveActionOriginFromPrincipal(context))
+                    };
                 return Results.Json(await store.SaveAsync(run, context.RequestAborted).ConfigureAwait(false), json);
             }
             catch (ArgumentException ex) { return Results.ValidationProblem(new Dictionary<string, string[]> { ["projection"] = [EndpointHelpers.RefusalDetail(ex)] }); }
