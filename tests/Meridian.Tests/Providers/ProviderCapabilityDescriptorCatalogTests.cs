@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
@@ -117,12 +117,20 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         descriptor.Historical.Should().BeAssignableTo<ISecurityRateObservationProvider>(
             "typed rates are another view of the historical adapter, not a third independently constructed adapter");
+        services.Should().HaveCount(3);
         services.Select(service => service.ServiceType).Should().BeEquivalentTo(
             descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
-            "the module owns both catalogued adapter factories and the typed-rate alias used by Security Master");
+            "historical and search implementations and the observed-rate alias must have module-owned factories");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
             "the module must own concrete factory construction and container lifetime");
+
+        using var client = new HttpClient();
+        var historical = new FredHistoricalDataProvider("synthetic-key", client);
+        services.AddSingleton(historical);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
+            "rate observations must reuse the same late-gated historical implementation");
     }
 
     [Fact]
