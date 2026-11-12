@@ -76,7 +76,7 @@ export function WorkspaceNav({
             <CalendarCheck className={designSystemNavRailClasses.itemIcon} width={16} height={16} aria-hidden="true" />
             <span className="operator-nav-label truncate font-medium">{viewModel.today.label}</span>
           </Link>
-          <AttentionCount count={viewModel.today.attentionCount} />
+          <AttentionCount count={viewModel.today.attentionCount} title={viewModel.today.attentionTitle} />
         </div>
       </div>
       <div className={designSystemNavRailClasses.section}>{viewModel.navEyebrow}</div>
@@ -135,7 +135,7 @@ export function WorkspaceNav({
                   />
                   <span className="operator-nav-label truncate font-medium">{item.label}</span>
                 </Link>
-                <AttentionCount count={item.attentionCount} />
+                <AttentionCount count={item.attentionCount} title={item.attentionTitle} />
                 {item.subItems.length > 0 ? (
                   <button
                     type="button"
@@ -195,13 +195,15 @@ export function WorkspaceNav({
  * Queue count badge. It sits beside the link, not inside it, and is hidden from assistive
  * technology: the link's visible text stays exactly its label, so the accessible name (which
  * carries "N items need attention") still contains the visible label (WCAG 2.5.3 Label in Name).
+ * The title is only a pointer hint naming the unit ("6 items in Today's finance queue"); the
+ * link's accessible name already carries the count.
  */
-function AttentionCount({ count }: { count: number }) {
+function AttentionCount({ count, title }: { count: number; title: string | null }) {
   if (count <= 0) {
     return null;
   }
   return (
-    <span className="operator-nav-count" aria-hidden="true">
+    <span className="operator-nav-count" aria-hidden="true" title={title ?? undefined}>
       {count > 99 ? "99+" : count}
     </span>
   );

@@ -148,6 +148,10 @@ describe("WorkspaceNav", () => {
     expect(today).toHaveTextContent(/^Today$/);
     expect(accounting).toHaveTextContent(/^Accounting$/);
     expect(badgeFor(accounting)).toHaveAttribute("aria-hidden", "true");
+    // A pointer hint names the badge's unit and where those items are listed.
+    expect(badgeFor(today)).toHaveAttribute("title", "3 items in Today's finance queue");
+    expect(badgeFor(accounting)).toHaveAttribute("title", "2 items from Accounting in Today's finance queue");
+    expect(badgeFor(data)).toHaveAttribute("title", "1 item from Data in Today's finance queue");
     // Workspaces with nothing queued carry no badge and no attention suffix.
     const portfolio = screen.getByRole("link", { name: /^Open Portfolio workspace/ });
     expect(badgeFor(portfolio)).toBeNull();

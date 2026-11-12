@@ -593,7 +593,7 @@ describe("App", () => {
     expect(within(confidence).getByText("Scope")).toBeInTheDocument();
     expect(within(confidence).getByText("Selected evidence")).toBeInTheDocument();
     expect(within(screen.getByRole("region", { name: "Priority decision" })).getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
-    expect(confidence).toHaveTextContent("4 loaded workspace items");
+    expect(confidence).toHaveTextContent("4 items in the finance queue");
     const trust = screen.getByRole("region", { name: "Workstation build, environment, provenance, and provider posture" });
     await user.click(trust.querySelector("summary") as HTMLElement);
     expect(within(trust).getByRole("link", { name: "Blocked Brokerage sync failed" }))
@@ -606,13 +606,28 @@ describe("App", () => {
     ["Decisions", "Providers", "Provenance", "Workspace data"].forEach((label) => {
       expect(within(status.querySelector("dl") as HTMLElement).getByText(label)).toBeInTheDocument();
     });
-    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more$/))
+    expect(within(screen.getByRole("contentinfo", { name: "Workstation status" })).getByText(/^Brokerage sync failed \+\d+ more issues?$/))
       .toBeInTheDocument();
 
     expect(screen.queryByRole("region", { name: "Daily control tower decision drivers" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
     expect(confidence).toHaveTextContent("All authorized scopes");
-    expect(await screen.findByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+    const financeQueue = await screen.findByRole("treegrid", { name: "Daily control tower finance queue" });
+    expect(financeQueue).toBeInTheDocument();
+    // The sidebar Today badge counts exactly the rows listed on Today, whatever the shared inbox
+    // does (here it fails to load), and the inbox sits in its own section after the queue.
+    expect(within(screen.getByRole("region", { name: "Finance queue" })).getByRole("treegrid", { name: "Daily control tower finance queue" }))
+      .toBe(financeQueue);
+    expect(financeQueue.querySelectorAll("tbody tr[data-dense-row-id]")).toHaveLength(4);
+    const todayLinks = screen.getAllByRole("link", { name: /^Today, Daily Control Tower, current route, 4 items need attention/ });
+    expect(todayLinks.length).toBeGreaterThan(0);
+    for (const link of todayLinks) {
+      const badge = link.parentElement?.querySelector(".operator-nav-count");
+      expect(badge).toHaveTextContent("4");
+      expect(badge).toHaveAttribute("title", "4 items in Today's finance queue");
+    }
+    expect(screen.getByRole("region", { name: "Operator inbox" })).toBeInTheDocument();
+    expect(screen.getAllByRole("row", { name: "Brokerage sync failed" })).toHaveLength(1);
     expect(screen.getAllByRole("link", {
       name: "Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Open report packs."
     }).some((link) => link.getAttribute("href") === "/reporting/report-packs")).toBe(true);
