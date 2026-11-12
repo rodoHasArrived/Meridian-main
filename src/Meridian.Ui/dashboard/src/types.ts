@@ -16,6 +16,7 @@ export * from "./types/market-data";
 export * from "./types/canonical-symbol";
 export * from "./types/consolidation";
 export * from "./types/cross-screen-counts";
+export * from "./types/corporate-action-inbox";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/provider-integration-identity";

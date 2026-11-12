@@ -5,7 +5,7 @@
 
 ## Overall Coverage
 
-**1817 / 10314** items documented (**17.6%**) &mdash; Grade: **F**
+**1816 / 10314** items documented (**17.6%**) &mdash; Grade: **F**
 
 ```text
 [====----------------] 17.6%
@@ -16,7 +16,7 @@
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
 | Public Classes / Interfaces | 1708 | 9803 | 17.4% | F |
-| API Endpoints | 108 | 358 | 30.2% | F |
+| API Endpoints | 107 | 358 | 29.9% | F |
 | Configuration Options | 1 | 142 | 0.7% | F |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 0 | 11 | 0.0% | F |
@@ -79,7 +79,7 @@
 | `CrossSourceBackfillProviderError` | `src/Meridian.Application/Backfill/CrossSourceBackfillReconciliationService.cs:618` |
 | ... and 8045 more | |
 
-### API Endpoints (250 undocumented)
+### API Endpoints (251 undocumented)
 
 | Item | Location |
 | ------ | ---------- |
@@ -133,7 +133,7 @@
 | `/api/loans/{loanId}/collateral/value` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:689` |
 | `/api/loans/{loanId}/status-transitions` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:719` |
 | `/api/loans/{loanId}/pik` | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:749` |
-| ... and 200 more | |
+| ... and 201 more | |
 
 ### Configuration Options (141 undocumented)
 
@@ -210,7 +210,7 @@
 ## Recommendations
 
 1. **Public Classes / Interfaces**: 8095 undocumented types. Add reference entries under `docs/reference/` for the types that carry contracts. Running DocFX does not move this metric: it emits browsable output from XML doc comments into `docs/docfx/api/*.yml`, which is gitignored and so is not part of the scanned corpus.
-2. **API Endpoints**: 250 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
+2. **API Endpoints**: 251 endpoint(s) missing from `docs/reference/api-reference.md`. Run the endpoint audit and update the API reference table.
 3. **Configuration Options**: 141 config key(s) not found in `docs/generated/configuration-schema.md`. Re-run the configuration schema generator to synchronise.
 4. **ADR Implementations**: Referenced ADR(s) ADR-001, ADR-007, ADR-010, ADR-006, ADR-015, ADR-013, ADR-004, ADR-005, ADR-014, ADR-002, ADR-016 have no corresponding file in `docs/adr/`. Create the missing ADR document(s) using `docs/adr/_template.md`.
 
