@@ -388,7 +388,10 @@ export interface DataOperationsProviderRow {
   affectedWorkflowsText: string;
   actionLabel: string;
   actionHref: string;
+  /** Reported latency only; "Latency not reported" when the source reports none. Never a timestamp. */
   latencyText: string;
+  /** Reported latency, else the last successful (or last verified) time. Only for surfaces labelled "last good". */
+  latencyOrLastGoodText: string;
   trustScoreText: string;
   signalSourceText: string;
   note: string;
@@ -956,6 +959,11 @@ const BACKFILL_PROVIDER_ALIASES: Record<string, string> = {
 export const DATA_BACKFILL_DETAIL_PANEL_ID = "data-backfill-detail-panel";
 export const DATA_EXPORT_DETAIL_PANEL_ID = "data-export-detail-panel";
 export const DATA_PROVIDER_DETAIL_PANEL_ID = "data-provider-detail-panel";
+
+// Matches the sentinel the server writes for providers without latency metrics
+// (src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs:128), so fixture and
+// production rows read the same.
+const LATENCY_NOT_REPORTED = "Latency not reported";
 
 export function useDataViewModel(
   data: DataWorkspaceResponse | null,
@@ -2333,7 +2341,10 @@ export function buildProviderRow(
   const readiness = record.readiness;
   const trust = record.trustSnapshot;
   const bindings = record.bindings;
-  const latencyText = formatProviderValue(providerRecord?.latency, connection ? formatLastGoodProviderResponse(connection) : "Latency not reported");
+  const reportedLatency = formatProviderValue(providerRecord?.latency, "");
+  const latencyText = reportedLatency || LATENCY_NOT_REPORTED;
+  const latencyOrLastGoodText = reportedLatency
+    || (connection ? formatLastGoodProviderResponse(connection) : LATENCY_NOT_REPORTED);
   const trustScoreText = trust
     ? `${normalizeProviderTrustScore(trust.score)}% · ${trust.healthStatus}`
     : readiness?.degradationScore !== null && readiness?.degradationScore !== undefined
@@ -2382,6 +2393,7 @@ export function buildProviderRow(
     actionLabel: primaryAction?.label ?? (connection?.providerId === "alpaca" ? "Manage Alpaca" : "View Details"),
     actionHref: primaryAction?.target ?? connection?.actionHref ?? readiness?.actionHref ?? `/settings#provider-${record.providerId}-connection`,
     latencyText,
+    latencyOrLastGoodText,
     trustScoreText,
     signalSourceText,
     note: recommendedActionText ?? providerRecord?.note ?? "No operator action reported",
@@ -2421,7 +2433,7 @@ export function buildProviderRow(
       providerRecord?.note ?? recommendedActionText,
       `Credential ${credentialText}`,
       `Verification ${verificationText}`,
-      `Latency ${latencyText}`,
+      latencyText === LATENCY_NOT_REPORTED ? LATENCY_NOT_REPORTED : `Latency ${latencyText}`,
       `Trust score ${trustScoreText}`,
       `Gate impact ${gateImpactText}`,
       `Recommended action ${recommendedActionText}`
@@ -2921,7 +2933,7 @@ function buildProviderSummaryCards(
     { id: "health", label: "Connection Health", value: health, detail: detail.description, tone: detail.statusTone },
     { id: "credentials", label: "Credential State", value: credential, detail: `${verifiedCount}/${rows.length} providers are verified or credential-free.`, tone: credentialToneFromLabel(credential) },
     { id: "verification", label: "Verification State", value: verification, detail: "Verification is separate from configured state.", tone: verificationToneFromLabel(verification) },
-    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful heartbeat or reported latency.", tone: "default" },
+    { id: "latency", label: "Latency / Last Response", value: latency, detail: "Last successful call or verification.", tone: "default" },
     { id: "workflows", label: "Affected Workflows", value: workflows, detail: "Workflow impact before routing changes.", tone: "default" },
     { id: "action", label: "Recommended Action", value: detail.actionText, detail: detail.gateImpactText, tone: detail.statusTone }
   ];

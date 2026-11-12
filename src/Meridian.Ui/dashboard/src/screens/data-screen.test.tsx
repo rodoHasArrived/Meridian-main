@@ -513,6 +513,10 @@ describe("DataScreen", () => {
     expect(plaidRow).toHaveClass("bg-danger/5");
     expect(within(plaidRow).getByText("Blocked")).toBeInTheDocument();
     expect(within(plaidRow).getByText("Open setup")).toHaveClass("whitespace-nowrap");
+    // "Trust / last good" keeps the last-good fallback when no latency is reported.
+    const plaidTrustCell = within(plaidRow).getByText("Trust score not reported").closest("td");
+    expect(plaidTrustCell).not.toBeNull();
+    expect(within(plaidTrustCell as HTMLElement).getByText("Never")).toBeInTheDocument();
     const plaidDetail = screen.getByRole("region", { name: /provider detail for Plaid/i });
     expect(plaidDetail).toHaveTextContent("Reason: Readiness blocked");
     expect(within(plaidDetail).getByText("READINESS_BLOCKED").closest("details")).not.toHaveAttribute("open");
@@ -962,6 +966,33 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Security Master command deck")).not.toBeInTheDocument();
+  });
+
+  it("shows Latency not reported, not a timestamp, under Latency on the Data overview", () => {
+    const alpacaConnection: ProviderConnectionRow = {
+      ...polygonConnection,
+      providerId: "alpaca",
+      displayName: "Alpaca paper",
+      capability: "Brokerage",
+      lastVerifiedAt: "2026-07-13T18:55:00Z",
+      lastSuccessfulAt: "2026-07-13T18:55:00Z"
+    };
+
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection, alpacaConnection]} />,
+      { initialEntries: ["/data"] }
+    );
+
+    const overview = screen.getByRole("region", { name: "Provider health overview" });
+    const latencyValue = (providerName: string) => {
+      const card = within(overview).getByRole("article", { name: `${providerName} health` });
+      return within(card).getByText("Latency", { selector: "dt" }).nextElementSibling;
+    };
+
+    const alpacaLatency = latencyValue("Alpaca paper");
+    expect(alpacaLatency?.tagName).toBe("DD");
+    expect(alpacaLatency).toHaveTextContent(/^Latency not reported$/);
+    expect(latencyValue("Polygon.io")).toHaveTextContent(/^18ms p50$/);
   });
 
   it("switches the detail panel when a backfill row is selected", async () => {

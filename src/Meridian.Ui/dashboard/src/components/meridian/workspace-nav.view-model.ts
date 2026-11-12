@@ -19,6 +19,7 @@ import {
 } from "@/lib/accounting-navigation";
 import { WORKSPACE_NAVIGATION_FEATURES, type WorkstationFeatureDefinition } from "@/lib/workstation-features";
 import type { WorkspaceAttentionCounts } from "@/lib/daily-control-tower";
+import { pluralizeCount } from "@/lib/format";
 import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 import type { AppShellOperatorFocusItem } from "@/app-shell.workflow-continuity-types";
 
@@ -50,6 +51,8 @@ export interface WorkspaceNavItemViewModel {
   ariaLabel: string;
   /** Control Tower queue items owned by this workspace; 0 renders no badge. */
   attentionCount: number;
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
+  attentionTitle: string | null;
   subItems: WorkspaceNavSubItemViewModel[];
   subItemGroups: WorkspaceNavSubItemGroupViewModel[];
   attentionSeverity: "blocked" | "review" | "info" | null;
@@ -76,6 +79,8 @@ export interface WorkspaceNavTodayViewModel {
   ariaCurrent: "page" | undefined;
   ariaLabel: string;
   attentionCount: number;
+  /** Names the badge's unit in the link tooltip (the badge itself takes no pointer events); null when there is no badge. */
+  attentionTitle: string | null;
 }
 
 export interface WorkspaceNavViewModel {
@@ -184,6 +189,9 @@ export function buildWorkspaceNavViewModel(
           : `${workspace.label} workspace, active section, ${workspace.maturity} product maturity`
         : `Open ${workspace.label} workspace, ${workspace.maturity} product maturity`}${formatAttentionAriaSuffix(attentionCount)}${formatPreservedScopeAriaSuffix(workspaceScopeSummary)}`,
       attentionCount,
+      attentionTitle: attentionCount > 0
+        ? `${pluralizeCount(attentionCount, "item")} from ${workspace.label} in Today's finance queue`
+        : null,
       subItems,
       subItemGroups,
       attentionSeverity
@@ -202,7 +210,10 @@ export function buildWorkspaceNavViewModel(
     active: isHome,
     ariaCurrent: isHome ? "page" : undefined,
     ariaLabel: `${isHome ? "Today, Daily Control Tower, current route" : "Open Today, the Daily Control Tower"}${formatAttentionAriaSuffix(todayAttentionCount)}`,
-    attentionCount: todayAttentionCount
+    attentionCount: todayAttentionCount,
+    attentionTitle: todayAttentionCount > 0
+      ? `${pluralizeCount(todayAttentionCount, "item")} in Today's finance queue`
+      : null
   };
 
   return {

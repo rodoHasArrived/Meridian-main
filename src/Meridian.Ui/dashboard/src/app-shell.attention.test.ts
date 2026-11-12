@@ -301,7 +301,7 @@ describe("app shell attention state", () => {
       key: "attention",
       status: "err",
       label: "Attention",
-      value: "Brokerage sync failed +2 more"
+      value: "Brokerage sync failed +2 more issues"
     });
   });
 });

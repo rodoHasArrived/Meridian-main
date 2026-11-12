@@ -417,7 +417,9 @@ describe("TradingScreen", () => {
   });
 
   it("collapses brokerage recovery to one blocked row that reviews on the overview", async () => {
-    await renderTradingScreen(data, "/trading/orders?symbol=MSFT");
+    // A live brokerage with no account in scope stays blocked: only a known non-live
+    // environment turns the missing account into setup.
+    await renderTradingScreen({ ...data, brokerage: { ...data.brokerage, environment: "live" } }, "/trading/orders?symbol=MSFT");
 
     const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
     expect(within(recovery).getByRole("status")).toHaveTextContent("Live trading blocked — recovery required");
@@ -425,6 +427,19 @@ describe("TradingScreen", () => {
     expect(within(recovery).queryByRole("button", { name: /synchronize and reconcile/i })).not.toBeInTheDocument();
     expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
       .toHaveAttribute("href", "/trading?symbol=MSFT#brokerage-recovery");
+  });
+
+  it("shows a paper brokerage with no account in scope as setup, not a recovery block", async () => {
+    await renderTradingScreen(data, "/trading/positions");
+
+    const recovery = screen.getByRole("region", { name: "Brokerage recovery" });
+    const status = within(recovery).getByRole("status", { name: "Brokerage recovery readiness" });
+    expect(status).toHaveTextContent("No fund account in scope");
+    expect(recovery).not.toHaveTextContent(/recovery required/i);
+    expect(recovery).not.toHaveTextContent("Live trading blocked");
+    // No scope picker is mounted here, so the row keeps its Review link to the overview.
+    expect(within(recovery).getByRole("link", { name: "Review brokerage recovery" }))
+      .toHaveAttribute("href", "/trading#brokerage-recovery");
   });
 
   it("keeps the full brokerage recovery panel on the trading overview", async () => {

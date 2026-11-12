@@ -148,10 +148,22 @@ describe("WorkspaceNav", () => {
     expect(today).toHaveTextContent(/^Today$/);
     expect(accounting).toHaveTextContent(/^Accounting$/);
     expect(badgeFor(accounting)).toHaveAttribute("aria-hidden", "true");
+    // The badge lets pointer events through to the link under it, so the link's tooltip names the
+    // badge's unit and where those items are listed; the badge carries no title of its own.
+    expect(today).toHaveAttribute("title", "Today: Daily Control Tower · 3 items in Today's finance queue");
+    expect(accounting).toHaveAttribute(
+      "title",
+      "Accounting · Available product maturity · 2 items from Accounting in Today's finance queue"
+    );
+    expect(data).toHaveAttribute("title", "Data · Available product maturity · 1 item from Data in Today's finance queue");
+    [today, accounting, data].forEach((link) => expect(badgeFor(link)).not.toHaveAttribute("title"));
+    // Today has no expand chevron; its link spans the row so the badge sits over the link.
+    expect(today).toHaveClass("col-span-full");
     // Workspaces with nothing queued carry no badge and no attention suffix.
     const portfolio = screen.getByRole("link", { name: /^Open Portfolio workspace/ });
     expect(badgeFor(portfolio)).toBeNull();
     expect(portfolio).not.toHaveAccessibleName(/attention/);
+    expect(portfolio).toHaveAttribute("title", "Portfolio · Preview product maturity");
   });
 
   it("expands inactive workspace pages from the rail toggle", async () => {
