@@ -2,11 +2,17 @@
 
 # `ledger-contracts` data objects - page 4 of 5
 
-Objects 241-320 of 369. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 370. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_LedgerBookQuery["LedgerBookQuery"] {
+        +AccountingBasisKindDto? AccountingBasis
+        +string? FundProfileId
+        +Guid? FundStructureNodeId
+        +FundStructureNodeKindDto? FundStructureNodeKind
+    }
     class Meridian_Contracts_Ledger_LedgerBookRequiredScopeDto["LedgerBookRequiredScopeDto"] {
         +AccountingBasisKindDto AccountingBasis
         +string? DisplayName
@@ -123,8 +129,8 @@ classDiagram
         +IReadOnlyDictionary~string__string~ ExternalGlDimensions
         +string? FundId
         +Guid? InstrumentId
-        +string? InvestorId
-        +string? OrganizationId
+        +Guid? IntercompanyAgreementId
+        +int? IntercompanyAgreementVersion
     }
     class Meridian_Contracts_Ledger_LedgerDimensionTags["LedgerDimensionTags"] {
     }
@@ -740,19 +746,6 @@ classDiagram
         +DateOnly SettlementDate
         +string StatementReference
         +DateOnly TransactionDate
-    }
-    class Meridian_Contracts_Ledger_PrivateCapitalCallDto["PrivateCapitalCallDto"] {
-        +decimal AmountToCall
-        +string CallId
-        +DateTimeOffset CreatedAtUtc
-        +string CreatedBy
-        +DateOnly DueDate
-        +IReadOnlyList~PrivateCapitalCallLineDto~ Lines
-        +DateOnly NoticeDate
-        +string PeriodId
-        +string PlanHash
-        +string? Purpose
-        +PrivateCapitalScopeDto Scope
     }
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutBookStatusDto
     Meridian_Contracts_Ledger_LedgerBookRolloutAssessmentDto --> Meridian_Contracts_Ledger_LedgerBookRolloutIssueDto

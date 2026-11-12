@@ -1027,15 +1027,16 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                     : null));
         }
 
+        var postingLines = await MaterializeAgreementReversalCurrenciesAsync(draft, ledgerBook, lines, ct).ConfigureAwait(false);
         // Compare the final materialized accounts as well: the chart can change between
         // draft validation and this independently loaded posting configuration.
-        await EnsureMaterializedPriorPeriodInverseAsync(draft, lines, ct).ConfigureAwait(false);
-        await EnsureMaterializedOpeningInverseAsync(draft, lines, ct).ConfigureAwait(false);
+        await EnsureMaterializedPriorPeriodInverseAsync(draft, postingLines, ct).ConfigureAwait(false);
+        await EnsureMaterializedOpeningInverseAsync(draft, postingLines, ct).ConfigureAwait(false);
         var entry = new JournalEntry(
             draft.JournalEntryId,
             timestamp,
             description,
-            lines,
+            postingLines,
             BuildManualJournalEntryMetadata(draft, postingCommand, evidenceLinks, recordedAtUtc, securityLineage));
 
         return new LedgerJournalEntryWrite(
@@ -1455,7 +1456,9 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
     }
 

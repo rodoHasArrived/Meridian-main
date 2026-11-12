@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 254,
-    "warning": 254
+    "total": 258,
+    "warning": 258
   },
   "failed": false,
   "findings": [
@@ -344,6 +344,36 @@
       },
       "message": "Business table fund_structure.fund_structure_linked_account does not have a table comment.",
       "object": "fund_structure.fund_structure_linked_account",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "intercompany_agreement"
+      },
+      "message": "Business table fund_structure.intercompany_agreement does not have a table comment.",
+      "object": "fund_structure.intercompany_agreement",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "intercompany_agreement_audit"
+      },
+      "message": "Business table fund_structure.intercompany_agreement_audit does not have a table comment.",
+      "object": "fund_structure.intercompany_agreement_audit",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "fund_structure",
+        "table": "intercompany_agreement_command_receipt"
+      },
+      "message": "Business table fund_structure.intercompany_agreement_command_receipt does not have a table comment.",
+      "object": "fund_structure.intercompany_agreement_command_receipt",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1839,6 +1869,22 @@
     {
       "details": {
         "columns": [
+          "tenant_id",
+          "agreement_id",
+          "aggregate_version"
+        ],
+        "constraint": "intercompany_agreement_snapshot_pointer",
+        "schema": "fund_structure",
+        "table": "intercompany_agreement"
+      },
+      "message": "Foreign key fund_structure.intercompany_agreement.intercompany_agreement_snapshot_pointer is not covered by a left-prefix index.",
+      "object": "fund_structure.intercompany_agreement.intercompany_agreement_snapshot_pointer",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "corrects_mutation_batch_id"
         ],
         "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
@@ -2797,5 +2843,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "6f9e9f6bf4922cb359044c7feb802e0aed3995440ab789fbe5dfadac2f0abd67"
+  "fingerprint": "d957e9de9834978de6d40ee01efcf7f8e63d106711cc2f5547c7d897ea7802ca"
 }

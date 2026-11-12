@@ -479,6 +479,8 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
             && TextEquals(retained.CapitalAccountId, candidate.CapitalAccountId)
             && retained.InstrumentId == candidate.InstrumentId
             && retained.PositionId == candidate.PositionId
+            && retained.IntercompanyAgreementId == candidate.IntercompanyAgreementId
+            && retained.IntercompanyAgreementVersion == candidate.IntercompanyAgreementVersion
             && TextEquals(retained.TaxLotId, candidate.TaxLotId)
             && TextEquals(retained.CostCenterId, candidate.CostCenterId)
             && TextEquals(retained.CounterpartyId, candidate.CounterpartyId)

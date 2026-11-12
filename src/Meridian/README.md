@@ -51,6 +51,12 @@ and process-host concerns isolated from domain and application logic.
 
 ## Important workflows
 
+`UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting
+migration gate and before starting hosted services. It retains its successful-readiness cache,
+serialized lifecycle operations, and retry after a pre-host migration failure. Desktop child
+`HostStartup` graphs do not repeat the parent's database migrations. The shared plan validates
+module prerequisites before running the established sequential initialization order.
+
 Use this module when changing host startup, CLI routing, runtime hosting, configuration bootstrap,
 local workstation API process behavior, or production API binding policy.
 

@@ -78,6 +78,7 @@ public static class ServiceCompositionRoot
         options ??= CompositionOptions.Default;
         services.TryAddSingleton(new CompositionConfiguration(options.Configuration));
 
+        services.AddDatabaseStartupPlan();
         services.AddFundScopeTenantServices();
 
         foreach (var (module, isEnabled) in FeatureModules)

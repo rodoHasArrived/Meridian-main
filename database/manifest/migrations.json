@@ -1243,6 +1243,15 @@
       "sha256": "3855a01189025fdd047b6cd4270de1cb6dd67a24502ac4e2475b9d58a479ae30"
     },
     {
+      "filename": "006_intercompany_agreements.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "schema": "fund_structure",
+      "sha256": "61fa511ef5c478c4828c521dc3850de05203afe078da24a93969176929784b60"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -1487,7 +1496,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "6989127c063f58b75a144c1c018ef304d75277b615e37f0acfb1311b8083d898",
+  "fingerprint": "3bf8a297dde1b351148029fca3bbc120743172d33b58c424cee982b779de8e00",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1749,9 +1758,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 165,
+    "files": 166,
     "migration_sets": 11,
-    "waivers": 29,
+    "waivers": 30,
     "warnings": 0
   },
   "waivers": [
@@ -1767,6 +1776,13 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
       "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
       "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12",
       "rule_id": "migration-truncate"
     },
     {

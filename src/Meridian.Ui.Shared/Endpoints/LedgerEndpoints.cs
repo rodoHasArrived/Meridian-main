@@ -2324,7 +2324,9 @@ public static partial class LedgerEndpoints
             VendorId: filter.VendorId,
             ProjectId: filter.ProjectId)
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
+            IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
     }
 
@@ -2362,7 +2364,9 @@ public static partial class LedgerEndpoints
             VendorId: filter.VendorId,
             ProjectId: filter.ProjectId)
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = Guid.TryParse(filter.IntercompanyAgreementId, out var agreementId) ? agreementId : null,
+            IntercompanyAgreementVersion = int.TryParse(filter.IntercompanyAgreementVersion, out var agreementVersion) ? agreementVersion : null
         };
     }
 
@@ -2507,7 +2511,9 @@ public static partial class LedgerEndpoints
             VendorId: LedgerDimensionTags.FirstTag(tags, "vendorId"),
             ProjectId: metadata.ProjectId ?? LedgerDimensionTags.FirstTag(tags, "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags)
         };
 
         return CanonicalizeDimensions(dimensions);
@@ -2540,7 +2546,9 @@ public static partial class LedgerEndpoints
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId)
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return CanonicalizeDimensions(result);
@@ -2578,7 +2586,9 @@ public static partial class LedgerEndpoints
             VendorId: LedgerDimensionTags.FirstTag(tags, prefix + "vendorId"),
             ProjectId: LedgerDimensionTags.FirstTag(tags, prefix + "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, prefix),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, prefix)
         };
 
         return CanonicalizeDimensions(dimensions);
@@ -2617,6 +2627,8 @@ public static partial class LedgerEndpoints
                && Matches(filter.CapitalAccountId, dimensions.CapitalAccountId)
                && Matches(filter.InstrumentId, dimensions.InstrumentId?.ToString("D"))
                && Matches(filter.PositionId, dimensions.PositionId?.ToString("D"))
+               && Matches(filter.IntercompanyAgreementId, dimensions.IntercompanyAgreementId?.ToString("D"))
+               && Matches(filter.IntercompanyAgreementVersion, dimensions.IntercompanyAgreementVersion?.ToString(CultureInfo.InvariantCulture))
                && Matches(filter.TaxLotId, dimensions.TaxLotId)
                && Matches(filter.CostCenterId, dimensions.CostCenterId)
                && Matches(filter.CounterpartyId, dimensions.CounterpartyId)
@@ -2683,7 +2695,11 @@ public static partial class LedgerEndpoints
             CustomerId: NormalizeOptional(filter.CustomerId),
             VendorId: NormalizeOptional(filter.VendorId),
             ProjectId: NormalizeOptional(filter.ProjectId),
-            ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions));
+            ExternalGlDimensions: NormalizeExternalGlDimensions(filter.ExternalGlDimensions))
+        {
+            IntercompanyAgreementId = NormalizeOptional(filter.IntercompanyAgreementId),
+            IntercompanyAgreementVersion = NormalizeOptional(filter.IntercompanyAgreementVersion)
+        };
 
     private static LedgerDimensionSetDto? CanonicalizeDimensions(LedgerDimensionSetDto? dimensions)
     {
@@ -2712,7 +2728,9 @@ public static partial class LedgerEndpoints
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;

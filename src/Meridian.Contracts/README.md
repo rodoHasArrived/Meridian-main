@@ -11,6 +11,13 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
 structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
 certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
@@ -83,6 +90,10 @@ or create a payment. The retained source hash and document identity explain the 
 `SecurityInterestSupport` supplies the typed `NegativeInterestUnsupported` capability blocker for
 unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
 negative fixings and spreads can still produce a supported positive coupon after contractual floors.
+
+`StructuredCashFlowScheduleEntry` equality compares persisted row state, including `RowVersion`
+and the measured accrual interval on current rows. A reflection regression enumerates writable
+members so adding persisted state without matching equality fails verification.
 
 Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
 underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share

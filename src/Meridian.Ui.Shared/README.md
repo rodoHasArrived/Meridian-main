@@ -11,6 +11,15 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Shared
 
+Intercompany agreement routes under `/api/fund-structure/intercompany-agreements` require resolved
+tenant/company scope and access to every legal entity disclosed in the retained record. The shared
+service binds independent review to frozen terms and accepted, byte-verified Evidence Vault artifacts.
+Missing PostgreSQL registry authority returns unavailable rather than substituting a local store.
+The source-line drill-through additionally requires ledger-report authority and an owned entity book;
+it shows exact posted provenance and advisory coverage without changing consolidation matching.
+`MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED=true` exposes reference-authoring capability only
+when posting authority is registered; validators remain mandatory regardless of this rollout switch.
+
 Observed bond-fixing retention and selection routes require workstation tenant scope and Security
 Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
 version/index/currency and contractual reset, and retain immutable evidence. They do not amend
@@ -938,6 +947,15 @@ See [amount provenance validation](../../docs/testing/w10-amount-provenance.md).
 
 ## Layer responsibility
 
+Template governance and reporting access-policy rules are owned by `Meridian.Reporting`.
+`ReportTemplateRegistryService` and `ReportAccessPolicyEvaluator` remain compatibility adapters
+for current workstation callers, translating the existing access context and delegating to the
+Reporting implementation. `IReportTemplateGovernanceStore` retains its original methods and
+the registry adapts that port without changing explicit-interface implementations or mocks.
+`FileReportTemplateGovernanceStore` also implements the Reporting-owned storage port while
+retaining the same snapshot format and atomic-write behavior. Endpoint authorization, DTOs, and
+workstation registration stay in this module.
+
 This module owns cross-surface operator-facing projection types and shared endpoint helpers. Preserve
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.
@@ -1241,6 +1259,11 @@ workstation data root. Browser-created views use snapshot v2 ownership keyed by 
 workstation tenant, operator and table/explorer identity. Ownerless v1 views remain read-only
 legacy tenant views with an explicit personal-copy action. All read/write paths validate table
 access; atomic snapshot publication and a cross-host writer lease preserve concurrent updates.
+Resolved personal views apply their search and filters once, without asking the legacy/system-view
+reader to resolve the personal ID again. Responses retain that authenticated personal view as active;
+requests without a view preserve the exact run selected by the reader. Missing or foreign personal
+IDs remain fail-closed and cannot expose another operator or tenant's rows or view metadata.
+Save responses use the persisted view metadata so storage normalization remains authoritative.
 The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
