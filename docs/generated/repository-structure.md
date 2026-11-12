@@ -1333,6 +1333,7 @@ Meridian-main
 │   │   │   ├── identity_access.json
 │   │   │   ├── ledger.json
 │   │   │   ├── money_market.json
+│   │   │   ├── operator_triage.json
 │   │   │   ├── public.json
 │   │   │   ├── reporting.json
 │   │   │   └── security_master.json
@@ -1907,6 +1908,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.mmd
 │   │   │   │   ├── ledger.mmd
 │   │   │   │   ├── money_market.mmd
+│   │   │   │   ├── operator_triage.mmd
 │   │   │   │   ├── public.mmd
 │   │   │   │   ├── reporting.mmd
 │   │   │   │   └── security_master.mmd
@@ -1918,6 +1920,7 @@ Meridian-main
 │   │   │   │   ├── identity_access.md
 │   │   │   │   ├── ledger.md
 │   │   │   │   ├── money_market.md
+│   │   │   │   ├── operator_triage.md
 │   │   │   │   ├── public.md
 │   │   │   │   ├── reporting.md
 │   │   │   │   └── security_master.md
