@@ -11,6 +11,16 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Storage
 
+Security Master migration 059 adds optional price quotation evidence and widens raw price storage
+from numeric(28,10) to numeric so new CLR-decimal quotations survive retention exactly. Existing
+rounded observations are left as retained evidence. Nullable metadata is omitted from legacy
+canonical serialization. Curve point JSON can retain typed rate observations and reviewed construction
+evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
+Typed-rate retries compare all retained source and construction facts except retrieval time under
+the curve row lock. A retry returns its original immutable version, hash and evidence, including
+after a newer distinct publication; it never makes the older observation latest again.
+
+
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
 cover debits relieved proceeds, credits execution cash cost, and books the exact realized result.

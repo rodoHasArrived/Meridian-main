@@ -13,6 +13,7 @@ public static class BondAnalyticsEndpoints
 {
     public static void MapBondAnalyticsEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         // Analytics read retained Security Master terms, so the same tenant scope that gates the
         // migration routes applies here; an unscoped request is refused rather than served globally.
         var group = app.MapGroup(string.Empty).RequireWorkstationTenantScope();
@@ -34,6 +35,8 @@ public static class BondAnalyticsEndpoints
             [FromQuery] decimal? cleanPrice,
             [FromQuery(Name = "yield")] decimal? annualYield,
             [FromQuery] string? yieldConvention,
+            [FromQuery] Guid? selectionReceiptId,
+            [FromQuery] string? priceAccountId,
             [FromServices] IBondAnalyticsService service,
             CancellationToken ct) =>
         {
@@ -53,14 +56,14 @@ public static class BondAnalyticsEndpoints
             {
                 return Results.BadRequest(new { error = "asOf and knownAt must be explicit UTC timestamps." });
             }
-            if (cleanPrice.HasValue == annualYield.HasValue)
+            if ((cleanPrice.HasValue ? 1 : 0) + (annualYield.HasValue ? 1 : 0) + (selectionReceiptId.HasValue ? 1 : 0) != 1)
             {
-                return Results.BadRequest(new { error = "Supply exactly one of cleanPrice per 100 face or annual fractional yield." });
+                return Results.BadRequest(new { error = "Supply exactly one retained selectionReceiptId, cleanPrice per 100 face, or annual fractional yield." });
             }
 
             var result = await service.CalculateAsync(new BondAnalyticsRequest(
                 securityId, new BondCalculationContext(asOf, settlementDate, knownAt),
-                cleanPrice, annualYield, convention), ct).ConfigureAwait(false);
+                cleanPrice, annualYield, convention) { SelectionReceiptId = selectionReceiptId, PriceAccountId = priceAccountId }, ct).ConfigureAwait(false);
             return result is null ? Results.NotFound() : Results.Json(result, jsonOptions);
         })
         .WithTags("BondAnalytics")

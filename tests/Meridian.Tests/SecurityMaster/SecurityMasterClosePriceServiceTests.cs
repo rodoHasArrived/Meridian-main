@@ -14,6 +14,33 @@ public sealed class SecurityMasterClosePriceServiceTests
     private static readonly Guid SecurityId = Guid.NewGuid();
     private static readonly DateTimeOffset Close = new(2026, 10, 1, 20, 0, 0, TimeSpan.Zero);
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task QuotationEvidence_IsRetainedAndMixedBasisBlocksApproval(bool mixedBasis)
+    {
+        var (service, store) = BuildService();
+        var quote = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Clean, SecurityQuotationConvention.Per100Face,
+            SecurityQuoteStatus.Bid, DateOnly.FromDateTime(Close.UtcDateTime), "Same day");
+        store.GetRawPricesAsync(SecurityId, Close, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(
+            new SecurityRawPriceDto[]
+            {
+                new("source", 100m, Close.AddHours(-1), SecurityPriceUnit.PercentOfPar) { Quotation = quote },
+                new("comparison", 100.2m, Close.AddHours(-2), SecurityPriceUnit.PercentOfPar)
+                { Quotation = quote with { Status = SecurityQuoteStatus.Ask, Basis = mixedBasis ? SecurityPriceBasis.Dirty : SecurityPriceBasis.Clean } }
+            });
+        var draft = await service.CreateClosePriceSetAsync(Request());
+        draft.Snapshot.Lines.Single().Observations.Should().OnlyContain(row => row.Quotation != null);
+        SecurityClosePriceEvidence.Validate(draft.Snapshot);
+        if (mixedBasis)
+        {
+            draft.Snapshot.Blockers.Should().Contain(item => item.Code == "IncomparableQuotationBasis");
+            RetainForRead(store, draft);
+            await service.Invoking(value => value.ApproveClosePriceSetAsync(Approve(draft))).Should().ThrowAsync<InvalidOperationException>();
+        }
+        else draft.Snapshot.Blockers.Should().BeEmpty("bid/ask status alone does not change the economic quote basis");
+    }
+
     [Fact]
     public async Task ApprovalRetainsExactSourceObservationsOverrideAndIndependentRationale()
     {

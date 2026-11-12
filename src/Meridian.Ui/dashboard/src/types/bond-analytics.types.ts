@@ -74,4 +74,25 @@ export interface BondAnalyticsQuery {
   cleanPrice?: string;
   yield?: string;
   yieldConvention?: BondYieldConvention;
+  selectionReceiptId?: string;
+  priceAccountId?: string;
+}
+
+/** Exact retained provider observation and immutable operator-choice receipt. */
+export interface BondRetainedObservation {
+  securityId: string;
+  selectedSource: string;
+  goldenCopyPrice: BondDecimal;
+  priceAsOf: string;
+  selectionReceiptId: string;
+  isStaleFallback: boolean;
+  daysStale?: number | null;
+  unit: string;
+  quotation?: {
+    basis: "Unspecified" | "Clean" | "Dirty";
+    convention: "Unspecified" | "Per100Face" | "CurrencyPerUnit";
+    status: "Unspecified" | "Bid" | "Ask" | "Mid" | "Evaluated" | "Trade";
+    settlementDate: string;
+    settlementBasis: string;
+  } | null;
 }

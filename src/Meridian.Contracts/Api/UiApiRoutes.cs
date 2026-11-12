@@ -443,6 +443,9 @@ public static class UiApiRoutes
     // Pricing hierarchy & golden copy
     public const string SecurityMasterPricingHierarchy = "/api/security-master/{securityId:guid}/pricing-hierarchy";
     public const string SecurityMasterPriceGoldenCopy = "/api/security-master/{securityId:guid}/price-golden-copy";
+    public const string SecurityMasterRetainedPriceObservations = "/api/security-master/{securityId:guid}/price-golden-copy/observations";
+    public const string SecurityMasterRateObservations = "/api/security-master/rates/observations";
+    public const string SecurityMasterRateIngest = "/api/security-master/rates/ingest";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
     public const string SecurityMasterRecordRawPrice = "/api/security-master/{securityId:guid}/raw-price";
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { getBondAnalytics } from "./bond-analytics.api";
+import { getBondAnalytics, getBondRetainedObservations } from "./bond-analytics.api";
 import { previewBondMigration, previewBondMigrationBatch, stageBondMigration } from "./bond-migration.api";
 
 describe("bond calculation API adapters", () => {
@@ -27,6 +27,15 @@ describe("bond calculation API adapters", () => {
     expect(params.has("yield")).toBe(false);
     expect(params.get("knownAt")).toBe("2026-10-29T12:00:00Z");
     expect(options.signal).toBe(controller.signal);
+  });
+
+  it("loads dated retained observations and keeps decimal response text exact", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('[{"goldenCopyPrice":"98.123456789012345678"}]', { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+    const rows = await getBondRetainedObservations("bond", { asOf: "2026-10-29T00:00:00Z", priceAccountId: "account-a" });
+    expect(rows[0].goldenCopyPrice).toBe("98.123456789012345678");
+    expect(fetchMock.mock.calls[0][0]).toContain("/price-golden-copy/observations?");
+    expect(fetchMock.mock.calls[0][0]).toContain("accountId=account-a");
   });
 
   it("passes authoritative errors through instead of returning seeded analytics", async () => {

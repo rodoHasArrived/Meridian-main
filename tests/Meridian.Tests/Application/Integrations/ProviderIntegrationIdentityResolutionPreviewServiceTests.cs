@@ -55,6 +55,121 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
         missing.Issues.Should().Contain(issue => issue.Code == "identity.security.identifier.missing");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PreviewAsync_ResolvesEveryIdentifierAndDetectsDisagreement(bool disagree)
+    {
+        var cusipId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var isinId = disagree ? Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb") : cusipId;
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(store, false,
+            """{"internalAccountId":"account-1","security":{"cusip":"123456789","isin":"US1234567890"}}""");
+        var query = new FakeSecurityMasterQueryService(cusipId, isinId);
+        var preview = await new ProviderIntegrationIdentityResolutionPreviewService(store, query).PreviewAsync("connection-alpha");
+
+        var row = preview.Rows.Single();
+        query.Lookups.Should().Equal(SecurityIdentifierKind.Cusip, SecurityIdentifierKind.Isin);
+        row.SecurityCandidates.Should().HaveCount(2).And.OnlyContain(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved);
+        row.HasIdentifierConflict.Should().Be(disagree);
+        row.SecurityStatus.Should().Be(disagree ? ProviderIntegrationIdentityResolutionStatusDto.Conflict : ProviderIntegrationIdentityResolutionStatusDto.Resolved);
+        if (disagree)
+        {
+            row.InternalSecurityId.Should().BeNull();
+            preview.SecurityReviewRequiredCount.Should().Be(1);
+            row.Issues.Should().Contain(issue => issue.Code == "identity.security.identifier-conflict" && issue.Severity == ProviderIntegrationIssueSeverityDto.Critical);
+            var readiness = await new ProviderIntegrationPromotionReadinessService(
+                new ProviderIntegrationIdentityResolutionPreviewService(store, query)).PreviewAsync("connection-alpha");
+            readiness.Rows.Single().Status.Should().Be(ProviderIntegrationPromotionReadinessStatusDto.Blocked);
+        }
+    }
+
+    [Fact]
+    public async Task ResolveAsync_RetainsChoiceWithoutChangingSourceAndInvalidatesChangedEvidence()
+    {
+        var cusipId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var isinId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(store, false,
+            """{"internalAccountId":"account-1","security":{"cusip":"123456789","isin":"US1234567890"}}""");
+        var service = new ProviderIntegrationIdentityResolutionPreviewService(store, new FakeSecurityMasterQueryService(cusipId, isinId));
+        var before = (await service.PreviewAsync("connection-alpha")).Rows.Single();
+        var sourceBefore = (await store.ListStagingRecordsAsync(before.SyncRunId)).Single().MappedRecord.GetRawText();
+        var request = new ProviderIntegrationIdentityResolutionRequestDto(before.SyncRunId, before.StagingRecordId, isinId, before.EvidenceHash!, "CUSIP belongs to replaced issue; reviewed original provider file.");
+        var decision = await service.ResolveAsync(null, "connection-alpha", request, "authenticated-operator");
+
+        var reloadedStore = new FileProviderIntegrationManifestStore(testRoot);
+        var after = (await new ProviderIntegrationIdentityResolutionPreviewService(reloadedStore,
+            new FakeSecurityMasterQueryService(cusipId, isinId)).PreviewAsync("connection-alpha")).Rows.Single();
+        after.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.Resolved);
+        after.InternalSecurityId.Should().Be(isinId.ToString("D"));
+        after.HasIdentifierConflict.Should().BeTrue();
+        after.OperatorResolution.Should().BeEquivalentTo(decision);
+        var ready = await new ProviderIntegrationPromotionReadinessService(
+            new ProviderIntegrationIdentityResolutionPreviewService(reloadedStore,
+                new FakeSecurityMasterQueryService(cusipId, isinId))).PreviewAsync("connection-alpha");
+        ready.Rows.Single().Status.Should().Be(ProviderIntegrationPromotionReadinessStatusDto.ReadyForReconciliation);
+        (await reloadedStore.ListStagingRecordsAsync(before.SyncRunId)).Single().MappedRecord.GetRawText().Should().Be(sourceBefore);
+
+        var changedService = new ProviderIntegrationIdentityResolutionPreviewService(reloadedStore,
+            new FakeSecurityMasterQueryService(cusipId, Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc")));
+        var changed = (await changedService.PreviewAsync("connection-alpha")).Rows.Single();
+        changed.OperatorResolution.Should().BeNull();
+        changed.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.Conflict);
+        var staleChoice = () => changedService.ResolveAsync(null, "connection-alpha", request, "authenticated-operator");
+        await staleChoice.Should().ThrowAsync<InvalidOperationException>();
+        var overwrite = () => reloadedStore.SaveIdentityDecisionAsync(decision with { Reason = "overwritten" });
+        await overwrite.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task PreviewAsync_DoesNotBypassProviderEvidenceWhenInternalIdIsPresent()
+    {
+        var internalId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(store, false,
+            """{"security":{"internalSecurityId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","isin":"US1234567890"}}""");
+        var service = new ProviderIntegrationIdentityResolutionPreviewService(store,
+            new FakeSecurityMasterQueryService(internalId, Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb")));
+        var row = (await service.PreviewAsync("connection-alpha")).Rows.Single();
+        row.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.Conflict);
+        row.SecurityCandidates.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task PreviewAsync_ChecksBothTickerAliases()
+    {
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(store, false,
+            """{"security":{"cusip":"123456789","ticker":"BOND","symbol":"BOND-OTHER"}}""");
+        var query = new FakeSecurityMasterQueryService(Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+            tickerSecurityId: Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
+        var row = (await new ProviderIntegrationIdentityResolutionPreviewService(store, query).PreviewAsync("connection-alpha")).Rows.Single();
+        row.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.Conflict);
+        row.SecurityCandidates.Should().HaveCount(3);
+        row.SecurityCandidates.Where(candidate => candidate.IdentifierKind == "Ticker")
+            .Select(candidate => candidate.IdentifierValue).Should().Equal("BOND", "BOND-OTHER");
+    }
+
+    [Fact]
+    public async Task ResolveAsync_RejectsInactiveOrUnmatchedChoicesAndForeignConnections()
+    {
+        var cusipId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var isinId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        var store = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(store, false,
+            """{"security":{"cusip":"123456789","isin":"US1234567890"}}""");
+        var service = new ProviderIntegrationIdentityResolutionPreviewService(store, new FakeSecurityMasterQueryService(cusipId, isinId, inactiveIsin: true));
+        var row = (await service.PreviewAsync("connection-alpha")).Rows.Single();
+        var request = new ProviderIntegrationIdentityResolutionRequestDto(row.SyncRunId, row.StagingRecordId, isinId, row.EvidenceHash!, "Reviewed");
+        var inactive = () => service.ResolveAsync(null, "connection-alpha", request, "operator");
+        await inactive.Should().ThrowAsync<ArgumentException>();
+        var unmatched = () => service.ResolveAsync(null, "connection-alpha", request with { SelectedSecurityId = Guid.NewGuid() }, "operator");
+        await unmatched.Should().ThrowAsync<ArgumentException>();
+        var foreignRun = () => service.ResolveAsync(null, "connection-alpha", request with { SyncRunId = "foreign-run" }, "operator");
+        await foreignRun.Should().ThrowAsync<KeyNotFoundException>();
+    }
+
     [Fact]
     public async Task PreviewAsync_ObservesCancellationBeforeReadingRuns()
     {
@@ -71,7 +186,8 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
 
     private static async Task SeedStagingAsync(
         IProviderIntegrationManifestStore store,
-        bool includeMissingRecord)
+        bool includeMissingRecord,
+        string? mappedRecordJson = null)
     {
         var manifest = CreateManifest();
         var manifestReference = ProviderIntegrationManifestIdentity.Create(manifest);
@@ -104,7 +220,7 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
             "payload-1",
             "source-position-1",
             "connection-alpha|positions|source-position-1",
-            Json("""{"providerAccountId":"A1","security":{"cusip":"123456789"},"quantity":100,"asOf":"2026-06-16"}"""),
+            Json(mappedRecordJson ?? """{"providerAccountId":"A1","security":{"cusip":"123456789"},"quantity":100,"asOf":"2026-06-16"}"""),
             ValidationWarnings: [],
             ProviderIntegrationProcessingStatusDto.Validated,
             DateTimeOffset.Parse("2026-06-16T12:02:00Z"))).ConfigureAwait(false);
@@ -190,10 +306,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
     private static JsonElement Json(string json)
         => JsonDocument.Parse(json).RootElement.Clone();
 
-    private sealed class FakeSecurityMasterQueryService(Guid securityId) : ISecurityMasterQueryService
+    private sealed class FakeSecurityMasterQueryService(Guid securityId, Guid? isinSecurityId = null, bool inactiveIsin = false, Guid? tickerSecurityId = null) : ISecurityMasterQueryService
     {
-        public Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
-            => throw new NotImplementedException();
+        public List<SecurityIdentifierKind> Lookups { get; } = [];
+        public async Task<SecurityDetailDto?> GetByIdAsync(Guid securityId, CancellationToken ct = default)
+            => await GetByIdentifierAsync(SecurityIdentifierKind.Cusip, "123456789", null, ct);
 
         public Task<SecurityDetailDto?> GetByIdAsOfAsync(Guid securityId, DateTimeOffset asOfUtc, CancellationToken ct = default)
             => GetByIdAsync(securityId, ct);
@@ -205,12 +322,16 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
             CancellationToken ct = default,
             DateTimeOffset? asOfUtc = null)
         {
-            if (identifierKind == SecurityIdentifierKind.Cusip && identifierValue == "123456789")
+            Lookups.Add(identifierKind);
+            var isIsin = identifierKind == SecurityIdentifierKind.Isin && identifierValue == "US1234567890" && isinSecurityId.HasValue;
+            var isOtherTicker = identifierKind == SecurityIdentifierKind.Ticker && identifierValue == "BOND-OTHER" && tickerSecurityId.HasValue;
+            if ((identifierKind == SecurityIdentifierKind.Cusip && identifierValue == "123456789") || isIsin ||
+                (identifierKind == SecurityIdentifierKind.Ticker && identifierValue == "BOND") || isOtherTicker)
             {
                 return Task.FromResult<SecurityDetailDto?>(new SecurityDetailDto(
-                    securityId,
+                    isIsin ? isinSecurityId!.Value : isOtherTicker ? tickerSecurityId!.Value : securityId,
                     "FixedIncome",
-                    SecurityStatusDto.Active,
+                    isIsin && inactiveIsin ? SecurityStatusDto.Inactive : SecurityStatusDto.Active,
                     "ABC 5.00 2031",
                     "USD",
                     Json("{}"),

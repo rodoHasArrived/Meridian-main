@@ -14,6 +14,25 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
     : IClassFixture<SecurityMasterDatabaseFixture>
 {
     [SecurityMasterDatabaseFact]
+    public async Task QuotationEvidence_RoundTripsAndCannotReplaceSameObservation()
+    {
+        var securityId = await SeedSecurityAsync();
+        var store = new PostgresSecurityMasterPricingStore(fixture.Options);
+        var date = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        var quote = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Dirty,
+            SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Ask, new(2026, 6, 2), "T+1");
+        var request = new RecordRawPriceRequest(securityId, "dealer", 99.12345678901234567890123456m, date, "operator", SecurityPriceUnit.PercentOfPar)
+            { Quotation = quote };
+        await store.RecordRawPriceAsync(request);
+        await store.RecordRawPriceAsync(request);
+        var restored = (await store.GetRawPricesAsync(securityId, date)).Single();
+        restored.Quotation.Should().Be(quote);
+        restored.Price.Should().Be(request.Price);
+        await store.Invoking(value => value.RecordRawPriceAsync(request with { Quotation = quote with { Basis = SecurityPriceBasis.Clean } }))
+            .Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task Observations_RetainOutOfOrderHistoryAndRefuseSameTimestampReplacement()
     {
         var securityId = await SeedSecurityAsync();

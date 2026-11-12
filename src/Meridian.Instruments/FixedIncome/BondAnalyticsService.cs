@@ -23,13 +23,15 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     private readonly ISecurityMasterQueryService _query;
     private readonly IBusinessDayCalendarSource? _calendars;
     private readonly IBondCalculationPolicy? _policy;
+    private readonly ISecurityMasterPricingService? _pricing;
 
     public BondAnalyticsService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null,
-        IBondCalculationPolicy? policy = null)
+        IBondCalculationPolicy? policy = null, ISecurityMasterPricingService? pricing = null)
     {
         _query = query;
         _calendars = calendars;
         _policy = policy;
+        _pricing = pricing;
     }
 
     public async Task<BondAnalyticsResult?> CalculateAsync(BondAnalyticsRequest request, CancellationToken ct = default)
@@ -112,8 +114,36 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             return Refuse("UnsupportedAssetClass", "This analytics model supports canonical Bond securities only.");
         if (Meridian.Contracts.CashFlows.SecurityContractualCashFlowTerms.IsDeclared(security.AssetClass, security.AssetSpecificTerms))
             return Refuse("UnsupportedCashFlowContract", model.CompanionRefusal);
-        if ((request.CleanPrice is null) == (request.Yield is null))
+        if (request.SelectionReceiptId is null && (request.CleanPrice is null) == (request.Yield is null))
             return Refuse("PriceOrYieldRequired", "Supply exactly one clean price per 100 face or annual yield fraction.");
+        if (request.SelectionReceiptId is not null && (request.CleanPrice is not null || request.Yield is not null))
+            return Refuse("AmbiguousRetainedObservation", "A retained observation receipt cannot be combined with a manual price or yield.");
+        SecurityPriceGoldenCopyDto? observation = null;
+        if (request.SelectionReceiptId is { } receipt)
+        {
+            if (model.Version == LegacyModelVersion)
+                return Refuse("UnsupportedRetainedObservation", "Retained observations require current analytics; legacy replay is unchanged.");
+            observation = _pricing is null ? null : await _pricing.GetGoldenCopySelectionAsync(
+                request.SecurityId, request.PriceAccountId, receipt, ct).ConfigureAwait(false);
+            if (observation is null || observation.SelectionReceiptId != receipt || observation.SecurityId != request.SecurityId)
+                return Refuse("PriceReceiptUnavailable", "Select a retained observation in the same security and account scope.");
+            if (observation.PriceAsOf > context.AsOf || observation.EvaluatedAsOf != context.AsOf
+                || observation.KnowledgeAsOf is null || context.KnownAt is { } cutoff && observation.KnowledgeAsOf != cutoff)
+                return Refuse("PriceReceiptContextMismatch", "Reload retained observations for this economic date and recorded cutoff.");
+            if (observation.IsStaleFallback)
+                return Refuse("StalePriceObservation", "Select a fresh observation or review the retained source freshness policy.");
+            if (observation.Unit != SecurityPriceUnit.PercentOfPar
+                || observation.Quotation is not { Convention: SecurityQuotationConvention.Per100Face,
+                    Basis: SecurityPriceBasis.Clean or SecurityPriceBasis.Dirty } quote
+                || quote.Status == SecurityQuoteStatus.Unspecified || !Enum.IsDefined(quote.Status)
+                || string.IsNullOrWhiteSpace(quote.SettlementBasis))
+                return Refuse("PriceQuotationRequired", "Review conventions: a retained quote requires explicit per-100 clean/dirty basis, status and settlement basis.");
+            if (quote.SettlementDate != settlement)
+                return Refuse("PriceSettlementMismatch", "Use the observation settlement date or select an observation on the calculation settlement basis.");
+            inputs.Add(new("PriceSelectionReceipt", receipt.ToString("D"),
+                ContentSha256: Sha256Digest.ComputeUtf8(System.Text.Json.JsonSerializer.Serialize(observation)),
+                VersionId: receipt, AsOf: observation.PriceAsOf, RecordedAt: observation.KnowledgeAsOf));
+        }
         if (request.CleanPrice is <= 0m)
             return Refuse("InvalidCleanPrice", "Clean price must be positive.");
         if (context.Curves is { Count: > 0 })
@@ -166,9 +196,13 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 annualRate.Value, zeroCoupon, convention.Value, model.Compatibility, out var flows, out var accrued, out var refusal))
             return Refuse("CashFlowRefused", refusal!);
         var priceFlows = flows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray();
+        var cleanInput = observation is null ? request.CleanPrice
+            : observation.Quotation!.Basis == SecurityPriceBasis.Clean ? observation.GoldenCopyPrice : observation.GoldenCopyPrice - accrued;
+        if (cleanInput is <= 0m)
+            return Refuse("InvalidCleanPrice", "Normalized retained clean price must be positive.");
         var yield = request.Yield.GetValueOrDefault();
-        var targetDirty = request.CleanPrice + accrued;
-        if (request.CleanPrice is not null && !BondPricingMath.TrySolveYield(priceFlows, targetDirty!.Value,
+        var targetDirty = cleanInput + accrued;
+        if (cleanInput is not null && !BondPricingMath.TrySolveYield(priceFlows, targetDirty!.Value,
                 convention.Value, paymentsPerYear, out yield, out refusal))
             return Refuse("YieldNotConverged", refusal!);
         if (!BondPricingMath.TryPrice(priceFlows, yield, convention.Value, paymentsPerYear, out var measures, out refusal))

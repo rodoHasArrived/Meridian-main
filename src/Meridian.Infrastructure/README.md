@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Infrastructure
 
+FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
+Fixed-income ingestion uses original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
+maturity Treasury yields are labeled par-curve observations and are never silently treated as
+zero rates or discount factors. Provider verification here is synthetic; live FRED access remains untested.
+
+
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
 Broker amendment and cancellation failures retain the broker-observed order status and use

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-21T15:53:39Z",
+  "generatedAt": "2026-11-12T15:46:27Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -562,8 +562,8 @@
         "src/Meridian.Backtesting"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Backtesting.Sdk",
+        "Meridian.Contracts",
         "Meridian.Instruments",
         "Meridian.Storage",
         "Meridian.Strategies"
@@ -710,7 +710,6 @@
         "src/Meridian.Execution/Interfaces/IOrderGateway.cs"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Contracts",
         "Meridian.Core",
         "Meridian.Execution.Sdk",
@@ -2028,13 +2027,13 @@
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Backtesting references Meridian.Application directly via project reference."
+      "to": "Meridian.Backtesting.Sdk",
+      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
-      "to": "Meridian.Backtesting.Sdk",
-      "reason": "Meridian.Backtesting references Meridian.Backtesting.Sdk directly via project reference."
+      "to": "Meridian.Contracts",
+      "reason": "Meridian.Backtesting references Meridian.Contracts directly via project reference."
     },
     {
       "from": "Meridian.Backtesting",
@@ -2080,11 +2079,6 @@
       "from": "Meridian.Domain",
       "to": "Meridian.ProviderSdk",
       "reason": "Meridian.Domain references Meridian.ProviderSdk directly via project reference."
-    },
-    {
-      "from": "Meridian.Execution",
-      "to": "Meridian.Application",
-      "reason": "Meridian.Execution references Meridian.Application directly via project reference."
     },
     {
       "from": "Meridian.Execution",
@@ -2444,324 +2438,324 @@
   ],
   "recentChanges": [
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs",
+      "path": "src/Meridian.Core/Currency/CurrencyMinorUnits.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
+      "lastModified": "2026-11-01T14:32:19Z",
+      "lastCommit": "248a331817",
+      "lastSummary": "style: whitespace formatting in CurrencyMinorUnits",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/NotionalLot.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
+      "path": "src/Meridian.Ledger/LedgerEntry.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-01T12:05:53Z",
+      "lastCommit": "3c42029ec2",
+      "lastSummary": "fix(ledger): let the FX conversion check honour the functional currency's minor units",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs",
+      "path": "src/Meridian.Application/Commands/ConfigCommands.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-21T05:33:44Z",
-      "lastCommit": "468399d31",
-      "lastSummary": "feat(security-master): one lot model keyed on the lot unit, with a notional lot",
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
+      "path": "src/Meridian.Application/Services/ConfigurationService.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 16
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs",
+      "path": "src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:28:18Z",
-      "lastCommit": "0bd7b0bc4",
-      "lastSummary": "Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate",
-      "touches": 3
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs",
+      "path": "src/Meridian.Wpf/ViewModels/FireAndForget.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs",
+      "path": "src/Meridian.Wpf/ViewModels/QuantScriptViewModel.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T20:14:06Z",
-      "lastCommit": "7d276fc6d",
-      "lastSummary": "Fourth review round: exact term keys, deposit rate units, reconciliation-time classes",
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T19:34:19Z",
-      "lastCommit": "53223bf3b",
-      "lastSummary": "Tighten the registry-lookup rules on the second review round",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx",
+      "path": "src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 3
+      "lastModified": "2026-11-01T11:47:14Z",
+      "lastCommit": "81febe098b",
+      "lastSummary": "Replace WPF async void helpers with SafeFireAndForget; move provider detection printing to CLI",
+      "touches": 1
     },
     {
-      "path": "src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts",
+      "path": "src/Meridian.Ui/dashboard/src/components/meridian/bond-analytics-panel.test.tsx",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Wpf/Views/SettingsPage.xaml",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T19:26:20Z",
-      "lastCommit": "0aa3eeb19",
-      "lastSummary": "Count and label the aggregate profile projection figures as declared",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T17:45:32Z",
-      "lastCommit": "07233cb6e",
-      "lastSummary": "Move the Bond projection onto SecurityTermsProjectionRegistry satellites",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.ReferenceData/SecurityMaster/SecurityAssetProfileCatalog.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T17:34:25Z",
-      "lastCommit": "ae83757a3",
-      "lastSummary": "Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T17:20:11Z",
-      "lastCommit": "408bf146f",
-      "lastSummary": "Replace asset-class name and substring checks with registry lookups (E5/E6)",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Storage/README.md",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 60
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 22
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
+      "lastModified": "2026-11-01T04:17:13Z",
+      "lastCommit": "455ecc70d1",
+      "lastSummary": "ci: repair the hosted lane failures on the base branch",
       "touches": 4
     },
     {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.Storage/AssetOperations/FileAccountCashForecastStore.cs",
-      "subsystem": "Providers and Storage",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
-      "touches": 3
-    },
-    {
-      "path": "src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-10-20T16:05:10-07:00",
-      "lastCommit": "2ed48d5db",
-      "lastSummary": "refactor(storage): partition account cash continuity stores per scope (#3201)",
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-01T04:17:13Z",
+      "lastCommit": "455ecc70d1",
+      "lastSummary": "ci: repair the hosted lane failures on the base branch",
       "touches": 2
     },
     {
-      "path": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs",
+      "path": "src/Meridian.Wpf/ViewModels/CashFlows/ContractualCashFlowScenarioViewModel.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-10-20T15:38:53Z",
-      "lastCommit": "3b3e24a81",
-      "lastSummary": "Reject stale patch bases on Security Master term amends (E1)",
-      "touches": 10
+      "lastModified": "2026-11-01T04:17:13Z",
+      "lastCommit": "455ecc70d1",
+      "lastSummary": "ci: repair the hosted lane failures on the base branch",
+      "touches": 2
     },
     {
-      "path": "src/Meridian.Application/README.md",
+      "path": "src/Meridian.Wpf/Views/DirectLendingPage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-01T04:17:13Z",
+      "lastCommit": "455ecc70d1",
+      "lastSummary": "ci: repair the hosted lane failures on the base branch",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/ProviderRouting/ProviderRuntimeCredentialService.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "ebe59f45d",
-      "lastSummary": "Extract shared fund-structure query projections",
-      "touches": 21
+      "lastModified": "2026-11-01T03:53:41Z",
+      "lastCommit": "39b16557bd",
+      "lastSummary": "fix: neutralize request-supplied ids in credential ownership logs; harden event reader in disposable schema-control test",
+      "touches": 6
     },
     {
-      "path": "src/Meridian.Execution/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Strategies/README.md",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Execution/OrderManagementSystem.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Strategies/Live/LiveTradingEngine.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
-      "touches": 4
-    },
-    {
-      "path": "src/Meridian.Execution/BrokerageServiceRegistration.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "path": "src/Meridian.Application/ProviderRouting/ProviderRoutingLogValues.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-01T03:53:41Z",
+      "lastCommit": "39b16557bd",
+      "lastSummary": "fix: neutralize request-supplied ids in credential ownership logs; harden event reader in disposable schema-control test",
       "touches": 1
     },
     {
-      "path": "src/Meridian.Execution/IOrderManagementLifecycle.cs",
-      "subsystem": "Execution, Risk, and Strategies",
-      "lastModified": "2026-10-20T08:15:36Z",
-      "lastCommit": "19d59dd7b",
-      "lastSummary": "Give OMS report intake and shutdown an explicit lifecycle",
+      "path": "src/Meridian.Ledger/LedgerAccounts.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-01T00:06:40Z",
+      "lastCommit": "22f694e987",
+      "lastSummary": "D1: short borrow fee and payment-in-lieu instruction, projector and posting guard",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ledger/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-01T00:06:40Z",
+      "lastCommit": "22f694e987",
+      "lastSummary": "D1: short borrow fee and payment-in-lieu instruction, projector and posting guard",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Contracts/Accounting/Lots/ShortCarryInstruction.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-01T00:06:40Z",
+      "lastCommit": "22f694e987",
+      "lastSummary": "D1: short borrow fee and payment-in-lieu instruction, projector and posting guard",
       "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/Ledger/ShortCarryPostingGuard.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-01T00:06:40Z",
+      "lastCommit": "22f694e987",
+      "lastSummary": "D1: short borrow fee and payment-in-lieu instruction, projector and posting guard",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ledger/ShortCarryProjector.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-01T00:06:40Z",
+      "lastCommit": "22f694e987",
+      "lastSummary": "D1: short borrow fee and payment-in-lieu instruction, projector and posting guard",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.bond-cutover.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:51:55Z",
+      "lastCommit": "baaf4b6d8a",
+      "lastSummary": "C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.bond-cutover.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:51:55Z",
+      "lastCommit": "baaf4b6d8a",
+      "lastSummary": "C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/WorkstationBondCutoverApiClient.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:51:55Z",
+      "lastCommit": "baaf4b6d8a",
+      "lastSummary": "C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:51:55Z",
+      "lastCommit": "baaf4b6d8a",
+      "lastSummary": "C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/AdminMaintenancePage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:51:55Z",
+      "lastCommit": "baaf4b6d8a",
+      "lastSummary": "C3/C8 close-out: batch migration preview in both workstations; register W10-BOND-001",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/README.md",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 5
+    },
+    {
+      "path": "src/Meridian.Contracts/Api/UiApiRoutes.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Endpoints/ProviderCredentialOwnershipEndpoints.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/ui-api-routes.generated.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/Composition/Features/ProviderRoutingFeatureRegistration.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.Contracts/Api/ProviderCredentialOwnershipApiModels.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/lib/api/provider-ownership.api.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-provider-ownership-panel.test.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/settings-provider-ownership-panel.tsx",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types/provider-ownership.types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/WorkstationProviderOwnershipApiClient.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Services/WorkstationSecurityMasterApiClient.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/ViewModels/Settings/ProviderOwnershipAdministrationViewModel.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Wpf/Views/CredentialManagementPage.xaml",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-10-31T23:45:48Z",
+      "lastCommit": "fd66f699fa",
+      "lastSummary": "C6+C7: deliberate runtime-credential apply with pending-restart state; keyset ladders in both workstations",
+      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,

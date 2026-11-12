@@ -11,6 +11,20 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
+clean/dirty price and market-value bases, and total accrued interest with matching currencies.
+The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,
+normalized consideration, signed variance and calculation inputs). Template v2 requires reviewed
+currency and explicit coupon units, frequency, day count, calendar, settlement, call schedules and
+factor history; its sample-payment preview uses shared schedule and bond kernels before staging.
+Configured holiday calendars are resolved by the host rather than inferred.
+
+Provider capability matrices separate terms, evaluated prices, executable quotes, trades, curves,
+fixings, factors and lifecycle notices. A configured connection or general certification never
+establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
+IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -556,6 +570,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
   copies, so a dry run and the replay it predicts coerce a value identically, and the
   operator-visible `transform.*` issue codes have one definition.
+  Identity preview resolves all supplied security identifiers before selecting a match. Conflicting
+  targets block reconciliation; retained operator choices bind the exact source and candidate
+  evidence hash. A changed match or source invalidates the choice without rewriting source data.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained

@@ -3174,3 +3174,35 @@ describe("accounting-screen view model", () => {
     });
   });
 });
+
+describe("authoritative Security Master ladder selection", () => {
+  it("loads economics outside search results without changing the query or filtered rows", async () => {
+    const bond = { ...securityResult, securityId: "ladder-bond", displayName: "Ladder bond", classification: { ...securityResult.classification, assetClass: "Bond" } };
+    const getDetail = vi.fn().mockResolvedValue(bond);
+    const services = createSecurityMasterServices({ getDetail });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => result.current.updateQuery("existing filter"));
+    await waitFor(() => expect(services.search).toHaveBeenCalledWith("existing filter"));
+    await act(() => result.current.selectSecurity("ladder-bond"));
+    expect(getDetail).toHaveBeenCalledWith("ladder-bond");
+    expect(result.current.selectedEntry).toEqual(bond);
+    expect(result.current.results).toEqual([]);
+    expect(result.current.query).toBe("existing filter");
+  });
+
+  it("ignores an older selection response and refuses mismatched authoritative economics", async () => {
+    const earlier = deferred<SecurityMasterEntry>();
+    const getDetail = vi.fn().mockImplementation((id: string) => id === "earlier" ? earlier.promise : Promise.resolve({ ...securityResult, securityId: "latest" }));
+    const services = createSecurityMasterServices({ getDetail });
+    const drillInServices = createSecurityMasterDrillInServices();
+    const { result } = renderHook(() => useSecurityMasterViewModel(true, services, drillInServices, 0));
+    act(() => { void result.current.selectSecurity("earlier"); });
+    await act(() => result.current.selectSecurity("latest"));
+    await act(async () => earlier.resolve({ ...securityResult, securityId: "earlier" }));
+    expect(result.current.selectedEntry?.securityId).toBe("latest");
+    await act(() => result.current.selectSecurity("mismatched"));
+    expect(result.current.selectedEntry).toBeNull();
+    expect(result.current.detailErrorText).toContain("different security");
+  });
+});

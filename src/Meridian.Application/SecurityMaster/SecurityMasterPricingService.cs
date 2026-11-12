@@ -35,6 +35,13 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
             || string.IsNullOrWhiteSpace(request.RecordedBy) || request.PriceAsOf == default
             || request.Unit == SecurityPriceUnit.Unspecified || !Enum.IsDefined(request.Unit))
             throw new ArgumentException("A price requires a security, source, observation date, actor, and explicit quote unit.");
+        if (request.Quotation is { } quote &&
+            (quote.Basis == SecurityPriceBasis.Unspecified || !Enum.IsDefined(quote.Basis)
+            || quote.Convention == SecurityQuotationConvention.Unspecified || !Enum.IsDefined(quote.Convention)
+            || quote.Status == SecurityQuoteStatus.Unspecified || !Enum.IsDefined(quote.Status)
+            || quote.SettlementDate == default || string.IsNullOrWhiteSpace(quote.SettlementBasis)
+            || (quote.Convention == SecurityQuotationConvention.Per100Face) != (request.Unit == SecurityPriceUnit.PercentOfPar)))
+            throw new ArgumentException("Quotation evidence requires explicit basis, convention, status and settlement facts consistent with quote units.");
         return _store.RecordRawPriceAsync(request with { SourceId = request.SourceId.Trim() }, ct);
     }
 
@@ -89,12 +96,12 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
             .Where(p => !string.Equals(p.SourceId, selected.SourceId, StringComparison.OrdinalIgnoreCase))
             .OrderBy(p => p.SourceId, StringComparer.Ordinal)
             .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf,
-                p.Unit == selected.Unit && selected.Price != 0m
+                p.Unit == selected.Unit && SecurityPriceQuotationEvidence.EconomicallyComparable(p.Quotation, selected.Quotation) && selected.Price != 0m
                     ? CalculateComparisonPercentage(p.Price, selected.Price) : null,
-                p.Unit)).ToArray();
+                p.Unit) { Quotation = p.Quotation }).ToArray();
         var selection = new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
             selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf,
-            knowledgeAsOf, Guid.NewGuid(), hierarchy);
+            knowledgeAsOf, Guid.NewGuid(), hierarchy) { Quotation = selected.Quotation };
         // Timestamp predicates are eligibility filters, not a PostgreSQL commit snapshot. A writer
         // can commit later with an earlier recorded timestamp; retain the exact evaluated result
         // and inputs so receipt replay remains stable even in that case.
@@ -105,6 +112,34 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
     public Task<SecurityPriceGoldenCopyDto?> GetGoldenCopySelectionAsync(
         Guid securityId, string? accountId, Guid receiptId, CancellationToken ct = default)
         => _store.GetPriceSelectionAsync(securityId, accountId, receiptId, ct);
+
+    public async Task<IReadOnlyList<SecurityPriceGoldenCopyDto>> GetObservationSelectionsAsync(
+        Guid securityId, string? accountId, DateTimeOffset asOf, CancellationToken ct = default, DateTimeOffset? knownAt = null)
+    {
+        if (asOf == default || asOf.Offset != TimeSpan.Zero || knownAt is { Offset: var offset } && offset != TimeSpan.Zero)
+            throw new ArgumentException("Observation cutoffs must be explicit UTC timestamps.");
+        if (await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false) is null)
+            return [];
+        var knowledgeAsOf = knownAt ?? DateTimeOffset.UtcNow;
+        var hierarchy = await _store.GetHierarchyAsOfAsync(securityId, accountId, asOf, ct, knowledgeAsOf).ConfigureAwait(false);
+        if (hierarchy is null || hierarchy.AsOf > asOf)
+            return [];
+        var prices = LatestEligible(await _store.GetRawPricesAsync(securityId, asOf, ct, knowledgeAsOf).ConfigureAwait(false), asOf);
+        var result = new List<SecurityPriceGoldenCopyDto>();
+        foreach (var source in hierarchy.Entries.OrderBy(entry => entry.Priority))
+        {
+            if (!prices.TryGetValue(source.SourceId.Trim(), out var price) || price.Unit == SecurityPriceUnit.Unspecified)
+                continue;
+            var age = (int)(asOf - price.PriceAsOf).TotalDays;
+            // Raw denotes an explicit operator choice, rather than hierarchy golden-copy approval.
+            var selection = new SecurityPriceGoldenCopyDto(securityId, price.Price, SecurityPriceKind.Raw,
+                price.SourceId, price.PriceAsOf, age > source.MaxDaysStale, age, [], price.Unit,
+                asOf, hierarchy.AsOf, knowledgeAsOf, Guid.NewGuid(), hierarchy) { Quotation = price.Quotation };
+            await _store.RetainPriceSelectionAsync(selection, accountId, ct).ConfigureAwait(false);
+            result.Add(selection);
+        }
+        return result;
+    }
 
     private static decimal? CalculateComparisonPercentage(decimal comparisonPrice, decimal selectedPrice)
     {
@@ -126,7 +161,7 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
         var asOf = DateTimeOffset.UtcNow;
         var prices = LatestEligible(await _store.GetRawPricesAsync(securityId, asOf, ct).ConfigureAwait(false), asOf);
         return prices.Values.OrderBy(p => p.SourceId, StringComparer.Ordinal)
-            .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf, null, p.Unit)).ToArray();
+            .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf, null, p.Unit) { Quotation = p.Quotation }).ToArray();
     }
 
     private static Dictionary<string, SecurityRawPriceDto> LatestEligible(
@@ -135,7 +170,7 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
             .GroupBy(p => p.SourceId.Trim(), StringComparer.OrdinalIgnoreCase)
             // A same-time legacy case-variant conflict is ambiguous and cannot drive valuation.
             .Select(g => g.Where(p => p.PriceAsOf == g.Max(v => v.PriceAsOf)).ToArray())
-            .Where(latest => latest.Select(p => (p.Price, p.Unit)).Distinct().Count() == 1)
+            .Where(latest => latest.Select(p => (p.Price, p.Unit, p.Quotation)).Distinct().Count() == 1)
             .Select(latest => latest.OrderBy(p => p.SourceId, StringComparer.Ordinal).First())
             .ToDictionary(p => p.SourceId.Trim(), StringComparer.OrdinalIgnoreCase);
 }

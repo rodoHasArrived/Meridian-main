@@ -11,6 +11,18 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Bond ladder selection loads authoritative Security Master detail even outside current search results
+and opens the existing Evidence tab. Return to bond ladder preserves its query, loaded rows and
+scroll position. Analytics offers Use retained observation with source, time, freshness, quote status,
+clean/dirty quotation and settlement evidence. Calculation submits the immutable receipt identity,
+not a copied quote. Blocker actions focus convention review, source selection or rates/fixings while
+retaining calculation inputs. Decimal text stays exact through parsing and formatting.
+
+Integration dry-runs show provider market value, normalized bond consideration and variance together,
+with an explicit sample-payment preview for fixed-income conventions. Retained source and derived
+normalization remain inspectable side by side.
+
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,
@@ -23,6 +35,12 @@ request and opaque fingerprints; displayed financial projections are never round
 command. The server recomputes the preview before creating a governed draft. Stale or uncertain
 outcomes require inspection and refresh; approval and publishing remain in the existing workflow.
 Focused coverage: `bond-analytics.api.test.ts` and `bond-analytics-panel.test.tsx`.
+
+Settings provider runtime evidence includes a side-by-side identifier matching table. Conflicting
+CUSIP, ISIN, provider, ticker and internal identifiers require an explicit active security choice
+and resolution reason. The server retains the authenticated operator and exact matching hash;
+changed evidence requires review again. Source records and all conflicting matches stay visible.
+Focused coverage: `provider-identity-evidence.test.tsx`.
 
 Provider credential editors require explicit selection of an existing owned connection. Status,
 save, verification and deletion use the same retained connection; account and environment come

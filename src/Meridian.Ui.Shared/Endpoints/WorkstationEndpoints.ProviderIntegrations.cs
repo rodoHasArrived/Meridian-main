@@ -815,6 +815,35 @@ public static partial class WorkstationEndpoints
             UserPermission.ModifyConfig,
             UserPermission.AdminMaintenance);
 
+        group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationIdentityResolution), async (
+            string connectionId,
+            ProviderIntegrationIdentityResolutionRequestDto request,
+            HttpContext context) =>
+        {
+            if (!HasProviderIntegrationConfigurePermission(context)) return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor)) return Results.Unauthorized();
+            if (!TryResolveRequiredTenantId(context, out var tenantId)) return EndpointHelpers.Forbidden();
+            var service = context.RequestServices.GetService<ProviderIntegrationIdentityResolutionPreviewService>();
+            if (service is null) return Results.Problem("Identity resolution is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            try
+            {
+                var decision = await service.ResolveAsync(tenantId, connectionId, request, actor, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(decision, jsonOptions);
+            }
+            catch (KeyNotFoundException ex) { return Results.NotFound(new { error = ex.Message }); }
+            catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
+            catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
+        })
+        .WithName("ResolveWorkstationProviderIntegrationIdentity")
+        .Produces<ProviderIntegrationIdentityDecisionDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status401Unauthorized)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status404NotFound)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireAnyPermission(UserPermission.ManageProviders, UserPermission.ModifyConfig, UserPermission.AdminMaintenance);
+
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationProviderIntegrationPromotionReadiness), async (
             string connectionId,
             int? recentRunLimit,

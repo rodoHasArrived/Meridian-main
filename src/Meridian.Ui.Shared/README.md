@@ -11,6 +11,20 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Fixed-income HTTP responses for bond reference, analytics, migration, pricing and curves emit CLR
+decimal amounts and rates as invariant decimal strings. This transport-only serializer leaves
+canonical retained receipt bytes and hashes unchanged; identifiers and integer versions retain
+their types. Raw provider JSON remains source evidence. Precision checks cover the actual analytics
+endpoint, exact browser request binding and response parsing/display.
+
+The typed rates observation and ingestion routes preserve source units, observation and vintage
+dates and transformations. Ingestion re-fetches selected facts, enforces currency/index agreement,
+and stamps the authenticated reviewer before immutable curve publication. Generic curve publication
+cannot attach verified rate evidence. Observed fixings become forecasts only through an explicit
+assumption. Treasury constant-maturity yields require an externally reviewed construction and
+explicit discount factors; the endpoint does not bootstrap them implicitly.
+
+
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -1050,7 +1064,11 @@ staging records, reconciliation-ready counts, warning groups, and capability sum
 promoting those records to Portfolio, Security Master, Ledger, or Accounting stores. The identity-resolution
 route previews provider account and Security Master match posture for staged records, including
 missing identifiers, unresolved securities, and review-required account mappings before
-reconciliation promotion. The promotion-readiness route composes that posture into ready,
+reconciliation promotion. Every supplied CUSIP, ISIN, SEDOL, FIGI, provider ID, ticker/symbol
+and internal security ID is checked; disagreement blocks promotion. The identity-resolution
+POST retains the authenticated operator’s selected active match and reason without rewriting
+staged source records. The choice binds the complete source and matching-evidence hash; changed
+evidence requires a fresh review. Settings shows all matches together and the retained decision. The promotion-readiness route composes that posture into ready,
 review-required, and blocked rows for the reconciliation-staging handoff while remaining read-only.
 The reconciliation-handoff route requires provider configuration permission, persists only
 operator-approved ready rows as handoff evidence, and exposes handoff history for the same

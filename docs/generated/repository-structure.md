@@ -4256,8 +4256,10 @@ Meridian-main
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationActivationReadinessService.cs
 │   │   │   ├── ProviderIntegrationActivationService.cs
+│   │   │   ├── ProviderIntegrationBondValueNormalization.cs
 │   │   │   ├── ProviderIntegrationDryRunService.cs
 │   │   │   ├── ProviderIntegrationFieldTransforms.cs
+│   │   │   ├── ProviderIntegrationFixedIncomeTermsValidation.cs
 │   │   │   ├── ProviderIntegrationHttpClientTransport.cs
 │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewService.cs
 │   │   │   ├── ProviderIntegrationManifestPromotion.cs
@@ -4839,6 +4841,7 @@ Meridian-main
 │   │   ├── Integrations
 │   │   │   ├── ProviderIntegrationContracts.cs
 │   │   │   ├── ProviderIntegrationContractsJsonContext.cs
+│   │   │   ├── ProviderIntegrationIdentityDecision.cs
 │   │   │   └── ProviderIntegrationManifestIdentity.cs
 │   │   ├── Integrity
 │   │   │   └── Sha256Digest.cs
@@ -5004,6 +5007,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterStructuredCreditReclassification.cs
 │   │   │   ├── SecurityProjectionRecordExtensions.cs
 │   │   │   ├── SecurityQueries.cs
+│   │   │   ├── SecurityRateObservations.cs
 │   │   │   ├── SecurityScheduleDecimal.cs
 │   │   │   ├── SecurityTermBlocks.cs
 │   │   │   ├── SecurityTermConventions.cs
@@ -6718,6 +6722,7 @@ Meridian-main
 │   │   │   └── PostgresFundStructureTenantBackfillStore.cs
 │   │   ├── Integrations
 │   │   │   ├── FileProviderIntegrationManifestStore.cs
+│   │   │   ├── FileProviderIntegrationManifestStore.IdentityDecisions.cs
 │   │   │   ├── FileProviderIntegrationManifestStore.Manifests.cs
 │   │   │   └── FileProviderIntegrationManifestStore.Provenance.cs
 │   │   ├── Interfaces
@@ -6971,7 +6976,8 @@ Meridian-main
 │   │   │   │   ├── 055_security_governance_events_otc_collateral_stream.sql
 │   │   │   │   ├── 056_otc_contract_lifecycle_events.sql
 │   │   │   │   ├── 057_terms_capability_floor.sql
-│   │   │   │   └── 058_security_master_schedule_decimal_precision.sql
+│   │   │   │   ├── 058_security_master_schedule_decimal_precision.sql
+│   │   │   │   └── 059_security_price_quotation_evidence.sql
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
@@ -7321,6 +7327,8 @@ Meridian-main
 │   │   │   │   │   │   ├── empty-state.concrete.test.tsx
 │   │   │   │   │   │   ├── empty-state.tsx
 │   │   │   │   │   │   ├── entity-summary.tsx
+│   │   │   │   │   │   ├── fixed-income-payment-preview.test.tsx
+│   │   │   │   │   │   ├── fixed-income-payment-preview.tsx
 │   │   │   │   │   │   ├── key-value-grid.concrete.test.tsx
 │   │   │   │   │   │   ├── key-value-grid.tsx
 │   │   │   │   │   │   ├── metric-card.concrete.test.tsx
@@ -7328,6 +7336,8 @@ Meridian-main
 │   │   │   │   │   │   ├── pagination.concrete.test.tsx
 │   │   │   │   │   │   ├── pagination.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
+│   │   │   │   │   │   ├── provider-identity-evidence.test.tsx
+│   │   │   │   │   │   ├── provider-identity-evidence.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.test.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.tsx
 │   │   │   │   │   │   ├── skeleton.concrete.test.tsx
@@ -7430,6 +7440,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
+│   │   │   │   │   │   ├── security-rates-ingestion-panel.test.tsx
+│   │   │   │   │   │   ├── security-rates-ingestion-panel.tsx
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.test.tsx
 │   │   │   │   │   │   ├── strategy-formula-workbench.tsx
@@ -7625,6 +7637,7 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics.api.test.ts
 │   │   │   │   │   │   ├── bond-analytics.api.ts
 │   │   │   │   │   │   ├── bond-cutover.api.ts
+│   │   │   │   │   │   ├── bond-http-precision.test.ts
 │   │   │   │   │   │   ├── bond-migration.api.ts
 │   │   │   │   │   │   ├── bond-reference.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
@@ -7657,6 +7670,7 @@ Meridian-main
 │   │   │   │   │   │   ├── security-master-schema.api.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.test.ts
 │   │   │   │   │   │   ├── security-master-workbench.api.ts
+│   │   │   │   │   │   ├── security-rates.api.ts
 │   │   │   │   │   │   └── statement-run-detail.api.ts
 │   │   │   │   │   ├── companion-pane
 │   │   │   │   │   │   ├── chrome-bridge.test.ts
@@ -7962,6 +7976,8 @@ Meridian-main
 │   │   │   │   │   ├── asset-detail-screen.tsx
 │   │   │   │   │   ├── asset-detail-screen.view-model.test.ts
 │   │   │   │   │   ├── asset-detail-screen.view-model.ts
+│   │   │   │   │   ├── bond-import-value-preview.test.tsx
+│   │   │   │   │   ├── bond-import-value-preview.tsx
 │   │   │   │   │   ├── capital-call-issuance-screen.test.tsx
 │   │   │   │   │   ├── capital-call-issuance-screen.tsx
 │   │   │   │   │   ├── capital-call-issuance-screen.view-model.test.ts
@@ -8009,6 +8025,8 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
 │   │   │   │   │   ├── data-screen.data-regions.tsx
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
+│   │   │   │   │   ├── data-screen.fixed-income-capabilities.test.tsx
+│   │   │   │   │   ├── data-screen.fixed-income-capabilities.tsx
 │   │   │   │   │   ├── data-screen.linked-context.ts
 │   │   │   │   │   ├── data-screen.operator-focus.ts
 │   │   │   │   │   ├── data-screen.plaid-institution-search.ts
@@ -8565,6 +8583,7 @@ Meridian-main
 │   │   │   ├── ExportEndpoints.cs
 │   │   │   ├── FailoverEndpoints.cs
 │   │   │   ├── FirstRunEndpoints.cs
+│   │   │   ├── FixedIncomeHttpJson.cs
 │   │   │   ├── FundAccountEndpoints.cs
 │   │   │   ├── FundProfileScopeEndpointFilters.cs
 │   │   │   ├── FundStructureEndpoints.cs
@@ -8641,6 +8660,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
+│   │   │   ├── SecurityMasterEndpoints.Rates.cs
 │   │   │   ├── SecurityMasterEndpoints.WriteRefusals.cs
 │   │   │   ├── StatusEndpoints.cs
 │   │   │   ├── StorageEndpoints.cs
@@ -10816,6 +10836,7 @@ Meridian-main
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
+│   │   │   │   ├── ProviderIntegrationFixedIncomeTermsValidationTests.cs
 │   │   │   │   ├── ProviderIntegrationHttpClientTransportTests.cs
 │   │   │   │   ├── ProviderIntegrationIdentityResolutionPreviewServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationMonitoringServiceTests.cs
@@ -11936,6 +11957,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationServiceTests.cs
 │   │   │   ├── SecurityMasterTermsCapabilityPostgresTests.cs
 │   │   │   ├── SecurityMasterTickerChangeServiceTests.cs
+│   │   │   ├── SecurityRateIngestionRulesTests.cs
 │   │   │   ├── SecurityReferenceTaxonomyCatalogTests.cs
 │   │   │   ├── SecurityScheduleAuthoringParityTests.cs
 │   │   │   ├── SecurityTermBlockAmendmentTests.cs
@@ -12346,6 +12368,7 @@ Meridian-main
 │   │   │   ├── FileOnboardingWorkspaceStoreTests.cs
 │   │   │   ├── FirstRunEndpointsTests.cs
 │   │   │   ├── FirstRunExperienceServiceTests.cs
+│   │   │   ├── FixedIncomeHttpPrecisionTests.cs
 │   │   │   ├── FundAccountEndpointAuthorizationTests.cs
 │   │   │   ├── FundOpsCloseLaneScenarioTests.cs
 │   │   │   ├── FundProfileScopeEndpointFilterTests.cs
@@ -12443,6 +12466,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterOtcContractEndpointsTests.cs
 │   │   │   ├── SecurityMasterOtcContractEndpointsTests.Lifecycle.cs
 │   │   │   ├── SecurityMasterPreferredEquityEndpointsTests.cs
+│   │   │   ├── SecurityMasterRateEndpointsTests.cs
 │   │   │   ├── SecurityMasterReconciliationSlaPolicyProviderTests.cs
 │   │   │   ├── SecurityMasterSnapshotLotEconomicsTests.cs
 │   │   │   ├── SecurityMasterStructuredCreditReclassificationEndpointsTests.cs
@@ -12506,6 +12530,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.MetricTransport.cs
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
+│   │   │   ├── WorkstationEndpointsTests.ProviderIdentityDecisions.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs

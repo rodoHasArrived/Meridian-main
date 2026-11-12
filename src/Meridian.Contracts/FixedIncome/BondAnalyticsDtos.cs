@@ -24,6 +24,12 @@ public sealed record BondAnalyticsRequest(
 {
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? CalculationVersion { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SelectionReceiptId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PriceAccountId { get; init; }
 }
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);

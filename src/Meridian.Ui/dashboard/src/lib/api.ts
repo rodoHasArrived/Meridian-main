@@ -3446,6 +3446,16 @@ export function getProviderIntegrationIdentityResolution(
   );
 }
 
+export function resolveProviderIntegrationIdentity(
+  connectionId: string,
+  request: import("../types").ProviderIntegrationIdentityResolutionRequest,
+  options: ApiRequestOptions = {}
+) {
+  return postJson<import("../types").ProviderIntegrationIdentityDecision>(
+    workstationProviderIntegrationIdentityResolutionEndpoint(connectionId), request, options
+  );
+}
+
 export function getProviderIntegrationPromotionReadiness(
   connectionId: string,
   recentRunLimit?: number,

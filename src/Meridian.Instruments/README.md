@@ -48,6 +48,14 @@ instructions retain their exact reviewed payload on the Projected event.
 
 Bond calculations use explicit economic/settlement/recorded cutoffs. Declared Asset Operations projections consume the shared cash-flow service and stable period identities. Bond analytics exposes per-100 clean/dirty prices, accrued interest, yield and risk with typed capability blockers; principal factors remain separate from inflation indexation. Bond migration previews stage normal Security Master drafts; the persisted full-inventory cutover gate blocks undeclared live calculations without rewriting historical journals. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
 
+Bond analytics can consume an immutable Security Master observation-selection receipt instead of a
+manually entered price or yield. The service replays the exact security/account-scoped receipt and
+checks economic/knowledge cutoffs, freshness, explicit per-100 quotation, clean/dirty basis and
+settlement agreement. Dirty quotes normalize using the calculated contractual accrual at settlement;
+the result retains the receipt identity and internal serialization hash in input provenance. Missing
+or incompatible evidence returns an actionable blocker. New optional request fields are omitted
+when absent so retained manual-input calculations and legacy model replay keep their serialization.
+
 ## Purpose
 
 Physical bounded-context module project for instrument terms, contracts, obligations,

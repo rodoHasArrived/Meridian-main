@@ -206,6 +206,11 @@ vi.mock("@/lib/api", async () => {
         }
       }
     ]),
+    getSecurityDetail: vi.fn().mockImplementation(async (securityId: string) => ({
+      securityId, displayName: "Apple Inc.", status: "Active",
+      classification: { assetClass: "Equity", subType: "CommonStock", primaryIdentifierKind: "Ticker", primaryIdentifierValue: "AAPL" },
+      economicDefinition: { currency: "USD", version: 1, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "CommonStock", assetFamily: "Equity", issuerType: "Corporate" }
+    })),
     getSecurityIdentity: vi.fn().mockResolvedValue(null),
     getOperatorOverrides: vi.fn().mockResolvedValue({
       securityId: "sec-1",
@@ -4902,7 +4907,8 @@ describe("AccountingScreen", () => {
 
     await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
     const commandDeck = screen.getByRole("region", { name: "Security Master command deck" });
-    expect(commandDeck).toHaveTextContent("Selected security");
+    await waitFor(() => expect(api.getSecurityDetail).toHaveBeenCalledWith("sec-dev-001", { allowDevelopmentFallback: false }));
+    expect(commandDeck).toHaveTextContent("Apple Inc.");
     expect(commandDeck).not.toHaveTextContent("sec-dev-001");
     const explorerSummary = screen.getByLabelText("Explorer summary");
     await waitFor(() => expect(explorerSummary).toHaveTextContent("Review required"));
@@ -4941,6 +4947,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getFinancialRecordExplorer).mockResolvedValueOnce({ ...explorer, rows: [selectedRow], selectedRecord: selectedRow.detail });
     const bondId = "33333333-3333-3333-3333-333333333333";
     vi.mocked(api.searchSecurities).mockResolvedValueOnce([{ securityId: bondId, displayName: "Reviewed corporate bond", status: "Active", classification: { assetClass: "Bond", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }]);
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", status: "Active", classification: { assetClass: securityId === bondId ? "Bond" : "Equity", subType: "Corporate", primaryIdentifierKind: "Cusip", primaryIdentifierValue: "123456AB1" }, economicDefinition: { currency: "USD", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, subType: "Corporate", assetFamily: "FixedIncome", issuerType: "Corporate" } }));
     vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ securityId, displayName: securityId === bondId ? "Reviewed corporate bond" : "Apple Inc.", assetClass: securityId === bondId ? "Bond" : "Equity", status: "Active", version: 7, effectiveFrom: "2026-01-01T00:00:00Z", effectiveTo: null, identifiers: [], aliases: [] }));
     await renderAccountingScreen(data, "/accounting/security-master");
     await waitFor(() => expect(api.getSecurityIdentity).toHaveBeenCalledWith("sec-dev-001"));
