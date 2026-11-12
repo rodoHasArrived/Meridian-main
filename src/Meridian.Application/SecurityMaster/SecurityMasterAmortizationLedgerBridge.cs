@@ -67,6 +67,7 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// accrual dates is recognized whole when its period date falls in the window. Consecutive
 /// windows therefore accrue every coupon exactly once, a little each period.
 /// </param>
+/// <param name="QuoteConvention">The class's declared price convention. Null uses the shared lot unit's default convention.</param>
 public sealed record AmortizationLedgerPostingContext(
     IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
@@ -75,7 +76,8 @@ public sealed record AmortizationLedgerPostingContext(
     DateTimeOffset? ProjectionAsOf = null,
     DateOnly? AmortizedThrough = null,
     AmortizationAccrualWindow? AccrualWindow = null,
-    decimal? CouponPrincipalBasis = null);
+    decimal? CouponPrincipalBasis = null,
+    SecurityQuoteConvention? QuoteConvention = null);
 
 /// <summary>An inclusive range of accounting dates whose accrual is posted as one entry.</summary>
 public sealed record AmortizationAccrualWindow
@@ -96,8 +98,6 @@ public sealed record AmortizationAccrualWindow
 /// <inheritdoc />
 public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
 {
-    private const decimal ParPrice = 100m;
-
     private readonly ISecurityMasterCashFlowService _cashFlowService;
     private readonly ILogger<SecurityMasterAmortizationLedgerBridge> _logger;
 
@@ -124,7 +124,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         var projection = postingContext.ProjectionAsOf is { } projectionAsOf
             ? await _cashFlowService.GetProjectionAsOfAsync(securityId, postingContext.Scenario, projectionAsOf, ct).ConfigureAwait(false)
             : await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false);
-        if (projection is null || projection.Schedule.Count == 0)
+        if (projection is null)
         {
             _logger.LogDebug(
                 "SecurityMasterAmortizationLedgerBridge: no cash flow projection for {SecurityId} under scenario {Scenario}.",
@@ -133,7 +133,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         // Shared freshness/scenario gate: never post a stale source or a rate-shocked what-if
-        // projection to the general ledger, matching the preview bridge's posting rules.
+        // projection to the general ledger.
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
         {
             _logger.LogWarning(
@@ -141,6 +141,17 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
                 securityId, blockReason);
             return 0;
         }
+
+        if (projection.Schedule.Count == 0)
+        {
+            _logger.LogDebug(
+                "SecurityMasterAmortizationLedgerBridge: no cash flow projection for {SecurityId} under scenario {Scenario}.",
+                securityId, postingContext.Scenario);
+            return 0;
+        }
+
+        if (postingContext.QuoteConvention is { } quoteConvention && !Enum.IsDefined(quoteConvention))
+            throw new ArgumentOutOfRangeException(nameof(context), "A defined quote convention is required.");
 
         var normalizedTicker = ticker.Trim().ToUpperInvariant();
         var financialAccountId = string.IsNullOrWhiteSpace(postingContext.FinancialAccountId)
@@ -161,7 +172,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         var convention = DayCountConventions.Parse(projection.TermsUsed?.DayCountConvention);
         var maturity = projection.TermsUsed?.MaturityDate
             ?? DateOnly.FromDateTime(schedule[^1].PeriodDate.UtcDateTime.Date);
-        var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity);
+        var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity, postingContext.QuoteConvention);
 
         var allocatedPremiumDiscount = postingContext.AmortizedThrough is { } amortizedThrough
             ? RoundCash(amortizingLots.Sum(lot => lot.Total * lot.WeightThrough(convention, amortizedThrough)))
@@ -250,11 +261,6 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
     }
 
     /// <summary>
-    /// The part of one coupon period's interest that accrues inside <paramref name="window"/>: the
-    /// rounded amount accrued through the window's end less the rounded amount accrued through
-    /// the day before it starts, so the shares of consecutive windows sum to the coupon exactly.
-    /// </summary>
-    /// <summary>
     /// Coupon accrued in the window on the lots actually held: every lot linked to the security
     /// earns its face share of each coupon period's interest, and only from the day it was acquired.
     /// </summary>
@@ -271,8 +277,9 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate > window.End)
                 continue;
 
-            // Bond lots hold quantity in units of 100 of par.
-            var share = lot.Quantity * ParPrice / principalBasis;
+            // Quantity already carries the lot's face (including any applied factor); its
+            // explicit multiplier converts legacy par units as well as canonical face units.
+            var share = LotQuantity.Of(lot).EconomicUnits / principalBasis;
             total += schedule.Sum(entry => CouponAccruedInWindow(entry, convention, window, share, lot.AcquiredDate));
         }
 
@@ -420,7 +427,8 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         IReadOnlyList<LedgerTaxLot>? openLots,
         Guid securityId,
         DayCountConvention convention,
-        DateOnly maturity)
+        DateOnly maturity,
+        SecurityQuoteConvention? quoteConvention)
     {
         if (openLots is null || openLots.Count == 0)
             return Array.Empty<AmortizingLot>();
@@ -433,9 +441,14 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate >= maturity)
                 continue;
 
-            // Bond lots record UnitCost as a price per 100 of par, so quantity × (unit cost − par)
-            // is the lot's signed premium (positive) or discount (negative) in dollars.
-            var total = lot.Quantity * (lot.UnitCost - ParPrice);
+            // Quote convention converts acquisition price to money; it does not determine held
+            // face. CostBasis is current carrying basis, not the acquisition premium distributed
+            // over this lifetime schedule.
+            var quantity = LotQuantity.Of(lot);
+            var basis = quoteConvention is { } quote
+                ? quantity.ValueAtPrice(lot.UnitCost, quote)
+                : quantity.ValueAtPrice(lot.UnitCost);
+            var total = basis - quantity.EconomicUnits;
             if (total == 0m)
                 continue;
 

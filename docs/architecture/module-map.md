@@ -68,6 +68,18 @@ flowchart LR
 | UI Shared | `src/Meridian.Ui.Services`, `src/Meridian.Ui.Shared` | Own workstation DTO projection and endpoint/read-model support for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and shared browser/WPF workflows |
 | UI Surfaces | `src/Meridian.Ui/dashboard`, `src/Meridian.Wpf` | Keep views thin; put state, labels, disabled reasons, and commands in view models |
 
+## Feature composition and workflow projections
+
+`ServiceCompositionRoot` pairs market-data registration modules with activation predicates in one
+ordered plan. Host presets and custom flags select entries without changing the plan's order;
+configuration, coordination, storage, and ledger remain unconditional. Production composition and
+startup guards run after registration.
+
+Within Financial Operations, `OperationsContinuityWorkflowService` owns governed transitions and
+persistence coordination. Its internal `OperationsReviewedAutomationProjection` builds reviewed-
+automation guidance and artifact DTOs from workflow state and evidence. The projection performs no
+writes and grants no posting, approval, publication, or close authority.
+
 ## Boundary Checks
 
 - The installed launcher accepts only `start` and `open`. Maintenance commands go directly

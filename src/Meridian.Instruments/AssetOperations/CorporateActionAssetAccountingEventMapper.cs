@@ -27,7 +27,8 @@ public sealed record CorporateActionAssetAccountingEventMapRequest(
     string? Notes = null,
     AssetAccountingCorrectionReferenceDto? Correction = null,
     OpenLotSuccessorInstructionDto? SuccessorInstruction = null,
-    OpenLotCapitalReturnInstructionDto? CapitalReturnInstruction = null)
+    OpenLotCapitalReturnInstructionDto? CapitalReturnInstruction = null,
+    CorporateActionRedemptionLotPlan? Redemption = null)
 {
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } =
         RetainedEvidence ?? [];
@@ -47,7 +48,7 @@ public sealed record CorporateActionAssetAccountingEventMapResult(
 /// caller must supply a balanced effect already mapped by the promoted accounting rule pack; this
 /// mapper never invents general-ledger accounts or appends a journal.
 /// </summary>
-public sealed class CorporateActionAssetAccountingEventMapper : ICorporateActionAssetAccountingEventMapper
+public sealed partial class CorporateActionAssetAccountingEventMapper : ICorporateActionAssetAccountingEventMapper
 {
     public CorporateActionAssetAccountingEventMapResult Map(CorporateActionAssetAccountingEventMapRequest request)
     {
@@ -217,16 +218,30 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
                         "Successor corrections require a separately reviewed workflow."));
             }
         }
+        AssetLotMutationInstructionDto? redemption = null;
+        try
+        { redemption = ResolveRedemption(request, blockers); }
+        catch (OverflowException)
+        {
+            blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.canonical-redemption-required",
+                "The canonical redemption price, quantity or basis exceeds the supported decimal range."));
+        }
+        if (redemption is not null)
+            lotInstruction = redemption;
         if (blockers.Count > 0)
         {
             return new CorporateActionAssetAccountingEventMapResult(null, blockers);
         }
 
+        var eventKind = redemption is null ? AssetAccountingEventKindDto.CorporateAction : AssetAccountingEventKindDto.Disposal;
+        var retainedEvent = redemption is null ? economicEvent : economicEvent with
+        { EventType = AssetAccountingEventTypeNames.For(eventKind) };
+        var retainedLineage = redemption is null ? lineage : lineage with { TriggerEvent = retainedEvent };
         var eventRequest = new ProjectAssetAccountingEventRequestDto(
-            AssetAccountingEventKindDto.CorporateAction,
+            eventKind,
             request.Scope,
-            economicEvent,
-            lineage,
+            retainedEvent,
+            retainedLineage,
             effect,
             projection.EventAmount,
             postingSet.Currency,
@@ -236,7 +251,8 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
             request.RetainedEvidence,
             request.Notes,
             request.Correction,
-            successorInstruction, capitalReturn);
+            successorInstruction, capitalReturn)
+        { Disposal = redemption };
 
         var postingIdempotencyKey = BuildPostingIdempotencyKey(
             projection,
@@ -244,7 +260,7 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
             mappedEffect,
             request.ExpectedPeriodVersion,
             request.RetainedEvidence,
-            successorInstruction, capitalReturn);
+            successorInstruction, capitalReturn, redemption);
 
         return new CorporateActionAssetAccountingEventMapResult(
             new CorporateActionAssetAccountingEventProjectionDto(
@@ -401,7 +417,8 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
         long expectedPeriodVersion,
         IReadOnlyList<RetainedEvidenceIdentityDto> evidence,
         OpenLotSuccessorInstructionDto? successorInstruction,
-        OpenLotCapitalReturnInstructionDto? capitalReturn)
+        OpenLotCapitalReturnInstructionDto? capitalReturn,
+        AssetLotMutationInstructionDto? redemption)
     {
         var builder = new StringBuilder(1024);
         AppendToken(builder, "corporate-action-posting/v1");
@@ -438,6 +455,9 @@ public sealed class CorporateActionAssetAccountingEventMapper : ICorporateAction
             AppendToken(builder, OpenLotSuccessors.Fingerprint(successorInstruction));
         if (capitalReturn is not null)
             AppendToken(builder, OpenLotCapitalReturn.Fingerprint(capitalReturn));
+
+        if (redemption is not null)
+            AppendToken(builder, AssetLotMutationInstructionValidator.Fingerprint(redemption));
 
         return $"corporate-action-posting/v1:{Sha256Digest.ComputeUtf8(builder.ToString())}";
     }

@@ -3449,5 +3449,1722 @@
         "sha256": "5df2c97fcebd3980f60cb095100d9879779bf78aec959fe10cb65ee0ef454380"
       }
     ]
+  },
+  "thirdSynchronization": {
+    "upstreamCommit": "a2002fcea559217bfd5f8c73d1cbd90de6b174b9",
+    "preSynchronizationCommit": "78b4dfaa8c572b8b5d389adc658e186605bab874",
+    "scope": "current merged index after third upstream synchronization; exact newest upstream image bytes retained through normal Git LFS clean filters",
+    "fileCount": 329,
+    "totalBytes": 90119455,
+    "resolvedPngConflictCount": 52,
+    "allWorktreeAndLocalLfsHashesVerified": true,
+    "allStagedPointersCanonical": true,
+    "allFilesMatchNewestUpstreamBytes": true,
+    "remoteObjectsUploaded": false,
+    "removedPreviousSynchronizationPaths": [],
+    "addedUpstreamPaths": [],
+    "resolvedPngPaths": [
+      "docs/screenshots/web/web-accounting-approval-inbox.png",
+      "docs/screenshots/web/web-accounting-approvals.png",
+      "docs/screenshots/web/web-accounting-asset-detail.png",
+      "docs/screenshots/web/web-accounting-capital-accounts.png",
+      "docs/screenshots/web/web-accounting-capital-calls.png",
+      "docs/screenshots/web/web-accounting-close-calendar.png",
+      "docs/screenshots/web/web-accounting-configure.png",
+      "docs/screenshots/web/web-accounting-consolidation.png",
+      "docs/screenshots/web/web-accounting-entity-setup.png",
+      "docs/screenshots/web/web-accounting-exceptions.png",
+      "docs/screenshots/web/web-accounting-external-gl-reconciliation.png",
+      "docs/screenshots/web/web-accounting-factor-paydown.png",
+      "docs/screenshots/web/web-accounting-journal-entries.png",
+      "docs/screenshots/web/web-accounting-journal-entry-detail.png",
+      "docs/screenshots/web/web-accounting-ledger.png",
+      "docs/screenshots/web/web-accounting-reconciliation-match.png",
+      "docs/screenshots/web/web-accounting-reconciliation.png",
+      "docs/screenshots/web/web-accounting-security-master.png",
+      "docs/screenshots/web/web-accounting-statement-import.png",
+      "docs/screenshots/web/web-accounting-workspace.png",
+      "docs/screenshots/web/web-data-backfills.png",
+      "docs/screenshots/web/web-data-evidence-workbench.png",
+      "docs/screenshots/web/web-data-exports.png",
+      "docs/screenshots/web/web-data-import.png",
+      "docs/screenshots/web/web-data-ingestion-operations.png",
+      "docs/screenshots/web/web-data-live-quotes.png",
+      "docs/screenshots/web/web-data-providers.png",
+      "docs/screenshots/web/web-data-query.png",
+      "docs/screenshots/web/web-data-storage-assurance.png",
+      "docs/screenshots/web/web-data-watchlist.png",
+      "docs/screenshots/web/web-data-workspace.png",
+      "docs/screenshots/web/web-portfolio-asset-detail.png",
+      "docs/screenshots/web/web-portfolio-attribution.png",
+      "docs/screenshots/web/web-portfolio-brokerage-sync.png",
+      "docs/screenshots/web/web-portfolio-workspace.png",
+      "docs/screenshots/web/web-reporting-run-parameters.png",
+      "docs/screenshots/web/web-settings-access.png",
+      "docs/screenshots/web/web-settings-accounting-systems.png",
+      "docs/screenshots/web/web-settings-alpaca-provider-advanced.png",
+      "docs/screenshots/web/web-settings-alpaca-provider-setup.png",
+      "docs/screenshots/web/web-settings-backend-capability-coverage.png",
+      "docs/screenshots/web/web-settings-diagnostics.png",
+      "docs/screenshots/web/web-settings-preferences.png",
+      "docs/screenshots/web/web-settings-providers.png",
+      "docs/screenshots/web/web-settings-workspace.png",
+      "docs/screenshots/web/web-strategy-covered-call.png",
+      "docs/screenshots/web/web-strategy-lab.png",
+      "docs/screenshots/web/web-strategy-promotions.png",
+      "docs/screenshots/web/web-strategy-quant-lab.png",
+      "docs/screenshots/web/web-strategy-workspace.png",
+      "docs/screenshots/web/web-trading-risk.png",
+      "docs/screenshots/web/web-trading-workspace.png"
+    ],
+    "files": [
+      {
+        "path": "docs/diagrams/analytics/backtesting-engine.png",
+        "bytes": 542473,
+        "sha256": "63bf820e8cb6d8793aff9d2086c8ffc03c7a09433a6c24484e997fb5d5071194"
+      },
+      {
+        "path": "docs/diagrams/architecture/c4/c4-level1-context.png",
+        "bytes": 1188345,
+        "sha256": "344ce5cca26e03aecf70a88a2205fd90f1689ca7238eefd1c617030994bd4d0c"
+      },
+      {
+        "path": "docs/diagrams/architecture/c4/c4-level2-containers.png",
+        "bytes": 1689123,
+        "sha256": "b8ca7489ea31d4d06524782d7cbcbae0a275ba935ffdb9152ae2d7628f3f6a2f"
+      },
+      {
+        "path": "docs/diagrams/architecture/c4/c4-level3-components.png",
+        "bytes": 1159794,
+        "sha256": "f965ccddedd52f2b6361934d54f6d9d9606dd891c48e32b4eff7810fda5d3447"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/domain-event-model.png",
+        "bytes": 2171970,
+        "sha256": "a1a33dfbb711cbf59a9727826b320ac2088d6fb32248e9a62a2611d8da64a095"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/fsharp-domain.png",
+        "bytes": 2412513,
+        "sha256": "cadedf0111d3058502348e32f83851c3b4c10d99bdedd6a0f55bb9b2711981e7"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/mcp-server.png",
+        "bytes": 903184,
+        "sha256": "d94e6299ac98404730c9b6520b468805702bb58597d08383d52ff2776c9a61c3"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/project-dependencies.png",
+        "bytes": 13053527,
+        "sha256": "989a7b16d1c51825a023c68209fea3aa0d391e9038d55ced84680c0c26608b8c"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/provider-architecture.png",
+        "bytes": 624107,
+        "sha256": "06498c859f2c3ecda86c8c40d7a1ea31f4c71f49474a1b64dc567487449179d1"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/runtime-hosts.png",
+        "bytes": 1518269,
+        "sha256": "d3b726fc613776d03913ef02a3cdf045efb5465c4ec08c360fa87f9864d488d7"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/storage-architecture.png",
+        "bytes": 1018253,
+        "sha256": "6389bbd68f8e8d021a5f2db945b24469f1aa5928bd5122d424d8106d06f1b3c2"
+      },
+      {
+        "path": "docs/diagrams/architecture/platform/workstation-delivery.png",
+        "bytes": 553218,
+        "sha256": "12a85a5082eceb2e48154e25947c9c598165760961137cf36a2120ce401e41b6"
+      },
+      {
+        "path": "docs/diagrams/operations/data-quality-monitoring.png",
+        "bytes": 279064,
+        "sha256": "b16fdc4ac7a83b393642e7fca8feeb1e0fb43c386fd5d4fe77e40c61fc0a580b"
+      },
+      {
+        "path": "docs/diagrams/operations/deployment-options.png",
+        "bytes": 643658,
+        "sha256": "ddaaa1adfa85bb789337fafe60cb43a985464922e55032caa03459468ca002bb"
+      },
+      {
+        "path": "docs/diagrams/operations/resilience-patterns.png",
+        "bytes": 500220,
+        "sha256": "8a7017ed12b30c02774e5a45cb3da5db0228455564ce392ff6e91201203910af"
+      },
+      {
+        "path": "docs/diagrams/reference/cli-commands.png",
+        "bytes": 516697,
+        "sha256": "cee61420434d145b82fb1910de40434c177e3686f5f8d094f96cf8a9fc62ef2f"
+      },
+      {
+        "path": "docs/diagrams/reference/configuration-management.png",
+        "bytes": 739179,
+        "sha256": "ea3e87cff8600c6c401af19ea640164420ea8fb91750defc6ac26ef58cdce24e"
+      },
+      {
+        "path": "docs/diagrams/reference/symbol-search-resolution.png",
+        "bytes": 645618,
+        "sha256": "01bc31b33860a282fad3a99b53aaa8de169c0c87288fa714eaec6f563da24b2d"
+      },
+      {
+        "path": "docs/diagrams/ui-implementation-flow.png",
+        "bytes": 2856804,
+        "sha256": "d1aeee071fa7687acac5aee6614e0b3256ab10c37b19da5d4ca3706736b183c5"
+      },
+      {
+        "path": "docs/diagrams/ui-navigation-map.png",
+        "bytes": 2570310,
+        "sha256": "d5eafc0ebdb18ef47fc43fd1b8491ca345273d7173d622b4b8b1a9794d65b76a"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screen-catalog.png",
+        "bytes": 1108495,
+        "sha256": "98b31e97d5190616025da7a4656132aa175090000463d8359e247f4b005bcd52"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screen-summary.png",
+        "bytes": 263349,
+        "sha256": "b9fd9c56a796b5ff5af760f95f8f797f1b01ff658683a7ce77b506e830413093"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-accounting.png",
+        "bytes": 450775,
+        "sha256": "e4a93e745ddfd498addb2655f2d1a88e37a4a7a28a9fc3750afce112feb44b91"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-data.png",
+        "bytes": 822410,
+        "sha256": "dda4a53263e980da92cc912c05495881572fe722419051ca7f5b2fb9aaa9e5c5"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-portfolio.png",
+        "bytes": 346216,
+        "sha256": "092be84ff1966056c7da3322b069efa4b3203779512eac6925ca64127e80f071"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-reporting.png",
+        "bytes": 310441,
+        "sha256": "1b1a4c5565cb9670ea0c6589b1483db3f78a385d44d888c02825821d0f6f890c"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-settings.png",
+        "bytes": 574071,
+        "sha256": "af4bc961c4dd0c76a8c6a32b07c8fc9ad3c4287f7cbfc963e55d4b3e78e9506b"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-strategy.png",
+        "bytes": 418762,
+        "sha256": "8d7ea673b9c824f429e7db4fc67aef3990210d4476e9c4745ac775927686a33c"
+      },
+      {
+        "path": "docs/diagrams/ui-wpf-screens-trading.png",
+        "bytes": 212316,
+        "sha256": "fa903a8259b12257d5d570a3d19f01c5340e908916a3e272915301f08029de76"
+      },
+      {
+        "path": "docs/diagrams/uml/Activity Diagram - Data Collection Process Flow.png",
+        "bytes": 305481,
+        "sha256": "18041ed3e118ef3db9a6b157ffa19b420133edb7c784c37bad3db67c0442be2a"
+      },
+      {
+        "path": "docs/diagrams/uml/Activity Diagram - Historical Backfill Process.png",
+        "bytes": 96913,
+        "sha256": "5d6487338c6ed8878c0c5be0ce931ec333e7773aba4832e4416c3fa45869bf8d"
+      },
+      {
+        "path": "docs/diagrams/uml/Class Diagram - WPF MVVM Architecture.png",
+        "bytes": 145370,
+        "sha256": "65d2191e67193b34c1253c9e9f1000829eb0da2b6a887e2625e11deae6fb4d16"
+      },
+      {
+        "path": "docs/diagrams/uml/Communication Diagram - Component Message Exchange.png",
+        "bytes": 211380,
+        "sha256": "afbcd41988db41c1ddaa2fba2cdb3604f400042c017910b2eba1ec48f8871a50"
+      },
+      {
+        "path": "docs/diagrams/uml/Interaction Overview Diagram - System Workflow.png",
+        "bytes": 120905,
+        "sha256": "e9a2bdb04d217d2ea886cd5b10776c4110dd7d72dec16e6aa8ba3ea0d6f9182c"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - Backtesting Engine.png",
+        "bytes": 182423,
+        "sha256": "b0d67fb09d512dc9adbbb1a4e65647a2ac1e08ddaeaac09ffdb197c85c97f350"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - Historical Backfill Flow.png",
+        "bytes": 136955,
+        "sha256": "45d47ea0169f56d795325d7d6447240687ceb36efa39233f36e62b55362d29be"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - Paper Trading Order Execution.png",
+        "bytes": 158121,
+        "sha256": "dba690743800d3c223294bc405b6e07597765ace96c1844e86970adc9c3ea658"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - Real-Time Data Collection Flow.png",
+        "bytes": 145110,
+        "sha256": "62d13dc8fd57e9a55bed226a0db1038aa4177dca13824db8556ac5241e2e1c72"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - Strategy Promotion Lifecycle.png",
+        "bytes": 168111,
+        "sha256": "230b1f34ebd2796cbadc8271242a7c961b400250de3f46ed2a7b6b7f522beb26"
+      },
+      {
+        "path": "docs/diagrams/uml/Sequence Diagram - WAL Durability and Crash-Safe Writes.png",
+        "bytes": 123737,
+        "sha256": "d4cc5c408efdd8c9829eeb3a0984479ff3cdce882cce0b27596ffa03d69fb8c8"
+      },
+      {
+        "path": "docs/diagrams/uml/State Diagram - Backfill Request States.png",
+        "bytes": 51804,
+        "sha256": "5e2d31095b1dd0a3f487a6c9a029548c3997ca6c13be0ae99097575eefb5f3bb"
+      },
+      {
+        "path": "docs/diagrams/uml/State Diagram - Order Book Stream States.png",
+        "bytes": 45286,
+        "sha256": "8f606f0825c5c52fc5aca2a741649e29b4ecccba97356ec73638dd2e616fc083"
+      },
+      {
+        "path": "docs/diagrams/uml/State Diagram - Provider Connection States.png",
+        "bytes": 42768,
+        "sha256": "d17c67115df9659a612c4b6032979213682082d02f2a03776eece6f07c8a3249"
+      },
+      {
+        "path": "docs/diagrams/uml/State Diagram - Trade Sequence Validation States.png",
+        "bytes": 30789,
+        "sha256": "677129555d16edd0d6df82517aa46027ea7c0d5c3473b0208929a374edb4cbf2"
+      },
+      {
+        "path": "docs/diagrams/uml/Timing Diagram - Backfill Operation Timeline.png",
+        "bytes": 60078,
+        "sha256": "acec7b2b909fd73b44b08791c117e9b7226f4ef912f3980c8dea163e7dad99dc"
+      },
+      {
+        "path": "docs/diagrams/uml/Timing Diagram - Event Processing Timeline.png",
+        "bytes": 45149,
+        "sha256": "8d9180a48996cafc7516700cb07d57434ff3b7200d054547e894522b7d7e7c91"
+      },
+      {
+        "path": "docs/diagrams/uml/Use Case Diagram - Meridian.png",
+        "bytes": 168246,
+        "sha256": "371740e85c7c85f6e4291d3dd6d2e06a27c165dcbcf309c8818acbed4f24ce5f"
+      },
+      {
+        "path": "docs/diagrams/uml/activity-diagram-backfill.png",
+        "bytes": 224560,
+        "sha256": "593603442de2a8ea32a36406ff8be08a30b786523e88df828539a49434492b93"
+      },
+      {
+        "path": "docs/diagrams/uml/activity-diagram.png",
+        "bytes": 381575,
+        "sha256": "7088492370b954dec454b93569226fb2cb06eaf7f02e04daff26f8556eb0aa41"
+      },
+      {
+        "path": "docs/diagrams/uml/communication-diagram.png",
+        "bytes": 250845,
+        "sha256": "7f97a465e30eada1bf5a85c0bd1e3c32c1d90ece3f86ff8ecfac3e989cb29077"
+      },
+      {
+        "path": "docs/diagrams/uml/interaction-overview-diagram.png",
+        "bytes": 262058,
+        "sha256": "efa3e56aa1ed835730694826e52d13e02837e99ec735a3077afa4bedbdd59001"
+      },
+      {
+        "path": "docs/diagrams/uml/sequence-diagram-backfill.png",
+        "bytes": 358429,
+        "sha256": "2b4e0d44c25a5927b3c87494007ccc45ee87312c33bd40c447cb2391dba3162d"
+      },
+      {
+        "path": "docs/diagrams/uml/sequence-diagram.png",
+        "bytes": 429000,
+        "sha256": "02a1e192665f346e3b046630faf42067647344460e68bf0bad75fdc158832c59"
+      },
+      {
+        "path": "docs/diagrams/uml/state-diagram-backfill.png",
+        "bytes": 119210,
+        "sha256": "6a0e62d637f164ebc5628d0c5f4b6d1a2e2b15d1a1e9349d7a1b0dac14e7044e"
+      },
+      {
+        "path": "docs/diagrams/uml/state-diagram-orderbook.png",
+        "bytes": 112532,
+        "sha256": "6d22bf33d55f5aecebd7a5acda2ea056ab48811c72b4aa96f5bdca15c609a2dc"
+      },
+      {
+        "path": "docs/diagrams/uml/state-diagram-trade-sequence.png",
+        "bytes": 75188,
+        "sha256": "eafea93f8dad5a46376f0f5a35c40e9055613613af678e9deed0a5386bc866c3"
+      },
+      {
+        "path": "docs/diagrams/uml/state-diagram.png",
+        "bytes": 105654,
+        "sha256": "90b93c89bfbe205abb9fc38ebccd9ec9035e5437ca09fe0cb1044868aa5a4057"
+      },
+      {
+        "path": "docs/diagrams/uml/timing-diagram-backfill.png",
+        "bytes": 39244,
+        "sha256": "99263f265b839f0dc46bce144b97b141647068e4a248d43cbbb5217e55b1a086"
+      },
+      {
+        "path": "docs/diagrams/uml/timing-diagram.png",
+        "bytes": 39201,
+        "sha256": "40a9e0a666572c935dee4eb56b96ea4a54f4120e697750639d075e12bd347236"
+      },
+      {
+        "path": "docs/diagrams/uml/use-case-diagram.png",
+        "bytes": 418097,
+        "sha256": "07af79334993dd67e40426b70227ec546f1317a21804c740d5190bd8eea2f3f0"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/backfill-workflow.png",
+        "bytes": 751776,
+        "sha256": "fce50cf351183e1e9b355f43ae3c8af85a967bba31c2b0252697eb51c430a06c"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/data-flow.png",
+        "bytes": 943800,
+        "sha256": "163f1a3c2a326c6b3b59b2f325df35a180242516a91f5dc95ce2d6dd9e815cf4"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/event-pipeline-sequence.png",
+        "bytes": 682525,
+        "sha256": "9420a192bcc0aa8f6a3ab45b7dfd6d933cbe4faa141f4695c5b2c4f4a68aa9c1"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/execution-layer.png",
+        "bytes": 439686,
+        "sha256": "51ecb12e0934d42db9e99c02bbaf52fd0f78d0d039e1f9332cd840b451f5d4f2"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/fund-ops-reconciliation.png",
+        "bytes": 507679,
+        "sha256": "6ffac53632a671df9070cf94ea3ddc2a7809ba3917420be106944b33b51057fb"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/onboarding-flow.png",
+        "bytes": 489640,
+        "sha256": "204d70c99aa5556b2fb43baa2046fb38530e261dd7b34cc96508b67d7ddc5ca5"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/security-master-lifecycle.png",
+        "bytes": 1978999,
+        "sha256": "4c3085b522bd8e67ac808693344e8eba3b87bf44f0a7f450211c76fa1a4152a8"
+      },
+      {
+        "path": "docs/diagrams/workflows/operations/strategy-lifecycle.png",
+        "bytes": 579887,
+        "sha256": "2ce2b11cef4c7cc99e59f5998ec36e7420943b584f62b0b7c5a49db227bf47e2"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/01-accounting-shell.png",
+        "bytes": 38835,
+        "sha256": "05a8d829f39688282dfe892d6fbd292c9c8dfa6117f534788361f8df4c7f33a1"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/02-fund-ledger.png",
+        "bytes": 38830,
+        "sha256": "cab8310e4d812f207df110cb915d5f8a5ddef5eca325f07116f0ba1244d8b070"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/03-fund-reconciliation.png",
+        "bytes": 38866,
+        "sha256": "ce4d2eee7dadf5aeadd7b3db2ba77bf88e9f778a351b414e1f90abd3d6f60bd5"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/04-fund-report-pack.png",
+        "bytes": 38863,
+        "sha256": "711a9e80777d6edaac70f9f766ed73d92aa5b8f1759e5dc9a5e7eb6ab43198d4"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/05-security-master.png",
+        "bytes": 38888,
+        "sha256": "24eced42cfc0e1e857c9a8de81525b59892d4dfb2cd0096b9e3e69edce9702c2"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-accounting/06-settings.png",
+        "bytes": 38887,
+        "sha256": "d5544a65a547dba75ffbbd799455e939fa4b1b837ea982a9369e8ab612cb8db5"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/01-data-shell.png",
+        "bytes": 38867,
+        "sha256": "e874424f8c490115d16f552d7d499142a22b2c94094630c90fe230e42fd61987"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/02-providers.png",
+        "bytes": 38820,
+        "sha256": "cc250febc383154cfe1752247f98f5b4aa5bf0c3494c191cbe38ce08a0b614ff"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/03-provider-health.png",
+        "bytes": 38891,
+        "sha256": "10c0966070dc3a39a6a4668e8f25b531a7a8246391fb848bc90e0ce4f7fbac1f"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/04-backfill.png",
+        "bytes": 38780,
+        "sha256": "0f18c915fdc1bc2070b655c4f7f2ab554146ec8ec367fa5cca0d8b2a5cef1997"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/05-data-sources.png",
+        "bytes": 38859,
+        "sha256": "8d3eaad6da2d9370a902147cce52c9297f747d076cc7dacc8a3c86cc00f4fb80"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/06-storage.png",
+        "bytes": 38860,
+        "sha256": "035266fc1d9092bcea89c703baf53ea790547abdc51f76382dc0dccb50946665"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-data/07-data-quality.png",
+        "bytes": 38889,
+        "sha256": "f99d81cef59e269ef41411b45db82a306cc36ec6a5ee06cf3c90f03b538bbeba"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/01-strategy-workspace.png",
+        "bytes": 39184,
+        "sha256": "85fc5903475556ef6e193e7dfac4a9241c87d30252e99f87bb51af5e77cc4272"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/02-workspace-layouts.png",
+        "bytes": 39102,
+        "sha256": "261cd5410d03ef71c110e4193fb5bf40a10fa7977328a0ea09a657f3ad6e17ec"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/03-strategy-workspace.png",
+        "bytes": 39190,
+        "sha256": "1af89e589e81aa54e9b9a1e51e1bab481fa8d574d153a9f923b3a9af2cf86657"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/04-trading-workspace.png",
+        "bytes": 39146,
+        "sha256": "3e71f0218f54b22a15c03782884db3e424f18edadbef09ace814132de833d81c"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/05-data-workspace.png",
+        "bytes": 39221,
+        "sha256": "db376088779fe034d977dc8d2200516b531cddf6ef4268aeb138d17492f40f49"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/06-accounting-workspace.png",
+        "bytes": 39221,
+        "sha256": "e59d696cd4798a331842f79aea14a5cc78c0be60f543cc7ad64433f277e57201"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-overview/07-help.png",
+        "bytes": 39250,
+        "sha256": "3633d8d689e365276a0340579930da37f2144c0cd511d46d4123a98290d814d2"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/01-strategy-shell.png",
+        "bytes": 38890,
+        "sha256": "946c6c86fdd4e52e41e25e63acc324e0c0fd46058bcd1be793020c4a9d88e9b6"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/02-backtest.png",
+        "bytes": 38968,
+        "sha256": "48b1f1e44b7c613f237536cc212f86988aadfcb9166fb07f7fb31d086e4f6d87"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/03-strategy-runs.png",
+        "bytes": 38930,
+        "sha256": "13ffb278108b247d380b3d552a5e3f027780bc368024fb3b11b25ae5e3ad599e"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/04-quant-script.png",
+        "bytes": 39004,
+        "sha256": "c00372a98c6ae3dc5c0891634dbc1b0ce6820a7a49845dd11d8efbdf165bdeb3"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/05-trading-shell.png",
+        "bytes": 38959,
+        "sha256": "6960ef6f6c599e91459e925fb70b0c9fbe30287fa25e4937a9d02bb7c2680988"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/06-position-blotter.png",
+        "bytes": 39029,
+        "sha256": "6b3a2c3d6adac7c83b03b405055680d203f3007ee7f80020e6b79ec5953218f9"
+      },
+      {
+        "path": "docs/screenshots/desktop/manuals/manual-strategy-and-trading/07-run-risk.png",
+        "bytes": 39029,
+        "sha256": "6b3a2c3d6adac7c83b03b405055680d203f3007ee7f80020e6b79ec5953218f9"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-account-portfolio.png",
+        "bytes": 172039,
+        "sha256": "43f6a77f9b3357b7e0fee9ac4a9768a5586ddcb03b712836672dc43683d96316"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-accounting-shell.png",
+        "bytes": 155932,
+        "sha256": "fef60b62ef921421ac5464f8c1b52660a1d69e5e6bc445831eec3fbe86494e67"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-activity-log.png",
+        "bytes": 147737,
+        "sha256": "d0773288fdaf919548b3b90d1eadd0703fd346a80066d272077dee5240dabdbc"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-add-provider-wizard.png",
+        "bytes": 154452,
+        "sha256": "fc488af55a6fd685c19faab2ad44d74c874b590e67eb4ef986bcfefc328631ff"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-admin-maintenance.png",
+        "bytes": 165336,
+        "sha256": "69a8b169866a8db6b1ff2716e6e80b0acdbb251cbb12dc3740d0f824b1885ac4"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-advanced-analytics.png",
+        "bytes": 161784,
+        "sha256": "583f1e340ee7651e15029b14127191aab7772b482415c56c97c89bcb805a5db9"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-aggregate-portfolio.png",
+        "bytes": 167456,
+        "sha256": "cd90e36ef5bd78a14a533d3516f18a5e46b25ca86bb6698f25985deb21171e55"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-analysis-export-wizard.png",
+        "bytes": 157600,
+        "sha256": "f46b2712f313775b37b3d3adf2ce0860d8d58d4a4e859343196e6c15ca4456f3"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-analysis-export.png",
+        "bytes": 194294,
+        "sha256": "de9551d82eb408d92a6b61f1745e03d2e1ec3ee8f1ffb7ce307fe2e084d49c39"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-archive-health.png",
+        "bytes": 138482,
+        "sha256": "9e3f110ebcc863ad006324fa5d3d69bf55de93665594e4f65e61ebd09eea376d"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-backfill.png",
+        "bytes": 178889,
+        "sha256": "598ffff6326d241463a93871b27c3d0bbf400c90d393673e65e8592c86d1f8d6"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-backtest.png",
+        "bytes": 132891,
+        "sha256": "3d130b7cda5eccea6ca642bd33c0d9df99f02bb848a454f269b174d92e87db08"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-batch-backtest.png",
+        "bytes": 158035,
+        "sha256": "60296eb1637b99f0bb62be612a1a0e2f8e910be4c140efcab0635b3a66053230"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-charts.png",
+        "bytes": 133801,
+        "sha256": "e78fd9919e849392953816f22aab662c657a72c93c929b86548221309fbe67dc"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-collection-sessions.png",
+        "bytes": 127883,
+        "sha256": "9f509c243d086d6e80a6f14c3d496c1981a0aa76d7c91e4b1fe55ef43c89bc10"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-credential-management.png",
+        "bytes": 158795,
+        "sha256": "1e9b7b76de9006c5ee14a219ab99591aca1618c104de8c159d26d6a952690239"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-dashboard.png",
+        "bytes": 172622,
+        "sha256": "0f54b59c18c4a9fbf0f9fc70d108ed86aec30d5d79c1d80444dcaeff794f5819"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-browser.png",
+        "bytes": 149836,
+        "sha256": "5a3cbdde97df62f42afa07ecce60bbb385e5fd56d8a18f16d003affd436c9b13"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-calendar.png",
+        "bytes": 158510,
+        "sha256": "deecf28251fdb45ad906dcadede53021fe9a4fb7b50508df71172dc46ca3fd2f"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-export.png",
+        "bytes": 137325,
+        "sha256": "67fe76a6bab03a6f6717d4ce7e76a5bf95762b7dd0e6561add9af942d459e424"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-quality.png",
+        "bytes": 137520,
+        "sha256": "6bbb584d550eab0d815f30f820315da3bfa3d01abb274b788fc9e1eb1e0476ff"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-sampling.png",
+        "bytes": 118850,
+        "sha256": "204c11a6aae2ab9c285f19a241e01c639e007e68bb6757294362df4b7dcd13b6"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-shell.png",
+        "bytes": 100212,
+        "sha256": "06f8e8f7cb5983808b53027283249d9ba2277a28880e29c6a0484af174afb376"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-data-sources.png",
+        "bytes": 128970,
+        "sha256": "45d56a152e810e0f828d1f0aa094acdfbee8ec2fd272402107abc4a27563df10"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-diagnostics.png",
+        "bytes": 156322,
+        "sha256": "83829d28efb225fe44553c7f17be8f9a79d9d22b952f7369c2bd8115a884c994"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-direct-lending.png",
+        "bytes": 155638,
+        "sha256": "01217f5beaf91189719fd58779a61a5d599ea0e5cf7cac7da6447454ca9f86ce"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-environment-designer.png",
+        "bytes": 147127,
+        "sha256": "bf9ba4bcda7bcc8f0f6e78ccbe9d0847a83eee331ca5573aa78b9bc2ba75a5f3"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-event-replay.png",
+        "bytes": 155269,
+        "sha256": "21c3face5b33a43b49e8da0fa8fd980e67fba8081adb097b0d2abd1e0ce2930a"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-evidence-workbench.png",
+        "bytes": 181781,
+        "sha256": "e3a68292dd541994590005af588f696fc8f41bf0878331238a10224ac0acca5c"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-export-presets.png",
+        "bytes": 158061,
+        "sha256": "99b9df540f7ce544d4718cdd50ad4038347bcdbc2cf2b6e15e3b30ac1f1793d4"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-accounting-close.png",
+        "bytes": 149120,
+        "sha256": "6ed7df380991ee6eb3973cd6a1937800d276b2cbe536f026ec30913429511836"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-accounting-configure.png",
+        "bytes": 179169,
+        "sha256": "c09b493f1afe18f827ad3ba2a1742fb762e49a8eb547c93961d08f6962612288"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-accounts.png",
+        "bytes": 184673,
+        "sha256": "a0d9c077e1b4d11bbffaa76544d458f96dff76820d6ab739f7908b231cc03216"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-audit-trail.png",
+        "bytes": 143336,
+        "sha256": "0190788736c35039a2004376c4ce07c04a1ad92403a5784511cb2930206dd797"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-banking.png",
+        "bytes": 142893,
+        "sha256": "3d645221bb24e49c343e98e72b8b488d07d38eb4a2e5e7c3a27146ef14b971fa"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-cash-financing.png",
+        "bytes": 144144,
+        "sha256": "e6d2a016db60a2574d52e093dc6eaf07fb05831ab18bfd6dbdf4ab17733debfc"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-ledger.png",
+        "bytes": 145824,
+        "sha256": "75801393a55db5c7997d3683ce7ca322c7f8fc4199a146374005a20c03bd3d44"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-portfolio.png",
+        "bytes": 140747,
+        "sha256": "99abb5ecddd0e461f6bc49685cf2f178322813d16e1a0c223c428d054e331406"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-reconciliation.png",
+        "bytes": 143134,
+        "sha256": "d647c8197f3dc59588e9a2e5c10bbcd795e3ede0e84531dc3ed4588177b97d89"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-report-pack.png",
+        "bytes": 144956,
+        "sha256": "a3e8178317539c42b5abb918ab1ee67527442a77930ab7562159d6b9abe94459"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-structure-setup.png",
+        "bytes": 157733,
+        "sha256": "9d87210da547375ec68232063c66ab7d7617554bc5fe17641d163e74e437212e"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-fund-trial-balance.png",
+        "bytes": 141943,
+        "sha256": "9da5e424337ef2cc8a499c497f8d441ec384683ac7e897ff857e28501a551bac"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-help.png",
+        "bytes": 162982,
+        "sha256": "4837ffdbedf8e7160e410a9261de05f8e74e1bfce0b392c86fc86cf9dc5612bd"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-home-workspace.png",
+        "bytes": 146912,
+        "sha256": "fc0f9dd42a0b5585aa5fa742140862c669d356b5f6d3e3253f816abbc3e0a106"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-index-subscription.png",
+        "bytes": 130255,
+        "sha256": "c0a7fb2a2ac878c6da0f8af4ba8487ca1f92a8c0c011718c2fa0c72e1ef0eaf5"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-keyboard-shortcuts.png",
+        "bytes": 180092,
+        "sha256": "25a3e52628f531e13bee133f700b523abb5343928147b576e8e175ffab462562"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-lean-integration.png",
+        "bytes": 174382,
+        "sha256": "fd46b9fcd2874d8183fcf95af5229aa50b96e2ae452323577d611222e7d04340"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-ledger-explorer.png",
+        "bytes": 160878,
+        "sha256": "4ffead62caefec72492dc794b55a867ea06920787b78ac81949fee49f291ec42"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-lifecycle-control.png",
+        "bytes": 166855,
+        "sha256": "2fa93f6e168dbaab2152f070840e9bff8d275c3c99ff3ef75e052a6e303fefaf"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-live-data.png",
+        "bytes": 181279,
+        "sha256": "ea3234f5dd64d4d27a460c5bfbfdc933c9febd8c008c62208e003019f27f1634"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-messaging-hub.png",
+        "bytes": 155341,
+        "sha256": "19dad467e384f960efa206399e04fbc7ce81549922c826bc3dd7b2f28d505e04"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-notification-center.png",
+        "bytes": 137842,
+        "sha256": "3948ca77dde9afc4272dbfcd20a7fbcd14e41d2a233fd27eda1d6768ead35d7b"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-operations-continuity.png",
+        "bytes": 172742,
+        "sha256": "d01fb52557e1571989212799f9770eca7aececc396758370514d62cba0836749"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-operations-record-release.png",
+        "bytes": 205637,
+        "sha256": "dcd9df5a850f5fd6f84168099425903fbdeda2e8c4d205d3dab544fa85bb302b"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-operator-readiness-console.png",
+        "bytes": 199567,
+        "sha256": "76793685c1f257db04feff4e8dbb8eb83ca97b3d61395dda211d050afd35b62e"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-options.png",
+        "bytes": 126286,
+        "sha256": "0a1f6b9c0d08a26572a91b6805c757ff58364ee9995d5d82e6f943c20e4c9604"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-order-book.png",
+        "bytes": 154596,
+        "sha256": "c5e16fe5f0f7d74cc96ca837cd6388566c0bcba9c4317cc1f498d5b6d7c6c447"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-package-manager.png",
+        "bytes": 119258,
+        "sha256": "fb17983fc4b462134347d06147dc5aa9c6be3e5803f3ead336d835302ccb2d1f"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-portfolio-explorer.png",
+        "bytes": 161099,
+        "sha256": "b9502cf73d69e9e8bbca27a844c61f1f8c091f541569954837d8ff3dc4bdf0ff"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-portfolio-import.png",
+        "bytes": 177470,
+        "sha256": "61091af70a21c184c8b04045c871b1aae1af95ab05a6ed488066ddcbbc0fe2a7"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-portfolio-shell.png",
+        "bytes": 147654,
+        "sha256": "f528ce81d32f349cb35531d35070436369e20e0bc6c2edb640289c04e060a786"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-position-blotter.png",
+        "bytes": 157688,
+        "sha256": "ee2d45ed4824082179389335e916910003a1e815cbfa62a7fd489295a2f4485c"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-posted-ledger.png",
+        "bytes": 145297,
+        "sha256": "0f6cbaac69c410e75bafa49a4c47699ee6fb3b432847bf819c5309bf3d357893"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-provider-health.png",
+        "bytes": 123009,
+        "sha256": "268220cedbda6ff12b61e8e717979fc201d655c27a3afd308f507641fb2a7f90"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-provider.png",
+        "bytes": 161362,
+        "sha256": "3ce9f970f61458c9521a278ca491904f8e3cb3386704c5f2f7fddbf3f27510c5"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-quant-script.png",
+        "bytes": 143217,
+        "sha256": "531a9078e810695b079cd90f0da97c293d30a7fbd7aa677b34138cb84abc7d99"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-report-line-provenance-explorer.png",
+        "bytes": 166618,
+        "sha256": "59fbc82d454a20851070fdd56cfec8e599c6d0c6cbe30ec846ae1c24fc0d3c83"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-report-run-status.png",
+        "bytes": 172387,
+        "sha256": "98e03d2968046ffaceb8edfc17b5ded7276779d5e41714406d922289f0e71524"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-reporting-shell.png",
+        "bytes": 154172,
+        "sha256": "dc5a71fa1adefb21642cafc74f4e3df5068d27579abce2de5c956e54fdcffe8a"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-retention-assurance.png",
+        "bytes": 133022,
+        "sha256": "930342ca62a6fca18ab3fd14232b247b297e2bcf089a16d4661dce07765b8e07"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-cash-flow.png",
+        "bytes": 172671,
+        "sha256": "8e31036aed47bec5b1d43c9faab5ec4724180c28101104dc9cad77c7dfc38d62"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-detail.png",
+        "bytes": 167662,
+        "sha256": "2e6d65e9949cba4062f346ff52954a7c6f3ac96db3ddd105b6d57b7d5b5661b8"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-ledger.png",
+        "bytes": 158476,
+        "sha256": "c0b9ed5acf84c394417a64b5593ea733179ecf9daef4405784059cdacbea4244"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-mat.png",
+        "bytes": 155617,
+        "sha256": "3c69d687975c8113798c8d8bc23b06c44a1610c7ccfd7f4fa8213216124dd432"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-portfolio.png",
+        "bytes": 147785,
+        "sha256": "a1bda0697d832e9568c5567600019a1d91a995af5cec51e570785374042aab29"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-run-risk.png",
+        "bytes": 149270,
+        "sha256": "51163263d53d943769c4c3740993c84d80f3a647be0098c1bd01bffa1c003c1f"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-schedules.png",
+        "bytes": 120686,
+        "sha256": "aaed9eda4c27420c5e39a060b011990b75aaab60cb84d53312d8952b4580231c"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-security-instrument-explorer.png",
+        "bytes": 166728,
+        "sha256": "950f2bb9acee3634536d82729116e8233cf39905aad518af8398de2e2bd720a7"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-security-master.png",
+        "bytes": 161288,
+        "sha256": "3bb1b9d8c6f5a06787401c5724fa4424ad350526cdfd0ba5c600d7555344082a"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-service-manager.png",
+        "bytes": 176257,
+        "sha256": "40095c595fd620cf6c2cbc96dadfa0d2946acbb0c9575db4f30b0ebfd4b2fdba"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-settings-shell.png",
+        "bytes": 153651,
+        "sha256": "6031d10449e0b20f6b6b7fd2ae74fcaf9f533fe6ba729dbd483a0251134865fb"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-settings.png",
+        "bytes": 183347,
+        "sha256": "f9bce2f0dae69456ec332252d598bd9645c56c50b6fa0a29fdd7ad59c0be6f38"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-setup-wizard.png",
+        "bytes": 162019,
+        "sha256": "1ce803a122c13da43858bde7e8cd2113c8f2724370795ebe0c6a2581b4476aa2"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-storage-optimization.png",
+        "bytes": 135002,
+        "sha256": "fb2dc2675a443761a8bd28daed7fa0709a345a9103f2278c9fc4b9fea36ed5cc"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-storage.png",
+        "bytes": 131129,
+        "sha256": "95624c8fce1bca21d5d54b2ba226462cfea5b7c70648a593b71a1f631b1118da"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-strategy-runs.png",
+        "bytes": 152804,
+        "sha256": "0107ddbfcec3d0ca95a1d1f2d85aeb2ad5a65348173b1995c28786216d38dffe"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-strategy-shell.png",
+        "bytes": 176482,
+        "sha256": "18325c003584388d4363710f2f278a781004d89587c13cd1e79be2e418b11504"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-symbol-mapping.png",
+        "bytes": 130271,
+        "sha256": "3737483e83192707bad169a0844ae5350912c5848b98b152875fd5a7c720bcab"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-symbol-storage.png",
+        "bytes": 132481,
+        "sha256": "3c8a985d479c983729a152566d3d279ef3eb92e2e45ff6dea709e73e9eec6010"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-symbols.png",
+        "bytes": 146101,
+        "sha256": "91805e0ad782aef216226476d9a61c5b331247efb17da6acfbfe7debcef00348"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-system-health.png",
+        "bytes": 166451,
+        "sha256": "631f4333b42b992aae82812895ca8fa9deaa44cf23b818500d008ca075de1c43"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-time-series-alignment.png",
+        "bytes": 137395,
+        "sha256": "4918ffaeece5e73b058a0446f742865ef54930e4a4aa9a706fc02c226ffed0f1"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-trading-hours.png",
+        "bytes": 164294,
+        "sha256": "01637b443e37f58bb02edd098d75a5c1ee834dd15dc096612458fad03bfd775b"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-trading-shell.png",
+        "bytes": 157623,
+        "sha256": "45d0c98980dd40532f5151f79b0504411ba6e21c95979c204df4438baf76e611"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-watchlist.png",
+        "bytes": 184696,
+        "sha256": "702f95a427079667c086db21418c2f1d170a07652cbeefa66cadcbc6f6571a3c"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-welcome.png",
+        "bytes": 174782,
+        "sha256": "91ad5f91c9c6b1a3aefca274c048944381ec4a54e61c888545befa81f47328bd"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-workflow-library.png",
+        "bytes": 158865,
+        "sha256": "7c8d23edc42edb17e27cfdceb9bf544a2210d9e32bdc79395887925df626a688"
+      },
+      {
+        "path": "docs/screenshots/desktop/wpf-workspaces.png",
+        "bytes": 164807,
+        "sha256": "05cfe5e3e2032790b28ad4b1bd616dd1d84986bcedf218111c2c4016a9b6c321"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-account-detail.png",
+        "bytes": 98301,
+        "sha256": "91ff578d3d8b4a545f1e4f9b19a59b45ac0d17793e6fa2f763effdd34e8e3070"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-approval-inbox.png",
+        "bytes": 125707,
+        "sha256": "783106530eed0d26f23b2cce873c71cd26952de0daeffb89e61b49eca39ec723"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-approvals.png",
+        "bytes": 182589,
+        "sha256": "abcc1e8b264fb0a34490070db4faa8600d7b49c168a1d5891471b12903593b1b"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-asset-detail.png",
+        "bytes": 100616,
+        "sha256": "478806fdb9717080fc26508c396b9f417860e1365d633dcfffab82c859f855ff"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-capital-accounts.png",
+        "bytes": 173300,
+        "sha256": "8ff5233af148902e49ca0db73b949da0a46e1a40cad94589658f0310901dffa2"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-capital-calls.png",
+        "bytes": 149038,
+        "sha256": "a3805a6205d1e49c02b1116f70a820c09426c75d40ae5f1cf8b57eba7df7fdaa"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-close-calendar.png",
+        "bytes": 113491,
+        "sha256": "c79f1b671c23c4506257494e0d9a37a739458785e4a06741142b89abca74fc7d"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-configure.png",
+        "bytes": 183047,
+        "sha256": "fc68cbe734ebb6c5ec84004a98dc43b61f1a6618f3c860bf616453435b04f237"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-consolidation.png",
+        "bytes": 125056,
+        "sha256": "aa3aa131d2ca4b1a1c71002bb1e807522392c6bf96d294fbdf6b8f31cf606287"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-entity-setup.png",
+        "bytes": 147608,
+        "sha256": "5c5e3b7e8f6b06292a2c67d01bbf0dc8f8f551cd8a24b24da50345e667f33169"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-evidence-detail.png",
+        "bytes": 172493,
+        "sha256": "8b5d050c03294dcbc2be22793a9be7b1d437616bb0e4d2b623f87e06f0eb5a17"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-evidence-workbench.png",
+        "bytes": 161871,
+        "sha256": "631d07ea5d46bba4bdea8bbdbe5e33bac65e4e1e4051ea9e02eee31647610370"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-exceptions.png",
+        "bytes": 180923,
+        "sha256": "37929625978242d1a7d7b37c3ba166117c78c71d1ee66ae59b4bc17beba46c81"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-external-gl-reconciliation.png",
+        "bytes": 180867,
+        "sha256": "65f1f7454dffd57033b865efab727b43245db01096e21b82584ee12fa98f8721"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-factor-paydown.png",
+        "bytes": 130920,
+        "sha256": "8041d6c29a1a8428dacb9057fc4916bfdbed20b593a8d15e5869d6a276d5f248"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-journal-entries.png",
+        "bytes": 201930,
+        "sha256": "f22bc3524cedd8bd03da8a2b03c3a3adf7d1170d29ddd6086809dbc0d45bb111"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-journal-entry-detail.png",
+        "bytes": 132648,
+        "sha256": "f52a94bc7ccbb519a1b0726b485aa49130681c57992d890f2107e57b80d530ab"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-ledger.png",
+        "bytes": 161913,
+        "sha256": "b6cb9dc372e6500dcd6f33c6f9e0483c750453f1b90d9ab9ace18196ce461003"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-margin-control.png",
+        "bytes": 163965,
+        "sha256": "39e15d9724474548c516b2bdfd5cd9b748f6fb885b7a95232ffb268e6433ecd0"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-operations-continuity.png",
+        "bytes": 208041,
+        "sha256": "b27fdf3d2756915ab19c2c3e3acd01d8c995b542f2f28159a78dc86f87f22256"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-reconciliation-match.png",
+        "bytes": 113275,
+        "sha256": "114c066effe1904b4d1bab22e01c5bb1ad5443ec5fa6277b75b48d8e058f7c1c"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-reconciliation.png",
+        "bytes": 199934,
+        "sha256": "efe37f310ae088d734ef9631b73403430bebf87cec4386f9ce65e4decaad14b4"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-security-master.png",
+        "bytes": 165871,
+        "sha256": "a5c5a6e9ab1f3fc3e344f543ef70aa33984c295f348ea009bcc31e9f8fd3066a"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-statement-import.png",
+        "bytes": 131180,
+        "sha256": "89e4227a9bc10dcf6cd363b9b6e6437db560fc820dca1ff9a316b455b1d3f33e"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-trial-balance-detail.png",
+        "bytes": 200233,
+        "sha256": "8555c5091fa38e4aa5818eede3c0c9ffcc271b1e4f06db6ec5f9aa03650a1dab"
+      },
+      {
+        "path": "docs/screenshots/web/web-accounting-workspace.png",
+        "bytes": 193207,
+        "sha256": "c05d1f202abaa330130b275734fe06c41a752cb7faff72ac0f23235aa766533a"
+      },
+      {
+        "path": "docs/screenshots/web/web-daily-control-tower.png",
+        "bytes": 149236,
+        "sha256": "a46b51422437d34dc9e72ebaf4790c49b3848dfc744bfb4feda05d5c71149057"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-alerts.png",
+        "bytes": 133078,
+        "sha256": "af61f94cf08e15e4e9bd04a4061149da323e9fdd356715b46aece93534ba3640"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-backfills.png",
+        "bytes": 141465,
+        "sha256": "b909366ac13c5b10ca3ba9be91f16a32fbb4989e46fa6a574f1ee8636002f2fb"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-evidence-workbench.png",
+        "bytes": 156917,
+        "sha256": "09f7c0c06059198a1029d91bdd68b9f7910a790deb877d7024b13eb676fd30ac"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-exports.png",
+        "bytes": 144855,
+        "sha256": "88d36a4315c9129b9308e18ba4f7beeff6193d6c3c558d5483017d8eeaa9c200"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-import.png",
+        "bytes": 167813,
+        "sha256": "7a9ef8b499d98f0f12e93bfc476801bb65fd849659a700fde8f7014446c22e4e"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-ingestion-operations.png",
+        "bytes": 151840,
+        "sha256": "5a4dd0780de6fa882f303a439f58f9ea68f34cba763eb678195fdb2ca7b6bf77"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-live-quotes.png",
+        "bytes": 108077,
+        "sha256": "75338af632d632d6cb069512023c648c8581389c2cc9e6c2d10bad0c324ad467"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-providers.png",
+        "bytes": 154918,
+        "sha256": "0086d9512bbe8e9d51e7cccadd7af8dadfaf188586b9917fa1cab282be91885b"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-query.png",
+        "bytes": 124135,
+        "sha256": "f0d97ffde4964fabacde27f078e0128cebd0d58c5f987892761009cd6e437251"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-storage-assurance.png",
+        "bytes": 151696,
+        "sha256": "1b7b830aa28b80604506682009dcf5855e62ad8c2b2f726245f39c636931d3c4"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-watchlist.png",
+        "bytes": 158928,
+        "sha256": "1f5dd31ce634c02b42602fcd5e8a789c1b9e4fa8b069559b1173b91712256933"
+      },
+      {
+        "path": "docs/screenshots/web/web-data-workspace.png",
+        "bytes": 152475,
+        "sha256": "e490896efed4e49cc62920276332728393d93e5abbd180d975bbb507dc923bfb"
+      },
+      {
+        "path": "docs/screenshots/web/web-operator-readiness-console.png",
+        "bytes": 168879,
+        "sha256": "c548ff911c2564e0af9e3f1cd0a091a6229a23bf2d00e285b7473f3393e97c3f"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-asset-detail.png",
+        "bytes": 85301,
+        "sha256": "2f20150e004e134b0e523381a5089d36e805d7e2ad2a8881599c7df99056f4a2"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-attribution.png",
+        "bytes": 186007,
+        "sha256": "3716d1c1fb4097c8b53829dc808b3efbdf09ea5d8dfd24e8db0f66b5a4fa4d2d"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-brokerage-sync.png",
+        "bytes": 161606,
+        "sha256": "e9f2f4a679d558cac8511c073177cf663d9f4d8d2e65687e163eea042ebafd9b"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-cash-ladder.png",
+        "bytes": 138069,
+        "sha256": "ebc4f2a2743ef17e41a3a70d368530d01964c8be10e8c6639e9ad96b3b2f904e"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-family-office.png",
+        "bytes": 172948,
+        "sha256": "94b6ca5ea0a859e794fd25e8b8c0d319ba16a794e19c8cdbe277564d46390c5e"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-loan-book.png",
+        "bytes": 117847,
+        "sha256": "b761de9bcb8a40569362ae78b793108307faa9e3c02c97ac20ba88dfb731da9d"
+      },
+      {
+        "path": "docs/screenshots/web/web-portfolio-workspace.png",
+        "bytes": 206171,
+        "sha256": "788cc72fa6cccfddc6b11a336d167a0dd31fe2ccf3376d43c085e92d752f64eb"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-evidence-workbench.png",
+        "bytes": 147271,
+        "sha256": "c984aa88731203f96d1043ed0306cf00b8aa5e8c5e7b447a162ce7b661b56989"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-exports.png",
+        "bytes": 134884,
+        "sha256": "05dda1a5955c8b4440e2a4293db47948fae832daf741f54ed545126c706751e9"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-governance.png",
+        "bytes": 142443,
+        "sha256": "cb90dc32a5fa6eb8f2cd7f2bd13cd7f800b0f7483155b2672d1fa86715deab2d"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-library.png",
+        "bytes": 97864,
+        "sha256": "1aa2115e9cb4fbe902a498c91c58dacc68c2864ffe1c457295b524c95629bac7"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-operations-record.png",
+        "bytes": 228400,
+        "sha256": "f0464a95e8e9952e7183d4519d617f13d288b55b7049bd82b89cac300bff8816"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-preview-validation.png",
+        "bytes": 112516,
+        "sha256": "092f4c4c27486e011b04559b0ce88878ce6e0252406e642482a755d746fffc2e"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-report-builder.png",
+        "bytes": 139298,
+        "sha256": "ff34605593ff676cef0210046a9e77cf286848ee01f6c5f213a1eea60901908f"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-report-packs.png",
+        "bytes": 159174,
+        "sha256": "57b045e30daed50909ded520cc8e2e9782e7c4afa8551b0874320289d40bc028"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-run-detail.png",
+        "bytes": 161027,
+        "sha256": "4be512c693f513c4a696643320a6c22dec5d4f136817ddf8270768af71c78358"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-run-parameters.png",
+        "bytes": 147985,
+        "sha256": "4634e00e6b0e4e65f9cd1e98aec6010c4c522393c28848169db7455ccf9a0bff"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-run-status.png",
+        "bytes": 149736,
+        "sha256": "1024f87ae7f68f52461a6e13a3a8757cdda3df2710c9a79a0c0c73601b8405f8"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-scheduled.png",
+        "bytes": 155571,
+        "sha256": "d548e25c8f3fe786f88582c1340d703a983beb8343318a078c8f4ad912f771ae"
+      },
+      {
+        "path": "docs/screenshots/web/web-reporting-workspace.png",
+        "bytes": 159642,
+        "sha256": "72d81cb2368bd390763aa15f60de7eaed754c4a2dc77abc27a1ce169772be965"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-access.png",
+        "bytes": 168026,
+        "sha256": "36f57be81485256436e5bfbeaf9f9d3bb6c50e8f118d65aeedc0a9eabae2b4eb"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-accounting-systems.png",
+        "bytes": 184046,
+        "sha256": "a3c99bdc3c282b699fc08c4359dea53a5741a6d09b35ab6382e8d1e1ab703dd6"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-alpaca-provider-advanced.png",
+        "bytes": 170211,
+        "sha256": "7d806e4836468678aec984aae6c721b166a04f5c39e0bf0b780e4207cf7b8828"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-alpaca-provider-setup.png",
+        "bytes": 166182,
+        "sha256": "32489b12a840b33e88d683a6deeba16572a3a3894ee4e3a90fcb28fee314a46a"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-backend-capability-coverage.png",
+        "bytes": 178724,
+        "sha256": "001efc9639210509f5f6cd2e540ad1841e3167933165e5887a402d8c597918d3"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-diagnostic-endpoints.png",
+        "bytes": 166972,
+        "sha256": "14b7e300b8557c4b8f731cf2272ab09282156667d0f4e0d9bec22b577f9f7503"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-diagnostics.png",
+        "bytes": 121717,
+        "sha256": "5d9b83724212b5d6e0437f46b3710e59e23a97b6f6fb1a9ee3c011b9477d2ad2"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-feature-coverage.png",
+        "bytes": 162877,
+        "sha256": "a68c3402f4c852adabc7a7813d9521b61e3d3b195d19c687ceebc028d6df65e6"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-preferences.png",
+        "bytes": 92491,
+        "sha256": "1e1e56092fbdf0ad77da3d66bfd8896b96d5729ed3a511a05843497ec3f9246e"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-providers.png",
+        "bytes": 158311,
+        "sha256": "da6875e6ac61727384175e25c689216ec540c7cfbe95a80d14bd64f491ce7c50"
+      },
+      {
+        "path": "docs/screenshots/web/web-settings-workspace.png",
+        "bytes": 140700,
+        "sha256": "c7b726e838f1c6bb899e6c8e5afea0e8a7f1f64cf02fe7a5956edfacf625fac7"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-covered-call.png",
+        "bytes": 157493,
+        "sha256": "30e52d461182dbe58897fd1e7751ec66316b4e542b7537e105f068797a1752ee"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-designer.png",
+        "bytes": 175754,
+        "sha256": "de9e940ef0b21c9d54f56913d737e36e2ec191f8439a5835aa5544ab7d19e50c"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-lab.png",
+        "bytes": 122002,
+        "sha256": "d750c3003eff4e844a22ab4a6c171af0e485dc9b259876f43a628fb9a82433f3"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-promotions.png",
+        "bytes": 167948,
+        "sha256": "16b79c474467e2472c597b919c1e8a549b0afc09eaebc4813f926088c3b74818"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-quant-lab.png",
+        "bytes": 114685,
+        "sha256": "d675cc00abff198e4492753aec0a6360edb99698526c45a5815cbcb32d9857ea"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-run-ledger.png",
+        "bytes": 144497,
+        "sha256": "8d72e91c6e6b0d6444519fbcc3245f69db4313bc067936ae81b87a9fc673f338"
+      },
+      {
+        "path": "docs/screenshots/web/web-strategy-workspace.png",
+        "bytes": 133781,
+        "sha256": "bef7fd6612f4de275df8f1f7882278f6a63ce3c89133deeea7e58a4e8fec4295"
+      },
+      {
+        "path": "docs/screenshots/web/web-trading-orders.png",
+        "bytes": 135650,
+        "sha256": "5b5440ec039f9be535a36a52f6b8dc82f40d72f040979fe47efe6ee2b893fea7"
+      },
+      {
+        "path": "docs/screenshots/web/web-trading-positions.png",
+        "bytes": 135497,
+        "sha256": "70bd242f7abf5574fe799b0f3ee881d379681ec0f48c81b3a5f1becd96e089b0"
+      },
+      {
+        "path": "docs/screenshots/web/web-trading-risk.png",
+        "bytes": 139461,
+        "sha256": "4d9e675df5166694b1c84aa63049ecb2783af5085f614cce2880bf6664543382"
+      },
+      {
+        "path": "docs/screenshots/web/web-trading-workspace.png",
+        "bytes": 149994,
+        "sha256": "9690abe812c23cf9ba4bdf9f4d52c429f37b42c25b921a4030c5998ad056ae2c"
+      },
+      {
+        "path": "docs/testing/evidence/bond-capabilities-20261029/analytics-results-1366.png",
+        "bytes": 144922,
+        "sha256": "1d1d11e550fa37996323500563872c03fc908ff39bf0b21af3c150f92ed7ca8b"
+      },
+      {
+        "path": "docs/testing/evidence/bond-capabilities-20261029/migration-draft-1366.png",
+        "bytes": 137889,
+        "sha256": "c0c1305436c30f5ad899b2d0b289c89c0bbc93caa6caaea486757d43f101f6f3"
+      },
+      {
+        "path": "docs/testing/evidence/next-work-20261028/mark-close-browser/M4-missing-date.png",
+        "bytes": 165998,
+        "sha256": "559d7a97bc39853f489c6906cfeff83e64838d320c02bcd2dc5054c7e7f13c47"
+      },
+      {
+        "path": "docs/testing/evidence/next-work-20261028/mark-close-browser/S4-accounting-details.png",
+        "bytes": 161440,
+        "sha256": "accd3a8c77b1b909f4305350f84340ba93e5d144ec6c921aa607ecf00ffabecf"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M-refusal-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M-refusal.png",
+        "bytes": 173339,
+        "sha256": "52a0a937f86a258c7021026a9ddb8550e0f05f6fca5276cdd393014af7f55a5b"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M1-fresh-1366x768.png",
+        "bytes": 140805,
+        "sha256": "0acb29c67af58fea3c7692c35ef442a284c96646aef00bb4d16b2a9b126edf8c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M1-fresh.png",
+        "bytes": 170361,
+        "sha256": "f0109dd6e75cd98b0cae2ad8a324005dddca423b543fcae1ffcaf991c552848f"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M10-unsupported-override-simulation-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M10-unsupported-override-simulation.png",
+        "bytes": 177058,
+        "sha256": "ef5375a0946dcb19f8dbc0a5901db1462332e37c02c47a639f384a06411edd7a"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M2-stale-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M2-stale.png",
+        "bytes": 172942,
+        "sha256": "6fa74f655edc4068255d2606a5f0829c424a02c735498799d5952f441889b432"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M3-future-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M3-future.png",
+        "bytes": 173997,
+        "sha256": "aedceb1df421356df1db8e64dbfc4a8a6297f9ba0296a030f3fdde9327a7c4b1"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M4-missing-date-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M4-missing-date.png",
+        "bytes": 172423,
+        "sha256": "e05d63f52623be05a129de67937210d482263d4d55b798467c49d99db74ec4d6"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M5-coverage-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M5-coverage.png",
+        "bytes": 173424,
+        "sha256": "b6c02e612bc656486704a7eb3ebfcde06b33e6c45d02696713b48c48fec597c7"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M6-confidence-repair.png",
+        "bytes": 170359,
+        "sha256": "87fc0276e3340ae107c39e1fc5888a5bd9e4b33e2a92415bddb5c89cb50d8cd3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M6-confidence.png",
+        "bytes": 174252,
+        "sha256": "572de289e55971f564630cdd1561e879e22967d1dab9b02f8df40ffbcc0e050e"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/M8-delayed-old-preview.png",
+        "bytes": 178213,
+        "sha256": "8ec7b85fa892a5ba2d68ef95514c397f191de18d68c617cebaba6cb8aadfa862"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S1-current-scope-1366x768.png",
+        "bytes": 131391,
+        "sha256": "85789ca40b6b0860757ad530b9652257ac94ed568c1998c73d8d077275477d24"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S1-current-scope.png",
+        "bytes": 158125,
+        "sha256": "aa841665632dc20d34b0fa2ea01d7a21af2e298f1e2e570f746475819e7a58ae"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S2-missing-entityId.png",
+        "bytes": 165713,
+        "sha256": "3e2001ca4116254098ae2364c6ec8845127fd76ebdcfa8d13e3a37efc1420d69"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S2-missing-fundAccountId.png",
+        "bytes": 162553,
+        "sha256": "640b0776330c71cf3f20ea07f0c66dfc15819bb97c761c244bcae25083822b1b"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S2-missing-fundProfileId.png",
+        "bytes": 165516,
+        "sha256": "47ec1e1b7e6bcc119a4cc80b7181637f3d0be55833216d9553471ea093a741d6"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S2-missing-ledgerBookId.png",
+        "bytes": 165072,
+        "sha256": "7d8ccc2bf7361a83c01b3385b921c554f302c621863c9d1ac1fffdfb0451f9ce"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S2-missing-periodId.png",
+        "bytes": 165476,
+        "sha256": "4fc827b7a5e2e23252887c42da8883c339279392aabe58ac909888909e805fe3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S3-foreign-scope.png",
+        "bytes": 165721,
+        "sha256": "9f10fe8efc9a0d0b76c8a552942bc4e4d52c2dbf71288f98c2a10d09bd2ce362"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S4-accounting-details.png",
+        "bytes": 113330,
+        "sha256": "a0274f35d5313bd9bea24a83fea7b9695f343c0af7a1f44ac640c1ce6ad79305"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S4-missing-context.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S4-missing-repair-context.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S4-missing-repair.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S4-missing.png",
+        "bytes": 154861,
+        "sha256": "2a0d9c6456b1247c9fc04a0540496eaa9fe6ff6f4328202eb6a4e46088406e9d"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S5-accounting-details.png",
+        "bytes": 112295,
+        "sha256": "01fabfb767c6aef679387f91f13bc758ea4f5e97f7874d2be6b9aabf449c2bca"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S5-stale-context.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S5-stale-repair-context.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S5-stale-repair.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S5-stale.png",
+        "bytes": 155677,
+        "sha256": "3d4ea548d8740a57947bd2e236081fd8e6cafd7596c048e930b571de75ad6baa"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S6-repair.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S6-unavailable.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S7-refusal-context.png",
+        "bytes": 155236,
+        "sha256": "f294706659b60c03d5b3c1e7ca7af2e9df74264e03da22a62365cb06490ee830"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S7-refusal.png",
+        "bytes": 146398,
+        "sha256": "fc4e6c9502dde8c89250447ac6a1574a3dc054f89c0fdd927bc3024fed2de1b8"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S7-repair-context.png",
+        "bytes": 165413,
+        "sha256": "e82ba3a4fb066b7a24935b103b5f5ff653937048bdbb4b1dae42173472ada43c"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S7-repair.png",
+        "bytes": 156140,
+        "sha256": "11e8e8a956d941005c2824098b775253d12715807de98f02b8b316345400e18b"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S8-delayed-old-response.png",
+        "bytes": 172864,
+        "sha256": "174e11fbb46a4b3d536e62ea24807e5b2ce96e49dcdcd6554883915b1053ecb4"
+      },
+      {
+        "path": "docs/testing/evidence/w10-615abde9/browser/evidence/screenshots/S8-repair.png",
+        "bytes": 165407,
+        "sha256": "ee8953a2c5a6276200de50dece8f70f08b688a1bb8d63f9eb407415c0bd23e38"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-merge-20261007/screenshots/S4-repaired-v9.png",
+        "bytes": 140884,
+        "sha256": "abdc797c1f460ea4e8d459fe74f84b8b650a4e648aae4c419bed57a95563b910"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-merge-20261007/screenshots/S5-published-v10.png",
+        "bytes": 108664,
+        "sha256": "1cdb56af20920159036613fe39a94c758679e8ed2bee522b73dfa04a976dde52"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-refresh-20261006/browser/screenshots/S4-repaired-v9.png",
+        "bytes": 140740,
+        "sha256": "dcc69f3e8da8faf0c6786524b7fb04f75133f5015fef3d8b71092869bf1ca8ae"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-refresh-20261006/browser/screenshots/S5-published-v10.png",
+        "bytes": 108664,
+        "sha256": "1cdb56af20920159036613fe39a94c758679e8ed2bee522b73dfa04a976dde52"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-reviewed-20261007/browser/official-w03g/screenshots/web-accounting-operations-continuity.png",
+        "bytes": 1549322,
+        "sha256": "e3ddac9868e0aabaef46d70036ffe756807022c9e8c9f4d86b9a1c559e86f2f4"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-reviewed-20261007/browser/screenshots/S19-same-version-matching-repair.png",
+        "bytes": 140771,
+        "sha256": "2bb3472dc63c19aaaa224bc9d9f6c46b84465f80b410cb258156aa8d00ab92c3"
+      },
+      {
+        "path": "docs/testing/evidence/w10-seam-reviewed-20261007/browser/screenshots/S20-same-version-repaired-publication.png",
+        "bytes": 105937,
+        "sha256": "5df2c97fcebd3980f60cb095100d9879779bf78aec959fe10cb65ee0ef454380"
+      }
+    ],
+    "localLfsFsckPassed": true,
+    "localLfsFsckCommand": "git lfs fsck --objects --pointers"
   }
 }

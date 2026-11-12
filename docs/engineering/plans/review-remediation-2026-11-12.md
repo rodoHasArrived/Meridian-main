@@ -177,3 +177,47 @@ hash validation reported zero errors and warnings. Independent remote hydration 
 empty LFS cache and no local references: all 329 images (90,112,988 bytes) matched their retained
 manifest, Git pointers and freshly downloaded objects. `git lfs fsck --objects --pointers` passed.
 Hosted checks on the published pull-request head remain authoritative for the merge.
+
+### Hosted validation corrections and final synchronization
+
+The expanded parallel application slice passed 2,074 tests; the updated Storage and Execution
+suites passed 961 and 1,110 tests respectively, with zero skips. These results include the
+server-options binding, trusted-origin, diagnostic privacy and log-field regressions. Supplemental
+backfill logging coverage uses a provider cutoff beyond the production stale tolerance so both
+resume and stale diagnostics are exercised without changing the requested symbol.
+
+Hosted CodeQL analysis exposed 21 reported flows. Thirteen path reports shared one source: the
+conversion endpoint could infer request-body storage options without service registration. All
+storage options now bind explicitly from trusted services, with real HTTP tests for configured
+roots and missing registration. Four financial boundaries construct server-owned commands while
+preserving every reviewed-evidence field; undefined origins downgrade to nonhuman authority and
+cannot append a reviewed journal. Privacy diagnostics omit workflow/fund identities, paths and
+exception objects. Remaining diagnostic fields encode line breaks and preserve business identities.
+No security alert was dismissed or suppressed; the hosted security gate must rescan the final head.
+
+Windows ran 2,688 tests on the earlier published head: 2,687 passed and one continuous-reader
+storage test exposed a destination-name gap during backup replacement. The shared Windows
+publication primitive now performs one native rename while retained delete-sharing readers keep
+their generation. Backup snapshots receive the original DACL at creation, are fsynced before
+publication, and retain durable recovery evidence if backup promotion fails after the live commit.
+Independent review checked native layouts, handles, extended path aliases, sharing denial and
+recovery sequencing. Actual native execution remains a required hosted Windows result.
+
+Disposable NuGet restore clones retain LFS pointers through a command-scoped checkout setting;
+they do not require binary assets. Restore fingerprints, caller configuration and normal publication
+hooks remain enforced. The helper regression suite passed 23 tests, including missing-object and
+environment-isolation proofs. The roster suite passed 51 tests with three existing optional
+PowerShell skips. All 15 catalog facts remain in the main assembly, including its three integration
+facts, and discovery confirms the focused Storage assembly no longer owns them.
+
+Publication also incorporates upstream `a2002fcea559217bfd5f8c73d1cbd90de6b174b9`, including the
+shared-accrual and feature-composition work. Source merged without conflicts. Independent review
+confirmed the same 16 feature modules, activation rules, financial adapter ownership and origin DTO
+fields. All 52 refreshed screenshots retain exact upstream bytes. The current scoped inventory is
+329 PNGs (90,119,455 bytes), recorded separately as `thirdSynchronization` without altering earlier
+captures. Remote upload and hydration verification must cover that final inventory before merge.
+
+The synchronized targeted run passed 903 tests with zero skips, covering changed upstream
+accounting and receipt cases, composition order, architectural boundaries and the security
+regressions. Its ten backfill coverage/resume cases include the corrected stale-log fixture.
+These cases overlap earlier slices and are not an additional independent total.

@@ -29,26 +29,27 @@ namespace Meridian.Application.Composition;
 [ImplementsAdr("ADR-001", "Centralized composition root for service configuration")]
 public static class ServiceCompositionRoot
 {
-    // Feature registration modules — instantiated once and reused across calls.
-    // Registration order matters: later modules may depend on services registered by earlier ones.
-    private static readonly IServiceFeatureRegistration[] FeatureModules =
+    // One ordered plan owns feature membership and activation. Keep configuration/storage before
+    // their consumers, providers before symbol/backfill services, and canonicalization after pipeline.
+    // Modules are stateless registration helpers; instances are reused across independent hosts.
+    private static readonly (IServiceFeatureRegistration Module, Func<CompositionOptions, bool> IsEnabled)[] FeatureModules =
     [
-        new ConfigurationFeatureRegistration(),
-        new CoordinationFeatureRegistration(),
-        new StorageFeatureRegistration(),
-        new LedgerFeatureRegistration(),
-        new CredentialFeatureRegistration(),
-        new ProviderFeatureRegistration(),
-        new ProviderRoutingFeatureRegistration(),
-        new SymbolManagementFeatureRegistration(),
-        new BackfillFeatureRegistration(),
-        new EtlFeatureRegistration(),
-        new MaintenanceFeatureRegistration(),
-        new DiagnosticsFeatureRegistration(),
-        new PipelineFeatureRegistration(),
-        new CollectorFeatureRegistration(),
-        new CanonicalizationFeatureRegistration(),
-        new HttpClientFeatureRegistration(),
+        (new ConfigurationFeatureRegistration(), static _ => true),
+        (new CoordinationFeatureRegistration(), static _ => true),
+        (new StorageFeatureRegistration(), static _ => true),
+        (new LedgerFeatureRegistration(), static _ => true),
+        (new CredentialFeatureRegistration(), static options => options.EnableCredentialServices),
+        (new ProviderFeatureRegistration(), static options => options.EnableProviderServices),
+        (new ProviderRoutingFeatureRegistration(), static options => options.EnableProviderServices),
+        (new SymbolManagementFeatureRegistration(), static options => options.EnableSymbolManagement),
+        (new BackfillFeatureRegistration(), static options => options.EnableBackfillServices),
+        (new EtlFeatureRegistration(), static options => options.EnableEtlServices),
+        (new MaintenanceFeatureRegistration(), static options => options.EnableMaintenanceServices),
+        (new DiagnosticsFeatureRegistration(), static options => options.EnableDiagnosticServices),
+        (new PipelineFeatureRegistration(), static options => options.EnablePipelineServices),
+        (new CollectorFeatureRegistration(), static options => options.EnableCollectorServices),
+        (new CanonicalizationFeatureRegistration(), static options => options.EnableCanonicalizationServices),
+        (new HttpClientFeatureRegistration(), static options => options.EnableHttpClientFactory),
     ];
 
     /// <summary>
@@ -79,55 +80,11 @@ public static class ServiceCompositionRoot
 
         services.AddFundScopeTenantServices();
 
-        // Core configuration and storage — always required
-        services.RegisterFeature<ConfigurationFeatureRegistration>(options);
-        services.RegisterFeature<CoordinationFeatureRegistration>(options);
-        services.RegisterFeature<StorageFeatureRegistration>(options);
-
-        // Ledger services — always registered; ProjectLedgerBook is a lightweight singleton
-        services.RegisterFeature<LedgerFeatureRegistration>(options);
-
-        // Credential services — must come before provider services
-        if (options.EnableCredentialServices)
-            services.RegisterFeature<CredentialFeatureRegistration>(options);
-
-        // Provider services — must come before dependent services (Symbol, Backfill)
-        if (options.EnableProviderServices)
-            services.RegisterFeature<ProviderFeatureRegistration>(options);
-
-        if (options.EnableProviderServices)
-            services.RegisterFeature<ProviderRoutingFeatureRegistration>(options);
-
-        // Symbol management — depends on ProviderFactory/ProviderRegistry
-        if (options.EnableSymbolManagement)
-            services.RegisterFeature<SymbolManagementFeatureRegistration>(options);
-
-        // Backfill services — depends on ProviderRegistry/ProviderFactory
-        if (options.EnableBackfillServices)
-            services.RegisterFeature<BackfillFeatureRegistration>(options);
-
-        if (options.EnableEtlServices)
-            services.RegisterFeature<EtlFeatureRegistration>(options);
-
-        // Remaining optional services
-        if (options.EnableMaintenanceServices)
-            services.RegisterFeature<MaintenanceFeatureRegistration>(options);
-
-        if (options.EnableDiagnosticServices)
-            services.RegisterFeature<DiagnosticsFeatureRegistration>(options);
-
-        if (options.EnablePipelineServices)
-            services.RegisterFeature<PipelineFeatureRegistration>(options);
-
-        if (options.EnableCollectorServices)
-            services.RegisterFeature<CollectorFeatureRegistration>(options);
-
-        // Canonicalization — must come after pipeline (decorates IMarketEventPublisher)
-        if (options.EnableCanonicalizationServices)
-            services.RegisterFeature<CanonicalizationFeatureRegistration>(options);
-
-        if (options.EnableHttpClientFactory)
-            services.RegisterFeature<HttpClientFeatureRegistration>(options);
+        foreach (var (module, isEnabled) in FeatureModules)
+        {
+            if (isEnabled(options))
+                module.Register(services, options);
+        }
 
         ProductionServiceRegistrationPolicy.Validate(services);
 
@@ -140,25 +97,6 @@ public static class ServiceCompositionRoot
 
         return services;
     }
-
-    /// <summary>
-    /// Locates the singleton feature module instance of type <typeparamref name="T"/>
-    /// from the static module array and invokes its registration.
-    /// </summary>
-    private static IServiceCollection RegisterFeature<T>(
-        this IServiceCollection services,
-        CompositionOptions options) where T : IServiceFeatureRegistration
-    {
-        foreach (var module in FeatureModules)
-        {
-            if (module is T feature)
-                return feature.Register(services, options);
-        }
-
-        // Fallback: create a new instance (should not happen with the static array)
-        return Activator.CreateInstance<T>().Register(services, options);
-    }
-
 }
 
 /// <summary>
