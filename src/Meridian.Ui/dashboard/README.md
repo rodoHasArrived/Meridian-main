@@ -2104,7 +2104,10 @@ mode stays pure Node while `npm run design-system:sync` reconverts changed fonts
 pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
-assets for hosted and offline-capable deployments.
+assets for hosted and offline-capable deployments. An asset that `index.html` links (the favicon
+mark) is never inlined (`meridianAssetsInlineLimit` in `vite.config.ts`): Vite reuses whichever URL
+it produced first for a file the HTML and the asset bridge both reference, so without the rule the
+tracked bundle could differ between machines.
 
 Asset drift is checked before dev/build and by Vite's build hook. Run
 `npm run design-system:check` to verify the copied bytes,

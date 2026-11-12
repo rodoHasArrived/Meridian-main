@@ -1,11 +1,14 @@
 // @vitest-environment node
 
+import path from "node:path";
+import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
 import config, {
   createMeridianApiFallbackBypass,
   createMeridianApiProxy,
   createMeridianDevSessionPlugin,
   defaultMeridianApiBaseUrl,
+  meridianAssetsInlineLimit,
   meridianDevFixtureHeader,
   meridianDevSessionHeader,
   meridianScreenshotCaptureEnv,
@@ -811,6 +814,22 @@ describe("Vite Meridian API proxy", () => {
 
     expect(result).toBeUndefined();
     expect(response.writableEnded).toBe(false);
+  });
+});
+
+describe("workstation build asset inlining", () => {
+  const dashboardRoot = path.resolve(__dirname, "..");
+
+  it("never inlines an asset that index.html links, so every reference shares the emitted file", () => {
+    const favicon = path.join(dashboardRoot, "src/assets/brand/meridian-mark.svg");
+
+    expect(readFileSync(path.join(dashboardRoot, "index.html"), "utf8")).toContain('href="/src/assets/brand/meridian-mark.svg"');
+    expect(meridianAssetsInlineLimit(favicon)).toBe(false);
+    expect((config as UserConfig).build?.assetsInlineLimit).toBe(meridianAssetsInlineLimit);
+  });
+
+  it("leaves other assets to Vite's size limit", () => {
+    expect(meridianAssetsInlineLimit(path.join(dashboardRoot, "src/assets/brand/meridian-mark-light.svg"))).toBeUndefined();
   });
 });
 
