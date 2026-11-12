@@ -11,6 +11,11 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui
 
+The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
+rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
+preserve exact decimal text from fixed-income responses; calculation and review authority remains
+in the shared services. See the dashboard README for these workflows and rebuild validation.
+
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
 after source changes; the shared analytics endpoint remains the calculation authority.
