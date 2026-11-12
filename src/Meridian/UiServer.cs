@@ -1316,21 +1316,8 @@ public sealed class UiServer : IAsyncDisposable
                 return;
 
             var readinessStopwatch = Stopwatch.StartNew();
-            await LedgerStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await DirectLendingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundAccountsStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await FundStructureStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await BankingStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
-                .ConfigureAwait(false);
-            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_app.Services, cancellationToken, _logger)
+            await _app.Services.GetRequiredService<DatabaseStartupPlan>()
+                .EnsureReadyAsync(_app.Services, cancellationToken, _logger)
                 .ConfigureAwait(false);
             var reportingStartup = _app.Services.GetService<IReportingMigrationStartup>();
             if (reportingStartup is not null)

@@ -6,6 +6,10 @@ namespace Meridian.Application.Composition;
 
 internal static class LedgerStartup
 {
+    // Retain the established migration sequence across every host.
+    internal static DatabaseStartupStep StartupStep { get; } =
+        new("ledger", [], EnsureDatabaseReadyAsync);
+
     internal const string ConnectionStringVariable = "MERIDIAN_LEDGER_CONNECTION_STRING";
     internal const string SchemaVariable = "MERIDIAN_LEDGER_SCHEMA";
     internal const string DefaultSchema = "ledger";
