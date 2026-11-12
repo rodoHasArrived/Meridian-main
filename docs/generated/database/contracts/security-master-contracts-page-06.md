@@ -252,6 +252,7 @@ classDiagram
         +string? Key
         +string Path
         +SecurityTermRead? Read
+        +bool WriteOnly
         +string? WriteVia
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermBlocks["SecurityTermBlocks"] {
