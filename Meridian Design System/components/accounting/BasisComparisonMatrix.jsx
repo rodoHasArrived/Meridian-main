@@ -7,8 +7,9 @@
 import React from "react";
 import { formatNumber, formatAccounting } from "../core/format.js";
 
-const COND={confirmed:{label:"Confirmed",glyph:"●"},provisional:{label:"Provisional",glyph:"◐"},estimated:{label:"Estimated",glyph:"○"},stale:{label:"Stale",glyph:"◔"},overridden:{label:"Overridden",glyph:"◆"},missing:{label:"Missing",glyph:"■"},na:{label:"Not applicable",glyph:"—"},pending:{label:"Pending",glyph:"◇"},exception:{label:"Exception",glyph:"▲"},reconciled:{label:"Reconciled",glyph:"✓"}};
-const cond=v=>COND[String(v||"").toLowerCase().replace(/[_\s-]+/g,"")]||null;
+import { conditionMeta } from "../operations/conditions.js";
+const cond=value=>value?conditionMeta(value):null;
+const unusable=cell=>["missing","na","restricted"].includes(cond(cell.condition)?.key);
 const MODES=[
   {id:"none",label:"Values"},
   {id:"absolute",label:"Absolute"},
@@ -60,6 +61,7 @@ const signed=(v,f)=>`${v<0?"\u2212":"+"}${f(Math.abs(v))}`;
 
 function difference(mode,cell,ref,row,basisId){
   if(mode==="none"||!ref)return null;
+  if(unusable(cell)||unusable(ref))return{text:"Not comparable — input unavailable",same:false};
   // Legacy call sites mark differing bases explicitly; honour that as an override.
   const flagged=(row.different||row.changed||[]).includes(basisId);
   const a=num(cell.value),b=num(ref.value);
@@ -94,6 +96,10 @@ export function BasisComparisonMatrix({
   const interactive=Boolean(onSelectCell||onOpenTrace||onOpenEvidence);
 
   const render=(cell,row)=>{
+    const condition=cond(cell.condition)?.key;
+    if(condition==="restricted")return "Restricted";
+    if(condition==="missing")return "—";
+    if(condition==="na")return "n/a";
     if(cell.value===null||cell.value===undefined||cell.value==="")
       return cell.condition==="na"?"n/a":"—";
     const n=num(cell.value);
@@ -115,7 +121,7 @@ export function BasisComparisonMatrix({
       </div>
     </div>
 
-    <div className="mds-bcm__scroll">
+    <div className="mds-bcm__scroll" role="region" aria-label={`${typeof title === "string" ? title : "Basis comparison"} scroll area`} tabIndex={0}>
       <table>
         <caption>{description||`${title} — every basis shown on identical rows and units; differences are stated against ${refBasis?.label||"the reference basis"} in words and numbers.`}</caption>
         <thead><tr>
@@ -147,7 +153,7 @@ export function BasisComparisonMatrix({
                     {c?<span className="mds-bcm__mark" aria-hidden="true">{c.glyph}</span>:null}{render(cell,row)}
                   </span>
                   {cell.method||cell.source||cell.asOf?<span className="mds-bcm__sub">{[cell.method,cell.source,cell.asOf].filter(Boolean).join(" · ")}</span>:null}
-                  {cell.override?<span className="mds-bcm__sub">Override: {cell.override}</span>:null}
+                  {cell.override&&c?.key!=="restricted"?<span className="mds-bcm__sub">Override: {cell.override}</span>:null}
                   {diff?<span className="mds-bcm__diff" data-same={diff.same?"true":undefined}>{diff.text}</span>:null}
                   {isRef&&mode!=="none"?<span className="mds-bcm__diff" data-same="true">Reference</span>:null}
                 </Tag>

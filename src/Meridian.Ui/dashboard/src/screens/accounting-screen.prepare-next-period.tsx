@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { describeApiError, isApiError } from "@/lib/api-errors";
@@ -309,7 +310,7 @@ function ClosePreparationTarget({ template, books, onPendingChange }: { template
       {periodError ? <StatusBanner tone="danger" title="Target periods unavailable" detail={periodError} role="alert" /> : null}
       {periodError ? <Button variant="outline" onClick={() => { invalidate(); setPeriodRevision(value => value + 1); }}>Retry target periods</Button> : null}
       {bookId && !periodLoading && !periodError && visiblePeriods.length === 0 ? <p role="status">No authoritative periods are configured for this book.</p> : null}
-      {selectedPeriod ? <p className="text-sm">Target period: <strong>{selectedPeriod.label}</strong>, {selectedPeriod.startDate} – {selectedPeriod.endDate}. Status: {selectedPeriod.status}.</p> : null}
+      {selectedPeriod ? <p className="text-sm">Target period: <strong>{selectedPeriod.label}</strong>, <CalendarDate value={selectedPeriod.startDate} /> – <CalendarDate value={selectedPeriod.endDate} />. Status: {selectedPeriod.status}.</p> : null}
       <p className="text-sm text-muted-foreground">Assign each source owner explicitly, including owners who remain the same. Missing assignments block creation.</p>
       <FormGrid columns={2}>{owners.map((owner, index) => <FormRow key={owner} label={`Target owner for ${owner || "unassigned source owner"}`} labelFor={`close-owner-${index}`}><Input id={`close-owner-${index}`} value={mappings[owner] ?? ""} onChange={event => { invalidate(); setMappings(current => ({ ...current, [owner]: event.target.value })); }} /></FormRow>)}</FormGrid>
       {selectedBook ? <p className="text-sm"><strong>{selectedPolicyChanged ? "Policy changed" : "Book policy"}:</strong> {template.sourceAccountingPolicyId} · {template.sourceAccountingPolicyVersion} → {selectedBook.accountingPolicyId} · {selectedBook.accountingPolicyVersion}</p> : null}
@@ -332,16 +333,24 @@ function ClosePreparationTarget({ template, books, onPendingChange }: { template
   </div>;
 }
 
+/**
+ * A period boundary or task due date from the close-preparation service. A real calendar date
+ * becomes a `<time>` with the same text; anything else is printed exactly as the service sent it.
+ */
+function CalendarDate({ value }: { value: string }) {
+  return <LocalDateText value={value} fallback={value} />;
+}
+
 function ClosePreparationPreviewDetails({ preview }: { preview: ClosePreparationPreview }) {
   const names = new Map(preview.tasks.map(task => [task.taskId, task.displayName]));
   return <section className="space-y-3" aria-label="Next-period preview">
     <div className="flex flex-wrap items-center justify-between gap-3"><h4 className="font-semibold">3. Review {preview.targetPeriod.label}</h4><Badge variant={preview.canCreate ? "success" : "warning"}>{preview.canCreate ? "Ready to create" : "Mappings or policies need attention"}</Badge></div>
-    <p className="text-sm">{preview.targetBook.displayName} · {preview.targetPeriod.startDate} – {preview.targetPeriod.endDate} · Calendar {preview.calendar.calendarId} v{preview.calendar.version}</p>
+    <p className="text-sm">{preview.targetBook.displayName} · <CalendarDate value={preview.targetPeriod.startDate} /> – <CalendarDate value={preview.targetPeriod.endDate} /> · Calendar {preview.calendar.calendarId} v{preview.calendar.version}</p>
     {preview.policyChanged ? <StatusBanner tone="warning" title="Policy changed for the target" detail={`Target policy: ${preview.targetPeriod.accountingPolicyId ?? preview.targetBook.accountingPolicyId} · ${preview.targetPeriod.accountingPolicyVersion ?? preview.targetBook.accountingPolicyVersion}`} /> : null}
     {preview.issues.length > 0 ? <ul aria-label="Preparation issues" className="space-y-2">{preview.issues.map((issue, index) => <li key={`${issue.code}-${index}`} className="text-sm"><Badge variant={issue.isBlocking ? "danger" : "warning"}>{issue.isBlocking ? "Blocked" : "Review"}</Badge> {issue.taskId ? `${names.get(issue.taskId) ?? issue.taskId}: ` : ""}{issue.message}</li>)}</ul> : null}
     <div className="overflow-x-auto"><TableWorkbench<(typeof preview.tasks)[number]> workbenchId="accounting-prepared-deadlines" sourceKey={JSON.stringify(preview.tasks)} rows={preview.tasks} columns={[{id:"field-0",label:"Task / dependencies",rowHeader:true,exportValue:task=>task.displayName,render:task=><>{task.displayName}<div className="mt-1 text-xs font-normal text-muted-foreground">{task.dependencies.length ? `After: ${task.dependencies.map(dependency => names.get(dependency.dependsOnTaskId) ?? dependency.dependsOnTaskId).join(", ")}` : "No dependencies"}</div></>},
 {id:"field-1",label:"Owner",exportValue:task=>task.owner,render:task=><>{task.ownerChanged ? <><Badge variant="warning">Owner changed</Badge><div>{task.sourceOwner} → {task.owner || "Unresolved"}</div></> : task.owner || "Unresolved owner"}</>},
-{id:"field-2",label:"Deadline",exportValue:task=>task.dueDate,render:task=><><div>{task.sourceDueDate} → <strong>{task.dueDate}</strong></div><div className="mt-1 text-xs text-muted-foreground">{task.deadlineRule.anchor === "PeriodEnd" ? "Period end" : "Period start"} {task.deadlineRule.offsetDays >= 0 ? "+" : ""}{task.deadlineRule.offsetDays} {task.deadlineRule.dayCount === "BusinessDays" ? "business" : "calendar"} days; {task.deadlineRule.adjustment === "None" ? "no adjustment" : task.deadlineRule.adjustment === "FollowingBusinessDay" ? "following business day" : "preceding business day"}.</div></>},
+{id:"field-2",label:"Deadline",exportValue:task=>task.dueDate,render:task=><><div><CalendarDate value={task.sourceDueDate} /> → <strong><CalendarDate value={task.dueDate} /></strong></div><div className="mt-1 text-xs text-muted-foreground">{task.deadlineRule.anchor === "PeriodEnd" ? "Period end" : "Period start"} {task.deadlineRule.offsetDays >= 0 ? "+" : ""}{task.deadlineRule.offsetDays} {task.deadlineRule.dayCount === "BusinessDays" ? "business" : "calendar"} days; {task.deadlineRule.adjustment === "None" ? "no adjustment" : task.deadlineRule.adjustment === "FollowingBusinessDay" ? "following business day" : "preceding business day"}.</div></>},
 {id:"field-3",label:"Fresh sign-offs and evidence",exportValue:task=>JSON.stringify(task.signOffRequirements),render:task=><>{task.signOffRequirements.map((requirement, index) => <div key={`${requirement.role}-${index}`} className="mb-2"><div>{requirement.role}: {requirement.requiredApprovalCount} new approval(s)</div><div className="text-xs text-muted-foreground">{requirement.evidenceRequirement || "Fresh supporting evidence required"}</div></div>)}</>}]} getRowId={task=>task.taskId} getSearchText={task=>[task.displayName,task.owner,task.dueDate,JSON.stringify(task.signOffRequirements)].join(" ")} completePopulation sourceDescription="Server-computed next-period preparation preview; dates and requirements use the declared calendar and policy." ariaLabel="Prepared task deadlines and requirements" emptyText="No source records returned." /></div>
     <p className="text-sm text-muted-foreground">Task structure and dependency links are retained. Prior task completion, approvals, reviewed evidence, journal references and locks are excluded from the new plan.</p>
   </section>;

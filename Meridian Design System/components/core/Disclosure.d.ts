@@ -74,7 +74,7 @@ export interface DisclosureResidueProps {
   children?: React.ReactNode;
 }
 
-export interface DisclosureRegionProps extends React.HTMLAttributes<HTMLElement> {
+export interface DisclosureRegionProps extends Omit<React.HTMLAttributes<HTMLElement>, "title"> {
   /** Region id — the key for overrides and persisted collapse. Falls back to a string `title`. */
   id?: string;
   title: React.ReactNode;
@@ -117,11 +117,11 @@ export interface DetailOnlyProps {
 }
 
 export declare const DETAIL_LEVELS: DetailLevel[];
-export declare function DisclosureProvider(props: DisclosureProviderProps): JSX.Element;
-export declare function DetailDial(props: DetailDialProps): JSX.Element;
-export declare function DisclosureResidue(props: DisclosureResidueProps): JSX.Element;
-export declare function DisclosureRegion(props: DisclosureRegionProps): JSX.Element;
-export declare function DetailOnly(props: DetailOnlyProps): JSX.Element | null;
+export declare function DisclosureProvider(props: DisclosureProviderProps): React.JSX.Element;
+export declare function DetailDial(props: DetailDialProps): React.JSX.Element;
+export declare function DisclosureResidue(props: DisclosureResidueProps): React.JSX.Element;
+export declare function DisclosureRegion(props: DisclosureRegionProps): React.JSX.Element;
+export declare function DetailOnly(props: DetailOnlyProps): React.JSX.Element | null;
 /** Null outside a provider — consumers must degrade to full detail, never to hidden. */
 export declare function useDisclosure(): DisclosureApi | null;
 /** `tier: "full"` columns/fields/rows hide at summary depth; untiered ones always show. */

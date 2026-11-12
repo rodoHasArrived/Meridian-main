@@ -17,3 +17,5 @@ const idx = Money.agingBucketIndex(Money.daysBetween(inv.dueDate, asOf)); // 0..
 ```
 
 Non-obvious: `amounts` aligns positionally with `buckets` — pass custom labels (e.g. ["Current","1–15","16–45","45+"]) and the wash thresholds follow (`warnFrom` index, last bucket always red). Use `Money.agingBucketIndex` + `daysBetween` so bucket math matches the rendered schedule.
+
+Missing or invalid supplied buckets keep row/column/grand totals unavailable; a partial known sum is not a whole-population total. Omitted required buckets differ from an explicit known zero.

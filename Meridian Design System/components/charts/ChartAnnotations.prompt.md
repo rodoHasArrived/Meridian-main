@@ -19,9 +19,11 @@ color merely to decorate a label. The caller resolves label collisions and
 validates finite values; the overlay does not infer dates, evidence, or causality.
 
 Missing geometry renders nothing; empty annotation arrays draw nothing. Without
-a pane, callouts are omitted because no value scale is defined. The overlay's
-SVG image-group name exposes band positions, event explanations, and visible
-callout values. Events also expose `detail` in their native SVG title. These are
-static annotations, so they add no keyboard stops. Give the enclosing chart an
-`ariaLabel`, `ariaDescription`, and accessible data for its units, basis, source,
-and underlying series; the overlay cannot infer that context.
+a pane, callouts are omitted because no value scale is defined. The overlay has
+no keyboard controls or independent accessible name. Each overlay registers a
+textual summary of bands, event positions/explanations, and visible callout values
+with the owning SVG description, preserving the frame description and other
+overlays across rerenders and cleanup. Event detail also remains in native SVG
+titles. Give the enclosing chart an `ariaLabel`, `ariaDescription`, and accessible
+data for its units, basis, source and underlying series; the overlay cannot infer
+that context. Tooltip-only explanations are insufficient.

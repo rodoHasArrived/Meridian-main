@@ -1,3 +1,4 @@
+import * as React from "react";
 export type ControlNodeType = "input" | "validation" | "reconciliation" | "calculation" | "journal" | "review" | "approval" | "attestation" | "report" | "external";
 export type ControlNodeStatus = "not-started" | "ready" | "in-progress" | "waiting" | "blocked" | "failed" | "complete" | "reopened" | "superseded";
 export type ControlEdgeType = "requires" | "produces" | "validates" | "blocks" | "invalidates" | "reopens" | "approves";
@@ -43,4 +44,4 @@ export interface ControlDependencyGraphProps extends Omit<React.HTMLAttributes<H
   title?: string;
   asOf?: string;
 }
-export declare function ControlDependencyGraph(props: ControlDependencyGraphProps): JSX.Element;
+export declare function ControlDependencyGraph(props: ControlDependencyGraphProps): React.JSX.Element;

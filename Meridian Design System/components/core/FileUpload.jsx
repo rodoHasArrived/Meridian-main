@@ -32,13 +32,14 @@ function inject() {
 
 export function FileUpload({ label, onFilesSelected, multiple = true, accept = "*" }) {
   inject();
+  const inputId = React.useId();
   const [files, setFiles] = useState([]);
   const [isDrag, setIsDrag] = useState(false);
   const inputRef = useRef(null);
 
   const handleFiles = (fileList) => {
-    const newFiles = Array.from(fileList);
-    const updated = multiple ? [...files, ...newFiles] : newFiles;
+    const newFiles = Array.from(fileList || []);
+    const updated = multiple ? [...files, ...newFiles] : newFiles.slice(0, 1);
     setFiles(updated);
     onFilesSelected?.(updated);
   };
@@ -57,13 +58,15 @@ export function FileUpload({ label, onFilesSelected, multiple = true, accept = "
 
   return (
     <div className="mds-upload-wrap">
-      {label && <label className="mds-upload-label">{label}</label>}
+      {label && <label className="mds-upload-label" htmlFor={inputId}>{label}</label>}
       <div
         className={`mds-upload-zone${isDrag ? " mds-upload-zone--drag" : ""}`}
+        role="button" tabIndex={0} aria-label={label || "Upload files"}
         onDrop={handleDrop}
         onDragOver={(e) => { e.preventDefault(); setIsDrag(true); }}
         onDragLeave={() => setIsDrag(false)}
         onClick={() => inputRef.current?.click()}
+        onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") { event.preventDefault(); inputRef.current?.click(); } }}
       >
         <div className="mds-upload-icon" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -75,18 +78,20 @@ export function FileUpload({ label, onFilesSelected, multiple = true, accept = "
       </div>
       <input
         ref={inputRef}
+        id={inputId}
+        aria-label={label || "Upload files"}
         type="file"
         className="mds-upload-input"
         multiple={multiple}
         accept={accept}
-        onChange={(e) => handleFiles(e.target.files)}
+        onChange={(e) => { handleFiles(e.target.files); e.target.value = ""; }}
       />
       {files.length > 0 && (
         <ul className="mds-file-list">
           {files.map((f, i) => (
             <li key={i} className="mds-file-item">
               <span className="mds-file-name">{f.name}</span>
-              <button type="button" className="mds-file-remove" onClick={() => removeFile(i)}>✕</button>
+              <button type="button" className="mds-file-remove" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)}>✕</button>
             </li>
           ))}
         </ul>

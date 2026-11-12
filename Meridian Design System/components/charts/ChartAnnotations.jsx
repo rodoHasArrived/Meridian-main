@@ -33,6 +33,33 @@ export function ChartAnnotations({
   showRules = true,
   badgeY = null,               // override badge baseline (defaults to pane top)
 }) {
+  const uid = React.useId();
+  const ref = React.useRef(null);
+  const accessiblePane = g && pane ? g.pane(pane) : null;
+  const description = [
+    ...bands.map((band,index) => `${band.label || `Band ${index+1}`} (${band.kind || "event"}), positions ${band.from} to ${band.to}`),
+    ...events.map((event,index) => `Event ${event.badge ?? index+1}${event.label ? `: ${event.label}` : ""} (${event.kind || "event"}), position ${event.index}${event.detail ? `: ${event.detail}` : ""}`),
+    ...(accessiblePane?.y ? callouts.map(callout => `${callout.text}${callout.kind ? ` (${callout.kind})` : ""}, position ${callout.index}, value ${callout.value}`) : []),
+  ].join(". ");
+  React.useLayoutEffect(() => {
+    const svg = ref.current?.ownerSVGElement;
+    if (!svg || !description) return;
+    const include = () => {
+      const ids = (svg.getAttribute("aria-describedby") || "").split(/\s+/).filter(Boolean);
+      if (!ids.includes(uid)) svg.setAttribute("aria-describedby", [...ids, uid].join(" "));
+    };
+    include();
+    // ChartFrame owns this attribute and may update its own description. Keep
+    // each overlay's description registered without replacing the frame's ids.
+    const observer = new MutationObserver(include);
+    observer.observe(svg, { attributes: true, attributeFilter: ["aria-describedby"] });
+    return () => {
+      observer.disconnect();
+      const ids = (svg.getAttribute("aria-describedby") || "").split(/\s+/).filter(id => id && id !== uid);
+      if (ids.length) svg.setAttribute("aria-describedby", ids.join(" "));
+      else svg.removeAttribute("aria-describedby");
+    };
+  }, [uid, description, g]);
   if (!g) return null;
   const p = pane ? g.pane(pane) : null;
   const t = p ? p.t : g.innerT;
@@ -40,14 +67,10 @@ export function ChartAnnotations({
   const y = p ? p.y : null;
   const by = badgeY != null ? badgeY : t;
   const clampX = (x) => Math.max(g.plotL, Math.min(g.plotR, x));
-  const descriptions = [
-    ...bands.map((bd, i) => `${bd.label || `Band ${i + 1}`} (${bd.kind || "event"}), positions ${bd.from} to ${bd.to}`),
-    ...events.map((e, i) => `Event ${e.badge != null ? e.badge : i + 1}${e.label ? `, ${e.label}` : ""} (${e.kind || "event"}), position ${e.index}${e.detail ? `: ${e.detail}` : ""}`),
-    ...(y ? callouts.map((c) => `${c.text}${c.kind ? ` (${c.kind})` : ""}, position ${c.index}, value ${c.value}`) : []),
-  ];
 
   return (
-    <g role={descriptions.length ? "img" : undefined} aria-label={descriptions.length ? `Chart annotations. ${descriptions.join(". ")}` : undefined}>
+    <g ref={ref}>
+      {description ? <desc id={uid}>{description}</desc> : null}
       {bands.map((bd, i) => {
         const x0 = clampX(g.x(bd.from)), x1 = clampX(g.x(bd.to));
         const c = kindColor(bd.kind);

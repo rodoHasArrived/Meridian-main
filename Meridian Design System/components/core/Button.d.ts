@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Action button — mirrors the desktop `PrimaryButtonStyle` / `GhostButtonStyle` / `LinkButtonStyle`.
  * `primary` is the solid graphite institutional action; `ghost` is the paper secondary;
@@ -16,4 +17,4 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   disabled?: boolean;
   children?: React.ReactNode;
 }
-export declare function Button(props: ButtonProps): JSX.Element;
+export declare function Button(props: ButtonProps): React.JSX.Element;

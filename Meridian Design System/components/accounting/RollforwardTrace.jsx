@@ -5,7 +5,8 @@
 // arithmetic and says "Out by …" when it does not tie.
 import React from "react";
 import { formatMoney } from "../core/format.js";
-import { roundMoney } from "./money";
+import { roundMoney } from "./money.js";
+import { knownAmount, sumKnown } from "./knownAmounts.js";
 
 let injected = false;
 function inject() {
@@ -32,9 +33,9 @@ function inject() {
 .mds-rf__note{font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);}
 .mds-rf__proof{display:flex;align-items:center;gap:8px;margin-top:8px;padding:5px 8px;
   border:1px solid var(--cond-confirmed-bd);background:var(--cond-confirmed-bg);
-  border-radius:var(--radius-chip,2px);font-size:11px;color:var(--cond-confirmed-fg);}
+  border-radius:var(--radius-chip,2px);font-size:11px;color:var(--text-primary);}
 .mds-rf__proof--off{border-color:var(--cond-exception-bd);background:var(--cond-exception-bg);
-  color:var(--cond-exception-fg);}
+  color:var(--text-primary);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "rollforward-trace");
@@ -48,12 +49,13 @@ export function RollforwardTrace({
   currency, decimals = 2, showProof = true, className = "", ...rest
 }) {
   inject();
-  const money = (v) => formatMoney(v, { currency, decimals, parens: true, zeroDash: true });
-  const sum = movements.reduce((a, m) => a + (Number(m.value) || 0), 0);
-  const derived = roundMoney(Number(opening || 0) + sum, decimals, "half-even");
-  const stated = closing === undefined || closing === null ? derived : Number(closing);
-  const diff = roundMoney(stated - derived, decimals, "half-even");
-  const ties = Math.abs(diff) < Math.pow(10, -decimals) / 2;
+  const money = value => knownAmount(value)===null?"Missing":formatMoney(value, { currency, decimals, parens: true, zeroDash: true });
+  const sum = sumKnown(movements.map(movement=>movement.value));
+  const usable=knownAmount(opening)!==null&&sum!==null&&(closing===undefined||knownAmount(closing)!==null);
+  const derived = usable?roundMoney(knownAmount(opening)+sum, decimals, "half-even"):null;
+  const stated = closing===undefined?derived:knownAmount(closing);
+  const diff = usable?roundMoney(stated-derived, decimals, "half-even"):null;
+  const ties = usable&&Math.abs(diff)<Math.pow(10,-decimals)/2;
   return (
     <div className={`mds-rf${className ? " " + className : ""}`} {...rest}>
       <div className="mds-rf__row mds-rf__row--open">
@@ -61,8 +63,8 @@ export function RollforwardTrace({
         <span className="mds-rf__val">{money(opening)}</span>
       </div>
       {movements.map((m, i) => {
-        const v = Number(m.value) || 0;
-        const op = m.op || (v === 0 ? "±" : v > 0 ? "+" : "−");
+        const v = knownAmount(m.value);
+        const op = m.op || (v === null?"?":v === 0 ? "±" : v > 0 ? "+" : "−");
         return (
           <div className="mds-rf__row" key={m.id || m.label || i}>
             <span className="mds-rf__lbl">
@@ -74,7 +76,7 @@ export function RollforwardTrace({
               ) : null}
             </span>
             <span className="mds-rf__val" style={m.tone ? { color: `var(--cond-${m.tone}-fg)` } : undefined}>
-              {v === 0 && m.emptyDash !== false ? "—" : money(Math.abs(v))}
+              {v===null?"Missing":v === 0 && m.emptyDash !== false ? "—" : money(Math.abs(v))}
             </span>
           </div>
         );
@@ -86,7 +88,7 @@ export function RollforwardTrace({
       {showProof ? (
         <div className={`mds-rf__proof${ties ? "" : " mds-rf__proof--off"}`}>
           <span aria-hidden="true">{ties ? "✓" : "▲"}</span>
-          {ties
+          {!usable?"Cannot prove rollforward — input missing; missing amounts are not zero":ties
             ? `Opening + movements = closing · ${movements.length} movements`
             : `Out by ${formatMoney(Math.abs(diff), { currency, decimals, parens: false })} — movements do not explain the closing balance`}
         </div>

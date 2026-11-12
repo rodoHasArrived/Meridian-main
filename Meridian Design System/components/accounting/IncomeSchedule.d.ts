@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Income schedule — the period-by-period table an investment accountant reads
  * instead of a generic chart: coupon accrual, premium amortization / discount
@@ -49,4 +50,4 @@ export interface IncomeScheduleProps extends Omit<React.HTMLAttributes<HTMLDivEl
   incomeLabel?: string;
   bookLabel?: string;
 }
-export declare function IncomeSchedule(props: IncomeScheduleProps): JSX.Element;
+export declare function IncomeSchedule(props: IncomeScheduleProps): React.JSX.Element;

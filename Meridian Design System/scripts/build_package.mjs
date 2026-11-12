@@ -12,6 +12,8 @@ const check = process.argv.includes('--check');
 if (process.argv.slice(2).some(arg => arg !== '--check')) throw new Error('Usage: node scripts/build_package.mjs [--check]');
 const pkg = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
 const oldManifest = JSON.parse(await readFile(resolve(root, '_ds_manifest.json'), 'utf8'));
+// Token/card metadata is synchronized by scripts/sync_manifest_metadata.py.
+// Keep one source-derived selector/default precedence contract for build and export.
 const identity = JSON.parse(await readFile(resolve(root, 'release.json'), 'utf8'));
 if (pkg.version !== identity.version) throw new Error('package.json must match authoritative release.json');
 const namespace = oldManifest.namespace;
@@ -99,6 +101,7 @@ for (const [constant, file] of [['REACT_SRI', 'react-18.3.1.production.min.js'],
 const generated = {
   '_ds_bundle.js': bundle.outputFiles[0].text,
   '_preview_runtime.js': runtime.outputFiles[0].text,
+  '_ds_manifest.json': JSON.stringify(manifest) + '\n',
   '_preview_jsx.js': jsxCompiler,
 };
 const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlgorithm: 'sha256',
@@ -107,7 +110,6 @@ const release = { name: pkg.name, version: pkg.version, namespace, sourceHashAlg
     bundledSources: Object.keys(bundle.metafile.inputs).map(path => path.split('\\').join('/'))
       .filter(path => Object.hasOwn(sourceHashes, path)).sort() },
   assets: Object.fromEntries(Object.entries({ ...generated,
-    '_ds_manifest.json': await readFile(resolve(root, '_ds_manifest.json'), 'utf8'),
     'release.json': await readFile(resolve(root, 'release.json'), 'utf8')
   }).map(([path, content]) => [path, { sha256: hash(content), bytes: Buffer.byteLength(content) }])),
   evidenceScope: 'Design-system package export; synthetic examples; not application production certification',

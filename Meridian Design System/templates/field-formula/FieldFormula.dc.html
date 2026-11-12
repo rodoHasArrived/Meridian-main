@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Compose · Field & Formula — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -81,7 +82,7 @@
 <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
 <div style="display:flex;align-items:center;gap:8px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">Signature</x-import>
-<code style="font:13px var(--font-data);color:var(--brand-signal-ink,#944A32)">{{ selSig }}</code>
+<code style="font:13px var(--font-data);color:var(--text-primary)">{{ selSig }}</code>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ selTone }}" hint-size="44px,18px">{{ selCat }}</x-import>
 </div>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 1 }}" items="{{ signatureItems }}" hint-size="100%,110px"></x-import>

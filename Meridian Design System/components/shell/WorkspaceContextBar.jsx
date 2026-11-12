@@ -38,7 +38,7 @@ function inject() {
 .mds-wctx__item{display:grid;align-content:center;gap:1px;min-width:max-content;padding:5px 12px;border:0;border-right:1px solid var(--border-divider,#E2DED5);background:transparent;text-align:left;color:inherit;font-family:inherit;}
 button.mds-wctx__item{cursor:pointer}button.mds-wctx__item:hover{background:var(--bg-hover,#EDEFF0)}button.mds-wctx__item:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-3px}
 .mds-wctx__label{font:600 9px var(--font-data,monospace);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted,#606870)}.mds-wctx__value{font-size:12px;font-weight:600;color:var(--text-primary,#20252B)}.mds-wctx__meta{font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
-.mds-wctx__spacer{flex:1;min-width:12px}.mds-wctx__actions{display:flex;align-items:center;gap:6px;padding:0 10px;border-left:1px solid var(--border-divider,#E2DED5)}.mds-wctx__lock{font:600 9px var(--font-data,monospace);text-transform:uppercase;color:var(--pending,#7A6B52)}
+.mds-wctx__spacer{flex:1;min-width:12px}.mds-wctx__actions{display:flex;align-items:center;gap:6px;padding:0 10px;border-left:1px solid var(--border-divider,#E2DED5)}.mds-wctx__lock{font:600 9px var(--font-data,monospace);text-transform:uppercase;color:var(--text-secondary,#535C65)}
 .mds-wctx__ghost{position:fixed;top:-9999px;left:0;display:flex;visibility:hidden;pointer-events:none;white-space:nowrap;}
 .mds-wctx__more{display:flex;align-items:center;gap:5px;padding:0 10px;border:0;border-right:1px solid var(--border-divider,#E2DED5);background:transparent;color:var(--text-secondary,#535C65);font:600 10px var(--font-data,monospace);letter-spacing:.04em;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
 .mds-wctx__more:hover{background:var(--bg-hover,#EDEFF0);color:var(--text-primary,#20252B)}.mds-wctx__more:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-3px}
@@ -76,11 +76,13 @@ export function WorkspaceContextBar({
   ];
 
   const navRef = React.useRef(null);
+  const moreRef = React.useRef(null);
   const ghostRef = React.useRef(null);
   const actionsRef = React.useRef(null);
   const [hidden, setHidden] = React.useState([]);
   const [open, setOpen] = React.useState(false);
   const signature = items.map((item) => item.key).join("|");
+  const contextSignature = JSON.stringify(c);
 
   const measure = React.useCallback(() => {
     const nav = navRef.current, ghost = ghostRef.current;
@@ -113,7 +115,7 @@ export function WorkspaceContextBar({
       next = dropped;
     }
     setHidden((current) => (current.length === next.length && current.every((key, i) => key === next[i]) ? current : next));
-  }, [collapse, minVisible, signature]);
+  }, [collapse, minVisible, signature, contextSignature]);
 
   React.useEffect(() => {
     measure();
@@ -125,7 +127,7 @@ export function WorkspaceContextBar({
 
   React.useEffect(() => {
     if (!open) return undefined;
-    const onKey = (event) => { if (event.key === "Escape") setOpen(false); };
+    const onKey = (event) => { if (event.key === "Escape" && navRef.current?.contains(event.target)) { event.stopPropagation(); setOpen(false); moreRef.current?.focus(); } };
     const onDown = (event) => { if (!navRef.current?.contains(event.target)) setOpen(false); };
     document.addEventListener("keydown", onKey);
     document.addEventListener("mousedown", onDown);
@@ -143,7 +145,7 @@ export function WorkspaceContextBar({
     </div>
     {visible.map((item) => item.node)}
     {overflow.length ? (
-      <button type="button" className="mds-wctx__more" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen((state) => !state)}>
+      <button ref={moreRef} type="button" className="mds-wctx__more" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen((state) => !state)}>
         {overflowLabel} +{overflow.length}
       </button>
     ) : null}

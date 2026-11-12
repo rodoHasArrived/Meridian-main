@@ -1,5 +1,6 @@
+import type React from "react";
 export interface WorkspaceContext { entity?: {type?: string; label?: string} | string; book?: string; basis?: string; period?: string; asOf?: string; currency?: string; scenario?: string; condition?: string; locked?: boolean; [key:string]: unknown; }
-export declare function WorkspaceContextProvider(props: {value?: WorkspaceContext; defaultValue?: WorkspaceContext; onChange?: (value:WorkspaceContext)=>void; children?:React.ReactNode}): JSX.Element;
+export declare function WorkspaceContextProvider(props: {value?: WorkspaceContext; defaultValue?: WorkspaceContext; onChange?: (value:WorkspaceContext)=>void; children?:React.ReactNode}): React.JSX.Element;
 export declare function useWorkspaceContext(): {context:WorkspaceContext; update(patch:Partial<WorkspaceContext>|((current:WorkspaceContext)=>Partial<WorkspaceContext>)):void; reset():void};
 /** Bundle carrier. The compiler exposes only capitalized exports, so consumers of
  *  `_ds_bundle.js` read the hook through this object. */
@@ -20,4 +21,4 @@ export interface WorkspaceContextBarProps extends React.HTMLAttributes<HTMLEleme
   /** Label on the overflow disclosure. Default "More". */
   overflowLabel?: React.ReactNode;
 }
-export declare function WorkspaceContextBar(props:WorkspaceContextBarProps):JSX.Element;
+export declare function WorkspaceContextBar(props:WorkspaceContextBarProps):React.JSX.Element;

@@ -73,7 +73,7 @@ export interface CommandPaletteProps {
   rankByRecency?: boolean;
 }
 
-export declare function CommandPalette(props: CommandPaletteProps): JSX.Element | null;
+export declare function CommandPalette(props: CommandPaletteProps): React.JSX.Element | null;
 
 export interface UseCommandPalette {
   open: boolean;

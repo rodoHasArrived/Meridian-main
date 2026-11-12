@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,14 +7,19 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>CloseTieOut — Meridian</title>
 </head>
 <body>
 <x-dc>
+<!-- @template name="Companion · CloseTieOut" description="Declared companion view of the close-management template; retains the same shared object and workflow state." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="close-tie-out">
 <style>html,body{margin:0;padding:0;height:100%;background:var(--bg)}</style>
 </helmet>
+<main aria-label="Close tie-out review">
+<h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)">Close tie-out review</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ previewDataState }}" label="Record preview" action-label="Retry preview" on-action="{{ onPreviewRetry }}" hint-size="100%,100vh">
 <div data-screen-label="Close tie-out" style="min-height:100%;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.ScreenComposition" screen="{{ screen }}" show-roles="{{ showRoles }}" hint-size="100%,900px">
 <div data-region="context" style="display:flex;flex-wrap:wrap;gap:18px;align-items:baseline">
@@ -24,7 +29,7 @@
 <span style="font-family:var(--font-data);font-size:12px;color:var(--text-muted)">Preparer M. Osei · Reviewer you</span>
 </div>
 <div data-region="claim">
-<p style="margin:0;font:15px/22px var(--font-body);color:var(--text-primary);max-width:92ch;text-wrap:pretty">The June trial balance ties to the custodian statement within tolerance. Two figures do not yet support that claim: the accrual posts <b style="font-weight:600">outside its reporting period</b> and the muni mark is a <b style="font-weight:600">desk override</b> above the materiality threshold.</p>
+<p style="margin:0;font:15px/22px var(--font-body);color:var(--text-primary);max-width:92ch;text-wrap:pretty">{{ balanceClaim }}. Two figures do not yet support that claim: the accrual posts <b style="font-weight:600">outside its reporting period</b> and the muni mark is a <b style="font-weight:600">desk override</b> above the materiality threshold.</p>
 <p style="margin:8px 0 0;font-size:12px;color:var(--text-muted)">Regions, spans and validation come from the <b style="font-weight:600">Investigate</b> archetype — this screen declares, it does not lay out.</p>
 </div>
 <div data-region="primary">
@@ -36,16 +41,22 @@
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.EnvelopeCoherence" envelopes="{{ envelopes }}" hint-size="100%,120px"></x-import>
 </div>
 <div data-region="action" style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ signOffBlocked }}" hint-size="120px,32px">Sign off</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" hint-size="130px,32px">Escalate</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="tertiary" hint-size="180px,32px">Return to preparer</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" disabled="{{ signOffBlocked }}" title="{{ signOffReason }}" aria-description="{{ signOffReason }}" on-click="{{ onSignOff }}" hint-size="120px,32px">Simulate sign-off</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" on-click="{{ onEscalate }}" hint-size="130px,32px">Escalate example</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="tertiary" on-click="{{ onReturn }}" hint-size="180px,32px">Return example to preparer</x-import>
 <span style="font-size:12px;color:var(--text-muted)">{{ dispositionNote }}</span>
 </div>
 </x-import>
 </div>
+</x-import>
+</main>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;archetype&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;investigate&quot;,&quot;monitor&quot;,&quot;compose&quot;,&quot;report&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;investigate&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;showRoles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;forceOutOfBalance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Proof&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;terminal&quot;,&quot;dense&quot;,&quot;standard&quot;,&quot;review&quot;],&quot;default&quot;:&quot;dense&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Proof&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;PROD&quot;,&quot;UAT&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;UAT&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Shell&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;FIXTURE&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;},&quot;archetype&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;investigate&quot;,&quot;monitor&quot;,&quot;compose&quot;,&quot;report&quot;,&quot;admin&quot;],&quot;default&quot;:&quot;investigate&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;showRoles&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Screen declaration&quot;},&quot;forceOutOfBalance&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Proof&quot;}}">
 class Component extends DCLogic {
+  state = { previewReady: false, disposition: null };
+  componentDidUpdate(previous) {
+    if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false });
+  }
   get ns() { return window.MeridianDesignSystem_205d17 || {}; }
 
   // ds-base.js loads the bundle asynchronously, so the first render can happen
@@ -105,6 +116,10 @@ class Component extends DCLogic {
   }
 
   renderVals() {
+    const prefs = window.MeridianPrefs;
+    document.documentElement.setAttribute("data-theme", prefs ? prefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light"));
+    document.documentElement.setAttribute("data-environment", prefs ? prefs.environment(this.props.environment ?? "FIXTURE") : (this.props.environment ?? "FIXTURE"));
+    if (document.body) document.body.setAttribute("data-theme-density", prefs ? prefs.density(this.props.density ?? "default") : (this.props.density ?? "default"));
     const { ValueEnvelope, GRID_SCHEMAS, DataGrid } = this.ns;
     const envelopeCheck = (ValueEnvelope && ValueEnvelope.check) || this.ns.envelopeCheck;
     const rows = this.rows();
@@ -122,21 +137,37 @@ class Component extends DCLogic {
                 evidence: [{ label: "Account ledger", ref: r.code }],
               })) }
         : c);
-    const blocked = envelopes.some((e) => (envelopeCheck ? envelopeCheck(e).length : 0) > 0);
+    // Proof is computed from present source amounts at their declared cent precision.
+    // Missing values never become zero, and coherence alone cannot approve an unbalanced book.
+    const cents = (key) => rows.reduce((sum, row) => sum +
+      (typeof row[key] === "number" && Number.isFinite(row[key]) ? Math.round(row[key] * 100) : NaN), 0);
+    const debits = cents("debit"), credits = cents("credit");
+    const balanced = rows.length > 0 && Number.isSafeInteger(debits) && Number.isSafeInteger(credits) && debits === credits;
+    const coherent = !!envelopeCheck && envelopes.every((e) => envelopeCheck(e).length === 0);
+    const blocked = !balanced || !coherent;
+    const signOffReason = !balanced ? "Sign-off is held: the trial balance is incomplete or does not balance to the cent."
+      : !coherent ? "Sign-off is held until every figure on this screen is coherent." : "";
     return {
+      previewDataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onPreviewRetry: () => this.setState({ previewReady: true }),
+      onSignOff: () => { if (!blocked) this.setState({ disposition: "Synthetic sign-off demonstrated. No attestation was submitted." }); },
+      onEscalate: () => this.setState({ disposition: "Synthetic escalation queued for the example reviewer; no external message was sent." }),
+      onReturn: () => this.setState({ disposition: "Synthetic return to preparer recorded in this preview only." }),
       screen: this.screenManifest(),
       showRoles: this.props.showRoles !== false,
-      environment: this.props.environment || "UAT",
-      density: this.props.density || "dense",
+      environment: this.props.environment || "FIXTURE",
+      density: this.props.density === "compact" ? "dense" : this.props.density === "spacious" ? "review" : this.props.density === "terminal" ? "terminal" : "standard",
       trialBalance: rows,
       tbColumns: columns,
       tbProof: base.proof,
       custodian: envelopes[0],
       envelopes,
+      balanceClaim: balanced ? "The June trial balance balances to the cent" : "The June trial balance is incomplete or out of balance",
+      signOffReason,
       signOffBlocked: blocked,
-      dispositionNote: blocked
-        ? "Sign-off is held until every figure on this screen is coherent."
-        : "All figures coherent — sign-off available.",
+      dispositionNote: this.state.disposition || (blocked
+        ? signOffReason
+        : "All declared figures coherent — synthetic sign-off available."),
     };
   }
 }

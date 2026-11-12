@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * DataGrid — the one tabular primitive. Capabilities are opt-in props, not
  * separate components: `select`, `groupBy`, `expand`, `edit`, `totals`,
@@ -106,7 +107,7 @@ export interface DataGridProps<Row = any> extends React.HTMLAttributes<HTMLDivEl
   emptyText?: string;
   maxHeight?: number | string;
 }
-export declare function DataGrid<Row = any>(props: DataGridProps<Row>): JSX.Element;
+export declare function DataGrid<Row = any>(props: DataGridProps<Row>): React.JSX.Element;
 
 export declare const GRID_SCHEMAS: Record<"ledger" | "trialBalance" | "taxLots" | "blotter" | "aging",
   { columns: GridColumn[]; proof?: GridProof }>;

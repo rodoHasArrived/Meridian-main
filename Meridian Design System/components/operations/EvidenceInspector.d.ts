@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { MeridianValueEnvelope } from "./ValueEnvelope";
 
 /**
@@ -34,7 +35,8 @@ import type { MeridianValueEnvelope } from "./ValueEnvelope";
 export interface EvidenceInspectorProps extends React.HTMLAttributes<HTMLElement> {
   /** Small-caps label above the selection ("Selected observation"). */
   eyebrow?: string;
-  /** The selected value, pre-formatted. Omit to render the empty message. */
+  /** The selected value, pre-formatted; numeric zero is a selection. Omit to render the empty message.
+   * Restricted conditions withhold the value and caption. */
   value?: React.ReactNode;
   /** One line of context under the value ("Current · 10Y · +11 bp vs 1M"). */
   caption?: React.ReactNode;
@@ -45,7 +47,7 @@ export interface EvidenceInspectorProps extends React.HTMLAttributes<HTMLElement
   /** `EvidenceSection` children. */
   children?: React.ReactNode;
 }
-export declare function EvidenceInspector(props: EvidenceInspectorProps): JSX.Element;
+export declare function EvidenceInspector(props: EvidenceInspectorProps): React.JSX.Element;
 
 export interface EvidenceField {
   label: string;
@@ -70,7 +72,7 @@ export interface EvidenceSectionProps extends React.HTMLAttributes<HTMLElement> 
   note?: string;
   children?: React.ReactNode;
 }
-export declare function EvidenceSection(props: EvidenceSectionProps): JSX.Element;
+export declare function EvidenceSection(props: EvidenceSectionProps): React.JSX.Element;
 
 export interface ProvenanceStep {
   id?: string;
@@ -80,10 +82,10 @@ export interface ProvenanceStep {
   /** `done` (filled) · `current` (accented) · `pending` (hollow). */
   state?: "done" | "current" | "pending";
 }
-export interface ProvenanceTraceProps extends React.OlHTMLAttributes<HTMLOListElement> {
+export interface ProvenanceTraceProps extends Omit<React.OlHTMLAttributes<HTMLOListElement>, "onSelect"> {
   steps: ProvenanceStep[];
   selectedId?: string;
   /** Makes each step a button — pair with a `LineageGraph` selection. */
   onSelect?: (id: string) => void;
 }
-export declare function ProvenanceTrace(props: ProvenanceTraceProps): JSX.Element;
+export declare function ProvenanceTrace(props: ProvenanceTraceProps): React.JSX.Element;

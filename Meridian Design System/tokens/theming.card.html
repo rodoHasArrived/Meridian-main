@@ -1,10 +1,12 @@
 <!-- @dsCard group="Theming" viewport="1200x800" name="Theming & White-Label" subtitle="Brand color variants, density scales, font customization" -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<title>Meridian — Theming &amp; White-Label</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { background: var(--bg); font-family: var(--font-body); color: var(--text-primary); padding: 24px; }
   .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
@@ -17,10 +19,10 @@
   .btn-demo { padding: 8px 16px; border: 1px solid var(--border); background: var(--bg-light); cursor: pointer; }
   h2 { font-size: 16px; font-weight: 600; margin: 16px 0 12px; }
   h3 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin: 12px 0 8px; }
-  code { background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-data); }
+  code { color: var(--text-primary); background: var(--bg-active); padding: 2px 6px; font-size: 11px; font-family: var(--font-data); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
 <h1 style="margin: 0 0 24px; font-size: 24px;">Meridian Theming System</h1>
 
 <h2>Brand Color Variants</h2>
@@ -134,7 +136,7 @@ document.body.setAttribute('data-theme-density', 'spacious');</pre>
 <div>--theme-primary-text: <code style="background: transparent;">#20252B</code></div>
 <div>--theme-bg-canvas: <code style="background: transparent;">#F2F0EB</code></div>
 <div>--theme-border: <code style="background: transparent;">#D2CDC3</code></div>
-<div style="color: var(--text-muted); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
+<div style="color: var(--text-primary); margin-top: 8px;">…and 20+ more. See <code>tokens/theme.css</code> for complete list.</div>
 </div>
 </body>
 </html>

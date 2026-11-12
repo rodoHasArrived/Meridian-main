@@ -13,6 +13,7 @@ export interface VirtualizedListProps<T = any> {
   renderRow?: (item: T, index: number) => React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  "aria-label"?: string;
 }
 
-export declare function VirtualizedList<T = any>(props: VirtualizedListProps<T>): JSX.Element;
+export declare function VirtualizedList<T = any>(props: VirtualizedListProps<T>): React.JSX.Element;

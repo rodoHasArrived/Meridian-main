@@ -5,6 +5,9 @@
 <meta charset="UTF-8" />
 <title>Screen composition</title>
 <link rel="stylesheet" href="../../styles.css" />
+
+
+
 <script src="../../_preview_runtime.js"></script>
 <script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
@@ -14,6 +17,7 @@
 <script type="text/babel">
 const { ScreenComposition, DataGrid, ValueEnvelope, Eyebrow } = window.MeridianDesignSystem_205d17;
 const ARCHETYPES = ScreenComposition.archetypes;
+const defineScreen = ScreenComposition.define;
 function Panel({ eyebrow, title, note, children, style }) {
   return (
     <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, ...style }}>

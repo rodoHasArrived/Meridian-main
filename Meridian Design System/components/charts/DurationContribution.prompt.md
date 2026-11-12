@@ -24,3 +24,10 @@ What drives aggregate duration — ranked by contribution, with the inputs that 
 **Scenarios are scenarios.** `scenario` labels the run as a scenario in the header, the units line, and the table caption. Do not present a scenario as a forecast.
 
 **Fallback.** The table carries entity, weight, duration, contribution, comparison, difference, and condition, and takes over on narrow screens. Selection is keyboard-operable throughout — arrows move, Enter and Space commit — and is meant to drive a linked inspector, the underlying positions, or `CalculationTrace` via `onOpenTrace`.
+
+Unavailable-input safeguard: explicit missing/not-applicable/restricted conditions or
+nonfinite required amounts replace the populated view with a stated unavailable
+result. Restricted row values, labels, titles and table totals are not emitted, and
+no partial totals or percentages are presented. Empty declared buckets still
+represent an observed empty bucket at zero. The caller must recover usable data
+before the ordinary view returns; UI redaction does not replace server permissions.

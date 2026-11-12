@@ -194,20 +194,51 @@ class Audit:
             if not self.allowed(path, "legacy_workspace_mentions_allowed"):
                 self.add("legacy-workspace", path, f"{match.group(1)} is not a visible root workspace name")
     def entries(self):
-        """Public manifest entries plus retained standalone entries, not embedded subviews."""
+        """Read every declared entry; filename conventions cannot hide compatibility pages."""
+        registry = self.root / "api/template-eligibility.json"
+        if registry.is_file():
+            templates = self.read_json("api/template-eligibility.json").get("templates", {})
+            if not isinstance(templates, dict):
+                self.add("template", registry, "Template registry must be an object")
+                return set()
+            entries = set()
+            for slug, record in sorted(templates.items()):
+                if not isinstance(slug, str) or Path(slug).name != slug or slug in (".", "..") or "\\" in slug:
+                    self.add("template", registry, f"Invalid template directory {slug!r}")
+                    continue
+                declared = record.get("entries", []) if isinstance(record, dict) else []
+                if not isinstance(declared, list) or not declared:
+                    self.add("template", registry, f"{slug}: no declared .dc.html entry")
+                    continue
+                seen = set()
+                for filename in declared:
+                    if not isinstance(filename, str) or Path(filename).name != filename or "\\" in filename or not filename.endswith(".dc.html"):
+                        self.add("template", registry, f"{slug}: invalid entry filename {filename!r}")
+                        continue
+                    if filename in seen:
+                        self.add("template", registry, f"{slug}: duplicate declared entry {filename}")
+                        continue
+                    seen.add(filename)
+                    entry = self.root / "templates" / slug / filename
+                    if not entry.is_file(): self.add("template", registry, f"{slug}: declared entry {filename} missing")
+                    else: entries.add(entry)
+                actual = {p.name for p in (self.root / "templates" / slug).glob("*.dc.html")}
+                for filename in sorted(actual - seen):
+                    self.add("template", registry, f"{slug}: undeclared entry {filename}")
+            for item in self.manifest.get("templates", []):
+                if item.get("entryPath") and self.root / item["entryPath"] not in entries:
+                    self.add("template", registry, f"Published entry is not declared: {item['entryPath']}")
+            return entries
+        # Isolated non-release fixtures can exercise the document API without a registry.
+        # Actual releases fail package_checks if the required registry is missing.
         entries = {self.root / t["entryPath"] for t in self.manifest.get("templates", []) if t.get("entryPath")}
-        declared_folders = {p.parent for p in entries}
         for folder in (self.root / "templates").glob("*"):
-            if not folder.is_dir() or folder.name.startswith("_") or folder in declared_folders: continue
-            pascal = "".join(part.capitalize() for part in folder.name.split("-"))
-            candidates = [folder / (pascal + ".dc.html"), folder / "index.html"]
-            preferred = next((p for p in candidates if p.is_file()), None)
-            if preferred: entries.add(preferred)
-            else:
-                actual = list(folder.glob("*.dc.html"))
-                if len(actual) == 1: entries.add(actual[0])
-                elif not actual: self.add("template", folder, "No template entry exists")
-                else: self.add("template", folder, "Ambiguous retained entries; declare the entry in the manifest")
+            if not folder.is_dir() or folder.name.startswith("_"): continue
+            candidates = list(folder.glob("*.dc.html"))
+            if candidates:
+                mounted = {child for owner in candidates for child in self.dependencies(owner)}
+                entries.update(set(candidates) - mounted)
+            elif (folder / "index.html").is_file(): entries.add(folder / "index.html")
         return entries
     def template_checks(self):
         for entry in sorted(self.entries()):

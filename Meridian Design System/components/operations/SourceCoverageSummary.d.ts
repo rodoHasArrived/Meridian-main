@@ -1,6 +1,7 @@
+import * as React from "react";
 export type CoverageCategory = "confirmed" | "provisional" | "stale" | "missing" | "na";
 export interface SourceCoverageItem { id?: string; label: string; condition?: string; state?: string; age?: string; [key: string]: unknown }
-export interface SourceCoverageSummaryProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect"> {
+export interface SourceCoverageSummaryProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect" | "title"> {
   /** The population, one entry per real item — the Field is never decorative. */
   sources?: SourceCoverageItem[];
   /** Counts instead of items, for populations too large to enumerate. Requires `total`. */
@@ -23,4 +24,4 @@ export interface SourceCoverageSummaryProps extends Omit<React.HTMLAttributes<HT
   showField?: boolean;
   showNote?: boolean;
 }
-export declare function SourceCoverageSummary(props: SourceCoverageSummaryProps): JSX.Element;
+export declare function SourceCoverageSummary(props: SourceCoverageSummaryProps): React.JSX.Element;

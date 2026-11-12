@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select } from "@/components/ui/select";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { cn } from "@/lib/utils";
@@ -109,22 +110,17 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
 
         {preview}
 
-        <label
-          htmlFor={orderTicket.acknowledgement.id}
+        <Checkbox
+          id={orderTicket.acknowledgement.id}
           className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
-        >
-          <input
-            id={orderTicket.acknowledgement.id}
-            type="checkbox"
-            checked={orderTicket.acknowledgement.checked}
-            disabled={orderTicket.acknowledgement.disabled}
-            onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
-            aria-describedby={joinDescribedByIds(
-              `${orderTicket.acknowledgement.id}-description`,
-              `${orderTicket.acknowledgement.id}-disabled-reason`
-            )}
-            className="mt-1 h-4 w-4 accent-primary"
-          />
+          checked={orderTicket.acknowledgement.checked}
+          disabled={orderTicket.acknowledgement.disabled}
+          onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
+          aria-describedby={joinDescribedByIds(
+            `${orderTicket.acknowledgement.id}-description`,
+            `${orderTicket.acknowledgement.id}-disabled-reason`
+          )}
+          label={
           <span>
             <span className="block font-medium text-foreground">{orderTicket.acknowledgement.label}</span>
             <span id={`${orderTicket.acknowledgement.id}-description`} className="mt-1 block text-xs leading-5 text-muted-foreground">
@@ -136,7 +132,8 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
               disabledReasonClassName="mt-1 block"
             />
           </span>
-        </label>
+          }
+        />
 
         {orderTicket.errorText && (
           <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">

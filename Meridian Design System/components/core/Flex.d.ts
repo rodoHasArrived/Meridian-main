@@ -15,4 +15,4 @@ export interface FlexProps extends React.HTMLAttributes<HTMLDivElement> {
   children?: React.ReactNode;
 }
 
-export declare function Flex(props: FlexProps): JSX.Element;
+export declare function Flex(props: FlexProps): React.JSX.Element;

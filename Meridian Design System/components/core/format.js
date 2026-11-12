@@ -44,7 +44,12 @@ export function getNumberDefaults() { return { ...DEFAULTS }; }
 const CACHE = new Map();
 export function numberFormatter(locale, opts = {}) {
   const loc = locale || DEFAULTS.locale;
-  const tag = DEFAULTS.numerals ? `${loc}-u-nu-${DEFAULTS.numerals}` : loc;
+  // A bound surface's explicit numeral system wins. Other calls retain the
+  // process numeral default, including callers that only override their locale.
+  let tag = loc;
+  if (DEFAULTS.numerals) {
+    try { if (!new Intl.Locale(loc).numberingSystem) tag = new Intl.Locale(loc, { numberingSystem: DEFAULTS.numerals }).toString(); } catch { /* NumberFormat below owns fallback. */ }
+  }
   const key = tag + "\u0000" + JSON.stringify(opts);
   let f = CACHE.get(key);
   if (!f) {

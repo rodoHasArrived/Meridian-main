@@ -32,7 +32,7 @@ try {
     assert(schema.$preview.width >= 1280 && schema.$preview.height >= 720, `${slug}: desktop thumbnail dimensions`);
     assert.deepEqual(schema.density.options, ['default', 'compact', 'terminal', 'spacious']);
     assert.deepEqual(schema.theme.options, ['light', 'dark']);
-    assert.deepEqual(schema.environment.options, ['PAPER', 'LIVE', 'FIXTURE']);
+    assert.deepEqual(schema.environment.options, ['FIXTURE', 'PAPER', 'LIVE']);
     assert.deepEqual(schema.dataState.options, ['ready', 'loading', 'empty', 'error']);
     assert(html.includes('environment="{{ environment }}"') && html.includes('state="{{ dataState }}"'), `${slug}: entry forwards the effective environment and data state`);
     const source = await readFile(resolve(dir, 'screen.jsx'), 'utf8');

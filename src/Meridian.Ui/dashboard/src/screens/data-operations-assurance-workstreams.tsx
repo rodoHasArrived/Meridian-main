@@ -28,6 +28,7 @@ import type {
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { formatUtcTimestamp } from "@/lib/format";
+import { Select } from "@/components/ui/select";
 
 export function IngestionOperationsWorkstream() {
   const [snapshot, setSnapshot] = useState<IngestionOperationsSnapshot | null>(null);
@@ -87,9 +88,9 @@ export function IngestionOperationsWorkstream() {
         </div>
         <div className="grid gap-3 md:grid-cols-[12rem_minmax(18rem,1fr)]">
           <label className="space-y-1 text-xs font-medium text-muted-foreground">State
-            <select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={stateFilter} onChange={(event) => setStateFilter(event.target.value)}>
+            <Select className="min-h-9 w-full text-sm" value={stateFilter} onChange={(event) => setStateFilter(event.target.value)}>
               {["All", "Queued", "Running", "Paused", "Failed", "Completed", "Cancelled"].map((state) => <option key={state}>{state}</option>)}
-            </select>
+            </Select>
           </label>
           <label className="space-y-1 text-xs font-medium text-muted-foreground">Action rationale
             <Input value={rationale} onChange={(event) => setRationale(event.target.value)} aria-label="Ingestion action rationale" />
@@ -97,6 +98,7 @@ export function IngestionOperationsWorkstream() {
         </div>
         <div className="overflow-x-auto rounded-[2px] border border-border">
           <TableWorkbench workbenchId="data-ingestion-operations" sourceKey={snapshot?.generatedAt ?? "loading"}
+            tableClassName="w-full min-w-[58rem] text-left text-sm" maxVisibleRows={null}
             sourceDescription="Authorized ingestion-operation snapshot; active State filter is applied before search and export."
             completePopulation={Boolean(snapshot) && !error} rows={jobs} getRowId={(job) => job.jobId}
             getSearchText={(job) => `${job.jobId} ${job.provider} ${job.workloadType} ${job.symbols.join(" ")} ${job.state}`}
@@ -152,7 +154,7 @@ export function StorageAssuranceWorkstream() {
   }
 
   return (
-    <section aria-labelledby="storage-assurance-title" className="workspace-region space-y-3">
+    <section aria-labelledby="storage-assurance-title" className="workspace-region min-w-0 space-y-3">
       <CardHeader><div className="flex flex-wrap items-start justify-between gap-3"><div><CardTitle id="storage-assurance-title">Storage &amp; Data Assurance</CardTitle><CardDescription>One posture for storage health, data quality, canonicalization, capacity, and safe maintenance.</CardDescription></div><Button size="sm" variant="outline" onClick={() => void refresh()}><RefreshCcw className="mr-2 h-4 w-4" />Refresh</Button></div></CardHeader>
       <CardContent className="space-y-4">
         {error ? <StatusBanner tone="danger" title="Storage assurance action needs attention" detail={error} /> : null}
@@ -169,8 +171,8 @@ export function StorageAssuranceWorkstream() {
             {snapshot?.alerts.length ? <Card><CardHeader><CardTitle className="text-base">Quality alerts</CardTitle></CardHeader><CardContent className="space-y-2">{snapshot.alerts.map((alert) => <StatusBanner key={alert.alertId} tone={alert.severity === "Critical" ? "danger" : "warning"} title={alert.subject} detail={alert.message} />)}</CardContent></Card> : null}
           </div>
           <Card><CardHeader><CardTitle className="text-base">Guarded maintenance</CardTitle><CardDescription>Preview first; execute only against the unchanged, unexpired candidate set.</CardDescription></CardHeader><CardContent className="space-y-3">
-            <label className="block space-y-1 text-xs font-medium text-muted-foreground">Action<select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={action} onChange={(event) => { setAction(event.target.value as StorageMaintenanceAction); setPreview(null); }}><option value="QualityCheck">Quality check</option><option value="Cleanup" disabled={!snapshot?.permissions.canDelete}>Temporary-file cleanup</option><option value="TierMigration" disabled={!snapshot?.permissions.canMigrate}>Copy-only tier migration</option></select></label>
-            {action === "TierMigration" ? <label className="block space-y-1 text-xs font-medium text-muted-foreground">Target tier<select className="min-h-9 w-full rounded-[2px] border border-border bg-background px-3 text-sm text-foreground" value={targetTier} onChange={(event) => setTargetTier(event.target.value)}>{["Hot", "Warm", "Cold", "Archive"].map((tier) => <option key={tier}>{tier}</option>)}</select></label> : null}
+            <label className="block space-y-1 text-xs font-medium text-muted-foreground">Action<Select className="min-h-9 w-full text-sm" value={action} onChange={(event) => { setAction(event.target.value as StorageMaintenanceAction); setPreview(null); }}><option value="QualityCheck">Quality check</option><option value="Cleanup" disabled={!snapshot?.permissions.canDelete}>Temporary-file cleanup</option><option value="TierMigration" disabled={!snapshot?.permissions.canMigrate}>Copy-only tier migration</option></Select></label>
+            {action === "TierMigration" ? <label className="block space-y-1 text-xs font-medium text-muted-foreground">Target tier<Select className="min-h-9 w-full text-sm" value={targetTier} onChange={(event) => setTargetTier(event.target.value)}>{["Hot", "Warm", "Cold", "Archive"].map((tier) => <option key={tier}>{tier}</option>)}</Select></label> : null}
             <Button className="w-full" disabled={busy} onClick={() => void createPreview()}>{busy ? "Working…" : "Preview action"}</Button>
             {preview ? <div className="space-y-2 rounded-[2px] border border-warning/50 bg-warning/5 p-3"><div className="font-semibold">Preview: {preview.action}</div><div className="text-xs text-muted-foreground">{preview.candidates.length} candidates · {formatBytes(preview.affectedBytes)} · expires {formatDate(preview.expiresAt)}</div><label className="block space-y-1 text-xs font-medium">Rationale<Input value={rationale} onChange={(event) => setRationale(event.target.value)} /></label><label className="block space-y-1 text-xs font-medium">Type “{preview.confirmationText}”<Input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /></label><Button variant="destructive" className="w-full" disabled={busy || !rationale.trim() || confirmation !== preview.confirmationText} onClick={() => void executePreview()}>Execute guarded action</Button></div> : null}
           </CardContent></Card>

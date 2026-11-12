@@ -1,3 +1,4 @@
+import * as React from "react";
 export type BasisDifferenceMode = "none" | "absolute" | "percent" | "bp";
 export interface BasisColumn {
   id: string;
@@ -62,4 +63,4 @@ export interface BasisComparisonMatrixProps extends React.HTMLAttributes<HTMLEle
   /** Table caption — the exportable textual description. */
   description?: string;
 }
-export declare function BasisComparisonMatrix(props: BasisComparisonMatrixProps): JSX.Element;
+export declare function BasisComparisonMatrix(props: BasisComparisonMatrixProps): React.JSX.Element;

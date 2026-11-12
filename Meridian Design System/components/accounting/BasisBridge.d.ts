@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Basis bridge — one economic event under every accounting basis it touches
  * (statutory, GAAP, tax, management, local). Investment accounting is
@@ -57,4 +58,4 @@ export interface BasisBridgeProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Single emphasized footer row — approval, effective date, or posting state. */
   footer?: BasisFooterRow[];
 }
-export declare function BasisBridge(props: BasisBridgeProps): JSX.Element;
+export declare function BasisBridge(props: BasisBridgeProps): React.JSX.Element;

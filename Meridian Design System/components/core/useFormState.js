@@ -44,22 +44,23 @@ export function useAsyncValidation(value, validator, { debounceMs = 300, skipEmp
   React.useEffect(() => {
     if (skipEmpty && (value == null || value === "")) { setStatus("idle"); setError(null); return; }
     const reqId = ++reqRef.current;
+    let current = true;
     const controller = typeof AbortController !== "undefined" ? new AbortController() : { abort() {}, signal: undefined };
     setStatus("checking");
     const t = setTimeout(async () => {
       try {
         const result = await validator(value, controller.signal);
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
         setError(result || null);
         setStatus(result ? "invalid" : "valid");
       } catch (e) {
         if (e && e.name === "AbortError") return;
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
         setError(e && e.message ? e.message : "Validation failed");
         setStatus("invalid");
       }
     }, debounceMs);
-    return () => { controller.abort(); clearTimeout(t); };
+    return () => { current = false; controller.abort(); clearTimeout(t); };
   }, [value, debounceMs, skipEmpty]);
   return { status, error, checking: status === "checking", valid: status === "valid", invalid: status === "invalid" };
 }

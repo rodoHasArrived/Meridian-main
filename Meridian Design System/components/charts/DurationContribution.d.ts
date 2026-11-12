@@ -1,3 +1,4 @@
+import * as React from "react";
 export type DurationRank = "contribution" | "difference" | "weight" | "label";
 export interface DurationContributionItem {
   id: string | number;
@@ -44,4 +45,8 @@ export interface DurationContributionProps extends Omit<React.HTMLAttributes<HTM
   valueFormat?: (value: number) => React.ReactNode;
   description?: string;
 }
-export declare function DurationContribution(props: DurationContributionProps): JSX.Element;
+export declare function DurationContribution(props: DurationContributionProps): React.JSX.Element;
+
+/** Explicit missing/not-applicable/restricted or invalid required amounts render
+ * an unavailable result without row labels, numeric bars, or derived table totals.
+ * Restore usable inputs to recover the ordinary view. */

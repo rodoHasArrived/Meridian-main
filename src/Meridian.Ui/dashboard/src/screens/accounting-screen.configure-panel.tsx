@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState, type JSX } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Combobox } from "@/components/ui/combobox";
 import { Drawer, DrawerBody, DrawerFooter } from "@/components/ui/drawer";
 import { FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -29,6 +28,8 @@ import {
   type ConfigureTone
 } from "@/screens/accounting-screen.configure-panel.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { TextArea } from "@/components/ui/text-area";
+import { Checkbox } from "@/components/ui/checkbox";
 
 function toneTextClass(tone: ConfigureTone): string {
   switch (tone) {
@@ -349,13 +350,16 @@ export function ConfigureComboField({ id, label, value, onChange, options, place
   const mergedOptions = value && !options.includes(value) ? [value, ...options] : options;
   return (
     <FormRow label={label} labelFor={id}>
-      <Combobox
+      <Input
         id={id}
-        options={mergedOptions}
+        list={`${id}-suggestions`}
         value={value}
-        onChange={onChange}
+        onChange={(event) => onChange(event.currentTarget.value)}
         placeholder={placeholder ?? "Select or type…"}
       />
+      <datalist id={`${id}-suggestions`}>
+        {mergedOptions.map((option) => <option key={option} value={option} />)}
+      </datalist>
     </FormRow>
   );
 }
@@ -994,11 +998,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Meridian dimensions" labelFor="accounting-dimension-mapping-meridian-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-meridian-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.meridianDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ meridianDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;costCenterId=fund-accounting"
                       />
                     </FormRow>
@@ -1018,11 +1022,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                   <details className="text-xs">
                     <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                     <FormRow label="Provider dimensions" labelFor="accounting-dimension-mapping-provider-dimensions">
-                      <textarea
+                      <TextArea rows={2}
                         id="accounting-dimension-mapping-provider-dimensions"
                         value={view.tenantAdministrationProfile.dimensionMappingSetup.providerDimensionsValue}
                         onChange={(event) => view.tenantAdministrationProfile.updateDimensionMappingSetup({ providerDimensionsText: event.currentTarget.value })}
-                        className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                        className="min-h-28 w-full font-mono text-sm"
                         placeholder="Class=fund-alpha&#10;Book=book-primary&#10;Department=fund-accounting"
                       />
                     </FormRow>
@@ -1112,22 +1116,22 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Account mappings" labelFor="accounting-external-gl-account-mappings">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-account-mappings"
                       value={view.externalGlMappingProfile.accountMappingsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateAccountMappings(event.currentTarget.value)}
-                      className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-24 w-full font-mono text-sm"
                       placeholder="Meridian:Account=external-account-id"
                     />
                   </FormRow>
                 </details>
               </div>
               <FormRow label="Retained mapping evidence" labelFor="accounting-external-gl-mapping-evidence">
-                <textarea
+                <TextArea rows={2}
                   id="accounting-external-gl-mapping-evidence"
                   value={view.externalGlMappingProfile.evidenceValue}
                   onChange={(event) => view.externalGlMappingProfile.updateEvidence(event.currentTarget.value)}
-                  className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                  className="min-h-24 w-full font-mono text-sm"
                   placeholder="approval:external-gl-mapping:profile-id"
                 />
               </FormRow>
@@ -1147,11 +1151,11 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="Meridian dimensions" labelFor="accounting-external-gl-meridian-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-meridian-dimensions"
                       value={view.externalGlMappingProfile.meridianDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateMeridianDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="fundId=fund-alpha&#10;bookId=book-primary&#10;Provider=quickbooks-fixture"
                     />
                   </FormRow>
@@ -1171,25 +1175,21 @@ export function ConfigureProductionReadinessCard({ view }: { view: AccountingCon
                 <details className="text-xs">
                   <summary className="cursor-pointer text-muted-foreground">Raw text</summary>
                   <FormRow label="External dimensions" labelFor="accounting-external-gl-provider-dimensions">
-                    <textarea
+                    <TextArea rows={2}
                       id="accounting-external-gl-provider-dimensions"
                       value={view.externalGlMappingProfile.externalDimensionsValue}
                       onChange={(event) => view.externalGlMappingProfile.updateExternalDimensions(event.currentTarget.value)}
-                      className="min-h-28 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm text-foreground shadow-xs"
+                      className="min-h-28 w-full font-mono text-sm"
                       placeholder="Class=fund-alpha&#10;Book=book-primary&#10;customerId=qbo-customer"
                     />
                   </FormRow>
                 </details>
               </div>
             </div>
-            <label className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground">
-              <input
-                type="checkbox"
-                checked={view.externalGlMappingProfile.certified}
-                onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)}
-              />
+            <Checkbox className="mt-3 flex items-center gap-2 text-sm font-semibold text-foreground" checked={view.externalGlMappingProfile.certified} onChange={(event) => view.externalGlMappingProfile.updateCertified(event.currentTarget.checked)} label={<>
+
               Certify mapping profile for guarded export readiness
-            </label>
+            </>} />
             {view.externalGlMappingProfile.mappingRows.length > 0 ? (
               <div className="mt-3 grid gap-2 md:grid-cols-3" role="region" aria-label="Retained external GL mapping profiles">
                 {view.externalGlMappingProfile.mappingRows.map((row) => (

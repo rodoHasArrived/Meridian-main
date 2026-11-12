@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Blotter — orders blotter preset over `DataGrid`. Desk conventions encoded once:
  * side as washed green/red text (never fills), mono right-aligned qty/price, order status
@@ -33,4 +34,4 @@ export interface BlotterProps {
   /** Appended DataGrid column defs (`cell` renderer; legacy `render` still accepted). */
   extraColumns?: { key: string; label: string; align?: "left" | "right"; cell?: (row: BlotterOrder) => React.ReactNode; render?: (row: BlotterOrder) => React.ReactNode }[];
 }
-export declare function Blotter(props: BlotterProps): JSX.Element;
+export declare function Blotter(props: BlotterProps): React.JSX.Element;

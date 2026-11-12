@@ -9,6 +9,7 @@ import { credentialOwnershipKey, ownedCredentialConnections } from "@/lib/provid
 import type { ProviderConnectionRow, ProviderRoutingConnection, SessionInfo } from "@/types";
 import type { SettingsProviderConnectionRow } from "./settings-screen.view-model";
 import { ProviderOwnershipPanel } from "./settings-provider-ownership-panel";
+import { Select } from "@/components/ui/select";
 
 interface Editor {
   connectionId: string;
@@ -164,11 +165,11 @@ export function OwnedProviderCredentialPanel({ row, session, onRefresh }: {
   return <section className="mb-3 grid gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-3" aria-label={`${row.displayName} inline provider actions`}>
     <div className="flex flex-wrap items-end gap-2">
       <label className="grid gap-1 text-xs font-medium text-muted-foreground">Owned connection
-        <select aria-label={`${row.displayName} owned connection`} className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+        <Select aria-label={`${row.displayName} owned connection`} className="h-9 text-sm"
           value={editor.connectionId} onChange={event => void selectConnection(event.target.value)}>
           <option value="">Select an owned connection</option>
           {editor.choices.map(choice => <option key={choice.connectionId} value={choice.connectionId}>{choice.displayName} · {choice.externalAccountId} · {choice.credentialEnvironment}</option>)}
-        </select>
+        </Select>
       </label>
       <Button variant="outline" size="sm" onClick={() => void loadConnections()} aria-label={`Refresh connections for ${row.displayName}`}>Refresh connections</Button>
     </div>

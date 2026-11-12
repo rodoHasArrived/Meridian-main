@@ -4,7 +4,8 @@
 import React from "react";
 import { AmountCell, splitEnvelopeValue } from "./AmountCell";
 import { toNumber } from "../core/format.js";
-import { accountNormalSide } from "./money";
+import { accountNormalSide } from "./money.js";
+import { knownAmount, sumKnown, displayAmount, optionalSide } from "./knownAmounts.js";
 
 // A side may arrive as a bare number or an envelope-shaped object — the proof arithmetic reads
 // the figure, AmountCell renders the facets (guidelines/VALUE_ENVELOPE.md).
@@ -74,15 +75,20 @@ function sectionOf(type) {
 }
 
 function sides(row) {
-  const d = toNumber(fig(row.debit));
-  const c = toNumber(fig(row.credit));
-  if (isFinite(d) || isFinite(c)) return { debit: isFinite(d) ? d : 0, credit: isFinite(c) ? c : 0 };
-  const b = toNumber(fig(row.balance));
-  if (!isFinite(b)) return { debit: 0, credit: 0 };
-  const normal = accountNormalSide(row.type);
-  const onNormal = b >= 0;
-  const side = onNormal === (normal === "debit") ? "debit" : "credit";
-  return { debit: side === "debit" ? Math.abs(b) : 0, credit: side === "credit" ? Math.abs(b) : 0 };
+  const sideValue=key=>{
+    const split=splitEnvelopeValue(row[key]);
+    const facets={...row.envelope,...split.envelope};
+    if(row[key]===undefined||(typeof row[key]==="string"&&row[key].trim()===""))return 0;
+    return knownAmount({...facets,value:split.value});
+  };
+  const hasSide=row.debit!==undefined||row.credit!==undefined;
+  if(hasSide)return{debit:sideValue("debit"),credit:sideValue("credit")};
+  const split=splitEnvelopeValue(row.balance);
+  const balance=knownAmount({...row.envelope,...split.envelope,value:split.value});
+  if(balance===null)return{debit:null,credit:null};
+  const normal=accountNormalSide(row.type);
+  const side=(balance>=0)===(normal==="debit")?"debit":"credit";
+  return{debit:side==="debit"?Math.abs(balance):0,credit:side==="credit"?Math.abs(balance):0};
 }
 
 export function TrialBalance({
@@ -100,9 +106,10 @@ export function TrialBalance({
   const cols = (showCode ? 4 : 3) + (trailing ? 1 : 0);
 
   const computed = rows.map((r, i) => ({ ...r, ...sides(r), _i: i, _sec: sectionOf(r.type) }));
-  const totalD = computed.reduce((a, r) => a + r.debit, 0);
-  const totalC = computed.reduce((a, r) => a + r.credit, 0);
-  const balanced = Math.abs(totalD - totalC) < 0.005;
+  const totalD = sumKnown(computed.map(row=>row.debit));
+  const totalC = sumKnown(computed.map(row=>row.credit));
+  const complete=totalD!==null&&totalC!==null;
+  const balanced = complete&&Math.abs(totalD-totalC)<0.005;
 
   const groups = grouped
     ? SECTIONS.map((s) => [s, computed.filter((r) => r._sec === s)]).filter(([, rs]) => rs.length)
@@ -122,8 +129,8 @@ export function TrialBalance({
                 onClick={onRowClick ? () => onRowClick(rows[r._i], r._i) : undefined}>
         {showCode && <td className="tbl__code">{r.code}</td>}
         <td className="tbl__acct">{r.account}</td>
-        <td className="tbl--r"><AmountCell value={r.debit} currency={currency} zeroDash envelope={r.debit ? env : undefined} /></td>
-        <td className="tbl--r"><AmountCell value={r.credit} currency={currency} zeroDash envelope={r.credit ? env : undefined} /></td>
+        <td className="tbl--r"><AmountCell value={displayAmount(r.debit)} currency={currency} zeroDash envelope={r.debit ? env : undefined} /></td>
+        <td className="tbl--r"><AmountCell value={displayAmount(r.credit)} currency={currency} zeroDash envelope={r.credit ? env : undefined} /></td>
         {trailing && <td className="tbl__trail">{trailing(rows[r._i], r._i)}</td>}
       </tr>
     );
@@ -155,10 +162,10 @@ export function TrialBalance({
                 <tr className="tbl__sub">
                   <td colSpan={cols - 2 - (trailing ? 1 : 0)}>{sec} subtotal</td>
                   <td className="tbl--r">
-                    <AmountCell value={rs.reduce((a, r) => a + r.debit, 0)} currency={currency} zeroDash mode="muted" />
+                    <AmountCell value={displayAmount(sumKnown(rs.map(row=>row.debit)))} currency={currency} zeroDash mode="muted" />
                   </td>
                   <td className="tbl--r">
-                    <AmountCell value={rs.reduce((a, r) => a + r.credit, 0)} currency={currency} zeroDash mode="muted" />
+                    <AmountCell value={displayAmount(sumKnown(rs.map(row=>row.credit)))} currency={currency} zeroDash mode="muted" />
                   </td>
                   {trailing && <td />}
                 </tr>
@@ -170,17 +177,18 @@ export function TrialBalance({
           <tr>
             <td className="tbl__foot-label" colSpan={cols - 2 - (trailing ? 1 : 0)}>
               Totals
-              {!balanced && (
+              {!complete&&<span className="tbl__foot-note"> Input missing — balance cannot be proved</span>}
+              {complete&&!balanced && (
                 <span className="tbl__foot-note" style={{ color: "var(--red-dim,#883832)" }}>
                   out of balance by {""}
                 </span>
               )}
-              {!balanced && (
+              {complete&&!balanced && (
                 <AmountCell value={totalD - totalC} currency={currency} mode="pnl" parens />
               )}
             </td>
-            <td className="tbl--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="tbl--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="tbl--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="tbl--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             {trailing && <td />}
           </tr>
         </tfoot>

@@ -1,3 +1,4 @@
+import type React from "react";
 export type ContinuityState = "live" | "delayed" | "stale" | "partial" | "offline" | "recovering" | "error";
 export interface ContinuityFrameProps extends React.HTMLAttributes<HTMLElement> {
   state?: ContinuityState;
@@ -21,5 +22,5 @@ export interface ContinuityFrameProps extends React.HTMLAttributes<HTMLElement> 
   retryLabel?: string;
   retrying?: boolean;
 }
-export declare function ContinuityStatus(props: ContinuityFrameProps): JSX.Element;
-export declare function ContinuityFrame(props: ContinuityFrameProps): JSX.Element;
+export declare function ContinuityStatus(props: ContinuityFrameProps): React.JSX.Element;
+export declare function ContinuityFrame(props: ContinuityFrameProps): React.JSX.Element;

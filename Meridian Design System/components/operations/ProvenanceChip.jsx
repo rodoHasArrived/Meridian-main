@@ -4,7 +4,7 @@
 // annotation: completeness dot · mono source system · as-of date. Full tuple in the
 // hover title. Renders a <button> when onOpen is set, otherwise a <span>.
 import React from "react";
-import { normalizeSeverity, humanizeStatus } from "./status";
+import { normalizeSeverity, humanizeStatus } from "./status.js";
 
 let injected = false;
 function inject() {

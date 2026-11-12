@@ -10,7 +10,8 @@
 <!-- release:generated:end -->
 
 Current-branch evidence and a reproducible distribution handoff:
-[4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md).
+[4.3.0 export audit](docs/AUDIT_4_3_0.md) · [Build, verify, and export](docs/EXPORT_4_3_0.md) ·
+[Local patches to re-apply after a re-export](docs/LOCAL_PATCHES.md).
 These describe this working tree separately from the historical upstream release reports.
 
 The [specimen card gallery](tests/gallery.html) reads the supported cards from `_ds_manifest.json`.

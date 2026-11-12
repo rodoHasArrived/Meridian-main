@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Figure — the parametric analytical figure. One frame, four geometries, series
  * assigned by **role** (`actual · prior · benchmark · scenario · target ·
@@ -60,13 +61,13 @@ export interface FigureProps extends React.HTMLAttributes<HTMLElement> {
   /** Small-multiple sizing. */
   small?: boolean;
 }
-export declare function Figure(props: FigureProps): JSX.Element;
+export declare function Figure(props: FigureProps): React.JSX.Element;
 
 export interface FigureSetProps extends React.HTMLAttributes<HTMLDivElement> {
   figures: FigureProps[];
   columns?: number;
 }
-export declare function FigureSet(props: FigureSetProps): JSX.Element;
+export declare function FigureSet(props: FigureSetProps): React.JSX.Element;
 
 export declare const FIGURE_ROLES: Record<FigureRole, { label: string; stroke: string; dash: string | null; fill: string }>;
 export declare const GEOMETRIES: FigureGeometry[];

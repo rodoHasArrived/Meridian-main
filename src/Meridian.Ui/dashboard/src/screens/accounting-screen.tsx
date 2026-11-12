@@ -32,6 +32,7 @@ import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
+import { TieOutPanel } from "@/components/accounting/TieOutPanel";
 import {
   approveAndPostDailyValuationBatch,
   approveOperationsContinuityWorkflow,
@@ -167,6 +168,7 @@ import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 import { applyCrossScreenCounts, applyOpenBreakDelta, selectCrossScreenCounts } from "@/lib/cross-screen-counts";
 import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit, useSinceLastVisit } from "@/lib/since-last-visit";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
+import { Select } from "@/components/ui/select";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
@@ -2397,8 +2399,13 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
             <ReconciliationReadinessPanel />
           </div>
 
-          <div className="xl:col-span-2">
+          <div className="space-y-3 xl:col-span-2">
             <ReconciliationComparisonPanel view={reconciliation.comparisonView} />
+            {/* Proof of the summary above, built from the same numbers and the same balanced rule.
+                Its heading stays at the panel default (h3), level with the sibling cards in this band. */}
+            {reconciliation.comparisonView.tieOut ? (
+              <TieOutPanel {...reconciliation.comparisonView.tieOut} />
+            ) : null}
           </div>
 
 
@@ -2860,7 +2867,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                 <label htmlFor="security-master-search" className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
                   Search securities
                 </label>
-                <input
+                <Input
                   id="security-master-search"
                   type="text"
                   value={securityMaster.query}
@@ -2869,7 +2876,7 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                   aria-controls={securityMaster.hasResults ? "security-master-results" : undefined}
                   aria-describedby="security-master-search-help security-master-search-status"
                   aria-invalid={securityMaster.searchErrorText ? true : undefined}
-                  className="w-full rounded-lg border border-border/70 bg-secondary/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/50"
+                  className="w-full text-sm"
                 />
                 <p id="security-master-search-help" className="text-xs text-muted-foreground">
                   Search by ticker, ISIN, CUSIP, FIGI, or display name.
@@ -3323,7 +3330,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
         {activity.paymentIntents.length > 0 ? (
           <>
             <div className="overflow-x-auto rounded-md border border-border/70">
-              <TableWorkbench<(typeof activity.paymentIntents)[number]>
+              <TableWorkbench<(typeof activity.paymentIntents)[number]> tableClassName={"w-full min-w-[1040px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-payment-evidence-workflows" sourceDescription="Payment intent and cash evidence workflows · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.paymentIntents.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.paymentIntents} getRowId={(intent) => intent.id} getSearchText={(intent) => JSON.stringify(intent)}
  ariaLabel="Payment intent and cash evidence workflows" emptyText="No retained records are available in this scope."
@@ -3524,7 +3531,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.fundEventLedgerRecords.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.fundEventLedgerRecords)[number]>
+            <TableWorkbench<(typeof activity.fundEventLedgerRecords)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-events" sourceDescription="Private-capital fund event ledger records · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.fundEventLedgerRecords.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.fundEventLedgerRecords} getRowId={(record) => record.id} getSearchText={(record) => JSON.stringify(record)}
  ariaLabel="Private-capital fund event ledger records" emptyText="No retained records are available in this scope."
@@ -3646,7 +3653,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.capitalAccounts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.capitalAccounts)[number]>
+            <TableWorkbench<(typeof activity.capitalAccounts)[number]> tableClassName={"w-full min-w-[760px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-activity" sourceDescription="Private-capital capital account activity · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccounts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccounts} getRowId={(account) => account.id} getSearchText={(account) => JSON.stringify(account)}
  ariaLabel="Private-capital capital account activity" emptyText="No retained records are available in this scope."
@@ -3672,7 +3679,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.capitalAccountSubledgers.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.capitalAccountSubledgers)[number]>
+            <TableWorkbench<(typeof activity.capitalAccountSubledgers)[number]> tableClassName={"w-full min-w-[980px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-subledgers" sourceDescription="Private-capital capital account subledgers · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccountSubledgers.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgers} getRowId={(subledger) => subledger.id} getSearchText={(subledger) => JSON.stringify(subledger)}
  ariaLabel="Private-capital capital account subledgers" emptyText="No retained records are available in this scope."
@@ -3748,7 +3755,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.capitalAccountSubledgerEntries.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.capitalAccountSubledgerEntries)[number]>
+            <TableWorkbench<(typeof activity.capitalAccountSubledgerEntries)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-subledger" sourceDescription="Private-capital capital account subledger · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.capitalAccountSubledgerEntries.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.capitalAccountSubledgerEntries} getRowId={(entry) => entry.id} getSearchText={(entry) => JSON.stringify(entry)}
  ariaLabel="Private-capital capital account subledger" emptyText="No retained records are available in this scope."
@@ -3772,7 +3779,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.ledgerImpacts.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.ledgerImpacts)[number]>
+            <TableWorkbench<(typeof activity.ledgerImpacts)[number]> tableClassName={"w-full min-w-[820px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-ledger-impacts" sourceDescription="Private-capital ledger impacts · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.ledgerImpacts.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.ledgerImpacts} getRowId={(impact) => impact.id} getSearchText={(impact) => JSON.stringify(impact)}
  ariaLabel="Private-capital ledger impacts" emptyText="No retained records are available in this scope."
@@ -3798,7 +3805,7 @@ function ManualJournalPrivateCapitalActivityPanel({ activity }: { activity: Manu
 
         {activity.reportOutputs.length > 0 ? (
           <div className="overflow-x-auto rounded-md border border-border/70">
-            <TableWorkbench<(typeof activity.reportOutputs)[number]>
+            <TableWorkbench<(typeof activity.reportOutputs)[number]> tableClassName={"w-full min-w-[960px] text-sm"} maxVisibleRows={null}
  workbenchId="accounting-private-capital-report-outputs" sourceDescription="Private-capital report outputs · complete authorized shared projection supplied to this view; source text is retained without financial recomputation."
  sourceKey={JSON.stringify(activity.reportOutputs.map((sourceRow) => sourceRow.id))} completePopulation rows={activity.reportOutputs} getRowId={(output) => output.id} getSearchText={(output) => JSON.stringify(output)}
  ariaLabel="Private-capital report outputs" emptyText="No retained records are available in this scope."
@@ -4142,7 +4149,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                         tabIndex={-1}
                       >
                         <td>
-                          <select disabled={Boolean(view.draft.assetAccountingDraft)}
+                          <Select disabled={Boolean(view.draft.assetAccountingDraft)}
                             id={`manual-je-account-${line.lineId}`}
                             value={line.accountPath}
                             onChange={(event) => view.updateLine(line.lineId, { accountPath: event.target.value })}
@@ -4157,7 +4164,7 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
                           >
                             <option value="">Select GL account</option>
                             {view.accountOptions.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-                          </select>
+                          </Select>
                           {badges.length > 0 ? <ManualJournalLineBadges badges={badges} /> : null}
                         </td>
                         <td>
@@ -4335,27 +4342,27 @@ function ManualJournalEntryWorkbenchPanel({ view, search }: { view: ManualJourna
               <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,0.22fr)_minmax(0,0.34fr)_minmax(0,0.18fr)_minmax(0,0.16fr)_auto]">
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Label</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
+                  <Input className="min-h-9 w-full" value={view.attachmentDraft.displayName} onChange={(event) => view.updateAttachmentDraft({ displayName: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold text-muted-foreground">Route or path</span>
-                  <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
+                  <Input className="min-h-9 w-full font-mono" value={view.attachmentDraft.uri} onChange={(event) => view.updateAttachmentDraft({ uri: event.target.value })} />
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Kind</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
+                  <Select className="min-h-9 w-full" value={view.attachmentDraft.evidenceKind} onChange={(event) => view.updateAttachmentDraft({ evidenceKind: event.target.value })}>
                     <option value="SourceDocument">Source document</option>
                     <option value="ApprovalSupport">Approval support</option>
                     <option value="ReconciliationEvidence">Reconciliation</option>
                     <option value="ValuationSupport">Valuation support</option>
-                  </select>
+                  </Select>
                 </label>
                 <label className="space-y-1 text-sm">
                   <span className="text-xs font-semibold uppercase text-muted-foreground">Scope</span>
-                  <select className="min-h-9 w-full rounded border border-border bg-background px-2" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
+                  <Select className="min-h-9 w-full" value={view.attachmentDraft.lineId ?? ""} onChange={(event) => view.updateAttachmentDraft({ lineId: event.target.value || null })}>
                     <option value="">Header</option>
                     {view.draft.lines.map((line) => <option key={line.lineId} value={line.lineId}>{line.side} {line.accountPath || line.lineId}</option>)}
-                  </select>
+                  </Select>
                 </label>
                 <div className="flex items-end">
                   <Button

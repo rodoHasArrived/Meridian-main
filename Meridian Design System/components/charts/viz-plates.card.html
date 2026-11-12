@@ -8,6 +8,11 @@
 <script src="../../_preview_runtime.js"></script>
 <script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
+<style>
+.lineage-layout{grid-template-columns:minmax(0,1fr) minmax(0,320px)}
+.lineage-layout > *{min-width:0}
+@media(max-width:900px){.lineage-layout{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
@@ -43,7 +48,7 @@ const EDGES = [
 
 function Panel({ eyebrow, title, note, children }) {
   return (
-    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14 }}>
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0 }}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
       <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"78ch" }}>{note}</p>
@@ -65,7 +70,7 @@ function Demo() {
       </Panel>
       <Panel eyebrow="Layered graph / orthogonal routing" title="Provenance and downstream dependency"
         note="Directional data flow uses a stable layered layout. Node placement, edge routing, selection, and the text outline are separate contracts — the outline is the non-visual path, not an afterthought.">
-        <div style={{ display:"grid", gridTemplateColumns:"1fr 320px", gap:14, alignItems:"start" }}>
+        <div className="lineage-layout" style={{ display:"grid", gap:14, alignItems:"start" }}>
           <LineageGraph nodes={NODES} edges={EDGES} selectedId={node} onSelect={setNode} height={300} />
           <EvidenceInspector eyebrow="Selected graph node" value={n.label} caption={n.meta}>
             <EvidenceSection title="Node" fields={[

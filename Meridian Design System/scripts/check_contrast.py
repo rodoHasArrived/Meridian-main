@@ -10,7 +10,7 @@ conformance checks fail.
 This closes the "known follow-up" in guidelines/ACCESSIBILITY.md: the contrast table there was
 hand-measured; this script re-derives it on every run.
 
-Usage:  python3 scripts/check_contrast.py [--root PATH]
+Usage:  python3 scripts/check_contrast.py [--root PATH] [--scope all|browser] [--actions-only]
 """
 
 from __future__ import annotations
@@ -42,24 +42,25 @@ PAIRS = [
     ("muted text on card",         "--text-muted",     "--bg-light",     4.5),
     ("muted text on header band",  "--text-muted",     "--bg-medium",    4.5),
     ("muted text on hover row",    "--text-muted",     "--bg-hover",     4.5),
-    ("signal ink on card",         "--brand-signal-ink", "--bg-light",    4.5),
-    ("signal ink on canvas",       "--brand-signal-ink", "--bg",          4.5),
-    # The incoming integration also publishes this text role; measure both names.
-    ("signal text on card",        "--brand-signal-text", "--bg-light",   4.5),
-    ("signal text on header band", "--brand-signal-text", "--bg-medium",  4.5),
-    # Graphic signal marks retain their 3:1 threshold; normal text uses the
-    # dedicated ink role, including the retained table's sort/rank labels.
-    ("accent on card (non-text)",  "--accent",         "--bg-light",     3.0),
-    ("accent on header band (non-text)", "--accent",   "--bg-medium",    3.0),
-    ("signal ink on header band",  "--brand-signal-ink", "--bg-medium", 4.5),
-    ("signal ink on selected row", "--brand-signal-ink", "--bg-active", 4.5),
-    ("signal ink on ghost fill",   "--brand-signal-ink", "--accent-ghost", 4.5),
-    ("signal fill label",          "--text-on-accent", "--accent",       4.5),
-    # The hover state was omitted here until 2026-09, so a hover fill that failed AA
-    # shipped behind a green gate. All three button states are checked now.
-    ("hover signal label",         "--text-on-accent", "--accent-hover", 4.5),
-    ("pressed signal label",       "--text-on-accent", "--accent-dim",   4.5),
-    ("focus ring on card",         "--border-focus",   "--bg-light",     3.0),
+    # Signal is an identity/plot role, not body text or a primary action. Measure the
+    # published action and interaction roles rather than imposing the old copper UI.
+    ("signal on card (non-text)", "--accent", "--bg-light", 3.0),
+    ("signal on header band (non-text)", "--accent", "--bg-medium", 3.0),
+    ("brand-signal-text text on card", "--brand-signal-text", "--bg-light", 4.5),
+    ("brand-signal-text text on header band", "--brand-signal-text", "--bg-medium", 4.5),
+    ("primary button label",       "--ink-inverse", "--brand-axis", 4.5),
+    ("hover button label",         "--ink-inverse", "--check-primary-hover", 4.5),
+    ("pressed button label",       "--ink-inverse", "--check-primary-pressed", 4.5),
+    ("signal-fill label",          "--text-on-accent", "--accent", 4.5),
+    ("hover signal-fill label",    "--text-on-accent", "--accent-hover", 4.5),
+    ("pressed signal-fill label",  "--text-on-accent", "--accent-dim", 4.5),
+    ("link text on card",          "--interaction-link", "--bg-light", 4.5),
+    ("link text on header band",   "--interaction-link", "--bg-medium", 4.5),
+    ("hover link text on card",    "--interaction-link-hover", "--bg-light", 4.5),
+    ("selected row text",          "--text-primary", "--selected-surface", 4.5),
+    ("body text on signal ghost",  "--text-primary", "--accent-ghost", 4.5),
+    ("selection edge on card",     "--interaction-selected", "--bg-light", 3.0),
+    ("focus ring on card",         "--interaction-focus", "--bg-light", 3.0),
     ("LIVE badge label",           "--text-on-fill",   "--mode-live",    4.5),
     ("PAPER badge label",          "--text-on-fill",   "--mode-paper",   4.5),
     ("FIXTURE badge label",        "--text-on-fill",   "--mode-fixture", 4.5),
@@ -427,6 +428,7 @@ def check_signal_ink(mode: str, tokens: dict[str, str]) -> list[str]:
 
 
 def check_mode(mode: str, tokens: dict[str, str]) -> list[str]:
+    tokens = action_tokens(tokens)
     failures = []
     for name, fg_tok, bg_tok, minimum in PAIRS:
         fg = resolve(f"var({fg_tok})", tokens)
@@ -503,43 +505,37 @@ def check_primary_buttons(root: Path, mode: str, tokens: dict[str, str]) -> list
 
 
 def check_brands(root: Path) -> list[str]:
-    """Measure every declared light/dark identity in its actual CSS cascade."""
-    theme = (root / "tokens/theme.css").read_text(encoding="utf-8")
-    sheets = [(root / "tokens" / name).read_text(encoding="utf-8")
-              for name in ("colors.css", "theme.css", "colors-dark.css")]
-    defaults = parse_tokens(BRAND_BLOCK.sub("", theme))
-    merged: dict[str, dict[str, str]] = {}
-    for brand, body in BRAND_BLOCK.findall(theme):
-        merged.setdefault(brand, {}).update(parse_tokens(body))
+    """Check computed semantic roles, including inherited roles, in every brand/mode."""
+    text = (root / "tokens/theme.css").read_text(encoding="utf-8")
+    brands: dict[str, dict[str, str]] = {}
+    for brand, body in BRAND_BLOCK.findall(text):
+        brands.setdefault(brand, {}).update(parse_tokens(body))
     failures = []
-    for brand, declared in merged.items():
-        # Each shipped preset now declares both accent identities and ghost fills.
-        # Focus remains the system's independent interaction blue.
-        for prefix in ("--theme-accent", "--theme-dark-accent"):
-            for name in sorted(name for name in defaults if name.startswith(prefix)):
-                if name not in declared:
-                    failures.append(f"[brand {brand}] missing declared identity role {name}")
-        for mode, tokens in mode_tokens("\n".join(sheets), brand=brand).items():
-            scope = f"{mode.replace('-', ' ')} · brand {brand}"
-            label = resolve("var(--text-on-accent)", tokens)
+    for brand, declared in brands.items():
+        defaults = parse_tokens(BRAND_BLOCK.sub("", text))
+        if "--theme-accent" in declared:
+            required = {name for name in defaults if name.startswith("--theme-accent") or name.startswith("--theme-dark-accent")}
+            required.add("--theme-text-on-accent")
+            for missing in sorted(required - set(declared)):
+                failures.append(f"[brand {brand}] missing declared identity role {missing}")
+        for mode, tokens in package_modes(root, declared, brand).items():
+            scope = f"{mode} · brand {brand}"
+            failures.extend(check_mode(scope, tokens))
             for state, suffix in BRAND_PAIRS:
+                label = resolve("var(--text-on-accent)", tokens)
                 fill = resolve(f"var(--{suffix})", tokens)
-                if label is None or fill is None:
-                    failures.append(f"[{scope}] {state} signal label: cannot resolve actual roles")
-                elif ratio(label, fill) < 4.5:
-                    failures.append(f"[{scope}] {state} signal label: {ratio(label, fill):.2f}:1 < 4.5:1")
-            for name, foreground, background, minimum in (
-                ("focus ring on card", "--border-focus", "--bg-light", 3.0),
-                ("body text on signal ghost", "--text-primary", "--accent-ghost", 4.5),
-            ):
-                fg, bg = resolve(f"var({foreground})", tokens), resolve(f"var({background})", tokens)
-                if fg is None or bg is None:
-                    failures.append(f"[{scope}] {name}: cannot resolve actual roles")
-                elif ratio(fg, bg) < minimum:
-                    failures.append(f"[{scope}] {name}: {ratio(fg, bg):.2f}:1 < {minimum}:1")
-            failures += check_primary_buttons(root, scope, tokens)
-            failures += check_semantic_chips(scope, tokens)
-            failures += check_signal_ink(scope, tokens)
+                if label is None or fill is None or ratio(label, fill) < 4.5:
+                    failures.append(f"[{mode.replace("-", " ")} · brand {brand}] {state} signal label: below 4.5:1 or unresolved")
+            failures.extend(check_semantic_chips(scope, tokens))
+            failures.extend(check_signal_ink(scope, tokens))
+            if (root / "components/core/Button.jsx").exists():
+                failures.extend(check_primary_buttons(root, scope, tokens))
+            expected_role = "--theme-accent" if mode in ("light", "forced-light") else "--theme-dark-accent"
+            if expected_role in declared:
+                expected = resolve(declared[expected_role], tokens)
+                actual = resolve("var(--accent)", tokens)
+                if actual is None or expected is None or actual != expected:
+                    failures.append(f"[{mode} · brand {brand}] declared signal identity is overridden by the default palette")
     return failures
 
 
@@ -741,6 +737,9 @@ def check_workstation(root: Path) -> list[str]:
     if default is None:
         return ["[workstation] structural primary: cannot read required default button utility contract"]
     classes = default.group(1)
+    semantic_failures = []
+    if re.search(r"(?:^|\s)(?:hover:|active:)?bg-\[var\(--(?:ws-)?accent", classes):
+        semantic_failures.append("[workstation] the primary button paints an accent fill; signal fills are not structural primary actions")
     label = utility_color(classes, "text")
     base = utility_color(classes, "bg")
     states = {"base": (label, base),
@@ -748,7 +747,7 @@ def check_workstation(root: Path) -> list[str]:
                         utility_color(classes, "bg", "hover:") if "hover:bg-" in classes else base),
               "pressed": (utility_color(classes, "text", "active:") if "active:text-" in classes else label,
                           utility_color(classes, "bg", "active:") if "active:bg-" in classes else base)}
-    return check_primary_states("workstation", mode_tokens(index.read_text(encoding="utf-8")), states)
+    return semantic_failures + check_primary_states("workstation", mode_tokens(index.read_text(encoding="utf-8")), states)
 
 
 
@@ -777,6 +776,7 @@ def check_ws_aliases(root: Path) -> list[str]:
             continue
         a, b = resolve(f"var({ws})", tokens), resolve(f"var({canon})", tokens)
         if a is None or b is None:
+            failures.append(f"[ws-alias] cannot resolve required alias pair {ws}/{canon}")
             continue
         if a != b:
             failures.append(f"[ws-alias] {ws} does not mirror {canon}")
@@ -864,6 +864,28 @@ def check_var_chains(root: Path) -> list[str]:
         declared: set[str] = set()
         for f in files:
             declared |= set(DECL_NAME.findall(blank_comments(f.read_text(encoding="utf-8"))))
+        if track == "package":
+            variants = package_modes(root)
+        else:
+            index_text = files[0].read_text(encoding="utf-8")
+            variants = {mode: scoped_tokens(index_text, f':root[data-theme="{mode}"]') for mode in ("light", "dark")}
+        for mode, effective in variants.items():
+            graph = {name: set(re.findall(r"var\(\s*(--[a-zA-Z0-9-]+)", value)) for name, value in effective.items()}
+            complete, cycles = set(), set()
+            def visit(name, pending):
+                if name in pending:
+                    cycles.add(tuple(sorted(pending[pending.index(name):])))
+                    return
+                if name in complete:
+                    return
+                for ref in graph.get(name, set()):
+                    if ref in graph:
+                        visit(ref, [*pending, name])
+                complete.add(name)
+            for name in graph:
+                visit(name, [])
+            for cycle in sorted(cycles):
+                failures.append(f"[var-chain] {track} {mode}: cyclic custom-property dependency: {', '.join(cycle)}")
         for f in files:
             text = blank_comments(f.read_text(encoding="utf-8"))
             for lineno, line in enumerate(text.splitlines(), 1):
@@ -891,18 +913,14 @@ def check_var_chains(root: Path) -> list[str]:
     for track, base in call_sites(root):
         if not base.exists():
             continue
-        for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
-            if path != base and path.suffix not in CALL_SITE_SUFFIXES:
-                continue
-            if is_test_source(path):
-                continue
+        for path in production_paths(base):
             text = blank_source_comments(path.read_text(encoding="utf-8", errors="replace"), path.suffix)
             declared = workstation_tokens if track == "workstation" else package_tokens
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
-            for lineno, line in enumerate(text.splitlines(), 1):
+            for lineno, line in style_lines(path, text):
                 for ref in BARE_REF.findall(line):
                     checked += 1
-                    if ref in declared or ref in local or ref in KNOWN_UNDECLARED:
+                    if ref in declared or ref in local or ref in KNOWN_UNDECLARED or ref.startswith(LOCAL_PREFIXES):
                         continue
                     failures.append(f"[var-chain] {_rel(path, root)}:{lineno}: bare var({ref}) with "
                                     "no fallback names a token this track never declares — it "
@@ -1177,6 +1195,7 @@ def check_fallbacks(root: Path) -> list[str]:
             if is_test_source(path):
                 continue
             text = blank_source_comments(path.read_text(encoding="utf-8", errors="replace"), path.suffix)
+            text = re.sub(r"\.replace\(/[^\n]*?/[gimsuy]*,\s*[\"\'][^\"\']*[\"\']\)", "", text)
             local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
             tokens = workstation_tokens if track == "workstation" else package_tokens
             for lineno, line in enumerate(text.splitlines(), 1):
@@ -1253,7 +1272,7 @@ def check_fallbacks(root: Path) -> list[str]:
                                 f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …{shown}…) — "
                                 f"the token resolves to "
                                 f"#{round(want[0]):02X}{round(want[1]):02X}{round(want[2]):02X}")
-    for stale_entry in sorted(KNOWN_UNDECLARED & tokens.keys()):
+    for stale_entry in sorted(KNOWN_UNDECLARED & package_tokens.keys()):
         failures.append(f"[fallback] {stale_entry} is declared now — drop it from "
                         "KNOWN_UNDECLARED so the exemption cannot outlive the gap")
     for f in failures[:10]:
@@ -1452,6 +1471,7 @@ BRAND_RETIRED = frozenset({
 })
 # IBM Plex is loaded by tokens/fonts.css; metadata about outlined fonts does not render.
 BRAND_FONTS = ("Space Grotesk", "JetBrains Mono", "Inter")
+GENERIC_FONTS = {"serif", "sans-serif", "monospace", "system-ui", "ui-sans-serif", "ui-monospace"}
 
 
 def svg_font_families(text: str) -> set[str]:
@@ -1469,13 +1489,16 @@ def svg_font_families(text: str) -> set[str]:
     return families
 
 
-def check_brand_assets(root: Path) -> list[str]:
+def check_brand_assets(root: Path, scope: str = "all") -> list[str]:
     """No brand asset may carry a retired colour or font, and the copies must agree."""
     repo = root.parent
     failures: list[str] = []
     checked = 0
     canonical = repo / BRAND_DIRS[0]
-    for rel in BRAND_DIRS:
+    fonts = root / "tokens/fonts.css"
+    loaded = {primary_font(value) for value in re.findall(r"font-family\s*:\s*([^;]+)", blank_comments(fonts.read_text(encoding="utf-8")))} if fonts.exists() else set()
+    directories = [rel for rel in BRAND_DIRS if scope == "all" or "Meridian.Wpf" not in str(rel)]
+    for rel in directories:
         base = repo / rel
         if not base.exists():
             continue
@@ -1487,14 +1510,11 @@ def check_brand_assets(root: Path) -> list[str]:
                 failures.append(f"[brand] {_rel(path, root)}: {', '.join(hits)} — a retired-identity "
                                 "colour in an asset the workstation chrome renders")
             try:
-                used = svg_font_families(text)
+                unavailable = sorted(svg_fonts(text) - loaded - GENERIC_FONTS)
+                if unavailable:
+                    failures.append(f"[brand] {_rel(path, root)}: primary face {', '.join(unavailable)} is not loaded by the package")
             except ET.ParseError as error:
                 failures.append(f"[brand] {_rel(path, root)}: invalid SVG: {error}")
-                continue
-            fonts = [family for family in BRAND_FONTS if family in used]
-            if fonts:
-                failures.append(f"[brand] {_rel(path, root)}: names {', '.join(fonts)}, a face the "
-                                "package no longer loads")
             source = canonical / path.name
             if base != canonical and source.exists() and \
                     source.read_text(encoding="utf-8").rstrip("\n") != text.rstrip("\n"):
@@ -1503,7 +1523,7 @@ def check_brand_assets(root: Path) -> list[str]:
     for f in failures[:10]:
         print(f)
     if not failures:
-        print(f"[brand] all {checked} brand asset(s) across {len(BRAND_DIRS)} track(s) carry the "
+        print(f"[brand] all {checked} brand asset(s) across {len(directories)} selected track(s) carry the "
               "current identity and agree")
     return failures
 
@@ -1702,34 +1722,190 @@ def check_elevation_guidance(root: Path) -> list[str]:
     return failures
 
 
-def run_checks(root: Path) -> list[str]:
-    light = parse_tokens((root / "tokens" / "colors.css").read_text(encoding="utf-8"))
-    dark_overrides = parse_tokens((root / "tokens" / "colors-dark.css").read_text(encoding="utf-8"))
-    dark = {**light, **dark_overrides}
-    return (check_mode("light", light) + check_mode("dark", dark)
-            + check_semantic_chips("light", light) + check_semantic_chips("dark", dark)
-            + check_signal_ink("light", light) + check_signal_ink("dark", dark)
-            + check_primary_buttons(root, "light", light) + check_primary_buttons(root, "dark", dark)
+def run_checks(root: Path, scope: str = "all") -> list[str]:
+    modes = package_modes(root)
+    failures = [failure for mode, tokens in modes.items() for failure in check_mode(mode, tokens)]
+    return (failures
+            + [failure for mode, tokens in modes.items() for failure in check_semantic_chips(mode, tokens)]
+            + [failure for mode, tokens in modes.items() for failure in check_signal_ink(mode, tokens)]
             + check_brands(root) + check_package_primary(root) + check_workstation(root)
             + check_ws_aliases(root) + check_comment_terminators(root)
-            + check_var_chains(root) + check_fallbacks(root)
+            + check_var_chains(root) + check_runtime_fallbacks(root) + check_fallbacks(root)
             + check_card_metadata(root) + check_doc_palette(root)
             + check_elevation_guidance(root) + check_bundle_parity(root)
             + check_tailwind_literals(root) + check_catalog_palette(root)
-            + check_runtime_palette(root)
+            + (check_runtime_palette(root) if scope == "all" else [])
             + check_accent_on_wash(root)
-            + check_brand_assets(root))
+            + check_brand_assets(root, scope))
+
+
+def action_tokens(tokens: dict[str, str]) -> dict[str, str]:
+    """The exact source Button expressions, with no extra published token names."""
+    return {**tokens,
+            "--check-primary-hover": "color-mix(in srgb, var(--brand-axis) 88%, var(--bg-light))",
+            "--check-primary-pressed": "color-mix(in srgb, var(--brand-axis) 78%, var(--bg-light))"}
+
+
+def package_modes(root: Path, brand: dict[str, str] | None = None, brand_name: str | None = None) -> dict[str, dict[str, str]]:
+    """Apply actual root selector/source-order cascades across the published sheets."""
+    css = "\n".join((root / "tokens" / name).read_text(encoding="utf-8") for name in ("colors.css", "theme.css", "colors-dark.css"))
+    contexts = mode_tokens(css, brand_name)
+    return {"light": contexts["light"], "forced-light": contexts["forced-light"],
+            "auto-dark": contexts["auto-dark"], "dark": contexts["manual-dark"]}
+
+
+def scoped_tokens(text: str, selector: str) -> dict[str, str]:
+    """Read declarations from exact leaf selectors, using CSS's last declaration wins."""
+    out = {}
+    for match in re.finditer(r"([^{}]+)\{([^{}]*)\}", blank_comments(text)):
+        if selector not in [part.strip() for part in match.group(1).split(",")]:
+            continue
+        out.update(dict(TOKEN_PATTERN.findall(match.group(2))))
+    return {name: value.strip() for name, value in out.items()}
+
+
+def root_selector(selector: str, attributes: dict[str, str]):
+    """Match the simple compound root selectors authored in token sheets.
+
+    Attributes and :not(attribute) contribute their argument specificity; :not has
+    no extra specificity of its own. Unsupported/descendant selectors never match
+    the root. This keeps brand and forced-light decisions separate from source order.
+    """
+    prefix = re.match(r"^(html|:root)", selector)
+    if prefix is None:
+        return None
+    tail = selector[prefix.end():]
+    score = 0 if prefix.group(1) == "html" else 1
+    attribute = re.compile(r"(?P<not>:not\()?\[(?P<name>[a-zA-Z0-9_-]+)(?:\s*=\s*(?:\"(?P<double>[^\"]*)\"|'(?P<single>[^']*)'|(?P<plain>[^\]\s]+)))?\](?(not)\))")
+    cursor = 0
+    while cursor < len(tail):
+        match = attribute.match(tail, cursor)
+        if match is None:
+            return None
+        name = match.group("name")
+        value = next((match.group(part) for part in ("double", "single", "plain") if match.group(part) is not None), None)
+        matches = name in attributes and (value is None or attributes[name] == value)
+        if bool(match.group("not")) == matches:
+            return None
+        score += 1
+        cursor = match.end()
+    return (0, score, 1 if prefix.group(1) == "html" else 0)
+
+
+def production_paths(base: Path):
+    """Production sources and shipped artifacts; tests are evidence, not rendered CSS."""
+    for path in ([base] if base.is_file() else sorted(base.rglob("*"))):
+        if not path.is_file() or (path != base and path.suffix not in CALL_SITE_SUFFIXES):
+            continue
+        if re.search(r"\.(?:test|spec)\.[^.]+$", path.name) or path.name.endswith(".d.ts"):
+            continue
+        yield path
+
+
+STYLE_VALUE = re.compile(r"(?:[\w-]+[\"']?\s*:\s*[^;{}]*|\[[^\]]*)var\(")
+
+
+def style_lines(path: Path, text: str):
+    """A var() is CSS only in a declaration/value or an arbitrary-style class.
+
+    Scanning all JavaScript strings incorrectly treated GovernanceLints' replacement
+    string 'var(--x)' and test assertions as styles shipped to the browser.
+    """
+    text = blank_comments(text)
+    for lineno, line in enumerate(text.splitlines(), 1):
+        if path.suffix == ".css" or STYLE_VALUE.search(line):
+            yield lineno, line
+
+
+def primary_font(stack: str) -> str:
+    return stack.split(",", 1)[0].strip().strip("\"'")
+
+
+def svg_fonts(text: str) -> set[str]:
+    tree = ET.fromstring(text)
+    stacks = []
+    for node in tree.iter():
+        if node.get("font-family"):
+            stacks.append(node.get("font-family"))
+        stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.get("style", "")))
+        if node.tag.rsplit("}", 1)[-1] == "style":
+            stacks.extend(re.findall(r"font-family\s*:\s*([^;}]+)", node.text or ""))
+    return {primary_font(stack) for stack in stacks}
+
+
+def check_runtime_fallbacks(root: Path) -> list[str]:
+    """Validate fallback reachability, not equality with a value that prevents it rendering.
+
+    CSS var(--defined, fallback) uses the defined custom property. Its fallback need not
+    equal that value (and cannot equal both light and dark values). Missing dependencies,
+    cycles and undeclared names are still failures: those make the fallback load-bearing.
+    Token contrast checks measure the values actually rendered; bundle parity still proves
+    that the shipped rules match their sources. A fallback is not an allowance for a missing
+    public token, even if its literal looks acceptable in one theme.
+    """
+    token_sets = {}
+    for track, paths in tracks(root).items():
+        tokens = {}
+        sheets = sorted((root / "tokens").glob("*.css")) if track == "package" else paths
+        for sheet in sheets:
+            if sheet.exists():
+                for name, value in parse_tokens(sheet.read_text(encoding="utf-8")).items():
+                    tokens.setdefault(name, value)
+        token_sets[track] = tokens
+    failures, checked, guarded = [], 0, 0
+    superseded = superseded_values(root)
+    for track, base in call_sites(root):
+        if not base.exists():
+            continue
+        tokens = token_sets[track]
+        for path in production_paths(base):
+            text = path.read_text(encoding="utf-8", errors="replace")
+            local = set(DECL_NAME.findall(text)) | set(JS_DECL_NAME.findall(text))
+            for lineno, line in style_lines(path, text):
+                for found in VAR_CALL.finditer(line):
+                    if not found.group(2):
+                        continue
+                    parsed = split_var_call(line, found.start())
+                    if parsed is None:
+                        continue
+                    name, fallback = parsed
+                    if not fallback or not (HEX_LITERAL.search(fallback) or RGBA_LITERAL.search(fallback)):
+                        continue
+                    checked += 1
+                    if name in tokens or name in local or name.startswith(LOCAL_PREFIXES):
+                        guarded += 1
+                        continue
+                    # Existing known-gap debt remains visible as a note, never grows here.
+                    if name in KNOWN_UNDECLARED:
+                        stale = sorted({value.upper() for value in HEX_LITERAL.findall(fallback) if len(value) == 7} & superseded)
+                        if stale:
+                            failures.append(f"[fallback] {_rel(path, root)}:{lineno}: existing undeclared {name} renders retired palette {', '.join(stale)}")
+                        else:
+                            print(f"[fallback-note] {_rel(path, root)}:{lineno}: existing undeclared {name}")
+                        continue
+                    failures.append(f"[fallback] {_rel(path, root)}:{lineno}: var({name}, …) — this track declares no such token; the fallback is always active")
+    # This debt list belongs to package consumers, not similarly named workstation aliases.
+    for name in sorted(KNOWN_UNDECLARED & set(token_sets["package"])):
+        failures.append(f"[fallback] {name} is declared now — drop it from KNOWN_UNDECLARED so the exemption cannot outlive the gap")
+    for failure in failures[:10]:
+        print(failure)
+    print(f"[fallback] {checked} production fallback expressions, {guarded} guarded by declared/local tokens; {len(failures)} undeclared dependencies")
+    return failures
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=Path(__file__).resolve().parent.parent)
+    parser.add_argument("--scope", choices=("all", "browser"), default="all",
+                        help="all (default) preserves native WPF palette/asset parity guards; browser explicitly excludes native assets/palette without certifying them")
     parser.add_argument("--actions-only", action="store_true",
-                        help="Check actual package/workstation structural primary actions in every color-scheme mode; leave historical governance checks to the full default gate")
+                        help="Check actual package/workstation structural primary actions in every color-scheme mode; other guards are not selected")
     args = parser.parse_args()
     root = args.root.resolve()
+    if args.scope == "browser":
+        print("[scope] browser only: native WPF palette and asset parity checks were not selected; they are not passed by this command")
     failures = (check_package_primary(root) + check_workstation(root)
-                if args.actions_only else run_checks(root))
+                if args.actions_only else run_checks(root, args.scope))
     if failures:
         print("\nContrast failures:", file=sys.stderr)
         for f in failures:

@@ -8,6 +8,11 @@
 <script src="../../_preview_runtime.js"></script>
 <script src="../../_preview_jsx.js"></script>
 <script src="../../_ds_bundle.js"></script>
+<style>
+.event-grid{grid-template-columns:minmax(0,1.35fr) minmax(0,1fr)}
+.event-grid > *{min-width:0}
+@media(max-width:900px){.event-grid{grid-template-columns:minmax(0,1fr)}}
+</style>
 </head>
 <body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
 <div id="root"></div>
@@ -41,7 +46,7 @@ const LANES = [
 
 function Panel({ eyebrow, title, note, children, span }) {
   return (
-    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, gridColumn: span }}>
+    <section style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:14, minWidth:0, gridColumn: span }}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <h2 style={{ font:"600 15px var(--font-display)", color:"var(--text-primary)", margin:"6px 0 4px" }}>{title}</h2>
       {note ? <p style={{ fontSize:12, lineHeight:"17px", color:"var(--text-muted)", margin:"0 0 12px", maxWidth:"80ch" }}>{note}</p> : null}
@@ -55,7 +60,7 @@ function Demo() {
   const [period, setPeriod] = React.useState(LABELS[0]);
   const row = SCHEDULE.find((r) => r.id === period) || SCHEDULE[0];
   return (
-    <div style={{ display:"grid", gridTemplateColumns:"1.35fr 1fr", gap:16, maxWidth:1240 }}>
+    <div className="event-grid" style={{ display:"grid", gap:16, maxWidth:1240 }}>
       <div style={{ gridColumn:"1 / -1" }}>
         <ClaimHeader
           context={["Investment accounting","EVT-2026-08421","Statutory"]}

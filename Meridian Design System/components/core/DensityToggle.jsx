@@ -78,13 +78,17 @@ export function DensityToggle({
   const isControlled = controlled != null;
   const [internal, setInternal] = React.useState(() => {
     if (isControlled) return controlled;
-    if (persist && typeof localStorage !== "undefined") {
-      const saved = localStorage.getItem(persist);
-      if (saved) return saved;
-    }
+    try {
+      if (persist && typeof localStorage !== "undefined") {
+        const saved = localStorage.getItem(persist);
+        if (LEVELS.some((level) => level.value === saved)) return saved;
+      }
+    } catch { /* Browser storage may be unavailable; density stays local. */ }
     return defaultValue;
   });
-  const value = isControlled ? controlled : internal;
+  const requested = isControlled ? controlled : internal;
+  const value = LEVELS.some((level) => level.value === requested) ? requested : "default";
+  const buttonRefs = React.useRef([]);
 
   React.useEffect(() => {
     if (!apply) return;
@@ -93,7 +97,8 @@ export function DensityToggle({
 
   const select = (v) => {
     if (!isControlled) setInternal(v);
-    if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v);
+    try { if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v); }
+    catch { /* Persistence failure must not prevent the explicit density choice. */ }
     onChange && onChange(v);
   };
 
@@ -101,13 +106,23 @@ export function DensityToggle({
     <div role="radiogroup" aria-label="Display density"
       className={`mds-den mds-den--${size}${fullWidth ? " mds-den--full" : ""}${className ? " " + className : ""}`}
       {...rest}>
-      {LEVELS.map((lv) => {
+      {LEVELS.map((lv, index) => {
         const active = lv.value === value;
         return (
           <button key={lv.value} type="button" role="radio" aria-checked={active}
+            ref={(node) => { buttonRefs.current[index] = node; }} tabIndex={active ? 0 : -1}
             title={lv.label}
             className={`mds-den__btn${active ? " mds-den__btn--active" : ""}`}
-            onClick={() => select(lv.value)}>
+            onClick={() => select(lv.value)}
+            onKeyDown={(event) => {
+              let next;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % LEVELS.length;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + LEVELS.length) % LEVELS.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = LEVELS.length - 1;
+              else return;
+              event.preventDefault(); select(LEVELS[next].value); buttonRefs.current[next]?.focus();
+            }}>
             <Glyph gap={lv.gap} />
             {showLabels && <span>{lv.label}</span>}
           </button>

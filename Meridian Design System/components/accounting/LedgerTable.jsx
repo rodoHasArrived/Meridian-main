@@ -7,10 +7,11 @@ import React from "react";
 const { useState } = React;
 import { AmountCell, splitEnvelopeValue } from "./AmountCell";
 import { toNumber } from "../core/format.js";
+import { knownAmount, sumKnown, displayAmount, optionalSide } from "./knownAmounts.js";
 
 // A debit/credit may arrive as a bare number or as an envelope-shaped object
 // ({ value, condition, authority, … }) — arithmetic reads the figure, AmountCell reads the rest.
-const amt = (v) => toNumber(splitEnvelopeValue(v).value);
+const amt = value => knownAmount(value);
 const fig = (v) => splitEnvelopeValue(v).value;
 
 // Row-level envelope facets apply to that row's amount cells; a side-level envelope-shaped
@@ -56,8 +57,8 @@ function inject() {
 .ldg tbody tr.ldg__row--on td{background:var(--bg-active,#E7EDF2);}
 .ldg tbody tr.ldg__row--on td:first-child{box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F);}
 .ldg tbody tr.ldg__row--pending td{background:var(--orange-a10,rgba(152,103,23,.07));}
-.ldg tbody tr.ldg__row--void td{color:var(--text-disabled,#A4ABB2);text-decoration:line-through;}
-.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-disabled,#A4ABB2);}
+.ldg tbody tr.ldg__row--void td{color:var(--text-secondary,#535C65);text-decoration:line-through;}
+.ldg tbody tr.ldg__row--void td .ldg__ref{color:var(--text-secondary,#535C65);}
 .ldg tbody tr.ldg__row--click:focus-visible{outline:var(--focus-ring);outline-offset:-2px;}
 .ldg__empty{padding:16px 12px;font-family:var(--font-body);font-size:12px;color:var(--text-muted,#606870);text-align:center;}
 .ldg__date{color:var(--text-secondary,#535C65);}
@@ -130,20 +131,22 @@ export function LedgerTable({
 
   // Running balance is chronological (source order); void rows contribute nothing. It is only
   // known from the opening balance or the first explicit row balance onward — earlier rows show a dash.
-  let bal = isFinite(toNumber(open)) ? toNumber(open) : 0;
-  let canCompute = isFinite(toNumber(open));
-  const computed = rows.map((r, i) => {
-    const isVoid = r.status === "void";
-    const d = isVoid ? 0 : amt(r.debit) || 0;
-    const c = isVoid ? 0 : amt(r.credit) || 0;
-    const delta = normalSide === "credit" ? c - d : d - c;
-    if (!isVoid && r.balance != null && isFinite(amt(r.balance))) {
-      bal = amt(r.balance);
-      canCompute = true;
-    } else if (canCompute) {
-      bal += delta;
+  let bal=knownAmount(open);
+  const rowSide=(row,key)=>{
+    if(row[key]===undefined||(typeof row[key]==="string"&&row[key].trim()===""))return 0;
+    return knownAmount({...sideEnvelope(row,key),value:fig(row[key])});
+  };
+  const computed=rows.map((row,index)=>{
+    const isVoid=row.status==="void";
+    const hasSides=row.debit!==undefined||row.credit!==undefined;
+    const debit=isVoid?0:hasSides?rowSide(row,"debit"):null;
+    const credit=isVoid?0:hasSides?rowSide(row,"credit"):null;
+    if(!isVoid){
+      if(row.balance!==undefined)bal=knownAmount(row.balance);
+      else if(bal===null||debit===null||credit===null)bal=null;
+      else bal+=normalSide==="credit"?credit-debit:debit-credit;
     }
-    return { ...r, _bal: bal, _hasBal: canCompute, _void: isVoid, _i: i };
+    return{...row,_bal:bal,_balanceKnown:bal!==null,_debit:debit,_credit:credit,_void:isVoid,_i:index};
   });
 
   let display = computed;
@@ -152,9 +155,10 @@ export function LedgerTable({
   }
 
   const live = computed.filter((r) => !r._void);
-  const totalD = live.reduce((a, r) => a + (amt(r.debit) || 0), 0);
-  const totalC = live.reduce((a, r) => a + (amt(r.credit) || 0), 0);
+  const totalD = sumKnown(live.map(row=>row._debit));
+  const totalC = sumKnown(live.map(row=>row._credit));
   const voided = computed.length - live.length;
+  const net=totalD===null||totalC===null?null:totalD-totalC;
 
   const hp = { sortKey, sortDir, onSort: handleSort };
 
@@ -173,7 +177,7 @@ export function LedgerTable({
           </tr>
         </thead>
         <tbody>
-          {isFinite(toNumber(open)) && (
+          {knownAmount(open)!==null && (
             <tr className="ldg__open">
               <td className="ldg__date" />
               <td />
@@ -182,7 +186,7 @@ export function LedgerTable({
               <td className="ldg--r" />
               <td className="ldg--r" />
               <td className="ldg--r">
-                <AmountCell value={toNumber(open)} currency={currency} mode="muted" />
+                <AmountCell value={displayAmount(open)} currency={currency} mode="muted" />
               </td>
             </tr>
           )}
@@ -208,17 +212,17 @@ export function LedgerTable({
                 {showAccount && <td className="ldg__acct">{r.account}</td>}
                 <td className="ldg__memo">{r.memo}</td>
                 <td className="ldg--r">
-                  <AmountCell value={fig(r.debit)} currency={currency} zeroDash
+                  <AmountCell value={r.debit===undefined?0:displayAmount(r.debit)} currency={currency} zeroDash
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "debit")} />
                 </td>
                 <td className="ldg--r">
-                  <AmountCell value={fig(r.credit)} currency={currency} zeroDash
+                  <AmountCell value={r.credit===undefined?0:displayAmount(r.credit)} currency={currency} zeroDash
                     mode={r._void ? "muted" : undefined} envelope={sideEnvelope(r, "credit")} />
                 </td>
                 <td className="ldg--r">
-                  {r._void || !r._hasBal
+                  {r._void
                     ? <span style={{ color: "var(--text-disabled,#A4ABB2)" }}>&mdash;</span>
-                    : <AmountCell value={r._bal} currency={currency} parens />}
+                    : <AmountCell value={displayAmount(r._bal)} currency={currency} parens />}
                 </td>
               </tr>
             );
@@ -234,13 +238,13 @@ export function LedgerTable({
                 </span>
               )}
             </td>
-            <td className="ldg--r"><AmountCell value={totalD} currency={currency} strong /></td>
-            <td className="ldg--r"><AmountCell value={totalC} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalD)} currency={currency} strong /></td>
+            <td className="ldg--r"><AmountCell value={displayAmount(totalC)} currency={currency} strong /></td>
             <td className="ldg--r">
               <AmountCell
-                value={totalD - totalC}
+                value={displayAmount(net)}
                 currency={currency}
-                mode={Math.abs(totalD - totalC) < 0.005 ? "muted" : "pnl"}
+                mode={net!==null&&Math.abs(net)<0.005?"muted":"pnl"}
                 parens
                 strong
               />

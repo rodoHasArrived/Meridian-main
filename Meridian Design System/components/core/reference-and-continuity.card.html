@@ -3,7 +3,7 @@
 const {Datum,DatumGroup,ContinuityFrame,SegmentedControl}=window.MeridianDesignSystem_205d17;
 const series=[38,44,41,52,49,58,55,66,62,71,68,78],W=660,H=230,PAD=30,PW=W-PAD*2,PH=H-PAD*2;
 const pts=series.map((v,i)=>`${PAD+i*PW/(series.length-1)},${PAD+PH-(v/90)*PH}`).join(" ");
-function Figure({sel,onSel}){return <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} role="img" aria-label="Book yield trace with embargo band, target datum, and committed selection">
+function Figure({sel,onSel}){return <svg width="100%" height={H} viewBox={`0 0 ${W} ${H}`} role="group" aria-label="Book yield trace with embargo band, target datum, and committed selection">
   <rect x={PAD} y={PAD} width={PW} height={PH} fill="var(--chart-plot)" stroke="var(--border)"/>
   <polyline points={pts} fill="none" stroke="var(--chart-primary)" strokeWidth="2"/>
   <svg x={PAD} y={PAD} width={PW} height={PH} overflow="visible">

@@ -1,3 +1,4 @@
+import type React from "react";
 /** Label-over-value fact grid used in entity summaries and detail panes. */
 export interface KeyValueGridProps {
   items: {
@@ -14,4 +15,4 @@ export interface KeyValueGridProps {
   /** Wire the withheld-fields reveal — usually `setDetailFor(region, level)`. */
   onReveal?: (level: "summary" | "full") => void;
 }
-export declare function KeyValueGrid(props: KeyValueGridProps): JSX.Element;
+export declare function KeyValueGrid(props: KeyValueGridProps): React.JSX.Element;

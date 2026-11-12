@@ -133,6 +133,8 @@ import {
 } from "./dev-fixtures/fixture-resolver";
 import { marketDataFixturePatterns, marketDataFixtureRoutes } from "./dev-fixtures/market-data-fixtures";
 import { bootstrapFixtureRoutes } from "./dev-fixtures/bootstrap-fixtures";
+import { workstationSurfaceFixturePatterns, workstationSurfaceFixtureRoutes } from "./dev-fixtures/workstation-surface-fixtures";
+import { UI_API_ROUTES } from "./ui-api-routes.generated";
 
 const fixtureSession: SessionInfo = {
   displayName: "Ops Desk",
@@ -6014,13 +6016,17 @@ const fixtures = {
   [`${SECURITY_MASTER_API_ENDPOINTS.base}/conflicts`]: fixtureSecurityConflicts,
   [RISK_API_ENDPOINTS.rules]: fixtureRiskRules,
   [riskRuleConfigEndpoint("DrawdownCircuitBreaker")]: fixtureDrawdownRiskRuleConfig,
+  // The books the Accounting configuration fixture already declares, served on their own route.
+  [UI_API_ROUTES.LedgerBooks]: fixtureAccountingConfiguration.ledgerBooks,
   ...marketDataFixtureRoutes,
-  ...bootstrapFixtureRoutes
+  ...bootstrapFixtureRoutes,
+  ...workstationSurfaceFixtureRoutes
 } satisfies Record<string, unknown>;
 
 const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRecordExplorer.replace("/{explorerId}", "");
 
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
+  ...workstationSurfaceFixturePatterns,
   {
     pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
     resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))

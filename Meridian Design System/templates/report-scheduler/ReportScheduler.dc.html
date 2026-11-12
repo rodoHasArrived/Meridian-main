@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,6 +7,7 @@
 <script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
 <script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Report · Report Scheduler — Meridian</title>
 </head>
 <body>
 <x-dc>
@@ -23,7 +24,7 @@
 <h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Report Scheduler</h1>
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="Blocked" label="{{ failedLine }}" hint-size="70px,18px"></x-import>
 <div style="flex:1"></div>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="120px,28px">New report pack</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="120px,28px" disabled="{{ true }}" title="Creating report packs requires the application reporting configuration service." aria-description="Creating report packs requires the application reporting configuration service.">New report pack</x-import>
 </div>
 <div style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:12px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Scheduled packs</x-import>
@@ -123,7 +124,7 @@
 </div>
 <div style="display:flex;gap:8px;margin-top:2px">
 <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onRunNow }}" hint-size="80px,28px">Run now</x-import>
-<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px">Edit schedule</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px" disabled="{{ true }}" title="Editing schedules requires application delivery permissions and a persistence service." aria-description="Editing schedules requires application delivery permissions and a persistence service.">Edit schedule</x-import>
 </div>
 </div>
 </div>
@@ -141,7 +142,7 @@ class Component extends DCLogic {
     if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
   }
   componentDidMount() { this.applyChrome(); }
-  componentDidUpdate() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
 
   NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
   packs = [
@@ -171,8 +172,8 @@ class Component extends DCLogic {
     const pack = this.packs[s.selected];
     const failed = this.packs.filter((p) => p.lastStatus === "Failed").length;
     return {
-      dataState: this.props.dataState ?? "ready",
-      onRetry: () => {},
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
       topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Scheduled Delivery", environment: String(this.props.environment ?? "PAPER").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
       nav: NavRail && el(NavRail, { activeId: "report-scheduler", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("report-scheduler") : []) }),
       statusBar: StatusBar && el(StatusBar, { items: [

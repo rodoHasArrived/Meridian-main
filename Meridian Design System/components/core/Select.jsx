@@ -41,9 +41,11 @@ function inject() {
   document.head.appendChild(el);
 }
 
-export function Select({ label, options = [], value, onChange, placeholder = "Select…", disabled = false, ariaLabel }) {
+export function Select({ label, options = [], value, onChange, placeholder = "Select…", disabled = false, ariaLabel, id, ...rest }) {
   inject();
-  const uid = React.useId();
+  const generatedId = React.useId();
+  const uid = id || generatedId;
+  const buttonId = id || `${uid}-btn`;
   const [open, setOpen] = React.useState(false);
   const [above, setAbove] = React.useState(false);
   const ref = React.useRef(null);
@@ -83,7 +85,8 @@ export function Select({ label, options = [], value, onChange, placeholder = "Se
       m.scrollTop = el.offsetTop + el.offsetHeight - m.clientHeight;
   }, [open, focusIdx]);
 
-  const commit = (it) => { onChange?.(it.value); setOpen(false); };
+  const commit = (it) => { if (disabled) return; onChange?.(it.value); setOpen(false); };
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
 
   const handleKey = (e) => {
     if (disabled) return;
@@ -121,14 +124,15 @@ export function Select({ label, options = [], value, onChange, placeholder = "Se
       <div className="mds-sel-wrap">
         <button
           type="button"
-          id={`${uid}-btn`}
+          {...rest}
+          id={buttonId}
           className={`mds-sel-btn${!displayLabel ? " mds-sel-btn--placeholder" : ""}`}
           role="combobox"
           aria-expanded={open}
           aria-haspopup="listbox"
           aria-controls={`${uid}-menu`}
-          aria-labelledby={label ? `${uid}-label ${uid}-btn` : undefined}
-          aria-label={!label ? (ariaLabel || placeholder) : undefined}
+          aria-labelledby={label ? `${uid}-label ${buttonId}` : rest["aria-labelledby"]}
+          aria-label={!label ? (ariaLabel || rest["aria-label"] || (id ? undefined : placeholder)) : undefined}
           aria-activedescendant={activeId}
           disabled={disabled}
           onClick={() => (open ? setOpen(false) : openMenu())}

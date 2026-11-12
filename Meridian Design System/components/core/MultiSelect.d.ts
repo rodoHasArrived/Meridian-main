@@ -57,4 +57,4 @@ export interface MultiSelectProps extends Omit<React.HTMLAttributes<HTMLDivEleme
  *   maxSelected={8}
  * />
  */
-export declare function MultiSelect(props: MultiSelectProps): JSX.Element;
+export declare function MultiSelect(props: MultiSelectProps): React.JSX.Element;

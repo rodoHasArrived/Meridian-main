@@ -4,13 +4,11 @@
 import React from "react";
 import { formatMoney, formatNumber } from "../core/format.js";
 
-const CONDITION={confirmed:{label:"Confirmed",glyph:"●"},provisional:{label:"Provisional",glyph:"◐"},estimated:{label:"Estimated",glyph:"○"},stale:{label:"Stale",glyph:"◔"},overridden:{label:"Overridden",glyph:"◆"},missing:{label:"Missing",glyph:"■"},na:{label:"Not applicable",glyph:"—"},pending:{label:"Pending",glyph:"◇"},exception:{label:"Exception",glyph:"▲"},reconciled:{label:"Reconciled",glyph:"✓"}};
-const ALIAS={complete:"confirmed",verified:"confirmed",ok:"confirmed",live:"confirmed",matched:"reconciled",certified:"reconciled",preliminary:"provisional",unaudited:"provisional",modeled:"estimated",forecast:"estimated",projected:"estimated",delayed:"stale",aged:"stale",override:"overridden",manual:"overridden",absent:"missing",unavailable:"missing","not applicable":"na","n/a":"na",none:"na",awaiting:"pending",queued:"pending",scheduled:"pending",unmatched:"exception",break:"exception",failed:"exception"};
-function meta(v){if(!v)return null;const k=String(v).trim().toLowerCase().replace(/[_-]+/g," ");const key=CONDITION[k]?k:ALIAS[k]||ALIAS[k.replace(/\s+/g,"")];return key?{key,...CONDITION[key]}:null}
+import { conditionMeta } from "../operations/conditions.js";
+const meta=value=>value?conditionMeta(value):null;
 
 const MODES={currency:{digits:2},accounting:{digits:2,parens:true},percent:{digits:2,suffix:"%",relative:false},bp:{digits:0,suffix:" bp",relative:false},quantity:{digits:0},count:{digits:0,suffix:" records"},duration:{digits:0,suffix:" days",dir:["late","early"],relative:false},number:{digits:2},analytical:{digits:2}};
-const num=v=>{const n=Number(v);return Number.isFinite(n)?n:null};
-const has=v=>v!==null&&v!==undefined&&v!==""&&num(v)!==null;
+const num=v=>{if(v==null||v===""||(typeof v==="string"&&!v.trim()))return null;const n=Number(v);return Number.isFinite(n)?n:null};
 
 function formatter({notation="currency",unit,currency,digits,format}){
   const m=MODES[notation]||MODES.number,d=digits??m.digits;
@@ -59,19 +57,19 @@ export function VarianceCell({
   const f=formatter({notation:notation||legacyMode||"currency",unit,currency,digits,format});
   const ref=expected!==undefined?expected:reference;
   const c=meta(condition);
-  const a=num(actual),e=num(ref);
+  const redacted=c?.key==="restricted";
+  const a=redacted||c?.key==="missing"||c?.key==="na"?null:num(actual),e=redacted?null:num(ref);
   const tolAbs=tolerance!=null?Math.abs(tolerance):(tolerancePct!=null&&e!=null?Math.abs(e)*tolerancePct/100:0);
   const variance=a!=null&&e!=null?a-e:null;
   const relative=variance!=null&&e!==0&&e!=null?variance/Math.abs(e)*100:null;
 
   let key=stateProp;
-  if(!key){
-    if(notComparable||c?.key==="na")key="not-comparable";
-    else if(c?.key==="pending")key="pending";
-    else if(!has(actual))key="missing-actual";
-    else if(!has(ref))key="missing-reference";
-    else{const abs=Math.abs(variance);key=abs<=tolAbs?(tolAbs>0&&abs>=tolAbs*nearFactor?"near":"within"):"outside"}
-  }
+  // A caller-declared result cannot turn withheld or absent evidence into agreement.
+  if(notComparable||c?.key==="na"||redacted)key="not-comparable";
+  else if(c?.key==="pending")key="pending";
+  else if(a===null)key="missing-actual";
+  else if(e===null)key="missing-reference";
+  else if(!key){const abs=Math.abs(variance);key=abs<=tolAbs?(tolAbs>0&&abs>=tolAbs*nearFactor?"near":"within"):"outside"}
   const tone={within:"pass",near:"review",outside:"exception",pending:"pending","not-comparable":"neutral","missing-actual":"neutral","missing-reference":"neutral"}[key]||"neutral";
   const mark={within:"✓",near:"◇",outside:"▲",pending:"◇","not-comparable":"—","missing-actual":"■","missing-reference":"■"}[key]||"—";
   const tolText=tolAbs>0?`${f.abs(tolAbs)} tolerance`:"tolerance";
@@ -86,7 +84,7 @@ export function VarianceCell({
   }[key]||"Not comparable";
   const word={within:"Agreed",near:"Review",outside:"Exception",pending:"Pending","not-comparable":"Not applicable","missing-actual":"Missing","missing-reference":"Missing"}[key]||"—";
 
-  const actualText=a!=null?conditioned(f.value(a),c):"—";
+  const actualText=redacted?"Restricted":a!=null?conditioned(f.value(a),c):"—";
   const wantRelative=showRelative!==undefined?showRelative:f.relative;
   const deltaText=variance!=null&&showDelta!==false?[f.delta(variance),wantRelative&&relative!=null?`${relative<0?"\u2212":relative>0?"+":""}${Math.abs(relative).toFixed(2)}%`:null].filter(Boolean).join(" · "):null;
   const versus=comparisonLabel?` versus ${comparisonLabel}`:"";
@@ -97,7 +95,7 @@ export function VarianceCell({
 
   const Tag=onSelect?"button":"span";
   const props=onSelect?{type:"button",onClick:()=>onSelect({actual:a,expected:e,variance,relative,state:key,tolerance:tolAbs}),"aria-pressed":selected||undefined}:{};
-  return <Tag className={`mds-var mds-var--${tone}${inline?" mds-var--inline":""}${onSelect?" mds-var--action":""}${className?" "+className:""}`} data-state={key} data-condition={c?.key||undefined} data-selected={selected?"true":undefined} aria-label={label} title={label} {...props} {...rest}>
+  return <Tag className={`mds-var mds-var--${tone}${inline?" mds-var--inline":""}${onSelect?" mds-var--action":""}${className?" "+className:""}`} data-state={key} data-condition={c?.key||undefined} data-selected={selected?"true":undefined} title={label} {...props} {...rest}>
     <span className="mds-var__actual">{actualText}</span>
     {deltaText?<span className="mds-var__delta"><span className="mds-var__mark" aria-hidden="true">{mark}</span>{deltaText}{versus}</span>:null}
     <span className="mds-var__result">{!deltaText?<span className="mds-var__mark" aria-hidden="true">{mark}</span>:null}{result}</span>

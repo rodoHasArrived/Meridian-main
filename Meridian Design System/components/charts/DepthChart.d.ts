@@ -35,4 +35,4 @@ export interface DepthChartProps {
   /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
   accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function DepthChart(props: DepthChartProps): JSX.Element;
+export declare function DepthChart(props: DepthChartProps): React.JSX.Element;
