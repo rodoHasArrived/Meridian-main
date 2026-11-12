@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json.Nodes;
 using Meridian.Contracts.Integrations;
+using Meridian.Contracts.SecurityMaster;
 
 namespace Meridian.Application.Integrations;
 
@@ -16,9 +17,11 @@ internal static class ProviderIntegrationBondValueNormalization
         // This is derived evidence, never a provider-supplied normalization assertion.
         record.Remove("bondValueReconciliation");
         var assetClass = Text(record, "security.assetClass") ?? Text(record, "assetClass");
-        if (record["bond"] is not JsonObject &&
-            !string.Equals(assetClass, "Bond", StringComparison.OrdinalIgnoreCase) &&
-            !string.Equals(assetClass, "FixedIncome", StringComparison.OrdinalIgnoreCase))
+        // A catalogued class keeps its own behavior. Only an unregistered external taxonomy
+        // may use the catalog's legacy accounting-class mapping to find the bond descriptor.
+        if (!SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor))
+            descriptor = SecurityAssetClassCatalog.GetOrDefault(SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(assetClass));
+        if (record["bond"] is not JsonObject && !descriptor.CarriesBondCouponStructure)
         {
             return false;
         }
