@@ -40,6 +40,42 @@ public sealed class IntercompanyProposalPostgresTests
     }
 
     [LedgerDatabaseFact]
+    public async Task IntercompanyDimensionQuery_ConjoinsAllFiveExactIdentitiesInPostgres()
+    {
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync();
+        var fixture = await SetupAsync(database);
+        var first = Write(fixture.Period, "equal-amount-dimension-one");
+        var second = Write(fixture.Period, "equal-amount-dimension-two");
+        await fixture.Journals.AppendAsync(first);
+        await fixture.Journals.AppendAsync(second);
+        var source = first.Entry.Lines[0].Dimensions!;
+        var exact = new LedgerLineDimensionSet
+        {
+            AgreementId = source.AgreementId,
+            AgreementRevisionId = source.AgreementRevisionId,
+            ChartAccountNodeId = source.ChartAccountNodeId,
+            AccountBindingRevisionId = source.AccountBindingRevisionId,
+            IntercompanyTransactionId = source.IntercompanyTransactionId
+        };
+
+        var selected = await fixture.Journals.QueryAsync(new(LedgerBookId: IntercompanyProposalTestData.BookA,
+            LineDimensions: exact));
+
+        Assert.Equal(first.Entry.JournalEntryId, Assert.Single(selected).Entry.JournalEntryId);
+        foreach (var unmatched in new[]
+        {
+            exact with { AgreementId = Guid.NewGuid().ToString("D") },
+            exact with { AgreementRevisionId = Guid.NewGuid().ToString("D") },
+            exact with { ChartAccountNodeId = "nonexistent-chart-node" },
+            exact with { AccountBindingRevisionId = Guid.NewGuid().ToString("D") },
+            exact with { IntercompanyTransactionId = "nonexistent-transaction" },
+            exact with { AccountBindingRevisionId = second.Entry.Lines[0].Dimensions!.AccountBindingRevisionId }
+        })
+            Assert.Empty(await fixture.Journals.QueryAsync(new(LedgerBookId: IntercompanyProposalTestData.BookA,
+                LineDimensions: unmatched)));
+    }
+
+    [LedgerDatabaseFact]
     public async Task MultipleEventGroups_CannotReuseSharedUnattributedContraLegs()
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();

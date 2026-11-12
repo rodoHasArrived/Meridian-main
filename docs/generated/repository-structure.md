@@ -12182,6 +12182,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.FactorPaydown.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.IntercompanyDimensions.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
@@ -12191,6 +12192,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.Direction.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.FactorPaydown.cs
+│   │   │   │   ├── AssetAccountingEventSpineServiceTests.IntercompanyDimensions.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.PreparationRevision.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
@@ -13306,6 +13308,7 @@ Meridian-main
 │   │   ├── TestSupport
 │   │   │   ├── ControllableReportingReleaseConsistencyGate.cs
 │   │   │   ├── ImmediateReportingReleaseConsistencyGate.cs
+│   │   │   ├── PostgresTestConnectionResolverTests.cs
 │   │   │   ├── PostgresTestSchemaTests.cs
 │   │   │   └── ProviderCatalogTestLease.cs
 │   │   ├── Treasury

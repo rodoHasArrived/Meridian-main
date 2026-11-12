@@ -989,6 +989,11 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                string.Equals(durable.CustomerId, expected.CustomerId, StringComparison.Ordinal) &&
                string.Equals(durable.VendorId, expected.VendorId, StringComparison.Ordinal) &&
                string.Equals(durable.ProjectId, expected.ProjectId, StringComparison.Ordinal) &&
+               string.Equals(durable.AgreementId, expected.AgreementId, StringComparison.Ordinal) &&
+               string.Equals(durable.AgreementRevisionId, expected.AgreementRevisionId, StringComparison.Ordinal) &&
+               string.Equals(durable.ChartAccountNodeId, expected.ChartAccountNodeId, StringComparison.Ordinal) &&
+               string.Equals(durable.AccountBindingRevisionId, expected.AccountBindingRevisionId, StringComparison.Ordinal) &&
+               string.Equals(durable.IntercompanyTransactionId, expected.IntercompanyTransactionId, StringComparison.Ordinal) &&
                durable.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal)
                    .SequenceEqual(expected.ExternalGlDimensions.OrderBy(static pair => pair.Key, StringComparer.Ordinal));
     }
@@ -1464,7 +1469,12 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
                 dimensions.VendorId,
                 dimensions.ProjectId)
             {
-                PositionId = dimensions.PositionId
+                PositionId = dimensions.PositionId,
+                AgreementId = dimensions.AgreementId,
+                AgreementRevisionId = dimensions.AgreementRevisionId,
+                ChartAccountNodeId = dimensions.ChartAccountNodeId,
+                AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+                IntercompanyTransactionId = dimensions.IntercompanyTransactionId
             };
 
     private static IReadOnlyList<AssetAccountingStageEvidenceDto> BuildPostedLifecycleStages(

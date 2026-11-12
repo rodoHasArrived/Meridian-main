@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
+using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
 namespace Meridian.FinancialOperations.Consolidation;
@@ -69,6 +70,12 @@ public static class ConsolidationFxTranslator
                 blockers.Add($"Source line {line.LineId:D} requires a recognized currency with a defined minor-unit scale.");
                 continue;
             }
+            if (!Enum.TryParse<LedgerAccountType>(line.AccountType, out var accountType) ||
+                !Enum.IsDefined(accountType) || accountType.ToString() != line.AccountType)
+            {
+                blockers.Add($"Source line {line.LineId:D} requires a canonical ledger account type.");
+                continue;
+            }
             if (line.LedgerBookId == Guid.Empty || line.JournalEntryId == Guid.Empty || line.LineId == Guid.Empty ||
                 string.IsNullOrWhiteSpace(line.EntityId) || string.IsNullOrWhiteSpace(line.AccountPath) ||
                 line.EffectiveDate > asOf || line.Debit < 0m || line.Credit < 0m ||
@@ -78,11 +85,11 @@ public static class ConsolidationFxTranslator
                 continue;
             }
             rules.TryGetValue(line.AccountPath, out var rule);
-            var method = rule?.Method ?? line.AccountType switch
+            var method = rule?.Method ?? accountType switch
             {
-                "Asset" or "Liability" => ConsolidationFxRateKindDto.Closing,
-                "Revenue" or "Expense" => ConsolidationFxRateKindDto.TransactionDate,
-                "Equity" => ConsolidationFxRateKindDto.Historical,
+                LedgerAccountType.Asset or LedgerAccountType.Liability => ConsolidationFxRateKindDto.Closing,
+                LedgerAccountType.Revenue or LedgerAccountType.Expense => ConsolidationFxRateKindDto.TransactionDate,
+                LedgerAccountType.Equity => ConsolidationFxRateKindDto.Historical,
                 _ => (ConsolidationFxRateKindDto?)null
             };
             if (method is null)
@@ -97,7 +104,7 @@ public static class ConsolidationFxTranslator
             }
             if (line.OpeningTranslatedSignedAmount is { } opening)
             {
-                if (line.AccountType != "Equity" || (opening != 0m && Math.Sign(opening) != Math.Sign(line.Debit - line.Credit)) ||
+                if (accountType != LedgerAccountType.Equity || (opening != 0m && Math.Sign(opening) != Math.Sign(line.Debit - line.Credit)) ||
                     (line.FunctionalCurrency == policy.ReportingCurrency && opening != line.Debit - line.Credit))
                 {
                     blockers.Add($"Opening translated amounts require consistent equity source evidence, line {line.LineId:D}.");

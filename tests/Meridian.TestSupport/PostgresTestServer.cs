@@ -20,6 +20,9 @@ namespace Meridian.TestSupport;
 /// </remarks>
 public sealed class PostgresTestServer : IAsyncDisposable
 {
+    /// <summary>Shared fixture endpoint that is never consumed by production host configuration.</summary>
+    public const string TestConnectionStringEnvironmentVariable = "MERIDIAN_TEST_POSTGRES_CONNECTION_STRING";
+
     private readonly PostgreSqlContainer? _container;
     private readonly ConcurrentDictionary<string, byte> _ownedSchemas = new(StringComparer.Ordinal);
 
@@ -59,9 +62,24 @@ public sealed class PostgresTestServer : IAsyncDisposable
         => !string.IsNullOrWhiteSpace(schema) && _ownedSchemas.ContainsKey(schema);
 
     /// <summary>
+    /// Resolves an explicit domain endpoint first, then the shared test-only endpoint. Supplying
+    /// a reader permits deterministic tests without changing process-wide environment variables.
+    /// </summary>
+    public static string? ResolveExternalConnectionString(string connectionStringEnvironmentVariable,
+        Func<string, string?>? environmentReader = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionStringEnvironmentVariable);
+        var read = environmentReader ?? (name => Environment.GetEnvironmentVariable(name));
+        var explicitConnection = read(connectionStringEnvironmentVariable);
+        if (!string.IsNullOrWhiteSpace(explicitConnection)) return explicitConnection;
+        var sharedConnection = read(TestConnectionStringEnvironmentVariable);
+        return string.IsNullOrWhiteSpace(sharedConnection) ? null : sharedConnection;
+    }
+
+    /// <summary>
     /// Creates a server from the connection string in
-    /// <paramref name="connectionStringEnvironmentVariable"/> when that variable is set;
-    /// otherwise starts a Testcontainers PostgreSQL container using
+    /// <paramref name="connectionStringEnvironmentVariable"/> when that variable is set, falling
+    /// back to <see cref="TestConnectionStringEnvironmentVariable"/>. Otherwise starts a Testcontainers PostgreSQL container using
     /// <paramref name="containerOptions"/> (or the defaults) and returns its connection string.
     /// </summary>
     public static async Task<PostgresTestServer> CreateAsync(
@@ -69,8 +87,7 @@ public sealed class PostgresTestServer : IAsyncDisposable
         PostgresTestContainerOptions? containerOptions = null,
         CancellationToken ct = default)
     {
-        var externalConnectionString =
-            Environment.GetEnvironmentVariable(connectionStringEnvironmentVariable);
+        var externalConnectionString = ResolveExternalConnectionString(connectionStringEnvironmentVariable);
         if (!string.IsNullOrWhiteSpace(externalConnectionString))
         {
             return new PostgresTestServer(externalConnectionString, container: null);

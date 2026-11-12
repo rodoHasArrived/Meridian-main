@@ -51,8 +51,8 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<LegacyIntercompanyAttributionValidator>();
             services.TryAddSingleton<ILegacyIntercompanyAttributionStore, PostgresLegacyIntercompanyAttributionStore>();
             services.TryAddSingleton<IIntercompanyProposalStore, PostgresIntercompanyProposalStore>();
-            services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
-            services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetService<ILedgerJournalStore>() as ILedgerBookControlStore ?? null!);
+            services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetService<ILedgerJournalStore>() as IControlledCloseAuthorizationStore ?? null!);
         }
         else
         {

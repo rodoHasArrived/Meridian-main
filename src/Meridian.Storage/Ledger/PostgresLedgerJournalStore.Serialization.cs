@@ -102,6 +102,11 @@ public sealed partial class PostgresLedgerJournalStore
         AddDimension(values, "customerId", dimensions.CustomerId);
         AddDimension(values, "vendorId", dimensions.VendorId);
         AddDimension(values, "projectId", dimensions.ProjectId);
+        AddDimension(values, "agreementId", dimensions.AgreementId);
+        AddDimension(values, "agreementRevisionId", dimensions.AgreementRevisionId);
+        AddDimension(values, "chartAccountNodeId", dimensions.ChartAccountNodeId);
+        AddDimension(values, "accountBindingRevisionId", dimensions.AccountBindingRevisionId);
+        AddDimension(values, "intercompanyTransactionId", dimensions.IntercompanyTransactionId);
 
         if (values["externalGlDimensions"] is IReadOnlyDictionary<string, string> { Count: 0 })
         {

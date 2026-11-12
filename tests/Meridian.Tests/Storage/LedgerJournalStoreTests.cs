@@ -728,9 +728,17 @@ public sealed class LedgerJournalStoreTests
 
         var act = () => database.JournalStore.AppendAsync(second);
 
-        var exception = await act.Should().ThrowAsync<PostgresException>();
-        exception.Which.SqlState.Should().Be(PostgresErrorCodes.UniqueViolation);
-        exception.Which.ConstraintName.Should().Be("ux_journal_entries_command");
+        await act.Should().ThrowAsync<LedgerValidationException>().WithMessage("*identity collision*");
+        // The append boundary now rejects mismatched receipts before insertion. Keep proving
+        // the database's global uniqueness guard as well as the unchanged retained posting.
+        await using var connection = new NpgsqlConnection(database.Options.ConnectionString);
+        await connection.OpenAsync();
+        await using var index = connection.CreateCommand();
+        index.CommandText = "select indexdef from pg_indexes where schemaname=@schema and indexname='ux_journal_entries_command'";
+        index.Parameters.AddWithValue("schema", database.Options.SchemaName);
+        var definition = (string?)await index.ExecuteScalarAsync();
+        definition.Should().NotBeNull();
+        definition.Should().Contain("CREATE UNIQUE INDEX").And.Contain("(command_id)");
         var retained = await database.JournalStore.GetByPeriodAsync(periodId);
         retained.Should().ContainSingle(record =>
             record.Entry.JournalEntryId == first.Entry.JournalEntryId &&
@@ -2638,7 +2646,12 @@ public sealed class LedgerJournalStoreTests
             VendorId: "vendor-1",
             ProjectId: "project-1")
         {
-            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70")
+            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70"),
+            AgreementId = "51e16a9e-56f3-4765-81b6-403c38a29d71",
+            AgreementRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d72",
+            ChartAccountNodeId = "51e16a9e-56f3-4765-81b6-403c38a29d73",
+            AccountBindingRevisionId = "51e16a9e-56f3-4765-81b6-403c38a29d74",
+            IntercompanyTransactionId = "recharge-transaction-1"
         };
 
     private static bool HasDimensionValue(PropertyInfo property, LedgerLineDimensionSet dimensions)

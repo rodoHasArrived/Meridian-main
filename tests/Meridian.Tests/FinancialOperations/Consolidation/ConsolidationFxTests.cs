@@ -153,6 +153,20 @@ public sealed class ConsolidationFxTests
         Assert.NotEmpty(ConsolidationFxTranslator.Translate(source, Rates(direct, inverse), Policy(), AsOf).Blockers);
     }
 
+    [Theory]
+    [InlineData("0")]
+    [InlineData("equity")]
+    [InlineData("Unrecognized")]
+    public void ExplicitRateRuleCannotAuthorizeMalformedLedgerAccountType(string accountType)
+    {
+        var source = new[] { Line("Assets:Cash", accountType, 100m, 0m), Line("Liabilities:Payable", "Liability", 0m, 100m) };
+        var policy = Policy() with { AccountRules = [new("Assets:Cash", ConsolidationFxRateKindDto.Closing)] };
+        var result = ConsolidationFxTranslator.Translate(source,
+            Rates(Quote(ConsolidationFxRateKindDto.Closing, 1.2m, AsOf)), policy, AsOf);
+        Assert.False(result.IsComplete);
+        Assert.Contains(result.Blockers, blocker => blocker.Contains("canonical ledger account type", StringComparison.Ordinal));
+    }
+
     [Fact]
     public void PriorBusinessDateRequiresExplicitEvidencedSelection()
     {

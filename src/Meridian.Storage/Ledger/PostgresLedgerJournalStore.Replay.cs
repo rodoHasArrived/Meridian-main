@@ -22,6 +22,7 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException("Posting identity collision: retained accounting content differs from the requested posting.");
         // Retained records identify their book through the authoritative period, not a candidate
         // book claim. The lock precedes audit verification, as for every normal journal append.
+        await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", collisions[0].PeriodId, false, ct).ConfigureAwait(false);
         var period = await LoadPeriodAsync(connection, transaction, collisions[0].PeriodId,
             forUpdate: _options.EnablePeriodLocking,
             callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)

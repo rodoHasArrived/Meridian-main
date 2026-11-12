@@ -60,6 +60,38 @@ public sealed class IntercompanyEntityCompositionTests
     }
 
     [Fact]
+    public void ControlStoresUseTheAuthoritativeJournalEvenWhenOnlyItsInterfaceIsRegistered()
+    {
+        const string connection = "Host=localhost;Database=meridian_synthetic;Username=synthetic";
+        var services = Basics();
+        var options = new LedgerJournalStoreOptions { ConnectionString = connection, SchemaName = "ledger_synthetic" };
+        var journals = new PostgresLedgerJournalStore(options);
+        services.AddSingleton(options);
+        services.AddSingleton<ILedgerJournalStore>(journals);
+        services.AddIntercompanyEntityServices(new CompositionConfiguration(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["MERIDIAN_LEDGER_CONNECTION_STRING"] = connection }).Build()));
+        using var provider = services.BuildServiceProvider();
+
+        Assert.Same(journals, provider.GetRequiredService<ILedgerBookControlStore>());
+        Assert.Same(journals, provider.GetRequiredService<IControlledCloseAuthorizationStore>());
+        Assert.Null(provider.GetService<PostgresLedgerJournalStore>());
+    }
+
+    [Fact]
+    public void JournalWithoutControlCapabilitiesDoesNotFabricateAuthorizationStores()
+    {
+        const string connection = "Host=localhost;Database=meridian_synthetic;Username=synthetic";
+        var services = Basics();
+        services.AddSingleton<ILedgerJournalStore>(new Mock<ILedgerJournalStore>().Object);
+        services.AddIntercompanyEntityServices(new CompositionConfiguration(new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?> { ["MERIDIAN_LEDGER_CONNECTION_STRING"] = connection }).Build()));
+        using var provider = services.BuildServiceProvider();
+
+        Assert.Null(provider.GetService<ILedgerBookControlStore>());
+        Assert.Null(provider.GetService<IControlledCloseAuthorizationStore>());
+    }
+
+    [Fact]
     public async Task LocalComposition_RetainsHistoryCapabilityWithoutFabricatingOutboxOrLedger()
     {
         var directory = Path.Combine(Path.GetTempPath(), "meridian-ic-composition-" + Guid.NewGuid().ToString("N"));

@@ -255,7 +255,10 @@ public sealed class RecurringJournalCalculationPostgresTests
         var configurationService = new AccountingConfigurationService(configuration, audit);
         var drafts = new FileManualJournalEntryDraftStore(Path.Combine(root, "drafts.json"));
         // A new store instance per fixture stands in for a restarted host.
-        var journalStore = new PostgresLedgerJournalStore(database.Options);
+        // Named synthetic controls isolate the golden calculation/posting assertions from the
+        // separately tested entity-lifecycle and intercompany policy prerequisites.
+        var journalStore = new PostgresLedgerJournalStore(database.Options,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configurationService, audit,
             journalStore: journalStore, recurringStore: recurring);
         var intake = new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService);

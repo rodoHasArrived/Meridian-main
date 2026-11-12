@@ -20,6 +20,7 @@ public sealed partial class PostgresLedgerJournalStore
         ArgumentNullException.ThrowIfNull(transaction);
         ArgumentNullException.ThrowIfNull(entries);
         if (entries.Count == 0) return EmptyLedgerAuthorityLease.Instance;
+        RequireWriteTenant();
         if (_postingAuthorityScopes.TryGetValue(transaction, out _))
             throw new LedgerValidationException("A posting authority scope already exists for this transaction.");
         // A batch may mix existing receipts and new writes. Lock every period first and classify
@@ -28,6 +29,7 @@ public sealed partial class PostgresLedgerJournalStore
             _options.RequireGovernedPostingCommand, _options.RequireExpectedVersion)).ToArray();
         foreach (var periodId in normalized.Select(write => write.PeriodId).Distinct().Order())
         {
+            await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", periodId, false, ct).ConfigureAwait(false);
             _ = await LoadPeriodAsync(connection, transaction, periodId, forUpdate: _options.EnablePeriodLocking,
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null, ct: ct).ConfigureAwait(false)
                 ?? throw new LedgerValidationException("The posting period does not exist.");
