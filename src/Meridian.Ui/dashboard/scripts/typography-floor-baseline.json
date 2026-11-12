@@ -85,7 +85,7 @@
     "src/screens/statement-import-preview.tsx": 4,
     "src/screens/strategy-designer-screen.tsx": 4,
     "src/screens/strategy-run-ledger-screen.tsx": 2,
-    "src/screens/strategy-screen.tsx": 5,
+    "src/screens/strategy-screen.tsx": 4,
     "src/screens/trading-screen.acceptance-panel.tsx": 3,
     "src/screens/trading-screen.tsx": 9,
     "src/screens/trial-balance-screen.tsx": 1,

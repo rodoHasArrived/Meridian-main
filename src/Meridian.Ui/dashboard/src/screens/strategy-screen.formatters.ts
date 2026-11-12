@@ -1,3 +1,5 @@
+import type { RunComparisonRow } from "@/types";
+import type { StrategyComparisonBadgeVariant } from "@/screens/strategy-screen.view-model";
 import { formatCount as formatCountValue, formatCurrency as formatCurrencyAmount } from "@/lib/format";
 
 export function formatText(value: string | null | undefined): string {
@@ -134,4 +136,32 @@ export function parseDecimalToken(value: string | null | undefined): number | nu
 export function parsePercentToken(value: string | null | undefined): number | null {
   const parsed = parseDecimalToken(value);
   return parsed === null ? null : parsed / 100;
+}
+
+export function buildComparisonEvidenceText(row: RunComparisonRow): string {
+  const ledgerText = row.hasLedger ? "Ledger linked" : "Ledger missing";
+  const auditText = row.hasAuditTrail ? "Audit linked" : "Audit missing";
+  return `${ledgerText}; ${auditText}`;
+}
+
+export function badgeVariantForMode(mode: string | null | undefined): StrategyComparisonBadgeVariant {
+  const normalized = mode?.trim().toLowerCase();
+  if (normalized === "paper") {
+    return "paper";
+  }
+
+  if (normalized === "live") {
+    return "live";
+  }
+
+  if (normalized === "backtest" || normalized === "research") {
+    return "research";
+  }
+
+  return "outline";
+}
+
+export function sanitizeDomId(value: string): string {
+  const normalized = value.trim().toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "");
+  return normalized || "run";
 }
