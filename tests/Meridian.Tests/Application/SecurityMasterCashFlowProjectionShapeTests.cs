@@ -17,10 +17,10 @@ namespace Meridian.Tests.Application;
 /// case goes through the public <see cref="SecurityMasterCashFlowService.GetProjectionAsync"/> seam and
 /// is serialized with the UI endpoints' options (<see cref="UiEndpoints.CreateEndpointJsonOptions"/>).
 /// The frozen legacy row codec preserves the original nested-member pins. Current calculated rows
-/// explicitly declare row version 1 and retain measured interest intervals when the legacy coupon
-/// walk supplies them. Both contracts pin every nested member independently. Top-level and resolved
-/// terms members remain unchanged; only a declared projection adds <c>scheduleEvidence</c>. A stray
-/// or malformed convention block still projects exactly as its clean twin.
+/// explicitly declare row version 2 and retain measured interest intervals and interest-basis
+/// segments when their calculation path supplies them. Both contracts pin every nested member
+/// independently. Top-level and resolved terms members remain unchanged; only a declared projection
+/// adds <c>scheduleEvidence</c>. A stray or malformed convention block still projects exactly as its clean twin.
 /// </summary>
 /// <remarks>
 /// The service reads the wall clock for its as-of date and drops periods paid before it, so every case
@@ -147,13 +147,25 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
         };
 
-    // Exact additions in current row contract 1. Contractual-principal and netted multi-leg rows
-    // do not claim measured intervals that their calculation path cannot supply.
+    private static readonly string[] InterestSegmentPaths =
+    [
+        "schedule[].interestSegments",
+        "schedule[].interestSegments[].start",
+        "schedule[].interestSegments[].end",
+        "schedule[].interestSegments[].referencePrincipal",
+        "schedule[].interestSegments[].unroundedInterestAmount",
+        "schedule[].interestSegments[].factor",
+        "schedule[].interestSegments[].periodStart",
+        "schedule[].interestSegments[].periodEnd",
+        "schedule[].interestSegments[].factorAfter",
+    ];
+
+    // Exact additions in current row contract 2. Factor-aware bonds retain the original coupon
+    // interval and every interest-basis segment; netted multi-leg rows do not claim that evidence.
     private static string[] CurrentRowAdditions(string caseName) => caseName switch
     {
-        "Bond.zeroRateBullet" =>
-        ["schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo"],
-        "Bond.zeroRateContractualSchedule" => ["schedule[].rowVersion"],
+        "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule" =>
+        ["schedule[].rowVersion", "schedule[].interestMeasuredFrom", "schedule[].interestMeasuredTo", .. InterestSegmentPaths],
         "Swap.zeroRateTwoLeg" => ["schedule[].rowVersion", "legSchedules[].schedule[].rowVersion"],
         _ => []
     };
@@ -268,11 +280,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             expected,
             $"the undeclared '{caseName}' projection writes exactly the current row contract");
         foreach (var row in projection["schedule"]!.AsArray())
-            row!["rowVersion"]!.GetValue<int>().Should().Be(1);
+            row!["rowVersion"]!.GetValue<int>().Should().Be(2);
         foreach (var leg in projection["legSchedules"]?.AsArray() ?? [])
             foreach (var row in leg!["schedule"]!.AsArray())
-                row!["rowVersion"]!.GetValue<int>().Should().Be(1);
-        if (caseName == "Bond.zeroRateBullet")
+                row!["rowVersion"]!.GetValue<int>().Should().Be(2);
+        if (caseName is "Bond.zeroRateBullet" or "Bond.zeroRateContractualSchedule")
         {
             projection["schedule"]!.AsArray().Should().NotBeEmpty();
             foreach (var row in projection["schedule"]!.AsArray())
@@ -281,6 +293,27 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                 var end = DateOnly.Parse(row["interestMeasuredTo"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
                 start.Should().BeBefore(end);
                 end.Should().Be(DateOnly.FromDateTime(row["periodDate"]!.GetValue<DateTimeOffset>().UtcDateTime));
+                var segments = row["interestSegments"]!.AsArray();
+                segments.Should().NotBeEmpty("version-2 bond rows retain their measured interest basis");
+                var cursor = start;
+                var interest = 0m;
+                foreach (var segment in segments)
+                {
+                    var segmentStart = DateOnly.Parse(segment!["start"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    var segmentEnd = DateOnly.Parse(segment["end"]!.GetValue<string>(), System.Globalization.CultureInfo.InvariantCulture);
+                    segmentStart.Should().Be(cursor);
+                    segmentEnd.Should().BeAfter(segmentStart).And.BeOnOrBefore(end);
+                    segment["periodStart"]!.GetValue<string>().Should().Be(row["interestMeasuredFrom"]!.GetValue<string>());
+                    segment["periodEnd"]!.GetValue<string>().Should().Be(row["interestMeasuredTo"]!.GetValue<string>());
+                    var factor = segment["factor"]!.GetValue<decimal>();
+                    segment["referencePrincipal"]!.GetValue<decimal>().Should().Be(1000m * factor);
+                    segment["factorAfter"]!.GetValue<decimal>().Should().BeInRange(0m, factor);
+                    segment["unroundedInterestAmount"]!.GetValue<decimal>().Should().Be(0m);
+                    interest += segment["unroundedInterestAmount"]!.GetValue<decimal>();
+                    cursor = segmentEnd;
+                }
+                cursor.Should().Be(end);
+                interest.Should().Be(row["interestAmount"]!.GetValue<decimal>());
             }
         }
         if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
@@ -367,7 +400,7 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             row!.AsObject().Select(static member => member.Key).Should().Equal(
                 "periodDate", "principalAmount", "interestAmount", "factor", "unadjustedStart",
                 "unadjustedEnd", "accrualStart", "accrualEnd", "rowVersion");
-            row["rowVersion"]!.GetValue<int>().Should().Be(1);
+            row["rowVersion"]!.GetValue<int>().Should().Be(2);
         }
     }
 

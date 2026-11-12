@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 1 of 7
 
-Objects 1-80 of 528. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 557. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -222,15 +222,95 @@ classDiagram
         +Guid LotSnapshotId
         +long LotSnapshotVersion
     }
+    class Meridian_Contracts_SecurityMaster_AttestCorporateActionCashDividendRequestDto["AttestCorporateActionCashDividendRequestDto"] {
+        +string Actor
+        +CorporateActionCashDividendDecisionAuthorityDto? Authority
+        +Guid CaseId
+        +string CompanyId
+        +string Confirmation
+        +string? CorrelationId
+        +string EvidenceHash
+        +string EvidenceReference
+        +long ExpectedDeclarationRevision
+        +string ExpectedEligibilityHash
+        +long ExpectedVersion
+        +string IdempotencyKey
+    }
     class Meridian_Contracts_SecurityMaster_CashDistributionCorporateActionTerms["CashDistributionCorporateActionTerms"] {
         +decimal? AmountPerUnit
         +SecurityIncomeComponent Component
         +string? Currency
         +string EventType
     }
+    class Meridian_Contracts_SecurityMaster_CashDividendAccountRoleBindingDto["CashDividendAccountRoleBindingDto"] {
+        +string DividendIncomeAccount
+        +string? DividendIncomeAccountName
+        +string DividendReceivableAccount
+        +string? DividendReceivableAccountName
+        +Guid LedgerBookId
+        +string RulePackId
+        +string RulePackVersion
+        +int SchemaVersion
+        +string SelectedRuleId
+        +string SelectedRuleVersion
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto["CashDividendAttestationDeclarationDto"] {
+        +CashDividendAccountRoleBindingDto? AccountRoleBinding
+        +string ChangedBy
+        +string CompanyId
+        +Guid DeclarationId
+        +bool Enabled
+        +Guid LedgerBookId
+        +string PolicyHash
+        +string PolicyVersion
+        +string PrincipalId
+        +string Reason
+        +DateTimeOffset RecordedAtUtc
+        +long Revision
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationResultDto["CashDividendAttestationDeclarationResultDto"] {
+        +CashDividendAttestationDeclarationDto Declaration
+        +bool Replayed
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationStateDto["CashDividendAttestationDeclarationStateDto"] {
+        +string CompanyId
+        +CashDividendAttestationDeclarationDto? Declaration
+        +IReadOnlyList~CashDividendAttestationDeclarationDto~ History
+        +bool PolicyEnabled
+        +string PolicyHash
+        +string PolicyVersion
+        +string TenantId
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendDeclarationAuthorityDto["CashDividendDeclarationAuthorityDto"] {
+        +bool CanAdministerDeclaration
+        +bool CanBindAccountingRoles
+        +OperationsActionOriginDto Origin
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendReconciliationAccountDto["CashDividendReconciliationAccountDto"] {
+        +decimal ExpectedLongQuantity
+        +string FinancialAccountId
+    }
+    class Meridian_Contracts_SecurityMaster_CashDividendReconciliationSupportDto["CashDividendReconciliationSupportDto"] {
+        +string EvidenceHash
+        +string EvidenceJson
+    }
     class Meridian_Contracts_SecurityMaster_CashFlowLegDirection["CashFlowLegDirection"] {
     }
     class Meridian_Contracts_SecurityMaster_CashFlowLegRateKind["CashFlowLegRateKind"] {
+    }
+    class Meridian_Contracts_SecurityMaster_ChangeCashDividendAttestationDeclarationRequestDto["ChangeCashDividendAttestationDeclarationRequestDto"] {
+        +CashDividendAccountRoleBindingDto? AccountRoleBinding
+        +string Actor
+        +CashDividendDeclarationAuthorityDto? Authority
+        +Guid CommandId
+        +string CompanyId
+        +bool Enabled
+        +long ExpectedRevision
+        +Guid LedgerBookId
+        +string PolicyHash
+        +string PolicyVersion
+        +string Reason
+        +string TenantId
     }
     class Meridian_Contracts_SecurityMaster_ClassificationLabelReader["ClassificationLabelReader"] {
         +IReadOnlySet~string~ KnownCaseNames
@@ -326,6 +406,9 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingStatusDto["CorporateActionCaseAccountingStatusDto"] {
         +Guid? ApprovalId
         +string? ApprovedBy
+        +string? AttestedBy
+        +Guid? CashDividendAttestationId
+        +string? DecisionKind
         +DateTimeOffset? PostedAtUtc
         +Guid? PostedJournalEntryId
         +bool ProjectionBalanced
@@ -395,6 +478,105 @@ classDiagram
         +bool Replayed
         +CorporateActionCaseTransitionDto Transition
     }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationDto["CorporateActionCashDividendAttestationDto"] {
+        +CashDividendAccountRoleBindingDto? AccountRoleBinding
+        +Guid AttestationId
+        +DateTimeOffset AttestedAtUtc
+        +string AttestedBy
+        +long BoundCaseVersion
+        +DateOnly BudgetMonth
+        +Guid BudgetReservationId
+        +Guid CaseId
+        +string Confirmation
+        +Guid DeclarationId
+        +long DeclarationRevision
+        +string Disclosure
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationPolicy["CorporateActionCashDividendAttestationPolicy"] {
+        +string PolicyHash
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationResultDto["CorporateActionCashDividendAttestationResultDto"] {
+        +CorporateActionCashDividendAttestationDto Attestation
+        +CorporateActionProcessingCaseDto Case
+        +bool Replayed
+        +CorporateActionCaseTransitionDto Transition
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationValidation["CorporateActionCashDividendAttestationValidation"] {
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendCaseFactsDto["CorporateActionCashDividendCaseFactsDto"] {
+        +Guid CaseId
+        +long CaseVersion
+        +IReadOnlyList~CorporateActionEvidenceDto~ Evidence
+        +IReadOnlyList~CorporateActionProcessingOptionDto~ Options
+        +string SnapshotHash
+        +string SnapshotJson
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendDecisionAuthorityDto["CorporateActionCashDividendDecisionAuthorityDto"] {
+        +bool CanAttestAccounting
+        +bool CanPostAccounting
+        +OperationsActionOriginDto Origin
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendEligibilityDto["CorporateActionCashDividendEligibilityDto"] {
+        +CashDividendAccountRoleBindingDto? AccountRoleBinding
+        +DateOnly BudgetMonth
+        +decimal DividendPerShare
+        +string EntitlementSnapshotHash
+        +string EntitlementSnapshotJson
+        +DateOnly ExDate
+        +decimal GrossImpactUsd
+        +string ProviderId
+        +string RelatedEventKey
+        +Guid SecurityId
+        +string SourceEventId
+        +string SourceEventVersion
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostedProofDto["CorporateActionCashDividendPostedProofDto"] {
+        +CorporateActionCashDividendAttestationDto Attestation
+        +CashDividendAttestationDeclarationDto Declaration
+        +CorporateActionCashDividendPostingDto Posting
+        +CorporateActionCaseAccountingProjectionDto Projection
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingDto["CorporateActionCashDividendPostingDto"] {
+        +string AccountingBasis
+        +Guid AttestationId
+        +Guid CaseId
+        +string Currency
+        +Guid JournalEntryId
+        +Guid LedgerBookId
+        +Guid PeriodId
+        +DateTimeOffset PostedAtUtc
+        +string PostedBy
+        +Guid PostingId
+        +string PostingStatus
+        +Guid ProjectionId
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingResultDto["CorporateActionCashDividendPostingResultDto"] {
+        +CorporateActionProcessingCaseDto Case
+        +CorporateActionCashDividendPostingDto Posting
+        +bool Replayed
+        +CorporateActionCaseTransitionDto Transition
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPreviewDto["CorporateActionCashDividendPreviewDto"] {
+        +CorporateActionProcessingCaseDto Case
+        +string Confirmation
+        +string Disclosure
+        +CorporateActionCashDividendEligibilityDto Eligibility
+        +CorporateActionCaseAccountingProjectionDto Projection
+    }
+    class Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto["CorporateActionCashDividendWorkspaceDto"] {
+        +string Actor
+        +CorporateActionCashDividendAttestationDto? Attestation
+        +string Availability
+        +IReadOnlyList~string~ Blockers
+        +decimal BookCalendarMonthGrossLimitUsd
+        +bool CanAdministerDeclaration
+        +bool CanAttestAccounting
+        +bool CanBindAccountingRoles
+        +bool CanPostAttestedAccounting
+        +CorporateActionProcessingCaseDto Case
+        +string Confirmation
+        +CashDividendAttestationDeclarationDto? Declaration
+    }
     class Meridian_Contracts_SecurityMaster_CorporateActionConflictCandidateDto["CorporateActionConflictCandidateDto"] {
         +string? EvidenceReference
         +string Source
@@ -432,116 +614,6 @@ classDiagram
         +IReadOnlyList~CorporateActionConflictCandidateDto~ Candidates
         +string Field
     }
-    class Meridian_Contracts_SecurityMaster_CorporateActionDownstreamAuthorityRequiredException["CorporateActionDownstreamAuthorityRequiredException"] {
-        +string TargetState
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionDto["CorporateActionDto"] {
-        +Guid? AcquirerSecurityId
-        +Guid CorpActId
-        +string? Currency
-        +decimal? DistributionRatio
-        +decimal? DividendPerShare
-        +string EventType
-        +decimal? ExchangeRatio
-        +DateOnly ExDate
-        +string? LifecycleState
-        +Guid? NewSecurityId
-        +DateOnly? PayDate
-        +JsonElement? Payload
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto["CorporateActionDurableInboxDto"] {
-        +int AppliedLastRun
-        +IReadOnlyList~CorporateActionProcessingCaseDto~ Cases
-        +int DuplicatesSkippedLastRun
-        +IReadOnlyList~string~ Errors
-        +DateTimeOffset? LastIngestAt
-        +IReadOnlyList~CorporateActionDurableInboxEntryDto~ Staged
-        +int StagedCount
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto["CorporateActionDurableInboxEntryDto"] {
-        +CorporateActionCaseScopeDto AcceptanceScope
-        +CorporateActionSourceProposalActionAvailabilityDto ActionAvailability
-        +string ActionType
-        +IReadOnlyList~string~ AgreeingSources
-        +decimal? Amount
-        +bool AutoApplied
-        +string? Currency
-        +IReadOnlyList~string~ DissentingSources
-        +CorporateActionElectionCalendarDto? ElectionCalendar
-        +DateOnly ExDate
-        +DateOnly? PayableDate
-        +Guid ProposalId
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEconomicFingerprint["CorporateActionEconomicFingerprint"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEffectiveState["CorporateActionEffectiveState"] {
-        +CorporateActionDto Effective
-        +bool IsCancelled
-        +string LifecycleState
-        +IReadOnlyList~CorporateActionDto~ Timeline
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEffectiveStateProjector["CorporateActionEffectiveStateProjector"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendar["CorporateActionElectionCalendar"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto["CorporateActionElectionCalendarDto"] {
-        +IReadOnlyList~CorporateActionElectionCutoffDto~ Cutoffs
-        +string EvidenceState
-        +IReadOnlyList~string~ Messages
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionElectionCutoffDto["CorporateActionElectionCutoffDto"] {
-        +DateTimeOffset DeadlineAt
-        +string EvidenceReference
-        +string Id
-        +string Label
-        +string Source
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEventTypeCount["CorporateActionEventTypeCount"] {
-        +int RowCount
-        +string StoredValue
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEventTypeNormalizationResult["CorporateActionEventTypeNormalizationResult"] {
-        +bool Applied
-        +CorporateActionEventTypeNormalizationResult Empty
-        +IReadOnlyList~CorporateActionEventTypeRename~ Renames
-        +IReadOnlyList~CorporateActionEventTypeCount~ UnmappedValues
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEventTypeRename["CorporateActionEventTypeRename"] {
-        +string CanonicalName
-        +int RowCount
-        +string StoredValue
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEventTypes["CorporateActionEventTypes"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEvidenceDto["CorporateActionEvidenceDto"] {
-        +Guid CaseId
-        +long CaseVersion
-        +string? Description
-        +string? EvidenceHash
-        +Guid EvidenceId
-        +string EvidenceKind
-        +string EvidenceReference
-        +JsonElement? Metadata
-        +DateTimeOffset RecordedAtUtc
-        +string RecordedBy
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEvidenceKinds["CorporateActionEvidenceKinds"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionEvidenceMutationResultDto["CorporateActionEvidenceMutationResultDto"] {
-        +CorporateActionProcessingCaseDto Case
-        +CorporateActionEvidenceDto Evidence
-        +bool Replayed
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionField["CorporateActionField"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionIdempotencyConflictException["CorporateActionIdempotencyConflictException"] {
-        +string IdempotencyKey
-        +Guid ResourceId
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionLedgerPostingKind["CorporateActionLedgerPostingKind"] {
-    }
-    class Meridian_Contracts_SecurityMaster_CorporateActionLifecycleStates["CorporateActionLifecycleStates"] {
-    }
     Meridian_Contracts_SecurityMaster_AcceptCorporateActionSourceProposalRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AddCorporateActionEvidenceRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_ApproveCorporateActionCaseAccountingRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionAccountingDecisionAuthorityDto
@@ -552,23 +624,38 @@ classDiagram
     Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationResult --> Meridian_Contracts_SecurityMaster_AssetPackRegistryValidationIssue
     Meridian_Contracts_SecurityMaster_AttachCorporateActionAccountingProjectionRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
     Meridian_Contracts_SecurityMaster_AttachCorporateActionAccountingProjectionRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionAuthorityDto
+    Meridian_Contracts_SecurityMaster_AttestCorporateActionCashDividendRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
+    Meridian_Contracts_SecurityMaster_AttestCorporateActionCashDividendRequestDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendDecisionAuthorityDto
+    Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto --> Meridian_Contracts_SecurityMaster_CashDividendAccountRoleBindingDto
+    Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationResultDto --> Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto
+    Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationStateDto --> Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto
+    Meridian_Contracts_SecurityMaster_ChangeCashDividendAttestationDeclarationRequestDto --> Meridian_Contracts_SecurityMaster_CashDividendAccountRoleBindingDto
+    Meridian_Contracts_SecurityMaster_ChangeCashDividendAttestationDeclarationRequestDto --> Meridian_Contracts_SecurityMaster_CashDividendDeclarationAuthorityDto
     Meridian_Contracts_SecurityMaster_CorporateActionAccountingApprovalResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingApprovalDto
     Meridian_Contracts_SecurityMaster_CorporateActionAccountingApprovalResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionDto
     Meridian_Contracts_SecurityMaster_CorporateActionAccountingPostingResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingPostingDto
     Meridian_Contracts_SecurityMaster_CorporateActionAccountingPostingResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionDto
     Meridian_Contracts_SecurityMaster_CorporateActionAccountingProjectionMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingProjectionDto
-    Meridian_Contracts_SecurityMaster_CorporateActionCaseSourceSnapshotDto --> Meridian_Contracts_SecurityMaster_CorporateActionDto
     Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationDto --> Meridian_Contracts_SecurityMaster_CashDividendAccountRoleBindingDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendEligibilityDto --> Meridian_Contracts_SecurityMaster_CashDividendAccountRoleBindingDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostedProofDto --> Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostedProofDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingProjectionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostedProofDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostedProofDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseTransitionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPreviewDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseAccountingProjectionDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPreviewDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendEligibilityDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CashDividendAttestationDeclarationDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendAttestationDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPostingDto
+    Meridian_Contracts_SecurityMaster_CorporateActionCashDividendWorkspaceDto --> Meridian_Contracts_SecurityMaster_CorporateActionCashDividendPreviewDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictCandidateDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictDto
     Meridian_Contracts_SecurityMaster_CorporateActionConflictResolutionResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictDto
     Meridian_Contracts_SecurityMaster_CorporateActionDissentFieldDto --> Meridian_Contracts_SecurityMaster_CorporateActionConflictCandidateDto
-    Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxDto --> Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto
-    Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto --> Meridian_Contracts_SecurityMaster_CorporateActionCaseScopeDto
-    Meridian_Contracts_SecurityMaster_CorporateActionDurableInboxEntryDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto
-    Meridian_Contracts_SecurityMaster_CorporateActionEffectiveState --> Meridian_Contracts_SecurityMaster_CorporateActionDto
-    Meridian_Contracts_SecurityMaster_CorporateActionElectionCalendarDto --> Meridian_Contracts_SecurityMaster_CorporateActionElectionCutoffDto
-    Meridian_Contracts_SecurityMaster_CorporateActionEventTypeNormalizationResult --> Meridian_Contracts_SecurityMaster_CorporateActionEventTypeCount
-    Meridian_Contracts_SecurityMaster_CorporateActionEventTypeNormalizationResult --> Meridian_Contracts_SecurityMaster_CorporateActionEventTypeRename
-    Meridian_Contracts_SecurityMaster_CorporateActionEvidenceMutationResultDto --> Meridian_Contracts_SecurityMaster_CorporateActionEvidenceDto
 ```

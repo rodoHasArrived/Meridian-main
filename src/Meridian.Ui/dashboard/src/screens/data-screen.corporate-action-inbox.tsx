@@ -13,6 +13,7 @@ import { LocalDateText } from "@/components/ui/local-date-text";
 import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { CorporateActionCalendar } from "@/screens/corporate-action-calendar";
+import { CashDividendAttestationPanel } from "@/components/meridian/cash-dividend-attestation-panel";
 import type {
   CorporateActionAcceptanceReceipt,
   CorporateActionInboxFilters,
@@ -306,6 +307,10 @@ function Reconciliation({ rows }: { rows: CorporateActionReconciliationPreview[]
 function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; panel: CorporateActionInboxViewModel }) {
   const durableCase = row.durableCase;
   const acceptDisabledReason = row.acceptCanonicalFactDisabledReason;
+  const nativeCaseId = durableCase?.caseId ?? row.compactCase?.caseId;
+  const nativeScope = durableCase?.scope ?? row.compactCase?.scope;
+  const boundCashDividendCase = nativeCaseId && nativeScope?.ledgerBookId
+    && /^[a-f0-9-]{36}$/i.test(nativeCaseId) && /^[a-f0-9-]{36}$/i.test(nativeScope.ledgerBookId);
 
   return (
     <DenseRowDetailPanel
@@ -355,10 +360,14 @@ function CaseWorkspace({ row, panel }: { row: CorporateActionInboxRowModel; pane
           {panel.acceptingKey === row.rowId ? "Accepting canonical fact…" : "Accept canonical fact"}
         </Button>
         <p className="self-center text-xs text-muted-foreground">
-          Election submission, treatment approval, and accounting posting remain outside this foundation workflow.
+          {boundCashDividendCase
+            ? "Source acceptance grants no accounting authority. The bounded cash-dividend attestation controls below use their own book policy and permissions."
+            : "Election submission, treatment approval, and accounting posting remain outside this foundation workflow."}
         </p>
       </div>
       {panel.acceptErrors[row.rowId] ? <StatusBanner role="alert" tone="danger" title="Canonical fact not accepted" detail={panel.acceptErrors[row.rowId]} /> : null}
+      {boundCashDividendCase && nativeScope ? <CashDividendAttestationPanel caseId={nativeCaseId} scope={nativeScope}
+        onCommitted={() => void panel.refresh()} /> : null}
       <WorkspaceSection title="Source facts and provenance"><SourceFacts row={row} /></WorkspaceSection>
       <WorkspaceSection title="Entitlement and election">
         <h4 className="text-xs font-semibold">Actual election cutoffs</h4>

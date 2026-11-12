@@ -12,6 +12,7 @@ export type CorporateActionCaseStatus =
   | "AccountingReview"
   | "ReadyForApproval"
   | "Approved"
+  | "PreparerAttested"
   | "Scheduled"
   | "Posted"
   | "Reconciled"

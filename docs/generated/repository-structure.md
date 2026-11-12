@@ -1189,9 +1189,12 @@ Meridian-main
 │       │   │   ├── test_check_codex_memory.py
 │       │   │   ├── test_check_docfx_navigation.py
 │       │   │   ├── test_generate_api_contract_coverage_dashboard.py
+│       │   │   ├── test_generate_configuration_reference.py
 │       │   │   ├── test_generate_structure_docs.py
 │       │   │   ├── test_markdown_generation_lint.py
 │       │   │   ├── test_pilot_readiness_dashboard.py
+│       │   │   ├── test_render_endpoint_reference.py
+│       │   │   ├── test_render_public_type_reference.py
 │       │   │   ├── test_repair_links.py
 │       │   │   ├── test_run_docs_automation_pilot_optin.py
 │       │   │   ├── test_scan_todos.py
@@ -1219,6 +1222,7 @@ Meridian-main
 │       │   ├── generate-ai-navigation.py
 │       │   ├── generate-api-contract-coverage-dashboard.py
 │       │   ├── generate-changelog.py
+│       │   ├── generate-configuration-reference.py
 │       │   ├── generate-coverage.py
 │       │   ├── generate-dependency-graph.py
 │       │   ├── generate-evidence-continuity-dashboard.py
@@ -1237,7 +1241,9 @@ Meridian-main
 │       │   ├── prompt-route-linter.py
 │       │   ├── README.md
 │       │   ├── render-adapter-readiness.py
+│       │   ├── render-endpoint-reference.py
 │       │   ├── render-make-help.py
+│       │   ├── render-public-type-reference.py
 │       │   ├── render-roadmap-diagrams.py
 │       │   ├── render-roadmap-docs.py
 │       │   ├── render-source-diagrams.py
@@ -2045,6 +2051,271 @@ Meridian-main
 │   │   ├── repo-maintenance-prompts.md
 │   │   └── roadmap-source-docs-implementation-prompt.md
 │   ├── reference
+│   │   ├── source-api
+│   │   │   ├── meridian
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.application
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   └── page-012.md
+│   │   │   ├── meridian.audit
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.backtesting
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.backtesting.sdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.contracts
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   ├── page-018.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   ├── page-020.md
+│   │   │   │   ├── page-021.md
+│   │   │   │   ├── page-022.md
+│   │   │   │   ├── page-023.md
+│   │   │   │   ├── page-024.md
+│   │   │   │   ├── page-025.md
+│   │   │   │   ├── page-026.md
+│   │   │   │   ├── page-027.md
+│   │   │   │   ├── page-028.md
+│   │   │   │   ├── page-029.md
+│   │   │   │   ├── page-030.md
+│   │   │   │   ├── page-031.md
+│   │   │   │   ├── page-032.md
+│   │   │   │   ├── page-033.md
+│   │   │   │   ├── page-034.md
+│   │   │   │   ├── page-035.md
+│   │   │   │   ├── page-036.md
+│   │   │   │   ├── page-037.md
+│   │   │   │   ├── page-038.md
+│   │   │   │   ├── page-039.md
+│   │   │   │   ├── page-040.md
+│   │   │   │   ├── page-041.md
+│   │   │   │   ├── page-042.md
+│   │   │   │   ├── page-043.md
+│   │   │   │   ├── page-044.md
+│   │   │   │   ├── page-045.md
+│   │   │   │   ├── page-046.md
+│   │   │   │   ├── page-047.md
+│   │   │   │   ├── page-048.md
+│   │   │   │   ├── page-049.md
+│   │   │   │   ├── page-050.md
+│   │   │   │   ├── page-051.md
+│   │   │   │   ├── page-052.md
+│   │   │   │   ├── page-053.md
+│   │   │   │   ├── page-054.md
+│   │   │   │   ├── page-055.md
+│   │   │   │   ├── page-056.md
+│   │   │   │   ├── page-057.md
+│   │   │   │   ├── page-058.md
+│   │   │   │   ├── page-059.md
+│   │   │   │   ├── page-060.md
+│   │   │   │   ├── page-061.md
+│   │   │   │   ├── page-062.md
+│   │   │   │   ├── page-063.md
+│   │   │   │   ├── page-064.md
+│   │   │   │   ├── page-065.md
+│   │   │   │   ├── page-066.md
+│   │   │   │   ├── page-067.md
+│   │   │   │   ├── page-068.md
+│   │   │   │   └── page-069.md
+│   │   │   ├── meridian.core
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   └── page-005.md
+│   │   │   ├── meridian.dataintegration
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
+│   │   │   ├── meridian.documents
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.domain
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.entities
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.execution
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.execution.sdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   └── page-003.md
+│   │   │   ├── meridian.financialoperations
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   └── page-009.md
+│   │   │   ├── meridian.fsharp
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.ibapi.smokestub
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.identity
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.infrastructure
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   └── page-008.md
+│   │   │   ├── meridian.instruments
+│   │   │   │   ├── page-001.md
+│   │   │   │   └── page-002.md
+│   │   │   ├── meridian.ledger
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   └── page-006.md
+│   │   │   ├── meridian.mcp
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.platform
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   └── page-003.md
+│   │   │   ├── meridian.portfoliorecords
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.processisolation
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.providersdk
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.quantscript
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.referencedata
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.reporting
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.risk
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.storage
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   └── page-014.md
+│   │   │   ├── meridian.strategies
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   └── page-004.md
+│   │   │   ├── meridian.ui.services
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   └── page-016.md
+│   │   │   ├── meridian.ui.shared
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   └── page-018.md
+│   │   │   ├── meridian.workflow
+│   │   │   │   └── page-001.md
+│   │   │   ├── meridian.wpf
+│   │   │   │   ├── page-001.md
+│   │   │   │   ├── page-002.md
+│   │   │   │   ├── page-003.md
+│   │   │   │   ├── page-004.md
+│   │   │   │   ├── page-005.md
+│   │   │   │   ├── page-006.md
+│   │   │   │   ├── page-007.md
+│   │   │   │   ├── page-008.md
+│   │   │   │   ├── page-009.md
+│   │   │   │   ├── page-010.md
+│   │   │   │   ├── page-011.md
+│   │   │   │   ├── page-012.md
+│   │   │   │   ├── page-013.md
+│   │   │   │   ├── page-014.md
+│   │   │   │   ├── page-015.md
+│   │   │   │   ├── page-016.md
+│   │   │   │   ├── page-017.md
+│   │   │   │   ├── page-018.md
+│   │   │   │   ├── page-019.md
+│   │   │   │   ├── page-020.md
+│   │   │   │   └── page-021.md
+│   │   │   └── README.md
 │   │   ├── accounting-configuration.md
 │   │   ├── accounting-report-packs.md
 │   │   ├── api-conflict-contract.md
@@ -5022,7 +5293,9 @@ Meridian-main
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
+│   │   │   │   ├── CorporateActionCaseAccountingService.CashDividend.cs
 │   │   │   │   ├── CorporateActionCaseAccountingService.cs
+│   │   │   │   ├── CorporateActionCashDividendEligibilityResolver.cs
 │   │   │   │   ├── CorporateActionCommandService.cs
 │   │   │   │   ├── CorporateActionInboxState.cs
 │   │   │   │   ├── CorporateActionIngestOrchestrator.cs
@@ -5098,11 +5371,13 @@ Meridian-main
 │   │   │   ├── SecurityEconomicDefinitionAdapter.ReferenceHomes.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.ScheduleHomes.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
+│   │   │   ├── SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
 │   │   │   ├── SecurityMasterCashFlowService.Context.cs
 │   │   │   ├── SecurityMasterCashFlowService.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
+│   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
 │   │   │   ├── SecurityMasterConflictDetection.cs
@@ -5375,6 +5650,7 @@ Meridian-main
 │   │   │   ├── AccountCashForecastJsonContext.cs
 │   │   │   ├── AssetAccountingEventDtos.cs
 │   │   │   ├── AssetAccountingPreparationRevision.cs
+│   │   │   ├── AssetAccountingPreparerAttestationDto.cs
 │   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
@@ -5619,6 +5895,7 @@ Meridian-main
 │   │   │   ├── OperationalCaseHistoryHashing.cs
 │   │   │   ├── OperationsContractsJsonContext.cs
 │   │   │   ├── OperationsOriginGuard.cs
+│   │   │   ├── PreparerAttestationApprovalBoundary.cs
 │   │   │   └── VerifiedOperationOutcome.cs
 │   │   ├── Options
 │   │   │   └── OptionReferenceDtos.cs
@@ -5654,9 +5931,16 @@ Meridian-main
 │   │   │   │   ├── ScheduleRoll.cs
 │   │   │   │   ├── ScheduleSpec.cs
 │   │   │   │   └── ScheduleTenor.cs
+│   │   │   ├── CashDividendAccountRoleBindingDto.cs
+│   │   │   ├── CashDividendAttestationDeclarationContracts.cs
+│   │   │   ├── CashDividendReconciliationSupport.cs
 │   │   │   ├── ClassificationLabelReader.cs
 │   │   │   ├── CommitmentLot.cs
 │   │   │   ├── CorporateActionCaseAccountingContracts.cs
+│   │   │   ├── CorporateActionCashDividendAttestationContracts.cs
+│   │   │   ├── CorporateActionCashDividendAttestationValidation.cs
+│   │   │   ├── CorporateActionCashDividendCaseFactsDto.cs
+│   │   │   ├── CorporateActionCashDividendWorkspaceDto.cs
 │   │   │   ├── CorporateActionEconomicFingerprint.cs
 │   │   │   ├── CorporateActionEffectiveStateProjector.cs
 │   │   │   ├── CorporateActionElectionCalendar.cs
@@ -5673,6 +5957,7 @@ Meridian-main
 │   │   │   ├── DayCountConventions.cs
 │   │   │   ├── DayCountPeriodContext.cs
 │   │   │   ├── EdgarReferenceDtos.cs
+│   │   │   ├── FaceValueAccrualHolding.cs
 │   │   │   ├── FaceValueLot.cs
 │   │   │   ├── FundUnitLot.cs
 │   │   │   ├── IDataVendorEntitlementService.cs
@@ -5747,6 +6032,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCorporateActions.cs
 │   │   │   ├── SecurityMasterDataQuality.cs
 │   │   │   ├── SecurityMasterEnumReads.cs
+│   │   │   ├── SecurityMasterLedgerSymbol.cs
 │   │   │   ├── SecurityMasterOptions.cs
 │   │   │   ├── SecurityMasterPricing.cs
 │   │   │   ├── SecurityMasterProvenance.cs
@@ -5838,6 +6124,8 @@ Meridian-main
 │   │   │   ├── OperatorSurfaceVisitDtos.cs
 │   │   │   ├── OperatorTriageDtos.cs
 │   │   │   ├── PilotReadinessArtifactDtos.cs
+│   │   │   ├── PreparerAttestationEvidenceDtos.cs
+│   │   │   ├── PreparerAttestationProofExportDto.cs
 │   │   │   ├── ReconciliationBreakLineageDtos.cs
 │   │   │   ├── ReconciliationDtos.cs
 │   │   │   ├── RecurringJournalDtos.cs
@@ -5847,6 +6135,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterTrustWorkbenchDtos.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandDtos.cs
 │   │   │   ├── SecurityMasterWorkstationDtos.cs
+│   │   │   ├── SinglePrincipalAttestationDtos.cs
 │   │   │   ├── StatementConnectorDtos.cs
 │   │   │   ├── StatementReconciliationDtos.cs
 │   │   │   ├── StrategyBriefingDtos.cs
@@ -6338,7 +6627,9 @@ Meridian-main
 │   │   │   ├── AccountingBasisProjectionSetService.cs
 │   │   │   ├── AccountingJournalDraftService.cs
 │   │   │   ├── AccountingPolicyService.cs
+│   │   │   ├── AccountingPostingCandidatePostService.ApprovalBoundary.cs
 │   │   │   ├── AccountingPostingCandidatePostService.CapitalReturn.cs
+│   │   │   ├── AccountingPostingCandidatePostService.CashDividendAttestation.cs
 │   │   │   ├── AccountingPostingCandidatePostService.cs
 │   │   │   ├── AccountingPostingCandidatePostService.Dimensions.cs
 │   │   │   ├── AccountingPostingCandidatePostService.FactorPaydown.cs
@@ -6382,6 +6673,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflow.ApprovalCollaboration.cs
 │   │   │   ├── OperationsContinuityWorkflow.cs
 │   │   │   ├── OperationsContinuityWorkflow.Reconciliation.cs
+│   │   │   ├── OperationsContinuityWorkflow.ReopenGovernance.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ApprovalCollaboration.cs
 │   │   │   ├── OperationsContinuityWorkflowService.ChecklistControls.cs
 │   │   │   ├── OperationsContinuityWorkflowService.CloseReadiness.cs
@@ -7014,6 +7306,7 @@ Meridian-main
 │   │   ├── LedgerReportPackLifecycle.cs
 │   │   ├── LedgerReportPackRequest.cs
 │   │   ├── LedgerReportPackSignature.cs
+│   │   ├── LedgerReportPreparerAttestation.cs
 │   │   ├── LedgerReportPresentation.cs
 │   │   ├── LedgerReportSchedule.cs
 │   │   ├── LedgerReportScheduledExport.cs
@@ -7418,6 +7711,7 @@ Meridian-main
 │   │   │   ├── InMemoryAssetOperationsProjectionStore.cs
 │   │   │   ├── InMemoryAssetOperationsProjectionStore.InstrumentPositions.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.AssetAccountingEvents.cs
+│   │   │   ├── PostgresAssetOperationsProjectionStore.CashDividendAttestation.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.InstrumentPositions.cs
 │   │   │   ├── PostgresAssetOperationsProjectionStore.Locks.cs
@@ -7597,14 +7891,17 @@ Meridian-main
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
 │   │   │   ├── CanonicalDisposalHistoryProjector.cs
 │   │   │   ├── CanonicalOpenLotDisposalGuard.cs
+│   │   │   ├── CashDividendEntitlementLock.cs
 │   │   │   ├── CorporateActionSuccessorAncestry.cs
 │   │   │   ├── DurableAutomatedJournalPoster.cs
 │   │   │   ├── GovernedLedgerPostingTarget.cs
+│   │   │   ├── HistoricalTaxLotAccrual.cs
 │   │   │   ├── HistoricalTaxLotQuantity.cs
 │   │   │   ├── IConsolidationPostingAuthority.cs
 │   │   │   ├── IIntercompanyAgreementPostingAuthority.cs
 │   │   │   ├── ILedgerJournalStore.cs
 │   │   │   ├── ILedgerReportingSnapshotSource.cs
+│   │   │   ├── ILedgerSecurityEntitlementInventory.cs
 │   │   │   ├── IntercompanyAgreementPostingGuard.cs
 │   │   │   ├── LedgerBookServiceException.cs
 │   │   │   ├── LedgerCurrencyBackfill.cs
@@ -7621,12 +7918,14 @@ Meridian-main
 │   │   │   ├── PostgresFundProfileTenancyRegistry.cs
 │   │   │   ├── PostgresLedgerBookService.cs
 │   │   │   ├── PostgresLedgerCurrencyBackfill.cs
+│   │   │   ├── PostgresLedgerJournalStore.AccrualHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.Amortization.cs
 │   │   │   ├── PostgresLedgerJournalStore.AmortizationFactorHistory.cs
 │   │   │   ├── PostgresLedgerJournalStore.AtomicTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
+│   │   │   ├── PostgresLedgerJournalStore.CashDividendAttestation.cs
 │   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
@@ -7640,6 +7939,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.PrivateCapital.cs
 │   │   │   ├── PostgresLedgerJournalStore.ProceedsAllocation.cs
 │   │   │   ├── PostgresLedgerJournalStore.ReportingSnapshot.cs
+│   │   │   ├── PostgresLedgerJournalStore.SecurityEntitlementInventory.cs
 │   │   │   ├── PostgresLedgerJournalStore.Serialization.cs
 │   │   │   ├── PostgresLedgerJournalStore.ShortLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.SuccessorHoldingPeriod.cs
@@ -7797,12 +8097,15 @@ Meridian-main
 │   │   │   │   ├── 060_security_master_revision_field_base.sql
 │   │   │   │   ├── 062_security_master_identifier_revisions.sql
 │   │   │   │   ├── 064_custom_asset_profile_field_projection.sql
-│   │   │   │   └── 065_security_price_quotation_evidence.sql
+│   │   │   │   ├── 065_security_price_quotation_evidence.sql
+│   │   │   │   └── 066_corporate_action_cash_dividend_attestations.sql
+│   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileEdgarReferenceDataStore.cs
 │   │   │   ├── IBondReferenceProjectionStore.cs
 │   │   │   ├── ICertificateOfDepositReferenceProjectionStore.cs
 │   │   │   ├── ICommodityReferenceProjectionStore.cs
+│   │   │   ├── ICorporateActionCashDividendAccountingStore.cs
 │   │   │   ├── ICorporateActionOperationsStore.cs
 │   │   │   ├── ICryptoReferenceProjectionStore.cs
 │   │   │   ├── ICustomAssetProfileFieldProjectionStore.cs
@@ -7834,6 +8137,11 @@ Meridian-main
 │   │   │   ├── PostgresCorporateActionCanonicalStore.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Accounting.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Cases.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendAttestations.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendCaseFacts.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendDeclarations.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendPostings.cs
+│   │   │   ├── PostgresCorporateActionOperationsStore.CashDividendSecurityAuthority.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.cs
 │   │   │   ├── PostgresCorporateActionOperationsStore.Export.cs
 │   │   │   ├── PostgresCryptoReferenceProjectionStore.cs
@@ -7989,6 +8297,7 @@ Meridian-main
 │   │   ├── Services
 │   │   │   ├── AggregatePortfolioService.cs
 │   │   │   ├── CashFlowProjectionService.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.ApprovalBoundary.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.Casework.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.CloseScope.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.cs
@@ -8259,6 +8568,8 @@ Meridian-main
 │   │   │   │   │   │   └── symbol-universe-manager.tsx
 │   │   │   │   │   ├── meridian
 │   │   │   │   │   │   ├── account-balance-history-chart.tsx
+│   │   │   │   │   │   ├── accounting-preparer-attestation.test.tsx
+│   │   │   │   │   │   ├── accounting-preparer-attestation.tsx
 │   │   │   │   │   │   ├── activity-center.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.test.tsx
 │   │   │   │   │   │   ├── approval-collaboration-panel.tsx
@@ -8277,6 +8588,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-observed-fixing-panel.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.test.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.tsx
+│   │   │   │   │   │   ├── cash-dividend-attestation-panel.test.tsx
+│   │   │   │   │   │   ├── cash-dividend-attestation-panel.tsx
 │   │   │   │   │   │   ├── close-checklist-history-chart.test.tsx
 │   │   │   │   │   │   ├── close-checklist-history-chart.tsx
 │   │   │   │   │   │   ├── command-palette.actions.test.ts
@@ -8347,6 +8660,10 @@ Meridian-main
 │   │   │   │   │   │   ├── option-screening-map.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.test.tsx
 │   │   │   │   │   │   ├── pop-out-pane-button.tsx
+│   │   │   │   │   │   ├── preparer-attestation-evidence.test.tsx
+│   │   │   │   │   │   ├── preparer-attestation-evidence.tsx
+│   │   │   │   │   │   ├── preparer-draft-check-panel.test.tsx
+│   │   │   │   │   │   ├── preparer-draft-check-panel.tsx
 │   │   │   │   │   │   ├── principal-id-input.test.tsx
 │   │   │   │   │   │   ├── principal-id-input.tsx
 │   │   │   │   │   │   ├── private-capital-lifecycle.test.tsx
@@ -8392,6 +8709,8 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
 │   │   │   │   │   │   ├── security-rates-ingestion-panel.test.tsx
 │   │   │   │   │   │   ├── security-rates-ingestion-panel.tsx
+│   │   │   │   │   │   ├── single-principal-attestation-panel.test.tsx
+│   │   │   │   │   │   ├── single-principal-attestation-panel.tsx
 │   │   │   │   │   │   ├── stat-strip.test.tsx
 │   │   │   │   │   │   ├── stat-strip.tsx
 │   │   │   │   │   │   ├── status-row.tsx
@@ -8581,6 +8900,7 @@ Meridian-main
 │   │   │   │   │   ├── first-run
 │   │   │   │   │   │   ├── activation-progress.test.tsx
 │   │   │   │   │   │   ├── activation-progress.tsx
+│   │   │   │   │   │   ├── first-run-screen.test.tsx
 │   │   │   │   │   │   ├── first-run-screen.tsx
 │   │   │   │   │   │   ├── getting-started.view-model.test.ts
 │   │   │   │   │   │   ├── getting-started.view-model.ts
@@ -8751,6 +9071,8 @@ Meridian-main
 │   │   │   │   │   ├── api.ts
 │   │   │   │   │   ├── approval-collaboration.ts
 │   │   │   │   │   ├── bond-decimal-format.ts
+│   │   │   │   │   ├── cash-dividend-attestation-api.test.ts
+│   │   │   │   │   ├── cash-dividend-attestation-api.ts
 │   │   │   │   │   ├── consolidation-api.test.ts
 │   │   │   │   │   ├── consolidation-api.ts
 │   │   │   │   │   ├── cross-screen-counts-context.tsx
@@ -8805,6 +9127,8 @@ Meridian-main
 │   │   │   │   │   ├── positive-decimal.ts
 │   │   │   │   │   ├── posted-period-comparison-api.test.ts
 │   │   │   │   │   ├── posted-period-comparison-api.ts
+│   │   │   │   │   ├── preparer-draft-check-api.test.ts
+│   │   │   │   │   ├── preparer-draft-check-api.ts
 │   │   │   │   │   ├── private-capital-notice-intent.test.ts
 │   │   │   │   │   ├── private-capital-notice-intent.ts
 │   │   │   │   │   ├── provider-credential-scope.test.ts
@@ -8883,6 +9207,8 @@ Meridian-main
 │   │   │   │   │   ├── shell-status-signals-context.tsx
 │   │   │   │   │   ├── since-last-visit.test.ts
 │   │   │   │   │   ├── since-last-visit.ts
+│   │   │   │   │   ├── single-principal-attestation-api.test.ts
+│   │   │   │   │   ├── single-principal-attestation-api.ts
 │   │   │   │   │   ├── sql-workbench-storage.test.ts
 │   │   │   │   │   ├── sql-workbench-storage.ts
 │   │   │   │   │   ├── status-signals.test.ts
@@ -9400,6 +9726,7 @@ Meridian-main
 │   │   │   │   │   │   ├── quant-run-response.json
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
 │   │   │   │   │   ├── asset-approval-fixtures.ts
+│   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
 │   │   │   │   │   ├── render.tsx
@@ -9420,6 +9747,7 @@ Meridian-main
 │   │   │   │   │   ├── bond-reference.types.ts
 │   │   │   │   │   ├── brokerage-recovery.ts
 │   │   │   │   │   ├── canonical-symbol.ts
+│   │   │   │   │   ├── cash-dividend-attestation.ts
 │   │   │   │   │   ├── close-preparation.ts
 │   │   │   │   │   ├── consolidation.ts
 │   │   │   │   │   ├── contractual-cash-flow.types.ts
@@ -9446,6 +9774,7 @@ Meridian-main
 │   │   │   │   │   ├── operator-scope-preference.ts
 │   │   │   │   │   ├── operator-surface-visit.ts
 │   │   │   │   │   ├── portfolio-cash-ladder.types.ts
+│   │   │   │   │   ├── preparer-attestation-evidence.ts
 │   │   │   │   │   ├── private-capital.ts
 │   │   │   │   │   ├── provider-accounting.ts
 │   │   │   │   │   ├── provider-integration-identity.ts
@@ -9713,6 +10042,7 @@ Meridian-main
 │   │   │   ├── EnvironmentDesignerEndpoints.cs
 │   │   │   ├── EquityReferenceEndpoints.cs
 │   │   │   ├── EvidenceEndpoints.cs
+│   │   │   ├── EvidenceEndpoints.SinglePrincipalAttestation.cs
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExportEndpoints.cs
@@ -9793,6 +10123,7 @@ Meridian-main
 │   │   │   ├── RiskEndpoints.cs
 │   │   │   ├── SamplingEndpoints.cs
 │   │   │   ├── SecureReportingDistributionEndpoints.cs
+│   │   │   ├── SecurityMasterEndpoints.CashDividendAttestation.cs
 │   │   │   ├── SecurityMasterEndpoints.CashFlowPreview.cs
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
@@ -9866,6 +10197,8 @@ Meridian-main
 │   │   │   └── WorkstationTenantContext.cs
 │   │   ├── Evidence
 │   │   │   ├── AccountCashForecastEvidenceAdapter.cs
+│   │   │   ├── ContractualCashFlowDraftAttestationSubjectResolver.cs
+│   │   │   ├── EvidenceAttestationSubjectResolver.cs
 │   │   │   ├── EvidenceContribution.cs
 │   │   │   ├── EvidenceContributors.cs
 │   │   │   ├── EvidenceDocumentExtraction.cs
@@ -9884,8 +10217,13 @@ Meridian-main
 │   │   │   ├── FileEvidenceArtifactStore.VaultAccess.cs
 │   │   │   ├── FileStatementReconciliationReportAuthorityStore.cs
 │   │   │   ├── JournalEntryEvidenceContributor.cs
+│   │   │   ├── PreparerAttestationEvidenceProjectionService.cs
 │   │   │   ├── ReconciliationEvidenceContributor.StatementRuns.cs
 │   │   │   ├── ReportingStatementImportEvidenceRetainer.cs
+│   │   │   ├── SinglePrincipalAttestationStore.ApprovalBoundary.cs
+│   │   │   ├── SinglePrincipalAttestationStore.cs
+│   │   │   ├── SinglePrincipalAttestationStore.Export.cs
+│   │   │   ├── SinglePrincipalAttestationStore.Persistence.cs
 │   │   │   ├── StatementImportEvidenceBridge.cs
 │   │   │   ├── StatementReconciliationReportFetchIngestionAuthority.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.ArtifactHistory.cs
@@ -9932,6 +10270,7 @@ Meridian-main
 │   │   │   ├── AccountingMigrationRunExecutionService.cs
 │   │   │   ├── AccountingMigrationRunWorkerPlanStore.cs
 │   │   │   ├── AccountingPositionSnapshotCaptureService.cs
+│   │   │   ├── AccountingPreparerAttestationDisclosure.cs
 │   │   │   ├── AccountingProductionCertificationCommandService.cs
 │   │   │   ├── AccountingProductionCertificationProfileStore.cs
 │   │   │   ├── AccountingProductionReadinessService.cs
@@ -9970,6 +10309,7 @@ Meridian-main
 │   │   │   ├── ConfigStore.cs
 │   │   │   ├── ConsolidationChartValidation.cs
 │   │   │   ├── ConsolidationWorkbenchService.cs
+│   │   │   ├── CorporateActionCashDividendReconciliationSupport.cs
 │   │   │   ├── CrossProcessFileLock.cs
 │   │   │   ├── CrossScreenCountDefinitions.cs
 │   │   │   ├── DailyValuationBatchLifecycleService.cs
@@ -9993,9 +10333,11 @@ Meridian-main
 │   │   │   ├── FinancialRecordExplorerReadScope.cs
 │   │   │   ├── FinancialRecordExplorerReadService.cs
 │   │   │   ├── FinancialRecordExplorerReadService.InstrumentJournalProof.cs
+│   │   │   ├── FinancialRecordExplorerReadService.PreparerAttestation.cs
 │   │   │   ├── FinancialRecordExplorerReadService.SecurityRows.cs
 │   │   │   ├── FinancialRecordExplorerSavedViewStore.cs
 │   │   │   ├── FirstRunExperienceService.cs
+│   │   │   ├── FixedIncomeAccrualCalculation.cs
 │   │   │   ├── FundAccountCloseReadinessService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.cs
 │   │   │   ├── FundOperationsWorkspaceReadService.Models.cs
@@ -10308,6 +10650,8 @@ Meridian-main
 │   │   │   └── IRemoteWorkstationClient.cs
 │   │   ├── Controls
 │   │   │   ├── AutomationLeafBorder.cs
+│   │   │   ├── CashDividendAttestationPanel.xaml
+│   │   │   ├── CashDividendAttestationPanel.xaml.cs
 │   │   │   ├── DataConfidenceExplanationButton.cs
 │   │   │   ├── DataConfidenceIndicator.xaml
 │   │   │   ├── DataConfidenceIndicator.xaml.cs
@@ -10327,6 +10671,8 @@ Meridian-main
 │   │   │   ├── LedgerAmountProofDrawer.xaml.cs
 │   │   │   ├── MetricCard.xaml
 │   │   │   ├── MetricCard.xaml.cs
+│   │   │   ├── PreparerDraftCheckPanel.xaml
+│   │   │   ├── PreparerDraftCheckPanel.xaml.cs
 │   │   │   ├── SectionHeaderBar.xaml
 │   │   │   ├── SectionHeaderBar.xaml.cs
 │   │   │   ├── ToneBadge.xaml
@@ -10551,12 +10897,14 @@ Meridian-main
 │   │   │   ├── WorkstationAccountingApiClient.cs
 │   │   │   ├── WorkstationBondCutoverApiClient.cs
 │   │   │   ├── WorkstationContractualCashFlowApiClient.cs
+│   │   │   ├── WorkstationContractualCashFlowApiClient.DraftChecks.cs
 │   │   │   ├── WorkstationOperatingContextScopeResolver.cs
 │   │   │   ├── WorkstationOperatingContextService.cs
 │   │   │   ├── WorkstationOperatorInboxApiClient.cs
 │   │   │   ├── WorkstationProviderOwnershipApiClient.cs
 │   │   │   ├── WorkstationReconciliationApiClient.cs
 │   │   │   ├── WorkstationRecurringJournalQueueClient.cs
+│   │   │   ├── WorkstationSecurityMasterApiClient.CashDividends.cs
 │   │   │   ├── WorkstationSecurityMasterApiClient.cs
 │   │   │   ├── WorkstationStrategyBriefingService.cs
 │   │   │   ├── WpfRemoteWorkstationClient.cs
@@ -10625,11 +10973,13 @@ Meridian-main
 │   │   │   │   ├── FactorPaydownViewModel.RetainedDrafts.cs
 │   │   │   │   └── RecurringJournalQueueViewModel.cs
 │   │   │   ├── CashFlows
-│   │   │   │   └── ContractualCashFlowScenarioViewModel.cs
+│   │   │   │   ├── ContractualCashFlowScenarioViewModel.cs
+│   │   │   │   └── PreparerDraftCheckViewModel.cs
 │   │   │   ├── SecurityMaster
 │   │   │   │   ├── BondAnalyticsViewModel.cs
 │   │   │   │   ├── BondMigrationPreviewViewModel.cs
-│   │   │   │   └── BondReferenceLadderViewModel.cs
+│   │   │   │   ├── BondReferenceLadderViewModel.cs
+│   │   │   │   └── CashDividendAttestationViewModel.cs
 │   │   │   ├── Settings
 │   │   │   │   ├── BondCutoverConsoleViewModel.cs
 │   │   │   │   └── ProviderOwnershipAdministrationViewModel.cs
@@ -10663,6 +11013,7 @@ Meridian-main
 │   │   │   ├── DiagnosticsPageViewModel.cs
 │   │   │   ├── DirectLendingViewModel.cs
 │   │   │   ├── EventReplayViewModel.cs
+│   │   │   ├── EvidenceWorkbenchViewModel.Attestations.cs
 │   │   │   ├── EvidenceWorkbenchViewModel.cs
 │   │   │   ├── ExportPresetsViewModel.cs
 │   │   │   ├── FinancialRecordExplorerViewModel.cs
@@ -10721,6 +11072,7 @@ Meridian-main
 │   │   │   ├── SecurityConflictLaneModels.cs
 │   │   │   ├── SecurityMasterDeactivateViewModel.cs
 │   │   │   ├── SecurityMasterEditViewModel.cs
+│   │   │   ├── SecurityMasterViewModel.Assurance.cs
 │   │   │   ├── SecurityMasterViewModel.Authorization.cs
 │   │   │   ├── SecurityMasterViewModel.cs
 │   │   │   ├── SecurityMasterViewModel.Import.cs
@@ -11037,12 +11389,15 @@ Meridian-main
 │   │   │   ├── Layout
 │   │   │   │   └── WorkstationLayoutControls.cs
 │   │   │   ├── Models
+│   │   │   │   ├── AccountingPreparerAttestationPresentation.cs
 │   │   │   │   ├── EvidenceVaultPresentationModels.cs
 │   │   │   │   ├── EvidenceWorkbenchPresentationModels.cs
 │   │   │   │   ├── OperationsContinuityClosePresentation.cs
 │   │   │   │   ├── OperationsContinuityPresentationModels.cs
 │   │   │   │   ├── OperationsRecordReleasePresentationModels.cs
 │   │   │   │   ├── OperatorReadinessConsolePresentationModels.cs
+│   │   │   │   ├── PreparerAttestationEvidencePresentation.cs
+│   │   │   │   ├── PreparerAttestationHistoryRowModel.cs
 │   │   │   │   └── WorkstationPresentationModels.cs
 │   │   │   ├── Primitives
 │   │   │   │   └── WorkstationPrimitiveControls.cs
@@ -11266,6 +11621,14 @@ Meridian-main
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Core.UnitTests.csproj
 │   │   └── README.md
+│   ├── Meridian.Demo.Tests
+│   │   ├── Demo
+│   │   │   ├── DemoWorkspaceGuardTests.cs
+│   │   │   ├── DemoWorkspaceSeederTests.cs
+│   │   │   ├── DemoWorkspaceSmokeTests.cs
+│   │   │   └── DemoWorkstationAssetTreeTests.cs
+│   │   ├── GlobalUsings.cs
+│   │   └── Meridian.Demo.Tests.csproj
 │   ├── Meridian.DesignModules.Tests
 │   │   ├── DesignModulePhysicalConformanceTests.cs
 │   │   └── Meridian.DesignModules.Tests.csproj
@@ -11564,6 +11927,7 @@ Meridian-main
 │   │   │   │   ├── BackfillFeatureRegistrationTests.cs
 │   │   │   │   ├── BusinessDayCalendarSourceCompositionTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
+│   │   │   │   ├── CashDividendAttestationCompositionTests.cs
 │   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
 │   │   │   │   ├── DatabaseStartupPlanTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
@@ -11799,6 +12163,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.PrincipalConventions.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.RecordRateUnit.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
+│   │   │   ├── SecurityMasterFactorAccrualProjectionTests.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
 │   │   │   ├── StructuredCashFlowLedgerGateTests.cs
 │   │   │   ├── StructuredCashFlowScheduleEntryEqualityTests.cs
@@ -11956,11 +12321,6 @@ Meridian-main
 │   │   │   │       └── SequenceErrorTrackerTests.cs
 │   │   │   ├── CredentialStoreExtensionsTests.cs
 │   │   │   └── MarketEventFilterTests.cs
-│   │   ├── Demo
-│   │   │   ├── DemoWorkspaceGuardTests.cs
-│   │   │   ├── DemoWorkspaceSeederTests.cs
-│   │   │   ├── DemoWorkspaceSmokeTests.cs
-│   │   │   └── DemoWorkstationAssetTreeTests.cs
 │   │   ├── Deposits
 │   │   │   └── DepositProjectionServiceTests.cs
 │   │   ├── Derivatives
@@ -12140,6 +12500,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
 │   │   │   │   ├── BondSettlementRetainedObservationTests.cs
+│   │   │   │   ├── CashDividendPreparerPostingContractTests.cs
 │   │   │   │   ├── ShortCarryTests.cs
 │   │   │   │   ├── ShortCorrectionTests.cs
 │   │   │   │   └── ShortCoverCurrencyTests.cs
@@ -12362,6 +12723,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketProviderBaseTests.cs
 │   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience
+│   │   │   │   ├── HttpResiliencePolicyTests.cs
 │   │   │   │   ├── PollingProviderBaseTests.cs
 │   │   │   │   ├── ProviderConnectionSupervisorTests.cs
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
@@ -12492,10 +12854,12 @@ Meridian-main
 │   │   │   ├── LedgerReportDeterministicExportTests.cs
 │   │   │   ├── LedgerReportPackPeriodBoundaryTests.cs
 │   │   │   ├── LedgerReportPackTestData.cs
+│   │   │   ├── LedgerReportPreparerAttestationExportTests.cs
 │   │   │   ├── LedgerReportRendererCompositionTests.cs
 │   │   │   ├── LedgerScheduledExportFormatTests.cs
 │   │   │   ├── LedgerTaxCharacterTests.cs
 │   │   │   ├── LedgerTaxLotBasisAdjusterTests.cs
+│   │   │   ├── LedgerTaxLotBasisAdjusterTests.Precision.cs
 │   │   │   ├── LedgerTaxLotExactBasisReliefTests.cs
 │   │   │   ├── LedgerTaxLotReliefWashSaleTests.cs
 │   │   │   ├── LedgerWashSaleActivationTests.cs
@@ -12706,9 +13070,15 @@ Meridian-main
 │   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
+│   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividend.cs
+│   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividendCaseFacts.cs
+│   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividendImmutability.cs
+│   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.CashDividendPosting.cs
 │   │   │   ├── CorporateActionAccountingPostgresRoundTripTests.cs
 │   │   │   ├── CorporateActionCaseAccountingPolicyTests.cs
+│   │   │   ├── CorporateActionCaseAccountingServiceCashDividendTests.cs
 │   │   │   ├── CorporateActionCaseAccountingServiceTests.cs
+│   │   │   ├── CorporateActionCashDividendEligibilityResolverTests.cs
 │   │   │   ├── CorporateActionCommandServiceTests.cs
 │   │   │   ├── CorporateActionEffectiveStateProjectorTests.cs
 │   │   │   ├── CorporateActionGoldenLedgerTests.cs
@@ -12732,6 +13102,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotGoldenTests.cs
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
+│   │   │   ├── FactoredAmortizationLedgerBridgeTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
 │   │   │   ├── HistoricalCorporateActionLedgerFixture.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
@@ -12847,6 +13218,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterConvertibleEquityAmendmentTests.cs
 │   │   │   ├── SecurityMasterCorporateActionCommandServiceTests.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentServiceTests.cs
+│   │   │   ├── SecurityMasterCostBasisAdjustmentServiceTests.FaceUnits.cs
 │   │   │   ├── SecurityMasterCrossNodeConsistencyTests.cs
 │   │   │   ├── SecurityMasterCsvParserTests.cs
 │   │   │   ├── SecurityMasterDatabaseFactAttribute.cs
@@ -12935,6 +13307,7 @@ Meridian-main
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
 │   │   │   ├── StructuredCashFlowScheduleRowVersionTests.cs
+│   │   │   ├── StructuredCashFlowScheduleRowVersionTests.InterestSegments.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
 │   │   │   ├── UnitizedLotTests.cs
 │   │   │   └── ValuationTestSecurities.cs
@@ -12992,6 +13365,7 @@ Meridian-main
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
+│   │   │   ├── AtomicTaxLotJournalStoreTests.AccrualHistory.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AcquisitionAdmission.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.AdvanceRefundingReport.cs
 │   │   │   ├── AtomicTaxLotJournalStoreTests.Amortization.cs
@@ -13049,6 +13423,7 @@ Meridian-main
 │   │   │   ├── CorporateActionSuccessorAncestryTests.CapitalReturn.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.Fixtures.cs
+│   │   │   ├── DataDateParsingTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
@@ -13067,6 +13442,7 @@ Meridian-main
 │   │   │   ├── FundScopeTenantColumnMigrationTests.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.ActorAttribution.cs
 │   │   │   ├── GovernedLedgerPostingTargetTests.cs
+│   │   │   ├── HistoricalTaxLotAccrualTests.cs
 │   │   │   ├── HistoricalTaxLotQuantityTests.cs
 │   │   │   ├── IntercompanyAgreementPostingGuardTests.cs
 │   │   │   ├── IntercompanyAgreementPostingPostgresTests.cs
@@ -13115,6 +13491,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalPeriodAuthorityPostgresTests.cs
 │   │   │   ├── ReportingOperationalStoreTests.cs
 │   │   │   ├── RetainedDataQueryStoreTests.cs
+│   │   │   ├── SecurityEntitlementInventoryPostgresTests.cs
 │   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
 │   │   │   ├── SecurityMasterCanonicalWithdrawalDefinitionTests.cs
 │   │   │   ├── SecurityMasterLegacyIdentifierCleanupTests.cs
@@ -13248,6 +13625,7 @@ Meridian-main
 │   │   │   └── MoneyMarketFundServiceTests.cs
 │   │   ├── Ui
 │   │   │   ├── Evidence
+│   │   │   │   ├── EvidenceAttestationSubjectResolverTests.cs
 │   │   │   │   ├── EvidenceDocumentExtractionTests.cs
 │   │   │   │   ├── EvidenceProofChainBuilderTests.cs
 │   │   │   │   ├── FileEvidenceArtifactStoreBufferedQuotaTests.cs
@@ -13274,6 +13652,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingPositionSnapshotCaptureServiceTests.cs
+│   │   │   ├── AccountingPreparerAttestationTestData.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
 │   │   │   ├── AccountingProjectionQueryServiceTests.cs
 │   │   │   ├── AccountingReportPackageServiceTests.cs
@@ -13317,8 +13696,11 @@ Meridian-main
 │   │   │   ├── CloseReadinessSubjectSourceTests.cs
 │   │   │   ├── CollateralExposureServiceTests.cs
 │   │   │   ├── ConfigServiceBaseLockTests.cs
+│   │   │   ├── ContractualCashFlowAttestationBindingEndpointTests.cs
 │   │   │   ├── ContractualCashFlowEndpointTests.cs
 │   │   │   ├── CookieCsrfProtectionTests.cs
+│   │   │   ├── CorporateActionCashDividendAttestationEndpointTests.cs
+│   │   │   ├── CorporateActionCashDividendReconciliationSupportTests.cs
 │   │   │   ├── CorporateActionOperationsAuthorizationTests.cs
 │   │   │   ├── CorporateActionOperationsEndpointTests.cs
 │   │   │   ├── CredentialCompatibilityEndpointsTests.cs
@@ -13400,6 +13782,9 @@ Meridian-main
 │   │   │   ├── PortfolioLedgerWorkflowStatusServiceTests.cs
 │   │   │   ├── PostedLedgerAmountProvenanceTests.cs
 │   │   │   ├── PostedPeriodComparisonTests.cs
+│   │   │   ├── PreparerAttestationApprovalBoundaryTests.cs
+│   │   │   ├── PreparerAttestationEvidenceProjectionTests.cs
+│   │   │   ├── PreparerAttestationOrdinaryReferenceConsumerTests.cs
 │   │   │   ├── PrivateCapitalBankObservationServiceTests.cs
 │   │   │   ├── PrivateCapitalEndpointsTests.cs
 │   │   │   ├── PrivateCapitalEventIntakeTests.cs
@@ -13422,11 +13807,13 @@ Meridian-main
 │   │   │   ├── ReconciliationBreakQueueProjectionTests.cs
 │   │   │   ├── ReconciliationLegacyBulkActionTests.cs
 │   │   │   ├── RecurringJournalCalculationTests.cs
+│   │   │   ├── RecurringJournalCalculationTests.FactoredAccrual.cs
 │   │   │   ├── RecurringJournalLifecycleTests.cs
 │   │   │   ├── RecurringJournalRunnerTests.cs
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
+│   │   │   ├── ReplayCapabilityEndpointsTests.cs
 │   │   │   ├── ReplayPreviewEndpointsTests.cs
 │   │   │   ├── ReplayScanLifetimeTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs
@@ -13484,6 +13871,10 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookGoldenTests.cs
 │   │   │   ├── SecurityMasterWorkbenchScheduleBookHarness.cs
 │   │   │   ├── SecurityMasterWriteRefusalEndpointsTests.cs
+│   │   │   ├── SinglePrincipalAttestationAdditionalTests.cs
+│   │   │   ├── SinglePrincipalAttestationEndpointTests.cs
+│   │   │   ├── SinglePrincipalAttestationStoreTests.cs
+│   │   │   ├── SinglePrincipalDraftAttestationTests.cs
 │   │   │   ├── SpreadsheetFormulaGuardTests.cs
 │   │   │   ├── StatementImportEvidenceBridgeTests.cs
 │   │   │   ├── StatementReconciliationAuthorityCompositionTests.cs
@@ -13555,6 +13946,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.PreparerAttestation.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewEndpointTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewScopeTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
@@ -13792,6 +14184,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── AccountingCloseViewModelTests.cs
 │   │   │   ├── AccountingConfigureViewModelTests.cs
+│   │   │   ├── AccountingPreparerAttestationPresentationTests.cs
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
@@ -13807,6 +14200,7 @@ Meridian-main
 │   │   │   ├── BondAnalyticsViewModelTests.cs
 │   │   │   ├── BondCutoverConsoleViewModelTests.cs
 │   │   │   ├── BondReferenceLadderViewModelTests.cs
+│   │   │   ├── CashDividendAttestationViewModelTests.cs
 │   │   │   ├── CashFlowViewModelTests.cs
 │   │   │   ├── ChartingPageViewModelTests.cs
 │   │   │   ├── ClusterStatusViewModelTests.cs
@@ -13820,6 +14214,7 @@ Meridian-main
 │   │   │   ├── DataSourcesViewModelTests.cs
 │   │   │   ├── DirectLendingViewModelTests.cs
 │   │   │   ├── EventReplayViewModelTests.cs
+│   │   │   ├── EvidenceWorkbenchAttestationActionTests.cs
 │   │   │   ├── EvidenceWorkbenchViewModelTests.cs
 │   │   │   ├── ExportPresetsViewModelTests.cs
 │   │   │   ├── FactorPaydownViewModelTests.Approval.cs
@@ -13852,6 +14247,7 @@ Meridian-main
 │   │   │   ├── PositionBlotterViewModelTests.cs
 │   │   │   ├── PostedLedgerBasisArrivalTests.cs
 │   │   │   ├── PostedLedgerViewModelTests.cs
+│   │   │   ├── PreparerDraftCheckViewModelTests.cs
 │   │   │   ├── ProviderAccountingViewModelTests.cs
 │   │   │   ├── ProviderDataProjectionViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
@@ -14010,6 +14406,7 @@ Meridian-main
 │   │   ├── test_consumer_certification_processes.py
 │   │   ├── test_consumer_predecessor.py
 │   │   ├── test_dashboard_package_lock.py
+│   │   ├── test_demo_smoke_workflow.py
 │   │   ├── test_dependency_maintenance.py
 │   │   ├── test_desktop_build_receipt.py
 │   │   ├── test_desktop_msix_packaging.py
@@ -14018,6 +14415,7 @@ Meridian-main
 │   │   ├── test_doc_health_dashboard_merge.py
 │   │   ├── test_doc_render_determinism.py
 │   │   ├── test_doctor_profiles.py
+│   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
 │   │   ├── test_endpoint_benchmark.py
@@ -14211,6 +14609,9 @@ Meridian-main
 │   │   ├── render_source_docs.py
 │   │   ├── requirements-render.txt
 │   │   └── validate_source_readmes.py
+│   ├── source_reference
+│   │   ├── __init__.py
+│   │   └── public_types.py
 │   ├── __init__.py
 │   └── README.md
 ├── .editorconfig
