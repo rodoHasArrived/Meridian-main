@@ -341,6 +341,13 @@ Broker-backed readiness also includes open-order reconciliation: `BrokerageExecu
 compares broker-reported open orders with the OMS open-order ledger, treats missing client order IDs
 as untraceable breaks, and reports OMS/broker divergence before live operators rely on the gateway.
 Ledger posting from trade-fill events is explicit and Security Master gated. `LedgerPostingConsumer`
+resolves every trade, commission, and variation-margin account through Ledger's shared
+`IChartOfAccounts` / `StandardChartOfAccounts` role registry. The registry preserves existing
+account names and brokerage/security scopes, so replay still matches retained journal lines and
+economic fingerprints. This account-lookup convergence preserves the execution short-sale shape
+described below; it does not migrate retained Securities credits to Backtesting's separate
+short-securities liability account.
+The consumer
 retains the trade journal's Investing cash category against its immutable line IDs. Sales report
 actual cash proceeds; realized gains/losses remain noncash adjustments, and commission journals
 remain separate Operating payments. Reversal preserves the retained category.

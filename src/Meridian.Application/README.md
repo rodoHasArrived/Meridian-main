@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+`LoanAccountingProjector` resolves trading cash and loan-specific account roles through the shared
+`IChartOfAccounts` registry while preserving retained loan account names, instrument symbols and
+loan account scope. Unknown roles and unbalanced projections fail before a journal write is returned.
+Shared lending payment/accrual line projection rejects negative source amounts before zero-line
+filtering or prepaid-interest allocation, so command and outbox paths cannot silently omit them.
+
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
 uses the shared versioned term keys for call schedules and schedule conventions.

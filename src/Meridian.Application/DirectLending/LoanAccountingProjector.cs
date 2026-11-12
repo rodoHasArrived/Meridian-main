@@ -6,8 +6,6 @@ using Meridian.Contracts.SecurityMaster;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
 using Meridian.Storage.Ledger;
-using LedgerAccount = Meridian.Ledger.LedgerAccount;
-using LedgerAccountType = Meridian.Ledger.LedgerAccountType;
 using SecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Application.DirectLending;
@@ -17,6 +15,7 @@ namespace Meridian.Application.DirectLending;
 /// </summary>
 public sealed class LoanAccountingProjector
 {
+    private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly ILedgerJournalStore? _journalStore;
     private readonly IAccountingPolicyService _accountingPolicyService;
     private readonly SecurityMasterQueryService? _securityMasterQueryService;
@@ -52,8 +51,12 @@ public sealed class LoanAccountingProjector
         var securityReference = contract.CurrentTerms.SecurityMasterReference;
         var instrumentSymbol = NormalizeSymbol(securityReference?.Symbol);
 
-        void Add(string account, LedgerAccountType accountType, decimal debit, decimal credit)
+        void Add(LedgerAccountRole accountRole, decimal debit, decimal credit)
         {
+            var account = _chartOfAccounts.Resolve(
+                accountRole,
+                loanId.ToString("D"),
+                accountRole == LedgerAccountRole.Cash ? null : instrumentSymbol);
             if (debit < 0m || credit < 0m)
             {
                 // Fail closed: a negative amount would otherwise be dropped (or posted inverted)
@@ -61,7 +64,7 @@ public sealed class LoanAccountingProjector
                 throw new DirectLendingCommandException(
                     new DirectLendingCommandError(
                         DirectLendingErrorCode.Validation,
-                        $"Direct-lending ledger event '{eventType}' produced a negative amount for account '{account}'; the journal was not posted."));
+                        $"Direct-lending ledger event '{eventType}' produced a negative amount for account '{account.Name}'; the journal was not posted."));
             }
 
             if (debit == 0m && credit == 0m)
@@ -73,11 +76,7 @@ public sealed class LoanAccountingProjector
                 Guid.NewGuid(),
                 journalEntryId,
                 timestamp,
-                new LedgerAccount(
-                    account,
-                    accountType,
-                    Symbol: IsDirectLendingInstrumentAccount(account) ? instrumentSymbol : null,
-                    FinancialAccountId: loanId.ToString("D")),
+                account,
                 debit,
                 credit,
                 description));
@@ -89,8 +88,8 @@ public sealed class LoanAccountingProjector
             case "loan.drawdown-booked":
                 description = "Loan drawdown funding";
                 var drawdownAmount = GetRequiredDecimal(root, eventType, "amount");
-                Add("LoanPrincipal", LedgerAccountType.Asset, drawdownAmount, 0m);
-                Add("Cash", LedgerAccountType.Asset, 0m, drawdownAmount);
+                Add(LedgerAccountRole.LoanPrincipal, drawdownAmount, 0m);
+                Add(LedgerAccountRole.Cash, 0m, drawdownAmount);
                 break;
 
             case "loan.daily-accrual-posted":
@@ -101,26 +100,26 @@ public sealed class LoanAccountingProjector
                 // PRD-115: interest settled from prepaid interest first (shared with DirectLendingOutboxDispatcher).
                 foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
                 {
-                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                    Add(ResolveAccountRole(line.Account), line.Debit, line.Credit);
                 }
 
                 if (IsPikCapitalizationDeferred(root))
                 {
                     // Capitalization policy: PIK is earned now but is neither cash nor principal
                     // until a capitalization date moves it (loan.pik-capitalized).
-                    Add("PikInterestReceivable", LedgerAccountType.Asset, pikInterest, 0m);
-                    Add("PikInterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
+                    Add(LedgerAccountRole.LoanPikInterestReceivable, pikInterest, 0m);
+                    Add(LedgerAccountRole.LoanPikInterestIncome, 0m, pikInterest);
                 }
                 else
                 {
                     // Legacy PIK toggle: PIK interest capitalizes into loan principal the same day.
-                    Add("LoanPrincipal", LedgerAccountType.Asset, pikInterest, 0m);
-                    Add("InterestIncome", LedgerAccountType.Revenue, 0m, pikInterest);
+                    Add(LedgerAccountRole.LoanPrincipal, pikInterest, 0m);
+                    Add(LedgerAccountRole.LoanInterestIncome, 0m, pikInterest);
                 }
-                Add("CommitmentFeeReceivable", LedgerAccountType.Asset, commitmentFee, 0m);
-                Add("CommitmentFeeIncome", LedgerAccountType.Revenue, 0m, commitmentFee);
-                Add("PenaltyReceivable", LedgerAccountType.Asset, penalty, 0m);
-                Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, penalty);
+                Add(LedgerAccountRole.LoanCommitmentFeeReceivable, commitmentFee, 0m);
+                Add(LedgerAccountRole.LoanCommitmentFeeIncome, 0m, commitmentFee);
+                Add(LedgerAccountRole.LoanPenaltyReceivable, penalty, 0m);
+                Add(LedgerAccountRole.LoanPenaltyIncome, 0m, penalty);
                 break;
 
             case "loan.daily-accrual-reversed":
@@ -132,22 +131,22 @@ public sealed class LoanAccountingProjector
                 // restores PrepaidInterestLiability instead of crediting a receivable never debited.
                 foreach (var line in DirectLendingJournalLines.ForAccruedInterest(root))
                 {
-                    Add(line.Account, line.AccountType, line.Credit, line.Debit);
+                    Add(ResolveAccountRole(line.Account), line.Credit, line.Debit);
                 }
                 if (IsPikCapitalizationDeferred(root))
                 {
-                    Add("PikInterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
-                    Add("PikInterestReceivable", LedgerAccountType.Asset, 0m, reversedPikInterest);
+                    Add(LedgerAccountRole.LoanPikInterestIncome, reversedPikInterest, 0m);
+                    Add(LedgerAccountRole.LoanPikInterestReceivable, 0m, reversedPikInterest);
                 }
                 else
                 {
-                    Add("InterestIncome", LedgerAccountType.Revenue, reversedPikInterest, 0m);
-                    Add("LoanPrincipal", LedgerAccountType.Asset, 0m, reversedPikInterest);
+                    Add(LedgerAccountRole.LoanInterestIncome, reversedPikInterest, 0m);
+                    Add(LedgerAccountRole.LoanPrincipal, 0m, reversedPikInterest);
                 }
-                Add("CommitmentFeeIncome", LedgerAccountType.Revenue, reversedCommitmentFee, 0m);
-                Add("CommitmentFeeReceivable", LedgerAccountType.Asset, 0m, reversedCommitmentFee);
-                Add("PenaltyIncome", LedgerAccountType.Revenue, reversedPenalty, 0m);
-                Add("PenaltyReceivable", LedgerAccountType.Asset, 0m, reversedPenalty);
+                Add(LedgerAccountRole.LoanCommitmentFeeIncome, reversedCommitmentFee, 0m);
+                Add(LedgerAccountRole.LoanCommitmentFeeReceivable, 0m, reversedCommitmentFee);
+                Add(LedgerAccountRole.LoanPenaltyIncome, reversedPenalty, 0m);
+                Add(LedgerAccountRole.LoanPenaltyReceivable, 0m, reversedPenalty);
                 break;
 
             // PRD-115: payments now settle FeeReceivable and PenaltyReceivable directly, so the
@@ -156,29 +155,29 @@ public sealed class LoanAccountingProjector
             case "loan.fee-assessed":
                 description = "Loan fee assessment";
                 var assessedFee = GetRequiredDecimal(root, eventType, "amount", "Amount");
-                Add("FeeReceivable", LedgerAccountType.Asset, assessedFee, 0m);
-                Add("FeeIncome", LedgerAccountType.Revenue, 0m, assessedFee);
+                Add(LedgerAccountRole.LoanFeeReceivable, assessedFee, 0m);
+                Add(LedgerAccountRole.LoanFeeIncome, 0m, assessedFee);
                 break;
 
             case "loan.prepayment-penalty-charged":
                 description = "Loan prepayment penalty";
                 var chargedPenalty = GetRequiredDecimal(root, eventType, "penaltyAmount", "PenaltyAmount");
-                Add("PenaltyReceivable", LedgerAccountType.Asset, chargedPenalty, 0m);
-                Add("PenaltyIncome", LedgerAccountType.Revenue, 0m, chargedPenalty);
+                Add(LedgerAccountRole.LoanPenaltyReceivable, chargedPenalty, 0m);
+                Add(LedgerAccountRole.LoanPenaltyIncome, 0m, chargedPenalty);
                 break;
 
             case "loan.pik-capitalized":
                 description = "Loan PIK capitalization";
                 var capitalizedPik = GetRequiredDecimal(root, eventType, "amount");
-                Add("LoanPrincipal", LedgerAccountType.Asset, capitalizedPik, 0m);
-                Add("PikInterestReceivable", LedgerAccountType.Asset, 0m, capitalizedPik);
+                Add(LedgerAccountRole.LoanPrincipal, capitalizedPik, 0m);
+                Add(LedgerAccountRole.LoanPikInterestReceivable, 0m, capitalizedPik);
                 break;
 
             case "loan.principal-payment-applied":
                 description = "Loan principal receipt";
                 var appliedPrincipal = GetRequiredDecimal(root, eventType, "AppliedAmount", "appliedAmount", "amount");
-                Add("Cash", LedgerAccountType.Asset, appliedPrincipal, 0m);
-                Add("LoanPrincipal", LedgerAccountType.Asset, 0m, appliedPrincipal);
+                Add(LedgerAccountRole.Cash, appliedPrincipal, 0m);
+                Add(LedgerAccountRole.LoanPrincipal, 0m, appliedPrincipal);
                 break;
 
             case "loan.mixed-payment-applied":
@@ -186,7 +185,7 @@ public sealed class LoanAccountingProjector
                 // PRD-115: split by allocation (shared with DirectLendingOutboxDispatcher).
                 foreach (var line in DirectLendingJournalLines.ForMixedPayment(root))
                 {
-                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                    Add(ResolveAccountRole(line.Account), line.Debit, line.Credit);
                 }
                 break;
 
@@ -198,15 +197,15 @@ public sealed class LoanAccountingProjector
                     ? DirectLendingJournalLines.ForUnappliedCashApplied(root)
                     : DirectLendingJournalLines.ForUnappliedCashRefunded(root))
                 {
-                    Add(line.Account, line.AccountType, line.Debit, line.Credit);
+                    Add(ResolveAccountRole(line.Account), line.Debit, line.Credit);
                 }
                 break;
 
             case "loan.write-off-applied":
                 description = "Loan write-off";
                 var writeOffAmount = GetRequiredDecimal(root, eventType, "AppliedAmount", "appliedAmount", "Amount", "amount");
-                Add("WriteOffExpense", LedgerAccountType.Expense, writeOffAmount, 0m);
-                Add("LoanPrincipal", LedgerAccountType.Asset, 0m, writeOffAmount);
+                Add(LedgerAccountRole.LoanWriteOffExpense, writeOffAmount, 0m);
+                Add(LedgerAccountRole.LoanPrincipal, 0m, writeOffAmount);
                 break;
 
             case "loan.discount-premium-amortized":
@@ -214,18 +213,18 @@ public sealed class LoanAccountingProjector
                 description = "Loan discount/premium amortization";
                 var discountAmortization = GetDecimal(root, "discountAmort", "discountAmortization");
                 var premiumAmortization = GetDecimal(root, "premiumAmort", "premiumAmortization");
-                Add("DiscountAmortizationExpense", LedgerAccountType.Expense, discountAmortization, 0m);
-                Add("LoanDiscount", LedgerAccountType.Asset, 0m, discountAmortization);
-                Add("LoanPremium", LedgerAccountType.Liability, premiumAmortization, 0m);
-                Add("PremiumAmortizationIncome", LedgerAccountType.Revenue, 0m, premiumAmortization);
+                Add(LedgerAccountRole.LoanDiscountAmortizationExpense, discountAmortization, 0m);
+                Add(LedgerAccountRole.LoanDiscount, 0m, discountAmortization);
+                Add(LedgerAccountRole.LoanPremium, premiumAmortization, 0m);
+                Add(LedgerAccountRole.LoanPremiumAmortizationIncome, 0m, premiumAmortization);
                 break;
 
             case "loan.restructured":
             case "LoanRestructured":
                 description = "Loan restructuring";
                 var principalHaircut = GetDecimal(root, "PrincipalHaircut", "principalHaircut", "haircutAmount");
-                Add("RestructuringLoss", LedgerAccountType.Expense, principalHaircut, 0m);
-                Add("LoanPrincipal", LedgerAccountType.Asset, 0m, principalHaircut);
+                Add(LedgerAccountRole.LoanRestructuringLoss, principalHaircut, 0m);
+                Add(LedgerAccountRole.LoanPrincipal, 0m, principalHaircut);
                 break;
         }
 
@@ -294,6 +293,14 @@ public sealed class LoanAccountingProjector
                     ["securityMasterLineage"] = securityLineage.Lineage
                 },
                 EvidenceReferences: [sourceEvidence]));
+
+        if (!entry.IsBalanced)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"Direct-lending ledger event '{eventType}' produced an unbalanced journal; the journal was not posted."));
+        }
 
         return
         [
@@ -538,6 +545,32 @@ public sealed class LoanAccountingProjector
 
     private static bool IsPikCapitalizationDeferred(JsonElement root) =>
         root.TryGetProperty("pikCapitalizationDeferred", out var value) && value.ValueKind == JsonValueKind.True;
+
+    private static LedgerAccountRole ResolveAccountRole(string account) => account switch
+    {
+        "Cash" => LedgerAccountRole.Cash,
+        "LoanPrincipal" => LedgerAccountRole.LoanPrincipal,
+        "AccruedInterestReceivable" => LedgerAccountRole.LoanAccruedInterestReceivable,
+        "InterestIncome" => LedgerAccountRole.LoanInterestIncome,
+        "PikInterestReceivable" => LedgerAccountRole.LoanPikInterestReceivable,
+        "PikInterestIncome" => LedgerAccountRole.LoanPikInterestIncome,
+        "CommitmentFeeReceivable" => LedgerAccountRole.LoanCommitmentFeeReceivable,
+        "CommitmentFeeIncome" => LedgerAccountRole.LoanCommitmentFeeIncome,
+        "FeeReceivable" => LedgerAccountRole.LoanFeeReceivable,
+        "FeeIncome" => LedgerAccountRole.LoanFeeIncome,
+        "PenaltyReceivable" => LedgerAccountRole.LoanPenaltyReceivable,
+        "PenaltyIncome" => LedgerAccountRole.LoanPenaltyIncome,
+        "LoanAndAccrualsClearing" => LedgerAccountRole.LoanAndAccrualsClearing,
+        "PrepaidInterestLiability" => LedgerAccountRole.LoanPrepaidInterestLiability,
+        "UnappliedCashLiability" => LedgerAccountRole.LoanUnappliedCashLiability,
+        "WriteOffExpense" => LedgerAccountRole.LoanWriteOffExpense,
+        "DiscountAmortizationExpense" => LedgerAccountRole.LoanDiscountAmortizationExpense,
+        "LoanDiscount" => LedgerAccountRole.LoanDiscount,
+        "LoanPremium" => LedgerAccountRole.LoanPremium,
+        "PremiumAmortizationIncome" => LedgerAccountRole.LoanPremiumAmortizationIncome,
+        "RestructuringLoss" => LedgerAccountRole.LoanRestructuringLoss,
+        _ => throw new LedgerValidationException($"Direct-lending account '{account}' is not registered in the shared chart of accounts.")
+    };
 
     private static bool IsDirectLendingInstrumentAccount(string account) =>
         !string.Equals(account, "Cash", StringComparison.OrdinalIgnoreCase);

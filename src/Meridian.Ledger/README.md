@@ -106,6 +106,15 @@ This layer should model ledger behavior and accounting evidence without owning U
 
 ## Important workflows
 
+Backtesting, the durable execution fill consumer and the direct-lending projector resolve posting
+accounts through `IChartOfAccounts` and the immutable `StandardChartOfAccounts` role registry.
+Account types and symbol requirements are explicit; an unknown role is rejected. Existing names,
+types and scopes remain compatible with retained journals and `LedgerAccounts` balance lookups.
+Loan roles retain their historical instrument symbol and loan-account scope; cash uses the same
+role as trading. The hierarchical `ChartOfAccounts` below remains a reporting rollup. This first
+convergence slice does not change posting economics or migrate historical journals: in particular,
+execution's legacy short securities credits still differ from Backtesting's short-payable liability.
+
 Use this module for books, ledger behavior, reconciliation evidence, and accounting workflow support.
 `ChartOfAccounts` supports customizable colon-delimited account hierarchies such as
 `Assets:Cash:Brokerage` and can roll flat trial-balance output up to parent accounts for

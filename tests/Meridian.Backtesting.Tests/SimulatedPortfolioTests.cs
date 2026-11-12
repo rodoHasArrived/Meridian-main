@@ -152,6 +152,45 @@ public sealed class SimulatedPortfolioTests
     private static Meridian.Ledger.Ledger NewLedger() => new();
 
     [Fact]
+    public void Ledger_SharedChart_KeepsLongAndShortEconomicsInSeparateBrokerAccounts()
+    {
+        var ledger = NewLedger();
+        var timestamp = new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        var rules = new FinancialAccountRules(AllowMargin: true, AllowShortSelling: true);
+        var portfolio = new SimulatedPortfolio(
+            [
+                new FinancialAccount("broker-long", "Long Broker", FinancialAccountKind.Brokerage, "Broker One", 10_000m, rules),
+                new FinancialAccount("broker-short", "Short Broker", FinancialAccountKind.Brokerage, "Broker Two", 10_000m, rules)
+            ],
+            "broker-long",
+            new FixedCommissionModel(0m),
+            ledger,
+            timestamp);
+
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 10L, 100m, 2m, timestamp.AddMinutes(1), "broker-long"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -5L, 120m, 3m, timestamp.AddMinutes(2), "broker-long"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", -10L, 100m, 2m, timestamp.AddMinutes(3), "broker-short"));
+        portfolio.ProcessFill(new FillEvent(Guid.NewGuid(), Guid.NewGuid(), "SPY", 4L, 90m, 3m, timestamp.AddMinutes(4), "broker-short"));
+
+        IChartOfAccounts chart = StandardChartOfAccounts.Instance;
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long")).Should().Be(9_595m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-short")).Should().Be(10_635m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-long", "SPY")).Should().Be(500m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-short", "SPY")).Should().Be(600m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-long")).Should().Be(100m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.RealizedGain, "broker-short")).Should().Be(40m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-long")).Should().Be(5m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.CommissionExpense, "broker-short")).Should().Be(5m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Securities, "broker-short", "SPY")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-long", "SPY")).Should().Be(0m);
+        ledger.GetBalance(chart.Resolve(LedgerAccountRole.Cash, "broker-long"))
+            .Should().Be(ledger.GetBalance(LedgerAccounts.CashAccount("broker-long")));
+        ledger.Accounts.Should().OnlyContain(account => account.FinancialAccountId == "broker-long" || account.FinancialAccountId == "broker-short");
+        ledger.Journal.Should().OnlyContain(entry => entry.IsBalanced);
+        portfolio.Cash.Should().Be(20_230m);
+    }
+
+    [Fact]
     public void Ledger_InitialDeposit_PostsBalancedEntry()
     {
         var ledger = NewLedger();

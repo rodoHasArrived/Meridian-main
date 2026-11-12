@@ -1,4 +1,5 @@
 using System.Text.Json;
+using Meridian.Contracts.DirectLending;
 using LedgerAccountType = Meridian.Ledger.LedgerAccountType;
 
 namespace Meridian.Application.DirectLending;
@@ -165,7 +166,18 @@ public static class DirectLendingJournalLines
         {
             if (element.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.Number)
             {
-                return value.GetDecimal();
+                var amount = value.GetDecimal();
+                if (amount < 0m)
+                {
+                    // Validate before zero-line filtering and prepaid-interest allocation, so
+                    // malformed retained values cannot disappear from either posting path.
+                    throw new DirectLendingCommandException(
+                        new DirectLendingCommandError(
+                            DirectLendingErrorCode.Validation,
+                            $"Direct-lending journal amount '{propertyName}' cannot be negative (was {amount})."));
+                }
+
+                return amount;
             }
         }
 

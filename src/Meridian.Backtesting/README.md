@@ -86,6 +86,12 @@ reconstructs that basis from a rounded entry quote. FIFO/LIFO/HIFO ordering and 
 SpecificId-to-FIFO fallback are preserved. This calculation convergence does not manufacture
 canonical SecurityIds or acquisition FX, authorize short posting, or replace retained Ledger lots.
 
+`SimulatedPortfolio` resolves posting accounts through the shared `IChartOfAccounts` and
+`StandardChartOfAccounts` role registry, retaining existing account identities and brokerage/symbol
+scopes for capital, fills, financing, income, and corporate actions. This lookup convergence retains
+the simulator's short-payable accounting; it does not migrate historical execution journals that
+record short positions as credits to Securities.
+
 Principal-paydown position adjustments consume Instruments `FactorPaydownProjectionService`, reduce
 total basis by the projected monetary principal, and then recompute per-unit basis. The historical
 adjuster uses scalar compatibility economics: it does not retain the prior lot factor or original

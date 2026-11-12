@@ -38,6 +38,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
     private const string ReconciliationExternalTransactionIdTag = "externalTransactionId";
 
     private readonly ITradeFillLedgerPostingTarget _postingTarget;
+    private readonly IChartOfAccounts _chartOfAccounts = StandardChartOfAccounts.Instance;
     private readonly Ledger.Ledger? _projectionLedger;
     private readonly Channel<PendingTradeFillPosting> _channel;
     private readonly ITradeFillPostingStore _postingStore;
@@ -643,8 +644,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
                 $"Order side '{evt.Side}' is not supported for fill '{evt.FillId:D}'.")
         };
         var accountId = NormalizeOptional(evt.FinancialAccountId);
-        var cashAccount = accountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(accountId);
-        var securitiesAccount = LedgerAccounts.Securities(evt.Symbol, accountId);
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
+        var securitiesAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Securities, accountId, evt.Symbol);
         var lines = new List<(LedgerAccount Account, decimal Debit, decimal Credit)>();
 
         if (evt.Side == Sdk.OrderSide.Buy && preCoverAccountingShape)
@@ -657,9 +658,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
             // Buy-to-cover at a gain: the short was opened with Cr Securities at the sale
             // proceeds, so the cover must debit Securities by those proceeds (cash paid plus the
             // gain) for a flat position to leave a zero Securities balance.
-            var gainAccount = accountId is null
-                ? LedgerAccounts.RealizedGain
-                : LedgerAccounts.RealizedGainFor(accountId);
+            var gainAccount = _chartOfAccounts.Resolve(LedgerAccountRole.RealizedGain, accountId);
             lines.Add((securitiesAccount, evt.GrossValue + evt.RealizedPnl, 0m));
             lines.Add((cashAccount, 0m, evt.GrossValue));
             lines.Add((gainAccount, 0m, evt.RealizedPnl));
@@ -667,9 +666,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         else if (evt.Side == Sdk.OrderSide.Buy && evt.RealizedPnl < 0m)
         {
             // Buy-to-cover at a loss: cash paid exceeds the short-sale proceeds being relieved.
-            var lossAccount = accountId is null
-                ? LedgerAccounts.RealizedLoss
-                : LedgerAccounts.RealizedLossFor(accountId);
+            var lossAccount = _chartOfAccounts.Resolve(LedgerAccountRole.RealizedLoss, accountId);
             var relievedProceeds = evt.GrossValue + evt.RealizedPnl;
             if (relievedProceeds <= 0m)
                 throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive buy-to-cover proceeds basis {relievedProceeds}.");
@@ -684,9 +681,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         }
         else if (evt.RealizedPnl > 0m)
         {
-            var gainAccount = accountId is null
-                ? LedgerAccounts.RealizedGain
-                : LedgerAccounts.RealizedGainFor(accountId);
+            var gainAccount = _chartOfAccounts.Resolve(LedgerAccountRole.RealizedGain, accountId);
             var costBasis = evt.GrossValue - evt.RealizedPnl;
             if (costBasis <= 0m)
                 throw new InvalidDataException($"Fill '{evt.FillId:D}' has non-positive sell cost basis {costBasis}.");
@@ -696,9 +691,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         }
         else if (evt.RealizedPnl < 0m)
         {
-            var lossAccount = accountId is null
-                ? LedgerAccounts.RealizedLoss
-                : LedgerAccounts.RealizedLossFor(accountId);
+            var lossAccount = _chartOfAccounts.Resolve(LedgerAccountRole.RealizedLoss, accountId);
             var costBasis = evt.GrossValue - evt.RealizedPnl;
             lines.Add((cashAccount, evt.GrossValue, 0m));
             lines.Add((lossAccount, -evt.RealizedPnl, 0m));
@@ -727,8 +720,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         var description = FormattableString.Invariant(
             $"Variation margin on {evt.Side} {evt.FilledQuantity} {evt.Symbol} @ {evt.FillPrice:F4}");
         var accountId = NormalizeOptional(evt.FinancialAccountId);
-        var cashAccount = accountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(accountId);
-        var settlementAccount = LedgerAccounts.FuturesMtmSettlement(evt.Symbol, accountId);
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
+        var settlementAccount = _chartOfAccounts.Resolve(LedgerAccountRole.FuturesMtmSettlement, accountId, evt.Symbol);
         var amount = Math.Abs(evt.RealizedPnl);
         IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> lines = evt.RealizedPnl > 0m
             ? [(cashAccount, amount, 0m), (settlementAccount, 0m, amount)]
@@ -744,10 +737,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IAsyncDi
         var journalId = CreateDeterministicGuid(evt.FillId, activityType, "journal");
         var description = $"Commission on {evt.Symbol} fill {evt.FillId}";
         var accountId = NormalizeOptional(evt.FinancialAccountId);
-        var cashAccount = accountId is null ? LedgerAccounts.Cash : LedgerAccounts.CashAccount(accountId);
-        var commissionAccount = accountId is null
-            ? LedgerAccounts.CommissionExpense
-            : LedgerAccounts.CommissionExpenseFor(accountId);
+        var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, accountId);
+        var commissionAccount = _chartOfAccounts.Resolve(LedgerAccountRole.CommissionExpense, accountId);
         return CreateJournal(
             evt,
             securityGate,

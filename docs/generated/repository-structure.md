@@ -6954,6 +6954,7 @@ Meridian-main
 │   │   ├── FundEconomicsJournalFactory.cs
 │   │   ├── FundLedgerBook.cs
 │   │   ├── GlobalUsings.cs
+│   │   ├── IChartOfAccounts.cs
 │   │   ├── IDepreciationScheduleCalculator.cs
 │   │   ├── ILedgerReportBinaryRenderer.cs
 │   │   ├── IPrivateCapitalStore.cs
@@ -6966,6 +6967,7 @@ Meridian-main
 │   │   ├── JournalTemplateBook.cs
 │   │   ├── Ledger.cs
 │   │   ├── LedgerAccount.cs
+│   │   ├── LedgerAccountRole.cs
 │   │   ├── LedgerAccounts.cs
 │   │   ├── LedgerAccountSummary.cs
 │   │   ├── LedgerAccountTaxLotPolicy.cs
@@ -7073,6 +7075,7 @@ Meridian-main
 │   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── StandardChartOfAccounts.cs
 │   │   ├── StructuredNoteAccountingTemplate.cs
 │   │   ├── TaxCharacter.cs
 │   │   ├── ValuationFreshnessPolicy.cs
@@ -11555,6 +11558,7 @@ Meridian-main
 │   │   │   │   ├── DirectLendingEventRebuilderTests.cs
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
+│   │   │   │   ├── DirectLendingJournalLinesTests.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
@@ -11927,6 +11931,7 @@ Meridian-main
 │   │   │   │   ├── EventDrivenDecouplingTests.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.LegacyCashFlowReplay.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.PreCoverAccountingReplay.cs
+│   │   │   │   ├── EventDrivenDecouplingTests.SharedChart.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.StrategyAttribution.cs
 │   │   │   │   ├── EventDrivenDecouplingTests.VariationMargin.cs
 │   │   │   │   ├── MarginModelTests.cs
@@ -12435,6 +12440,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalEvidenceTests.cs
 │   │   │   ├── RecurringJournalScheduleTests.cs
 │   │   │   ├── ShareClassUnitRegisterTests.cs
+│   │   │   ├── StandardChartOfAccountsTests.cs
 │   │   │   ├── StructuredNoteAccountingTemplateTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
