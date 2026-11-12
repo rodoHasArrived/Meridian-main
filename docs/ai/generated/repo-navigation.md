@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-11T11:02:41Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-12T23:15:01Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -134,19 +134,19 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 60 |
-| `src/Meridian.Application/README.md` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 55 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 7 |
-| `src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
-| `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs` | Desktop and UI Workflows | `b80fa4ee03` (2026-11-11T10:00:22Z) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs` | Host and Composition | `b80fa4ee03` (2026-11-11T10:00:22Z) | 1 |
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 59 |
-| `src/Meridian.Contracts/README.md` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 50 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | `d9f2c6983b` (2026-11-11T09:39:07Z) | 27 |
-| `src/Meridian.Wpf/README.md` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 25 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
-| `src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs` | Desktop and UI Workflows | `d9f2c6983b` (2026-11-11T09:39:07Z) | 15 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 13 |
-| `src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs` | Host and Composition | `d9f2c6983b` (2026-11-11T09:39:07Z) | 12 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | `e2ce37f3cc` (2026-11-12T23:09:28Z) | 21 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | `e2ce37f3cc` (2026-11-12T23:09:28Z) | 3 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs` | Unmapped | `e2ce37f3cc` (2026-11-12T23:09:28Z) | 1 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowReadModelBuilder.cs` | Unmapped | `e2ce37f3cc` (2026-11-12T23:09:28Z) | 1 |
+| `src/Meridian.QuantScript/Api/QuantDataContext.cs` | Backtesting and Strategy Analytics | `a96b31b03c` (2026-11-12T23:09:28Z) | 1 |
+| `src/Meridian.QuantScript/Meridian.QuantScript.csproj` | Backtesting and Strategy Analytics | `a96b31b03c` (2026-11-12T23:09:28Z) | 1 |
+| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | `a96b31b03c` (2026-11-12T23:09:28Z) | 1 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | `c3e4f76b55` (2026-11-12T22:58:20Z) | 9 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | `2184a593ab` (2026-11-12T22:31:30Z) | 75 |
+| `src/Meridian.Application/README.md` | Host and Composition | `2184a593ab` (2026-11-12T22:31:30Z) | 56 |
+| `src/Meridian.Contracts/README.md` | Host and Composition | `2184a593ab` (2026-11-12T22:31:30Z) | 48 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | `2184a593ab` (2026-11-12T22:31:30Z) | 31 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | `2184a593ab` (2026-11-12T22:31:30Z) | 18 |
+| `src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs` | Desktop and UI Workflows | `2184a593ab` (2026-11-12T22:31:30Z) | 14 |
+| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | `2184a593ab` (2026-11-12T22:31:30Z) | 12 |
 

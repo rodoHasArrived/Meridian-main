@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T11:02:41Z",
+  "generatedAt": "2026-11-12T23:15:01Z",
   "generatorVersion": "1.0",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -971,7 +971,6 @@
         "src/Meridian.QuantScript"
       ],
       "projectReferences": [
-        "Meridian.Application",
         "Meridian.Backtesting",
         "Meridian.Backtesting.Sdk",
         "Meridian.Contracts",
@@ -2167,11 +2166,6 @@
     },
     {
       "from": "Meridian.QuantScript",
-      "to": "Meridian.Application",
-      "reason": "Meridian.QuantScript references Meridian.Application directly via project reference."
-    },
-    {
-      "from": "Meridian.QuantScript",
       "to": "Meridian.Backtesting",
       "reason": "Meridian.QuantScript references Meridian.Backtesting directly via project reference."
     },
@@ -2438,324 +2432,324 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.FinancialOperations/README.md",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "e2ce37f3cc",
+      "lastSummary": "refactor(operations): extract workflow read-model composition",
+      "touches": 21
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "e2ce37f3cc",
+      "lastSummary": "refactor(operations): extract workflow read-model composition",
+      "touches": 3
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "e2ce37f3cc",
+      "lastSummary": "refactor(operations): extract workflow read-model composition",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowReadModelBuilder.cs",
+      "subsystem": "Unmapped",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "e2ce37f3cc",
+      "lastSummary": "refactor(operations): extract workflow read-model composition",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/Api/QuantDataContext.cs",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "a96b31b03c",
+      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/Meridian.QuantScript.csproj",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "a96b31b03c",
+      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.QuantScript/README.md",
+      "subsystem": "Backtesting and Strategy Analytics",
+      "lastModified": "2026-11-12T23:09:28Z",
+      "lastCommit": "a96b31b03c",
+      "lastSummary": "refactor(quantscript): depend on shared contracts without Application",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:58:20Z",
+      "lastCommit": "c3e4f76b55",
+      "lastSummary": "Refresh current public API references for typed pool accrual",
+      "touches": 9
+    },
+    {
       "path": "src/Meridian.Ui.Shared/README.md",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 60
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 75
     },
     {
       "path": "src/Meridian.Application/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 55
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 7
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/ISecurityMasterCashFlowService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.CashFlowBlocker.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 2
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityEvents.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T10:00:22Z",
-      "lastCommit": "b80fa4ee03",
-      "lastSummary": "Keep capability reads passive and version complete economic events",
-      "touches": 1
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/README.md",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 59
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 56
     },
     {
       "path": "src/Meridian.Contracts/README.md",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 50
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 48
     },
     {
       "path": "src/Meridian.Storage/README.md",
       "subsystem": "Providers and Storage",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 27
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 31
     },
     {
-      "path": "src/Meridian.Wpf/README.md",
+      "path": "src/Meridian.Ledger/README.md",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 18
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 25
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetSpecificTermsUpcasterChain.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 15
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterMapping.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 13
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 14
     },
     {
       "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 13
-    },
-    {
-      "path": "src/Meridian.Application/Composition/Features/StorageFeatureRegistration.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 12
     },
     {
-      "path": "src/Meridian.Instruments/README.md",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 12
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityEconomicDefinitionAdapter.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.FSharp/Domain/SecurityMasterCommands.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Instruments/FixedIncome/BondAnalyticsService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 11
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FSharp/Domain/SecurityMasterLegacyUpgrade.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.FSharp/README.md",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 10
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.cs",
+      "path": "src/Meridian.Ui.Shared/Services/RecurringJournalRunner.cs",
       "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 10
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/CashFlow/ContractualCashFlowPreviewService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 9
     },
     {
       "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 9
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 8
     },
     {
-      "path": "src/Meridian.FSharp/Domain/SecurityTermModules.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 8
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredConventions.cs",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.Context.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 6
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.DeclaredBondLeg.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 5
-    },
-    {
-      "path": "src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.FSharp/Interop.SecurityMaster.fs",
-      "subsystem": "Domain, Ledger, and F#",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DeclaredExercise.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.InstrumentPassport.cs",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/types/workstation-7.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 5
-    },
-    {
-      "path": "src/Meridian.Application/SecurityMaster/ApprovedFieldEditCanonicalMergeHandler.cs",
-      "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 4
     },
     {
       "path": "src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
-      "touches": 4
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 5
     },
     {
-      "path": "src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCostBasisAdjustmentService.cs",
       "subsystem": "Host and Composition",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
       "touches": 4
     },
     {
-      "path": "src/Meridian.Instruments/AssetOperations/PortfolioCashLadderEngine.DeclaredBonds.cs",
-      "subsystem": "Unmapped",
-      "lastModified": "2026-11-11T09:39:07Z",
-      "lastCommit": "d9f2c6983b",
-      "lastSummary": "Consolidate Security Master term storage and govern rate semantics",
+      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowReceiptJsonContext.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Application/SecurityMaster/SecurityMasterCashFlowService.FactorAccrual.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLot.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ledger/LedgerTaxLotBasisAdjuster.cs",
+      "subsystem": "Domain, Ledger, and F#",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/HistoricalTaxLotAccrual.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/ILedgerJournalStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.AccrualHistory.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/PostgresLedgerJournalStore.HistoricalTaxLots.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T22:31:30Z",
+      "lastCommit": "2184a593ab",
+      "lastSummary": "Support unit-safe amortization and dated pool accrual evidence",
+      "touches": 1
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/types.ts",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T22:23:37Z",
+      "lastCommit": "9881ececdc",
+      "lastSummary": "Export merged intercompany types through dashboard barrel",
+      "touches": 7
+    },
+    {
+      "path": "src/Meridian.Storage/Ledger/AccountingPostingCommandValidator.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
       "touches": 4
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementService.Reads.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementService.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs",
+      "subsystem": "Host and Composition",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Storage/FundStructure/PostgresIntercompanyAgreementStore.cs",
+      "subsystem": "Providers and Storage",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
+    },
+    {
+      "path": "src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.cs",
+      "subsystem": "Desktop and UI Workflows",
+      "lastModified": "2026-11-12T21:51:21Z",
+      "lastCommit": "7ec39cd1f6",
+      "lastSummary": "style: format intercompany agreement sources",
+      "touches": 2
     }
   ],
   "recentChangesWindowDays": 14,
