@@ -1811,13 +1811,13 @@
     {
       "method": "POST",
       "path": "/api/alignment/create",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:177",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:178",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/alignment/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:197",
+      "source": "src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:184",
       "documented": true
     },
     {
@@ -3359,61 +3359,61 @@
     {
       "method": "GET",
       "path": "/api/replay/files",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:31",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:34",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/replay/start",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:71",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:74",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/replay/{sessionId}/pause",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:104",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:133",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/replay/{sessionId}/resume",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:139",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/replay/{sessionId}/stop",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:132",
-      "documented": false
-    },
-    {
-      "method": "POST",
-      "path": "/api/replay/{sessionId}/seek",
       "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:146",
       "documented": false
     },
     {
       "method": "POST",
-      "path": "/api/replay/{sessionId}/speed",
+      "path": "/api/replay/{sessionId}/seek",
       "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:159",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/replay/{sessionId}/speed",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:165",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/replay/{sessionId}/status",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:173",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:178",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/replay/preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:200",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:206",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/replay/stats",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:300",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ReplayEndpoints.cs:306",
       "documented": false
     },
     {

@@ -54,6 +54,34 @@ describe("option broker assessment evidence", () => {
     expect(screen.getByText(/Restrictions \/ collateral evidence: Account restricted/)).toBeInTheDocument();
     expect(screen.getByText(/A historical match establishes no present broker acceptance/)).toBeInTheDocument();
   });
+  it("preserves an uncertain import across a forbidden retry until the same command succeeds", async () => {
+    api.accept.mockRejectedValueOnce(new Error("response lost after dispatch"))
+      .mockRejectedValueOnce(new ApiError({ path: "/accept", status: 403, detail: "The entity grant is unavailable." }))
+      .mockResolvedValueOnce(retained);
+    const user = userEvent.setup(); mount();
+    await user.upload(screen.getByLabelText(/Original broker source document/), new File(["broker source"], "source.txt", { type: "text/plain" }));
+    await screen.findByText("source.txt attached");
+    await user.click(screen.getByRole("button", { name: "Preview evidence import" }));
+    await screen.findByRole("region", { name: "Reviewed broker assessment preview" });
+    await user.click(screen.getByRole("button", { name: "Accept reviewed evidence import" }));
+    await screen.findByRole("button", { name: "Retry exact import" });
+    const original = api.accept.mock.calls[0][1];
+
+    await user.click(screen.getByRole("button", { name: "Retry exact import" }));
+    await screen.findByText("Permission denied for this Meridian role.");
+    expect(screen.getByRole("button", { name: "Retry exact import" })).toBeEnabled();
+    expect(screen.getByLabelText("Broker provider ID")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Preview evidence import" })).toBeDisabled();
+    expect(api.accept.mock.calls[1][1]).toBe(original);
+
+    await user.click(screen.getByRole("button", { name: "Retry exact import" }));
+    await screen.findByText(/Retained broker assessment record-a/);
+    expect(api.accept).toHaveBeenCalledTimes(3);
+    expect(api.accept.mock.calls[2][1]).toBe(original);
+    expect(api.preview).toHaveBeenCalledTimes(1);
+    expect(screen.getByLabelText("Broker provider ID")).toBeEnabled();
+    expect(screen.queryByRole("button", { name: "Retry exact import" })).not.toBeInTheDocument();
+  });
   it("distinguishes a definitive validation rejection from an uncertain transport outcome", async () => {
     api.accept.mockRejectedValue(new ApiError({ path: "/accept", status: 400, detail: "Reported currency is required." }));
     const user = userEvent.setup(); mount();

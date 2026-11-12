@@ -242,6 +242,34 @@ public sealed class OptionsChainServiceTests
         result.Should().Equal(fallbackExpirations);
     }
 
+    [Fact]
+    public async Task DiscoverExpirationsAsync_PreservesFailedDiscoveryWithoutChangingListCompatibility()
+    {
+        _providerMock.Setup(provider => provider.GetExpirationsAsync("AAPL", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("Synthetic provider timeout"));
+        var sut = CreateService(_providerMock.Object);
+
+        var discovery = await sut.DiscoverExpirationsAsync("AAPL");
+
+        discovery.IsAvailable.Should().BeFalse();
+        discovery.Expirations.Should().BeEmpty();
+        (await sut.GetExpirationsAsync("AAPL")).Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task DiscoverExpirationsAsync_AvailableFallbackRetainsItsDates()
+    {
+        var primary = new StubOptionsChainProvider("primary", "Primary", priority: 1);
+        var expirations = new[] { new DateOnly(2027, 1, 15) };
+        var fallback = new StubOptionsChainProvider("fallback", "Fallback", priority: 2, expirations: expirations);
+        var sut = new OptionsChainService(_collector, _logger, _healthSourceMock.Object, [primary, fallback]);
+
+        var discovery = await sut.DiscoverExpirationsAsync("AAPL");
+
+        discovery.IsAvailable.Should().BeTrue();
+        discovery.Expirations.Should().Equal(expirations);
+    }
+
     #endregion
 
     #region GetStrikesAsync Tests

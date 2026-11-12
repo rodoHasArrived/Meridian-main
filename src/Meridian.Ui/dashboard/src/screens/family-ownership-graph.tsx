@@ -7,6 +7,8 @@ export function FamilyOwnershipGraph({ graph, table, onSelect }: { graph: Family
   const marker = useId().replace(/:/g, "");
   const layout = useMemo(() => layoutOwnershipGraph(graph.nodes, graph.edges), [graph.nodes, graph.edges]);
   const highlighted = ownershipPathEdges(graph.selectedNodeId, layout.edges);
+  // Keep keyboard entry available without inventing a selection for a missing bookmark.
+  const tabStopNodeId = graph.nodes.find(node => node.isSelected)?.id ?? graph.nodes[0]?.id;
   const refs = useRef<Record<string, HTMLButtonElement | null>>({});
   const [selectedEdge, setSelectedEdge] = useState<string | null>(null);
   const edgeDetail = graph.edges.find((edge) => edge.id === selectedEdge);
@@ -51,7 +53,7 @@ export function FamilyOwnershipGraph({ graph, table, onSelect }: { graph: Family
             </g>;
           })}
         </svg>
-        {graph.nodes.map((node) => { const pos = layout.positions.get(node.id)!; return <button key={node.id} ref={(element) => { refs.current[node.id] = element; }} type="button" style={{ left: pos.x, top: pos.y, width: 224, height: 104 }} className={`absolute overflow-hidden rounded border bg-background p-3 text-left text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${node.isSelected ? "border-primary ring-2 ring-primary" : "border-border"}`} aria-label={node.selectAriaLabel} aria-pressed={node.isSelected} aria-controls={node.detailPanelId} tabIndex={node.isSelected ? 0 : -1} onClick={() => onSelect(node.id)} onKeyDown={(event) => keyDown(event, node.id)}>
+        {graph.nodes.map((node) => { const pos = layout.positions.get(node.id)!; return <button key={node.id} ref={(element) => { refs.current[node.id] = element; }} type="button" style={{ left: pos.x, top: pos.y, width: 224, height: 104 }} className={`absolute overflow-hidden rounded border bg-background p-3 text-left text-xs focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${node.isSelected ? "border-primary ring-2 ring-primary" : "border-border"}`} aria-label={node.selectAriaLabel} aria-pressed={node.isSelected} aria-controls={node.detailPanelId} tabIndex={node.id === tabStopNodeId ? 0 : -1} onClick={() => onSelect(node.id)} onKeyDown={(event) => keyDown(event, node.id)}>
           <span className="block text-muted-foreground">{node.type}{layout.cyclic.has(node.id) ? " · Cycle" : ""}</span><span className="mt-1 block font-semibold">{node.label}</span><span className="mt-1 block text-muted-foreground">{node.type === "asset" ? "Association only" : "Select for relationships"}</span>
         </button>; })}
       </div>

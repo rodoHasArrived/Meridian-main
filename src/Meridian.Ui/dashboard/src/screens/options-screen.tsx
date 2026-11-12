@@ -46,7 +46,7 @@ export function OptionsScreen() {
   const [basket, setBasket] = useState<OptionAssessmentBasket>(() => ({ ...EMPTY_OPTION_BASKET, legs: [] }));
   const [account, setAccount] = useState(params.get("fundAccountId") ?? "");
   const [activeLeg, setActiveLeg] = useState("new");
-  const controller = useRef<AbortController | null>(null); const legCounter = useRef(0); const ownQuery = useRef<string | null>(null);
+  const controller = useRef<AbortController | null>(null); const ownQuery = useRef<string | null>(null);
   const query = params.toString();
   useEffect(() => {
     if (ownQuery.current === query) { ownQuery.current = null; return; }
@@ -90,12 +90,19 @@ export function OptionsScreen() {
   }
   const selected = data?.candidates.find(row => row.id === selectedId) ?? null;
   const coincident = selected ? optionCoincidentGroups(data?.candidates ?? []).find(group => group.some(row => row.id === selected.id)) : null;
+  function addLeg(createLeg: (legId: string) => OptionBasketLeg) {
+    setBasket(previous => {
+      if (previous.legs.length >= 50) return previous;
+      const usedIds = new Set(previous.legs.map(leg => leg.legId));
+      let number = 1;
+      while (usedIds.has(`leg-${number}`)) number++;
+      return { ...previous, legs: [...previous.legs, createLeg(`leg-${number}`)] };
+    });
+  }
   function addSelected() {
     if (!selected) return;
     if (activeLeg === "new") {
-      if (basket.legs.length >= 50) return;
-      const leg = candidateLeg(selected, `leg-${++legCounter.current}`);
-      setBasket(previous => ({ ...previous, legs: [...previous.legs, leg] }));
+      addLeg(legId => candidateLeg(selected, legId));
     } else setBasket(previous => ({ ...previous, legs: previous.legs.map(leg => leg.legId === activeLeg
       ? { ...candidateLeg(selected, leg.legId), side: leg.side, positionIntent: leg.positionIntent, ratio: leg.ratio } : leg) }));
   }
@@ -139,7 +146,7 @@ export function OptionsScreen() {
       </div>
       {basket.legs.map(leg => <BasketLegEditor key={leg.legId} leg={leg} onChange={updated => setBasket(previous => ({ ...previous, legs: previous.legs.map(current => current.legId === updated.legId ? updated : current) }))} onRemove={() => { setBasket(previous => ({ ...previous, legs: previous.legs.filter(current => current.legId !== leg.legId) })); if (activeLeg === leg.legId) setActiveLeg("new"); }} />)}
       {!basket.legs.length ? <p className="text-xs">Select a map or table contract to add an option leg, or add an equity leg below. Canonical JSON and CSV imports can also describe a basket.</p> : null}
-      <Button variant="outline" className="w-fit" disabled={basket.legs.length >= 50} onClick={() => { const leg = newEquityLeg(`leg-${++legCounter.current}`); setBasket(previous => ({ ...previous, legs: [...previous.legs, leg] })); }}>Add equity leg</Button>
+      <Button variant="outline" className="w-fit" disabled={basket.legs.length >= 50} onClick={() => addLeg(newEquityLeg)}>Add equity leg</Button>
     </CardContent></Card>
     <Card><CardHeader><CardTitle>Account and dated broker evidence</CardTitle><CardDescription>A matching imported assessment applies to its exact basket and account at the broker's stated time. It does not establish current acceptance.</CardDescription></CardHeader><CardContent className="grid gap-3">
       <label className="grid gap-1 text-xs">Owned fund account ID<Input value={account} onChange={event => setAccount(event.target.value)} placeholder="Select an account in the workstation scope or enter its UUID" /></label>

@@ -1,11 +1,21 @@
+using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Options;
 using Meridian.Domain.Collectors;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Instruments.Options;
+using Meridian.Identity.Auth;
+using Meridian.ProviderSdk;
 using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
@@ -87,6 +97,87 @@ public sealed class OptionScreeningServiceTests
     {
         await Assert.ThrowsAsync<InvalidOperationException>(() => Service(null).ScreenAsync(new("XYZ")));
         await Assert.ThrowsAsync<ArgumentException>(() => Service(null).ScreenAsync(new("XYZ", MinDelta: 1m, MaxDelta: -1m)));
+    }
+
+    [Fact]
+    public async Task ExpirationProviderTimeout_IsUnavailableRatherThanAValidEmptyScreen()
+    {
+        var provider = new Mock<IOptionsChainProvider>();
+        provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new TimeoutException("Synthetic expiration discovery timeout"));
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => Service(provider.Object).ScreenAsync(new("XYZ")));
+        Assert.Contains("expiration discovery is unavailable", failure.Message);
+        provider.Verify(value => value.GetChainSnapshotAsync(It.IsAny<string>(), It.IsAny<DateOnly>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task UnhealthyExpirationProvider_IsUnavailableWithoutQueryingItsCoverage()
+    {
+        var provider = new Mock<IOptionsChainProvider>();
+        var health = new Mock<IProviderConnectionHealthSource>();
+        health.Setup(value => value.GetHealthAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ProviderConnectionHealthSnapshot("synthetic", "synthetic", IsHealthy: false, Status: "unhealthy"));
+        var chains = new OptionsChainService(new OptionDataCollector(new TestMarketEventPublisher()),
+            NullLogger<OptionsChainService>.Instance, health.Object, [provider.Object]);
+        var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => new OptionScreeningService(chains, new Clock()).ScreenAsync(new("XYZ")));
+        Assert.Contains("expiration discovery is unavailable", failure.Message);
+        provider.Verify(value => value.GetExpirationsAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SuccessfulExpirationDiscovery_OutsideRequestedDte_IsAValidEmptyScreen()
+    {
+        var provider = new Mock<IOptionsChainProvider>();
+        provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new DateOnly(2027, 1, 15)]);
+        var result = await Service(provider.Object).ScreenAsync(new("XYZ", MaxDte: 7));
+        Assert.Empty(result.Candidates);
+        Assert.Empty(result.LoadedExpirations);
+        Assert.Empty(result.FailedExpirations);
+        provider.Verify(value => value.GetChainSnapshotAsync(It.IsAny<string>(), It.IsAny<DateOnly>(), It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EmptyExpirationPayload_DoesNotProveCoverageBecauseAdaptersAlsoReturnItOnFailure()
+    {
+        var provider = new Mock<IOptionsChainProvider>();
+        provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<DateOnly>());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => Service(provider.Object).ScreenAsync(new("XYZ")));
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task ScreenEndpoint_FailedDiscoveryIsUnavailable_WhileNoEligibleDatesIsSuccessful(bool discoveryFails)
+    {
+        var provider = new Mock<IOptionsChainProvider>();
+        var discovery = provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>()));
+        if (discoveryFails)
+            discovery.ThrowsAsync(new TimeoutException("Synthetic expiration discovery timeout"));
+        else
+            discovery.ReturnsAsync([new DateOnly(2027, 1, 15)]);
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        builder.Services.AddMutationRateLimiter();
+        builder.Services.AddSingleton(Service(provider.Object));
+        await using var app = builder.Build();
+        app.UseRateLimiter();
+        app.Use(async (context, next) =>
+        {
+            context.Items[LoginSessionMiddleware.CurrentUserKey] = "operator";
+            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = UserPermission.ViewMarketData;
+            await next(context);
+        });
+        app.MapOptionVisualizationEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        await app.StartAsync();
+
+        var response = await app.GetTestClient().PostAsJsonAsync("/api/options/screen", new OptionScreenRequest("XYZ", MaxDte: 7));
+
+        Assert.Equal(discoveryFails ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK, response.StatusCode);
+        if (discoveryFails)
+            Assert.Contains("expiration discovery is unavailable", await response.Content.ReadAsStringAsync());
+        else
+            Assert.Empty((await response.Content.ReadFromJsonAsync<OptionScreenResult>())!.Candidates);
     }
 
     private static OptionScreeningService Service(IOptionsChainProvider? provider) => new(new OptionsChainService(

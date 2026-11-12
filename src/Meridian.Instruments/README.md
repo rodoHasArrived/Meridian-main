@@ -18,6 +18,11 @@ criteria reasons and exact decimal evidence. Basket/assessment fingerprints bind
 equity legs and account/order context; imported broker evidence is dated and is not a local
 options margin model or permission to execute.
 
+`OptionsChainService.DiscoverExpirationsAsync` preserves whether provider failover supplied
+expiration coverage before DTE filtering. Screening treats unavailable discovery as an error;
+successfully discovered dates outside the requested DTE range produce a valid empty screen.
+The existing list-only expiration read keeps its compatibility behavior.
+
 Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
 already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge
 eligibility must agree. Existing declared fixings remain authoritative; duplicate source selections

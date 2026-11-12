@@ -21,6 +21,12 @@ describe("money.toNumber", () => {
     expect(toNumber("−45.5")).toBe(-45.5); // unicode minus
   });
 
+  it("preserves trailing statement minus signs", () => {
+    expect(toNumber("1,234.00-")).toBe(-1234);
+    expect(toNumber(" $1,234.00− ")).toBe(-1234);
+    expect(toNumber("921.00 -")).toBe(-921);
+  });
+
   it("returns NaN for blank / unparseable input", () => {
     expect(Number.isNaN(toNumber(""))).toBe(true);
     expect(Number.isNaN(toNumber(null))).toBe(true);
@@ -61,6 +67,11 @@ describe("money.formatMoney", () => {
 describe("money.sumAmounts", () => {
   it("sums money-ish values and ignores blanks/NaN", () => {
     expect(sumAmounts([100, "(50.00)", "", null, "25.50"])).toBeCloseTo(75.5, 6);
+  });
+
+  it("balances a credit with a trailing minus against its debit", () => {
+    expect(sumAmounts(["1,234.00", "1,234.00-"])).toBe(0);
+    expect(formatMoney("1,234.00-", { parens: true })).toBe("(1,234.00)");
   });
 });
 

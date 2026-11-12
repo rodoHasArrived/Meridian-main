@@ -4,8 +4,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { axe } from "jest-axe";
 import { renderWithRouter } from "@/test/render";
 import { OptionsScreen } from "./options-screen";
-import { DEFAULT_OPTION_CRITERIA } from "./options-screen.view-model";
-import type { OptionScreenCandidate, OptionScreenResult } from "@/types/option-visualization.types";
+import { candidateLeg, DEFAULT_OPTION_CRITERIA, EMPTY_OPTION_BASKET, emptyAssessment, newEquityLeg } from "./options-screen.view-model";
+import type { OptionScreenCandidate, OptionScreenResult, RetainedOptionAssessment } from "@/types/option-visualization.types";
 
 const mocks = vi.hoisted(() => ({ screen: vi.fn(), history: vi.fn(), preview: vi.fn(), accept: vi.fn() }));
 vi.mock("@/lib/api/option-visualization.api", () => ({ screenOptions: mocks.screen, listOptionAssessments: mocks.history,
@@ -40,6 +40,55 @@ describe("OptionsScreen", () => {
     await user.selectOptions(within(screen.getByRole("group", { name: "leg-1 · Option" })).getByLabelText("Side", { exact: true }), "Sell");
     expect(within(screen.getByRole("group", { name: "leg-1 · Option" })).getByLabelText("Side", { exact: true })).toHaveValue("Sell");
     expect(screen.getByLabelText("Exact deliverable / settlement terms")).toHaveValue("");
+    expect(mocks.accept).not.toHaveBeenCalled();
+  });
+  it.each(["Option", "Equity"] as const)("allocates a distinct %s leg after loading a retained basket and keeps edits and removals independent", async (kind) => {
+    const account = "f3550de4-a0d8-459d-9c8a-cb2eb3eb6f98";
+    const basket = { ...EMPTY_OPTION_BASKET, legs: [
+      { ...candidateLeg(call, "leg-1"), symbol: "RETAINED-CALL", ratio: "2" },
+      { ...newEquityLeg("leg-3"), symbol: "RETAINED-SHARES" }
+    ] };
+    const retained: RetainedOptionAssessment = {
+      assessmentId: "retained-record", assessment: { ...emptyAssessment(account, basket), providerId: "synthetic", externalAccountId: "synthetic-account",
+        assessedAt: "2026-11-12T12:00:00Z", brokerReference: "retained-report", rawBrokerStatus: "Reported" },
+      basketFingerprint: "basket-hash", contentSha256: "content-hash", recordedAt: "2026-11-12T12:05:00Z", recordedBy: "operator",
+      sourceVaultId: "source", sourceDocumentId: "source-document", sourceSha256: "source-hash",
+      assessmentVaultId: "assessment", assessmentDocumentId: "assessment-document", correctsAssessmentId: null, isSuperseded: false
+    };
+    mocks.history.mockResolvedValue([retained]);
+    const user = userEvent.setup();
+    renderWithRouter(<OptionsScreen />, { initialEntries: [`/data/quotes?view=options&symbol=XYZ&fundAccountId=${account}`] });
+    await user.click(screen.getByRole("button", { name: "Load assessment history" }));
+    await user.click(await screen.findByRole("button", { name: "Use exact assessed basket" }));
+    const retainedOption = screen.getByRole("group", { name: "leg-1 · Option" });
+    const retainedEquity = screen.getByRole("group", { name: "leg-3 · Equity" });
+    if (kind === "Option") {
+      await user.click(screen.getByRole("button", { name: "Screen contracts" }));
+      await screen.findByRole("table", { name: "Options screening contracts" });
+      await user.click(screen.getByRole("button", { name: "XYZ-P100, Put, rejected" }));
+      await user.click(screen.getByRole("button", { name: "Use selected contract" }));
+    } else await user.click(screen.getByRole("button", { name: "Add equity leg" }));
+
+    const groups = screen.getAllByRole("group", { name: /^leg-\d+ · (Option|Equity)$/ });
+    expect(groups).toHaveLength(3);
+    const legIds = groups.map(group => group.querySelector("legend")!.textContent!.split(" · ")[0]);
+    expect(new Set(legIds).size).toBe(3);
+    const added = groups.find(group => group !== retainedOption && group !== retainedEquity)!;
+    expect(added.querySelector("legend")).toHaveTextContent(kind);
+    const symbol = within(added).getByLabelText("Symbol", { exact: true });
+    await user.clear(symbol); await user.type(symbol, "NEW-ONLY");
+    expect(within(retainedOption).getByLabelText("Symbol", { exact: true })).toHaveValue("RETAINED-CALL");
+    expect(within(retainedEquity).getByLabelText("Symbol", { exact: true })).toHaveValue("RETAINED-SHARES");
+    const retainedRatio = within(retainedOption).getByLabelText("Ratio quantity");
+    await user.clear(retainedRatio); await user.type(retainedRatio, "7");
+    expect(within(added).getByLabelText("Ratio quantity")).toHaveValue(kind === "Option" ? "1" : "100");
+    expect(within(retainedEquity).getByLabelText("Ratio quantity")).toHaveValue("100");
+    await user.click(within(added).getByRole("button", { name: /^Remove leg-/ }));
+    expect(screen.getAllByRole("group", { name: /^leg-\d+ · (Option|Equity)$/ })).toHaveLength(2);
+    expect(within(retainedOption).getByLabelText("Ratio quantity")).toHaveValue("7");
+    await user.click(within(retainedOption).getByRole("button", { name: "Remove leg-1" }));
+    expect(screen.queryByRole("group", { name: "leg-1 · Option" })).not.toBeInTheDocument();
+    expect(within(retainedEquity).getByLabelText("Symbol", { exact: true })).toHaveValue("RETAINED-SHARES");
     expect(mocks.accept).not.toHaveBeenCalled();
   });
   it("discards a delayed response after criteria change even when transport ignores abort", async () => {

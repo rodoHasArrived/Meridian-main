@@ -25,7 +25,10 @@ public sealed class OptionScreeningService(OptionsChainService chains, TimeProvi
         request = request with { UnderlyingSymbol = request.UnderlyingSymbol.Trim().ToUpperInvariant() };
         var now = timeProvider.GetUtcNow();
         var today = DateOnly.FromDateTime(now.UtcDateTime);
-        var expirations = (await chains.GetExpirationsAsync(request.UnderlyingSymbol, ct).ConfigureAwait(false))
+        var discovery = await chains.DiscoverExpirationsAsync(request.UnderlyingSymbol, ct).ConfigureAwait(false);
+        if (!discovery.IsAvailable)
+            throw new InvalidOperationException("Option expiration discovery is unavailable. No provider supplied expiration coverage for this underlying. Check provider status and retry.");
+        var expirations = discovery.Expirations
             .Distinct().Where(expiry => expiry.DayNumber - today.DayNumber >= request.MinDte
                 && expiry.DayNumber - today.DayNumber <= request.MaxDte).Order().ToArray();
         var candidates = new List<OptionScreenCandidate>();
@@ -87,8 +90,6 @@ public sealed class OptionScreeningService(OptionsChainService chains, TimeProvi
         }
         if (expirations.Length > 0 && loaded.Count == 0)
             throw new InvalidOperationException("No requested expiration could be loaded. Check provider evidence and retry.");
-        if (expirations.Length == 0 && !chains.IsProviderAvailable)
-            throw new InvalidOperationException("No options-chain provider is configured. No substitute chain is supplied.");
         return new(request, now, candidates.GroupBy(candidate => candidate.Id).Select(group => group.First()).ToArray(),
             loaded, failed, expirations.Skip(MaximumExpirations).Select(expiry => expiry.ToString("yyyy-MM-dd")).ToArray(),
             request.StrikeRange,

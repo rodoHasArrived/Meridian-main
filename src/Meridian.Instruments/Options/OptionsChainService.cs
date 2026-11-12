@@ -107,6 +107,16 @@ public sealed class OptionsChainService
     public async Task<IReadOnlyList<DateOnly>> GetExpirationsAsync(
         string underlyingSymbol,
         CancellationToken ct = default)
+        => (await DiscoverExpirationsAsync(underlyingSymbol, ct).ConfigureAwait(false)).Expirations;
+
+    /// <summary>
+    /// Preserves whether provider failover supplied expiration coverage before a caller applies
+    /// its date filters. Empty provider payloads do not establish coverage: existing adapters also
+    /// return empty payloads for unavailable credentials and remote failures.
+    /// </summary>
+    public async Task<OptionsExpirationDiscoveryResult> DiscoverExpirationsAsync(
+        string underlyingSymbol,
+        CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(underlyingSymbol);
 
@@ -118,11 +128,11 @@ public sealed class OptionsChainService
 
         if (expirations is null)
         {
-            _logger.LogWarning("No options chain provider configured; returning empty expirations for {Symbol}", underlyingSymbol);
-            return Array.Empty<DateOnly>();
+            _logger.LogWarning("No options chain provider supplied expiration coverage for {Symbol}", underlyingSymbol);
+            return new OptionsExpirationDiscoveryResult(false, Array.Empty<DateOnly>());
         }
 
-        return expirations;
+        return new OptionsExpirationDiscoveryResult(true, expirations);
     }
 
     /// <summary>
@@ -475,6 +485,14 @@ public sealed class OptionsChainService
         return date.Day >= 15 && date.Day <= 21;
     }
 }
+
+/// <summary>
+/// Provider discovery outcome, distinct from an empty list after a consumer's DTE filtering.
+/// The compatibility list-only read continues to return an empty list when coverage is unavailable.
+/// </summary>
+public sealed record OptionsExpirationDiscoveryResult(
+    bool IsAvailable,
+    IReadOnlyList<DateOnly> Expirations);
 
 internal sealed class AlwaysHealthyProviderConnectionHealthSource : IProviderConnectionHealthSource
 {

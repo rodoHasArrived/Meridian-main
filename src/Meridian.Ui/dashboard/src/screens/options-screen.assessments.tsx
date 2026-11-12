@@ -85,6 +85,7 @@ export function OptionAssessmentPanel({ account, basket, basketKey, onUseBasket 
   async function accept() {
     const exact = command ?? (preview && previewRequest ? { idempotencyKey: crypto.randomUUID(), previewFingerprint: preview.previewFingerprint, import: previewRequest } : null);
     if (!exact) return;
+    const hadUncertainOutcome = uncertain;
     // Deliberately do not abort acceptance on basket edits; uncertain outcomes keep this exact request.
     setCommand(exact); setBusy("accept"); setError(null); setUncertain(false);
     try {
@@ -97,7 +98,8 @@ export function OptionAssessmentPanel({ account, basket, basketKey, onUseBasket 
       if (sourceInput.current) sourceInput.current.value = "";
     } catch (failure) {
       if (!mounted.current) return;
-      const rejected = isApiError(failure) && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.status !== 429;
+      // A rejected retry cannot establish whether an earlier dispatch committed.
+      const rejected = !hadUncertainOutcome && isApiError(failure) && failure.status >= 400 && failure.status < 500 && failure.status !== 408 && failure.status !== 429;
       setUncertain(!rejected);
       if (rejected) { setCommand(null); setPreview(null); setPreviewRequest(null); }
       setError(describeApiError(failure, rejected ? "The import was rejected. Correct the inputs and preview again." : "Import outcome is uncertain. Retry this same reviewed command or inspect history.").summary);

@@ -91,6 +91,35 @@ describe("portfolio table route focus", () => {
 });
 
 
+describe("family ownership graph route focus", () => {
+  it.each(["/portfolio/family-office", "/portfolio/family-office/", "/PORTFOLIO/FAMILY-OFFICE"])("keeps ownership selection local on %s", (pathname) => {
+    const scope = "?familyOfficeId=family-a&asOf=2026-06-30";
+    const initial = focusState(scope, pathname);
+    expect(focusState(`${scope}&ownershipNode=unavailable-bookmark`, pathname).routeKey).toBe(initial.routeKey);
+    expect(focusState(`${scope}&ownershipNode=available-node`, pathname).routeKey).toBe(initial.routeKey);
+  });
+
+  it("preserves client, financial scope, unrelated parameters and evidence navigation", () => {
+    const pathname = "/portfolio/family-office";
+    const scope = "familyOfficeId=family-a&fundAccountId=account-a&asOf=2026-06-30&filter=all";
+    const initial = focusState(`?${scope}`, pathname, "#ownership-evidence");
+    const selected = focusState(`?${scope}&ownershipNode=available-node`, pathname, "#ownership-evidence");
+    expect(selected.routeKey).toBe(initial.routeKey);
+    expect(selected.targetElementId).toBe("ownership-evidence");
+    for (const key of ["familyOfficeId", "fundAccountId", "asOf", "filter"]) {
+      const changed = new URLSearchParams(scope);
+      changed.set(key, "changed");
+      expect(focusState(`?${changed}&ownershipNode=available-node`, pathname, "#ownership-evidence").routeKey).not.toBe(initial.routeKey);
+    }
+    expect(focusState(`?${scope}&ownershipNode=available-node`, pathname, "#other-evidence").routeKey).not.toBe(initial.routeKey);
+  });
+
+  it.each(["/portfolio", "/portfolio/asset-detail", "/reporting"])("preserves ownership query navigation on other routes: %s", (pathname) => {
+    expect(focusState("?ownershipNode=first", pathname).routeKey)
+      .not.toBe(focusState("?ownershipNode=second", pathname).routeKey);
+  });
+});
+
 describe("market data tab route focus", () => {
   it.each(["/data/quotes", "/data/quotes/", "/DATA/QUOTES"])("keeps tab selection local on %s", (pathname) => {
     const initial = focusState("?provider=polygon&symbol=MSFT", pathname);
