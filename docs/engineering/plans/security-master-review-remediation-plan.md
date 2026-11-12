@@ -652,5 +652,13 @@ new Bond rate-unit declaration or lift the declared-schedule posting gate. Struc
 uses its existing governed scalar unit declaration. Consumer admission is not proof that
 every retained record satisfies these existing conditions.
 
-Validation evidence will be recorded after the focused build, financial regressions and
-PostgreSQL history checks complete. No migration or historical journal rewrite is introduced.
+Validation on the integrated branch: the .NET 10 build of `tests/Meridian.Tests/Meridian.Tests.csproj`
+passed with `EnableWindowsTargeting=true`; 569 focused tests passed with zero skips, with Docker
+PostgreSQL enabled. The filter covers cost-basis/relief precision, the source projector and bridge,
+context receipt versions, historical lot reconstruction, recurring journal calculations/lifecycle,
+draft intake, rate-unit parity and catalog coverage. The database regression executes governed
+paydowns and a same-day disposal, restarts the store, and verifies final-day entitlement and scope.
+A separate read-only agent financial review found no unresolved findings after corrections.
+Changed-file whitespace formatting passed. Maintained documentation generation converged; the
+repository inventory and test coverage report were refreshed. Hosted checks remain the merge
+authority. No migration or historical journal rewrite is introduced.
