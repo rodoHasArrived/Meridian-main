@@ -1,4 +1,5 @@
 using FluentAssertions;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
@@ -113,8 +114,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
 
         module.Register(services, new DataSourceRegistry());
 
-        services.Should().HaveCount(2);
-        services.Select(service => service.ServiceType).Should().BeEquivalentTo(descriptor.Implementations(),
+        // The module registers both declared capability implementations, plus the rate-observation
+        // contract, which forwards to the same historical provider instance.
+        services.Should().HaveCount(3);
+        services.Select(service => service.ServiceType).Should().BeEquivalentTo(
+            descriptor.Implementations().Append(typeof(ISecurityRateObservationProvider)),
             "both historical and search capability implementations must have module-owned factories");
         services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
             && service.ImplementationFactory != null,
