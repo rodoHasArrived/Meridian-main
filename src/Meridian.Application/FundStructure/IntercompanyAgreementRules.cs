@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.FundStructure;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Application.FundStructure;
 
@@ -14,13 +15,13 @@ public static class IntercompanyAgreementRules
         Currency = draft.Currency?.Trim().ToUpperInvariant() ?? string.Empty,
         PartyOneRole = draft.PartyOneRole?.Trim() ?? string.Empty,
         PartyTwoRole = draft.PartyTwoRole?.Trim() ?? string.Empty,
-        Purpose = Clean(draft.Purpose),
+        Purpose = NormalizeOptional(draft.Purpose),
         Terms = draft.Terms is null ? null : draft.Terms with
         {
-            RateDescription = Clean(draft.Terms.RateDescription),
-            ScheduleDescription = Clean(draft.Terms.ScheduleDescription),
-            AllocationDescription = Clean(draft.Terms.AllocationDescription),
-            Notes = Clean(draft.Terms.Notes)
+            RateDescription = NormalizeOptional(draft.Terms.RateDescription),
+            ScheduleDescription = NormalizeOptional(draft.Terms.ScheduleDescription),
+            AllocationDescription = NormalizeOptional(draft.Terms.AllocationDescription),
+            Notes = NormalizeOptional(draft.Terms.Notes)
         },
         Evidence = draft.Evidence?.Select(e => e is null ? throw new IntercompanyAgreementValidationException("Evidence reference is required.")
             : e with { Reference = e.Reference?.Trim() ?? string.Empty }).ToArray() ?? []
@@ -134,6 +135,5 @@ public static class IntercompanyAgreementRules
     public static bool SameActor(string? first, string? second) => string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
     private static bool RoleEquals(string a, string b) => string.Equals(a.Replace(" ", string.Empty), b.Replace(" ", string.Empty), StringComparison.OrdinalIgnoreCase);
     private static string Digest(string text) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
-    private static string? Clean(string? value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private static void Fail(string message) => throw new IntercompanyAgreementValidationException(message);
 }
