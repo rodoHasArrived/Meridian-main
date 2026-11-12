@@ -1234,6 +1234,15 @@
       "sha256": "3855a01189025fdd047b6cd4270de1cb6dd67a24502ac4e2475b9d58a479ae30"
     },
     {
+      "filename": "006_intercompany_agreements.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "schema": "fund_structure",
+      "sha256": "61fa511ef5c478c4828c521dc3850de05203afe078da24a93969176929784b60"
+    },
+    {
       "filename": "001_fund_accounts.sql",
       "immutable": true,
       "migration_set_id": "fund-accounts",
@@ -1304,6 +1313,15 @@
       "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
       "schema": "fund_accounts",
       "sha256": "4fc0e5464b31d9a5a068f7f8b0114001a25e72848e1ec185f3deb7930e0f48f4"
+    },
+    {
+      "filename": "009_private_capital_records.sql",
+      "immutable": true,
+      "migration_set_id": "fund-accounts",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundAccounts/Migrations/009_private_capital_records.sql",
+      "schema": "fund_accounts",
+      "sha256": "31a9d472b7e4764219971282da4437974db73cfa1dc72e412d5dcd765d945f6d"
     },
     {
       "filename": "001_banking.sql",
@@ -1478,7 +1496,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "938494673270e97608bd6d2dd27d318fc615158542d54626255701360d99079c",
+  "fingerprint": "62dbc230f9baf58571641aa360d1b713d1c3e5aae491bc842131a08612b634f3",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1740,9 +1758,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 164,
+    "files": 166,
     "migration_sets": 11,
-    "waivers": 29,
+    "waivers": 30,
     "warnings": 0
   },
   "waivers": [
@@ -1758,6 +1776,13 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
       "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
       "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12",
       "rule_id": "migration-truncate"
     },
     {

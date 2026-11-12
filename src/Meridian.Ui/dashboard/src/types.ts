@@ -41,5 +41,9 @@ export * from "./types/bond-reference.types";
 export * from "./types/contractual-cash-flow.types";
 export * from "./types/provider-ownership.types";
 export * from "./types/private-capital";
+export * from "./types/private-capital.types";
+export * from "./types/corporate-action-calendar.types";
+export * from "./types/option-visualization.types";
+export * from "./types/intercompany-agreements";
 
 export * from "./types/number-passport-reference";

@@ -1,5 +1,5 @@
 export interface PrivateCapitalEvidence { vaultId: string; documentId: string; contentHash: string }
-export interface PrivateCapitalCommitment {
+export interface PrivateCapitalRecordCommitment {
   commitmentId: string; holderEntityId: string; vehicleSecurityId: string; vehicleName: string;
   strategy: string | null; vintageYear: number | null; currency: string; sourceReference: string;
   evidence: PrivateCapitalEvidence; createdAt: string; createdBy: string;
@@ -15,7 +15,7 @@ export interface PrivateCapitalSnapshot extends PrivateCapitalSnapshotInput {
   batchId?: string;
 }
 export interface PrivateCapitalRecords {
-  commitments: PrivateCapitalCommitment[]; snapshots: PrivateCapitalSnapshot[]; generatedAt: string; canManage: boolean;
+  commitments: PrivateCapitalRecordCommitment[]; snapshots: PrivateCapitalSnapshot[]; generatedAt: string; canManage: boolean;
 }
 export interface PrivateCapitalChoices { entities: { id: string; label: string }[]; vehicles: { id: string; label: string }[] }
 export interface PrivateCapitalPreview {

@@ -34,7 +34,8 @@ public static class OptionVisualizationEndpoints
             try
             {
                 var service = context.RequestServices.GetService<OptionScreeningService>();
-                if (service is null) return Results.Problem("Options screening is unavailable.", statusCode: 503);
+                if (service is null)
+                    return Results.Problem("Options screening is unavailable.", statusCode: 503);
                 return Results.Json(await service.ScreenAsync(request, ct).ConfigureAwait(false), json);
             }
             catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
@@ -45,7 +46,8 @@ public static class OptionVisualizationEndpoints
 
         app.MapGet(AssessmentsRoute, async (Guid accountId, HttpContext context, CancellationToken ct) =>
         {
-            if (!await Authorized(context, accountId, UserPermission.ViewOptionAssessments, ct).ConfigureAwait(false)) return EndpointHelpers.Forbidden(context);
+            if (!await Authorized(context, accountId, UserPermission.ViewOptionAssessments, ct).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden(context);
             return await Guard(async () =>
             {
                 var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
@@ -59,7 +61,8 @@ public static class OptionVisualizationEndpoints
         app.MapPost(UiApiRoutes.OptionAssessmentPreview, async (Guid accountId, OptionAssessmentImportRequest request,
             HttpContext context, CancellationToken ct) =>
         {
-            if (!await Authorized(context, accountId, UserPermission.ManageOptionAssessments, ct).ConfigureAwait(false)) return EndpointHelpers.Forbidden(context);
+            if (!await Authorized(context, accountId, UserPermission.ManageOptionAssessments, ct).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden(context);
             return await Guard(async () =>
             {
                 await CheckAccount(context, accountId, request.Assessment, ct).ConfigureAwait(false);
@@ -74,12 +77,14 @@ public static class OptionVisualizationEndpoints
         app.MapPost(UiApiRoutes.OptionAssessmentAccept, async (Guid accountId, AcceptOptionAssessmentImportRequest command,
             HttpContext context, CancellationToken ct) =>
         {
-            if (!await Authorized(context, accountId, UserPermission.ManageOptionAssessments, ct).ConfigureAwait(false)) return EndpointHelpers.Forbidden(context);
+            if (!await Authorized(context, accountId, UserPermission.ManageOptionAssessments, ct).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden(context);
             return await Guard(async () =>
             {
                 await CheckAccount(context, accountId, command.Import.Assessment, ct).ConfigureAwait(false);
                 var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
-                if (string.IsNullOrWhiteSpace(scope.Actor)) return EndpointHelpers.Forbidden(context);
+                if (string.IsNullOrWhiteSpace(scope.Actor))
+                    return EndpointHelpers.Forbidden(context);
                 var result = await context.RequestServices.GetRequiredService<OptionAssessmentImportService>()
                     .AcceptAsync(scope.TenantId!, scope.CompanyId!, scope.Actor, accountId, command, ct).ConfigureAwait(false);
                 return Results.Json(result, json, statusCode: StatusCodes.Status201Created);
@@ -91,14 +96,16 @@ public static class OptionVisualizationEndpoints
         app.MapGet(UiApiRoutes.OptionAssessmentSource, async (Guid accountId, string assessmentId,
             HttpContext context, CancellationToken ct) =>
         {
-            if (!await Authorized(context, accountId, UserPermission.ViewOptionAssessments, ct).ConfigureAwait(false)) return EndpointHelpers.Forbidden(context);
+            if (!await Authorized(context, accountId, UserPermission.ViewOptionAssessments, ct).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden(context);
             return await Guard(async () =>
             {
                 var scope = HttpContextWorkstationTenantContextAccessor.Resolve(context);
                 var records = await context.RequestServices.GetRequiredService<OptionAssessmentImportService>()
                     .ListAsync(scope.TenantId!, scope.CompanyId!, accountId, ct).ConfigureAwait(false);
                 var record = records.SingleOrDefault(row => row.AssessmentId == assessmentId);
-                if (record is null) return Results.NotFound();
+                if (record is null)
+                    return Results.NotFound();
                 var source = await context.RequestServices.GetRequiredService<IEvidenceArtifactStore>()
                     .TryOpenDocumentContentAsync(record.SourceVaultId, record.SourceDocumentId, scope.TenantId!, scope.CompanyId!, ct).ConfigureAwait(false);
                 return source is null ? Results.NotFound() : Results.Stream(source.Content, source.ContentType, source.FileName);
@@ -110,7 +117,8 @@ public static class OptionVisualizationEndpoints
     private static async Task<bool> Authorized(HttpContext context, Guid account, UserPermission permission, CancellationToken ct)
     {
         if (account == Guid.Empty || !(await EndpointAuthorization.AuthorizeScopedAsync(context, permission,
-            AccessScopeKindDto.Account, account, ct).ConfigureAwait(false)).IsAllowed) return false;
+            AccessScopeKindDto.Account, account, ct).ConfigureAwait(false)).IsAllowed)
+            return false;
         // A permission grant (including a global administrative override) cannot invent an account.
         // The registered query service applies the host's tenant guard before reading authoritative records.
         var query = context.RequestServices.GetService<IAccountQueryService>();
@@ -119,10 +127,12 @@ public static class OptionVisualizationEndpoints
 
     private static async Task CheckAccount(HttpContext context, Guid accountId, BrokerOptionAssessment? assessment, CancellationToken ct)
     {
-        if (assessment is null || assessment.FundAccountId != accountId) throw new ArgumentException("Assessment account does not match the selected owned account.");
+        if (assessment is null || assessment.FundAccountId != accountId)
+            throw new ArgumentException("Assessment account does not match the selected owned account.");
         // An existing retained brokerage link is authoritative. Never relink it from imported claim text.
         var sync = context.RequestServices.GetService<BrokeragePortfolioSyncService>();
-        if (sync is null) return;
+        if (sync is null)
+            return;
         var status = await sync.GetStatusAsync(accountId, ct).ConfigureAwait(false);
         if (status.IsLinked && (!string.Equals(status.ProviderId, assessment.ProviderId?.Trim(), StringComparison.OrdinalIgnoreCase)
             || !string.Equals(status.ExternalAccountId, assessment.ExternalAccountId?.Trim(), StringComparison.Ordinal)))
@@ -131,7 +141,8 @@ public static class OptionVisualizationEndpoints
 
     private static async Task<IResult> Guard(Func<Task<IResult>> action)
     {
-        try { return await action().ConfigureAwait(false); }
+        try
+        { return await action().ConfigureAwait(false); }
         catch (ArgumentException ex) { return Results.BadRequest(new { error = ex.Message }); }
         catch (InvalidOperationException ex) { return Results.Conflict(new { error = ex.Message }); }
         catch (JsonException) { return Results.Problem("Retained assessment history is corrupt; no empty history is substituted.", statusCode: 503); }

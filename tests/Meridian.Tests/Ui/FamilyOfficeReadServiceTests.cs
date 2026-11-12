@@ -174,7 +174,8 @@ public sealed class FamilyOfficeReadServiceTests
         var accounts = new InMemoryFundAccountService();
         var structure = new InMemoryFundStructureService(accounts);
         var now = DateTimeOffset.Parse("2026-05-29T12:00:00Z");
-        var org = Guid.NewGuid(); var business = Guid.NewGuid();
+        var org = Guid.NewGuid();
+        var business = Guid.NewGuid();
         await structure.CreateOrganizationAsync(new(org, "ORG", "Organization", "USD", now.AddYears(-1), "test"));
         await structure.CreateBusinessAsync(new(business, org, BusinessKindDto.Hybrid, "B", "Business", "USD", now.AddYears(-1), "test"));
         var clientIds = new[] { Guid.NewGuid(), Guid.NewGuid() };
@@ -190,7 +191,8 @@ public sealed class FamilyOfficeReadServiceTests
             await structure.LinkNodesAsync(new(Guid.NewGuid(), fundIds[index], entityIds[index], OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", index == 0 ? 100m : 60m));
             await structure.CreateInvestmentPortfolioAsync(new(portfolioIds[index], business, $"P{index}", $"Portfolio {index}", "USD", now.AddYears(-1), "test", FundId: fundIds[index], EntityId: entityIds[index]));
             var link = await structure.LinkNodesAsync(new(Guid.NewGuid(), clientIds[index], portfolioIds[index], OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", 60m, Notes: "Operator notes, not a document id"));
-            if (index == 0) selectedLinkId = link.OwnershipLinkId;
+            if (index == 0)
+                selectedLinkId = link.OwnershipLinkId;
         }
         // This is legal ownership evidence, not permission to include the sibling entity.
         await structure.LinkNodesAsync(new(Guid.NewGuid(), fundIds[0], entityIds[1], OwnershipRelationshipTypeDto.Owns, now.AddYears(-1), "test", 40m));
@@ -198,11 +200,16 @@ public sealed class FamilyOfficeReadServiceTests
         var graph = await structure.GetOrganizationStructureAsync(new(ActiveOnly: true, AsOf: now));
         // A valid read can retain the fund operating parent and legal Client -> Portfolio
         // association without redundant client metadata. The direct retained link is decisive.
-        graph = graph with {
+        graph = graph with
+        {
             Clients = graph.Clients.Select(client => client with { InvestmentPortfolioIds = [] }).ToArray(),
-            InvestmentPortfolios = graph.InvestmentPortfolios.Select(portfolio => portfolio with {
-                ClientId = null, FundId = fundIds[Array.IndexOf(portfolioIds, portfolio.InvestmentPortfolioId)],
-                SleeveId = null, VehicleId = null }).ToArray()
+            InvestmentPortfolios = graph.InvestmentPortfolios.Select(portfolio => portfolio with
+            {
+                ClientId = null,
+                FundId = fundIds[Array.IndexOf(portfolioIds, portfolio.InvestmentPortfolioId)],
+                SleeveId = null,
+                VehicleId = null
+            }).ToArray()
         };
         var reader = Substitute.For<IFundStructureService>();
         reader.GetOrganizationStructureAsync(Arg.Any<OrganizationStructureQuery>(), Arg.Any<CancellationToken>()).Returns(graph);
@@ -216,7 +223,8 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.DoesNotContain(selected.OwnershipGraph.Nodes, node => node.NodeId == entityIds[1].ToString("D"));
         Assert.DoesNotContain(selected.OwnershipGraph.Nodes, node => node.NodeId == fundIds[1].ToString("D"));
         Assert.DoesNotContain(selected.OwnershipGraph.Edges, edge => edge.TargetNodeId == entityIds[1].ToString("D"));
-        Assert.All(selected.OwnershipGraph.Edges, edge => {
+        Assert.All(selected.OwnershipGraph.Edges, edge =>
+        {
             Assert.Contains(selected.OwnershipGraph.Nodes, node => node.NodeId == edge.SourceNodeId);
             Assert.Contains(selected.OwnershipGraph.Nodes, node => node.NodeId == edge.TargetNodeId);
         });
@@ -236,7 +244,10 @@ public sealed class FamilyOfficeReadServiceTests
         var accounts = new InMemoryFundAccountService();
         var structure = new InMemoryFundStructureService(accounts);
         var now = DateTimeOffset.Parse("2026-05-29T12:00:00Z");
-        var org = Guid.NewGuid(); var business = Guid.NewGuid(); var fund = Guid.NewGuid(); var entity = Guid.NewGuid();
+        var org = Guid.NewGuid();
+        var business = Guid.NewGuid();
+        var fund = Guid.NewGuid();
+        var entity = Guid.NewGuid();
         await structure.CreateOrganizationAsync(new(org, "ORG", "Organization", "USD", now.AddYears(-1), "test"));
         await structure.CreateBusinessAsync(new(business, org, BusinessKindDto.Hybrid, "B", "Business", "USD", now.AddYears(-1), "test"));
         await structure.CreateFundAsync(new(fund, "F", "Shared fund", "USD", now.AddYears(-1), "test", BusinessId: business));
@@ -269,8 +280,13 @@ public sealed class FamilyOfficeReadServiceTests
         var accounts = new InMemoryFundAccountService();
         var structure = new InMemoryFundStructureService(accounts);
         var now = DateTimeOffset.Parse("2026-05-29T12:00:00Z");
-        var org = Guid.NewGuid(); var business = Guid.NewGuid(); var client = Guid.NewGuid();
-        var fund = Guid.NewGuid(); var entity = Guid.NewGuid(); var parent = Guid.NewGuid(); var portfolio = Guid.NewGuid();
+        var org = Guid.NewGuid();
+        var business = Guid.NewGuid();
+        var client = Guid.NewGuid();
+        var fund = Guid.NewGuid();
+        var entity = Guid.NewGuid();
+        var parent = Guid.NewGuid();
+        var portfolio = Guid.NewGuid();
         await structure.CreateOrganizationAsync(new(org, "ORG", "Organization", "USD", now.AddYears(-1), "test"));
         await structure.CreateBusinessAsync(new(business, org, BusinessKindDto.Hybrid, "B", "Business", "USD", now.AddYears(-1), "test"));
         await structure.CreateClientAsync(new(client, business, "C", "Family", "USD", now.AddYears(-1), "test", ClientSegmentKind: ClientSegmentKind.FamilyOffice));
@@ -287,7 +303,8 @@ public sealed class FamilyOfficeReadServiceTests
         Assert.Contains(result.OwnershipGraph.Nodes, node => node.NodeId == fund.ToString("D"));
         Assert.Contains(result.OwnershipGraph.Edges, edge => edge.SourceNodeId == parent.ToString("D") && edge.TargetNodeId == portfolio.ToString("D"));
         Assert.Empty(result.Accounts);
-        Assert.All(result.OwnershipGraph.Edges, edge => {
+        Assert.All(result.OwnershipGraph.Edges, edge =>
+        {
             Assert.Contains(result.OwnershipGraph.Nodes, node => node.NodeId == edge.SourceNodeId);
             Assert.Contains(result.OwnershipGraph.Nodes, node => node.NodeId == edge.TargetNodeId);
         });

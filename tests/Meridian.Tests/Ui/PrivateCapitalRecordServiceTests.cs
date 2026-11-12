@@ -21,8 +21,11 @@ public sealed class PrivateCapitalRecordServiceTests
             var commitment = await service.CreateAsync(Scope, "operator", create);
             var input = Row(commitment.CommitmentId) with
             {
-                CommitmentAmount = "10000000000000.000001", CalledAmount = "0", UnfundedAmount = null,
-                CumulativeDistributions = "123.00000001", NavAmount = "-5.125"
+                CommitmentAmount = "10000000000000.000001",
+                CalledAmount = "0",
+                UnfundedAmount = null,
+                CumulativeDistributions = "123.00000001",
+                NavAmount = "-5.125"
             };
             var preview = await service.PreviewAsync(Scope, "operator", new([input], null, Evidence, "Quarter-end source review"));
             var command = new AcceptPrivateCapitalImport(preview.BatchId, preview.Fingerprint, Guid.NewGuid());
@@ -145,13 +148,15 @@ public sealed class PrivateCapitalRecordServiceTests
         private readonly object _gate = new();
         public Task<IReadOnlyList<PrivateCapitalStoredRecord>> ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default)
         {
-            lock (_gate) return Task.FromResult<IReadOnlyList<PrivateCapitalStoredRecord>>(_rows.GetValueOrDefault(scope)?.ToArray() ?? []);
+            lock (_gate)
+                return Task.FromResult<IReadOnlyList<PrivateCapitalStoredRecord>>(_rows.GetValueOrDefault(scope)?.ToArray() ?? []);
         }
         public Task AppendAsync(PrivateCapitalScope scope, Func<IReadOnlyList<PrivateCapitalStoredRecord>, IReadOnlyList<PrivateCapitalStoredRecord>> prepare, CancellationToken ct = default)
         {
             lock (_gate)
             {
-                if (!_rows.TryGetValue(scope, out var rows)) _rows[scope] = rows = [];
+                if (!_rows.TryGetValue(scope, out var rows))
+                    _rows[scope] = rows = [];
                 rows.AddRange(prepare(rows.ToArray()));
             }
             return Task.CompletedTask;

@@ -2638,7 +2638,9 @@ public sealed class LedgerJournalStoreTests
             VendorId: "vendor-1",
             ProjectId: "project-1")
         {
-            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70")
+            PositionId = Guid.Parse("51e16a9e-56f3-4765-81b6-403c38a29d70"),
+            IntercompanyAgreementId = Guid.Parse("aaaaaaaa-1111-2222-3333-bbbbbbbbbbbb"),
+            IntercompanyAgreementVersion = 1
         };
 
     private static bool HasDimensionValue(PropertyInfo property, LedgerLineDimensionSet dimensions)

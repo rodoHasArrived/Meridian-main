@@ -103,27 +103,38 @@ public static class CorporateActionDeadlinePolicy
 
     public static string? Validate(CorporateActionElectionDeadlineDto? value)
     {
-        if (value is null || value.SeriesId == Guid.Empty) return "A stable deadline series ID is required.";
-        if (value.Kind is not ("IssuerElection" or "BrokerElection" or "CustodianElection")) return "Select an issuer, broker, or custodian election deadline.";
-        if (string.IsNullOrWhiteSpace(value.SourceParty)) return "The source party is required.";
-        if (value.SourceParty.Length > 256) return "The source party must be at most 256 characters.";
-        if (value.Date.HasValue && value.At.HasValue) return "Supply a date-only deadline or an offset timestamp, never both.";
+        if (value is null || value.SeriesId == Guid.Empty)
+            return "A stable deadline series ID is required.";
+        if (value.Kind is not ("IssuerElection" or "BrokerElection" or "CustodianElection"))
+            return "Select an issuer, broker, or custodian election deadline.";
+        if (string.IsNullOrWhiteSpace(value.SourceParty))
+            return "The source party is required.";
+        if (value.SourceParty.Length > 256)
+            return "The source party must be at most 256 characters.";
+        if (value.Date.HasValue && value.At.HasValue)
+            return "Supply a date-only deadline or an offset timestamp, never both.";
         if (value.Withdrawn)
         {
-            if (value.SupersedesEvidenceId is null) return "Withdrawal must identify the current deadline evidence.";
+            if (value.SupersedesEvidenceId is null)
+                return "Withdrawal must identify the current deadline evidence.";
         }
-        else if (!value.Date.HasValue && !value.At.HasValue) return "Supply exactly one date-only deadline or timestamp with an explicit offset.";
-        if (value.SupersedesEvidenceId == Guid.Empty) return "The superseded evidence ID must be a UUID.";
+        else if (!value.Date.HasValue && !value.At.HasValue)
+            return "Supply exactly one date-only deadline or timestamp with an explicit offset.";
+        if (value.SupersedesEvidenceId == Guid.Empty)
+            return "The superseded evidence ID must be a UUID.";
         if (value.Kind == "BrokerElection" && string.IsNullOrWhiteSpace(value.FinancialAccountId) && string.IsNullOrWhiteSpace(value.CustodyAccountId))
             return "A broker cutoff requires its financial or custody account identity.";
-        if (value.Kind == "CustodianElection" && string.IsNullOrWhiteSpace(value.CustodyAccountId)) return "A custodian cutoff requires its custody account identity.";
-        if (value.TimeZoneId is { Length: > 128 }) return "The source timezone is too long.";
+        if (value.Kind == "CustodianElection" && string.IsNullOrWhiteSpace(value.CustodyAccountId))
+            return "A custodian cutoff requires its custody account identity.";
+        if (value.TimeZoneId is { Length: > 128 })
+            return "The source timezone is too long.";
         if (!string.IsNullOrWhiteSpace(value.TimeZoneId))
         {
             try
             {
                 var zone = TimeZoneInfo.FindSystemTimeZoneById(value.TimeZoneId);
-                if (value.At is { } at && zone.GetUtcOffset(at) != at.Offset) return "The source timezone and timestamp offset disagree.";
+                if (value.At is { } at && zone.GetUtcOffset(at) != at.Offset)
+                    return "The source timezone and timestamp offset disagree.";
             }
             catch (TimeZoneNotFoundException) { return "The source timezone is unknown; use an IANA or supported Windows timezone ID."; }
             catch (InvalidTimeZoneException) { return "The source timezone is invalid."; }
@@ -133,10 +144,12 @@ public static class CorporateActionDeadlinePolicy
 
     public static string? ValidateEvidence(string? reference, string? hash, string? rationale)
     {
-        if (!CorporateActionEvidenceKinds.IsTrustedReference(reference)) return "Use a typed evidence URI such as document://, vault://, or https://.";
+        if (!CorporateActionEvidenceKinds.IsTrustedReference(reference))
+            return "Use a typed evidence URI such as document://, vault://, or https://.";
         if (hash is null || hash.Length != 64 || hash.Any(c => c is not (>= '0' and <= '9') and not (>= 'a' and <= 'f')))
             return "A lowercase SHA-256 evidence digest is required.";
-        if (string.IsNullOrWhiteSpace(rationale)) return "A source-review rationale is required.";
+        if (string.IsNullOrWhiteSpace(rationale))
+            return "A source-review rationale is required.";
         return null;
     }
 
@@ -170,8 +183,10 @@ public static class CorporateActionDeadlinePolicy
         try
         {
             var envelope = metadata?.Deserialize<CorporateActionDeadlineEvidenceDto>(JsonOptions);
-            if (envelope is null || envelope.SchemaVersion != 1) throw new JsonException();
-            if (Validate(envelope.Deadline) is { } error) throw new CorporateActionValidationException(error);
+            if (envelope is null || envelope.SchemaVersion != 1)
+                throw new JsonException();
+            if (Validate(envelope.Deadline) is { } error)
+                throw new CorporateActionValidationException(error);
             return envelope.Deadline;
         }
         catch (JsonException) { throw new CorporateActionValidationException("Deadline evidence must use the typed version-1 deadline contract."); }
@@ -192,14 +207,18 @@ public sealed class CorporateActionDeadlineInstantConverter : JsonConverter<Date
 {
     public override DateTimeOffset? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TokenType == JsonTokenType.Null) return null;
-        if (reader.TokenType == JsonTokenType.String && CorporateActionDeadlinePolicy.TryParseInstant(reader.GetString()!, out var value)) return value;
+        if (reader.TokenType == JsonTokenType.Null)
+            return null;
+        if (reader.TokenType == JsonTokenType.String && CorporateActionDeadlinePolicy.TryParseInstant(reader.GetString()!, out var value))
+            return value;
         throw new JsonException("A deadline timestamp requires an ISO timestamp with an explicit UTC offset.");
     }
 
     public override void Write(Utf8JsonWriter writer, DateTimeOffset? value, JsonSerializerOptions options)
     {
-        if (value is { } at) writer.WriteStringValue(at.ToString("O", CultureInfo.InvariantCulture));
-        else writer.WriteNullValue();
+        if (value is { } at)
+            writer.WriteStringValue(at.ToString("O", CultureInfo.InvariantCulture));
+        else
+            writer.WriteNullValue();
     }
 }

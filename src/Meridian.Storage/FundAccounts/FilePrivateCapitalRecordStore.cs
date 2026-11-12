@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.PrivateCapital;
 using Meridian.Storage.Archival;
 
@@ -16,17 +15,20 @@ public sealed class FilePrivateCapitalRecordStore(string rootDirectory) : IPriva
     private string PathFor(PrivateCapitalScope scope)
     {
         PrivateCapitalScopeValidation.Require(scope);
-        var key = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(scope, Json))));
+        // Preserve the retained partition's existing filename casing.
+        var key = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(scope, Json)).ToUpperInvariant();
         return Path.Combine(rootDirectory, "private-capital", key + ".json");
     }
 
     public async Task<IReadOnlyList<PrivateCapitalStoredRecord>> ReadAsync(PrivateCapitalScope scope, CancellationToken ct = default)
     {
         var path = PathFor(scope);
-        if (!File.Exists(path)) return [];
+        if (!File.Exists(path))
+            return [];
         var envelope = JsonSerializer.Deserialize<Envelope>(await File.ReadAllTextAsync(path, ct).ConfigureAwait(false), Json)
             ?? throw new InvalidDataException("Private-capital records could not be decoded.");
-        if (envelope.Scope != scope) throw new InvalidDataException("Private-capital record scope does not match its partition.");
+        if (envelope.Scope != scope)
+            throw new InvalidDataException("Private-capital record scope does not match its partition.");
         return envelope.Records;
     }
 
@@ -43,7 +45,8 @@ public sealed class FilePrivateCapitalRecordStore(string rootDirectory) : IPriva
             await using var fileLock = await LockAsync(path + ".lock", ct).ConfigureAwait(false);
             var existing = await ReadAsync(scope, ct).ConfigureAwait(false);
             var added = prepare(existing);
-            if (added.Count == 0) return;
+            if (added.Count == 0)
+                return;
             if (added.Select(row => (row.Kind, row.Id)).Distinct().Count() != added.Count ||
                 added.Any(row => existing.Any(old => old.Kind == row.Kind && old.Id == row.Id)))
                 throw new InvalidOperationException("A retained private-capital identity already exists.");
@@ -58,7 +61,8 @@ public sealed class FilePrivateCapitalRecordStore(string rootDirectory) : IPriva
         while (true)
         {
             ct.ThrowIfCancellationRequested();
-            try { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
+            try
+            { return new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None); }
             catch (IOException) { await Task.Delay(30, ct).ConfigureAwait(false); }
         }
     }

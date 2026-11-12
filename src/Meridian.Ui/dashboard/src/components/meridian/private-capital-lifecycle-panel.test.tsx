@@ -4,10 +4,10 @@ import { ApiError } from "@/lib/api-errors";
 import { PrivateCapitalLifecyclePanel } from "./private-capital-lifecycle-panel";
 import { buildCapitalRows } from "./private-capital-lifecycle.view-model";
 import type { privateCapitalApi } from "@/lib/api/private-capital-records.api";
-import type { PrivateCapitalCommitment, PrivateCapitalRecords, PrivateCapitalSnapshot } from "@/types/private-capital.types";
+import type { PrivateCapitalRecordCommitment, PrivateCapitalRecords, PrivateCapitalSnapshot } from "@/types/private-capital.types";
 
 const evidence = { vaultId: "vault", documentId: "source", contentHash: "a".repeat(64) };
-const commitment: PrivateCapitalCommitment = { commitmentId: "c1", holderEntityId: "entity", vehicleSecurityId: "vehicle",
+const commitment: PrivateCapitalRecordCommitment = { commitmentId: "c1", holderEntityId: "entity", vehicleSecurityId: "vehicle",
   vehicleName: "Synthetic Fund", strategy: "Private equity", vintageYear: 2024, currency: "USD", sourceReference: "statement", evidence,
   createdAt: "2026-11-01T00:00:00Z", createdBy: "operator" };
 const snapshot: PrivateCapitalSnapshot = { snapshotId: "s1", commitmentId: "c1", asOfDate: "2026-09-30", navValuationDate: "2026-09-30",

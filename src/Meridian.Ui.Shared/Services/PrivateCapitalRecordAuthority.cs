@@ -26,8 +26,10 @@ public sealed class PrivateCapitalRecordAuthority(
             var page = await securities.SearchAsync(new SecuritySearchRequest("", Take: 200, Skip: skip, ActiveOnly: true), ct).ConfigureAwait(false);
             vehicles.AddRange(page.Where(item => item.AssetClass == "PrivateFundInterest")
                 .Select(item => new PrivateCapitalChoice(item.SecurityId, item.DisplayName)));
-            if (page.Count < 200) break;
-            if (skip >= 100_000) throw new InvalidOperationException("Security choices exceed the bounded source query; narrow the source population before capture.");
+            if (page.Count < 200)
+                break;
+            if (skip >= 100_000)
+                throw new InvalidOperationException("Security choices exceed the bounded source query; narrow the source population before capture.");
         }
         return new(graph.Entities.Where(item => item.IsActive).Select(item => new PrivateCapitalChoice(item.EntityId, item.Name)).ToArray(),
             vehicles.DistinctBy(item => item.Id).ToArray());

@@ -3,6 +3,7 @@
 // </auto-generated>
 
 export const UI_API_ROUTES = {
+  IntercompanyAgreements: "/api/fund-structure/intercompany-agreements",
   OnboardingWorkspaces: "/api/accounting/onboarding/workspaces",
   OnboardingWorkspace: "/api/accounting/onboarding/workspaces/{workspaceId:guid}",
   OnboardingCriteria: "/api/accounting/onboarding/workspaces/{workspaceId:guid}/criteria",

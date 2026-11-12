@@ -10,6 +10,8 @@ create table if not exists __SCHEMA__.private_capital_record (
     primary key (tenant_id, company_id, record_kind, record_id),
     check (length(trim(tenant_id)) > 0 and length(trim(company_id)) > 0)
 );
+comment on table __SCHEMA__.private_capital_record is
+    'Append-only, tenant/company-scoped private-capital source records and replay receipts; financial authority follows explicit correction links.';
 create unique index if not exists ux_private_capital_single_correction
     on __SCHEMA__.private_capital_record
     (tenant_id, company_id, (payload->>'supersedesSnapshotId'))

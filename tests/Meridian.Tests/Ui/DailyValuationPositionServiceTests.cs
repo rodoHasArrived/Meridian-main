@@ -5,6 +5,7 @@ using Meridian.Application.SecurityMaster.Rebuild;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Ledger;
 using Meridian.Storage.SecurityMaster;
 using Meridian.Ui.Shared.Services;
 using NSubstitute;
@@ -42,6 +43,40 @@ public sealed class DailyValuationPositionServiceTests
             new MarkToMarketPosition("AAPL", 10m, 150m, "account-a", "Equity", SecurityId));
         result.EvidenceLinks.Should().ContainSingle(link =>
             link.Route.Contains("run-a/account-a", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ResolveConfiguredAsync_NoteSnapshot_PreservesFaceAndRawAverageEntryQuote()
+    {
+        var store = Substitute.For<IPositionSnapshotStore>();
+        var snapshot = Snapshot("run-a", "account-a", ValuationAsOf.AddMinutes(-15)) with
+        {
+            Positions = [new PositionRecord("AAPL", 1000m, 98m, 0m, 0m)]
+        };
+        store.GetSnapshotHistoryAsync("run-a", "account-a", Arg.Any<PositionSnapshotOwnerScope>(),
+            Arg.Any<DateTimeOffset>(), ValuationAsOf, Arg.Any<CancellationToken>())
+            .Returns(_ => History(snapshot));
+        var service = CreateService(store, assetClass: "StructuredNote");
+
+        var result = await service.ResolveConfiguredAsync(
+            WorkItem() with { PositionSnapshotScopes = [new("run-a", "account-a")] }, ValuationAsOf);
+
+        result.IsReady.Should().BeTrue();
+        var position = result.Positions.Should().ContainSingle().Which;
+        position.Quantity.Should().Be(1000m);
+        position.CostPrice.Should().Be(98m, "retained CostBasis is an average entry quote, not a total");
+        var projection = DailyPortfolioPricingProjector.Project(new DailyPortfolioPricingInput(
+            new DailyPortfolioPricingPolicy("fund-a", "note-fvtpl", "Note close", "retained-close",
+                "controller", ValuationAsOf.AddDays(-1)), "2026-07", ValuationAsOf, "USD",
+            [new DailyPortfolioPriceMark(position.Symbol, position.Quantity, position.CostPrice, 101m,
+                "retained-close", "evidence://note/close", FinancialAccountId: position.FinancialAccountId,
+                InstrumentType: position.InstrumentType, SecurityId: position.SecurityId,
+                PriceObservedOn: DateOnly.FromDateTime(ValuationAsOf.UtcDateTime))], "entity-a"));
+        projection.TotalCostBasis.Should().Be(980m);
+        projection.TotalMarketValue.Should().Be(1010m);
+        var draft = DailyPortfolioPricingDraftBuilder.BuildDrafts(projection).Should().ContainSingle().Which;
+        draft.Metadata.Tags!["accounting.template"].Should().Be(StructuredNoteAccountingTemplate.TemplateId);
+        draft.TotalDebits.Should().Be(30m);
     }
 
     [Theory]
@@ -346,7 +381,8 @@ public sealed class DailyValuationPositionServiceTests
     private static DailyValuationPositionService CreateService(
         IPositionSnapshotStore? store = null,
         SecurityStatusDto securityStatus = SecurityStatusDto.Active,
-        string securityCurrency = "USD")
+        string securityCurrency = "USD",
+        string assetClass = "Equity")
     {
         var registry = Substitute.For<ICanonicalSymbolRegistry>();
         registry.GetDefinition("AAPL").Returns(new CanonicalSymbolDefinition
@@ -354,13 +390,13 @@ public sealed class DailyValuationPositionServiceTests
             Canonical = "AAPL",
             DisplayName = "Apple Inc.",
             SecurityId = SecurityId,
-            AssetClass = "Equity",
+            AssetClass = assetClass,
             Exchange = "NASDAQ",
             Currency = securityCurrency,
             Aliases = ["AAPL"]
         });
         var securityMaster = Substitute.For<ISecurityMasterQueryService>();
-        var detail = SecurityDetail(securityStatus, securityCurrency);
+        var detail = SecurityDetail(securityStatus, securityCurrency, assetClass);
         securityMaster.GetRecordedByIdAsOfAsync(SecurityId, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>())
             .Returns(detail);
         securityMaster.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(detail);
@@ -395,10 +431,10 @@ public sealed class DailyValuationPositionServiceTests
         }
     }
 
-    private static SecurityDetailDto SecurityDetail(SecurityStatusDto status, string currency)
+    private static SecurityDetailDto SecurityDetail(SecurityStatusDto status, string currency, string assetClass = "Equity")
         => new(
             SecurityId,
-            "Equity",
+            assetClass,
             status,
             "Apple Inc.",
             currency,

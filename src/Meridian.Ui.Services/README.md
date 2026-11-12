@@ -6,10 +6,16 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Services
+
+`WorkstationIntercompanyAgreementApiClient` and `IntercompanyAgreementWorkspace` consume the shared
+tenant-scoped registry and advisory journal-line routes. The workspace retains unsaved/conflicting
+input, server capabilities, exact approved versions, evidence and review history without duplicating
+agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
+and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
 Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
 typed fixed-income reads preserve nullable and nested financial values. API request serialization

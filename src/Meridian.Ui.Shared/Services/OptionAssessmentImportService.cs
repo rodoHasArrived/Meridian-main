@@ -17,13 +17,18 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
     {
         ArgumentNullException.ThrowIfNull(request);
         var normalized = OptionAssessmentValidation.Normalize(request.Assessment, request.LegsCsv);
-        if (normalized.AssessedAt > clock.GetUtcNow()) throw new ArgumentException("Broker assessment time cannot be in the future.");
+        if (normalized.AssessedAt > clock.GetUtcNow())
+            throw new ArgumentException("Broker assessment time cannot be in the future.");
         var source = Source(request);
-        if (request.CorrectsAssessmentId is { } correction && !IsId(correction)) throw new ArgumentException("Correction identity is invalid.");
+        if (request.CorrectsAssessmentId is { } correction && !IsId(correction))
+            throw new ArgumentException("Correction identity is invalid.");
         var sourceHash = OptionAssessmentValidation.Digest(source);
         var fingerprint = OptionAssessmentValidation.Digest(OptionAssessmentValidation.CanonicalBytes(new
         {
-            assessment = normalized, sourceHash, request.SourceFileName, request.SourceContentType,
+            assessment = normalized,
+            sourceHash,
+            request.SourceFileName,
+            request.SourceContentType,
             request.CorrectsAssessmentId
         }));
         return new(normalized, OptionAssessmentValidation.BasketFingerprint(normalized), fingerprint, sourceHash,
@@ -36,15 +41,18 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
         Guid accountId, AcceptOptionAssessmentImportRequest command, CancellationToken ct = default)
     {
         ValidateScope(tenant, company, actor);
-        if (command.IdempotencyKey == Guid.Empty) throw new ArgumentException("A stable idempotency key is required.");
+        if (command.IdempotencyKey == Guid.Empty)
+            throw new ArgumentException("A stable idempotency key is required.");
         var preview = Preview(command.Import);
-        if (preview.Assessment.FundAccountId != accountId) throw new ArgumentException("The assessment belongs to a different fund account.");
+        if (preview.Assessment.FundAccountId != accountId)
+            throw new ArgumentException("The assessment belongs to a different fund account.");
         if (!string.Equals(preview.PreviewFingerprint, command.PreviewFingerprint, StringComparison.Ordinal))
             throw new InvalidOperationException("The reviewed preview no longer matches these inputs. Preview again.");
         await _gate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var directory = DirectoryFor(tenant, company, accountId); Directory.CreateDirectory(directory);
+            var directory = DirectoryFor(tenant, company, accountId);
+            Directory.CreateDirectory(directory);
             // Prevent independent hosts sharing a data root from accepting conflicting corrections.
             await using var lease = new FileStream(Path.Combine(directory, ".import-lock"), FileMode.OpenOrCreate,
                 FileAccess.ReadWrite, FileShare.None);
@@ -53,7 +61,8 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
             if (File.Exists(path))
             {
                 var previous = await ReadReceipt(path, ct).ConfigureAwait(false);
-                if (previous.Record.Assessment.FundAccountId != accountId) throw new InvalidDataException("Retained assessment account is inconsistent.");
+                if (previous.Record.Assessment.FundAccountId != accountId)
+                    throw new InvalidDataException("Retained assessment account is inconsistent.");
                 if (previous.Actor != actor || previous.PreviewFingerprint != preview.PreviewFingerprint)
                     throw new InvalidOperationException("The idempotency key is already bound to a different actor or import.");
                 await Verify(previous, tenant, company, ct).ConfigureAwait(false);
@@ -95,7 +104,8 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
         var receipts = await ReadReceipts(DirectoryFor(tenant, company, account), ct).ConfigureAwait(false);
         foreach (var receipt in receipts)
         {
-            if (receipt.Record.Assessment.FundAccountId != account) throw new InvalidDataException("Retained assessment account is inconsistent.");
+            if (receipt.Record.Assessment.FundAccountId != account)
+                throw new InvalidDataException("Retained assessment account is inconsistent.");
             await Verify(receipt, tenant, company, ct).ConfigureAwait(false);
         }
         var corrected = receipts.Select(item => item.Record.CorrectsAssessmentId).OfType<string>().ToHashSet(StringComparer.Ordinal);
@@ -105,7 +115,8 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
 
     private async Task Verify(ImportReceipt receipt, string tenant, string company, CancellationToken ct)
     {
-        if (receipt.Tenant != tenant || receipt.Company != company) throw new InvalidDataException("Retained assessment scope is inconsistent.");
+        if (receipt.Tenant != tenant || receipt.Company != company)
+            throw new InvalidDataException("Retained assessment scope is inconsistent.");
         var row = receipt.Record;
         if (OptionAssessmentValidation.BasketFingerprint(row.Assessment) != row.BasketFingerprint
             || OptionAssessmentValidation.Digest(OptionAssessmentValidation.CanonicalBytes(row.Assessment)) != row.ContentSha256)
@@ -121,7 +132,8 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
         var content = await evidence.TryOpenDocumentContentAsync(vault, document, tenant, company, ct).ConfigureAwait(false)
             ?? throw new InvalidDataException("Retained broker assessment source document is unavailable.");
         await using var stream = content.Content;
-        using var bytes = new MemoryStream(); await stream.CopyToAsync(bytes, ct).ConfigureAwait(false);
+        using var bytes = new MemoryStream();
+        await stream.CopyToAsync(bytes, ct).ConfigureAwait(false);
         if (OptionAssessmentValidation.Digest(bytes.ToArray()) != expected)
             throw new InvalidDataException("Retained broker assessment source bytes do not match their digest.");
     }
@@ -151,9 +163,11 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
         if (string.IsNullOrWhiteSpace(request.SourceContentBase64) || request.SourceContentBase64.Length > MaxSourceBytes * 4 / 3 + 4)
             throw new ArgumentException("Attach a broker source document of at most 8 MiB.");
         byte[] source;
-        try { source = Convert.FromBase64String(request.SourceContentBase64); }
+        try
+        { source = Convert.FromBase64String(request.SourceContentBase64); }
         catch (FormatException) { throw new ArgumentException("Source document encoding is invalid."); }
-        if (source.Length is < 1 or > MaxSourceBytes) throw new ArgumentException("Attach a broker source document of 1 byte to 8 MiB.");
+        if (source.Length is < 1 or > MaxSourceBytes)
+            throw new ArgumentException("Attach a broker source document of 1 byte to 8 MiB.");
         return source;
     }
 
@@ -165,7 +179,8 @@ public sealed class OptionAssessmentImportService(string dataRoot, IEvidenceArti
     private static async Task<List<ImportReceipt>> ReadReceipts(string directory, CancellationToken ct)
     {
         var records = new List<ImportReceipt>();
-        if (!Directory.Exists(directory)) return records;
+        if (!Directory.Exists(directory))
+            return records;
         foreach (var path in Directory.EnumerateFiles(directory, "*.json").Order(StringComparer.Ordinal))
             records.Add(await ReadReceipt(path, ct).ConfigureAwait(false));
         return records;

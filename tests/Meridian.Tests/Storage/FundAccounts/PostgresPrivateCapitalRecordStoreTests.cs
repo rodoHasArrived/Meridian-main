@@ -37,7 +37,7 @@ public sealed class PostgresPrivateCapitalRecordStoreTests(FundAccountDatabaseFi
         var store = new PostgresPrivateCapitalRecordStore(fixture.Options);
         var id = Guid.NewGuid();
         await Assert.ThrowsAnyAsync<Exception>(() => store.AppendAsync(scope, _ =>
-            [new("test", id, "{}"), new("test", id, "{}") ]));
+            [new("test", id, "{}"), new("test", id, "{}")]));
         Assert.Empty(await store.ReadAsync(scope));
         await Assert.ThrowsAsync<UnauthorizedAccessException>(() => store.ReadAsync(new("", "")));
     }

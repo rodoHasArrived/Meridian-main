@@ -11,6 +11,18 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+`PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
+points to immutable command snapshots, approved revisions, audit decisions and command receipts.
+One command atomically checks its expected head and retains its result; command identities are
+unique within a tenant. Database guards refuse history rewrites and tenant reassignment. Party
+reads remain stable under entity authority locks; sorted shared agreement leases survive through
+the ledger store's owned commit. Explicit references require that authority, while unsupported
+caller-owned append paths refuse them. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`LedgerOpenLotProjection` uses shared successor quote validation without rounding retained basis.
+The exception still requires unit-successor lineage, an originating atomic mutation batch and a
+retained basis adjustment; ordinary acquisitions retain exact quantity/price/basis checks.
+
 `FileProviderIntegrationManifestStore` stores identity decisions under each sync run's
 `identity-decisions` directory. Entity locking protects append-only retention: identical retries
 reuse the existing decision, while a changed payload under the same decision ID is refused.

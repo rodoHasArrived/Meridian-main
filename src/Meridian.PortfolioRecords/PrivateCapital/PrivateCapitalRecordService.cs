@@ -1,8 +1,7 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.PrivateCapital;
 using Meridian.Storage.FundAccounts;
 
@@ -43,7 +42,8 @@ public sealed class PrivateCapitalRecordService(
     {
         var records = await store.ReadAsync(scope, ct).ConfigureAwait(false);
         var preview = Find<PrivateCapitalImportPreview>(records, "preview", batchId);
-        if (preview is null) return null;
+        if (preview is null)
+            return null;
         var input = Find<PreviewPrivateCapitalImport>(records, "source-input", batchId)
             ?? throw new InvalidDataException("The retained preview has no exact source input.");
         return new(preview, input, Read<AcceptReceipt>(records, "accept-receipt")
@@ -57,7 +57,8 @@ public sealed class PrivateCapitalRecordService(
         if (request.CommandId == Guid.Empty || request.HolderEntityId == Guid.Empty || request.VehicleSecurityId == Guid.Empty)
             throw new ArgumentException("Command, holder entity and vehicle security identities are required.");
         var currency = request.Currency?.Trim().ToUpperInvariant() ?? "";
-        if (!Regex.IsMatch(currency, "^[A-Z]{3}$")) throw new ArgumentException("Supply a three-letter commitment currency.");
+        if (!Regex.IsMatch(currency, "^[A-Z]{3}$"))
+            throw new ArgumentException("Supply a three-letter commitment currency.");
         var normalized = request with { Currency = currency, SourceReference = RequiredText(request.SourceReference, "Source reference", 512), Evidence = NormalizeEvidence(request.Evidence) };
         var fingerprint = Hash(normalized);
         var prior = await store.ReadAsync(scope, ct).ConfigureAwait(false);
@@ -91,7 +92,8 @@ public sealed class PrivateCapitalRecordService(
         if ((request.Rows is not null) == (request.Csv is not null))
             throw new ArgumentException("Supply exactly one of rows or CSV.");
         var supplied = request.Rows ?? PrivateCapitalCsv.Parse(request.Csv!);
-        if (supplied.Count is < 1 or > 500) throw new ArgumentException("Supply between one and 500 observations.");
+        if (supplied.Count is < 1 or > 500)
+            throw new ArgumentException("Supply between one and 500 observations.");
         var rows = supplied.Select(NormalizeRow).ToArray();
         if (rows.Select(row => (row.CommitmentId, row.AsOfDate)).Distinct().Count() != rows.Length)
             throw new ArgumentException("A commitment may appear only once for each as-of date in a batch.");
@@ -116,7 +118,8 @@ public sealed class PrivateCapitalRecordService(
         AcceptPrivateCapitalImport request, CancellationToken ct = default)
     {
         RequireActor(actor);
-        if (request.CommandId == Guid.Empty || request.BatchId == Guid.Empty) throw new ArgumentException("Batch and command identities are required.");
+        if (request.CommandId == Guid.Empty || request.BatchId == Guid.Empty)
+            throw new ArgumentException("Batch and command identities are required.");
         var retained = await store.ReadAsync(scope, ct).ConfigureAwait(false);
         if (Find<AcceptReceipt>(retained, "accept-receipt", request.CommandId) is { } old)
             return ResolveAcceptReplay(old, request);
@@ -184,14 +187,16 @@ public sealed class PrivateCapitalRecordService(
     private static PrivateCapitalSnapshotInput NormalizeRow(PrivateCapitalSnapshotInput row)
     {
         ArgumentNullException.ThrowIfNull(row);
-        if (row.CommitmentId == Guid.Empty) throw new ArgumentException("A stable commitment identity is required.");
+        if (row.CommitmentId == Guid.Empty)
+            throw new ArgumentException("A stable commitment identity is required.");
         var asOf = Date(row.AsOfDate, "As-of date");
         var valuation = string.IsNullOrWhiteSpace(row.NavValuationDate) ? null : Date(row.NavValuationDate, "NAV valuation date");
         if (valuation is not null && string.CompareOrdinal(valuation, asOf) > 0)
             throw new ArgumentException("NAV valuation date cannot follow the observation's as-of date.");
         var normalized = row with
         {
-            AsOfDate = asOf, NavValuationDate = valuation,
+            AsOfDate = asOf,
+            NavValuationDate = valuation,
             CommitmentAmount = Amount(row.CommitmentAmount, "Commitment"),
             CalledAmount = Amount(row.CalledAmount, "Called capital"),
             UnfundedAmount = Amount(row.UnfundedAmount, "Unfunded commitment"),
@@ -199,7 +204,8 @@ public sealed class PrivateCapitalRecordService(
             NavAmount = Amount(row.NavAmount, "NAV", signed: true),
             SourceReference = RequiredText(row.SourceReference, "Source reference", 512)
         };
-        if (normalized.NavAmount is not null && valuation is null) throw new ArgumentException("A reported NAV requires its valuation date.");
+        if (normalized.NavAmount is not null && valuation is null)
+            throw new ArgumentException("A reported NAV requires its valuation date.");
         if (new[] { normalized.CommitmentAmount, normalized.CalledAmount, normalized.UnfundedAmount, normalized.CumulativeDistributions, normalized.NavAmount }.All(value => value is null))
             throw new ArgumentException("An observation must contain at least one source-reported amount.");
         return normalized;
@@ -207,16 +213,20 @@ public sealed class PrivateCapitalRecordService(
 
     private static string? Amount(string? text, string field, bool signed = false)
     {
-        if (string.IsNullOrWhiteSpace(text)) return null;
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
         text = text.Trim();
         if (text.Length > 80 || !Regex.IsMatch(text, "^-?(0|[1-9][0-9]*)(\\.[0-9]{1,28})?$") ||
             !decimal.TryParse(text, NumberStyles.AllowLeadingSign | NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture, out var value))
             throw new ArgumentException($"{field} must be representable exact decimal text, without exponents or separators.");
-        if (!signed && value < 0m) throw new ArgumentException($"{field} is outside its permitted range.");
+        if (!signed && value < 0m)
+            throw new ArgumentException($"{field} is outside its permitted range.");
         var canonical = text.Contains('.') ? text.TrimEnd('0').TrimEnd('.') : text;
-        if (canonical == "-0") canonical = "0";
+        if (canonical == "-0")
+            canonical = "0";
         var parsed = value.ToString("0.############################", CultureInfo.InvariantCulture);
-        if (parsed != canonical) throw new ArgumentException($"{field} exceeds exact decimal precision; rounding is not permitted.");
+        if (parsed != canonical)
+            throw new ArgumentException($"{field} exceeds exact decimal precision; rounding is not permitted.");
         return parsed;
     }
 
@@ -238,16 +248,18 @@ public sealed class PrivateCapitalRecordService(
     private static string RequiredText(string? value, string name, int maximum)
     {
         value = value?.Trim();
-        if (string.IsNullOrWhiteSpace(value) || value.Length > maximum) throw new ArgumentException($"{name} is required and must be at most {maximum} characters.");
+        if (string.IsNullOrWhiteSpace(value) || value.Length > maximum)
+            throw new ArgumentException($"{name} is required and must be at most {maximum} characters.");
         return value;
     }
 
     private static void RequireActor(string actor)
     {
-        if (string.IsNullOrWhiteSpace(actor)) throw new UnauthorizedAccessException("An authenticated operator is required.");
+        if (string.IsNullOrWhiteSpace(actor))
+            throw new UnauthorizedAccessException("An authenticated operator is required.");
     }
 
-    private static string Hash<T>(T value) => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(value, Json)))).ToLowerInvariant();
+    private static string Hash<T>(T value) => Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(value, Json));
     private static PrivateCapitalStoredRecord Pack<T>(string kind, Guid id, T value) => new(kind, id, JsonSerializer.Serialize(value, Json));
     private static T? Find<T>(IReadOnlyList<PrivateCapitalStoredRecord> rows, string kind, Guid id) where T : class
         => rows.FirstOrDefault(row => row.Kind == kind && row.Id == id) is { } found ? JsonSerializer.Deserialize<T>(found.Payload, Json) : null;
@@ -257,7 +269,8 @@ public sealed class PrivateCapitalRecordService(
 
     private static PrivateCapitalCommitment ResolveCreateReplay(IReadOnlyList<PrivateCapitalStoredRecord> rows, CreateReceipt receipt, string fingerprint)
     {
-        if (receipt.Fingerprint != fingerprint) throw new InvalidOperationException("This command identity was used with different register inputs.");
+        if (receipt.Fingerprint != fingerprint)
+            throw new InvalidOperationException("This command identity was used with different register inputs.");
         return Find<PrivateCapitalCommitment>(rows, "commitment", receipt.CommitmentId) ?? throw new InvalidDataException("The retained create receipt has no register entry.");
     }
 

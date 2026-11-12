@@ -37,28 +37,34 @@ public sealed class OptionScreeningServiceTests
     [Fact]
     public async Task MissingGreeks_RemainInTableWithExplicitReason()
     {
-        var expiry = new DateOnly(2026, 12, 18); var provider = new Mock<IOptionsChainProvider>();
+        var expiry = new DateOnly(2026, 12, 18);
+        var provider = new Mock<IOptionsChainProvider>();
         provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>())).ReturnsAsync([expiry]);
-        var snapshot = Snapshot(expiry); var call = snapshot.Calls.Single();
+        var snapshot = Snapshot(expiry);
+        var call = snapshot.Calls.Single();
         var noGreek = new OptionQuote(Now, call.Symbol, call.Contract, 1m, 10, 1.1m, 10, 100m, Delta: null, Source: "synthetic-source");
         provider.Setup(value => value.GetChainSnapshotAsync("XYZ", expiry, 20, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OptionChainSnapshot(Now, "XYZ", 100m, expiry, [100m], [noGreek], []));
         var row = Assert.Single((await Service(provider.Object).ScreenAsync(new("XYZ"))).Candidates);
-        Assert.Null(row.Delta); Assert.Contains("Delta unavailable", row.RejectionReasons);
+        Assert.Null(row.Delta);
+        Assert.Contains("Delta unavailable", row.RejectionReasons);
     }
 
     [Fact]
     public async Task ChildContractScopeMismatch_CannotPassAndTinyDecimalsStayFixedPoint()
     {
-        var expiry = new DateOnly(2026, 12, 18); var provider = new Mock<IOptionsChainProvider>();
+        var expiry = new DateOnly(2026, 12, 18);
+        var provider = new Mock<IOptionsChainProvider>();
         provider.Setup(value => value.GetExpirationsAsync("XYZ", It.IsAny<CancellationToken>())).ReturnsAsync([expiry]);
         var bad = new OptionQuote(Now, "OTHER-C", new("OTHER", 0.00000001m, expiry, OptionRight.Call),
             0.00000001m, 10, 0.00000002m, 10, 100m, Delta: 0.00000001m, Source: "synthetic-source");
         provider.Setup(value => value.GetChainSnapshotAsync("XYZ", expiry, 20, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new OptionChainSnapshot(Now, "XYZ", 100m, expiry, [100m], [bad], []));
         var row = Assert.Single((await Service(provider.Object).ScreenAsync(new("XYZ"))).Candidates);
-        Assert.False(row.PassesScreen); Assert.Contains(row.RejectionReasons, value => value.Contains("does not match"));
-        Assert.Equal("0.00000001", row.Strike); Assert.Equal("0.00000001", row.Delta);
+        Assert.False(row.PassesScreen);
+        Assert.Contains(row.RejectionReasons, value => value.Contains("does not match"));
+        Assert.Equal("0.00000001", row.Strike);
+        Assert.Equal("0.00000001", row.Delta);
     }
 
     [Fact]
@@ -70,7 +76,9 @@ public sealed class OptionScreeningServiceTests
         provider.Setup(value => value.GetChainSnapshotAsync("XYZ", It.IsAny<DateOnly>(), 20, It.IsAny<CancellationToken>()))
             .ReturnsAsync((string _, DateOnly expiry, int? _, CancellationToken _) => expiry == expirations[1] ? null : Snapshot(expiry));
         var result = await Service(provider.Object).ScreenAsync(new("XYZ"));
-        Assert.Equal(11, result.LoadedExpirations.Count); Assert.Single(result.FailedExpirations); Assert.Single(result.OmittedExpirations);
+        Assert.Equal(11, result.LoadedExpirations.Count);
+        Assert.Single(result.FailedExpirations);
+        Assert.Single(result.OmittedExpirations);
         provider.Verify(value => value.GetChainSnapshotAsync("XYZ", expirations[12], It.IsAny<int?>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

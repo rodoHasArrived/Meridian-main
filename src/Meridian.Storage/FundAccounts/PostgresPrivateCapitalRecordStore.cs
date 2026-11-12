@@ -26,7 +26,8 @@ public sealed class PostgresPrivateCapitalRecordStore : IPrivateCapitalRecordSto
         await _migrationGate.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            if (_migrated) return;
+            if (_migrated)
+                return;
             await new FundAccountMigrationRunner(_options).EnsureMigratedAsync(ct).ConfigureAwait(false);
             _migrated = true;
         }

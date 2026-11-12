@@ -1,11 +1,11 @@
-import type { PrivateCapitalCommitment, PrivateCapitalSnapshot } from "@/types/private-capital.types";
+import type { PrivateCapitalRecordCommitment, PrivateCapitalSnapshot } from "@/types/private-capital.types";
 
 export const capitalMeasures = [
   ["commitmentAmount", "Commitment"], ["calledAmount", "Called capital"],
   ["unfundedAmount", "Unfunded commitment"], ["cumulativeDistributions", "Distributions"], ["navAmount", "NAV"]
 ] as const;
 
-export function buildCapitalRows(commitments: PrivateCapitalCommitment[], snapshots: PrivateCapitalSnapshot[],
+export function buildCapitalRows(commitments: PrivateCapitalRecordCommitment[], snapshots: PrivateCapitalSnapshot[],
   group: "vintage" | "strategy", asOfDate?: string) {
   const superseded = new Set(snapshots.flatMap(row => row.supersedesSnapshotId ? [row.supersedesSnapshotId] : []));
   const eligible = snapshots.filter(row => !superseded.has(row.snapshotId) && (!asOfDate || row.asOfDate <= asOfDate));

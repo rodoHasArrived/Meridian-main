@@ -28,7 +28,9 @@ public sealed class OptionScreeningService(OptionsChainService chains, TimeProvi
         var expirations = (await chains.GetExpirationsAsync(request.UnderlyingSymbol, ct).ConfigureAwait(false))
             .Distinct().Where(expiry => expiry.DayNumber - today.DayNumber >= request.MinDte
                 && expiry.DayNumber - today.DayNumber <= request.MaxDte).Order().ToArray();
-        var candidates = new List<OptionScreenCandidate>(); var loaded = new List<string>(); var failed = new List<string>();
+        var candidates = new List<OptionScreenCandidate>();
+        var loaded = new List<string>();
+        var failed = new List<string>();
         foreach (var expiry in expirations.Take(MaximumExpirations))
         {
             ct.ThrowIfCancellationRequested();
@@ -40,29 +42,40 @@ public sealed class OptionScreeningService(OptionsChainService chains, TimeProvi
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             { failed.Add(expiry.ToString("yyyy-MM-dd")); continue; }
-            if (snapshot is null) { failed.Add(expiry.ToString("yyyy-MM-dd")); continue; }
+            if (snapshot is null)
+            { failed.Add(expiry.ToString("yyyy-MM-dd")); continue; }
             if (!string.Equals(snapshot.UnderlyingSymbol, request.UnderlyingSymbol, StringComparison.OrdinalIgnoreCase)
-                || snapshot.Expiration != expiry) { failed.Add(expiry.ToString("yyyy-MM-dd")); continue; }
+                || snapshot.Expiration != expiry)
+            { failed.Add(expiry.ToString("yyyy-MM-dd")); continue; }
             loaded.Add(expiry.ToString("yyyy-MM-dd"));
             foreach (var quote in snapshot.Calls.Concat(snapshot.Puts))
             {
                 var right = quote.Contract.Right.ToString();
-                if (request.Right != "Both" && right != request.Right) continue;
+                if (request.Right != "Both" && right != request.Right)
+                    continue;
                 var reasons = new List<string>();
                 if (!string.Equals(quote.Contract.UnderlyingSymbol, request.UnderlyingSymbol, StringComparison.OrdinalIgnoreCase)
                     || quote.Contract.Expiration != expiry)
                     reasons.Add("Provider quote contract does not match the requested underlying or expiration");
                 var dte = quote.Contract.Expiration.DayNumber - today.DayNumber;
                 var spread = quote.MidPrice is > 0m ? quote.Spread / quote.MidPrice.Value : (decimal?)null;
-                if (quote.Delta is null) reasons.Add("Delta unavailable");
-                else if (quote.Delta < request.MinDelta || quote.Delta > request.MaxDelta) reasons.Add("Delta outside selected bounds");
-                if (quote.MidPrice is null) reasons.Add("Valid two-sided quote unavailable");
-                if (request.MinOpenInterest > 0 && (quote.OpenInterest is null || quote.OpenInterest < request.MinOpenInterest)) reasons.Add("Open interest below minimum or unavailable");
-                if (request.MinVolume > 0 && (quote.Volume is null || quote.Volume < request.MinVolume)) reasons.Add("Volume below minimum or unavailable");
-                if (request.MaxSpreadFraction is { } ceiling && (spread is null || spread > ceiling)) reasons.Add("Spread above maximum or unavailable");
+                if (quote.Delta is null)
+                    reasons.Add("Delta unavailable");
+                else if (quote.Delta < request.MinDelta || quote.Delta > request.MaxDelta)
+                    reasons.Add("Delta outside selected bounds");
+                if (quote.MidPrice is null)
+                    reasons.Add("Valid two-sided quote unavailable");
+                if (request.MinOpenInterest > 0 && (quote.OpenInterest is null || quote.OpenInterest < request.MinOpenInterest))
+                    reasons.Add("Open interest below minimum or unavailable");
+                if (request.MinVolume > 0 && (quote.Volume is null || quote.Volume < request.MinVolume))
+                    reasons.Add("Volume below minimum or unavailable");
+                if (request.MaxSpreadFraction is { } ceiling && (spread is null || spread > ceiling))
+                    reasons.Add("Spread above maximum or unavailable");
                 decimal? premium = request.PremiumBasis switch { "Ask" => quote.AskPrice, "Mid" => quote.MidPrice, _ => quote.BidPrice };
-                if (request.MinPremium is { } floor && (premium is null || premium < floor)) reasons.Add("Selected premium below minimum or unavailable");
-                if (dte < request.MinDte || dte > request.MaxDte) reasons.Add("DTE outside selected bounds");
+                if (request.MinPremium is { } floor && (premium is null || premium < floor))
+                    reasons.Add("Selected premium below minimum or unavailable");
+                if (dte < request.MinDte || dte > request.MaxDte)
+                    reasons.Add("DTE outside selected bounds");
                 var id = OptionAssessmentValidation.Digest(OptionAssessmentValidation.CanonicalBytes(new
                 { quote.Symbol, quote.Source, quote.Contract }));
                 candidates.Add(new(id, quote.Symbol, quote.Contract.UnderlyingSymbol, right,
@@ -72,7 +85,8 @@ public sealed class OptionScreeningService(OptionsChainService chains, TimeProvi
                     quote.Contract.Exchange, quote.Contract.Style.ToString(), quote.Source, quote.Timestamp, reasons.Count == 0, reasons));
             }
         }
-        if (expirations.Length > 0 && loaded.Count == 0) throw new InvalidOperationException("No requested expiration could be loaded. Check provider evidence and retry.");
+        if (expirations.Length > 0 && loaded.Count == 0)
+            throw new InvalidOperationException("No requested expiration could be loaded. Check provider evidence and retry.");
         if (expirations.Length == 0 && !chains.IsProviderAvailable)
             throw new InvalidOperationException("No options-chain provider is configured. No substitute chain is supplied.");
         return new(request, now, candidates.GroupBy(candidate => candidate.Id).Select(group => group.First()).ToArray(),

@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
+using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
@@ -95,6 +96,7 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
     private PrivateCapitalCloseScope? _privateCapitalCloseScope;
 
     private readonly DesktopAuthenticationSession? _authenticationSession;
+    public IntercompanyAgreementWorkspace? Agreements { get; }
 
     public FundLedgerViewModel(
         FundLedgerReadService fundLedgerReadService,
@@ -108,7 +110,8 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         IStatementReconciliationWorkbenchService? statementReconciliationWorkbenchService = null,
         IPrivateCapitalCloseCockpitService? privateCapitalCloseCockpitService = null,
         IFinancialOperationsCommandCenterReadService? financialOperationsCommandCenterReadService = null,
-        DesktopAuthenticationSession? authenticationSession = null)
+        DesktopAuthenticationSession? authenticationSession = null,
+        IWorkstationIntercompanyAgreementApiClient? intercompanyAgreementClient = null)
     {
         _fundLedgerReadService = fundLedgerReadService ?? throw new ArgumentNullException(nameof(fundLedgerReadService));
         _fundContextService = fundContextService ?? throw new ArgumentNullException(nameof(fundContextService));
@@ -122,6 +125,12 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
         _privateCapitalCloseCockpitService = privateCapitalCloseCockpitService;
         _financialOperationsCommandCenterReadService = financialOperationsCommandCenterReadService;
         _authenticationSession = authenticationSession;
+        Agreements = intercompanyAgreementClient is null ? null : new IntercompanyAgreementWorkspace(intercompanyAgreementClient);
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut += OnAgreementSessionChanged;
+            _authenticationSession.SignedIn += OnAgreementSessionChanged;
+        }
         ReconciliationSection.OperatorText = ResolveReconciliationOperator();
 
         AccountQueueTable = new WorkstationTableModel<FundAccountSummary>(
@@ -1051,8 +1060,23 @@ public sealed partial class FundLedgerViewModel : BindableBase, IDisposable
 
     public void Dispose()
     {
+        if (_authenticationSession is not null)
+        {
+            _authenticationSession.SignedOut -= OnAgreementSessionChanged;
+            _authenticationSession.SignedIn -= OnAgreementSessionChanged;
+        }
+        Agreements?.Dispose();
         _fundContextService.ActiveFundProfileChanged -= OnActiveFundProfileChanged;
         DisposeReconciliationWorkbench();
+    }
+
+    private void OnAgreementSessionChanged(object? sender, EventArgs e)
+    {
+        var dispatcher = System.Windows.Application.Current?.Dispatcher;
+        if (dispatcher is not null && !dispatcher.CheckAccess())
+            dispatcher.Invoke(() => Agreements?.ResetSession());
+        else
+            Agreements?.ResetSession();
     }
 
     private async Task<FundProfileDetail?> ResolveActiveFundAsync(

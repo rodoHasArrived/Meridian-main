@@ -62,7 +62,8 @@ public sealed class FamilyOfficeReadService
         if (familyClient is null)
             return BuildEmptyOverview(generatedAt, [familyOfficeId.HasValue
                 ? "The selected family office is unavailable in the current authorized scope."
-                : "Select a family office before reading its ownership and balances."]) with { AvailableClients = choices };
+                : "Select a family office before reading its ownership and balances."]) with
+            { AvailableClients = choices };
 
         var warnings = new List<string>();
 
@@ -254,7 +255,8 @@ public sealed class FamilyOfficeReadService
             .Concat(vehicles.Select(static vehicle => vehicle.LegalEntityId)).ToHashSet();
         var entities = graph.Entities.Where(entity => entityIds.Contains(entity.EntityId)).ToArray();
         var nodeIds = new HashSet<Guid>([clientId]);
-        if (business is not null) nodeIds.Add(business.BusinessId);
+        if (business is not null)
+            nodeIds.Add(business.BusinessId);
         nodeIds.UnionWith(funds.Select(static fund => fund.FundId));
         nodeIds.UnionWith(sleeves.Select(static sleeve => sleeve.SleeveId));
         nodeIds.UnionWith(vehicles.Select(static vehicle => vehicle.VehicleId));

@@ -5,6 +5,8 @@ namespace Meridian.Contracts.Api;
 /// </summary>
 public static class UiApiRoutes
 {
+    public const string IntercompanyAgreements = "/api/fund-structure/intercompany-agreements";
+
     // Bounded accounting onboarding; retained comparisons and readiness never transfer authority.
     public const string OnboardingWorkspaces = "/api/accounting/onboarding/workspaces";
     public const string OnboardingWorkspace = "/api/accounting/onboarding/workspaces/{workspaceId:guid}";

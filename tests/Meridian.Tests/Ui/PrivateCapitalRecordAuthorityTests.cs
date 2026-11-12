@@ -22,7 +22,9 @@ public sealed class PrivateCapitalRecordAuthorityTests
             var intake = await store.WriteIntakeArtifactAsync(new("report-pack", "source", "upload", "gp-statement.txt",
                 Convert.ToBase64String(Encoding.UTF8.GetBytes("Capital statement: commitment 1000, called 100.")), "text/plain")
             {
-                TenantId = "tenant-a", Scope = "company-a", Actor = "operator",
+                TenantId = "tenant-a",
+                Scope = "company-a",
+                Actor = "operator",
                 Classification = EvidenceDocumentClassificationDto.Statement
             });
             var identity = intake.VaultIdentity;

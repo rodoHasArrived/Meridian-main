@@ -25,6 +25,14 @@ block. Receipt IDs and hashes are retained in the input manifest and coupon sour
 remain exclusive to future resets; absent receipt selections leave earlier v3 requests unchanged,
 and v1/v2 replay receives no new inputs.
 
+Canonical call/put redemption is an explicit principal-only long-lot disposal mode. It binds every
+selected lot's complete quantity and basis, retains the reviewed instruction with selections ordered
+by their retained ordinal before drafting, and routes the candidate through the existing atomic
+lot/journal writer. Governed fractional unit successors may retain their derived twelve-decimal
+quote while their exact allocated basis remains authoritative.
+Accrued-interest, make-whole, short and mixed mutation cases refuse this bounded path. Historical
+corporate-action projections retain their original behavior unless this mode is selected.
+
 Floating analytics v3 returns each projected coupon's resolved fixing evidence without repricing
 in either workstation. Observed fixings and forecasts retain their distinct source and reset date;
 the effective coupon reflects contractual caps/floors. Fixed/zero v1/v2 remain explicitly selectable

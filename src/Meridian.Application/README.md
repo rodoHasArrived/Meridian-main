@@ -17,6 +17,16 @@ use the scoped retained date population before pagination and bind cursors to th
 Deadline capture and CSV import reuse the append-only case evidence lifecycle, source precision,
 predecessor validation, frozen-case checks and durable command replay without changing economics.
 
+`IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
+receipts and effective-date selection over the durable agreement store. Retrospective amendments
+preserve posted versions; semantic bases follow effective chronology rather than approval order.
+`PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
+lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+Provider holding normalization identifies bond-style records through the catalog coupon-structure
+capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
+uses the shared versioned term keys for call schedules and schedule conventions.
+
 Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
 the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
 security/version, reviewer and justification remain bound to a content hash. Retrieval-only retries
@@ -35,6 +45,13 @@ Provider capability matrices separate terms, evaluated prices, executable quotes
 fixings, factors and lifecycle notices. A configured connection or general certification never
 establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
 IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
+Cash-flow context v4 persists schedule row version 1, including measured accrual dates. A frozen
+v0 serializer keeps v1–v3 receipt hashes and replay arithmetic stable; unsupported row versions
+refuse replay. Accrual posting reads held face from shared lot quantity and multiplier and converts
+acquisition prices using the declared quote convention. Blocked empty schedules report their blocker.
+The unused whole-coupon posting helper and direct corporate-action poster have been retired;
+historical corporate-action characterizations live only in test fixtures.
 
 The governed Security Master field-edit lifecycle accepts `assetSpecificTerms.rateUnit` on scalar-rate
 classes without schedule anchors. Publishing the approved edit promotes only its declaration,
@@ -61,7 +78,7 @@ Its banking schema follows `BankingStartup.SchemaVariable`; funding requires ret
 in the same database as the ledger for atomic source validation. Business workflows remain owned
 by Financial Operations and shared workstation services, rather than this composition layer.
 
-Bond cash-flow context receipts now use `bond-cash-flow-context-v3`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 and v2 through their original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
+Bond cash-flow context receipts now use `bond-cash-flow-context-v4`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1–v3 through their original row contracts and arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 Current unsigned Security Master cash-flow readers return `NegativeInterestUnsupported` with no
 schedule when effective interest is negative, after contractual caps and floors. Ledger gates reject
@@ -105,8 +122,8 @@ resolves only the declaring block's calendars; it never substitutes a common or 
 former Application-side prototype factory (with a common-calendar fallback) was removed. See the
 [contractual schedule rollout](../../docs/domain/contractual-schedule.md#future-expansion-notes)
 for the declared engine and remaining 5b work.
-Cash-flow service composition retains its exact six-argument and calendar-aware seven-argument
-CLR constructors alongside the extended policy and calculation-receipt composition paths.
+Cash-flow service composition no longer accepts the retired whole-coupon bridge. Its remaining
+constructors support calendar, policy and calculation-receipt composition.
 
 Freshness monitoring begins with live ingress or collector subscription attempts, not configured symbols in an idle workstation. An unused UI monitor does not publish empty snapshots over an active collector's process-wide metrics. Internal reconciliation retains observed `tradeFill.price` only for the single-currency share movement, never a commission leg or a price inferred from fee-inclusive net cash.
 
@@ -1146,6 +1163,18 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Important workflows
 
+`DatabaseStartupPlan` is the shared, sequential migration plan consumed by executable hosts and
+`UiServer`. Each existing `*Startup` owner declares its initializer and prerequisite in
+`DatabaseStartupStep`; `AddDatabaseStartupPlan` registers the eight core participants without
+opening a database. The final graph rejects duplicate identifiers, missing prerequisites and cycles
+before any initializer runs. Failures and cancellation stop the plan before later participants.
+The existing Ledger → Security Master → Direct Lending → Asset Operations → Fund Accounts →
+Fund Structure → Banking → Money Market sequence remains intact. Headless hosts run the plan after
+the production guard and before tenant cutover/background work; desktop children leave migration
+ownership to their parent. Workstation reporting readiness remains a subsequent host-owned step.
+`DatabaseStartupPlanTests`, `HostStartupLifecycleTests`, and
+`SupportedPostureStartupIntegrationTests` cover the plan and both executable entry paths.
+
 ### Market-data feature composition
 
 `ServiceCompositionRoot.AddMarketDataServices` uses one ordered feature plan pairing each
@@ -1337,8 +1366,9 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the same opening outstanding principal used by calculated cash flows. Dated factors
-include only payments through their evidence date; later contractual payments completed before
+quote by the same opening outstanding principal used by calculated cash flows. Dirty quotations
+block with `PriceBasisRequiresNormalization` until settlement-aware clean/dirty normalization is
+reviewed. Dated factors include only payments through their evidence date; later contractual payments completed before
 the valuation date reduce the balance. Without an applicable factor, all completed in-window
 contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
 twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.

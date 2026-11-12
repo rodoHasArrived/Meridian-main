@@ -38,8 +38,10 @@ public sealed class CorporateActionCalendarService(
         var processingCase = await RequireCaseAsync(request.CaseId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
         var preview = ParseImport(request);
         var errors = preview.Errors.ToList();
-        if (processingCase.Version != request.ExpectedVersion) errors.Add("The case version changed; refresh before previewing this import.");
-        if (CorporateActionCaseStates.IsContentFrozen(processingCase.State)) errors.Add("The case is content-frozen; use its governed reopen/restatement workflow.");
+        if (processingCase.Version != request.ExpectedVersion)
+            errors.Add("The case version changed; refresh before previewing this import.");
+        if (CorporateActionCaseStates.IsContentFrozen(processingCase.State))
+            errors.Add("The case is content-frozen; use its governed reopen/restatement workflow.");
         try
         {
             CorporateActionCaseAccountingPolicy.EnsureScopeAssertionMatches(request.ScopeAssertion ?? new(request.TenantId, request.CompanyId), processingCase.Scope);
@@ -60,7 +62,8 @@ public sealed class CorporateActionCalendarService(
         string actor, string? correlationId, CancellationToken ct = default)
     {
         var preview = ParseImport(request);
-        if (preview.Errors.Count > 0) throw new CorporateActionValidationException(string.Join(" ", preview.Errors));
+        if (preview.Errors.Count > 0)
+            throw new CorporateActionValidationException(string.Join(" ", preview.Errors));
         if (!Sha256Digest.FixedEquals(preview.PreviewHash, request.PreviewHash ?? string.Empty))
             throw new CorporateActionValidationException("The CSV or import scope changed; preview this exact import again.");
         var results = new List<CorporateActionEvidenceMutationResultDto>();
@@ -87,9 +90,12 @@ public sealed class CorporateActionCalendarService(
         DateOnly from, DateOnly to, string? account = null, string? custody = null, string? cursor = null,
         int take = 250, CancellationToken ct = default)
     {
-        if (to < from || to.DayNumber - from.DayNumber > 366) throw new CorporateActionValidationException("Select a calendar range of at most 367 days.");
-        if (string.IsNullOrWhiteSpace(tenant) || string.IsNullOrWhiteSpace(company)) throw new CorporateActionScopeMismatchException("Tenant and company scope are required.");
-        if (take is < 1 or > 500) throw new CorporateActionValidationException("Calendar page size must be between 1 and 500.");
+        if (to < from || to.DayNumber - from.DayNumber > 366)
+            throw new CorporateActionValidationException("Select a calendar range of at most 367 days.");
+        if (string.IsNullOrWhiteSpace(tenant) || string.IsNullOrWhiteSpace(company))
+            throw new CorporateActionScopeMismatchException("Tenant and company scope are required.");
+        if (take is < 1 or > 500)
+            throw new CorporateActionValidationException("Calendar page size must be between 1 and 500.");
         var snapshot = await Store.ReadCalendarAsync(tenant, company, from, to, account, custody, ct).ConfigureAwait(false);
         var items = ProjectCalendar(snapshot, from, to, account, custody);
         var revision = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(items, CorporateActionDeadlinePolicy.JsonOptions));
@@ -98,11 +104,13 @@ public sealed class CorporateActionCalendarService(
         if (cursor is not null)
         {
             CalendarCursor? decoded;
-            try { decoded = cursor.Length > 2048 ? null : JsonSerializer.Deserialize<CalendarCursor>(Convert.FromBase64String(cursor)); }
+            try
+            { decoded = cursor.Length > 2048 ? null : JsonSerializer.Deserialize<CalendarCursor>(Convert.FromBase64String(cursor)); }
             catch (Exception ex) when (ex is JsonException or FormatException) { decoded = null; }
             if (decoded is null || decoded.Query != query || decoded.Offset < 0 || decoded.Offset > items.Count)
                 throw new CorporateActionValidationException("The calendar cursor does not match this scope/range; refresh the calendar.");
-            if (decoded.Revision != revision) throw new CorporateActionStateConflictException(Guid.Empty, "The retained calendar changed between pages; refresh the range before continuing.");
+            if (decoded.Revision != revision)
+                throw new CorporateActionStateConflictException(Guid.Empty, "The retained calendar changed between pages; refresh the range before continuing.");
             offset = decoded.Offset;
         }
         var page = items.Skip(offset).Take(take).ToArray();
@@ -141,18 +149,20 @@ public sealed class CorporateActionCalendarService(
             AddDate("RecordDate", proposal.ProposedAction.RecordDate);
             AddDate("PaymentDate", proposal.ProposedAction.PayDate);
             foreach (var processingCase in cases)
-            foreach (var record in ProjectHistory(snapshot.Evidence.Where(e => e.CaseId == processingCase.CaseId).ToArray()).Where(e => e.IsCurrent && !e.Deadline.Withdrawn))
-            {
-                var deadline = record.Deadline;
-                if (account is not null && deadline.FinancialAccountId is not null && deadline.FinancialAccountId != account ||
-                    custody is not null && deadline.CustodyAccountId is not null && deadline.CustodyAccountId != custody) continue;
-                var date = deadline.Date ?? DateOnly.FromDateTime(deadline.At!.Value.DateTime);
-                if (date < from || date > to) continue;
-                result.Add(new CorporateActionCalendarEventDto($"{processingCase.CaseId:N}:{deadline.SeriesId:N}", proposal.SecurityId,
-                    ticker, proposal.ProposedAction.EventType, proposal.ProposalId, deadline.Kind, date, deadline.At,
-                    [new CorporateActionCalendarCaseReferenceDto(processingCase.CaseId, processingCase.Version, processingCase.State, processingCase.Scope)],
-                    proposal.ProviderIdentity, proposal.State, record));
-            }
+                foreach (var record in ProjectHistory(snapshot.Evidence.Where(e => e.CaseId == processingCase.CaseId).ToArray()).Where(e => e.IsCurrent && !e.Deadline.Withdrawn))
+                {
+                    var deadline = record.Deadline;
+                    if (account is not null && deadline.FinancialAccountId is not null && deadline.FinancialAccountId != account ||
+                        custody is not null && deadline.CustodyAccountId is not null && deadline.CustodyAccountId != custody)
+                        continue;
+                    var date = deadline.Date ?? DateOnly.FromDateTime(deadline.At!.Value.DateTime);
+                    if (date < from || date > to)
+                        continue;
+                    result.Add(new CorporateActionCalendarEventDto($"{processingCase.CaseId:N}:{deadline.SeriesId:N}", proposal.SecurityId,
+                        ticker, proposal.ProposedAction.EventType, proposal.ProposalId, deadline.Kind, date, deadline.At,
+                        [new CorporateActionCalendarCaseReferenceDto(processingCase.CaseId, processingCase.Version, processingCase.State, processingCase.Scope)],
+                        proposal.ProviderIdentity, proposal.State, record));
+                }
         }
         return result.OrderBy(e => e.Date).ThenBy(e => e.SecurityId).ThenBy(e => e.EventId, StringComparer.Ordinal).ToArray();
     }
@@ -161,26 +171,33 @@ public sealed class CorporateActionCalendarService(
     {
         var errors = new List<string>();
         var rows = new List<CorporateActionDeadlineImportRowDto>();
-        if (request.Csv is null || Encoding.UTF8.GetByteCount(request.Csv) > 262144) throw new CorporateActionValidationException("CSV imports must be at most 256 KiB.");
-        if (request.CaseId == Guid.Empty || request.ExpectedVersion <= 0) errors.Add("A durable case ID and positive expected case version are required.");
+        if (request.Csv is null || Encoding.UTF8.GetByteCount(request.Csv) > 262144)
+            throw new CorporateActionValidationException("CSV imports must be at most 256 KiB.");
+        if (request.CaseId == Guid.Empty || request.ExpectedVersion <= 0)
+            errors.Add("A durable case ID and positive expected case version are required.");
         if (string.IsNullOrWhiteSpace(request.IdempotencyKey) || Encoding.UTF8.GetByteCount(request.IdempotencyKey) > 220)
             errors.Add("Use a nonblank import idempotency key of at most 220 UTF-8 bytes.");
         var hash = Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(request with { PreviewHash = null }, CorporateActionDeadlinePolicy.JsonOptions));
         IReadOnlyList<string[]> parsed;
-        try { parsed = ParseCsv(request.Csv.TrimStart('\uFEFF')); }
+        try
+        { parsed = ParseCsv(request.Csv.TrimStart('\uFEFF')); }
         catch (FormatException ex) { return new CorporateActionDeadlineImportPreviewDto(hash, request.ExpectedVersion, [], [ex.Message]); }
         if (parsed.Count == 0 || string.Join(',', parsed[0]) != CorporateActionDeadlinePolicy.CsvHeader)
             return new CorporateActionDeadlineImportPreviewDto(hash, request.ExpectedVersion, [], [$"Use the canonical CSV header: {CorporateActionDeadlinePolicy.CsvHeader}"]);
-        if (parsed.Count > 101) errors.Add("Import at most 100 deadline rows at a time.");
+        if (parsed.Count > 101)
+            errors.Add("Import at most 100 deadline rows at a time.");
         var series = new HashSet<Guid>();
         for (var index = 1; index < Math.Min(parsed.Count, 101); index++)
         {
             var cells = parsed[index];
             try
             {
-                if (cells.Length != 14) throw new FormatException("Expected 14 CSV columns.");
-                if (!Guid.TryParse(cells[0], out var id) || id == Guid.Empty) throw new FormatException("seriesId must be a UUID.");
-                if (!series.Add(id)) throw new FormatException("Each deadline series may occur once in an import.");
+                if (cells.Length != 14)
+                    throw new FormatException("Expected 14 CSV columns.");
+                if (!Guid.TryParse(cells[0], out var id) || id == Guid.Empty)
+                    throw new FormatException("seriesId must be a UUID.");
+                if (!series.Add(id))
+                    throw new FormatException("Each deadline series may occur once in an import.");
                 DateOnly? date = string.IsNullOrEmpty(cells[3]) ? null : DateOnly.ParseExact(cells[3], "yyyy-MM-dd", CultureInfo.InvariantCulture);
                 DateTimeOffset? at = string.IsNullOrEmpty(cells[4]) ? null : CorporateActionDeadlinePolicy.TryParseInstant(cells[4], out var instant)
                     ? instant : throw new FormatException("at requires an ISO timestamp with an explicit offset.");
@@ -194,33 +211,47 @@ public sealed class CorporateActionCalendarService(
             catch (Exception ex) when (ex is FormatException or CorporateActionValidationException)
             { errors.Add($"Row {index + 1}: {ex.Message}"); }
         }
-        if (rows.Count == 0 && errors.Count == 0) errors.Add("The CSV has no deadline records.");
+        if (rows.Count == 0 && errors.Count == 0)
+            errors.Add("The CSV has no deadline records.");
         return new CorporateActionDeadlineImportPreviewDto(hash, request.ExpectedVersion, rows, errors);
     }
 
     private static IReadOnlyList<string[]> ParseCsv(string text)
     {
-        var rows = new List<string[]>(); var cells = new List<string>(); var cell = new StringBuilder();
-        var quoted = false; var closedQuote = false;
+        var rows = new List<string[]>();
+        var cells = new List<string>();
+        var cell = new StringBuilder();
+        var quoted = false;
+        var closedQuote = false;
         for (var i = 0; i < text.Length; i++)
         {
             var c = text[i];
             if (quoted)
             {
-                if (c == '"') { if (i + 1 < text.Length && text[i + 1] == '"') { cell.Append('"'); i++; } else { quoted = false; closedQuote = true; } }
-                else cell.Append(c);
+                if (c == '"')
+                { if (i + 1 < text.Length && text[i + 1] == '"') { cell.Append('"'); i++; } else { quoted = false; closedQuote = true; } }
+                else
+                    cell.Append(c);
             }
-            else if (c == '"' && cell.Length == 0 && !closedQuote) quoted = true;
+            else if (c == '"' && cell.Length == 0 && !closedQuote)
+                quoted = true;
             else if (c == ',' || c is '\r' or '\n')
             {
-                cells.Add(cell.ToString()); cell.Clear(); closedQuote = false;
-                if (c != ',') { if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++; if (cells.Any(x => x.Length > 0)) rows.Add(cells.ToArray()); cells.Clear(); }
+                cells.Add(cell.ToString());
+                cell.Clear();
+                closedQuote = false;
+                if (c != ',')
+                { if (c == '\r' && i + 1 < text.Length && text[i + 1] == '\n') i++; if (cells.Any(x => x.Length > 0)) rows.Add(cells.ToArray()); cells.Clear(); }
             }
-            else if (closedQuote || c == '"') throw new FormatException("CSV quotes are malformed.");
-            else cell.Append(c);
+            else if (closedQuote || c == '"')
+                throw new FormatException("CSV quotes are malformed.");
+            else
+                cell.Append(c);
         }
-        if (quoted) throw new FormatException("CSV has an unterminated quoted field.");
-        if (cell.Length > 0 || cells.Count > 0 || closedQuote) { cells.Add(cell.ToString()); if (cells.Any(x => x.Length > 0)) rows.Add(cells.ToArray()); }
+        if (quoted)
+            throw new FormatException("CSV has an unterminated quoted field.");
+        if (cell.Length > 0 || cells.Count > 0 || closedQuote)
+        { cells.Add(cell.ToString()); if (cells.Any(x => x.Length > 0)) rows.Add(cells.ToArray()); }
         return rows;
     }
 

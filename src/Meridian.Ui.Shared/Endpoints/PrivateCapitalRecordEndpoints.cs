@@ -21,7 +21,8 @@ public static class PrivateCapitalRecordEndpoints
                 var records = await service.ReadAsync(Scope(context), ct).ConfigureAwait(false);
                 var holders = new HashSet<Guid>();
                 foreach (var holder in records.Commitments.Select(row => row.HolderEntityId).Distinct())
-                    if (await CanReadHolderAsync(context, holder, ct).ConfigureAwait(false)) holders.Add(holder);
+                    if (await CanReadHolderAsync(context, holder, ct).ConfigureAwait(false))
+                        holders.Add(holder);
                 var commitments = records.Commitments.Where(row => holders.Contains(row.HolderEntityId)).ToArray();
                 var ids = commitments.Select(row => row.CommitmentId).ToHashSet();
                 return Results.Json(new
@@ -39,7 +40,8 @@ public static class PrivateCapitalRecordEndpoints
                 var choices = await service.ChoicesAsync(Scope(context), ct).ConfigureAwait(false);
                 var entities = new List<PrivateCapitalChoice>();
                 foreach (var entity in choices.Entities)
-                    if (await EntityAllowedAsync(context, entity.Id, UserPermission.ManagePrivateCapitalRecords, ct).ConfigureAwait(false)) entities.Add(entity);
+                    if (await EntityAllowedAsync(context, entity.Id, UserPermission.ManagePrivateCapitalRecords, ct).ConfigureAwait(false))
+                        entities.Add(entity);
                 return Results.Json(new PrivateCapitalChoices(entities, entities.Count > 0 ? choices.Vehicles : []), jsonOptions);
             }))
             .RequirePermission(UserPermission.ManagePrivateCapitalRecords).RequireWorkstationTenantCompanyScope().WithName("GetPrivateCapitalRecordChoices");
@@ -48,7 +50,8 @@ public static class PrivateCapitalRecordEndpoints
             ExecuteAsync(async () =>
             {
                 var inspection = await service.InspectImportAsync(Scope(context), batchId, ct).ConfigureAwait(false);
-                if (inspection is null) return Results.NotFound();
+                if (inspection is null)
+                    return Results.NotFound();
                 await RequireRowsAllowedAsync(context, service, inspection.Preview.Rows, write: false, ct).ConfigureAwait(false);
                 return Results.Json(inspection, jsonOptions);
             }))
@@ -68,7 +71,8 @@ public static class PrivateCapitalRecordEndpoints
             [FromServices] PrivateCapitalRecordService service, CancellationToken ct) =>
             ExecuteAsync(async () =>
             {
-                if ((request.Rows is not null) == (request.Csv is not null)) throw new ArgumentException("Supply exactly one of rows or CSV.");
+                if ((request.Rows is not null) == (request.Csv is not null))
+                    throw new ArgumentException("Supply exactly one of rows or CSV.");
                 var rows = request.Rows ?? PrivateCapitalCsv.Parse(request.Csv!);
                 await RequireRowsAllowedAsync(context, service, rows, write: true, ct).ConfigureAwait(false);
                 return Results.Json(await service.PreviewAsync(Scope(context), Actor(context), request, ct).ConfigureAwait(false), jsonOptions);
@@ -80,7 +84,8 @@ public static class PrivateCapitalRecordEndpoints
             ExecuteAsync(async () =>
             {
                 var inspection = await service.InspectImportAsync(Scope(context), request.BatchId, ct).ConfigureAwait(false);
-                if (inspection is null) return Results.NotFound();
+                if (inspection is null)
+                    return Results.NotFound();
                 await RequireRowsAllowedAsync(context, service, inspection.Preview.Rows, write: true, ct).ConfigureAwait(false);
                 return Results.Json(await service.AcceptAsync(Scope(context), Actor(context), request, ct).ConfigureAwait(false), jsonOptions);
             }))
@@ -109,11 +114,13 @@ public static class PrivateCapitalRecordEndpoints
         {
             if (!commitments.TryGetValue(id, out var commitment))
                 throw new UnauthorizedAccessException("The observation's commitment is unavailable in the authorized scope.");
-            if (!checkedHolders.Add(commitment.HolderEntityId)) continue;
+            if (!checkedHolders.Add(commitment.HolderEntityId))
+                continue;
             var allowed = write
                 ? await EntityAllowedAsync(context, commitment.HolderEntityId, UserPermission.ManagePrivateCapitalRecords, ct).ConfigureAwait(false)
                 : await CanReadHolderAsync(context, commitment.HolderEntityId, ct).ConfigureAwait(false);
-            if (!allowed) throw new UnauthorizedAccessException("Private-capital observations for this holder are not authorized.");
+            if (!allowed)
+                throw new UnauthorizedAccessException("Private-capital observations for this holder are not authorized.");
         }
     }
 
@@ -130,7 +137,8 @@ public static class PrivateCapitalRecordEndpoints
 
     private static async Task<IResult> ExecuteAsync(Func<Task<IResult>> action)
     {
-        try { return await action().ConfigureAwait(false); }
+        try
+        { return await action().ConfigureAwait(false); }
         catch (UnauthorizedAccessException) { return Results.StatusCode(StatusCodes.Status403Forbidden); }
         catch (ArgumentException exception) { return Results.BadRequest(new { code = "PrivateCapitalInputInvalid", error = EndpointHelpers.RefusalDetail(exception) }); }
         catch (InvalidOperationException exception) { return Results.Conflict(new { code = "PrivateCapitalConflict", error = EndpointHelpers.RefusalDetail(exception) }); }

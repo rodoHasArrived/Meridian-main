@@ -6,10 +6,22 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FinancialOperations
+
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the same instruction at drafting. Selections are compared by their
+retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 

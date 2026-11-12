@@ -445,7 +445,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDataVendorEntitlementStore, PostgresDataVendorEntitlementStore>();
             services.AddSingleton<ISecurityMasterQualityReportStore, PostgresSecurityMasterQualityReportStore>();
             services.AddSingleton<ISecurityMasterPricingService, SecurityMasterPricingService>();
-            services.AddSingleton<IStructuredCashFlowLedgerBridge, StructuredCashFlowLedgerBridge>();
             services.AddSingleton<ISecurityMasterAmortizationLedgerBridge, SecurityMasterAmortizationLedgerBridge>();
             // Stored, versioned curves (migrations 052/053) feed floating-leg projection and the
             // valuation seam; both models dispatch on the catalog's DefaultValuationModel fact.
@@ -649,6 +648,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 Schema = configuration.GetSchema(FundStructureStartup.SchemaVariable, FundStructureStartup.DefaultSchema)
             });
             services.TryAddSingleton<IFundStructureStore, PostgresFundStructureStore>();
+            services.TryAddSingleton<IIntercompanyAgreementStore, PostgresIntercompanyAgreementStore>();
+            services.TryAddSingleton<IIntercompanyAgreementPostingAuthority, PostgresIntercompanyAgreementPostingAuthority>();
             services.TryAddSingleton<PostgresFundStructureService>();
             services.TryAddSingleton<IFundStructureService>(sp => sp.GetRequiredService<PostgresFundStructureService>());
         }

@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Contracts.Options;
 
@@ -21,22 +21,28 @@ public static partial class OptionAssessmentValidation
                 CultureInfo.InvariantCulture, out var amount) || positive && amount <= 0m)
             throw new ArgumentException($"{name} must be an exact{(positive ? " positive" : "")} decimal string.");
         var canonical = amount.ToString("0.############################", CultureInfo.InvariantCulture);
-        var literal = value.Trim(); var negative = literal.StartsWith('-');
-        if (negative) literal = literal[1..];
-        var parts = literal.Split('.'); var whole = parts[0].TrimStart('0');
+        var literal = value.Trim();
+        var negative = literal.StartsWith('-');
+        if (negative)
+            literal = literal[1..];
+        var parts = literal.Split('.');
+        var whole = parts[0].TrimStart('0');
         var fraction = parts.Length == 2 ? parts[1].TrimEnd('0') : string.Empty;
         whole = whole.Length == 0 ? "0" : whole;
         var exact = (negative && (whole != "0" || fraction.Length > 0) ? "-" : string.Empty)
             + whole + (fraction.Length > 0 ? "." + fraction : string.Empty);
-        if (canonical != exact) throw new ArgumentException($"{name} exceeds exact decimal precision; rounding is not allowed.");
+        if (canonical != exact)
+            throw new ArgumentException($"{name} exceeds exact decimal precision; rounding is not allowed.");
         return canonical;
     }
 
     public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null)
     {
         ArgumentNullException.ThrowIfNull(value);
-        if (value.SchemaVersion != "1") throw new ArgumentException("Assessment schemaVersion must be 1.");
-        if (value.FundAccountId == Guid.Empty) throw new ArgumentException("An owned fund account is required.");
+        if (value.SchemaVersion != "1")
+            throw new ArgumentException("Assessment schemaVersion must be 1.");
+        if (value.FundAccountId == Guid.Empty)
+            throw new ArgumentException("An owned fund account is required.");
         if (value.AssessedAt == default || value.AssessedAt.Offset != TimeSpan.Zero)
             throw new ArgumentException("Broker assessment time must be an explicit UTC timestamp.");
         var basket = value.Basket ?? throw new ArgumentException("Basket is required.");
@@ -47,13 +53,16 @@ public static partial class OptionAssessmentValidation
         if (normalizedLegs.Select(leg => leg.LegId).Distinct(StringComparer.Ordinal).Count() != legs.Count)
             throw new ArgumentException("Leg IDs must be unique.");
         var orderType = Choice(basket.OrderType, "orderType", "Limit", "Market");
-        if (orderType == "Limit" && basket.LimitPrice is null) throw new ArgumentException("Limit baskets require a limit price.");
+        if (orderType == "Limit" && basket.LimitPrice is null)
+            throw new ArgumentException("Limit baskets require a limit price.");
         var price = basket.LimitPrice is null ? null : ExactDecimal(basket.LimitPrice, "limitPrice");
         if (price is not null && decimal.Parse(price, CultureInfo.InvariantCulture) < 0m)
             throw new ArgumentException("Use a nonnegative limit price and an explicit debit/credit price effect.");
-        if (orderType == "Market" && price is not null) throw new ArgumentException("Market baskets cannot have a limit price.");
+        if (orderType == "Market" && price is not null)
+            throw new ArgumentException("Market baskets cannot have a limit price.");
         var warnings = value.Warnings?.Select(warning => Required(warning, "warning", 2000)).ToArray() ?? [];
-        if (warnings.Length > 100) throw new ArgumentException("A maximum of 100 broker warnings may be imported.");
+        if (warnings.Length > 100)
+            throw new ArgumentException("A maximum of 100 broker warnings may be imported.");
         var hasMargin = new[] { value.InitialMarginBefore, value.InitialMarginChange, value.InitialMarginAfter,
             value.MaintenanceMarginBefore, value.MaintenanceMarginChange, value.MaintenanceMarginAfter, value.ExcessLiquidityAfter }
             .Any(amount => amount is not null);
@@ -68,23 +77,37 @@ public static partial class OptionAssessmentValidation
             RawBrokerStatus = Required(value.RawBrokerStatus, "rawBrokerStatus", 2000),
             Basket = basket with
             {
-                Quantity = ExactDecimal(basket.Quantity, "quantity", true), OrderType = orderType,
+                Quantity = ExactDecimal(basket.Quantity, "quantity", true),
+                OrderType = orderType,
                 PriceEffect = Choice(basket.PriceEffect, "priceEffect", "Debit", "Credit", "Even"),
-                LimitPrice = price, Currency = Currency(basket.Currency), Legs = normalizedLegs
+                LimitPrice = price,
+                Currency = Currency(basket.Currency),
+                Legs = normalizedLegs
             },
-            InitialMarginBefore = Amount(value.InitialMarginBefore), InitialMarginChange = Amount(value.InitialMarginChange),
-            InitialMarginAfter = Amount(value.InitialMarginAfter), MaintenanceMarginBefore = Amount(value.MaintenanceMarginBefore),
-            MaintenanceMarginChange = Amount(value.MaintenanceMarginChange), MaintenanceMarginAfter = Amount(value.MaintenanceMarginAfter),
-            ExcessLiquidityAfter = Amount(value.ExcessLiquidityAfter), CashImpact = Amount(value.CashImpact),
-            PermissionEvidence = Optional(value.PermissionEvidence), RestrictionEvidence = Optional(value.RestrictionEvidence),
-            Warnings = warnings, MarginCurrency = marginCurrency, CashImpactCurrency = cashCurrency
+            InitialMarginBefore = Amount(value.InitialMarginBefore),
+            InitialMarginChange = Amount(value.InitialMarginChange),
+            InitialMarginAfter = Amount(value.InitialMarginAfter),
+            MaintenanceMarginBefore = Amount(value.MaintenanceMarginBefore),
+            MaintenanceMarginChange = Amount(value.MaintenanceMarginChange),
+            MaintenanceMarginAfter = Amount(value.MaintenanceMarginAfter),
+            ExcessLiquidityAfter = Amount(value.ExcessLiquidityAfter),
+            CashImpact = Amount(value.CashImpact),
+            PermissionEvidence = Optional(value.PermissionEvidence),
+            RestrictionEvidence = Optional(value.RestrictionEvidence),
+            Warnings = warnings,
+            MarginCurrency = marginCurrency,
+            CashImpactCurrency = cashCurrency
         };
     }
 
     public static string BasketFingerprint(BrokerOptionAssessment assessment) => Digest(JsonSerializer.SerializeToUtf8Bytes(
         new { assessment.FundAccountId, assessment.ProviderId, assessment.ExternalAccountId, assessment.Basket }, Json));
 
-    public static string Digest(byte[] bytes) => Convert.ToHexStringLower(SHA256.HashData(bytes));
+    public static string Digest(byte[] bytes)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        return Sha256Digest.Compute(bytes);
+    }
     public static byte[] CanonicalBytes<T>(T value) => JsonSerializer.SerializeToUtf8Bytes(value, Json);
 
     private static OptionAssessmentLeg NormalizeLeg(OptionAssessmentLeg value)
@@ -93,12 +116,15 @@ public static partial class OptionAssessmentValidation
         var kind = Choice(value.InstrumentType, "instrumentType", "Option", "Equity");
         var result = value with
         {
-            LegId = Required(value.LegId, "legId", 128), InstrumentType = kind,
-            Symbol = Required(value.Symbol, "symbol", 256), Currency = Currency(value.Currency),
+            LegId = Required(value.LegId, "legId", 128),
+            InstrumentType = kind,
+            Symbol = Required(value.Symbol, "symbol", 256),
+            Currency = Currency(value.Currency),
             Side = Choice(value.Side, "side", "Buy", "Sell"),
             PositionIntent = Choice(value.PositionIntent, "positionIntent", "Open", "Close"),
             Ratio = ExactDecimal(value.Ratio, "ratio", true),
-            Exchange = Optional(value.Exchange), Deliverable = Optional(value.Deliverable)
+            Exchange = Optional(value.Exchange),
+            Deliverable = Optional(value.Deliverable)
         };
         if (kind == "Option")
         {
@@ -107,8 +133,10 @@ public static partial class OptionAssessmentValidation
             result = result with
             {
                 UnderlyingSymbol = Required(value.UnderlyingSymbol, "underlyingSymbol", 256),
-                Right = Choice(value.Right, "right", "Call", "Put"), Expiration = expiry.ToString("yyyy-MM-dd"),
-                Strike = ExactDecimal(value.Strike, "strike", true), Multiplier = ExactDecimal(value.Multiplier, "multiplier", true),
+                Right = Choice(value.Right, "right", "Call", "Put"),
+                Expiration = expiry.ToString("yyyy-MM-dd"),
+                Strike = ExactDecimal(value.Strike, "strike", true),
+                Multiplier = ExactDecimal(value.Multiplier, "multiplier", true),
                 Deliverable = Required(value.Deliverable, "deliverable", 2000)
             };
         }
@@ -121,7 +149,8 @@ public static partial class OptionAssessmentValidation
     private static string Currency(string? value)
     {
         var text = Required(value, "currency", 3).ToUpperInvariant();
-        if (text.Length != 3 || text.Any(c => c is < 'A' or > 'Z')) throw new ArgumentException("Currency requires a three-letter code.");
+        if (text.Length != 3 || text.Any(c => c is < 'A' or > 'Z'))
+            throw new ArgumentException("Currency requires a three-letter code.");
         return text;
     }
     private static string? Optional(string? value) => string.IsNullOrWhiteSpace(value) ? null : Required(value, "text", 2000);
@@ -137,7 +166,8 @@ public static partial class OptionAssessmentValidation
 
     public static IReadOnlyList<OptionAssessmentLeg> ParseLegsCsv(string csv)
     {
-        if (csv.Length > 256_000) throw new ArgumentException("Leg CSV exceeds 256 KB.");
+        if (csv.Length > 256_000)
+            throw new ArgumentException("Leg CSV exceeds 256 KB.");
         var rows = ReadCsv(csv);
         var headers = new[] { "legId", "instrumentType", "symbol", "side", "positionIntent", "ratio", "currency",
             "underlyingSymbol", "right", "expiration", "strike", "multiplier", "exchange", "deliverable" };
@@ -145,7 +175,8 @@ public static partial class OptionAssessmentValidation
             throw new ArgumentException($"CSV header must be exactly: {string.Join(',', headers)}");
         return rows.Skip(1).Select((row, i) =>
         {
-            if (row.Length != headers.Length) throw new ArgumentException($"CSV row {i + 2} requires {headers.Length} fields.");
+            if (row.Length != headers.Length)
+                throw new ArgumentException($"CSV row {i + 2} requires {headers.Length} fields.");
             string? Cell(int n) => string.IsNullOrWhiteSpace(row[n]) ? null : row[n].Trim();
             return new OptionAssessmentLeg(row[0], row[1], row[2], row[3], row[4], row[5], row[6],
                 Cell(7), Cell(8), Cell(9), Cell(10), Cell(11), Cell(12), Cell(13));
@@ -154,40 +185,56 @@ public static partial class OptionAssessmentValidation
 
     private static List<string[]> ReadCsv(string csv)
     {
-        var rows = new List<string[]>(); var cells = new List<string>(); var cell = new StringBuilder();
-        var quoted = false; var closedQuote = false;
+        var rows = new List<string[]>();
+        var cells = new List<string>();
+        var cell = new StringBuilder();
+        var quoted = false;
+        var closedQuote = false;
         for (var i = 0; i < csv.Length; i++)
         {
             var c = csv[i];
             if (quoted)
             {
-                if (c == '"' && i + 1 < csv.Length && csv[i + 1] == '"') { cell.Append('"'); i++; }
-                else if (c == '"') { quoted = false; closedQuote = true; }
-                else cell.Append(c);
+                if (c == '"' && i + 1 < csv.Length && csv[i + 1] == '"')
+                { cell.Append('"'); i++; }
+                else if (c == '"')
+                { quoted = false; closedQuote = true; }
+                else
+                    cell.Append(c);
                 continue;
             }
             if (c == '"')
             {
-                if (cell.Length > 0 || closedQuote) throw new ArgumentException("Malformed CSV quote.");
-                quoted = true; continue;
+                if (cell.Length > 0 || closedQuote)
+                    throw new ArgumentException("Malformed CSV quote.");
+                quoted = true;
+                continue;
             }
             if (c is ',' or '\r' or '\n')
             {
-                cells.Add(cell.ToString()); cell.Clear(); closedQuote = false;
+                cells.Add(cell.ToString());
+                cell.Clear();
+                closedQuote = false;
                 if (c != ',')
                 {
-                    if (cells.Count != 1 || cells[0].Length > 0) rows.Add(cells.ToArray());
-                    cells.Clear(); if (c == '\r' && i + 1 < csv.Length && csv[i + 1] == '\n') i++;
+                    if (cells.Count != 1 || cells[0].Length > 0)
+                        rows.Add(cells.ToArray());
+                    cells.Clear();
+                    if (c == '\r' && i + 1 < csv.Length && csv[i + 1] == '\n')
+                        i++;
                 }
             }
             else
             {
-                if (closedQuote) throw new ArgumentException("Unexpected text after a quoted CSV field.");
+                if (closedQuote)
+                    throw new ArgumentException("Unexpected text after a quoted CSV field.");
                 cell.Append(c);
             }
         }
-        if (quoted) throw new ArgumentException("Unclosed CSV quote.");
-        if (cell.Length > 0 || cells.Count > 0 || closedQuote) { cells.Add(cell.ToString()); rows.Add(cells.ToArray()); }
+        if (quoted)
+            throw new ArgumentException("Unclosed CSV quote.");
+        if (cell.Length > 0 || cells.Count > 0 || closedQuote)
+        { cells.Add(cell.ToString()); rows.Add(cells.ToArray()); }
         return rows;
     }
 }

@@ -63,7 +63,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
                 command.Parameters.AddWithValue("from_date", from.ToString("yyyy-MM-dd"));
                 command.Parameters.AddWithValue("to_date", to.ToString("yyyy-MM-dd"));
                 await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                while (await reader.ReadAsync(ct).ConfigureAwait(false)) proposals.Add(ReadProposal(reader));
+                while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                    proposals.Add(ReadProposal(reader));
             }
             var cases = new List<CorporateActionProcessingCaseDto>();
             if (proposals.Count > 0)
@@ -78,7 +79,8 @@ public sealed partial class PostgresCorporateActionOperationsStore
                 AddCalendarParameters(command, tenantId, companyId, financialAccountId, custodyAccountId);
                 command.Parameters.AddWithValue("proposals", proposals.Select(p => p.ProposalId).ToArray());
                 await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
-                while (await reader.ReadAsync(ct).ConfigureAwait(false)) cases.Add(ReadCase(reader));
+                while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                    cases.Add(ReadCase(reader));
             }
             IReadOnlyList<CorporateActionEvidenceDto> evidence = cases.Count == 0 ? [] : await ReadDeadlineRowsAsync(connection, transaction,
                 cases.Select(c => c.CaseId).ToArray(), tenantId, companyId, ct).ConfigureAwait(false);

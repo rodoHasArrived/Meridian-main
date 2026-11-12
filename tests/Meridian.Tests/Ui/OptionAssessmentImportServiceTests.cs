@@ -82,7 +82,8 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
     [Fact]
     public void Preview_RequiresSourceRejectsFutureAndChangesWhenSourceOrAccountChanges()
     {
-        var service = Service(); var first = service.Preview(Import());
+        var service = Service();
+        var first = service.Preview(Import());
         Assert.False(Directory.Exists(_root));
         Assert.Throws<ArgumentException>(() => service.Preview(Import() with { SourceContentBase64 = "" }));
         Assert.Throws<ArgumentException>(() => service.Preview(Import() with { Assessment = Assessment() with { AssessedAt = Now.AddSeconds(1) } }));
@@ -95,20 +96,24 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
     {
         Assert.Throws<ArgumentException>(() => OptionAssessmentValidation.Normalize(Assessment() with { MarginCurrency = null }));
         var value = OptionAssessmentValidation.Normalize(Assessment() with { MarginCurrency = "EUR", CashImpact = "2", CashImpactCurrency = "GBP" });
-        Assert.Equal("USD", value.Basket.Currency); Assert.Equal("EUR", value.MarginCurrency); Assert.Equal("GBP", value.CashImpactCurrency);
+        Assert.Equal("USD", value.Basket.Currency);
+        Assert.Equal("EUR", value.MarginCurrency);
+        Assert.Equal("GBP", value.CashImpactCurrency);
     }
 
     [Fact]
     public async Task Accept_RetainsSourceSurvivesRestartAndRetriesSameCommandExactlyOnce()
     {
-        var service = Service(); var command = Command(service, Import());
+        var service = Service();
+        var command = Command(service, Import());
         var first = await service.AcceptAsync("tenant", "company", "operator", Account, command);
         var retry = await Service().AcceptAsync("tenant", "company", "operator", Account, command);
         Assert.Equal(first.AssessmentId, retry.AssessmentId);
         Assert.Equal(first.ContentSha256, retry.ContentSha256);
         Assert.Equal(first.RecordedAt, retry.RecordedAt);
         var records = await Service().ListAsync("tenant", "company", Account);
-        Assert.Single(records); Assert.Equal("Approved", records[0].Assessment.Outcome);
+        Assert.Single(records);
+        Assert.Equal("Approved", records[0].Assessment.Outcome);
         Assert.NotEmpty(records[0].SourceVaultId);
         Assert.Empty(await Service().ListAsync("other-tenant", "company", Account));
         Assert.Empty(await Service().ListAsync("tenant", "other-company", Account));
@@ -119,23 +124,27 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
     [Fact]
     public async Task IdempotencyAndReviewedFingerprint_RejectChangedPayload()
     {
-        var service = Service(); var command = Command(service, Import());
+        var service = Service();
+        var command = Command(service, Import());
         await service.AcceptAsync("tenant", "company", "operator", Account, command);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.AcceptAsync("tenant", "company", "operator", Account,
             command with { Import = Import() with { Assessment = Assessment() with { RawBrokerStatus = "changed" } } }));
         var changed = Command(service, Import() with { Assessment = Assessment() with { RawBrokerStatus = "changed" } })
-            with { IdempotencyKey = command.IdempotencyKey };
+            with
+        { IdempotencyKey = command.IdempotencyKey };
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.AcceptAsync("tenant", "company", "operator", Account, changed));
     }
 
     [Fact]
     public async Task Corrections_AppendImmutableHistoryAndRefuseASecondFork()
     {
-        var service = Service(); var first = await service.AcceptAsync("tenant", "company", "operator", Account, Command(service, Import()));
+        var service = Service();
+        var first = await service.AcceptAsync("tenant", "company", "operator", Account, Command(service, Import()));
         var corrected = Import() with { CorrectsAssessmentId = first.AssessmentId, Assessment = Assessment() with { Outcome = "Rejected", RawBrokerStatus = "Revised broker result" } };
         var second = await service.AcceptAsync("tenant", "company", "operator", Account, Command(service, corrected));
         var rows = await Service().ListAsync("tenant", "company", Account);
-        Assert.Equal(2, rows.Count); Assert.True(rows.Single(row => row.AssessmentId == first.AssessmentId).IsSuperseded);
+        Assert.Equal(2, rows.Count);
+        Assert.True(rows.Single(row => row.AssessmentId == first.AssessmentId).IsSuperseded);
         Assert.Equal("Approved", rows.Single(row => row.AssessmentId == first.AssessmentId).Assessment.Outcome);
         Assert.Equal(first.AssessmentId, second.CorrectsAssessmentId);
         await Assert.ThrowsAsync<InvalidOperationException>(() => service.AcceptAsync("tenant", "company", "operator", Account, Command(service, corrected)));
@@ -144,7 +153,8 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
     [Fact]
     public async Task CorruptReceipts_FailExplicitlyInsteadOfReturningEmptyHistory()
     {
-        var service = Service(); await service.AcceptAsync("tenant", "company", "operator", Account, Command(service, Import()));
+        var service = Service();
+        await service.AcceptAsync("tenant", "company", "operator", Account, Command(service, Import()));
         var receipt = Directory.EnumerateFiles(Path.Combine(_root, "workstation", "option-assessments"), "*.json", SearchOption.AllDirectories).Single();
         await File.WriteAllTextAsync(receipt, "corrupt");
         await Assert.ThrowsAsync<System.Text.Json.JsonException>(() => service.ListAsync("tenant", "company", Account));
@@ -186,14 +196,16 @@ public sealed class OptionAssessmentImportServiceTests : IDisposable
         app.MapOptionVisualizationEndpoints(new JsonSerializerOptions(JsonSerializerDefaults.Web));
         await app.StartAsync();
         Assert.Null(app.Services.GetService<IAuthenticationService>());
-        var client = app.GetTestClient(); var route = $"/api/options/assessments/accounts/{Account}";
+        var client = app.GetTestClient();
+        var route = $"/api/options/assessments/accounts/{Account}";
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(route)).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.GetAsync(route + "/missing-assessment/source")).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync(route + "/preview", Import())).StatusCode);
         Assert.Equal(HttpStatusCode.Forbidden, (await client.PostAsJsonAsync(route + "/accept",
             new AcceptOptionAssessmentImportRequest(Guid.NewGuid(), "unreachable-preview", Import()))).StatusCode);
         Assert.False(Directory.Exists(_root));
-        if (!scopeAllowed) await accounts.DidNotReceiveWithAnyArgs().GetAccountAsync(default, default);
+        if (!scopeAllowed)
+            await accounts.DidNotReceiveWithAnyArgs().GetAccountAsync(default, default);
     }
 
     private static AcceptOptionAssessmentImportRequest Command(OptionAssessmentImportService service, OptionAssessmentImportRequest request) =>
