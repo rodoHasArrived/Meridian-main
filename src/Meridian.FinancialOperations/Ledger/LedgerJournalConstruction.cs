@@ -53,7 +53,9 @@ internal static class LedgerJournalConstruction
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return HasAnyDimension(mapped) ? mapped : null;
@@ -68,6 +70,8 @@ internal static class LedgerJournalConstruction
             || dimensions.CapitalAccountId is not null
             || dimensions.InstrumentId is not null
             || dimensions.PositionId is not null
+            || dimensions.IntercompanyAgreementId is not null
+            || dimensions.IntercompanyAgreementVersion is not null
             || dimensions.TaxLotId is not null
             || dimensions.CostCenterId is not null
             || dimensions.CounterpartyId is not null

@@ -368,7 +368,11 @@ public sealed class RecurringJournalRunner(
             CustomerId = line.CustomerId ?? schedule.CustomerId,
             VendorId = line.VendorId ?? schedule.VendorId,
             ProjectId = line.ProjectId ?? schedule.ProjectId,
-            PositionId = line.PositionId ?? schedule.PositionId
+            PositionId = line.PositionId ?? schedule.PositionId,
+            IntercompanyAgreementId = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementId : schedule.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = line.IntercompanyAgreementId.HasValue || line.IntercompanyAgreementVersion.HasValue
+                ? line.IntercompanyAgreementVersion : schedule.IntercompanyAgreementVersion
         };
     }
 
