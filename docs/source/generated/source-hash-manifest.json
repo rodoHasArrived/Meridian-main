@@ -10,7 +10,7 @@
       "path": "src/Meridian.Application",
       "readme": "src/Meridian.Application/README.md",
       "readme_hash": "a43b4a8a2d7b447771b1e275190c308ca88aafac4c8068c193b33fbf4cd5ecbc",
-      "source_hash": "dc9fa3dab08f7673078f2d41e16b1ce10d1da9a839259b44541126e76648c8e0"
+      "source_hash": "ed862d03ee11e411f459e7dca20e7c6aba92aec29329a3cc586e121d79c319ce"
     },
     {
       "id": "SRC-BACKTESTING",
@@ -178,7 +178,7 @@
       "path": "src/Meridian",
       "readme": "src/Meridian/README.md",
       "readme_hash": "2926f587eb9932106d0ead144ff546d2fdf035e3cda6683c218eb9e0c4b12144",
-      "source_hash": "08882f7ca377ef842f00fd821e2da30b7c8a6495f1ea7cd5c9dd9a6118ec4776"
+      "source_hash": "f5cf0e460f51b591053f2a31e5eaa70c78c53dbf15998b14fc76fb575726fd0e"
     },
     {
       "id": "SRC-IBAPI-SMOKESTUB",
@@ -262,14 +262,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "4699d6dd9ce89d9bdcac4cfd3adcb458b7f9c96ce16579adc40dec838ecd7aa3",
-      "source_hash": "b079c187161743bff6a75afb4be2dbbde47d81b8ecc0960f796705d5a9819e7b"
+      "source_hash": "bf9180d4f26469efdf6f959f2131fe61c9868b9744142011ec2525b11c679675"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "532afb1bf7f4a102034fe3becb7eaea7bc770784133554a7e18e26947662f20e",
-      "source_hash": "b079c187161743bff6a75afb4be2dbbde47d81b8ecc0960f796705d5a9819e7b"
+      "readme_hash": "9da12d14d16198a1da9b87b61b61dac17b45cad79fbd59086062e7be7563223a",
+      "source_hash": "bf9180d4f26469efdf6f959f2131fe61c9868b9744142011ec2525b11c679675"
     },
     {
       "id": "SRC-UI-SERVICES",
