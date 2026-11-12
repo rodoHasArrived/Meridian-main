@@ -81,7 +81,10 @@ public sealed class LedgerEventAuditPostgresTests
         await connection.OpenAsync(ct);
         await using (var transaction = await connection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct))
         {
-            await GovernedStore(database).AppendAsync(connection, transaction, Write(book, period, "poster"), ct);
+            var store = GovernedStore(database);
+            var write = Write(book, period, "poster");
+            await using var authority = await store.AcquirePostingAuthorityAsync(connection, transaction, [write], ct);
+            await store.AppendAsync(connection, transaction, write, ct);
             await transaction.RollbackAsync(ct);
         }
         (await database.JournalStore.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
@@ -291,13 +294,15 @@ public sealed class LedgerEventAuditPostgresTests
         return (book, await database.JournalStore.SavePeriodAsync(period, 0, ct: ct));
     }
 
+    // Isolate audit-chain persistence from independently tested lifecycle/agreement policy while
+    // retaining both required named controls and the real append authority scope.
     private static PostgresLedgerJournalStore GovernedStore(LedgerPostgresTestDatabase database) => new(new LedgerJournalStoreOptions
     {
         ConnectionString = database.Options.ConnectionString,
         SchemaName = database.Options.SchemaName,
         RequireGovernedPostingCommand = true,
         RequireExpectedVersion = true
-    });
+    }, postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
 
     private static LedgerJournalEntryWrite Write(LedgerBookRecord book, LedgerAccountingPeriod period, string actor,
         Guid? reverses = null, LedgerLineDimensionSet? dimensions = null)
