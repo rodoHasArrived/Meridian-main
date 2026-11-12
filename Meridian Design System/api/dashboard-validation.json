@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
   "scope": "Complete current dashboard test-file union and current synthetic Chromium reports; no backend/native Windows/AT certification.",
-  "sourceHashScope": "The complete functional execution had identical before/end source snapshots. Exactly two explicitly approved post-run style sources now differ; their non-style ASTs are verified, their unchanged whole test files were rerun, and current rendered style cases are recorded separately. All other 1386 source files match the original snapshot. Final source hashes are current; global before/final immutability is not claimed and continuous writes were not instrumented.",
-  "observedAt": "2026-11-12T23:02:08.594932+00:00",
+  "sourceHashScope": "The complete functional execution had identical before/end source snapshots. Afterward exactly two approved style sources and the exact upstream intercompany disabled-reason source/test revision changed. Independent AST and gate equivalence checks, complete affected test-file reruns, the one added upstream regression, and current scoped style browser proof qualify only those four paths. All other 1384 inputs match the original snapshot. Existing workstation/adoption reports retain their recorded unchanged scenario scope and do not claim to exercise the new registry explanation. Global before/final immutability is not claimed; continuous writes were not instrumented.",
+  "observedAt": "2026-11-12T23:32:09.852301+00:00",
   "counts": {
     "files": 499,
-    "passed": 5725,
+    "passed": 5726,
     "failed": 0,
     "skipped": 0
   },
   "rawAcceptedExecutions": {
     "files": 500,
-    "passed": 5727,
+    "passed": 5728,
     "failed": 0,
     "skipped": 0,
     "identicalDuplicates": [
@@ -51,6 +51,20 @@
       "previousRuntimeSourceSha256": "476a1dd0d5a3e73c783359bfcb9e72aae033e9b5e8dfc015b6ed909ba7a44478",
       "currentRuntimeSourceSha256": "f3136d7bec7bfac61ea3d647cba8996c7b687aa70317f90a057eb233cbc84489",
       "testSourceUnchanged": true
+    },
+    {
+      "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx",
+      "report": "/tmp/pr3542-publish-dashboard/run-EiP9qe/batch-44.json",
+      "status": "superseded-successful-earlier-upstream-accessibility",
+      "sha256": "057262ec96bc2c628b69dd4eb45c529f258b94462f0ec8438e29dbd685fe743d",
+      "passed": 6,
+      "identitySha256": "91c14daee964db9af207486710594987d6b54987b924323fc2eb0e74f233b233",
+      "reason": "Exact upstream presentation-only disabled-reason revision after the full functional run; complete current test file adds its one regression while preserving every prior test identity.",
+      "finalWholeFileReport": "/tmp/pr3542-late-panel-tests.json",
+      "runtimeSourcePath": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx",
+      "previousRuntimeSourceSha256": "cafba85489baa58cd81bd56f04ea5fe1d9706d470047efa3539242538123e157",
+      "currentRuntimeSourceSha256": "3c74cdd86120acdc92866cb8f4e5eb36a5f8c1e2f9799e6085587968795ef984",
+      "testSourceUnchanged": false
     }
   ],
   "sourceHashes": {
@@ -888,8 +902,8 @@
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance-presenters.ts": "48f41f7ed82eb6b58739cfeb29a3fff75a04bd2d6ecd5856e13aee2f9ae07847",
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.test.ts": "3a1de7a3264c91e5b4bd47e589bec4f80b07b146e890e55b2e7ec1bc9a78801e",
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.governance.view-model.ts": "b383715fb1c5e9519986c55981b85424a4a9c9d0ba825a1ea54ab612afaf56e9",
-    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx": "057262ec96bc2c628b69dd4eb45c529f258b94462f0ec8438e29dbd685fe743d",
-    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx": "cafba85489baa58cd81bd56f04ea5fe1d9706d470047efa3539242538123e157",
+    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx": "8d0b7ac158a491c0c9514b8bcdf070affd3e60cfe969c3a2b25b57f9055ba0a5",
+    "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx": "3c74cdd86120acdc92866cb8f4e5eb36a5f8c1e2f9799e6085587968795ef984",
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entries.view-model.test.ts": "ce99a2304ea2b25f399f05ac2fd88cffc4dee7faf2db8ee23f926c66fc34f9f9",
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entries.view-model.ts": "29c347d87b2bcfd3d7807ae5081bec4f3ff0f968e2575db5199f23f7c5d7c209",
     "src/Meridian.Ui/dashboard/src/screens/accounting-screen.journal-entry-enhancements.tsx": "a2b3d4789ce07e99423868e5cbed0485f2aa575345eaaaaa51c53d997cfba2d1",
@@ -5518,14 +5532,14 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx",
-      "sha256": "057262ec96bc2c628b69dd4eb45c529f258b94462f0ec8438e29dbd685fe743d",
-      "passed": 6,
+      "sha256": "8d0b7ac158a491c0c9514b8bcdf070affd3e60cfe969c3a2b25b57f9055ba0a5",
+      "passed": 7,
       "failed": 0,
       "skipped": 0,
       "status": "passed",
-      "identitySha256": "91c14daee964db9af207486710594987d6b54987b924323fc2eb0e74f233b233",
+      "identitySha256": "340c5dc067545c5e6f243eb5aec2044144f1202a1f1ae88b798174ea454e664d",
       "reports": [
-        "/tmp/pr3542-publish-dashboard/run-EiP9qe/batch-44.json"
+        "/tmp/pr3542-late-panel-tests.json"
       ]
     },
     {
@@ -18388,7 +18402,8 @@
     "finalFileMap": null,
     "interruptedManifest": null,
     "resumeManifest": null,
-    "qualifiedStyleUpdate": "/tmp/meridian-pr3542-reviews/qualified-first-run-styles.json"
+    "qualifiedStyleUpdate": "/tmp/meridian-pr3542-reviews/qualified-first-run-styles.json",
+    "qualifiedUpstreamAccessibility": "/tmp/meridian-pr3542-reviews/qualified-upstream-panel.json"
   },
   "sourceFreezeProof": {
     "snapshot": "/tmp/pr3542-publish-runtime-before.json",
@@ -18397,13 +18412,15 @@
     "scope": "All files under dashboard/src, including runtime, tests and local assets",
     "filesCompared": 1388,
     "beforeAfterIdentical": false,
-    "unchangedFiles": 1386,
+    "unchangedFiles": 1384,
     "differences": {
       "added": [],
       "removed": [],
       "changed": [
         "src/Meridian.Ui/dashboard/src/features/first-run/activation-progress.tsx",
-        "src/Meridian.Ui/dashboard/src/features/first-run/first-run-screen.tsx"
+        "src/Meridian.Ui/dashboard/src/features/first-run/first-run-screen.tsx",
+        "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx",
+        "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx"
       ]
     },
     "continuousWriteMonitoring": false,
@@ -18969,6 +18986,55 @@
       "independentAstVerifier": {
         "path": "/tmp/meridian-pr3542-reviews/check-qualified-style.cjs",
         "sha256": "da8c2e5766d6e2fe7211333bd7d5c9fe32972e4063e0405a1ab64ed2cd263683"
+      }
+    },
+    "qualifiedUpstreamAccessibilityUpdate": {
+      "kind": "exact-post-full-upstream-disabled-reason-qualification",
+      "upstreamCommit": "68bc28a43c7da9fcbd4b3cd159ca803c0f761086",
+      "configuration": "/tmp/meridian-pr3542-reviews/qualified-upstream-panel.json",
+      "configurationSha256": "de303dce4b4d77e62da2b5fbd995700e85006d4442035a24bcc2d87fa4da1677",
+      "changedSources": [
+        "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx",
+        "src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx"
+      ],
+      "beforeSourceSha256": "cafba85489baa58cd81bd56f04ea5fe1d9706d470047efa3539242538123e157",
+      "afterSourceSha256": "3c74cdd86120acdc92866cb8f4e5eb36a5f8c1e2f9799e6085587968795ef984",
+      "beforeTestSha256": "057262ec96bc2c628b69dd4eb45c529f258b94462f0ec8438e29dbd685fe743d",
+      "afterTestSha256": "8d0b7ac158a491c0c9514b8bcdf070affd3e60cfe969c3a2b25b57f9055ba0a5",
+      "independentAstAndGateVerification": {
+        "equivalentOutsideExactPresentationChange": true,
+        "typedGateTruthTableCases": 32,
+        "disabledAuthorityConditionEquivalent": true,
+        "normalizedBeforeSha256": "8bc33bb054fbab24fc4c1891fe186e1e7c2a578f4e15ab2410db2619d39ed1c9",
+        "normalizedAfterSha256": "8bc33bb054fbab24fc4c1891fe186e1e7c2a578f4e15ab2410db2619d39ed1c9",
+        "scope": "Only the exact const createDisabledReason explanation expression and the New agreement draft disabled/disabledReason attributes were normalized. All handlers, commands, IDs, capability data and financial logic remain AST-identical."
+      },
+      "independentVerifier": {
+        "path": "/tmp/meridian-pr3542-reviews/check-upstream-accessibility.cjs",
+        "sha256": "3b0c0f0444003239b0c3988a94fa24af6e6862fed51dcfc3cd8b650461f94411"
+      },
+      "wholeFileTestReport": "/tmp/pr3542-late-panel-tests.json",
+      "wholeFilePassed": 7,
+      "exactAddedTestName": "IntercompanyAgreementsPanel explains loading and open-draft blockers and clears the reason when creation becomes available",
+      "retainedBrowserScope": {
+        "maintainedReport": "/tmp/pr3542-publish-workstation/report.json",
+        "adoptionReport": "/tmp/pr3542-publish-adoption/results.json",
+        "adoptionReviewedSources": [
+          {
+            "path": "src/Meridian.Ui/dashboard/src/screens/data-screen.tsx",
+            "reviewedSourceHash": "3259c370669da867c5292437c1d097f97cdba2571c16c6bb7db69d01c4dcdeb4"
+          },
+          {
+            "path": "src/Meridian.Ui/dashboard/src/screens/data-operations-maintenance.tsx",
+            "reviewedSourceHash": "37c2538e5023520121b1a83d1a132687490291c967500c217699d4445577b28a"
+          },
+          {
+            "path": "src/Meridian.Ui/dashboard/src/screens/reporting-screen.report-writer.tsx",
+            "reviewedSourceHash": "827fc137c3837043e13b551ccbbe392b358d550aec72b3b077ef10a348367950"
+          }
+        ],
+        "maintainedReviewedSources": null,
+        "notes": "The existing reports retain only their recorded unchanged workstation/adoption scenarios. The maintained report does not publish a reviewedSource set; none is invented. They are not credited as exercising the new registry disabled-reason path. That path has its exact source/gate review and fresh whole-file regression separately."
       }
     }
   }
