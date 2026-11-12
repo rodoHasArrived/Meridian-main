@@ -48,9 +48,9 @@ export function FixedIncomePaymentPreview({ mappedRecords }: { mappedRecords: un
   return (
     <section className="mt-3 space-y-2 rounded-sm border border-border/60 bg-background/40 p-3" aria-label="Fixed-income sample payment preview">
       <h4 className="text-xs font-semibold text-foreground">Review conventions · Sample first coupon</h4>
-      <p className="text-[11px] text-muted-foreground">Illustrative cash on 100,000 original face, with supplied dated factors. This preview does not approve terms or create a holding.</p>
+      <p className="text-xs text-muted-foreground">Illustrative cash on 100,000 original face, with supplied dated factors. This preview does not approve terms or create a holding.</p>
       {previews.map((preview, index) => (
-        <div key={`${preview.paymentDate}-${index}`} className="grid gap-2 border-t border-border/50 pt-2 text-[11px]">
+        <div key={`${preview.paymentDate}-${index}`} className="grid gap-2 border-t border-border/50 pt-2 text-xs">
           <dl className="grid gap-x-4 gap-y-1 md:grid-cols-2">
             <div><dt className="text-muted-foreground">Sample coupon cash</dt><dd className="font-mono">{preview.currency} {bondDecimalText(preview.sampleCouponPayment)}</dd></div>
             <div><dt className="text-muted-foreground">Coupon and frequency</dt><dd>{bondDecimalText(preview.coupon)} {preview.couponRateUnit} · {preview.paymentFrequency} · {preview.couponCashBasis}</dd></div>
@@ -61,7 +61,7 @@ export function FixedIncomePaymentPreview({ mappedRecords }: { mappedRecords: un
             <div><dt className="text-muted-foreground">Retained schedules</dt><dd>{preview.callScheduleCount} call windows · {preview.factorHistoryCount} dated factors</dd></div>
             <div><dt className="text-muted-foreground">Currency choice</dt><dd>{preview.currency} · Reviewed explicit choice</dd></div>
           </dl>
-          <details><summary className="cursor-pointer text-muted-foreground">Normalized terms used for sample</summary><pre className="mt-2 max-h-48 overflow-auto rounded-sm bg-secondary/20 p-2 text-[10px]">{preview.normalizedTermsJson}</pre></details>
+          <details><summary className="cursor-pointer text-muted-foreground">Normalized terms used for sample</summary><pre className="mt-2 max-h-48 overflow-auto rounded-sm bg-secondary/20 p-2 text-xs">{preview.normalizedTermsJson}</pre></details>
         </div>
       ))}
     </section>

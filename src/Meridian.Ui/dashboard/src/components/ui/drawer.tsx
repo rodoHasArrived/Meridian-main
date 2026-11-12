@@ -150,7 +150,7 @@ export function DrawerHeader({ title, titleId, onClose, className, children, ...
           type="button"
           aria-label="Close drawer"
           onClick={onClose}
-          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[2px] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[var(--ws-row-hover)] hover:text-foreground focus:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="ml-auto inline-flex h-8 w-8 items-center justify-center rounded-[var(--radius-button)] text-muted-foreground transition-colors [outline-offset:-2px] hover:bg-[var(--ws-row-hover)] hover:text-foreground focus:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]"
         >
           <X className="h-4 w-4" aria-hidden="true" />
         </button>

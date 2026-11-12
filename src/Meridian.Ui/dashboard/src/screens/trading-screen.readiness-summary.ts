@@ -3,6 +3,7 @@ import type {
   TradingOperatorReadiness,
   WorkstationBrokerageSyncStatus
 } from "@/types";
+import { formatUtcTimestamp } from "@/lib/format";
 
 export type AcceptanceLevel = "ready" | "review" | "atRisk";
 
@@ -133,7 +134,7 @@ export function formatTradingUtcDateTime(value: string): string {
     return value;
   }
 
-  return `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+  return formatUtcTimestamp(date);
 }
 
 function formatLiveOperationRequirementAriaLabel(
@@ -163,8 +164,3 @@ function formatExecutionReconciliationValue(
   return formatReadinessStatusValue(reconciliation.status);
 }
 
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
-}

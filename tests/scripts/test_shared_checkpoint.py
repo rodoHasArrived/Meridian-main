@@ -17,7 +17,7 @@ class SharedCheckpointTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             checkpoint_path = temp_path / "workflow.checkpoint.json"
             artifact_path = temp_path / "evidence.json"
@@ -38,7 +38,7 @@ class SharedCheckpointTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             checkpoint_path = temp_path / "workflow.checkpoint.json"
             artifact_path = temp_path / "evidence.json"

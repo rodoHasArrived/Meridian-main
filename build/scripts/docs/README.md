@@ -152,6 +152,13 @@ changes can intentionally fail the check until documentation has been reviewed a
 refreshed. Use `--write-module` when only specific stale modules have been reviewed; reserve the
 broad `--write` refresh for a full accepted-baseline review.
 
+Dependency-only bumps (for example Dependabot) do not drift the source hash: `package-lock.json` is
+excluded, and `package.json` is fingerprinted with registry version ranges masked in
+`dependencies`, `devDependencies`, `optionalDependencies`, and `overrides`. Package names,
+`file:`/git/URL/workspace specifiers, npm alias targets, `peerDependencies`, scripts, engines, and
+every other field still participate. Malformed or duplicate-key `package.json` falls back to the raw
+content hash.
+
 ```bash
 python3 build/scripts/docs/validate-doc-hashes.py --summary
 python3 build/scripts/docs/validate-doc-hashes.py --write-module SRC-HOST --summary
@@ -451,8 +458,16 @@ Generates documentation health metrics with scoring.
 ```bash
 python3 generate-health-dashboard.py \
   --output docs/status/doc-health-dashboard.md \
-  --json-output health.json
+  --json-output health.json \
+  --volatile-json-output artifacts/docs/doc-health-line-metrics.json
 ```
+
+`--json-output` writes the tracked, merge-stable payload: file, orphan, heading, staleness and
+marker counts plus a `signal_digest` of them. Line counts (`total_lines`, `average_lines`, per-file
+`line_count`) change on every Markdown edit, so they are written only to the optional untracked
+`--volatile-json-output` path. Independent Markdown edits therefore do not conflict on the
+dashboard. Concurrent signal changes, such as two branches that each add a file, conflict on the
+digest line instead of merging into a wrong count.
 
 ### repair-links.py
 

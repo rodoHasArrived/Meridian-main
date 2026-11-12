@@ -33,6 +33,10 @@ import {
   type QuantTemplateRow
 } from "@/screens/quant-lab-screen.view-model";
 import type { QuantDiagnostic } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { cn } from "@/lib/utils";
+import { TextArea } from "@/components/ui/text-area";
+import { Input } from "@/components/ui/input";
 
 const quantTradeColumns: DenseDataTableColumn<QuantTradeRowViewModel>[] = [
   { id: "timestamp", label: "Timestamp", render: (row) => <span className="font-mono">{row.timestamp}</span> },
@@ -90,10 +94,10 @@ export function QuantLabScreen() {
       title={
         <span className="flex items-center gap-2">
           <FlaskConical className="h-5 w-5 text-primary" />
-          Quant Lab
+          Script workbench
         </span>
       }
-      scope="Strategy Lane"
+      scope="Strategy"
       description="Compile and execute C# / .csx scripts against Meridian's price-series, statistics, and backtesting APIs. Plots, metrics, and diagnostics returned inline."
     >
       <Tabs
@@ -144,12 +148,12 @@ function ScriptLabPanel() {
             <span className="text-xs text-muted-foreground">{vm.resultPanel.runtimeSummary}</span>
           </div>
           <label htmlFor={vm.sourceEditor.id} className="sr-only">{vm.sourceEditor.label}</label>
-          <textarea
+          <TextArea rows={2}
             id={vm.sourceEditor.id}
             spellCheck={false}
             value={vm.source}
             onChange={(event) => vm.setSource(event.target.value)}
-            className="w-full min-h-[16rem] resize-y rounded-md border border-border/70 bg-background/60 p-3 font-mono text-xs leading-5 text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
+            className="w-full min-h-[16rem] font-mono text-xs leading-5"
             aria-label={vm.sourceEditor.ariaLabel}
             aria-describedby={vm.sourceEditor.describedBy}
           />
@@ -364,7 +368,7 @@ function TradeLedgerPanel({
               role="region"
               aria-label={ledger.detailEmptyTitle}
             >
-              <div className="eyebrow-label">{ledger.detailEmptyTitle}</div>
+              <div className={eyebrowClassName(ledger.detailEmptyTitle)}>{ledger.detailEmptyTitle}</div>
               <p className="mt-2">{ledger.detailEmptyText}</p>
             </aside>
           )}
@@ -413,7 +417,7 @@ function DiagnosticsBlock({
       <ul className="space-y-1 text-xs">
         {entries.map((entry, idx) => (
           <li key={idx} className={`font-mono ${toneClass}`}>
-            <span className="mr-1.5 uppercase tracking-wide opacity-70">{entry.severity}</span>
+            <span className={cn("mr-1.5 opacity-70", usesTrackedCaps(entry.severity) && "uppercase tracking-wide")}>{entry.severity}</span>
             <span className="opacity-70">[{entry.line}:{entry.column}]</span>
             <span className="ml-1.5 text-foreground">{entry.message}</span>
           </li>
@@ -486,7 +490,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                     <span className="text-xs text-muted-foreground">{row.checked ? "true" : "false"}</span>
                   </div>
                 ) : (
-                  <input
+                  <Input
                     id={row.inputId}
                     type={row.inputType}
                     value={row.value}
@@ -495,7 +499,7 @@ function ParametersSidePanel({ rows, panel, onChange, onReset }: ParametersSideP
                     step={row.step}
                     disabled={panel.controlsDisabled}
                     onChange={(e) => onChange(row.name, e.target.value)}
-                    className="w-full rounded-md border border-border/70 bg-background/60 px-2 py-1.5 font-mono text-xs text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="w-full font-mono text-xs disabled:cursor-not-allowed disabled:opacity-60"
                     aria-label={row.ariaLabel}
                     aria-describedby={row.descriptionId ?? undefined}
                   />

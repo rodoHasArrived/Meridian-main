@@ -1,21 +1,33 @@
-// Meridian chart-interaction layer — the crosshair/tooltip/synced-cursor machinery the SVG
-// charts were missing. Pure state + geometry helpers; charts stay declarative.
+// Meridian chart-interaction layer — crosshair/tooltip/synced-cursor machinery. Pure state +
+// geometry helpers; charts stay declarative. Pixel-based since the real-pixel frame rewrite:
+// pass the SAME padLeft/rail you gave the chart (ChartFrame defaults: padLeft 10, rail 62)
+// and the pointer→index mapping is exact at any container width.
 //
-//   useChartCrosshair(count)         → { index, bind, clear } — pointer→nearest-index tracking
-//   ChartCursorSync / useSyncedCursor → broadcast one cursor index across stacked charts
+//   useChartCrosshair(count, {padLeft, rail}) → { index, bind, clear }
+//   ChartCursorSync / useSyncedCursor         → broadcast one cursor index across stacked charts
 import React from "react";
 
+function indexAt(e, count, padLeft, rail) {
+  if (!Number.isInteger(count) || count <= 0) return null;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const span = rect.width - padLeft - rail;
+  if (span <= 0) return null;
+  const t = (e.clientX - rect.left - padLeft) / span;
+  const i = Math.round(t * (count - 1));
+  return Math.max(0, Math.min(count - 1, i));
+}
+
 // Maps a pointer position over a plot to the nearest data index. `bind` spreads onto the
-// element that wraps the SVG (needs position:relative and a known plot inset).
-export function useChartCrosshair(count, { plotLeft = 0.05, plotRight = 0.93 } = {}) {
+// element that wraps the chart (it supplies position:relative for tooltip anchoring).
+export function useChartCrosshair(count, { padLeft = 10, rail = 62 } = {}) {
   const [index, setIndex] = React.useState(null);
+  React.useEffect(() => {
+    setIndex(current => !Number.isInteger(count) || count <= 0 || (current !== null && current >= count) ? null : current);
+  }, [count]);
   const onMove = React.useCallback((e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const frac = (e.clientX - rect.left) / rect.width;
-    const t = (frac - plotLeft) / (plotRight - plotLeft);
-    const i = Math.round(t * (count - 1));
-    setIndex(Math.max(0, Math.min(count - 1, i)));
-  }, [count, plotLeft, plotRight]);
+    const i = indexAt(e, count, padLeft, rail);
+    if (i != null) setIndex(i);
+  }, [count, padLeft, rail]);
   const clear = React.useCallback(() => setIndex(null), []);
   return {
     index,
@@ -41,16 +53,13 @@ export function useSyncedCursor(count, opts) {
   const ctx = React.useContext(CursorContext);
   const local = useChartCrosshair(count, opts);
   if (!ctx) return local;
+  const padLeft = (opts && opts.padLeft) ?? 10, rail = (opts && opts.rail) ?? 62;
   const onMove = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const frac = (e.clientX - rect.left) / rect.width;
-    const pl = (opts && opts.plotLeft) ?? 0.05, pr = (opts && opts.plotRight) ?? 0.93;
-    const t = (frac - pl) / (pr - pl);
-    const i = Math.round(t * (count - 1));
-    ctx.setIndex(Math.max(0, Math.min(count - 1, i)));
+    const i = indexAt(e, count, padLeft, rail);
+    if (i != null) ctx.setIndex(i);
   };
   return {
-    index: ctx.index,
+    index: Number.isInteger(count) && count > 0 && Number.isInteger(ctx.index) && ctx.index >= 0 && ctx.index < count ? ctx.index : null,
     setIndex: ctx.setIndex,
     clear: () => ctx.setIndex(null),
     bind: { onMouseMove: onMove, onMouseLeave: () => ctx.setIndex(null), style: { position: "relative" } },
@@ -61,5 +70,5 @@ export function useSyncedCursor(count, opts) {
 // already-capitalized ChartCursorSync (the compiler only exposes capital-initial exports;
 // React hooks stay lowercase). Consume as:
 //   const { useChartCrosshair, useSyncedCursor, ChartCursorSync } =
-//     window.MeridianDesignSystem_4f61be.ChartCursor;
+//     window.MeridianDesignSystem_205d17.ChartCursor;
 export const ChartCursor = { ChartCursorSync, useChartCrosshair, useSyncedCursor };

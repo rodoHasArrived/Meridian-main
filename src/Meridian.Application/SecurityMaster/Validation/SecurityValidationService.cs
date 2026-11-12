@@ -37,7 +37,10 @@ public sealed class SecurityValidationService : ISecurityValidationService
         SecurityIdentifierKind.Wkn,
         SecurityIdentifierKind.Valoren,
         SecurityIdentifierKind.PermTicker,
-        SecurityIdentifierKind.Ric
+        SecurityIdentifierKind.Ric,
+        // A UTI names exactly one reported trade. UPI and RED codes are shared reference data and
+        // deliberately stay out (SecurityIdentifierNormalizer.IsSharedReferenceKind).
+        SecurityIdentifierKind.Uti
     ];
 
     private readonly ISecurityMasterStore _store;
@@ -447,6 +450,28 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     "Move the OCC symbol to the listed option or warrant contract, or replace it with the canonical identifier for this asset class."));
             }
 
+            if (!SecurityAssetClassCatalog.MayCarryIdentifierKind(record.AssetClass, identifier.Kind))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH",
+                    "Regulatory derivatives identifier is attached to an asset class that does not report it",
+                    $"{identifier.Kind} '{identifier.Value}' is a regulatory derivatives-reporting identifier, but the record asset class is '{record.AssetClass}'. Permitted classes: {string.Join(", ", (SecurityAssetClassCatalog.GetPermittedAssetClasses(identifier.Kind) ?? new HashSet<string>()).Order(StringComparer.Ordinal))}.",
+                    [$"identifiers.{identifier.Kind}", "assetClass"],
+                    "Move the identifier to the OTC derivative contract it reports, or record it as an alias with an explanatory reason."));
+            }
+
+            if (identifier.IsPrimary && SecurityIdentifierNormalizer.IsSharedReferenceKind(identifier.Kind))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_SHARED_IDENTIFIER_NOT_PRIMARY",
+                    "Shared reference identifier cannot be the primary identifier",
+                    $"{identifier.Kind} '{identifier.Value}' names a product or reference entity shared by many contracts, so it cannot identify this record uniquely.",
+                    [$"identifiers.{identifier.Kind}", "identifiers.isPrimary"],
+                    "Mark a contract-level identifier (UTI, internal code or provider symbol) as primary and keep the UPI/RED code as a secondary identifier."));
+            }
+
             if (!SecurityIdentifierNormalizer.TryValidateFormat(identifier.Kind, identifier.Value, out var formatMessage))
             {
                 issues.Add(SecurityValidationIssueFactory.Create(
@@ -809,7 +834,11 @@ public sealed class SecurityValidationService : ISecurityValidationService
             or SecurityIdentifierKind.Valoren
             or SecurityIdentifierKind.Cik
             or SecurityIdentifierKind.LoanX
-            or SecurityIdentifierKind.Clip;
+            or SecurityIdentifierKind.Clip
+            or SecurityIdentifierKind.Uti
+            or SecurityIdentifierKind.Upi
+            or SecurityIdentifierKind.MarkitRedEntity
+            or SecurityIdentifierKind.MarkitRedPair;
 
     private static SecurityValidationReportDto BuildReport(
         Guid? securityId,

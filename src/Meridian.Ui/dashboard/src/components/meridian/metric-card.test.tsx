@@ -19,3 +19,24 @@ describe("MetricSnapshotCard", () => {
     expect(screen.getByRole("group", { name: /Status critical/ })).toHaveClass("mds-metric--danger");
   });
 });
+
+describe("MetricSnapshotCard trust rules", () => {
+  it("mutes a stale figure and prints its source under the value", () => {
+    render(
+      <MetricSnapshotCard
+        id="pnl"
+        label="Unrealized PnL"
+        value="+$90"
+        delta="+8%"
+        tone="success"
+        freshness="stale"
+        provenance={{ source: "Portfolio workspace", asOf: "2026-06-30T18:05:00Z" }}
+      />
+    );
+
+    const card = screen.getByRole("group", { name: /Unrealized P&L metric/ });
+    expect(card).toHaveClass("mds-metric--degraded");
+    expect(card).toHaveTextContent("Stale · Source: Portfolio workspace · As of Jun 30, 2026, 18:05 UTC");
+    expect(card).not.toHaveTextContent("+8%");
+  });
+});

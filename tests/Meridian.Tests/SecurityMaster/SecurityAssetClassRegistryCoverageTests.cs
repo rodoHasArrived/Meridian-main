@@ -66,6 +66,10 @@ public sealed class SecurityAssetClassRegistryCoverageTests
     {
         SecurityAssetClassRegistry.AssetClassesWithProjection(SecurityTermsProjectionKind.TermsJsonOnly)
             .Should().NotIntersectWith(PostgresSecurityMasterStore.ProjectedAssetClasses);
+        // CustomAsset was the last terms-JSON-only class until its profile-keyed projection
+        // (migration 064); a new class declaring TermsJsonOnly must be a deliberate gap.
+        SecurityAssetClassRegistry.AssetClassesWithProjection(SecurityTermsProjectionKind.TermsJsonOnly)
+            .Should().BeEmpty();
     }
 
     [Fact]
@@ -209,16 +213,16 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
         var readOnly = SecurityAssetTermsSchema.Fields(assetClass)
-            .Where(field => field.SinceTermsVersion > writes)
+            .Where(field => !field.AuthoringEnabled || field.SinceTermsVersion > writes)
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .ToArray();
         SecurityAssetTermsSchema.Fields(assetClass)
-            .Where(field => field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
+            .Where(field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > SecurityAssetClassCatalog.GetStampFloor(assetClass))
             .Select(static field => (field.Key, field.SinceTermsVersion))
             .Should().Equal(("scheduleConventions", blockSince), ("callSchedule", scheduleSince), ("putSchedule", scheduleSince), ("cashFlowContract", companionSince));
         readOnly.Should().Equal(new[] { ("cashFlowContract", companionSince) },
             "the calculation companion remains readable ahead of the unchanged schedule writer");
-        readOnly.Should().OnlyContain(term => term.SinceTermsVersion > writes && term.SinceTermsVersion <= reads, assetClass);
+        readOnly.Should().OnlyContain(term => term.SinceTermsVersion <= reads, assetClass);
 
         // ... and they are exactly the declared terms no write surface offers.
         IReadOnlyList<string> readOnlyKeys = readOnly.Select(static term => term.Key).ToArray();
@@ -239,14 +243,14 @@ public sealed class SecurityAssetClassRegistryCoverageTests
         // companion remain outside every write surface.
         var definition = SecurityAssetClassRegistry.Get("Swap");
         definition.Fields.Select(static field => field.Key)
-            .Should().Equal("effectiveDate", "maturityDate", "legs");
-        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.SinceTermsVersion > 1)
+            .Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
+        SecurityAssetTermsSchema.Fields("Swap").Where(static field => field.Key != SecurityRecordRateUnit.FieldKey && field.SinceTermsVersion > 1)
             .Select(static field => (field.Key, field.SinceTermsVersion)).Should().Equal(("cashFlowContract", 3));
-        definition.UiHints.Select(static hint => hint.Key).Should().Equal("effectiveDate", "maturityDate", "legs");
+        definition.UiHints.Select(static hint => hint.Key).Should().Equal("rateUnit", "effectiveDate", "maturityDate", "legs");
         SecurityTermBlocks.For("Swap").Select(static field => field.Key).Should().Equal("legs");
         SecurityAssetTermsSchema.ElementFields("Swap", "legs")
             .Should().ContainSingle(static field => field.Key == "scheduleConventions")
-            .Which.SinceTermsVersion.Should().Be(2)
-            .And.BeGreaterThan(SecurityAssetClassCatalog.GetTermsVersion("Swap"));
+            .Which.SinceTermsVersion.Should().Be(2);
+        SecurityAssetTermsSchema.ElementFields("Swap", "legs").Single(field => field.Key == "scheduleConventions").AuthoringEnabled.Should().BeFalse();
     }
 }

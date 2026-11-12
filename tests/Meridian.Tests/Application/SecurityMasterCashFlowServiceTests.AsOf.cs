@@ -18,6 +18,10 @@ public sealed partial class SecurityMasterCashFlowServiceTests
     [Fact]
     public async Task GetProjectionAsOfAsync_UsesTheRequestedDate_ForBothTheProjectionAndTheCurveLookup()
     {
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, and the pinned swap's legs cannot
+        // declare a unit (the engine refuses per-leg conventions, LegConventionsNotFollowed). The
+        // projection's rows are blocked until per-leg units are declarable (pinned before D3: four
+        // quarters, the first on 2026-04-01); its as-of date and the as-of curve lookup are still asserted.
         var asOf = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var security = ValuationTestSecurities.FloatingSwap(new DateOnly(2026, 1, 1));
         var store = Substitute.For<ISecurityMasterCashFlowStore>();
@@ -35,8 +39,10 @@ public sealed partial class SecurityMasterCashFlowServiceTests
 
         projection.Should().NotBeNull();
         projection!.AsOf.Should().Be(asOf, "the projection is dated as requested, not today");
-        projection.Schedule.Should().HaveCount(4, "every quarter of the pinned year is on or after the as-of");
-        projection.Schedule[0].PeriodDate.Should().Be(new DateTimeOffset(2026, 4, 1, 0, 0, 0, TimeSpan.Zero));
+        projection.BlockedReason.Should().Be(
+            "Rate legs.fixedRate = 0.04 on Swap has no declared unit (Fraction, Percent or BasisPoints). "
+            + "A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.");
+        projection.Schedule.Should().BeEmpty();
         await curves.Received(1).GetForwardCurveAsync("SOFR", new DateOnly(2026, 1, 1), Arg.Any<CancellationToken>());
         await curves.DidNotReceive().GetForwardCurveAsync(Arg.Any<string>(), DateOnly.FromDateTime(DateTime.UtcNow.Date), Arg.Any<CancellationToken>());
 

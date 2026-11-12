@@ -98,10 +98,12 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
             .Select(p => new SecurityComparisonPriceDto(p.SourceId, p.Price, p.PriceAsOf,
                 p.Unit == selected.Unit && SecurityPriceQuotationEvidence.EconomicallyComparable(p.Quotation, selected.Quotation) && selected.Price != 0m
                     ? CalculateComparisonPercentage(p.Price, selected.Price) : null,
-                p.Unit) { Quotation = p.Quotation }).ToArray();
+                p.Unit)
+            { Quotation = p.Quotation }).ToArray();
         var selection = new SecurityPriceGoldenCopyDto(securityId, selected.Price, SecurityPriceKind.MarketGoldenCopy,
             selected.SourceId, selected.PriceAsOf, stale, daysStale, comparisons, selected.Unit, asOf, hierarchy.AsOf,
-            knowledgeAsOf, Guid.NewGuid(), hierarchy) { Quotation = selected.Quotation };
+            knowledgeAsOf, Guid.NewGuid(), hierarchy)
+        { Quotation = selected.Quotation };
         // Timestamp predicates are eligibility filters, not a PostgreSQL commit snapshot. A writer
         // can commit later with an earlier recorded timestamp; retain the exact evaluated result
         // and inputs so receipt replay remains stable even in that case.
@@ -134,7 +136,8 @@ public sealed partial class SecurityMasterPricingService : ISecurityMasterPricin
             // Raw denotes an explicit operator choice, rather than hierarchy golden-copy approval.
             var selection = new SecurityPriceGoldenCopyDto(securityId, price.Price, SecurityPriceKind.Raw,
                 price.SourceId, price.PriceAsOf, age > source.MaxDaysStale, age, [], price.Unit,
-                asOf, hierarchy.AsOf, knowledgeAsOf, Guid.NewGuid(), hierarchy) { Quotation = price.Quotation };
+                asOf, hierarchy.AsOf, knowledgeAsOf, Guid.NewGuid(), hierarchy)
+            { Quotation = price.Quotation };
             await _store.RetainPriceSelectionAsync(selection, accountId, ct).ConfigureAwait(false);
             result.Add(selection);
         }

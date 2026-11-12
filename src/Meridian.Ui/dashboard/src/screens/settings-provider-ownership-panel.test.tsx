@@ -65,6 +65,31 @@ describe("provider ownership panel", () => {
     expect(bind).toHaveBeenCalledWith("paper-a", { providerId: "alpaca" });
   });
 
+  it("finalizes a verified migration, which ends rollback and marks the receipt finalized", async () => {
+    const preview = vi.fn().mockResolvedValue(status("gen-1"));
+    const base = { providerId: "alpaca", scope: { tenantId: "tenant-a", connectionId: "paper-a", externalAccountId: "account-paper-a", environment: "paper" }, credentialGeneration: "gen-1", actor: "operator-a", migratedAt: "2026-10-31T00:00:00Z", rolledBack: false };
+    const migrate = vi.fn().mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...base, migrationId: request.migrationId, oAuthTokenTransferred: true }));
+    const finalize = vi.fn().mockImplementation(async (_c: string, request: { migrationId: string }) => ({ ...base, migrationId: request.migrationId, oAuthTokenTransferred: true, finalizedBy: "controller", finalizedAt: "2026-11-01T00:00:00Z" }));
+    const rollback = vi.fn();
+    render(<ProviderOwnershipPanel providerId="alpaca" displayName="Alpaca" connection={owned("paper-a")} api={{ preview, migrate, finalize, rollback }} />);
+
+    expect(screen.getByRole("button", { name: "Finalize migration" })).toBeDisabled();
+    fireEvent.click(screen.getByRole("button", { name: "Preview migration" }));
+    await screen.findByText(/generation gen-1 can be migrated/);
+    fireEvent.click(screen.getByRole("button", { name: "Migrate to this connection" }));
+    await screen.findByText(/OAuth token moved with the record/);
+    fireEvent.click(screen.getByRole("button", { name: "Finalize migration" }));
+    await screen.findByText(/finalized by controller; rollback has ended/);
+
+    const [connectionId, request] = finalize.mock.calls[0];
+    expect(connectionId).toBe("paper-a");
+    expect(request).toEqual({ providerId: "alpaca", migrationId: migrate.mock.calls[0][1].migrationId });
+    expect(screen.getByLabelText("Alpaca migration receipt")).toHaveTextContent(/· finalized ·/);
+    expect(screen.getByRole("button", { name: "Roll back migration" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Finalize migration" })).toBeDisabled();
+    expect(rollback).not.toHaveBeenCalled();
+  });
+
   it("shows the pending-restart state after binding and applies only when an applier recycles", async () => {
     const bind = vi.fn().mockResolvedValue({ providerId: "alpaca", tenantId: "tenant-a", connectionId: "paper-a" });
     const base = { providerId: "alpaca", tenantId: "tenant-a", connectionId: "paper-a", isBound: true, boundAt: "2026-10-31T00:00:00Z", detail: "" };
@@ -91,7 +116,7 @@ describe("provider ownership panel", () => {
 
   it("disables every connection command until the editor selects an owned connection", () => {
     render(<ProviderOwnershipPanel providerId="alpaca" displayName="Alpaca" connection={null} api={{}} />);
-    for (const name of ["Preview migration", "Migrate to this connection", "Roll back migration", "Bind as host runtime credential", "Check running instances", "Apply to running instances"]) {
+    for (const name of ["Preview migration", "Migrate to this connection", "Roll back migration", "Bind as host runtime credential", "Check running instances", "Apply to running instances", "Finalize migration"]) {
       expect(screen.getByRole("button", { name })).toBeDisabled();
     }
     expect(screen.getByLabelText("Alpaca ownership status")).toHaveTextContent(/Select an owned connection above/);

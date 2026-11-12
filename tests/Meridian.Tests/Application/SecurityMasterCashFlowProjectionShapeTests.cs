@@ -112,6 +112,9 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         "termsUsed.legs[].resetSchedule",
     ];
 
+    // The termsUsed leg members a blocked swap still reports: SwapLegPaths without the leg schedules.
+    private static readonly string[] SwapTermsLegPaths = SwapLegPaths.Where(static path => path.StartsWith("termsUsed.", StringComparison.Ordinal)).ToArray();
+
     private static readonly string[] PrincipalScheduleRowPaths =
     [
         "termsUsed.principalSchedule[].paymentDate",
@@ -120,19 +123,45 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
 
     // The rows each case writes beyond the top-level and termsUsed members. No case writes a factor
     // schedule, a step-coupon schedule, or a leg notional or reset schedule.
+    // D3 (decided 2026-11-05): undeclared non-zero rates block, so every undeclared case with a
+    // non-zero rate writes no rows and carries its block reason (UndeclaredRateBlocks below). Before D3
+    // the bonds, the CD and the StructuredCredit wrote ScheduleRowPaths (the contractual-schedule bond
+    // also PrincipalScheduleRowPaths) and the swaps also SwapLegPaths. The zero-rate cases need no unit
+    // and keep those undeclared row shapes pinned.
     private static readonly IReadOnlyDictionary<string, string[][]> RowsWritten =
         new Dictionary<string, string[][]>(StringComparer.Ordinal)
         {
-            ["Bond.fixedBullet"] = [ScheduleRowPaths],
-            ["Bond.atMaturity"] = [ScheduleRowPaths],
-            ["Bond.contractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
-            ["CertificateOfDeposit"] = [ScheduleRowPaths],
-            ["StructuredCredit.flat"] = [ScheduleRowPaths],
-            ["Swap.twoLeg"] = [ScheduleRowPaths, SwapLegPaths],
+            ["Bond.fixedBullet"] = [],
+            ["Bond.atMaturity"] = [],
+            ["Bond.contractualSchedule"] = [PrincipalScheduleRowPaths],
+            ["CertificateOfDeposit"] = [],
+            ["StructuredCredit.flat"] = [],
+            ["Swap.twoLeg"] = [SwapTermsLegPaths],
             ["Bond.blocked"] = [],
-            ["Bond.stampOneStrayBlock"] = [ScheduleRowPaths],
-            ["Bond.stampTwoBlockAsNumber"] = [ScheduleRowPaths],
-            ["Swap.stampOneStrayLegBlocks"] = [ScheduleRowPaths, SwapLegPaths],
+            ["Bond.stampOneStrayBlock"] = [],
+            ["Bond.stampTwoBlockAsNumber"] = [],
+            ["Swap.stampOneStrayLegBlocks"] = [SwapTermsLegPaths],
+            ["Bond.zeroRateBullet"] = [ScheduleRowPaths],
+            ["Bond.zeroRateContractualSchedule"] = [ScheduleRowPaths, PrincipalScheduleRowPaths],
+            ["Swap.zeroRateTwoLeg"] = [ScheduleRowPaths, SwapLegPaths],
+        };
+
+    private const string UndeclaredUnitTail =
+        " has no declared unit (Fraction, Percent or BasisPoints). A legacy value is flagged rather than converted; its unit cannot be inferred from its magnitude.";
+
+    // D3 (decided 2026-11-05): the exact block each undeclared non-zero case now carries.
+    private static readonly IReadOnlyDictionary<string, string> UndeclaredRateBlocks =
+        new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            ["Bond.fixedBullet"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.atMaturity"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.contractualSchedule"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["CertificateOfDeposit"] = "Rate couponRate = 4.1 on CertificateOfDeposit" + UndeclaredUnitTail,
+            ["StructuredCredit.flat"] = "Rate couponOrIndex = 5.25 on StructuredCredit" + UndeclaredUnitTail,
+            ["Swap.twoLeg"] = "Rate legs.fixedRate = 4.25 on Swap" + UndeclaredUnitTail,
+            ["Bond.stampOneStrayBlock"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Bond.stampTwoBlockAsNumber"] = "Rate couponRate = 5 on Bond" + UndeclaredUnitTail,
+            ["Swap.stampOneStrayLegBlocks"] = "Rate legs.fixedRate = 4.25 on Swap" + UndeclaredUnitTail,
         };
 
     // A fully-populated scheduleConventions block, as a node that writes it would store it.
@@ -172,6 +201,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
             ["Bond.stampTwoBlockAsNumber"] = ("Bond", StructuredCashFlowSourceKind.CalculatedBullet, static issue =>
                 WithBlock(Stamped(FixedBond(issue, "SemiAnnual"), 2), "7")),
             ["Swap.stampOneStrayLegBlocks"] = ("Swap", StructuredCashFlowSourceKind.CalculatedBullet, static issue => StampOneSwapWithLegBlocks(issue)),
+            // D3 (decided 2026-11-05): a zero rate resolves without a unit, so these undeclared cases
+            // still walk the legacy projection and pin its row shapes.
+            ["Bond.zeroRateBullet"] = ("Bond", StructuredCashFlowSourceKind.CalculatedBullet, static issue => ZeroRate(FixedBond(issue, "SemiAnnual"))),
+            ["Bond.zeroRateContractualSchedule"] = ("Bond", StructuredCashFlowSourceKind.CalculatedSinker, static issue => ZeroRate(ContractualScheduleBond(issue))),
+            ["Swap.zeroRateTwoLeg"] = ("Swap", StructuredCashFlowSourceKind.CalculatedBullet, static issue => ZeroRateSwap(TwoLegSwap(issue))),
         };
 
     public static TheoryData<string> UndeclaredCases()
@@ -220,6 +254,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         MemberPaths(projection).Should().BeEquivalentTo(
             expected,
             $"the undeclared '{caseName}' projection writes the same members in every row");
+        if (UndeclaredRateBlocks.TryGetValue(caseName, out var reason))
+        {
+            // D3 (decided 2026-11-05): the undeclared non-zero rate blocks with its exact reason.
+            projection["blockedReason"]!.GetValue<string>().Should().Be(reason);
+        }
     }
 
     [Fact]
@@ -238,8 +277,11 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
         var clean = await ProjectAsync(cleanName);
         var twin = await ProjectAsync(twinName);
 
-        clean["schedule"]!.AsArray().Count.Should().BePositive($"the clean twin '{cleanName}' projects rows to compare");
-        clean["blockedReason"].Should().BeNull();
+        // D3 (decided 2026-11-05): undeclared non-zero rates block, so both twins block with the same
+        // reason; the comparison below still requires every other member to be equal.
+        clean["schedule"]!.AsArray().Should().BeEmpty($"the clean twin '{cleanName}' declares no rate unit");
+        clean["blockedReason"]!.GetValue<string>().Should().Be(UndeclaredRateBlocks[cleanName]);
+        twin["blockedReason"]!.GetValue<string>().Should().Be(UndeclaredRateBlocks[cleanName]);
 
         // The as-of is the wall clock at projection time; every other member, rows included, is equal.
         clean.Remove("asOf");
@@ -253,11 +295,12 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
     public async Task DeclaredProjection_AddsExactlyScheduleEvidence()
     {
         // A Bond stamped at its scheduleConventions version with a minimal block declares a schedule.
+        // D3 (decided 2026-11-05): the block also declares the Percent its 5 coupon was written in.
         var projection = await ProjectAsync(
             "Bond.declared",
             "Bond",
             StructuredCashFlowSourceKind.CalculatedBullet,
-            WithBlock(Stamped(FixedBond(IssueDate, "SemiAnnual"), 2), """{"accrualAdjusted":false}"""));
+            WithBlock(Stamped(FixedBond(IssueDate, "SemiAnnual"), 2), """{"accrualAdjusted":false,"couponRateUnit":"Percent"}"""));
 
         projection["blockedReason"].Should().BeNull();
         projection["schedule"]!.AsArray().Count.Should().BePositive("the declared bond projects rows");
@@ -399,6 +442,20 @@ public sealed class SecurityMasterCashFlowProjectionShapeTests
                     ["exchangesPrincipal"] = false,
                 }),
         };
+
+    private static JsonObject ZeroRate(JsonObject bond)
+    {
+        bond["couponRate"] = 0m;
+        return bond;
+    }
+
+    private static JsonObject ZeroRateSwap(JsonObject swap)
+    {
+        var legs = swap["legs"]!.AsArray();
+        legs[0]!["fixedRate"] = 0m;
+        legs[1]!["currentIndexRate"] = 0m;
+        return swap;
+    }
 
     private static JsonObject StampOneSwapWithLegBlocks(DateOnly issue)
     {

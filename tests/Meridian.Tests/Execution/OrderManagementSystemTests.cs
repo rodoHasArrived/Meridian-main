@@ -2924,6 +2924,12 @@ public sealed class OrderManagementSystemGateTests : IDisposable
             .Single(static p => p.Symbol == "AAPL");
 
         position.ContractMultiplier.Should().Be(100m);
+
+        // The premium is paid at quote x contracts x multiplier, the same scale the risk
+        // layer sizes the order at; commissions, if any, only take more cash.
+        var paper = portfolio.Accounts.Single().Positions["AAPL"];
+        paper.AverageCostBasis.Should().BePositive();
+        portfolio.Cash.Should().BeLessThanOrEqualTo(1_000_000m - 10m * paper.AverageCostBasis * 100m);
     }
 
     [Fact]

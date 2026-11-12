@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { GateRail, SeverityBadge } from "@/components/operations";
 import { DenseRowDetailPanel } from "@/components/meridian/dense-row-detail-accessibility";
 import { cn } from "@/lib/utils";
+import { TextArea } from "@/components/ui/text-area";
 
 export type StrategyFormulaWorkbenchMode = "visual" | "formula" | "code";
 export type StrategyFormulaFieldType = "decimal" | "string" | "date" | "percent";
@@ -74,11 +75,11 @@ export function StrategyFormulaWorkbench({
     <section className="space-y-4" aria-labelledby="strategy-formula-workbench-title" data-testid="strategy-formula-workbench">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0">
-          <div className="eyebrow-label">Design system component</div>
-          <h1 id="strategy-formula-workbench-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
+          <div className="eyebrow-label eyebrow-label--sentence">Design system component</div>
+          <h2 id="strategy-formula-workbench-title" className="flex items-center gap-2 text-2xl font-semibold tracking-normal text-foreground">
             <FunctionSquare className="h-6 w-6 text-primary" aria-hidden="true" />
             {title}
-          </h1>
+          </h2>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Strategy authoring mode">
@@ -149,10 +150,10 @@ export function StrategyFormulaWorkbench({
             <CardDescription>{selectedCell ? `${selectedCell.label} · ${selectedCell.status}` : "No selected cell"}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
-            <textarea
+            <TextArea rows={2}
               value={source}
               onChange={(event) => setSource(event.target.value)}
-              className="min-h-52 w-full resize-y rounded-md border border-border bg-background px-3 py-2 font-mono text-sm leading-6 text-foreground shadow-[var(--shadow-panel)] outline-hidden transition-colors placeholder:text-muted-foreground focus:border-primary/70 focus:ring-2 focus:ring-primary/35"
+              className="min-h-52 w-full font-mono text-sm leading-6"
               aria-label="Strategy formula source"
               spellCheck={false}
             />

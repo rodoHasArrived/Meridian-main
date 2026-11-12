@@ -55,18 +55,8 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Set up .NET SDK
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
-        with:
-          global-json-file: global.json
-
-      - name: Cache NuGet packages
-        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.nuget/packages
-          key: ${{ runner.os }}-nuget-v1-${{ hashFiles('**/*.csproj', '**/*.fsproj', '**/*.props', '**/*.targets', '**/packages.lock.json', '**/*.packages.lock.json', '**/NuGet.Config', 'global.json') }}
-          restore-keys: |
-            ${{ runner.os }}-nuget-v1-
+      - name: Set up .NET SDK and NuGet cache
+        uses: ./.github/actions/setup-dotnet-nuget
 
       - name: Restore WPF tests
         shell: pwsh
@@ -104,7 +94,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -252,7 +242,7 @@ jobs:
           fetch-depth: 1
 
       - name: Set up .NET SDK
-        uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5.4.0
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
           global-json-file: global.json
 
@@ -426,7 +416,7 @@ jobs:
           NOTES
 
       - name: Publish the evaluation prerelease
-        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        uses: softprops/action-gh-release@8a0cd651e5b2365bd640854a3fa5dfc70e4875f3 # v3.0.4
         with:
           tag_name: eval-v${{ inputs.version }}
           name: Meridian ${{ inputs.version }} (evaluation, self-signed)

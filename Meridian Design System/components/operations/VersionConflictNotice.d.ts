@@ -1,0 +1,4 @@
+import * as React from "react";
+export interface ConflictField{key?:string;label?:string;base?:any;proposed?:any;latest?:any;conflict?:boolean;}
+export interface VersionConflictNoticeProps extends Omit<React.HTMLAttributes<HTMLElement>, "title">{title?:React.ReactNode;record?:React.ReactNode;fields?:ConflictField[];field?:string;proposed?:any;latest?:any;base?:any;baseVersion?:number|string;originalVersion?:number|string;latestVersion?:number|string;latestAuthor?:string;latestAt?:string;choices?:Record<string,"mine"|"theirs">;onFieldChoice?:(key:string,side:"mine"|"theirs")=>void;requireReason?:boolean;onReload?:()=>void;onCompare?:()=>void;onMergeNonConflicting?:()=>void;onReapply?:(detail:{reason:string;choices:Record<string,"mine"|"theirs">})=>void;onSaveDraft?:(reason:string)=>void;onDiscard?:()=>void;autoFocus?:boolean;}
+export declare function VersionConflictNotice(props:VersionConflictNoticeProps):React.JSX.Element;

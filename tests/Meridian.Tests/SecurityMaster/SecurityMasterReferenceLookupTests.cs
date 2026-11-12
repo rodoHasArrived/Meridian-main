@@ -328,6 +328,13 @@ public sealed class SecurityMasterReferenceLookupTests
     [InlineData("CertificateOfDeposit", "CertificateOfDeposit")]
     [InlineData("CommercialPaper", "CommercialPaper")]
     [InlineData("Repo", "Repo")]
+    // Registry-derived since remediation slice 8; WorkstationSecuritySubTypeCoverageTests pins
+    // every catalog class.
+    [InlineData("FxSpot", "FxSpot")]
+    [InlineData("CashSweep", "CashSweep")]
+    [InlineData("OtherSecurity", "OtherSecurity")]
+    [InlineData("StructuredCredit", "StructuredCredit")]
+    [InlineData("CapFloor", "CapFloor")]
     public void DeriveSubType_ReturnsExpectedSubType(string assetClass, string expectedSubType)
     {
         SecurityMasterSecurityReferenceLookup.DeriveSubType(assetClass)
@@ -335,10 +342,7 @@ public sealed class SecurityMasterReferenceLookupTests
     }
 
     [Theory]
-    [InlineData("Equity")]
-    [InlineData("FxSpot")]
-    [InlineData("CashSweep")]
-    [InlineData("OtherSecurity")]
+    [InlineData("Equity")] // declared sub-type-ambiguous: common, preferred, ADR and MLP records share the class
     [InlineData(null)]
     [InlineData("")]
     public void DeriveSubType_ReturnsNull_ForAmbiguousOrUnknownAssetClass(string? assetClass)

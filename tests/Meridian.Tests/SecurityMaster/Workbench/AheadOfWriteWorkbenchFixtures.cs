@@ -18,7 +18,11 @@ namespace Meridian.Tests.SecurityMaster.Workbench;
 /// </summary>
 internal sealed class CanonicalAmendHarness
 {
-    public CanonicalAmendHarness(Mock<ISecurityMasterStore> projectionStore, ISecurityAssetProfileCatalog? assetProfileCatalog = null)
+    public CanonicalAmendHarness(
+        Mock<ISecurityMasterStore> projectionStore,
+        ISecurityAssetProfileCatalog? assetProfileCatalog = null,
+        IGovernedTermAmendmentPolicy? governedTermAmendmentPolicy = null,
+        ISecurityMasterRevisionStore? revisionStore = null)
     {
         var eventStore = new Mock<ISecurityMasterEventStore>(MockBehavior.Loose);
         eventStore
@@ -45,7 +49,9 @@ internal sealed class CanonicalAmendHarness
                 ResolveInactiveByDefault = true
             },
             NullLogger<SecurityMasterService>.Instance,
-            assetProfileCatalog: assetProfileCatalog);
+            assetProfileCatalog: assetProfileCatalog,
+            governedTermAmendmentPolicy: governedTermAmendmentPolicy,
+            revisionStore: revisionStore);
     }
 
     public SecurityMasterService Service { get; }
@@ -60,15 +66,15 @@ internal sealed class CanonicalAmendHarness
 /// handler's exception and surfaces only the handler's name, so this is how a publish-level test sees
 /// WHY the merge's amendment was refused.
 /// </summary>
-internal sealed class RecordingAmender(ISecurityMasterAmender inner) : ISecurityMasterAmender
+internal sealed class RecordingAmender(IGovernedPublicationAmender inner) : IGovernedPublicationAmender
 {
     public List<Exception> Failures { get; } = [];
 
-    public async Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+    public async Task<SecurityDetailDto> AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
     {
         try
         {
-            return await inner.AmendTermsAsync(request, ct).ConfigureAwait(false);
+            return await inner.AmendApprovedRevisionAsync(request, ct).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -136,7 +142,9 @@ internal static class AheadOfWriteFixtures
     public const string StrayCallSchedule = """[{"callDate":"2028-01-01","callPrice":101}]""";
 
     public static string NotYetWritableReason(string assetClass, string path, int sinceVersion, int writes)
-        => $"'{path}' is an asset-class terms version {sinceVersion} term of '{assetClass}'. This node reads it but writes " +
+        => assetClass == "Swap"
+            ? $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms."
+            : $"'{path}' is an asset-class terms version {sinceVersion} term of '{assetClass}'. This node reads it but writes " +
            $"assetClassTermsVersion {writes}, so a create, amend, import or field edit cannot set it yet. Leave it absent, " +
            "null or empty (ADR-024).";
 

@@ -67,21 +67,21 @@ public sealed class QuoteFloatViewModel : BindableBase, IDisposable
         try
         {
             var response = await _httpClient.GetAsync(
-                $"{_baseUrl}/api/live/{Uri.EscapeDataString(_symbol)}/quote");
+                $"{_baseUrl}{WpfServices.LiveDataApiPayloads.QuoteRoute(_symbol)}");
 
             if (!response.IsSuccessStatusCode)
                 return;
 
             var json = await response.Content.ReadAsStringAsync();
-            var quote = JsonSerializer.Deserialize<JsonElement>(json);
+            var payload = JsonSerializer.Deserialize<JsonElement>(json);
 
-            decimal bid = 0, ask = 0, last = 0;
-            if (quote.TryGetProperty("bid", out var b))
-                bid = b.GetDecimal();
-            if (quote.TryGetProperty("ask", out var a))
-                ask = a.GetDecimal();
-            if (quote.TryGetProperty("last", out var l))
-                last = l.GetDecimal();
+            // The quotes endpoint answers 200 with a null quote until the collector has a BBO.
+            if (!WpfServices.LiveDataApiPayloads.TryReadQuote(payload, out var quote))
+                return;
+
+            decimal bid = quote.Bid, ask = quote.Ask, last = 0;
+            if (quote.Last is { } sessionLast && sessionLast > 0)
+                last = sessionLast;
             else if (bid > 0 && ask > 0)
                 last = (bid + ask) / 2m;
 

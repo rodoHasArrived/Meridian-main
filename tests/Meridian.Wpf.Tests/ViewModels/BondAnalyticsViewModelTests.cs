@@ -54,6 +54,7 @@ public sealed class BondAnalyticsViewModelTests
 
         sent.Should().NotBeNull();
         sent!.CleanPrice.Should().Be(99.125m);
+        sent.CalculationVersion.Should().Be("bond-analytics-v2", "the existing fixed/zero model remains the default");
         sent.Yield.Should().BeNull();
         sent.Context.SettlementDate.Should().Be(new DateOnly(2026, 10, 30));
         sent.Context.KnownAt.Should().Be(new DateTimeOffset(2026, 10, 29, 9, 30, 0, TimeSpan.Zero));
@@ -62,6 +63,70 @@ public sealed class BondAnalyticsViewModelTests
         view.Metrics.Should().Contain(row => row.Label == "Dirty price / 100" && row.Value == "1234567.123456789012");
         view.CashFlows.Should().ContainSingle().Which.Interest.Should().Be("2.5");
         view.StatusText.Should().Contain("grant no");
+        view.HasFloatingResult.Should().BeFalse();
+        view.Metrics.Should().NotContain(row => row.Label.StartsWith("SpreadDv01"));
+    }
+
+    [Theory]
+    [InlineData("bond-analytics-v1")]
+    [InlineData("bond-analytics-v2")]
+    [InlineData("bond-analytics-v3")]
+    public async Task Calculate_ForwardsTheSelectedVersionWithoutSubstitution(string version)
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client.Setup(c => c.GetBondAnalyticsAsync(It.IsAny<BondAnalyticsRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((BondAnalyticsRequest request, CancellationToken _) =>
+                ApiResponse<BondAnalyticsResult>.Ok(Result(SecurityId) with { ModelVersion = request.CalculationVersion! }));
+        var view = new BondAnalyticsViewModel(client.Object, SecurityId, 7) { Value = "100", CalculationVersion = version };
+
+        await view.CalculateCommand.ExecuteAsync(null);
+
+        client.Verify(c => c.GetBondAnalyticsAsync(It.Is<BondAnalyticsRequest>(request => request.CalculationVersion == version),
+            It.IsAny<CancellationToken>()), Times.Once);
+        view.ProvenanceText.Should().Contain(version);
+        view.HasFloatingResult.Should().Be(version == "bond-analytics-v3");
+    }
+
+    [Fact]
+    public async Task CalculationVersionChange_CancelsAndDiscardsThePreviousResult()
+    {
+        var pending = new TaskCompletionSource<ApiResponse<BondAnalyticsResult>>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        CancellationToken token = default;
+        client.Setup(c => c.GetBondAnalyticsAsync(It.IsAny<BondAnalyticsRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<BondAnalyticsRequest, CancellationToken>((_, cancellation) => token = cancellation)
+            .Returns(pending.Task);
+        var view = new BondAnalyticsViewModel(client.Object, SecurityId, 7) { Value = "100", CalculationVersion = "bond-analytics-v3" };
+
+        var calculation = view.CalculateCommand.ExecuteAsync(null);
+        view.IsBusy.Should().BeTrue();
+        view.CalculationVersion = "bond-analytics-v2";
+        token.IsCancellationRequested.Should().BeTrue();
+        pending.SetResult(ApiResponse<BondAnalyticsResult>.Ok(Result(SecurityId) with { ModelVersion = "bond-analytics-v3" }));
+        await calculation;
+
+        view.HasResult.Should().BeFalse();
+        view.HasFloatingResult.Should().BeFalse();
+        view.Metrics.Should().BeEmpty();
+        view.CashFlows.Should().BeEmpty();
+        view.Inputs.Should().BeEmpty();
+        view.StatusText.Should().Be("Calculation version changed. Calculate again.");
+    }
+
+    [Fact]
+    public async Task Calculate_RejectsASubstitutedModelWithoutDisplayingItsValues()
+    {
+        var client = new Mock<IWorkstationSecurityMasterApiClient>();
+        client.Setup(c => c.GetBondAnalyticsAsync(It.IsAny<BondAnalyticsRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ApiResponse<BondAnalyticsResult>.Ok(Result(SecurityId)));
+        var view = new BondAnalyticsViewModel(client.Object, SecurityId, 7) { Value = "100", CalculationVersion = "bond-analytics-v3" };
+
+        await view.CalculateCommand.ExecuteAsync(null);
+
+        view.HasResult.Should().BeFalse();
+        view.StatusText.Should().Contain("different calculation version");
+        view.Metrics.Should().BeEmpty();
+        client.Verify(c => c.GetBondAnalyticsAsync(It.IsAny<BondAnalyticsRequest>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]

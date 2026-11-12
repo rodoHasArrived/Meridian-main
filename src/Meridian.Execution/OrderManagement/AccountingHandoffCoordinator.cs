@@ -1,3 +1,4 @@
+using Meridian.Core.Exceptions;
 using Meridian.Execution.Events;
 
 namespace Meridian.Execution.OrderManagement;
@@ -190,7 +191,7 @@ internal sealed class AccountingHandoffCoordinator
 }
 
 /// <summary>An accepted broker fill has not completed its authoritative accounting handoff.</summary>
-internal sealed class AccountingHandoffException : Exception
+internal sealed class AccountingHandoffException : MeridianException
 {
     public AccountingHandoffException(
         TradeExecutedEvent tradeEvent,

@@ -13,6 +13,7 @@ import { DECIMAL_LITERAL, bondDecimalText, utcInstantFromLocalInput } from "@/li
 import type {
   BondAnalyticsQuery,
   BondAnalyticsResult,
+  BondCalculationVersion,
   BondDecimal,
   BondRetainedObservation,
   BondYieldConvention
@@ -42,6 +43,35 @@ const cashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
 
 const decimalText = (value: BondDecimal | null | undefined): string => bondDecimalText(value);
 
+const floatingCashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
+  ...cashFlowColumns,
+  {
+    id: "fixing",
+    label: "Fixing / source",
+    render: (row) => row.floatingCoupon ? (
+      <div className="max-w-60 whitespace-normal text-xs">
+        <strong className="break-words">
+          {row.floatingCoupon.isObserved ? "Observed fixing" : "Forecast fixing"} · {row.floatingCoupon.indexName}
+        </strong>
+        <span className="block">Reset {row.floatingCoupon.resetDate}</span>
+        <span className="block break-words">{row.floatingCoupon.source || "Source unavailable"}</span>
+      </div>
+    ) : "Fixing evidence unavailable"
+  },
+  {
+    id: "rates",
+    label: "Coupon rate basis",
+    align: "right",
+    render: (row) => row.floatingCoupon ? (
+      <div className="whitespace-nowrap text-xs">
+        <span className="block">Index fraction: {decimalText(row.floatingCoupon.indexRate)}</span>
+        <span className="block">Spread: {decimalText(row.floatingCoupon.spreadBps)} bp</span>
+        <span className="block">Coupon fraction: {decimalText(row.floatingCoupon.couponRate)}</span>
+      </div>
+    ) : "Unavailable"
+  }
+];
+
 export interface BondAnalyticsPanelProps {
   securityId: string;
   priceAccountId?: string;
@@ -63,6 +93,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
   const [inputKind, setInputKind] = useState<"cleanPrice" | "yield" | "retained">("cleanPrice");
   const [value, setValue] = useState("");
   const [convention, setConvention] = useState<BondYieldConvention>("NominalPeriodic");
+  const [calculationVersion, setCalculationVersion] = useState<BondCalculationVersion>("bond-analytics-v2");
   const [result, setResult] = useState<BondAnalyticsResult | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +178,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
     setSelectedReceipt("");
     setObservationsPending(false);
     setObservationsError(null);
+    setCalculationVersion("bond-analytics-v2");
     return () => { request.current?.abort(); observationRequest.current?.abort(); };
   }, [securityId, priceAccountId]);
 
@@ -172,6 +204,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
     const query: BondAnalyticsQuery = {
       asOf: `${asOf}T00:00:00Z`,
       settlementDate,
+      calculationVersion,
       yieldConvention: convention,
       ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}),
       ...(inputKind === "retained" ? { selectionReceiptId: selectedReceipt, ...(priceAccountId ? { priceAccountId } : {}) } : { [inputKind]: value.trim() })
@@ -185,6 +218,8 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       if (controller.signal.aborted) return;
       if (response.securityId.toLowerCase() !== securityId.toLowerCase())
         throw new Error("The calculation returned a different security. Refresh the selected record.");
+      if (response.modelVersion !== calculationVersion)
+        throw new Error("The calculation returned a different model version. No result is displayed; refresh and retry the selected version.");
       setResult(response);
     } catch (failure) {
       if (!controller.signal.aborted)
@@ -194,20 +229,25 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
     }
   }
 
+  const isFloating = calculationVersion === "bond-analytics-v3";
   const metrics: Array<[string, BondDecimal | null | undefined]> = result
     ? [
         ["Clean price / 100", result.cleanPrice],
         ["Dirty price / 100", result.dirtyPrice],
         ["Accrued interest / 100", result.accruedInterest],
-        ["YTM (annual fraction)", result.yieldToMaturity],
+        [isFloating ? "Projected-flow yield (annual fraction)" : "YTM (annual fraction)", result.yieldToMaturity],
         ["Current yield (annual fraction)", result.currentYield],
-        ["Yield to worst (annual fraction)", result.yieldToWorst],
         ["Macaulay duration (years)", result.macaulayDuration],
         ["Modified duration (years)", result.modifiedDuration],
-        ["Convexity", result.convexity],
-        ["DV01 / 100", result.dv01]
+        ["Convexity (years²)", result.convexity],
+        ["DV01 (price points / 100 / bp)", result.dv01]
       ]
     : [];
+  if (result) {
+    metrics.push(isFloating
+      ? ["SpreadDv01 (price points / 100 / +1 bp)", result.spreadDv01]
+      : ["Yield to worst (annual fraction)", result.yieldToWorst]);
+  }
 
   return (
     <Card className="panel-surface">
@@ -223,8 +263,30 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
         <form onSubmit={submit} aria-label="Bond analytics inputs">
-          <fieldset disabled={pending} className="flex min-w-0 flex-col gap-3">
+          <fieldset className="flex min-w-0 flex-col gap-3">
             <legend className="sr-only">Calculation inputs for {securityId}</legend>
+            <FormRow
+              label="Calculation version"
+              labelFor={`${id}-model`}
+              hint="The selected model must match the retained bond terms. Changing a model or input clears the calculation."
+            >
+              <Select
+                id={`${id}-model`}
+                value={calculationVersion}
+                onChange={(e) => edit(() => setCalculationVersion(e.target.value as BondCalculationVersion))}
+              >
+                <option value="bond-analytics-v1">bond-analytics-v1 · Legacy fixed / zero coupon</option>
+                <option value="bond-analytics-v2">bond-analytics-v2 · Fixed / zero coupon</option>
+                <option value="bond-analytics-v3">bond-analytics-v3 · Floating, named index</option>
+              </Select>
+            </FormRow>
+            {isFloating ? (
+              <p className="text-sm text-muted-foreground">
+                v3 requires an explicitly typed Floating bond with a named reference-rate index. The yield discounts
+                projected coupon cash flows and is not a discount margin. Already-reset periods require observed
+                fixings; future resets require a retained forward curve. Missing inputs block the calculation.
+              </p>
+            ) : null}
             <FormGrid columns={3}>
               <FormRow label="Calculation date (UTC)" labelFor={`${id}-asof`}>
                 <Input
@@ -268,7 +330,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                   }
                 >
                   <option value="cleanPrice">Clean price per 100 face</option>
-                  <option value="yield">Annual yield fraction</option>
+                  <option value="yield">{isFloating ? "Projected-flow annual yield fraction" : "Annual yield fraction"}</option>
                   <option value="retained">Use retained observation</option>
                 </Select>
               </FormRow>
@@ -329,7 +391,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 <p className="text-xs text-muted-foreground">The calculation consumes this immutable receipt. Stale, unspecified or mismatched settlement evidence returns a blocker; no quote convention is inferred.</p>
               </div>
             ) : null}
-            <Button type="submit" className="w-fit" aria-busy={pending}>
+            <Button type="submit" className="w-fit" disabled={pending} aria-busy={pending}>
               {pending ? "Calculating…" : "Calculate bond analytics"}
             </Button>
           </fieldset>
@@ -374,14 +436,20 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 }
               />
             ) : (
-              <dl className="grid grid-cols-2 gap-3 xl:grid-cols-5">
-                {metrics.map(([label, metric]) => (
-                  <div key={label} className="min-w-0">
-                    <dt className="text-xs text-muted-foreground">{label}</dt>
-                    <dd className="break-words font-mono text-sm tabular-nums">{decimalText(metric)}</dd>
-                  </div>
-                ))}
-              </dl>
+              <>
+                <dl className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+                  {metrics.map(([label, metric]) => (
+                    <div key={label} className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">{label}</dt>
+                      <dd className="break-words font-mono text-sm tabular-nums">{decimalText(metric)}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  DV01 is the approximate price decrease per 100 face for a 1 bp yield increase, holding cash flows fixed.
+                  {isFloating ? " SpreadDv01 is the signed dirty-price change per 100 face for a +1 bp coupon-spread increase at the same projected-flow yield, including any cap or floor. It is separate from DV01." : null}
+                </p>
+              </>
             )}
             {result.diagnostics.length ? (
               <StatusBanner
@@ -396,23 +464,26 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 }
               />
             ) : null}
-            <details>
-              <summary className="cursor-pointer text-sm font-semibold">
-                Projected contractual payments ({result.cashFlows.length})
-              </summary>
-              <p className="my-2 text-xs text-muted-foreground">
-                Projected cash per 100 face; these rows are not observed payments or posted journals.
-              </p>
-              <DenseDataTable
-                columns={cashFlowColumns}
-                rows={result.cashFlows}
-                getRowId={(row) => row.flowId}
-                ariaLabel="Projected bond payments"
-                caption="Projected contractual payments per 100 face"
-                emptyText="No calculated payment schedule is available."
-              />
-            </details>
-            {result.exerciseYields.length ? (
+            {!result.isBlocked ? (
+              <details>
+                <summary className="cursor-pointer text-sm font-semibold">
+                  Projected contractual payments ({result.cashFlows.length})
+                </summary>
+                <p className="my-2 text-xs text-muted-foreground">
+                  Projected cash per 100 face; these rows are not observed payments or posted journals.
+                  {isFloating ? " Observed or forecast describes the fixing, not the payment. Reset status follows the calculation date; rates are annual fractions (0.03 = 3%) and spread is in basis points (100 bp = 1%)." : null}
+                </p>
+                <DenseDataTable
+                  columns={isFloating ? floatingCashFlowColumns : cashFlowColumns}
+                  rows={result.cashFlows}
+                  getRowId={(row) => row.flowId}
+                  ariaLabel="Projected bond payments"
+                  caption="Projected contractual payments per 100 face"
+                  emptyText="No calculated payment schedule is available."
+                />
+              </details>
+            ) : null}
+            {!result.isBlocked && result.exerciseYields.length ? (
               <details>
                 <summary className="cursor-pointer text-sm font-semibold">Contractual exercise scenarios</summary>
                 <ul className="mt-2 flex flex-col gap-2 text-xs">
@@ -435,7 +506,8 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 {result.inputs.map((input, index) => (
                   <li className="break-all" key={`${input.kind}-${input.key}-${index}`}>
                     <strong>{input.kind}</strong> · {input.key} · version{" "}
-                    {input.version ?? input.versionId ?? "Unspecified"}
+                    {input.version ?? "Unspecified"}
+                    {input.versionId ? <span className="block">Version ID {input.versionId}</span> : null}
                     {input.contentSha256 ? (
                       <span className="block font-mono">SHA-256 {input.contentSha256}</span>
                     ) : null}

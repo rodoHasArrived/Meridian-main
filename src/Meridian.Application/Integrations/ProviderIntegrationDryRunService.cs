@@ -188,7 +188,8 @@ public sealed class ProviderIntegrationDryRunService
             ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
             allIssues.AddRange(rowIssues);
             var mappedElement = ToJsonElement(mappedRecord);
-            if (mappedRecordPreviews.Count < 20) mappedRecordPreviews.Add(mappedElement);
+            if (mappedRecordPreviews.Count < 20)
+                mappedRecordPreviews.Add(mappedElement);
             var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
             var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(
                 connection.ConnectionId,

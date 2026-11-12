@@ -65,6 +65,27 @@ public sealed class ConfigJsonSchemaGenerator
             return;
         }
 
+        // Keys the sample config carries that are not bound to AppConfig. They must be declared
+        // because the root sets additionalProperties=false; their contents are owned by other
+        // components (the editor, the desktop shell, Serilog), so they stay open objects.
+        properties["$schema"] = new JsonObject
+        {
+            ["type"] = "string",
+            ["description"] = "Path or URL of the JSON Schema used for editor validation."
+        };
+
+        properties["Settings"] = new JsonObject
+        {
+            ["type"] = new JsonArray("object", "null"),
+            ["description"] = "Desktop application preferences (theme, notifications, service URLs). Not bound to AppConfig."
+        };
+
+        properties["Serilog"] = new JsonObject
+        {
+            ["type"] = new JsonArray("object", "null"),
+            ["description"] = "Serilog logging configuration, read by Serilog.Settings.Configuration."
+        };
+
         properties["TenantScopeEnforcement"] = new JsonObject
         {
             ["type"] = new JsonArray("string", "null"),
@@ -124,7 +145,13 @@ public sealed class ConfigJsonSchemaGenerator
                     ["items"] = CreateTypedSchema("string")
                 },
                 ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["GovernanceProfile"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["enum"] = new JsonArray("Standard", "Institutional")
+                },
                 ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
+                ["RequireIndependentProfileApprover"] = CreateTypedSchema("boolean"),
                 ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),
                 ["RequireGovernedTermAmendments"] = CreateTypedSchema("boolean")
             }

@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.ScheduleManagerPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -185,7 +186,7 @@
                         <TextBox x:Name="CronExpressionInput"
                                  Text="{Binding CronExpression, UpdateSourceTrigger=PropertyChanged}"
                                  Style="{StaticResource FormTextBoxStyle}"
-                                 Padding="8,6" FontFamily="Consolas" />
+                                 Padding="8,6" FontFamily="{DynamicResource MeridianDataFontFamily}" />
                     </DockPanel>
                     <TextBlock x:Name="CronValidationResult" Text="{Binding CronValidationText}" TextWrapping="Wrap">
                         <TextBlock.Style>

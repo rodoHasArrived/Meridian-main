@@ -184,7 +184,7 @@ export function ReferenceDataWorkbenchPanel({
                 </div>
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Reference data detail</div>
+                  <div className="eyebrow-label eyebrow-label--sentence">Reference data detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
@@ -269,7 +269,7 @@ export function SecurityOpenLotReadModelPanel({
                   />
                 ) : (
                   <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                    <div className="eyebrow-label">Open lot detail</div>
+                    <div className="eyebrow-label eyebrow-label--sentence">Open lot detail</div>
                     <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                   </div>

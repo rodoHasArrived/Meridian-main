@@ -251,7 +251,8 @@ public sealed class ProviderIntegrationRestDryRunService
                 ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
                 allIssues.AddRange(rowIssues);
                 var mappedElement = ToJsonElement(mappedRecord);
-                if (mappedRecordPreviews.Count < 20) mappedRecordPreviews.Add(mappedElement);
+                if (mappedRecordPreviews.Count < 20)
+                    mappedRecordPreviews.Add(mappedElement);
                 var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
                 var recordOrdinal = (accepted + quarantined + 1).ToString(CultureInfo.InvariantCulture);
                 var dedupeKey = ProviderIntegrationMappedRecordIdentity.BuildDedupeKey(

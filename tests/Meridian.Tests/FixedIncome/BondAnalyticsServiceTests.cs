@@ -214,7 +214,7 @@ public sealed class BondAnalyticsServiceTests
         pricing.GetGoldenCopySelectionAsync(SecurityId, "account", receipt, Arg.Any<CancellationToken>()).Returns(observation);
         var service = new BondAnalyticsService(query, pricing: pricing);
         var request = new BondAnalyticsRequest(SecurityId, new(AsOf, settlement))
-            { SelectionReceiptId = receipt, PriceAccountId = "account" };
+        { SelectionReceiptId = receipt, PriceAccountId = "account" };
 
         var first = (await service.CalculateAsync(request))!;
         var replay = (await service.CalculateAsync(request))!;
@@ -267,8 +267,10 @@ public sealed class BondAnalyticsServiceTests
         => new(SecurityId, 100m, SecurityPriceKind.Raw, "provider", AsOf, false, 0, [],
             SecurityPriceUnit.PercentOfPar, AsOf, AsOf, AsOf.AddDays(1), receipt,
             new(SecurityId, null, [new(1, "provider", "Provider", 1)], AsOf, "operator"))
-        { Quotation = new(SecurityPriceBasis.Clean, SecurityQuotationConvention.Per100Face,
-            SecurityQuoteStatus.Bid, settlement, "T+1 US government") };
+        {
+            Quotation = new(SecurityPriceBasis.Clean, SecurityQuotationConvention.Per100Face,
+            SecurityQuoteStatus.Bid, settlement, "T+1 US government")
+        };
 
     private static BondAnalyticsRequest Request(decimal? price = null, decimal? yield = null)
         => new(SecurityId, new(AsOf), price, yield);

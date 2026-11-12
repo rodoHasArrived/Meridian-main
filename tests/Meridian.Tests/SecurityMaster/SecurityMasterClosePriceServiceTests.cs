@@ -38,7 +38,8 @@ public sealed class SecurityMasterClosePriceServiceTests
             RetainForRead(store, draft);
             await service.Invoking(value => value.ApproveClosePriceSetAsync(Approve(draft))).Should().ThrowAsync<InvalidOperationException>();
         }
-        else draft.Snapshot.Blockers.Should().BeEmpty("bid/ask status alone does not change the economic quote basis");
+        else
+            draft.Snapshot.Blockers.Should().BeEmpty("bid/ask status alone does not change the economic quote basis");
     }
 
     [Fact]

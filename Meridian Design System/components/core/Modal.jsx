@@ -4,40 +4,42 @@
 import React from "react";
 import { useOverlayFocus } from "./useOverlayFocus";
 
+const ModalTitleIdContext = React.createContext(null);
+
 let injected = false;
 function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(14,17,19,.5)); z-index: 50;
+.mdl-overlay { position: fixed; inset: 0; background: var(--scrim, rgba(17,23,29,.5)); z-index: 50;
   display: flex; align-items: center; justify-content: center;
   animation: mdl-fade-in var(--motion-base, 150ms) var(--ease-standard, ease-out); }
 @keyframes mdl-fade-in { from { opacity: 0; } to { opacity: 1; } }
-.mdl-wrap { background: var(--bg-light, #FBFAF8); border: 1px solid var(--border, #E4E3DE);
+.mdl-wrap { background: var(--bg-light, #F8F7F3); border: 1px solid var(--border, #D2CDC3);
   max-width: 520px; width: 92vw; max-height: 92vh; display: flex; flex-direction: column; }
 .mdl-hd { display: flex; align-items: center; justify-content: space-between;
-  padding: 16px 18px; border-bottom: 1px solid var(--border, #E4E3DE);
-  background: var(--bg-medium, #EDEAE4); }
+  padding: 16px 18px; border-bottom: 1px solid var(--border, #D2CDC3);
+  background: var(--bg-medium, #EBE8E1); }
 .mdl-title { font-family: var(--font-body); font-size: 15px; font-weight: 600;
-  color: var(--text-primary, #22252A); margin: 0; }
+  color: var(--text-primary, #20252B); margin: 0; }
 .mdl-close { appearance: none; border: none; background: transparent; width: 28px; height: 28px;
   display: flex; align-items: center; justify-content: center; cursor: pointer;
-  color: var(--text-muted, #5E666F); font-size: 18px; line-height: 1;
+  color: var(--text-muted, #606870); font-size: 18px; line-height: 1;
 }
-.mdl-close:hover { color: var(--text-primary, #22252A); }
+.mdl-close:hover { color: var(--text-primary, #20252B); }
 .mdl-bd { flex: 1; overflow-y: auto; padding: 18px; font-family: var(--font-body);
-  font-size: 13px; color: var(--text-primary, #22252A); }
+  font-size: 13px; color: var(--text-primary, #20252B); }
 .mdl-ft { display: flex; align-items: center; gap: 8px; justify-content: flex-end;
-  padding: 14px 18px; border-top: 1px solid var(--border, #E4E3DE);
-  background: var(--bg-medium, #EDEAE4); flex-wrap: wrap; }
-.mdl-btn { padding: 7px 14px; border: 1px solid var(--border, #E4E3DE);
-  border-radius: var(--radius-button,2px); background: var(--bg-light, #FBFAF8);
-  color: var(--text-primary, #22252A); font-family: var(--font-body);
+  padding: 14px 18px; border-top: 1px solid var(--border, #D2CDC3);
+  background: var(--bg-medium, #EBE8E1); flex-wrap: wrap; }
+.mdl-btn { padding: 7px 14px; border: 1px solid var(--border, #D2CDC3);
+  border-radius: var(--radius-button,2px); background: var(--bg-light, #F8F7F3);
+  color: var(--text-primary, #20252B); font-family: var(--font-body);
   font-size: 12px; font-weight: 500; cursor: pointer;
   transition: background 100ms ease, border-color 100ms ease; }
-.mdl-btn:hover { background: var(--bg-active, #F2E3DB); border-color: var(--accent, #A85436); }
-.mdl-btn--primary { background: var(--accent, #A85436); color: var(--text-on-accent, #fff); border-color: var(--accent, #A85436); }
-.mdl-btn--primary:hover { background: var(--accent-dim, #8C4429); }
+.mdl-btn:hover { background: var(--bg-active, #E7EDF2); border-color: var(--accent, #C56343); }
+.mdl-btn--primary { background: var(--accent, #C56343); color: var(--text-on-accent, #0D1217); border-color: var(--accent, #C56343); }
+.mdl-btn--primary:hover { background: var(--accent-dim, #CB6E4E); }
 .mdl-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 `;
   const el = document.createElement("style");
@@ -49,6 +51,7 @@ function inject() {
 export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, children }) {
   inject();
   const ref = React.useRef(null);
+  const titleId = React.useId();
   // Shared overlay focus contract (initial focus, Tab trap, restore) — same hook as Dialog/Drawer.
   useOverlayFocus(ref, open, ".mdl-wrap");
   // Escape-to-close, matching Dialog/Drawer. Bound only while open.
@@ -60,25 +63,29 @@ export function Modal({ open = false, onClose = () => {}, closeOnEsc = true, chi
   }, [open, closeOnEsc, onClose]);
   if (!open) return null;
   return (
+    <ModalTitleIdContext.Provider value={titleId}>
     <div className="mdl-overlay" onClick={onClose} ref={ref}>
       <div
         className="mdl-wrap"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="mdl-title"
+        aria-labelledby={titleId}
       >
         {children}
       </div>
     </div>
+    </ModalTitleIdContext.Provider>
   );
 }
 
 export function ModalHeader({ title, onClose }) {
+  const modalTitleId = React.useContext(ModalTitleIdContext);
+  const standaloneTitleId = React.useId();
   return (
     <div className="mdl-hd">
-      <h2 className="mdl-title" id="mdl-title">{title}</h2>
-      <button className="mdl-close" onClick={onClose} aria-label="Close">×</button>
+      <h2 className="mdl-title" id={modalTitleId ?? standaloneTitleId}>{title}</h2>
+      <button type="button" className="mdl-close" onClick={onClose} aria-label="Close">×</button>
     </div>
   );
 }

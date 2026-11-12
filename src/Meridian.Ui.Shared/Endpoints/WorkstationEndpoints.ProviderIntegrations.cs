@@ -820,11 +820,15 @@ public static partial class WorkstationEndpoints
             ProviderIntegrationIdentityResolutionRequestDto request,
             HttpContext context) =>
         {
-            if (!HasProviderIntegrationConfigurePermission(context)) return EndpointHelpers.Forbidden();
-            if (!EndpointAuthorization.TryResolveActor(context, out var actor)) return Results.Unauthorized();
-            if (!TryResolveRequiredTenantId(context, out var tenantId)) return EndpointHelpers.Forbidden();
+            if (!HasProviderIntegrationConfigurePermission(context))
+                return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            if (!TryResolveRequiredTenantId(context, out var tenantId))
+                return EndpointHelpers.Forbidden();
             var service = context.RequestServices.GetService<ProviderIntegrationIdentityResolutionPreviewService>();
-            if (service is null) return Results.Problem("Identity resolution is not registered.", statusCode: StatusCodes.Status501NotImplemented);
+            if (service is null)
+                return Results.Problem("Identity resolution is not registered.", statusCode: StatusCodes.Status501NotImplemented);
             try
             {
                 var decision = await service.ResolveAsync(tenantId, connectionId, request, actor, context.RequestAborted).ConfigureAwait(false);

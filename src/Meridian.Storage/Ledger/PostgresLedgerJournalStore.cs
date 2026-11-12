@@ -187,6 +187,7 @@ public sealed partial class PostgresLedgerJournalStore :
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
+        await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await InsertJournalLegsAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "journal", entry.Entry.JournalEntryId, 1,

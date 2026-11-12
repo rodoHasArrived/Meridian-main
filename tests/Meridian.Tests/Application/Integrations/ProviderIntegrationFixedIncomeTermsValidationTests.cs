@@ -75,7 +75,7 @@ public sealed class ProviderIntegrationFixedIncomeTermsValidationTests
     public void UnknownCalendar_IsNotReplacedWithWeekends()
     {
         var mapped = CreateRecord();
-        mapped["security"]!["paymentCalendars"] = "[\"MISSING-HOLIDAY-SET\"]";
+        mapped["security"]!["paymentCalendars"] = "[\"MISSINGCALENDAR\"]";
         var issues = Validate(mapped);
 
         issues.Should().Contain(issue => issue.TargetField == "security.paymentCalendars");
@@ -86,10 +86,10 @@ public sealed class ProviderIntegrationFixedIncomeTermsValidationTests
     public void ConfiguredHolidayCalendar_DrivesTheSamplePaymentDate()
     {
         var mapped = CreateRecord();
-        mapped["security"]!["paymentCalendars"] = "[\"TEST-HOLIDAYS\"]";
+        mapped["security"]!["paymentCalendars"] = "[\"TESTHOLIDAYS\"]";
         var calendars = new StaticBusinessDayCalendarSource([
             BusinessDayCalendars.WeekendsOnly,
-            new HolidayBusinessDayCalendar("TEST-HOLIDAYS", 7, [new DateOnly(2027, 1, 15)])
+            new HolidayBusinessDayCalendar("TESTHOLIDAYS", 7, [new DateOnly(2027, 1, 15)])
         ]);
         var issues = new List<ValidationIssueDto>();
 

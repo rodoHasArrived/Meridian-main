@@ -58,7 +58,7 @@ public sealed class PostgresReferenceProjectionReaderTests
     {
         var reader = new PostgresReferenceProjectionReader(Options);
 
-        // Option is the one remaining specialized writer; CustomAsset is profile-governed. Bond now
+        // Option and CustomAsset (profile-keyed rows) are specialized writers, not descriptors. Bond now
         // has a descriptor whose parent table carries no display name or currency in its spine.
         reader.Invoking(r => r.SelectSql("Option", "")).Should().Throw<ArgumentException>().WithMessage("*Option*");
         reader.Invoking(r => r.SelectSql("CustomAsset", "")).Should().Throw<ArgumentException>();

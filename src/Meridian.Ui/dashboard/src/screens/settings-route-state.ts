@@ -49,19 +49,19 @@ export const SETTINGS_ROUTE_TABS: readonly SettingsRouteTab[] = [
 
 export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { title: string; description: string }>> = {
   chooser: {
-    title: "Settings",
+    title: "Choose a settings task",
     description: "Choose the operator task you need without loading unrelated administration controls."
   },
   preferences: {
-    title: "Preferences",
+    title: "Workstation preferences",
     description: "Personalize this browser workstation without changing authority or service configuration."
   },
   access: {
-    title: "Access",
+    title: "Access and authority",
     description: "Review authentication posture and manage scoped authority with retained audit evidence."
   },
   operations: {
-    title: "Accounting systems",
+    title: "External ledger connections",
     description: "External general-ledger connections and asset-profile governance."
   },
   providers: {
@@ -77,7 +77,7 @@ export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { ti
     description: "Inspect provider integration manifests, sync evidence, quarantine, and activation controls."
   },
   diagnostics: {
-    title: "Diagnostics",
+    title: "Current failures and events",
     description: "Start with current failures and recent events that need operator attention."
   },
   "diagnostics-advanced": {

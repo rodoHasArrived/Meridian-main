@@ -39,7 +39,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         image.save(path)
 
     def test_web_validation_passes_for_fresh_route_matched_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -87,7 +87,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("Screenshot capture validation passed", result.stdout)
 
     def test_web_validation_fails_wrong_route_and_blank_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -139,7 +139,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("capture is likely low-entropy", result.stderr)
 
     def test_web_validation_fails_stale_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -190,7 +190,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("web-a.png is stale", result.stderr)
 
     def test_web_validation_fails_when_manifest_omits_expected_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -227,7 +227,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("Manifest is missing expected web capture entries: web-a.", result.stderr)
 
     def test_web_validation_fails_when_manifest_path_does_not_match_output_file(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -274,7 +274,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("web-a manifest capture path does not match the requested output file", result.stderr)
 
     def test_web_validation_fails_when_manifest_status_failed(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -321,7 +321,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("Manifest status is 'failed', expected 'passed'.", result.stderr)
 
     def test_web_validation_requires_explicit_manifest_to_be_readable(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -356,7 +356,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
                     self.assertNotIn("Traceback", result.stderr)
 
     def test_web_validation_requires_successful_manifest_status(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -391,7 +391,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
                     self.assertIn("expected 'passed'", result.stderr)
 
     def test_web_validation_without_manifest_still_checks_catalog_images(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -412,7 +412,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertEqual(0, result.returncode, result.stderr)
 
     def test_desktop_validation_fails_wrong_page_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -464,7 +464,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("observed page tag 'OtherPage', expected 'ExpectedPage'", result.stderr)
 
     def test_desktop_validation_fails_when_manifest_omits_expected_capture(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()
@@ -509,7 +509,7 @@ class ValidateScreenshotCapturesTests(unittest.TestCase):
         self.assertIn("Manifest is missing expected desktop capture entries: wpf-a.", result.stderr)
 
     def test_desktop_validation_fails_when_manifest_path_does_not_match_output_file(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output = root / "screens"
             output.mkdir()

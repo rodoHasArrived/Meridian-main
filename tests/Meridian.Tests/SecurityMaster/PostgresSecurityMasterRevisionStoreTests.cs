@@ -37,6 +37,38 @@ public sealed class PostgresSecurityMasterRevisionStoreTests : IClassFixture<Sec
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task CreateDraft_WithAFieldBase_PersistsItThroughTransitions()
+    {
+        var securityId = Guid.NewGuid();
+        var draft = await NewStore().CreateDraftAsync(
+            securityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Correction.",
+            fundProfileId: null,
+            fieldValue: new SecurityMasterRevisionFieldValue("1000"),
+            fieldBase: new SecurityMasterRevisionFieldBase(7, """{"par":900}"""));
+
+        await NewStore().TransitionAsync(draft.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
+        var reloaded = (await NewStore().GetAsync(draft.RevisionId))!;
+
+        reloaded.FieldBaseRecorded.Should().BeTrue();
+        reloaded.BaseVersion.Should().Be(7);
+        reloaded.FieldBaseSnapshot.Should().Be("""{"par":900}""");
+        (await NewStore().ListBySecurityAsync(securityId)).Single().BaseVersion.Should().Be(7);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task CreateDraft_WithoutAFieldBase_ReadsBackWithoutOne()
+    {
+        var draft = await NewStore().CreateDraftAsync(
+            Guid.NewGuid(), "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Correction.",
+            fundProfileId: null, fieldValue: new SecurityMasterRevisionFieldValue("1000"));
+
+        var reloaded = (await NewStore().GetAsync(draft.RevisionId))!;
+
+        reloaded.FieldBaseRecorded.Should().BeFalse("rows staged without a base keep publishing without a stale check");
+        reloaded.BaseVersion.Should().BeNull();
+    }
+
+    [SecurityMasterDatabaseFact]
     public async Task Transition_AdvancesLifecycleAndPersistsAcrossInstances()
     {
         var securityId = Guid.NewGuid();

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
@@ -14,6 +15,7 @@ public static partial class WorkstationEndpoints
 {
     private static void MapFinancialRecordExplorerEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        MapWorkstationTableViewEndpoints(group, jsonOptions);
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationFinancialRecordExplorer), async (
             string explorerId,
             [FromServices] FinancialRecordExplorerReadService service,
@@ -38,6 +40,24 @@ public static partial class WorkstationEndpoints
             }
 
             var query = BuildFinancialRecordExplorerQuery(context);
+            var personalViews = Array.Empty<FinancialRecordExplorerSavedViewDto>();
+            if (context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>() is { } viewStore &&
+                TryResolveCurrentUser(context, out var actor))
+            {
+                try
+                {
+                    personalViews = (await viewStore.LoadPersonalViewsAsync(tenantId, actor, explorerId, context.RequestAborted).ConfigureAwait(false))
+                        .Where(view => !view.IsReadOnly).Select(ToExplorerPersonalView).ToArray();
+                    var selected = personalViews.FirstOrDefault(view => view.ViewId == query?.ViewId);
+                    if (selected is not null)
+                        query = query! with
+                        {
+                            SearchText = context.Request.Query.ContainsKey("searchText") ? query.SearchText : selected.SearchText,
+                            Filters = query.Filters?.Count > 0 ? query.Filters : selected.Filters
+                        };
+                }
+                catch (NotSupportedException) { /* A legacy custom store remains readable; new personal writes return unavailable. */ }
+            }
             var explorer = await service
                 .GetExplorerAsync(
                     explorerId,
@@ -53,6 +73,15 @@ public static partial class WorkstationEndpoints
                     BuildReportAccessQueryContext(context),
                     context.RequestAborted)
                 .ConfigureAwait(false);
+            if (explorer is not null)
+            {
+                var views = explorer.SavedViews.Select(view => view with
+                {
+                    IsReadOnly = true,
+                    Origin = view.IsSystem ? "System view" : "Legacy tenant view — save a personal copy"
+                }).Concat(personalViews).Select(view => query?.ViewId == null ? view : view with { IsActive = view.ViewId == query.ViewId }).ToArray();
+                explorer = explorer with { SavedViews = views };
+            }
             return explorer is null
                 ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
                 : Results.Json(explorer, jsonOptions);
@@ -105,7 +134,6 @@ public static partial class WorkstationEndpoints
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationFinancialRecordExplorerSavedViews), async (
             string explorerId,
             FinancialRecordExplorerSavedViewSaveRequestDto request,
-            [FromServices] FinancialRecordExplorerReadService service,
             HttpContext context) =>
         {
             try
@@ -115,21 +143,42 @@ public static partial class WorkstationEndpoints
                     return Results.Unauthorized();
                 }
 
-                var savedView = await service.SaveViewAsync(explorerId, tenantId, request, context.RequestAborted).ConfigureAwait(false);
-                return savedView is null
-                    ? Results.NotFound(new { error = $"Unknown financial record explorer '{explorerId}'." })
-                    : Results.Json(savedView, jsonOptions);
+                if (!FinancialRecordExplorerReadService.IsKnownExplorerId(explorerId))
+                    return Results.NotFound();
+                if (!CanReadFinancialRecordExplorer(context, explorerId))
+                    return EndpointHelpers.Forbidden();
+                if (!TryResolveCurrentUser(context, out var actor))
+                    return Results.Unauthorized();
+                var store = context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>();
+                if (store is null)
+                    return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
+                if (request.Filters?.Any(filter => filter is null || string.IsNullOrWhiteSpace(filter.FilterId)) == true)
+                    return Results.BadRequest(new { error = "Saved-view filters require an identity." });
+                var filters = (request.Filters ?? []).GroupBy(filter => filter.FilterId)
+                    .ToDictionary(group => group.Key, group => group.Last().Value ?? string.Empty);
+                var saved = await store.SavePersonalViewAsync(tenantId, actor, explorerId,
+                    new WorkstationTableViewSaveRequest(request.Label, request.SearchText, request.ColumnIds?.Count > 0 ? request.ColumnIds : ["__all__"], "compact", Filters: filters)
+                    { Description = request.Description, ExplorerFilters = request.Filters ?? [] },
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(ToExplorerPersonalView(saved) with { Description = request.Description, Filters = request.Filters ?? [] }, jsonOptions);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
+            catch (NotSupportedException) { return Results.Problem("Personal view persistence is unavailable.", statusCode: 501); }
         })
         .WithName("SaveWorkstationFinancialRecordExplorerView").RequireAuthenticatedSession()
         .Produces<FinancialRecordExplorerSavedViewDto>(200)
         .Produces(400)
         .Produces(404);
     }
+
+    private static FinancialRecordExplorerSavedViewDto ToExplorerPersonalView(WorkstationTableViewDto view)
+        => new(view.ViewId, view.Label, view.Description ?? view.Origin ?? "My view", IsSystem: false, IsActive: false,
+            Filters: view.ExplorerFilters ?? (view.Filters ?? new Dictionary<string, string>()).Select(filter => new FinancialRecordExplorerFilterDto(filter.Key, filter.Key, filter.Value)).ToArray(),
+            SearchText: view.SearchText, ColumnIds: view.ColumnIds.Where(column => column != "__all__").ToArray())
+        { IsReadOnly = view.IsReadOnly, Origin = view.Origin };
 
     private static FinancialRecordExplorerQueryDto? BuildFinancialRecordExplorerQuery(HttpContext context)
     {

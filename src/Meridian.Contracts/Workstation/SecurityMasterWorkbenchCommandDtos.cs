@@ -148,7 +148,34 @@ public sealed record SecurityMasterPublishResultDto(
     long NewVersion,
     bool RestatementRequired,
     IReadOnlyList<RestatementCandidateDto> RestatementCandidates,
-    IReadOnlyList<string> InvalidatedProjections);
+    IReadOnlyList<string> InvalidatedProjections,
+    // What publication did to the canonical (golden) record; null when no handler reported it.
+    SecurityMasterCanonicalMergeOutcomeDto? CanonicalMerge = null);
+
+/// <summary>What publishing an approved revision did to the canonical (golden) record.</summary>
+public enum SecurityMasterCanonicalMergeOutcomeKind
+{
+    /// <summary>The revision changes no asset-specific term (an annotation path, or a clear).</summary>
+    NotApplicable,
+
+    /// <summary>The approved value stays an overlay annotation; the canonical terms are unchanged.</summary>
+    OverlayOnly,
+
+    /// <summary>The canonical terms already held the approved value; no amendment was appended.</summary>
+    AlreadyCanonical,
+
+    /// <summary>The approved value was merged into the canonical terms.</summary>
+    Merged
+}
+
+/// <summary>
+/// The canonical-merge outcome of a publish, with an operator-facing explanation and, when the
+/// canonical record was read or amended, its version.
+/// </summary>
+public sealed record SecurityMasterCanonicalMergeOutcomeDto(
+    SecurityMasterCanonicalMergeOutcomeKind Outcome,
+    string Detail,
+    long? CanonicalVersion);
 
 /// <summary>
 /// A report pack proposed for restatement because an upstream reference-data edit affected a

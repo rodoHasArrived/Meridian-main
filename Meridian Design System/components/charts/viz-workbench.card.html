@@ -1,0 +1,114 @@
+<!-- @dsCard group="Charts" viewport="1280x760" name="Analytical workbench" subtitle="Claim → trace → evidence inspector — the reading-path contract in one screen" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Analytical workbench</title>
+<link rel="stylesheet" href="../../styles.css" />
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>.spec-workbench{display:grid;grid-template-columns:minmax(0,1fr) var(--inspector-width);gap:16px;align-items:start;max-width:1240px}@media(max-width:900px){.spec-workbench{grid-template-columns:minmax(0,1fr)}}</style>
+</head>
+<body style="margin:0;padding:20px;background:var(--bg-canvas);font-family:var(--font-body);">
+<div id="root"></div>
+<script type="text/babel">
+const { ClaimHeader, TraceChart, IntervalBar, EvidenceInspector, EvidenceSection, ProvenanceTrace,
+  DataConditionLegend, ConnectionState, SegmentedControl, MetricCard, Drawer } = window.MeridianDesignSystem_205d17;
+
+const TENORS = ["1M","3M","6M","1Y","2Y","3Y","5Y","7Y","10Y","20Y","30Y"];
+const CURRENT  = [4.30,4.34,4.35,4.28,4.20,4.18,4.24,4.32,4.45,4.72,4.81];
+const PRIOR    = [4.36,4.38,4.36,4.26,4.09,4.05,4.11,4.20,4.34,4.63,4.74];
+const SCENARIO = [4.22,4.27,4.29,4.33,4.36,4.39,4.42,4.50,4.60,4.74,4.88];
+
+const CONTRACT = [
+  { label: "Price observation",     condition: "confirmed" },
+  { label: "Scenario result",       condition: "estimated" },
+  { label: "Reference attributes",  condition: "stale", state: "Stale 18m" },
+  { label: "Optional liquidity field", condition: "missing" },
+];
+const TRACE = [
+  { id: "feed",  label: "Refinitiv rates feed", meta: "Snapshot 11:29:42 UTC" },
+  { id: "clean", label: "Clean & normalize",    meta: "Holiday and outlier rules" },
+  { id: "curve", label: "Curve builder v14.7",  meta: "Bootstrapped par curve", state: "current" },
+  { id: "field", label: "10Y yield",            meta: "Derived field · 4.45%", state: "pending" },
+];
+
+function Demo() {
+  const [sel, setSel] = React.useState({ seriesId: "cur", index: 8 });
+  const [view, setView] = React.useState("all");
+  const [lineageOpen,setLineageOpen] = React.useState(false);
+  const series = [
+    { id: "cur",   label: "Current",        role: "actual",   values: CURRENT },
+    { id: "prior", label: "1M prior",       role: "prior",    values: PRIOR, hidden: view === "cur" },
+    { id: "scen",  label: "Bull steepener", role: "scenario", values: SCENARIO, hidden: view !== "all" },
+  ];
+  const v = CURRENT[sel.index];
+  return (
+    <React.Fragment>
+    <Drawer open={lineageOpen} onClose={()=>setLineageOpen(false)} title="Synthetic curve lineage" size="480px">
+      <p style={{color:"var(--text-secondary)",fontSize:12}}>Retained synthetic provenance for the curve shown in this specimen.</p>
+      <ProvenanceTrace steps={TRACE}/>
+    </Drawer>
+    <div className="spec-workbench">
+      <div style={{ display:"flex", flexDirection:"column", gap:12, minWidth:0 }}>
+        <ClaimHeader
+          context={["Rates","United States Treasury","14 May 2026"]}
+          claim="The belly steepened while the long end remained anchored."
+          note="Current versus one-month prior on a shared tenor scale. The scenario curve is model-derived and labelled as such."
+          states={[
+            { condition:"confirmed", label:"Prices live", detail:"42s" },
+            { condition:"stale", label:"Reference", detail:"18m" },
+            { condition:"estimated", label:"Scenario" },
+          ]}>
+          <SegmentedControl size="sm" value={view} onChange={setView}
+            options={[{value:"all",label:"All"},{value:"prior",label:"Vs 1M"},{value:"cur",label:"Current"}]} />
+        </ClaimHeader>
+        <div style={{ background:"var(--bg-light)", border:"1px solid var(--border)", borderRadius:2, padding:"12px 14px 6px" }}>
+          <TraceChart
+            description="US Treasury curve: current, one-month prior, and bull-steepener scenario by tenor."
+            categories={TENORS} series={series} height={300}
+            yUnit="Yield (%)" xUnit="Tenor" yFormat={(x) => x.toFixed(1) + "%"}
+            annotations={[{ type:"range", from:4, to:6, label:"2Y–5Y belly" },
+                          { type:"bracket", from:4, to:6, at:4.42, label:"Belly +11–13 bp vs 1M" }]}
+            selected={sel} onSelect={setSel} />
+          <div style={{ display:"flex", gap:10, borderTop:"1px solid var(--border-divider)", paddingTop:10, marginTop:4 }}>
+            <MetricCard label="10Y yield" value="4.45%" delta="+11 bp vs 1M" tone="neutral" />
+            <MetricCard label="2s10s" value="+25 bp" delta="+17 bp" tone="neutral" />
+            <MetricCard label="5s30s" value="+57 bp" delta="+6 bp" tone="neutral" />
+            <MetricCard label="Curve regime" value="Steepening" delta="Bull · model classification" />
+          </div>
+        </div>
+        <ConnectionState state="live" subject="Prices" age="42s" cadence="15s"
+          detail="Reference attributes stale 18m — last known good shown" />
+      </div>
+      <EvidenceInspector value={v.toFixed(2) + "%"} condition="confirmed"
+        caption={`Current · ${TENORS[sel.index]} · ${(v - PRIOR[sel.index] > 0 ? "+" : "") + ((v - PRIOR[sel.index]) * 100).toFixed(0)} bp vs 1M`}>
+        <EvidenceSection title="Evidence" fields={[
+          { label:"Source", value:"Refinitiv" },
+          { label:"Observed", value:"11:29:42 UTC" },
+          { label:"Field", value:"YLD_YTM_MID" },
+          { label:"Quality", value:"Confirmed · 98%" },
+        ]} />
+        <EvidenceSection title="Data-state contract">
+          <DataConditionLegend items={CONTRACT} />
+        </EvidenceSection>
+        <EvidenceSection title="10Y model range"
+          note="Intervals describe the scenario model, not observed market-data uncertainty.">
+          <IntervalBar domain={[3.95,5.05]} format={(x) => x.toFixed(2)}
+            rows={[{ label:"90%", lo:4.07, hi:4.91, mid:4.49, wide:true },
+                   { label:"50%", lo:4.29, hi:4.68, mid:4.49 },
+                   { label:"Mean", lo:4.49, hi:4.49, mid:4.49, text:"4.49%" }]} />
+        </EvidenceSection>
+        <EvidenceSection title="Provenance trace" action="Open lineage" onAction={() => setLineageOpen(true)}>
+          <ProvenanceTrace steps={TRACE} />
+        </EvidenceSection>
+      </EvidenceInspector>
+    </div>
+    </React.Fragment>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

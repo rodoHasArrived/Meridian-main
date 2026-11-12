@@ -37,7 +37,8 @@ public sealed partial class WorkstationEndpointsTests
                 decisions.Should().ContainSingle().Which.ReviewedBy.Should().Be("authenticated-reviewer");
                 decisions.Single().EvidenceHash.Should().Be(row.EvidenceHash);
             }
-            else decisions.Should().BeEmpty();
+            else
+                decisions.Should().BeEmpty();
             (await store.ListStagingRecordsAsync(row.SyncRunId)).Should().BeEmpty();
         }
         finally { DeleteProviderIntegrationTestRoot(testRoot); }

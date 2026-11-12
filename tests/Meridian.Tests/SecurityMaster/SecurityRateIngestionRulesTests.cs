@@ -59,7 +59,7 @@ public sealed class SecurityRateIngestionRulesTests
             ingest.Should().Throw<ArgumentException>();
         }
         Action implicitForecast = () => SecurityRateIngestionRules.BuildPublication(Request(observation) with
-            { ConstructionMethod = SecurityRateConstructionMethod.DirectForwardRates }, Definition(), "operator");
+        { ConstructionMethod = SecurityRateConstructionMethod.DirectForwardRates }, Definition(), "operator");
         implicitForecast.Should().Throw<ArgumentException>();
     }
 

@@ -20,9 +20,11 @@ describe("bond holding import value preview", () => {
   it("shows provider, normalized and variance together and exposes exact convention evidence", async () => {
     const user = userEvent.setup();
     const { container } = render(<BondImportValuePreview mappedRecords={[mappedRecord]} />);
+    expect(screen.getByRole("table", { name: "Bond holding provider value and normalized consideration" })).toBeInTheDocument();
     const row = screen.getByRole("row", { name: /9128285M8/ });
+    expect(within(row).getByRole("rowheader", { name: /9128285M8 Clean · USD/ })).toBeInTheDocument();
     expect(within(row).getAllByText("98,500")).toHaveLength(3);
-    expect(within(row).getByText("0", { selector: "td" })).toBeInTheDocument();
+    expect(within(row).getByRole("cell", { name: "0" })).toBeInTheDocument();
     await user.click(screen.getByText("Review conventions"));
     expect(screen.getByText("120.123456789012345678901234")).toBeVisible();
     expect(screen.getByText("98,620.123456789012345678901234")).toBeVisible();
@@ -36,7 +38,7 @@ describe("bond holding import value preview", () => {
         variance: null, status: "Blocked", explanation: "Review conventions: bond.currentFactor." }
     } }]} />);
     const row = screen.getByRole("row", { name: /9128285M8/ });
-    expect(within(row).getAllByText("Unavailable", { selector: "td" })).toHaveLength(2);
+    expect(within(row).getAllByRole("cell", { name: "Unavailable" })).toHaveLength(2);
     expect(within(row).getByText("Blocked")).toBeInTheDocument();
   });
 

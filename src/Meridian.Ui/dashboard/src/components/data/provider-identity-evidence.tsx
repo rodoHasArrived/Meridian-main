@@ -57,7 +57,7 @@ function IdentityEvidenceRow({ connectionId, row, onResolved }: {
     <p className="font-mono">{row.stagingRecordId} · {row.securityStatus}</p>
     {row.hasIdentifierConflict ? <p className="mt-1 text-warning">Supplied identifiers match different securities. Review the source conflict.</p> : null}
     <div className="mt-2 overflow-x-auto">
-      <table className="w-full text-left text-[11px]">
+      <table className="w-full text-left text-xs">
         <caption className="sr-only">Identifier matching evidence for {row.stagingRecordId}</caption>
         <thead><tr><th scope="col" className="pr-3">Identifier</th><th scope="col" className="pr-3">Provider</th><th scope="col" className="pr-3">Match</th><th scope="col">Status</th></tr></thead>
         <tbody>{row.securityCandidates.map((candidate) => <tr key={`${candidate.identifierKind}:${candidate.provider ?? ""}:${candidate.identifierValue}`}>

@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * AR / AP aging schedule — one row per counterparty with amounts spread across ascending
  * age buckets and a row total; the footer totals every bucket and shows each bucket's share
@@ -27,4 +28,4 @@ export interface AgingTableProps {
   /** Highlight one row. */
   selectedIndex?: number;
 }
-export declare function AgingTable(props: AgingTableProps): JSX.Element;
+export declare function AgingTable(props: AgingTableProps): React.JSX.Element;

@@ -22,7 +22,7 @@ public sealed class PostgresSecurityMasterPricingHistoryTests(SecurityMasterData
         var quote = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Dirty,
             SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Ask, new(2026, 6, 2), "T+1");
         var request = new RecordRawPriceRequest(securityId, "dealer", 99.12345678901234567890123456m, date, "operator", SecurityPriceUnit.PercentOfPar)
-            { Quotation = quote };
+        { Quotation = quote };
         await store.RecordRawPriceAsync(request);
         await store.RecordRawPriceAsync(request);
         var restored = (await store.GetRawPricesAsync(securityId, date)).Single();

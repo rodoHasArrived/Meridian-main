@@ -112,7 +112,11 @@ public sealed record PortfolioCashLadderDto(
     int SecuritiesEvaluated,
     int SecuritiesWithFlows,
     bool IsDecisionReady,
-    IReadOnlyList<string> BlockingReasons);
+    IReadOnlyList<string> BlockingReasons)
+{
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto? Blocker { get; init; }
+}
 
 /// <summary>Query parameters for the portfolio cash ladder read model.</summary>
 /// <remarks>

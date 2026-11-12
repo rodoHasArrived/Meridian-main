@@ -28,8 +28,10 @@ public sealed class QuotedPriceValuationModelTests
         var bond = ValuationTestSecurities.Bond();
         var selection = new SecurityPriceGoldenCopyDto(bond.SecurityId, 101.4m, SecurityPriceKind.MarketGoldenCopy,
             "provider", PriceAsOf, false, 1, [], SecurityPriceUnit.PercentOfPar)
-        { Quotation = new(SecurityPriceBasis.Dirty, SecurityQuotationConvention.Per100Face,
-            SecurityQuoteStatus.Evaluated, DateOnly.FromDateTime(ValuationTestSecurities.AsOf.UtcDateTime), "T+1") };
+        {
+            Quotation = new(SecurityPriceBasis.Dirty, SecurityQuotationConvention.Per100Face,
+            SecurityQuoteStatus.Evaluated, DateOnly.FromDateTime(ValuationTestSecurities.AsOf.UtcDateTime), "T+1")
+        };
         var result = await new QuotedPriceValuationModel(Pricing(bond, selection)).ValueAsync(
             new SecurityValuationRequest(bond.SecurityId, ValuationTestSecurities.AsOf, Quantity: 100_000m), bond, CancellationToken.None);
         result.IsBlocked.Should().BeTrue();

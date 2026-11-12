@@ -35,16 +35,23 @@ internal static class ProviderIntegrationBondValueNormalization
         var interestCurrency = Text(record, "bond.accruedInterest.currency");
         var priceCurrency = Text(record, "price.currency");
         var missing = new List<string>();
-        if (face is null) missing.Add("bond.originalFace");
-        if (factor is null || factor < 0) missing.Add("bond.currentFactor (non-negative)");
-        if (quote is null || quote < 0) missing.Add("price.amount (non-negative)");
-        if (providerValue is null) missing.Add("marketValue.amount");
-        if (interest is null) missing.Add("bond.accruedInterest.amount (explicit zero if none)");
+        if (face is null)
+            missing.Add("bond.originalFace");
+        if (factor is null || factor < 0)
+            missing.Add("bond.currentFactor (non-negative)");
+        if (quote is null || quote < 0)
+            missing.Add("price.amount (non-negative)");
+        if (providerValue is null)
+            missing.Add("marketValue.amount");
+        if (interest is null)
+            missing.Add("bond.accruedInterest.amount (explicit zero if none)");
         if (!string.Equals(quotation, "Per100", StringComparison.OrdinalIgnoreCase) &&
             !string.Equals(quotation, "PercentOfPar", StringComparison.OrdinalIgnoreCase))
             missing.Add("bond.quotationConvention (Per100)");
-        if (!IsBasis(priceBasis)) missing.Add("bond.priceBasis (Clean or Dirty)");
-        if (!IsBasis(valueBasis)) missing.Add("bond.marketValueBasis (Clean or Dirty)");
+        if (!IsBasis(priceBasis))
+            missing.Add("bond.priceBasis (Clean or Dirty)");
+        if (!IsBasis(valueBasis))
+            missing.Add("bond.marketValueBasis (Clean or Dirty)");
         if (currency is null || interestCurrency is null ||
             !string.Equals(currency, interestCurrency, StringComparison.OrdinalIgnoreCase) ||
             (priceCurrency is not null && !string.Equals(currency, priceCurrency, StringComparison.OrdinalIgnoreCase)))
@@ -133,8 +140,10 @@ internal static class ProviderIntegrationBondValueNormalization
         => Node(root, path) is JsonValue value && value.TryGetValue<string>(out var text) && !string.IsNullOrWhiteSpace(text) ? text.Trim() : null;
     private static decimal? Number(JsonObject root, string path)
     {
-        if (Node(root, path) is not JsonValue value) return null;
-        if (value.TryGetValue<decimal>(out var amount)) return amount;
+        if (Node(root, path) is not JsonValue value)
+            return null;
+        if (value.TryGetValue<decimal>(out var amount))
+            return amount;
         return value.TryGetValue<string>(out var text) && decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out amount) ? amount : null;
     }
 }

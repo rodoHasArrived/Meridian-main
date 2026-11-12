@@ -18,7 +18,7 @@ class SummarizeDesktopWorkflowBundleTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             bundle_path = root / "bundle"
             bundle_path.mkdir(parents=True, exist_ok=True)

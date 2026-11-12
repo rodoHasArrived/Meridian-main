@@ -1,6 +1,6 @@
 // Meridian Toolbar — the standard band above a data surface: search/filters at the start,
-// actions at the end. One consistent surface (mirrors the FilteredDataTable toolbar
-// treatment) instead of per-screen hand-rolled bands.
+// actions at the end. One consistent surface — the sanctioned filter chrome above a
+// DataGrid — instead of per-screen hand-rolled bands.
 import React from "react";
 
 let injected = false;
@@ -9,10 +9,10 @@ function inject() {
   injected = true;
   const css = `
 .mds-toolbar{display:flex;align-items:center;gap:12px;padding:8px 12px;flex-wrap:wrap;
-  background:var(--bg-medium,#EDEAE4);border:1px solid var(--border,#E4E3DE);}
+  background:var(--bg-medium,#EBE8E1);border:1px solid var(--border,#D2CDC3);}
 .mds-toolbar__group{display:flex;align-items:center;gap:8px;min-width:0;}
 .mds-toolbar__spacer{flex:1;}
-.mds-toolbar__divider{width:1px;align-self:stretch;margin:2px 0;background:var(--border-divider,#DAD8D3);}
+.mds-toolbar__divider{width:1px;align-self:stretch;margin:2px 0;background:var(--border-divider,#E2DED5);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "toolbar");

@@ -76,7 +76,8 @@ public sealed class ProviderInstrumentCapabilityMatrixServiceTests
         finally
         {
             var directory = Path.GetDirectoryName(path)!;
-            if (Directory.Exists(directory)) Directory.Delete(directory, recursive: true);
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
         }
     }
 
