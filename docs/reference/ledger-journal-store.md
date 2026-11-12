@@ -88,6 +88,77 @@ The write path rejects unbalanced journal entries before opening a connection. P
 bounded single-row reads and updates; the store does not buffer beyond the requested result set for
 period or aggregate journal reads.
 
+## Recovery, reconciliation, and journal access
+
+PostgreSQL remains the authoritative posted journal. Paper fill handoffs and financing assessments
+use durable source outboxes with the existing WAL and atomic snapshots; they are independently
+replayable source evidence, not additional accounting books. Financing assessments have their own
+source identity, exact book/period scope and changed-content refusal. Session recovery confirms
+pending assessments before exposing rebuilt cash and journals. An unresolved assessment blocks
+further fills, settlements and close. Account-level charges have no inferred strategy allocation.
+
+`POST /api/portfolio/import-runs` retains an immutable broker snapshot before subscription effects
+and optionally prepares one opening-balance draft. Reusing the run ID resumes its checkpoints;
+different content under that ID is refused. Opening balances require complete cash, quantity,
+currency and cost evidence. The supported opening slice is unit-priced equities in one currency;
+derivative multipliers and missing tax-lot history are not inferred. Review, approval and posting
+remain ordinary journal-workbench actions. The atomic posting boundary rechecks the opening
+cutoff and rejects overlapping originating activity. The cutoff is a calendar date: same-day
+post-snapshot trading requires a future timestamp-cutover treatment.
+
+`Ledger:DailyReconciliation` configures `UtcHour`, `RetryMinutes` and explicit `Targets` containing
+tenant, company, fund and account identities. With no targets the worker is idle. Each daily run
+reauthorizes retained ownership, uses a stable operation ID across restart, and compares through
+the existing persistent break queue. It never resolves or signs off a break. Posted cash and
+canonical lot quantities/costs are separate comparison evidence; missing or unsupported lot
+history blocks a claim of reconciliation rather than becoming a zero position.
+
+Run journal queries are available under `/api/workstation/runs/{runId}/ledger`: `entries`,
+`accounts`, `trial-balance/as-of`, `running-balance` and `symbols/{symbol}`. Paper/live reads can
+rebuild from authorized posted journals carrying the exact `strategy.runId`, strategy and account
+provenance. An unspecified book selects only a unique primary book; parallel accounting bases
+are never added together. Existing WPF run-ledger views consume the shared summary.
+
+`POST /api/workstation/runs/{runId}/ledger/export` and
+`POST /api/ledger/periods/{periodId}/journal-export` produce CSV or Parquet journal lines.
+Requests select the format and may supply a complete account-name mapping. Missing mappings
+refuse export. Original accounts, IDs, metadata, dimensions and currency envelopes remain in the
+output; external mapping does not modify the source journal. Monetary columns use invariant
+decimal text in both formats to preserve precision. JSON audit envelopes use generated contexts.
+The MCP ledger tools use these authenticated, scoped read APIs.
+
+The read-only completeness control at
+`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/completeness` compares independent,
+explicitly selected source populations with their required journal purposes. A fill can require
+both a trade and a commission receipt. Missing, duplicate, unlinked and wrong-scope journals are
+reported separately. Unsupported source versions or absent ownership bindings leave coverage
+incomplete; an empty journal never proves an empty source population.
+
+## Close snapshots and subsequent corrections
+
+Migration `V_ledger_055__period_close_snapshots.sql` adds immutable close snapshots. Hard close
+captures the ordered posted journal population and content hash in the same transaction as the
+period transition. History fences, the accounting audit chain and temporary-account balance
+checks remain in force. Retrieval verifies the stored hash and declared scope; reopened periods
+retain their earlier close versions. `GET /api/ledger/periods/{periodId}/close-snapshot` exposes
+the authorized snapshot without changing period state.
+
+`POST /api/ledger/period-adjustments/prepare` prepares a source-linked inverse in an explicitly
+selected current open period, preserving the closed source journal. Native-currency period-end
+marks can opt into next-period reversal preparation; the default carrying-value-delta policy
+remains available. `/api/ledger/period-adjustments/schedule-mark-reversal` retains the exact
+source/target policy before its due date and uses the existing automated-journal scheduler to
+prepare the draft. A prepared or scheduled draft grants no approval or posting authority.
+Foreign-currency correction preparation and automatic rerouting of an unposted late fill are
+outside this treatment and fail closed; they must not silently lose FX or source evidence.
+
+Declared journal lines must share one functional currency and match the retained book currency.
+A fully declared single-transaction-currency journal must also balance its original amounts.
+Legitimate FX exchange journals retain their differing original currencies and recorded rates;
+unlike nominal amounts never satisfy the functional balance check. Legacy currency-blind history
+retains its explicit compatibility path and governed backfill workflow. Lending now supplies
+explicit currency envelopes through the shared journal boundary.
+
 Basis-aware postings are still policy-engine evidence, not certified GAAP, tax, cash, or statutory
 reporting. Operator-facing reports should describe balances as "basis per configured policy" until
 reviewed by a qualified accountant.

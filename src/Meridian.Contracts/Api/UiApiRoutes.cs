@@ -896,6 +896,13 @@ public static class UiApiRoutes
     public const string RunsReviewPacket = "/api/workstation/runs/{runId}/review-packet";
     public const string RunsLedgerTrialBalance = "/api/workstation/runs/{runId}/ledger/trial-balance";
     public const string RunsLedgerJournal = "/api/workstation/runs/{runId}/ledger/journal";
+    public const string RunsLedgerEntries = "/api/workstation/runs/{runId}/ledger/entries";
+    public const string RunsLedgerAccounts = "/api/workstation/runs/{runId}/ledger/accounts";
+    public const string RunsLedgerTrialBalanceAsOf = "/api/workstation/runs/{runId}/ledger/trial-balance/as-of";
+    public const string RunsLedgerRunningBalance = "/api/workstation/runs/{runId}/ledger/running-balance";
+    public const string RunsLedgerSymbol = "/api/workstation/runs/{runId}/ledger/symbols/{symbol}";
+    public const string RunsLedgerExport = "/api/workstation/runs/{runId}/ledger/export";
+    public const string LedgerPeriodJournalExport = "/api/ledger/periods/{periodId:guid}/journal-export";
     public const string LedgerBooks = "/api/ledger/books";
     public const string LedgerBookRolloutAssessment = "/api/ledger/books/rollout-assessment";
     public const string LedgerBookById = "/api/ledger/books/{ledgerBookId:guid}";

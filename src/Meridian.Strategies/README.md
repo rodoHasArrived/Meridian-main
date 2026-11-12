@@ -11,6 +11,10 @@ last_reviewed: 2026-08-03
 
 # src/Meridian.Strategies
 
+Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
+posted journals with the exact retained run identity. The source authorizes the financial account
+and book independently; terminal metrics are not required. Backtests retain their recorded books.
+
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
 
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
@@ -219,6 +223,10 @@ allowing paper-to-live promotion to evaluate the newly retained out-of-sample ev
 organization, customer, vendor, project, and `externalGl.*` run-parameter filters so workstation
 ledger drill-throughs stay aligned with accounting dimensions instead of a strategy-only scope
 vocabulary.
+`StrategyRunReadService.GetLedgerSnapshotAsync` applies that run's tenant/company visibility before
+replaying an isolated journal snapshot, optionally bounded by an as-of timestamp. The full journal,
+account and running-balance endpoints consume that same retained accounting source; a missing
+ledger remains unavailable instead of becoming an empty success.
 Promotion requires an explicitly successful completed lifecycle; an end timestamp and qualifying
 metrics on a failed or cancelled attempt never establish eligibility. `PromotionReadiness.isTerminal`
 continues to classify terminal lifecycle states independently of eligibility.

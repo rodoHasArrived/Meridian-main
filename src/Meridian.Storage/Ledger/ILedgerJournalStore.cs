@@ -140,6 +140,14 @@ public interface ILedgerJournalStore
 /// </summary>
 public interface IAtomicLedgerPeriodCloseStore
 {
+    /// <summary>Returns the immutable latest or selected close version, scoped like period reads.</summary>
+    Task<LedgerPeriodCloseSnapshot?> GetCloseSnapshotAsync(
+        Guid periodId,
+        long? periodVersion = null,
+        CancellationToken ct = default)
+        => Task.FromException<LedgerPeriodCloseSnapshot?>(
+            new NotSupportedException("This ledger store does not retain close snapshots."));
+
     /// <summary>
     /// Hard-closes a retained period only after rechecking revenue and expense balances while
     /// holding the same exclusion boundary used by journal appends. The balance guard, period

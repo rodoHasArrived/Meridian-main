@@ -11,6 +11,11 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Contracts
 
+`PriorPeriodAdjustmentSourceDto` binds a newly prepared correction to its retained source journal,
+closed period, original effective date, explicitly selected open target period, operator reason,
+intent identity and expected inverse lines. Workbench saves retain this server-produced authority;
+it does not reopen or modify the source period or grant approval/posting authority.
+
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
 absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`

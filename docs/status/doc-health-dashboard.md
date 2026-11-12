@@ -19,9 +19,9 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 961 |
-| Orphaned files | 398 |
-| Files without headings | 233 |
+| Total documentation files | 962 |
+| Orphaned files | 399 |
+| Files without headings | 234 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 330 |
 | **Health score** | **79/100** |
@@ -46,6 +46,7 @@ write them to an untracked path. CI writes `artifacts/docs/doc-health-line-metri
 
 These files lack a Markdown heading, making them harder to navigate:
 
+- `.ai/ledger-accounting-controls.md`
 - `Meridian Design System/SKILL.md`
 - `Meridian Design System/components/accounting/AccountTree.prompt.md`
 - `Meridian Design System/components/accounting/AccountingPeriodSelector.prompt.md`
@@ -60,8 +61,7 @@ These files lack a Markdown heading, making them harder to navigate:
 - `Meridian Design System/components/accounting/CommitmentBar.prompt.md`
 - `Meridian Design System/components/accounting/FxRevaluationTable.prompt.md`
 - `Meridian Design System/components/accounting/IncomeSchedule.prompt.md`
-- `Meridian Design System/components/accounting/JournalEntryForm.prompt.md`
-- ... and 218 more
+- ... and 219 more
 
 ### Orphaned Documentation
 
@@ -87,7 +87,7 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
 - `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
 - `.agents/skills/meridian-simulated-user-panel/references/personas.md`
-- ... and 378 more
+- ... and 379 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 79 | 961 | 398 | 0 |
+| 1970-01-01 | 79 | 962 | 399 | 0 |
 
 ---
 

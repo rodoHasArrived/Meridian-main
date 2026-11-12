@@ -124,6 +124,14 @@ internal sealed class LiveRunMetricsTracker
         DateTimeOffset endedAt)
     {
         var netPnl = finalEquity - _initialEquity;
+        var marginInterest = ledger.Journal
+            // Financing assessments carry an effective trading date (UTC midnight), so a
+            // same-day charge belongs to a run that starts later that trading day.
+            .Where(entry => entry.Timestamp >= new DateTimeOffset(_startedAt.UtcDateTime.Date, TimeSpan.Zero)
+                && entry.Timestamp <= endedAt)
+            .SelectMany(static entry => entry.Lines)
+            .Where(static line => line.Account.Name == LedgerAccounts.MarginInterestExpense.Name)
+            .Sum(static line => line.Debit - line.Credit);
         var totalReturn = _initialEquity > 0m ? netPnl / _initialEquity : 0m;
         var elapsed = endedAt - _startedAt;
         // Same formulas as BacktestMetricsEngine (risk-free rate zero), so live and backtest runs
@@ -153,7 +161,7 @@ internal sealed class LiveRunMetricsTracker
         var metrics = new BacktestMetrics(
             InitialCapital: _initialEquity,
             FinalEquity: finalEquity,
-            GrossPnl: netPnl + _totalCommissions,
+            GrossPnl: netPnl + _totalCommissions + marginInterest,
             NetPnl: netPnl,
             TotalReturn: totalReturn,
             AnnualizedReturn: annualizedReturn,
@@ -169,7 +177,7 @@ internal sealed class LiveRunMetricsTracker
             WinningTrades: 0,
             LosingTrades: 0,
             TotalCommissions: _totalCommissions,
-            TotalMarginInterest: 0m,
+            TotalMarginInterest: marginInterest,
             TotalShortRebates: 0m,
             Xirr: double.NaN,
             SymbolAttribution: new Dictionary<string, SymbolAttribution>(StringComparer.OrdinalIgnoreCase));

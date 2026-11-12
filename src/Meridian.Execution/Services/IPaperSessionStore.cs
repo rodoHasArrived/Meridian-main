@@ -4,6 +4,7 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
+using Meridian.Execution.Events;
 
 namespace Meridian.Execution.Services;
 
@@ -24,7 +25,9 @@ public sealed record PersistedSessionRecord(
     bool IsActive,
     List<string> Symbols,
     string? MatchingModelVersion = null,
-    string? CostModelVersion = null);
+    string? CostModelVersion = null,
+    TradeFillLedgerPostingContext? AccountingContext = null,
+    string? FinancialAccountId = null);
 
 /// <summary>
 /// Lightweight serialisation DTO for a <see cref="Meridian.Ledger.LedgerAccount"/>.

@@ -26,15 +26,19 @@ public sealed class LedgerReadService
     public LedgerSummary? BuildSummary(StrategyRunEntry entry)
         => BuildBaseSummary(entry);
 
-    public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+    public Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default)
+        => BuildSummaryAsync(entry, ct, postedLedger: null);
+
+    public async Task<LedgerSummary?> BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct,
+        IReadOnlyLedger? postedLedger)
     {
-        var summary = BuildBaseSummary(entry);
+        var summary = BuildBaseSummary(entry, postedLedger);
         if (summary is null || _securityReferenceLookup is null || summary.TrialBalance.Count == 0)
         {
             return summary;
         }
 
-        var requests = BuildLookupRequests(entry, summary.TrialBalance);
+        var requests = BuildLookupRequests(entry, summary.TrialBalance, postedLedger);
         var lookup = await ResolveSecuritiesAsync(requests, ct).ConfigureAwait(false);
 
         var trialBalance = summary.TrialBalance
@@ -75,11 +79,11 @@ public sealed class LedgerReadService
         ];
     }
 
-    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry)
+    private static LedgerSummary? BuildBaseSummary(StrategyRunEntry entry, IReadOnlyLedger? postedLedger = null)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
-        var ledger = entry.Metrics?.Ledger;
+        var ledger = postedLedger ?? entry.Metrics?.Ledger;
         if (ledger is null)
         {
             return null;
@@ -181,9 +185,10 @@ public sealed class LedgerReadService
 
     private static IReadOnlyDictionary<string, SecurityReferenceLookupRequest> BuildLookupRequests(
         StrategyRunEntry entry,
-        IReadOnlyList<LedgerTrialBalanceLine> trialBalance)
+        IReadOnlyList<LedgerTrialBalanceLine> trialBalance,
+        IReadOnlyLedger? postedLedger = null)
     {
-        var metadataByKey = entry.Metrics?.Ledger?.Journal
+        var metadataByKey = (postedLedger ?? entry.Metrics?.Ledger)?.Journal
             .Where(static item => !string.IsNullOrWhiteSpace(item.Metadata.Symbol))
             .GroupBy(
                 static item => ComposeLineKey(item.Metadata.Symbol!, item.Metadata.FinancialAccountId),

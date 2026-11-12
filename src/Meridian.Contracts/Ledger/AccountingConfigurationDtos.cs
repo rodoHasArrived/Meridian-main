@@ -815,6 +815,10 @@ public sealed record ManualJournalEntryDraftDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? ConsolidationEvidenceDigest = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] bool RequiresConsolidationEvidence = false)
 {
+    /// <summary>Immutable source and target for an independently approved current-period correction.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public PriorPeriodAdjustmentSourceDto? PriorPeriodAdjustmentSource { get; init; }
+
     /// <summary>Server-retained approved commitment/call binding; clients cannot replace it.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PrivateCapitalAuthorityJson { get; init; }

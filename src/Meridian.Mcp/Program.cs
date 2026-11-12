@@ -10,6 +10,8 @@ builder.Logging.SetMinimumLevel(LogLevel.Warning);
 builder.Logging.AddConsole(o => o.LogToStandardErrorThreshold = LogLevel.Trace);
 
 builder.Services.AddSingleton<RepoPathService>();
+builder.Services.AddSingleton(_ => LedgerApiClient.CreateHttpClient());
+builder.Services.AddSingleton<LedgerApiClient>();
 
 builder.Services
     .AddMcpServer()

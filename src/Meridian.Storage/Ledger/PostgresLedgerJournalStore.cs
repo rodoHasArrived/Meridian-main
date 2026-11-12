@@ -186,6 +186,7 @@ public sealed partial class PostgresLedgerJournalStore :
             LedgerPeriodPostingGuard.Validate(entry, period);
         await ValidateJournalBasisAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        await ValidateOpeningCutoverAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await ValidateCurrentConsolidationSourcesAsync(connection, transaction, entry, ct).ConfigureAwait(false);
         await ValidateAndRecordCapitalPostingAsync(connection, transaction, entry, period, ct).ConfigureAwait(false);
         await InsertJournalEntryAsync(connection, transaction, entry, ct).ConfigureAwait(false);
@@ -559,7 +560,33 @@ public sealed partial class PostgresLedgerJournalStore :
                 ct: ct)
             .ConfigureAwait(false);
 
+        if (requireClosedTemporaryAccounts)
+        {
+            if (current is not null)
+                await LockCloseSnapshotHistoryAsync(connection, transaction, current, ct).ConfigureAwait(false);
+        }
+
         var auditHead = await LockAndVerifyLedgerAuditAsync(connection, transaction, ct).ConfigureAwait(false);
+        if (requireClosedTemporaryAccounts)
+        {
+            if (current is { Status: "HardClosed" } && current.Version == expectedVersion + 1 && closeEvent is not null)
+            {
+                var retained = await LoadCloseSnapshotAsync(connection, transaction, period.PeriodId, current.Version, ct).ConfigureAwait(false);
+                if (retained is not null)
+                {
+                    var payload = retained.VerifyIntegrity();
+                    var replayEvent = closeEvent with { RecordedAt = LedgerPeriodCloseSnapshot.DatabaseTimestamp(closeEvent.RecordedAt) };
+                    if (payload.CloseEvent == replayEvent && payload.Period == (period with
+                    {
+                        Version = current.Version,
+                        OpenedAt = LedgerPeriodCloseSnapshot.DatabaseTimestamp(period.OpenedAt),
+                        ClosedAt = period.ClosedAt is { } closed ? LedgerPeriodCloseSnapshot.DatabaseTimestamp(closed) : null
+                    }))
+                        return current;
+                }
+            }
+        }
+
         LedgerAccountingPeriod saved;
         if (current is null)
         {
@@ -608,6 +635,9 @@ public sealed partial class PostgresLedgerJournalStore :
         {
             await InsertCloseEventAsync(connection, transaction, closeEvent, saved.Version, ct).ConfigureAwait(false);
         }
+
+        if (requireClosedTemporaryAccounts && closeEvent is not null)
+            await SaveCloseSnapshotAsync(connection, transaction, saved, closeEvent, ct).ConfigureAwait(false);
 
         await AppendLedgerAuditAsync(connection, transaction, auditHead, "period", saved.PeriodId, saved.Version,
             current is null ? "PeriodCreated" : saved.Status == "Open" && current.Status != "Open" ? "PeriodReopened"

@@ -5,6 +5,7 @@ using Meridian.Execution.Interfaces;
 using Meridian.Execution.Margin;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
+using Meridian.Execution.Events;
 using Meridian.Ledger;
 
 namespace Meridian.Execution.Services;
@@ -20,6 +21,7 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
     public const string DefaultAccountId = "default";
 
     private readonly Meridian.Ledger.Ledger? _ledger;
+    private readonly Dictionary<Guid, PaperFinancingCharge> _financingCharges = [];
     private readonly ILivePositionCorporateActionAdjuster? _corporateActionAdjuster;
     private readonly PositionLotSelectionMethod _lotSelectionMethod;
 
@@ -474,6 +476,36 @@ public sealed class PaperTradingPortfolio : IMultiAccountPortfolioState
                     (LedgerAccounts.Cash, 0m, accountInterest),
                 ]);
             }
+        }
+    }
+
+    /// <summary>Applies a retained cash-paid assessment once. The durable session owner
+    /// persists and posts the source before calling this rebuildable projection.</summary>
+    public bool ApplyFinancingCharge(PaperFinancingCharge charge)
+    {
+        charge.Validate();
+        lock (_lock)
+        {
+            if (_financingCharges.TryGetValue(charge.SourceEventId, out var retained))
+                return retained == charge ? false : throw new InvalidDataException("Financing identity has conflicting content.");
+            if (!_accounts.TryGetValue(charge.AccountId, out var account))
+                throw new InvalidDataException($"Financing account '{charge.AccountId}' is not present in the paper portfolio.");
+            var nextCash = checked(account.Cash - charge.Amount);
+            var scopedId = charge.AccountId == DefaultAccountId ? null : charge.AccountId;
+            var journalId = PaperFinancingCharge.Identity("projection-journal", charge.SourceEventId.ToString("D"));
+            var description = $"Cash-paid margin interest: {charge.SourceReference}";
+            var expense = scopedId is null ? LedgerAccounts.MarginInterestExpense : LedgerAccounts.MarginInterestExpenseFor(scopedId);
+            _ledger?.Post(new JournalEntry(journalId, charge.OccurredAt, description,
+            [
+                new(PaperFinancingCharge.Identity("debit", journalId.ToString("D")), journalId,
+                    charge.OccurredAt, expense, charge.Amount, 0m, description),
+                new(PaperFinancingCharge.Identity("credit", journalId.ToString("D")), journalId,
+                    charge.OccurredAt, LedgerAccounts.CashFor(scopedId), 0m, charge.Amount, description)
+            ], new JournalEntryMetadata(ActivityType: "margin-interest", FinancialAccountId: scopedId,
+                EffectiveDate: charge.AccrualDate, IdempotencyKey: $"paper-financing:{charge.SourceEventId:D}")));
+            account.Cash = nextCash;
+            _financingCharges.Add(charge.SourceEventId, charge);
+            return true;
         }
     }
 

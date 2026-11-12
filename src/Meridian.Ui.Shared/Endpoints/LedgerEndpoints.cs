@@ -32,6 +32,7 @@ public static partial class LedgerEndpoints
         MapAccountOversightEndpoints(app, jsonOptions);
         MapPrivateCapitalEndpoints(app, jsonOptions);
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
+        MapCloseSnapshotEndpoints(app);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
@@ -324,6 +325,8 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented);
 
         MapAccountRunningBalanceEndpoint(app, jsonOptions);
+        MapLedgerJournalExportEndpoints(app);
+        MapLedgerCompletenessEndpoints(app);
 
         app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
             Guid aggregateId,

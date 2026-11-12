@@ -291,6 +291,7 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<ISecurityMasterOperationalReadinessService, SecurityMasterOperationalReadinessService>();
         services.TryAddSingleton<IMultiAssetCoverageReadService, MultiAssetCoverageReadService>();
         services.TryAddSingleton<LedgerReadService>();
+        services.TryAddSingleton<IStrategyRunLedgerSource, PostedStrategyRunLedgerSource>();
         services.TryAddSingleton<StrategyRunReadService>();
         services.TryAddSingleton<StrategyRunComparisonService>();
         services.TryAddSingleton<AuditTrailExplorerService>();
@@ -405,6 +406,13 @@ public static class WorkstationServiceCollectionExtensions
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", gatewayPath, "broker-orders.json"), gatewayId);
         });
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        services.TryAddSingleton(sp =>
+        {
+            var daily = new ProviderLedgerDailyReconciliationOptions();
+            configuration.HostConfiguration?.GetSection("Ledger:DailyReconciliation").Bind(daily);
+            return daily;
+        });
+        services.AddHostedService<ProviderLedgerDailyReconciliationWorker>();
         services.TryAddSingleton(sp => new MarginCertificationStore(ResolveWorkstationDataDirectory(sp)));
         services.TryAddSingleton<MarginControlCenterReadService>();
         // Reconcile statement runs against Meridian's own retained account records (positions + cash +
@@ -1124,6 +1132,17 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryLifecycleService>(sp =>
             (IManualJournalEntryLifecycleService)sp.GetRequiredService<IManualJournalEntryWorkbenchService>());
         services.TryAddSingleton<DailyValuationBatchLifecycleService>();
+        services.TryAddSingleton<Meridian.Application.Subscriptions.Services.WatchlistService>();
+        services.TryAddSingleton<Meridian.Application.Subscriptions.Services.PortfolioImportService>();
+        services.TryAddSingleton<Meridian.Application.Subscriptions.Services.PortfolioImportRunService>(sp =>
+            new Meridian.Application.Subscriptions.Services.PortfolioImportRunService(
+                sp.GetRequiredService<Meridian.Application.UI.ConfigStore>(),
+                sp.GetRequiredService<Meridian.Application.Subscriptions.Services.PortfolioImportService>(),
+                sp.GetRequiredService<Meridian.Application.Subscriptions.Services.WatchlistService>(),
+                sp.GetService<ILedgerJournalStore>() is { } importStore
+                    ? new PortfolioOpeningBalanceQueue(sp.GetRequiredService<AutomatedJournalDraftIntakeService>(),
+                        sp.GetRequiredService<ConfigStore>(), importStore, sp.GetService<ContractSecurityMasterQueryService>(), sp.GetService<IFundAccountService>())
+                    : null));
         services.TryAddSingleton(AutomatedJournalEvidencePolicy.Default);
         services.TryAddSingleton(sp =>
             new AutomatedJournalDraftIntakeService(

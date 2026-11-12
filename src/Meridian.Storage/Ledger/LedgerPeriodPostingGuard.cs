@@ -179,6 +179,36 @@ public static class LedgerPeriodPostingGuard
             .Where(IsInstrumentBearingLine)
             .ToArray();
         var metadata = journalEntry.Metadata;
+        if (metadata.Tags?.GetValueOrDefault("securityMaster.lineageMode") == "per-line")
+        {
+            var key = metadata.IdempotencyKey;
+            if (key?.StartsWith("portfolio-opening:", StringComparison.Ordinal) != true &&
+                key?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) != true)
+                throw new LedgerValidationException("Per-line Security Master lineage requires the retained opening or opening-correction source.");
+            if (metadata.SecurityId.HasValue || !string.IsNullOrWhiteSpace(metadata.Symbol))
+                throw new LedgerValidationException("A mixed opening uses per-line instrument identity rather than an ambiguous header security.");
+            foreach (var line in instrumentLines)
+            {
+                var prefix = $"securityMaster.line.{line.EntryId:D}.";
+                if (!Guid.TryParse(metadata.Tags.GetValueOrDefault(prefix + "securityId"), out var id) || id == Guid.Empty ||
+                    line.Dimensions?.InstrumentId != id ||
+                    !TryGetMetadataTag(metadata, prefix + "provenance", out var provenance) ||
+                    !TryGetMetadataTag(metadata, prefix + "lineage", out var lineage))
+                    throw new LedgerValidationException("Each opening instrument line requires its exact Security Master identity, provenance and approved mapping.");
+                var tags = new Dictionary<string, string>(metadata.Tags, StringComparer.OrdinalIgnoreCase)
+                { ["securityMasterProvenance"] = provenance, ["securityMasterLineage"] = lineage };
+                ValidateSecurityMasterLineageCore(entry, [line], metadata with
+                { SecurityId = id, Symbol = line.Account.Symbol, Tags = tags }, verifiedAmortizationReversal: false);
+            }
+            return;
+        }
+        ValidateSecurityMasterLineageCore(entry, instrumentLines, metadata, verifiedAmortizationReversal);
+    }
+
+    private static void ValidateSecurityMasterLineageCore(LedgerJournalEntryWrite entry,
+        LedgerEntry[] instrumentLines, JournalEntryMetadata metadata, bool verifiedAmortizationReversal)
+    {
+        var journalEntry = entry.Entry;
         var instrumentBearing = instrumentLines.Length > 0 ||
             !string.IsNullOrWhiteSpace(metadata.Symbol) ||
             metadata.SecurityId.GetValueOrDefault() != Guid.Empty;

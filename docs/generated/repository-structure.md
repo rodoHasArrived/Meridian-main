@@ -5163,7 +5163,9 @@ Meridian-main
 │   │   │   │   ├── CorruptStoreQuarantine.cs
 │   │   │   │   ├── IndexSubscriptionService.cs
 │   │   │   │   ├── MetadataEnrichmentService.cs
+│   │   │   │   ├── PortfolioImportRunService.cs
 │   │   │   │   ├── PortfolioImportService.cs
+│   │   │   │   ├── PortfolioOpeningBalanceProjector.cs
 │   │   │   │   ├── SchedulingService.cs
 │   │   │   │   ├── SymbolImportExportService.cs
 │   │   │   │   ├── SymbolManagementService.cs
@@ -5573,6 +5575,7 @@ Meridian-main
 │   │   │   ├── LedgerDisposalTaxDtos.cs
 │   │   │   ├── LedgerToleranceConstants.cs
 │   │   │   ├── PostedPeriodComparisonDtos.cs
+│   │   │   ├── PriorPeriodAdjustmentDtos.cs
 │   │   │   ├── PrivateCapitalActivityRoutes.cs
 │   │   │   ├── PrivateCapitalBankObservationDtos.cs
 │   │   │   └── PrivateCapitalLifecycleDtos.cs
@@ -5928,6 +5931,7 @@ Meridian-main
 │   │   │       ├── BulkImportExport.cs
 │   │   │       ├── IndexComponents.cs
 │   │   │       ├── PortfolioImport.cs
+│   │   │       ├── PortfolioImportRun.cs
 │   │   │       ├── ResubscriptionMetrics.cs
 │   │   │       ├── SubscriptionSchedule.cs
 │   │   │       ├── SymbolMetadata.cs
@@ -6103,6 +6107,8 @@ Meridian-main
 │   │   ├── Events
 │   │   │   ├── ITradeEventPublisher.cs
 │   │   │   ├── LedgerPostingConsumer.cs
+│   │   │   ├── PaperFinancingCharge.cs
+│   │   │   ├── PaperFinancingPostingService.cs
 │   │   │   ├── TradeExecutedEvent.cs
 │   │   │   ├── TradeFillCashFlowReplayCompatibility.cs
 │   │   │   ├── TradeFillHandoffFailureStore.cs
@@ -6173,7 +6179,8 @@ Meridian-main
 │   │   │   ├── PaperTradingCostModel.cs
 │   │   │   └── PaperTradingCostOptions.cs
 │   │   ├── Serialization
-│   │   │   └── ExecutionJsonContext.cs
+│   │   │   ├── ExecutionJsonContext.cs
+│   │   │   └── PaperFinancingApiJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── BrokerageExecutionReconciliationService.cs
 │   │   │   ├── ExecutionAuditTrailService.cs
@@ -6950,6 +6957,7 @@ Meridian-main
 │   │   ├── JournalTemplateBook.cs
 │   │   ├── Ledger.cs
 │   │   ├── LedgerAccount.cs
+│   │   ├── LedgerAccountingCompleteness.cs
 │   │   ├── LedgerAccounts.cs
 │   │   ├── LedgerAccountSummary.cs
 │   │   ├── LedgerAccountTaxLotPolicy.cs
@@ -7082,12 +7090,14 @@ Meridian-main
 │   │   │   ├── ConventionResources.cs
 │   │   │   └── TemplateResources.cs
 │   │   ├── Services
+│   │   │   ├── LedgerApiClient.cs
 │   │   │   └── RepoPathService.cs
 │   │   ├── Tools
 │   │   │   ├── AdrTools.cs
 │   │   │   ├── AuditTools.cs
 │   │   │   ├── ConventionTools.cs
 │   │   │   ├── KnownErrorTools.cs
+│   │   │   ├── LedgerTools.cs
 │   │   │   ├── ProviderTools.cs
 │   │   │   ├── RepoEditTools.cs
 │   │   │   ├── ToolProcessExecution.cs
@@ -7456,6 +7466,8 @@ Meridian-main
 │   │   │   ├── ExportResult.cs
 │   │   │   ├── ExportValidator.cs
 │   │   │   ├── ExportVerificationReport.cs
+│   │   │   ├── LedgerJournalExporter.cs
+│   │   │   ├── LedgerJournalExportJsonContext.cs
 │   │   │   ├── PreflightRule.cs
 │   │   │   ├── SpreadsheetFormulaGuard.cs
 │   │   │   └── XlsxWorkbookWriter.cs
@@ -7551,7 +7563,8 @@ Meridian-main
 │   │   │   │   ├── V_ledger_051__tax_lot_account_case_insensitive_keys.sql
 │   │   │   │   ├── V_ledger_052__tax_lot_current_factor.sql
 │   │   │   │   ├── V_ledger_053__atomic_lot_factor_paydown.sql
-│   │   │   │   └── V_ledger_054__private_capital_authority.sql
+│   │   │   │   ├── V_ledger_054__private_capital_authority.sql
+│   │   │   │   └── V_ledger_055__period_close_snapshots.sql
 │   │   │   ├── AccountingPostingCommandFingerprintJsonContext.cs
 │   │   │   ├── AccountingPostingCommandValidator.cs
 │   │   │   ├── AtomicTaxLotJournalFingerprint.cs
@@ -7570,6 +7583,7 @@ Meridian-main
 │   │   │   ├── LedgerJournalStoreOptions.cs
 │   │   │   ├── LedgerMigrationRunner.cs
 │   │   │   ├── LedgerOpenLotProjection.cs
+│   │   │   ├── LedgerPeriodCloseSnapshot.cs
 │   │   │   ├── LedgerPeriodPostingGuard.cs
 │   │   │   ├── LedgerRetainedValueComparison.cs
 │   │   │   ├── LedgerStoreExtensions.cs
@@ -7585,6 +7599,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.Audit.cs
 │   │   │   ├── PostgresLedgerJournalStore.AverageCostRelief.cs
 │   │   │   ├── PostgresLedgerJournalStore.CapitalReturn.cs
+│   │   │   ├── PostgresLedgerJournalStore.CloseSnapshots.cs
 │   │   │   ├── PostgresLedgerJournalStore.Consolidation.cs
 │   │   │   ├── PostgresLedgerJournalStore.CorporateAction.cs
 │   │   │   ├── PostgresLedgerJournalStore.cs
@@ -7592,6 +7607,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.FactorPaydown.cs
 │   │   │   ├── PostgresLedgerJournalStore.HistoricalTaxLots.cs
 │   │   │   ├── PostgresLedgerJournalStore.LotReferenceAuthority.cs
+│   │   │   ├── PostgresLedgerJournalStore.OpeningCutover.cs
 │   │   │   ├── PostgresLedgerJournalStore.OpenLotBackfill.cs
 │   │   │   ├── PostgresLedgerJournalStore.PeriodLockOwner.cs
 │   │   │   ├── PostgresLedgerJournalStore.PrivateCapital.cs
@@ -7960,6 +7976,7 @@ Meridian-main
 │   │   │   ├── IReconciliationSlaCalendarResolver.cs
 │   │   │   ├── IReconciliationSlaPolicyProvider.cs
 │   │   │   ├── ISecurityReferenceLookup.cs
+│   │   │   ├── IStrategyRunLedgerSource.cs
 │   │   │   ├── LedgerReadService.cs
 │   │   │   ├── PortfolioReadService.cs
 │   │   │   ├── PromotionService.cs
@@ -7980,6 +7997,7 @@ Meridian-main
 │   │   │   ├── StrategyLifecycleManager.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.cs
+│   │   │   ├── StrategyRunReadService.Ledger.cs
 │   │   │   ├── StrategyRunResearchRecorder.cs
 │   │   │   └── StrategyRunScopeMetadataResolver.cs
 │   │   ├── Storage
@@ -9630,9 +9648,12 @@ Meridian-main
 │   │   │   ├── LedgerEndpoints.AuditIntegrity.cs
 │   │   │   ├── LedgerEndpoints.CloseExecution.cs
 │   │   │   ├── LedgerEndpoints.ClosePreparation.cs
+│   │   │   ├── LedgerEndpoints.CloseSnapshots.cs
+│   │   │   ├── LedgerEndpoints.Completeness.cs
 │   │   │   ├── LedgerEndpoints.Consolidation.cs
 │   │   │   ├── LedgerEndpoints.cs
 │   │   │   ├── LedgerEndpoints.Dimensions.cs
+│   │   │   ├── LedgerEndpoints.Export.cs
 │   │   │   ├── LedgerEndpoints.FactorPaydown.cs
 │   │   │   ├── LedgerEndpoints.JournalAutomation.cs
 │   │   │   ├── LedgerEndpoints.OpenLotBackfill.cs
@@ -9659,6 +9680,7 @@ Meridian-main
 │   │   │   ├── PathValidation.cs
 │   │   │   ├── PlaidEndpoints.cs
 │   │   │   ├── PortfolioCashLadderEndpoints.cs
+│   │   │   ├── PortfolioImportEndpoints.cs
 │   │   │   ├── PromotionEndpoints.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
@@ -9716,6 +9738,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.FeatureCapabilities.cs
 │   │   │   ├── WorkstationEndpoints.FinancialRecordExplorers.cs
 │   │   │   ├── WorkstationEndpoints.IBResults.cs
+│   │   │   ├── WorkstationEndpoints.Ledger.cs
 │   │   │   ├── WorkstationEndpoints.OperatorInbox.cs
 │   │   │   ├── WorkstationEndpoints.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpoints.OperatorSurfaceVisits.cs
@@ -9789,8 +9812,10 @@ Meridian-main
 │   │   │   ├── CoveredCallJsonContext.cs
 │   │   │   ├── DirectLendingJsonContext.cs
 │   │   │   ├── FamilyOfficeJsonContext.cs
+│   │   │   ├── PeriodAdjustmentJsonContext.cs
 │   │   │   ├── QualityApiJsonContext.cs
 │   │   │   ├── ReportingCertifiedArtifactJsonContext.cs
+│   │   │   ├── RunLedgerQueryJsonContext.cs
 │   │   │   └── WorkstationOperationsJsonContext.cs
 │   │   ├── Services
 │   │   │   ├── Acceptance
@@ -9894,6 +9919,7 @@ Meridian-main
 │   │   │   ├── InMemoryOperatorInboxService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
+│   │   │   ├── LedgerAccountingCompletenessReadService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerBookOrdering.cs
 │   │   │   ├── LedgerClientReportExportService.cs
@@ -9915,6 +9941,8 @@ Meridian-main
 │   │   │   ├── ManualJournalEntryWorkbenchService.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Lifecycle.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.MutationRecovery.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.OpeningBalances.cs
+│   │   │   ├── ManualJournalEntryWorkbenchService.PeriodAdjustments.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.PrivateCapital.cs
 │   │   │   ├── ManualJournalEntryWorkbenchService.Recurring.cs
 │   │   │   ├── ManualJournalMutationRecoveryStore.cs
@@ -9930,13 +9958,17 @@ Meridian-main
 │   │   │   ├── OperatorTriagePolicy.cs
 │   │   │   ├── OperatorTriageServiceCollectionExtensions.cs
 │   │   │   ├── PaperFuturesSettlementService.cs
+│   │   │   ├── PeriodAdjustmentPreparationService.cs
 │   │   │   ├── PlaidWebhookVerifier.cs
 │   │   │   ├── PlaidWorkstationService.cs
 │   │   │   ├── PortfolioCashLadderReadService.cs
 │   │   │   ├── PortfolioLedgerCashBalanceProvider.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusService.cs
+│   │   │   ├── PortfolioOpeningBalanceQueue.cs
+│   │   │   ├── PostedLedgerAccountReconciliationSource.cs
 │   │   │   ├── PostedLedgerAmountProvenanceService.cs
 │   │   │   ├── PostedPeriodComparisonService.cs
+│   │   │   ├── PostedStrategyRunLedgerSource.cs
 │   │   │   ├── PrivateCapitalBankObservationService.cs
 │   │   │   ├── PrivateCapitalEventIntakes.cs
 │   │   │   ├── PrivateCapitalFundEventCommandCenterService.cs
@@ -9946,6 +9978,7 @@ Meridian-main
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
 │   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderDataReadModelService.cs
+│   │   │   ├── ProviderLedgerDailyReconciliationWorker.cs
 │   │   │   ├── ProviderLedgerReconciliationService.CorporateActions.cs
 │   │   │   ├── ProviderLedgerReconciliationService.cs
 │   │   │   ├── ProviderLedgerReconciliationService.Outcomes.cs
@@ -11633,6 +11666,7 @@ Meridian-main
 │   │   │   │   └── RuntimeDiagnosticRedactorTests.cs
 │   │   │   ├── Subscriptions
 │   │   │   │   ├── PortfolioImportReliabilityTests.cs
+│   │   │   │   ├── PortfolioImportRunTests.cs
 │   │   │   │   ├── SchedulingServiceReliabilityTests.cs
 │   │   │   │   └── SubscriptionStoreQuarantineTests.cs
 │   │   │   ├── Ui
@@ -11929,6 +11963,7 @@ Meridian-main
 │   │   │   ├── OrderStateTableTests.cs
 │   │   │   ├── PaperExecutionGatewayLotSizeTests.cs
 │   │   │   ├── PaperFillEnvelopeRegressionTests.cs
+│   │   │   ├── PaperFinancingPostingTests.cs
 │   │   │   ├── PaperFuturesSettlementServiceTests.cs
 │   │   │   ├── PaperGatewayLiveFeedPricingTests.cs
 │   │   │   ├── PaperGatewayTickSizeBoundaryTests.cs
@@ -12333,6 +12368,7 @@ Meridian-main
 │   │   │   ├── FundEconomicsJournalFactoryTests.cs
 │   │   │   ├── JournalTemplateTests.cs
 │   │   │   ├── LedgerAccountIdentityTests.cs
+│   │   │   ├── LedgerAccountingCompletenessTests.cs
 │   │   │   ├── LedgerAccountTypeOrdinalContractTests.cs
 │   │   │   ├── LedgerAverageCostWashSaleRoundingTests.cs
 │   │   │   ├── LedgerCanonicalCashFlowTests.cs
@@ -12341,6 +12377,7 @@ Meridian-main
 │   │   │   ├── LedgerCashFlowCategoryEvidenceTests.cs
 │   │   │   ├── LedgerCashFlowExportTests.cs
 │   │   │   ├── LedgerCashFlowTestData.cs
+│   │   │   ├── LedgerCurrencyJournalInvariantTests.cs
 │   │   │   ├── LedgerEntryCurrencyTests.cs
 │   │   │   ├── LedgerImmutabilityTests.cs
 │   │   │   ├── LedgerIntegrationTests.cs
@@ -12379,6 +12416,7 @@ Meridian-main
 │   │   │   ├── ShareClassUnitRegisterTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
+│   │   │   ├── LedgerToolsTests.cs
 │   │   │   ├── McpRepoRootFixture.cs
 │   │   │   ├── RepoEditToolsTests.cs
 │   │   │   ├── RepoPathServiceTests.cs
@@ -12934,8 +12972,11 @@ Meridian-main
 │   │   │   ├── LedgerDatabaseFactAttribute.cs
 │   │   │   ├── LedgerDatabaseTestDiscoveryTests.cs
 │   │   │   ├── LedgerEventAuditPostgresTests.cs
+│   │   │   ├── LedgerJournalExporterTests.cs
 │   │   │   ├── LedgerJournalStoreHydrationTests.cs
 │   │   │   ├── LedgerJournalStoreTests.cs
+│   │   │   ├── LedgerOpeningCutoverTests.cs
+│   │   │   ├── LedgerPeriodCloseSnapshotTests.cs
 │   │   │   ├── LedgerPostgresTestDatabase.cs
 │   │   │   ├── LedgerPostgresTestDatabase.LotReferences.cs
 │   │   │   ├── LifecyclePolicyEngineTests.cs
@@ -12955,6 +12996,7 @@ Meridian-main
 │   │   │   ├── ParquetConversionServiceTests.cs
 │   │   │   ├── ParquetStorageSinkTests.cs
 │   │   │   ├── PortableDataPackagerTests.cs
+│   │   │   ├── PortfolioOpeningLineageTests.cs
 │   │   │   ├── PositionSnapshotStoreTests.cs
 │   │   │   ├── PostgresMigrationRunnerValidationTests.cs
 │   │   │   ├── PostgresReportingDeploymentProbeTests.cs
@@ -13122,6 +13164,7 @@ Meridian-main
 │   │   │   ├── AccountingConfigurationServiceTests.ManualAuditRecovery.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryArchive.cs
 │   │   │   ├── AccountingConfigurationServiceTests.ManualRecoveryScope.cs
+│   │   │   ├── AccountingConfigurationServiceTests.PeriodAdjustmentPreparation.cs
 │   │   │   ├── AccountingMigrationRunExecutionServiceTests.cs
 │   │   │   ├── AccountingPositionSnapshotCaptureServiceTests.cs
 │   │   │   ├── AccountingProductionReadinessOperationalHardeningTests.cs
@@ -13205,6 +13248,8 @@ Meridian-main
 │   │   │   ├── FundStructureEndpointAuthorizationTests.cs
 │   │   │   ├── InMemoryFundStructureTenancyGuardTests.cs
 │   │   │   ├── InvestmentAccountingTransactionLabServiceTests.cs
+│   │   │   ├── LedgerAccountingCompletenessReadServiceTests.cs
+│   │   │   ├── LedgerAccountingSourceReaderTests.cs
 │   │   │   ├── LedgerAccountRunningBalanceEndpointTests.cs
 │   │   │   ├── LedgerAccountRunningBalanceScopeTests.cs
 │   │   │   ├── LedgerAmountProvenanceEndpointTests.cs
@@ -13239,11 +13284,15 @@ Meridian-main
 │   │   │   ├── OperatorTriagePostgresTests.cs
 │   │   │   ├── OptionReferenceEndpointsRoundtripTests.cs
 │   │   │   ├── PackagingEndpointsPathContainmentTests.cs
+│   │   │   ├── PeriodAdjustmentPreparationTests.cs
 │   │   │   ├── PlaidWebhookVerifierTests.cs
 │   │   │   ├── PlaidWorkstationServiceTests.cs
 │   │   │   ├── PortfolioLedgerWorkflowStatusServiceTests.cs
+│   │   │   ├── PortfolioOpeningBalancePostingTests.cs
+│   │   │   ├── PostedLedgerAccountReconciliationSourceTests.cs
 │   │   │   ├── PostedLedgerAmountProvenanceTests.cs
 │   │   │   ├── PostedPeriodComparisonTests.cs
+│   │   │   ├── PostedStrategyRunLedgerSourceTests.cs
 │   │   │   ├── PrivateCapitalBankObservationServiceTests.cs
 │   │   │   ├── PrivateCapitalEndpointsTests.cs
 │   │   │   ├── PrivateCapitalEventIntakeTests.cs
@@ -13256,6 +13305,7 @@ Meridian-main
 │   │   │   ├── ProviderCredentialOwnershipRaceTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
 │   │   │   ├── ProviderEndpointProjectionTests.cs
+│   │   │   ├── ProviderLedgerDailyReconciliationWorkerTests.cs
 │   │   │   ├── ProviderLedgerReconciliationServiceTests.cs
 │   │   │   ├── ProviderReadinessEndpointTests.cs
 │   │   │   ├── ProviderRoutingEndpointsTests.cs
@@ -13386,10 +13436,12 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.OpenLotBackfill.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorScopePreference.cs
 │   │   │   ├── WorkstationEndpointsTests.OperatorSurfaceVisits.cs
+│   │   │   ├── WorkstationEndpointsTests.PeriodAdjustmentSchedule.cs
 │   │   │   ├── WorkstationEndpointsTests.PostingActorBoundary.cs
 │   │   │   ├── WorkstationEndpointsTests.ProviderIntegrations.cs
 │   │   │   ├── WorkstationEndpointsTests.RecurringJournals.cs
 │   │   │   ├── WorkstationEndpointsTests.ReportAuthority.cs
+│   │   │   ├── WorkstationEndpointsTests.RunLedgerQueries.cs
 │   │   │   ├── WorkstationEndpointsTests.StrategyTenantScope.cs
 │   │   │   ├── WorkstationEndpointsTests.TermsCapabilityRefusal.cs
 │   │   │   ├── WorkstationEndpointsTests.TradingTenantScope.cs

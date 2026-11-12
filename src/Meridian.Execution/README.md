@@ -92,6 +92,34 @@ recovery and may exceed the display-cache limit. The permanent minimal identity 
 
 ## Purpose
 
+Paper financing assessments use `PaperFinancingPostingService`, composed alongside
+`Execution:TradeFillLedgerPosting`. An authenticated administrator can record a dated,
+cash-paid margin charge through `POST /api/execution/sessions/{sessionId}/financing` with
+`accrualDate`, `amount`, `sourceReference`, and `rationale`. The authenticated actor is retained
+by the server. This records an assessed charge; it does not invent a daily financing rate.
+
+The scope-partitioned source outbox syncs each accepted assessment through the existing WAL,
+publishes an atomic source snapshot, and confirms the journal through the same governed target
+as fills. A lifetime file lease permits one writer per scope directory. The store publishes its
+initialized marker only after the first complete snapshot exists; loss of an initialized snapshot
+blocks recovery instead of treating compacted financing history as an empty account. Retries retain the
+same source identity (session, account, accrual date, source reference); different economics
+under that identity fail closed. Accepted assessments survive interrupted posting and are
+recovered before a session book is exposed. They debit margin-interest expense and credit cash
+without increasing the loan principal. The authoritative journal remains in the configured
+ledger store; the outbox retains source evidence and delivery state.
+If confirmation fails, the current session refuses further fills, settlements and close until
+the same source is successfully retried or startup recovers the pending assessment. Order history
+and cancellation evidence remain recordable while recovery is pending.
+
+New sessions created with this composition retain the exact book, period, aggregate and
+policy binding, plus their local `default` account identity. A missing or changed accounting
+owner blocks reconstruction instead of silently omitting financing. Legacy sessions remain
+unbound and require an explicit migration before accepting these charges. Session reconstruction
+merges financing and settlements into fill replay, preserving paid charges when subsequent fills
+rebuild the projection. This endpoint serves single-account paper sessions; account-level charge
+allocation to promoted strategy runs requires a retained run allocation and is not inferred.
+
 Broker reconciliation propagates caller cancellation from health and open-order queries so cancelled requests do not become unhealthy-broker or query-failure evidence.
 
 Execution owns order routing, execution services, allocation, margin, derivatives, tax-lot, and broker gateway behavior.

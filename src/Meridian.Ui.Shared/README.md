@@ -11,6 +11,97 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui.Shared
 
+`PostedStrategyRunLedgerSource` authorizes account/book ownership and selects only posted journals
+whose `strategy.runId`, strategy and financial-account provenance agree with the retained run.
+An unspecified book selects only a unique primary book; invalid scope metadata never falls back
+to another book. Account-only financing is not allocated to a strategy without retained authority.
+
+`GET /api/ledger/periods/{periodId}/close-snapshot?periodVersion=<version>` returns the verified
+immutable close population for the selected version (latest when omitted), after ledger read
+permission and exact tenant/company book ownership checks. A failed content hash returns 409;
+missing historical snapshots remain absent.
+
+`POST /api/ledger/period-adjustments/prepare` accepts `ledgerBookId`, `sourceJournalEntryId`,
+`targetPeriodId`, `accountingDate`, `intentId`, `reason` and optional `reversePeriodEndMark`.
+It resolves the posted source in the selected book, requires a hard-closed source and a later
+explicit open target, and queues an independently approved inverse draft. The original journal and
+closed workbench record remain unchanged. Native book-currency sources are supported; missing or
+foreign currency evidence is refused. The same intent replays; changed source/target/reason/policy
+conflicts. Source period, original date, reason and policy survive into posted journal metadata.
+The `reversePeriodEndMark` option requires retained validated mark evidence, a period-end source
+and the immediately following period's first day. Delta carrying-value marks remain the default.
+`POST /api/ledger/period-adjustments/schedule-mark-reversal` accepts the same request with that
+explicit policy enabled and retains a one-time UTC due date in the existing durable automated
+journal schedule store. The source period must be a calendar month. No draft is created before
+due; the existing hosted scheduler prepares the ordinary review draft on the next-period date.
+Restart replay of an incomplete running claim returns the same draft identity. Policy/source/target
+changes under the same schedule identity conflict. Scheduling never approves or posts a journal.
+New native workbench journals retain explicit identity currency on every leg.
+
+Focused coverage: `PeriodAdjustmentPreparationTests`, the governed mark-to-preparation case in
+`AccountingConfigurationServiceTests.PeriodAdjustmentPreparation`, and `LedgerPeriodCloseSnapshotTests`.
+
+The accounting completeness read control compares independent retained source populations with
+the exact book, period, aggregate and financial-account journal scope. Paper sessions require a
+persisted accounting binding; loan history requires a retained loan-to-book binding and lending
+read permission. Asset-event sources use the scoped spine enumeration. Missing lineage, unsupported
+source versions or unavailable readers report incomplete coverage rather than an empty successful
+population. Loan reversal events retain their own source identity and count their adjustment
+journals separately from the original accrual.
+
+Broker account imports are available at `POST /api/portfolio/import-runs` and the scoped
+`GET /api/portfolio/import-runs/{runId}` read. The command binds a retained financial account,
+ledger book, accounting period, observation date and explicit provider account. Retried IDs resume
+the saved population and checkpoints; changed commands conflict. Opening balances reserve one
+account/book source and enter the ordinary manual journal approval queue, preserving the complete
+source even when subscription filters exclude assets. Workstation saves cannot change the retained
+opening economics, source account paths or reservation key. Configure the source chart mapping
+before intake; an accounting-role correction requires the governed correction workflow.
+Opening header and line entity dimensions come from the retained financial account. An absent or
+changed entity blocks intake instead of borrowing the account ID or adding a placeholder entity.
+Mixed-symbol openings retain active, same-currency Security Master identities and approved mapping
+provenance on every instrument line. The shared append guard checks each line independently; a
+mixed header never substitutes a single instrument identity for the full opening population.
+
+With a durable journal store configured, provider reconciliation additionally compares posted
+cash and canonical open-lot quantities/cost against the broker. Cost uses retained acquisition and
+governed basis adjustments, excluding mark-to-market carrying-value changes. Missing lot evidence,
+unproven FX/price conventions, later activity relative to the broker cutoff, and changing journal
+populations are blocked comparisons. These results join the existing retained break queue, tolerance,
+aging and casework workflow. The new comparison does not imply historical lot replay.
+
+`Ledger:DailyReconciliation` configures the comparison-only background clock: `UtcHour` (default 23),
+`RetryMinutes` (default 15), and `Targets` containing `TenantId`, `CompanyId`, `FundProfileId`,
+`AccountId`, `AmountTolerance`, and `ProviderStaleAfterMinutes`. Empty targets leave it idle. Each
+due target rechecks retained fund/account ownership, enters explicit tenant authority, and executes
+the shared reconciliation service with a deterministic account/date operation ID. Restarts recover
+the same retained operation; failed attempts retry at the bounded interval. The worker never signs
+off or resolves a break, approves a journal, or fetches provider credentials. Broker sync must keep
+its retained provider snapshot current; missing/stale evidence stays visible in comparison results.
+
+## Full journal reads and portable exports
+
+The run ledger API adds `/api/workstation/runs/{runId}/ledger/entries`, `/accounts`,
+`/trial-balance/as-of?asOf=<ISO-8601>`, `/running-balance?accountName=Cash`, and
+`/symbols/{symbol}`. Full entries include immutable debit/credit legs and audit metadata.
+Journal and symbol reads accept `from`, `to`, `offset` and `limit` (default 500, max 10,000).
+Account reads accept `asOf` and `financialAccountId`; running balances retain the opening balance
+before `from` and require an unambiguous account identity. Optional `accountType`, `symbol` and
+`financialAccountId` qualify that identity; an empty symbol/account-id selects the unscoped bucket.
+All reads retain the existing run permission and tenant/company visibility filters.
+
+`POST /api/workstation/runs/{runId}/ledger/export` and
+`POST /api/ledger/periods/{periodId}/journal-export` return CSV or Parquet journal lines.
+The body is `{ "format": "csv", "accountMapping": { "Cash": "1000", "Capital Account": "3000" } }`;
+omit `accountMapping` to use Meridian account names. A supplied map must cover every exported account;
+missing or blank mappings fail the export. Mapping only changes `external_account`, retaining the
+original account. Export requires `ExportData` alongside the relevant run/ledger read permission.
+The posted-period path resolves book ownership through the existing tenant registry and includes
+stored policy, rule, source-event and approval envelopes. Both formats preserve full metadata,
+dimensions and currency JSON using source-generated contexts. Decimal amounts are invariant decimal
+text in Parquet as well as CSV, retaining precision across external readers. CSV text uses the shared
+spreadsheet formula guard. These downloads do not submit entries to any external GL provider.
+
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
 requirements and ignored contradictory configuration. Browser and WPF show the same host decision;

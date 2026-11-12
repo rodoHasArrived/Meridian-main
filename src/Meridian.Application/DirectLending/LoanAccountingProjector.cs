@@ -47,10 +47,149 @@ public sealed class LoanAccountingProjector
         var journalEntryId = Guid.NewGuid();
         var timestamp = new DateTimeOffset(accountingDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
         var currency = contract.CurrentTerms.BaseCurrency.ToString();
-        var lines = new List<LedgerEntry>();
-        var description = eventType;
         var securityReference = contract.CurrentTerms.SecurityMasterReference;
         var instrumentSymbol = NormalizeSymbol(securityReference?.Symbol);
+        var lines = BuildLines(loanId, eventType, payload.RootElement, journalEntryId, timestamp, currency, instrumentSymbol);
+        var description = lines.Count > 0 ? lines[0].Description : eventType;
+
+        if (lines.Count == 0)
+        {
+            return [];
+        }
+
+        if (_journalStore is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    "Ledger journal store is required for direct-lending ledger-impacting events."));
+        }
+
+        var period = await ResolvePostingPeriodAsync(accountingDate, postingKind, ct).ConfigureAwait(false);
+        if (period is null)
+        {
+            throw new DirectLendingCommandException(
+                new DirectLendingCommandError(
+                    DirectLendingErrorCode.Validation,
+                    $"No ledger accounting period accepts {postingKind} posting date '{accountingDate:yyyy-MM-dd}'."));
+        }
+
+        var policy = await _accountingPolicyService
+            .ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary, accountingDate), ct)
+            .ConfigureAwait(false);
+
+        var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
+        instrumentSymbol = securityLineage.Symbol;
+        lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
+        lines = ApplyLineDimensions(lines, contract, loanId, securityLineage.SecurityId, period.LedgerBookId);
+        var postingCommandId = metadata.CommandId.GetValueOrDefault(sourceEventId);
+        var idempotencyKey = $"direct-lending:{loanId:N}:{eventType}:{sourceEventId:N}";
+        var sourceEvidence = new JournalEvidenceReference(
+            $"direct-lending-event-{sourceEventId:N}",
+            $"direct-lending://events/{sourceEventId:D}",
+            AccountingPostingEvidenceKindDto.Source.ToString(),
+            "DirectLending",
+            timestamp,
+            "meridian.direct-lending",
+            SubjectId: loanId.ToString("D"),
+            Description: eventType);
+
+        var entry = new JournalEntry(
+            journalEntryId,
+            timestamp,
+            description,
+            lines,
+            new JournalEntryMetadata(
+                ActivityType: eventType,
+                Symbol: instrumentSymbol,
+                SecurityId: securityLineage.SecurityId,
+                FinancialAccountId: loanId.ToString("D"),
+                Institution: "DirectLending",
+                EffectiveDate: accountingDate,
+                IdempotencyKey: idempotencyKey,
+                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["loanId"] = loanId.ToString("D"),
+                    ["currency"] = currency,
+                    ["sourceEventId"] = sourceEventId.ToString("D"),
+                    ["sourceEventType"] = eventType,
+                    ["securityMasterProvenance"] = securityLineage.Provenance,
+                    ["securityMasterLineage"] = securityLineage.Lineage
+                },
+                EvidenceReferences: [sourceEvidence]));
+
+        return
+        [
+            new LedgerJournalEntryWrite(
+                entry,
+                AggregateId: loanId,
+                PeriodId: period.PeriodId,
+                CommandId: metadata.CommandId,
+                CorrelationId: metadata.CorrelationId,
+                AccountingBasis: policy.AccountingBasis,
+                AccountingPolicyId: policy.PolicyId,
+                AccountingPolicyVersion: policy.Version,
+                RuleId: eventType,
+                RuleVersion: policy.Version,
+                SourceEventId: sourceEventId,
+                PostingKind: postingKind,
+                AdjustmentApproval: adjustmentApproval,
+                LedgerBookId: period.LedgerBookId,
+                PostingCommand: new AccountingPostingCommandDto(
+                    postingCommandId,
+                    loanId,
+                    period.PeriodId,
+                    accountingDate,
+                    timestamp,
+                    idempotencyKey,
+                    postingKind == LedgerPostingKindDto.Adjustment
+                        ? AccountingPostingIntentDto.Adjustment
+                        : AccountingPostingIntentDto.Originating,
+                    SourceEventId: sourceEventId,
+                    CorrelationId: metadata.CorrelationId,
+                    CausationId: postingCommandId,
+                    ExpectedVersion: period.Version,
+                    SourceEventType: eventType,
+                    ApprovalState: adjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
+                        ? AccountingPostingApprovalStateDto.Approved
+                        : AccountingPostingApprovalStateDto.NotRequired,
+                    ApprovalId: adjustmentApproval?.ApprovalId,
+                    LedgerBookId: period.LedgerBookId,
+                    Evidence:
+                    [
+                        new AccountingPostingEvidenceReferenceDto(
+                            sourceEvidence.EvidenceId,
+                            sourceEvidence.Uri,
+                            AccountingPostingEvidenceKindDto.Source,
+                            sourceEvidence.SourceSystem,
+                            sourceEvidence.RetainedAtUtc,
+                            sourceEvidence.RetainedBy,
+                            sourceEvidence.SubjectId,
+                            sourceEvidence.ContentHash,
+                            sourceEvidence.Description)
+                    ]))
+        ];
+    }
+
+    /// <summary>
+    /// Reports whether a retained loan event requires a journal, using exactly the same amount
+    /// validation and line projection as posting. Zero-value and non-accounting events have no
+    /// required journal; malformed or negative accounting amounts fail closed.
+    /// </summary>
+    public static bool HasAccountingImpact(string eventType, JsonElement payload)
+        => BuildLines(Guid.Empty, eventType, payload, Guid.Empty, DateTimeOffset.UnixEpoch, "USD", null).Count > 0;
+
+    private static List<LedgerEntry> BuildLines(
+        Guid loanId,
+        string eventType,
+        JsonElement root,
+        Guid journalEntryId,
+        DateTimeOffset timestamp,
+        string currency,
+        string? instrumentSymbol)
+    {
+        var lines = new List<LedgerEntry>();
+        var description = eventType;
 
         void Add(string account, LedgerAccountType accountType, decimal debit, decimal credit)
         {
@@ -80,10 +219,10 @@ public sealed class LoanAccountingProjector
                     FinancialAccountId: loanId.ToString("D")),
                 debit,
                 credit,
-                description));
+                description,
+                currency: new LedgerEntryCurrency(currency, currency, debit, credit, 1m)));
         }
 
-        var root = payload.RootElement;
         switch (eventType)
         {
             case "loan.drawdown-booked":
@@ -229,123 +368,7 @@ public sealed class LoanAccountingProjector
                 break;
         }
 
-        if (lines.Count == 0)
-        {
-            return [];
-        }
-
-        if (_journalStore is null)
-        {
-            throw new DirectLendingCommandException(
-                new DirectLendingCommandError(
-                    DirectLendingErrorCode.Validation,
-                    "Ledger journal store is required for direct-lending ledger-impacting events."));
-        }
-
-        var period = await ResolvePostingPeriodAsync(accountingDate, postingKind, ct).ConfigureAwait(false);
-        if (period is null)
-        {
-            throw new DirectLendingCommandException(
-                new DirectLendingCommandError(
-                    DirectLendingErrorCode.Validation,
-                    $"No ledger accounting period accepts {postingKind} posting date '{accountingDate:yyyy-MM-dd}'."));
-        }
-
-        var policy = await _accountingPolicyService
-            .ResolvePolicyAsync(new AccountingPolicyQuery(AccountingBasisKindDto.Primary, accountingDate), ct)
-            .ConfigureAwait(false);
-
-        var securityLineage = await ResolveSecurityMasterPostingLineageAsync(securityReference, eventType, ct).ConfigureAwait(false);
-        instrumentSymbol = securityLineage.Symbol;
-        lines = ApplyAuthoritativeInstrumentSymbol(lines, instrumentSymbol);
-        lines = ApplyLineDimensions(lines, contract, loanId, securityLineage.SecurityId, period.LedgerBookId);
-        var postingCommandId = metadata.CommandId.GetValueOrDefault(sourceEventId);
-        var idempotencyKey = $"direct-lending:{loanId:N}:{eventType}:{sourceEventId:N}";
-        var sourceEvidence = new JournalEvidenceReference(
-            $"direct-lending-event-{sourceEventId:N}",
-            $"direct-lending://events/{sourceEventId:D}",
-            AccountingPostingEvidenceKindDto.Source.ToString(),
-            "DirectLending",
-            timestamp,
-            "meridian.direct-lending",
-            SubjectId: loanId.ToString("D"),
-            Description: eventType);
-
-        var entry = new JournalEntry(
-            journalEntryId,
-            timestamp,
-            description,
-            lines,
-            new JournalEntryMetadata(
-                ActivityType: eventType,
-                Symbol: instrumentSymbol,
-                SecurityId: securityLineage.SecurityId,
-                FinancialAccountId: loanId.ToString("D"),
-                Institution: "DirectLending",
-                EffectiveDate: accountingDate,
-                IdempotencyKey: idempotencyKey,
-                Tags: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                {
-                    ["loanId"] = loanId.ToString("D"),
-                    ["currency"] = currency,
-                    ["sourceEventId"] = sourceEventId.ToString("D"),
-                    ["sourceEventType"] = eventType,
-                    ["securityMasterProvenance"] = securityLineage.Provenance,
-                    ["securityMasterLineage"] = securityLineage.Lineage
-                },
-                EvidenceReferences: [sourceEvidence]));
-
-        return
-        [
-            new LedgerJournalEntryWrite(
-                entry,
-                AggregateId: loanId,
-                PeriodId: period.PeriodId,
-                CommandId: metadata.CommandId,
-                CorrelationId: metadata.CorrelationId,
-                AccountingBasis: policy.AccountingBasis,
-                AccountingPolicyId: policy.PolicyId,
-                AccountingPolicyVersion: policy.Version,
-                RuleId: eventType,
-                RuleVersion: policy.Version,
-                SourceEventId: sourceEventId,
-                PostingKind: postingKind,
-                AdjustmentApproval: adjustmentApproval,
-                LedgerBookId: period.LedgerBookId,
-                PostingCommand: new AccountingPostingCommandDto(
-                    postingCommandId,
-                    loanId,
-                    period.PeriodId,
-                    accountingDate,
-                    timestamp,
-                    idempotencyKey,
-                    postingKind == LedgerPostingKindDto.Adjustment
-                        ? AccountingPostingIntentDto.Adjustment
-                        : AccountingPostingIntentDto.Originating,
-                    SourceEventId: sourceEventId,
-                    CorrelationId: metadata.CorrelationId,
-                    CausationId: postingCommandId,
-                    ExpectedVersion: period.Version,
-                    SourceEventType: eventType,
-                    ApprovalState: adjustmentApproval?.Status == LedgerAdjustmentApprovalStatusDto.Approved
-                        ? AccountingPostingApprovalStateDto.Approved
-                        : AccountingPostingApprovalStateDto.NotRequired,
-                    ApprovalId: adjustmentApproval?.ApprovalId,
-                    LedgerBookId: period.LedgerBookId,
-                    Evidence:
-                    [
-                        new AccountingPostingEvidenceReferenceDto(
-                            sourceEvidence.EvidenceId,
-                            sourceEvidence.Uri,
-                            AccountingPostingEvidenceKindDto.Source,
-                            sourceEvidence.SourceSystem,
-                            sourceEvidence.RetainedAtUtc,
-                            sourceEvidence.RetainedBy,
-                            sourceEvidence.SubjectId,
-                            sourceEvidence.ContentHash,
-                            sourceEvidence.Description)
-                    ]))
-        ];
+        return lines;
     }
 
     private async Task<LedgerAccountingPeriod?> ResolvePostingPeriodAsync(
@@ -401,7 +424,8 @@ public sealed class LoanAccountingProjector
                 line.Debit,
                 line.Credit,
                 line.Description,
-                line.Dimensions))
+                line.Dimensions,
+                line.Currency))
             .ToList();
 
     private static List<LedgerEntry> ApplyLineDimensions(
@@ -427,7 +451,8 @@ public sealed class LoanAccountingProjector
                 line.Debit,
                 line.Credit,
                 line.Description,
-                dimensions))
+                dimensions,
+                line.Currency))
             .ToList();
     }
 

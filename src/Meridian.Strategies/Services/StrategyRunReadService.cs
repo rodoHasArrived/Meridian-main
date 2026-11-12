@@ -14,7 +14,7 @@ public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
 /// <summary>
 /// Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.
 /// </summary>
-public sealed class StrategyRunReadService
+public sealed partial class StrategyRunReadService
 {
     private const string ContinuityStatusHealthy = "Healthy";
     private const string ContinuityStatusWarning = "Warning";
@@ -36,6 +36,7 @@ public sealed class StrategyRunReadService
     private readonly LedgerReadService _ledgerReadService;
     private readonly IPromotionRecordStore? _promotionRecordStore;
     private readonly CashFlowProjectionService? _cashFlowProjectionService;
+    private readonly IStrategyRunLedgerSource? _postedLedgerSource;
 
     internal PortfolioReadService PortfolioReadService => _portfolioReadService;
     internal LedgerReadService LedgerReadService => _ledgerReadService;
@@ -45,13 +46,15 @@ public sealed class StrategyRunReadService
         PortfolioReadService portfolioReadService,
         LedgerReadService ledgerReadService,
         IPromotionRecordStore? promotionRecordStore = null,
-        CashFlowProjectionService? cashFlowProjectionService = null)
+        CashFlowProjectionService? cashFlowProjectionService = null,
+        IStrategyRunLedgerSource? postedLedgerSource = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _portfolioReadService = portfolioReadService ?? throw new ArgumentNullException(nameof(portfolioReadService));
         _ledgerReadService = ledgerReadService ?? throw new ArgumentNullException(nameof(ledgerReadService));
         _promotionRecordStore = promotionRecordStore;
         _cashFlowProjectionService = cashFlowProjectionService;
+        _postedLedgerSource = postedLedgerSource;
     }
 
     public Task<IReadOnlyList<StrategyRunSummary>> GetRunsAsync(
@@ -260,7 +263,7 @@ public sealed class StrategyRunReadService
                 .ConfigureAwait(false);
         }
         var portfolioTask = _portfolioReadService.BuildSummaryAsync(run, ct);
-        var ledgerTask = _ledgerReadService.BuildSummaryAsync(run, ct);
+        var ledgerTask = BuildRunLedgerSummaryAsync(run, scope, ct);
 
         await Task.WhenAll(portfolioTask, ledgerTask).ConfigureAwait(false);
 
@@ -626,7 +629,7 @@ public sealed class StrategyRunReadService
         var run = await GetRunForScopeAsync(runId, scope, ct).ConfigureAwait(false);
         return run is null
             ? null
-            : await _ledgerReadService.BuildSummaryAsync(run, ct).ConfigureAwait(false);
+            : await BuildRunLedgerSummaryAsync(run, scope, ct).ConfigureAwait(false);
     }
 
     public Task<IReadOnlyList<StrategyRunComparison>> CompareRunsAsync(

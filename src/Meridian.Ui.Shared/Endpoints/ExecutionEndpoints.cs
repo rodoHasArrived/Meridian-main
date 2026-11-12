@@ -5,6 +5,8 @@ using Meridian.Execution.Interfaces;
 using Meridian.Execution.Models;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Services;
+using Meridian.Execution.Events;
+using Meridian.Execution.Serialization;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.Accounts;
@@ -708,6 +710,42 @@ public static class ExecutionEndpoints
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
         // --- Session management ---
+
+        group.MapPost("/sessions/{sessionId}/financing", async (string sessionId, HttpContext context) =>
+        {
+            if (!TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            if (EndpointAuthorization.ResolveTrustedActionOrigin(context, OperationsActionOriginDto.HumanOperator)
+                != OperationsActionOriginDto.HumanOperator)
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+            var persistence = context.RequestServices.GetService<PaperSessionPersistenceService>();
+            if (persistence is null || context.RequestServices.GetService<PaperFinancingPostingService>() is null)
+                return Results.Problem("Durable financing posting is not configured.", statusCode: 503);
+            try
+            {
+                var request = await JsonSerializer.DeserializeAsync(context.Request.Body,
+                    PaperFinancingApiJsonContext.Default.PaperFinancingRequest, context.RequestAborted).ConfigureAwait(false);
+                if (request is null)
+                    return Results.BadRequest();
+                await persistence.RecordFinancingAsync(new PaperFinancingCharge(sessionId,
+                    PaperTradingPortfolio.DefaultAccountId, request.AccrualDate, request.Amount,
+                    request.SourceReference, request.Rationale, actor), context.RequestAborted).ConfigureAwait(false);
+                return Results.NoContent();
+            }
+            catch (JsonException) { return Results.BadRequest(); }
+            catch (ArgumentException ex) { return Results.Problem(ex.Message, statusCode: 400); }
+            catch (InvalidDataException ex) { return Results.Problem(ex.Message, statusCode: 409); }
+            catch (InvalidOperationException ex) { return Results.Problem(ex.Message, statusCode: 409); }
+            catch (Meridian.Ledger.LedgerValidationException ex) { return Results.Problem(ex.Message, statusCode: 409); }
+            catch (IOException)
+            {
+                return Results.Problem("Financing posting is unavailable. Retry the same source assessment after recovery.", statusCode: 503);
+            }
+        })
+        .WithName("PostPaperSessionFinancing")
+        .RequirePermission(UserPermission.AdminMaintenance)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces(204).Produces(400).Produces(401).Produces(403).Produces(409).Produces(503);
 
         group.MapGet("/sessions", async (HttpContext context) =>
         {

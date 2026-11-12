@@ -18,6 +18,7 @@ using Meridian.FSharp.Ledger;
 using Meridian.ProviderSdk;
 using Meridian.Storage.Archival;
 using Meridian.Storage.SecurityMaster;
+using Meridian.Storage.Ledger;
 using Meridian.Strategies.Services;
 using Microsoft.Extensions.Logging;
 using static Meridian.Contracts.Text.TextPrimitives;
@@ -51,6 +52,7 @@ public sealed partial class ProviderLedgerReconciliationService
     private readonly ILedgerBookService? _ledgerBookService;
     private readonly IFundProfileTenancyRegistry? _fundProfileTenancyRegistry;
     private readonly ILogger<ProviderLedgerReconciliationService> _logger;
+    private readonly PostedLedgerAccountReconciliationSource? _postedLedgerSource;
 
     public ProviderLedgerReconciliationService(
         BrokeragePortfolioSyncService brokerageSync,
@@ -64,7 +66,8 @@ public sealed partial class ProviderLedgerReconciliationService
         IOperatorOverridesStore? operatorOverridesStore = null,
         ISecurityMasterConflictService? securityMasterConflictService = null,
         ILedgerBookService? ledgerBookService = null,
-        IFundProfileTenancyRegistry? fundProfileTenancyRegistry = null)
+        IFundProfileTenancyRegistry? fundProfileTenancyRegistry = null,
+        ILedgerJournalStore? postedJournalStore = null)
     {
         _brokerageSync = brokerageSync ?? throw new ArgumentNullException(nameof(brokerageSync));
         _fundAccountService = fundAccountService ?? throw new ArgumentNullException(nameof(fundAccountService));
@@ -78,6 +81,7 @@ public sealed partial class ProviderLedgerReconciliationService
         _securityMasterConflictService = securityMasterConflictService;
         _ledgerBookService = ledgerBookService;
         _fundProfileTenancyRegistry = fundProfileTenancyRegistry;
+        _postedLedgerSource = postedJournalStore is null ? null : new PostedLedgerAccountReconciliationSource(postedJournalStore);
     }
 
     public async Task<ProviderLedgerReconciliationDetailDto> RunAsync(
@@ -550,6 +554,28 @@ public sealed partial class ProviderLedgerReconciliationService
             internalSnapshot,
             custodianPositions,
             bankStatementLines);
+        if (_postedLedgerSource is not null && ledgerScope is not null && providerProjection is not null)
+        {
+            IReadOnlyList<ProviderShadowBookComparisonLineDto> postedLines;
+            try
+            {
+                postedLines = await _postedLedgerSource.CompareAsync(ledgerScope.Book, accountId, providerProjection, tolerance, ct);
+            }
+            catch (Exception ex) when (ex is InvalidOperationException or ArgumentException or NotSupportedException)
+            {
+                postedLines = [new("posted-ledger-population", "Posted ledger population", "posted-ledger", "provider-sync",
+                    null, null, null, ProviderLedgerReconciliationCheckStatusDto.Blocked, ex.Message)];
+            }
+            var allLines = shadowBookComparison.Lines.Concat(postedLines).ToArray();
+            shadowBookComparison = shadowBookComparison with
+            {
+                Lines = allLines,
+                ComparableLineCount = allLines.Count(l => l.Status != ProviderLedgerReconciliationCheckStatusDto.Blocked),
+                MatchedLineCount = allLines.Count(l => l.Status == ProviderLedgerReconciliationCheckStatusDto.Matched),
+                BreakLineCount = allLines.Count(l => l.Status == ProviderLedgerReconciliationCheckStatusDto.Break),
+                UnavailableLineCount = allLines.Count(l => l.Status == ProviderLedgerReconciliationCheckStatusDto.Blocked)
+            };
+        }
         AddShadowBookBreaks(runId, lifecycle, checks, breaks, shadowBookComparison);
         var corporateActionReadiness = BuildCorporateActionReadiness(
             providerProjection,

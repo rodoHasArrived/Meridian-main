@@ -311,10 +311,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             throw new InvalidOperationException("Consolidation drafts require authoritative consolidation intake; rerun consolidation to prepare an elimination.");
         }
         EnsureAssetAccountingSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
+        EnsureOpeningBalanceSaveAuthority(request.Draft, existing, trustedAutomatedIntake);
         var normalizedDraft = await NormalizeAndValidateAsync(request.Draft with
         {
             TenantId = requestedTenantId,
             CompanyId = requestedCompanyId,
+            PriorPeriodAdjustmentSource = existing is null
+                ? (trustedAutomatedIntake ? request.Draft.PriorPeriodAdjustmentSource : null)
+                : existing.PriorPeriodAdjustmentSource,
             // Automated evidence grades are server-produced accounting-control facts. A browser or
             // WPF resave may edit the draft, but cannot clear, replace, or upgrade the retained grade.
             AutomationEvidenceAssessment = existing is null
@@ -333,7 +337,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                  RecurringJournalEvidenceGuard.IsRecurring(existing.TreasuryContext?.IdempotencyKey) ||
                  existing.RequiresValuationMarkEvidence || existing.ValuationMarkEvidenceJson is not null ||
                  ValuationMarkEvidenceGuard.IsValuation(existing.TreasuryContext?.IdempotencyKey) ||
-                 IsConsolidationDraft(existing))
+                 IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null)
                 ? (request.Draft.TreasuryContext ?? existing.TreasuryContext) is { } valuationContext
                     ? valuationContext with { IdempotencyKey = existing.TreasuryContext?.IdempotencyKey }
                     : existing.TreasuryContext
@@ -344,7 +348,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             RecurringJournalEvidenceDigest = existing is null
                 ? (trustedAutomatedIntake ? request.Draft.RecurringJournalEvidenceDigest : null)
                 : existing.RecurringJournalEvidenceDigest,
-            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
+            ReversalOfJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing) || existing.PriorPeriodAdjustmentSource is not null) ? existing.ReversalOfJournalEntryId : request.Draft.ReversalOfJournalEntryId,
             RebookedFromJournalEntryId = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.RebookedFromJournalEntryId : request.Draft.RebookedFromJournalEntryId,
             Reversal = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Reversal : request.Draft.Reversal,
             Rebook = existing is not null && (existing.RecurringJournalEvidenceJson is not null || IsConsolidationDraft(existing)) ? existing.Rebook : request.Draft.Rebook,
@@ -404,6 +408,8 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         }
 
         var now = DateTimeOffset.UtcNow;
+        if (existing is null && trustedAutomatedIntake && normalizedDraft.PriorPeriodAdjustmentSource is { } priorPeriodSource)
+            normalizedDraft = normalizedDraft with { PriorPeriodAdjustmentSource = priorPeriodSource with { ExpectedLines = normalizedDraft.Lines } };
         var saved = normalizedDraft with
         {
             Status = normalizedDraft.ValidationIssues.Any(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
@@ -472,6 +478,7 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             CompanyId = companyId,
             // A read-only validation request is not authority to invent a policy or source receipt.
             PrivateCapitalAuthorityJson = existing?.PrivateCapitalAuthorityJson,
+            PriorPeriodAdjustmentSource = existing?.PriorPeriodAdjustmentSource,
             DistributionDeclarationJson = existing?.DistributionDeclarationJson,
             RecurringJournalEvidenceJson = existing?.RecurringJournalEvidenceJson,
             RecurringJournalEvidenceDigest = existing?.RecurringJournalEvidenceDigest,
@@ -1011,7 +1018,13 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                 line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
                 line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m,
                 description,
-                ToLedgerLineDimensions(line.Dimensions)));
+                ToLedgerLineDimensions(line.Dimensions),
+                string.Equals(line.Currency, ledgerBook.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(draft.Currency, ledgerBook.BaseCurrency, StringComparison.OrdinalIgnoreCase)
+                    ? new LedgerEntryCurrency(ledgerBook.BaseCurrency, ledgerBook.BaseCurrency,
+                        line.Side == AccountingTemplateLineSideDto.Debit ? amount : 0m,
+                        line.Side == AccountingTemplateLineSideDto.Credit ? amount : 0m, 1m)
+                    : null));
         }
 
         var entry = new JournalEntry(
@@ -1119,12 +1132,35 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         AddMetadataTag(tags, "accountingBasis", draft.AccountingBasis.ToString());
         AddMetadataTag(tags, "ledgerBookId", draft.LedgerBookId?.ToString("D"));
         AddMetadataTag(tags, "periodId", draft.PeriodId);
+        if (draft.PriorPeriodAdjustmentSource is { } priorPeriod)
+        {
+            AddMetadataTag(tags, "prior-period.sourceJournalEntryId", priorPeriod.SourceJournalEntryId.ToString("D"));
+            AddMetadataTag(tags, "prior-period.sourcePeriodId", priorPeriod.SourcePeriodId.ToString("D"));
+            AddMetadataTag(tags, "prior-period.originalEffectiveDate", priorPeriod.OriginalEffectiveDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture));
+            AddMetadataTag(tags, "prior-period.intentId", priorPeriod.IntentId);
+            AddMetadataTag(tags, "prior-period.reason", priorPeriod.Reason);
+            AddMetadataTag(tags, "prior-period.reversalPolicy", priorPeriod.ReversePeriodEndMark ? "reverse-period-end-mark" : "reviewed-prior-period-correction");
+        }
         AddMetadataTag(tags, "tenantId", draft.TenantId);
         AddMetadataTag(tags, "companyId", draft.CompanyId);
         AddMetadataTag(tags, "sourceEventId", postingCommand.SourceEventId?.ToString("D"));
         AddMetadataTag(tags, "sourceJournalEntryId", postingCommand.SourceJournalEntryId?.ToString("D"));
         AddMetadataTag(tags, "securityMasterProvenance", securityLineage?.Provenance);
         AddMetadataTag(tags, "securityMasterLineage", securityLineage?.Lineage);
+        if (securityLineage?.PerLine is { } perLine)
+        {
+            tags["securityMaster.lineageMode"] = "per-line";
+            foreach (var line in draft.Lines)
+            {
+                if (!perLine.TryGetValue(line.LineId, out var resolved))
+                    continue;
+                var entryId = CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"), line.LineId, line.Side.ToString());
+                var prefix = $"securityMaster.line.{entryId:D}.";
+                tags[prefix + "securityId"] = resolved.SecurityId!.Value.ToString("D");
+                tags[prefix + "provenance"] = resolved.Provenance;
+                tags[prefix + "lineage"] = resolved.Lineage;
+            }
+        }
         if (evidenceLinks.Count > 0)
         {
             tags["evidenceLinks"] = string.Join("|", evidenceLinks);
@@ -1176,12 +1212,31 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
         if (instrumentLines.Length == 0)
             return null;
 
+        if (instrumentLines.Any(item => (item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId).GetValueOrDefault() == Guid.Empty))
+            throw new InvalidOperationException("Every instrument-bearing opening line requires its own resolved Security Master identity before posting.");
+
         var securityIds = instrumentLines
             .Select(static item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId)
             .Where(static value => value.HasValue && value.Value != Guid.Empty)
             .Select(static value => value!.Value)
             .Distinct()
             .ToArray();
+        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) ||
+                draft.TreasuryContext?.IdempotencyKey?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) == true))
+        {
+            var perLine = new Dictionary<string, ManualJournalSecurityMasterLineage>(StringComparer.Ordinal);
+            foreach (var group in instrumentLines.GroupBy(item => item.Line.SecurityId ?? item.Line.Dimensions?.InstrumentId))
+            {
+                var resolved = await ResolveSecurityMasterPostingLineageAsync(draft with { Lines = group.Select(item => item.Line).ToArray() }, chartByPath, ct)
+                    ?? throw new InvalidOperationException("Opening line Security Master provenance is unavailable.");
+                foreach (var item in group)
+                    perLine.Add(item.Line.LineId, resolved);
+            }
+            return new ManualJournalSecurityMasterLineage(null, null,
+                instrumentLines.Select(item => item.Line.LedgerAccountFinancialAccountId).Distinct(StringComparer.OrdinalIgnoreCase).SingleOrDefault(),
+                string.Join('|', perLine.Values.Select(value => value.Provenance).Distinct(StringComparer.Ordinal)),
+                string.Join('|', perLine.Values.Select(value => value.Lineage).Distinct(StringComparer.Ordinal)), perLine);
+        }
         if (securityIds.Length != 1)
         {
             throw new InvalidOperationException(
@@ -1264,11 +1319,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
                alias.IsEnabled && string.Equals(alias.AliasValue?.Trim(), symbol, StringComparison.OrdinalIgnoreCase));
 
     private sealed record ManualJournalSecurityMasterLineage(
-        Guid SecurityId,
-        string Symbol,
+        Guid? SecurityId,
+        string? Symbol,
         string? FinancialAccountId,
         string Provenance,
-        string Lineage);
+        string Lineage,
+        IReadOnlyDictionary<string, ManualJournalSecurityMasterLineage>? PerLine = null);
 
     private static AccountingPostingIntentDto BuildManualPostingIntent(ManualJournalEntryDraftDto draft)
     {
@@ -1532,6 +1588,14 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             Reversal = reversal,
             Rebook = rebook
         };
+        if (IsOpeningBalanceDraft(posted))
+        {
+            correction = correction with
+            {
+                TreasuryContext = (correction.TreasuryContext ?? new TreasuryLedgerContextDto()) with
+                { IdempotencyKey = $"portfolio-opening-correction:{posted.JournalEntryId:D}:{correctionId:D}" }
+            };
+        }
         if (posted.RecurringJournalEvidenceJson is { } recurringJson)
         {
             var evidence = RecurringJournalEvidenceGuard.Deserialize(recurringJson)

@@ -11,6 +11,12 @@ last_reviewed: 2026-07-27
 
 # src/Meridian
 
+Enabled trade-fill ledger composition also supplies the scope-bound paper financing source
+outbox and governed posting target. The human administrator assessment route uses that same
+book/period authority; absent scope binding or unresolved source delivery fails closed.
+Shared workstation composition owns optional daily reconciliation and scheduled mark-reversal
+draft preparation. These workers retain the ordinary tenant, period and approval controls.
+
 `UiServer` paper composition registers `IOrderGateway` as a read-only view over the OMS paper `IExecutionGateway` (no second paper simulator). The optional StockSharp gateway no longer registers placeholder account-catalog, portfolio or activity sync adapters; the runtime surface reports those as missing.
 
 The browser host can compose the Alpaca brokerage execution portfolio. `BrokeragePortfolioState`

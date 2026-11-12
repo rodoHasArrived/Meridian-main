@@ -11,6 +11,32 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Storage
 
+Hard close now retains `LedgerPeriodCloseSnapshot` in the same PostgreSQL transaction as the
+period transition, close event and audit fact. Migration 055 adds immutable, versioned snapshots.
+The canonical source-generated payload includes the scoped book journal history through the closing
+effective date, including opening history, closing entries, currencies, dimensions and source lineage.
+SHA-256 verification precedes every read. Earlier-period fences and the audit boundary prevent a
+concurrent posting from producing a partly observed close population. An exact lost-acknowledgement
+retry returns the original close version; altered close commands conflict. Reopen/reclose retains
+earlier snapshots. Pre-migration closes explicitly have no snapshot; they are never fabricated.
+
+Focused coverage: `LedgerPeriodCloseSnapshotTests` includes deterministic hashing, scope/content
+corruption, restart replay, immutable retention and rollback when snapshot persistence fails.
+
+Portfolio opening balances recheck their account cutoff inside the journal append transaction,
+after the shared ledger audit-head lock. Prior account activity at or before the snapshot date
+blocks the opening; once an opening posts, backdated originating activity at or before that
+cutoff requires a governed adjustment. Later activity and independently scoped accounts remain
+eligible. This protects the approval interval and concurrent postings as well as draft preparation.
+Declared line functional currencies must match the retained ledger book's base currency.
+
+`Export/LedgerJournalExporter` produces CSV and Parquet rows from immutable journal lines. It
+preserves audit metadata, dimensional scope and transaction-currency evidence through source-generated
+JSON envelopes; exports from retained `LedgerJournalEntryRecord` populations additionally retain
+posting policy, rule, source event, period and approval metadata. Monetary columns use invariant
+decimal text in both formats to preserve full decimal precision across readers. An optional external
+account map must cover every exported source account; it never changes the original journal.
+
 Security Master migration 062 now checks its apply conditions in the runner without changing
 the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,
 hold source-table write locks through commit, and refuse the usual thirty-second command timeout

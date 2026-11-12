@@ -22,6 +22,27 @@ public sealed class LiveRunMetricsTrackerTests
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public void Build_FinancingExpenseWithinRun_AdjustsGrossProfitAndInterestMetric()
+    {
+        var ledger = new MeridianLedger();
+        ledger.PostLines(StartedAt.AddHours(2), "Assessed financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpenseFor("account-1"), 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.CashAccount("account-1"), 0m, 12.50m)
+        ]);
+        ledger.PostLines(StartedAt.AddDays(-1), "Earlier period",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 100m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 100m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, ledger, StartedAt.AddDays(1));
+        result.Metrics.TotalMarginInterest.Should().Be(12.50m);
+        result.Metrics.NetPnl.Should().Be(-12.50m);
+        result.Metrics.GrossPnl.Should().Be(0m);
+    }
+
+    [Fact]
     public void Build_LargerLaterCurrencyLoss_PreservesWorstPercentageAndBlocksPromotion()
     {
         var metrics = BuildMetricsFor([100m, 50m, 1_000m, 900m], initialEquity: 100m, finalEquity: 900m);

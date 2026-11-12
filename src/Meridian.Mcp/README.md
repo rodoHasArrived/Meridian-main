@@ -31,6 +31,21 @@ This layer should expose AI/tooling access without mixing MCP mechanics into UI 
 
 Use this module for MCP host behavior and AI-assisted tool/resource access.
 
+### Ledger reads
+
+`LedgerTools` forwards journal, current/as-of trial-balance, account-summary, running-balance,
+per-symbol and accounting-completeness reads to the workstation API. Run tools accept a retained
+`runId`; posted-book tools accept a `periodId`, and completeness requires the exact book, period,
+aggregate and financial-account scope. The API applies its usual permissions and tenant visibility;
+these tools do not read journal files directly or grant posting authority.
+
+Set `MDC_API_URL` to the API origin (default `http://localhost:8080/`) and, when configured on the
+server, supply `MDC_API_KEY` through the process environment. HTTPS is required for non-loopback
+hosts. Redirects are disabled and credentials never appear in tool output. The caller's server-side
+identity must have the applicable strategy/ledger read permission and tenant scope. A 401/403 is
+reported as a failed read, never retried with broader authority. Journal and symbol tools use
+`offset`/`limit` pagination (default 500, maximum 10,000).
+
 ### Preview-first repository edits
 
 The repo edit tools expose a thin MCP wrapper over `build/scripts/ai/ai-edit-tool.py`:
