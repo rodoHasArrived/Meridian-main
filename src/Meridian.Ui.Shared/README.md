@@ -1111,6 +1111,10 @@ workstation data root. Browser-created views use snapshot v2 ownership keyed by 
 workstation tenant, operator and table/explorer identity. Ownerless v1 views remain read-only
 legacy tenant views with an explicit personal-copy action. All read/write paths validate table
 access; atomic snapshot publication and a cross-host writer lease preserve concurrent updates.
+Resolved personal views apply their search and filters once, without asking the legacy/system-view
+reader to resolve the personal ID again. Responses retain that authenticated personal view as active;
+requests without a view preserve the exact run selected by the reader. Missing or foreign personal
+IDs remain fail-closed and cannot expose another operator or tenant's rows or view metadata.
 The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
