@@ -773,3 +773,28 @@ does not claim native Windows browser zoom execution. Native Windows/Edge and
 assistive-technology announcement journeys remain unexecuted by this audit.
 Live providers, backend writes and the complete monorepo CI are not certified by
 these synthetic browser checks. The PR remains draft and unmerged.
+
+## Fixture gap follow-up (issue #3510)
+
+The workstation smoke walk now reports **3 unanswered fixture calls, down from
+17**, and still passes all 22 cases with zero automated accessibility
+violations, no unexpected console errors and no failed assets.
+
+Fourteen read routes are answered by synthetic fixtures typed against the shared
+contracts. Nine carry sample data consistent with the existing sample desk
+(reconciliation queue status, open cases and taxonomy; validation and breaks for
+run-42; ledger books; the provider capability matrix; the Security Master
+quality report; the operator visit read). Five return the valid empty or
+first-session answer (risk escalations, daily valuation schedules, the quality
+dashboard, the corporate-action inbox, the operator scope preference). The smoke
+script fails if any of these returns 501 again; removing one fixture was
+confirmed to fail the run.
+
+Still unanswered, and still listed in the report: the financial-operations
+command center and the close period plan, which are large composite projections,
+and the POST that records an operator visit, which is a write and is not faked.
+
+The count of 17 described this walk only. Opening Data and Security Master
+routes outside it shows many more unanswered reference-data, quality and
+maintenance routes. These fixtures are layout and state samples; they are not
+backend, posting or provider evidence.

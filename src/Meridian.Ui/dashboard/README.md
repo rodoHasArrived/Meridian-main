@@ -2216,6 +2216,19 @@ and 15 axe scans; the three adoption journeys pass 24 checks and 24 scoped axe
 scans. All use synthetic fixtures; these counts do not certify backend services
 or native Windows/assistive-technology behavior.
 
+The routes that walk reads are answered by `src/lib/dev-fixtures/`. Read surfaces
+that once returned 501 there (reconciliation readiness, statement-run detail for
+the sample run, operator preference reads, ledger books, the provider capability
+matrix, and the empty-state answers for escalations, valuation schedules, data
+quality and the corporate-action inbox) are served from
+`workstation-surface-fixtures.ts`, typed against the shared contracts. The smoke
+script lists those paths and fails if one returns 501 again. Three calls stay
+unanswered on purpose and are still reported: the financial-operations command
+center and the close period plan (large composite projections with no synthetic
+fixture yet), and the POST that records an operator visit (a write). The walk
+covers a small part of the workstation: other routes, including most of Data and
+Security Master reference data, still return 501 in fixture-only mode.
+
 ### Workspace-specific styling
 
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped

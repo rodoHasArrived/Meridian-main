@@ -819,6 +819,10 @@ public sealed record ManualJournalEntryDraftDto(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? PrivateCapitalAuthorityJson { get; init; }
 
+    /// <summary>Server-retained distribution terms and tiers used to recover an interrupted declaration.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DistributionDeclarationJson { get; init; }
+
     public IReadOnlyList<JournalEntryLifecycleTransitionDto> LifecycleTransitions { get; init; } =
         LifecycleTransitions ?? [];
 

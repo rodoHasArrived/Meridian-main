@@ -119,6 +119,27 @@ After extraction, verify the payload against its internal inventory/SHA256SUMS.
 Checksums detect changed bytes; they do not independently establish authorship or
 publisher trust. Re-exporting unchanged inputs produces the same archive bytes.
 
+## Accepting a re-export
+
+A fresh export from the design source replaces the vendored files and drops every
+local fix that was not carried upstream. Before accepting a new tree, rebuild and
+run the local-patch regressions, then re-apply whatever fails from
+[LOCAL_PATCHES.md](LOCAL_PATCHES.md):
+
+```bash
+npm run build
+MERIDIAN_CHROMIUM_PATH=/path/to/chromium npm run test:patches
+```
+
+## Hosted checks
+
+`.github/workflows/design-system-package.yml` runs on pull requests and `main` pushes that
+change this package or the dashboard asset synchronization script. `package-integrity` runs
+`build:check`, `release:check`, `test:release`, the dashboard asset projection check,
+`test:patches`, `test:agency` and `test:browser`. `release-governance` runs
+`scripts/validate_release.py` and the Python suite with no allowance for failure. Neither
+is a required check.
+
 ## Consumer dependencies
 
 - **Component bundle:** React is a consumer-supplied peer/global. Load React
