@@ -1758,6 +1758,8 @@ public sealed partial class AccountingPostingCandidateService :
         ValidateOptionalDimension(typed.CapitalAccountId, candidate?.CapitalAccountId, "capitalAccountId", issues);
         ValidateOptionalDimension(typed.InstrumentId, candidate?.InstrumentId, "instrumentId", issues);
         ValidateOptionalDimension(typed.PositionId, candidate?.PositionId, "positionId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementId, candidate?.IntercompanyAgreementId, "intercompanyAgreementId", issues);
+        ValidateOptionalDimension(typed.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), candidate?.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture), "intercompanyAgreementVersion", issues);
         ValidateOptionalDimension(typed.TaxLotId, candidate?.TaxLotId, "taxLotId", issues);
         ValidateOptionalDimension(typed.CostCenterId, candidate?.CostCenterId, "costCenterId", issues);
         ValidateOptionalDimension(typed.CounterpartyId, candidate?.CounterpartyId, "counterpartyId", issues);

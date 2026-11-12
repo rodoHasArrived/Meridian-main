@@ -82,6 +82,7 @@ modules:
       - ResearchContinuity
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementServiceTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DatabaseStartupPlanTests|FullyQualifiedName~HostStartupLifecycleTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
@@ -130,6 +131,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Contracts.UnitTests/Meridian.Contracts.UnitTests.csproj --filter "FullyQualifiedName~LedgerAgreementDimensionsTests|FullyQualifiedName~FundStructureContractsJsonContextTests|FullyQualifiedName~IntercompanyAgreementRatePrecisionTests"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
       - dotnet build src/Meridian.Contracts/Meridian.Contracts.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~AutoGapRemediationServiceTests|FullyQualifiedName~BackfillCoordinatorPreviewTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -272,6 +274,7 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementStorePostgresTests|FullyQualifiedName~IntercompanyAgreementPostingPostgresTests" /p:EnableWindowsTargeting=true
       - dotnet build src/Meridian.Core/Meridian.Core.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet build src/Meridian.Storage/Meridian.Storage.csproj /p:EnableWindowsTargeting=true /p:NodeReuse=false
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~BackfillStatusStoreTests|FullyQualifiedName~ParallelBackfillServiceTests|FullyQualifiedName~GapBackfillServiceTests|FullyQualifiedName~AutoGapRemediationServiceTests|FullyQualifiedName~BackfillCoordinatorPreviewTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:NodeReuse=false
@@ -454,6 +457,7 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementPostingGuardTests|FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
@@ -806,6 +810,7 @@ modules:
       - AccountingRecords
       - GovernedReportPack
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests|FullyQualifiedName~ConsolidationServiceTests" /p:EnableWindowsTargeting=true
       - dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
@@ -976,12 +981,13 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
     diagrams:
       - DIA-BROWSER-WORKSTATION
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-11-12
 
   - id: SRC-UI-SHARED
     path: src/Meridian.Ui.Shared
@@ -1023,6 +1029,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -1061,6 +1068,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - npm --prefix src/Meridian.Ui/dashboard run test -- --run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build
     diagrams:
@@ -1103,6 +1111,7 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
     diagrams:

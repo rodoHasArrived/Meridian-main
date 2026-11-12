@@ -17,6 +17,13 @@ The absent property is omitted from JSON so historical journal hashes remain unc
 classification establishes preparer attestation only; source verification, independent approval
 and financial coverage remain separate.
 
+`LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
+Canonicalization, grouping and replay preserve the distinction between agreement revisions without
+changing legacy signatures when references are absent. Agreement provenance explains a line; it
+does not create paired postings, settlement or agreement-level consolidation. The durable storage
+boundary validates supplied references and historical reversals. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 `StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
 through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
 quotes through the shared lot model, applies currency minor units, and retains template/convention

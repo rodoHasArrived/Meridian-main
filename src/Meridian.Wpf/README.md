@@ -55,6 +55,13 @@ and shows unknown or foreign support as unavailable without granting ordinary ap
 Native compilation can be checked with Windows targeting on another OS; executing the WPF controls
 and Windows test assembly still requires the Windows Desktop runtime.
 
+Fund Operations includes an Agreements tab over the shared `IntercompanyAgreementWorkspace` and
+API client. It supports entity/date filters, draft terms, evidence, independent review, revision
+comparison and advisory source-line drill-through. Server capabilities control mutations and stale
+responses preserve local edits. The desktop surface does not maintain its own agreement store or
+posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
+native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
 It also displays the host's effective governance profile, source, restart latch, enforced edit and

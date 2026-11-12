@@ -49,6 +49,56 @@ public sealed class CashDividendPreparerPostingContractTests
     }
 
     [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void NativeAttestedAppendCannotBypassAgreementAuthorityWithCorrectlyShapedReferences(bool compatibilityTags)
+    {
+        var write = BuildWrite();
+        var first = write.Entry.Lines[0];
+        var agreementId = Guid.Parse("73000000-0000-0000-0000-000000000001");
+        var dimensions = first.Dimensions! with
+        {
+            EntityId = "73000000-0000-0000-0000-000000000002",
+            CounterpartyId = "73000000-0000-0000-0000-000000000003",
+            IntercompanyAgreementId = compatibilityTags ? null : agreementId,
+            IntercompanyAgreementVersion = compatibilityTags ? null : 1
+        };
+        var tags = new Dictionary<string, string>(write.Entry.Metadata.Tags ?? new Dictionary<string, string>());
+        if (compatibilityTags)
+        {
+            tags[$"lineDimensions.{first.EntryId:N}.intercompanyAgreementId"] = agreementId.ToString("D");
+            tags[$"lineDimensions.{first.EntryId:N}.intercompanyAgreementVersion"] = "1";
+        }
+        write = write with
+        {
+            Entry = new JournalEntry(write.Entry.JournalEntryId, write.Entry.Timestamp, write.Entry.Description,
+                [new LedgerEntry(first.EntryId, first.JournalEntryId, first.Timestamp, first.Account, first.Debit,
+                    first.Credit, first.Description, dimensions, first.Currency), write.Entry.Lines[1]],
+                write.Entry.Metadata with { Tags = tags })
+        };
+        var ordinary = write with
+        {
+            PostingCommand = write.PostingCommand! with
+            {
+                Actor = "independent-reviewer",
+                ApprovalState = AccountingPostingApprovalStateDto.Approved,
+                ApprovalId = "ordinary-review",
+                CashDividendAttestation = null
+            }
+        };
+        var normalized = AccountingPostingCommandValidator.NormalizeAndValidate(ordinary, true, true);
+        IntercompanyAgreementPostingGuard.HasReferences(normalized.Entry).Should().BeTrue();
+        normalized.Entry.Lines[0].Dimensions!.IntercompanyAgreementId.Should().Be(agreementId);
+        normalized.Entry.Lines[0].Dimensions!.IntercompanyAgreementVersion.Should().Be(1);
+
+        var nativeAppend = () => AccountingPostingCommandValidator.NormalizeAndValidate(write,
+            true, true, allowPreparerAttestation: true);
+
+        nativeAppend.Should().Throw<LedgerValidationException>()
+            .WithMessage("*standalone append transaction*agreement leases*through commit*");
+    }
+
+    [Theory]
     [InlineData(true)]
     [InlineData(false)]
     public void NativeAttestedAppendRejectsMissingOrEmptyLedgerBook(bool missing)

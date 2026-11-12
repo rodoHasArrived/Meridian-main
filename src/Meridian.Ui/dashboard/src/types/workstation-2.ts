@@ -1383,6 +1383,8 @@ export interface LedgerDimensionSet {
   taxLotId?: string | null;
   costCenterId?: string | null;
   counterpartyId?: string | null;
+  intercompanyAgreementId?: string | null;
+  intercompanyAgreementVersion?: number | null;
   externalGlDimensions?: Record<string, string> | null;
   organizationId?: string | null;
   portfolioId?: string | null;

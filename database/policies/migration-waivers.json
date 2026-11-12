@@ -43,6 +43,12 @@
       "review_after": "2027-03-22"
     },
     {
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "rule_id": "migration-truncate",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12"
+    },
+    {
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/034_security_master_dated_price_history.sql",
       "rule_id": "migration-drop-table-member",
       "reason": "Requires human schema/storage and release-operations review. Replaces only security_raw_prices_pkey (security_id, source_id) with (security_id, source_id, price_as_of) so earlier observations remain retained; no row or column is removed. PostgresMigrationRunner executes the constraint replacement and migration-ledger append under one transaction and advisory migration lock, so failed DDL restores the original primary key. Drain legacy price writers before rollout because their old ON CONFLICT target is no longer valid. After multiple dated observations exist, prefer a forward fix; do not restore the old key by deleting history. Any reverse migration requires separately reviewed preservation of every retained observation and proof that the old uniqueness can be restored safely.",

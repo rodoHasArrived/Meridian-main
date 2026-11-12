@@ -50,6 +50,13 @@ controlled workflow or granting approval/posting authority. This B assertion rem
 from the separate native C cash-dividend lane. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
 for the bounded default-off scope and outstanding W14 acceptance.
 
+Intercompany agreement contracts retain bilateral party roles, descriptive terms, proposal state,
+immutable approved versions, evidence hashes and shared capabilities. Authenticated call context
+supplies tenant and actor separately from command bodies. Optional ledger agreement ID/version
+properties travel together; their conditional signature suffix preserves legacy hashes when absent.
+`FundStructureContractsJsonContext` registers the shared registry wire types. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
 structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
 certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.

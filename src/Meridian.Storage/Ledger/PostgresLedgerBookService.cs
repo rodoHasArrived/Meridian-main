@@ -863,7 +863,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: FirstTag(tags, "vendorId"),
             ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, ""),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, "")
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -896,7 +898,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId)
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -937,7 +941,9 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: FirstTag(tags, prefix + "vendorId"),
             ProjectId: FirstTag(tags, prefix + "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, prefix),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, prefix)
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -983,9 +989,10 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             dimensions.ProjectId ?? string.Empty,
             string.Join("\u001d", externalGl));
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{key}\u001epositionId={dimensions.PositionId.Value:D}"
             : key;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e");
     }
 
     private static LedgerBookDto MapBook(LedgerBookRecord record)

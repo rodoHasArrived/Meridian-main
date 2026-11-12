@@ -30,6 +30,12 @@ Operations Continuity refuses reserved W14 preparer-assertion references when di
 or reopening a controlled workflow. These refusals preserve the current workflow state and its
 ordinary approval requirements; legacy opaque references still do not prove independent review.
 
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
 retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the

@@ -2161,6 +2161,8 @@ function formatClosePostingBalanceScope(dimensions: LedgerDimensionSet | null | 
     ["Tax lot", dimensions?.taxLotId],
     ["Cost center", dimensions?.costCenterId],
     ["Counterparty", dimensions?.counterpartyId],
+    ["Agreement", dimensions?.intercompanyAgreementId],
+    ["Agreement version", dimensions?.intercompanyAgreementVersion == null ? null : String(dimensions.intercompanyAgreementVersion)],
     ["Organization", dimensions?.organizationId],
     ["Portfolio", dimensions?.portfolioId],
     ["Book", dimensions?.bookId],
