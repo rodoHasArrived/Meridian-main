@@ -28,6 +28,13 @@ public sealed class SecurityAssetClassBehaviorFactsTests
         => Classes(static d => d.CarriesBondCouponStructure).Should().Equal("Bond");
 
     [Fact]
+    public void SupportsRecurringFixedIncomeAccrual_AdmitsBondOnly()
+    {
+        Classes(static d => d.SupportsRecurringFixedIncomeAccrual).Should().Equal("Bond");
+        SecurityAssetClassCatalog.GetOrDefault("NotAClass").SupportsRecurringFixedIncomeAccrual.Should().BeFalse();
+    }
+
+    [Fact]
     public void UsesOccOptionSymbols_IsOptionAndWarrant()
         => Classes(static d => d.UsesOccOptionSymbols).Should().BeEquivalentTo(["Option", "Warrant"]);
 

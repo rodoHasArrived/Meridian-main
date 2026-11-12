@@ -17,11 +17,37 @@ ledger dimensions omit null fields to preserve legacy evidence hashes. Consolida
 participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
 See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 
+The catalog's explicit `SupportsRecurringFixedIncomeAccrual` capability admits Bond only; coupon
+structure, lot units and valuation treatment do not imply recurring admission. Shared lot validation
+certifies the twelve-decimal quote derived from a governed unit successor's exact allocated basis.
+Disposal instructions compare selections by retained ordinal while keeping every field exact.
+
+`SecurityAssetTermsCodecBindings` declares the flat key/member bindings used to generate the
+Security Master C# decode and F# writer arms; schema requiredness remains in
+`SecurityAssetTermsSchema`. Regenerate both arms together rather than editing generated codecs.
+
+Typed rate-observation contracts retain source text, declared units, observation/vintage dates,
+retrieval and construction evidence. `SecurityRateIngestionRules` requires an explicit reviewed
+construction; observed fixings, forward assumptions and Treasury par yields are distinct inputs.
+Optional quotation evidence declares clean/dirty basis, per-100 convention, quote status and
+settlement facts. Bond calculations and settlement consideration can pin a hash-bound immutable
+price-selection receipt instead of copying a quote; absent optional fields preserve legacy bytes.
+
+Provider integration identity decisions retain the operator's selected security, matching-evidence
+hash, reason and review metadata without rewriting staged source records. Fixed-income capability
+rows separate adapter support from tenant-scoped connection, entitlement, freshness and verification
+evidence; broad provider coverage does not establish that a particular input is available.
+
 `BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
 for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
 `BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
 fraction, original typed provider observation, recording actor/time, review justification and hash.
 Observed reset evidence is distinct from a forward curve or forecast assumption.
+
+`StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
+interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
+row schema for historical receipts. The catalog declares StructuredNote valuation as fair value
+through profit or loss, independently of eligibility for coupon-accrual accounting.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
