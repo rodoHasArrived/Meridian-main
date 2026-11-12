@@ -2,11 +2,27 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 523. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 527. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterClosePricesJsonContext["SecurityMasterClosePricesJsonContext"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflict["SecurityMasterConflict"] {
+        +Guid ConflictId
+        +string ConflictKind
+        +DateTimeOffset DetectedAt
+        +string FieldPath
+        +string ProviderA
+        +string ProviderB
+        +DateTimeOffset? ResolvedAt
+        +string? ResolvedBy
+        +string? ResolvedReason
+        +string? ResolvedWinnerSource
+        +Guid SecurityId
+        +string Status
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategories["SecurityMasterConflictFieldCategories"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityMasterConflictFieldCategory["SecurityMasterConflictFieldCategory"] {
@@ -294,11 +310,21 @@ classDiagram
         +SecurityStatusDto Status
         +long Version
     }
+    class Meridian_Contracts_SecurityMaster_SecurityTermBinding["SecurityTermBinding"] {
+        +string? DecodeExpression
+        +bool DecodeOnly
+        +string? Key
+        +string Path
+        +SecurityTermRead? Read
+        +string? WriteVia
+    }
     class Meridian_Contracts_SecurityMaster_SecurityTermBlocks["SecurityTermBlocks"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermConventionKind["SecurityTermConventionKind"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermConventions["SecurityTermConventions"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermRead["SecurityTermRead"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermReader["SecurityTermReader"] {
     }
@@ -390,26 +416,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto["SecurityValidationWorkflowDto"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto["SecurityValuationBlockerDto"] {
-        +string Code
-        +string Reason
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput["SecurityValuationCurveInput"] {
-        +Guid CurveId
-        +Guid? CurveVersionId
-        +string Role
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationInputDto["SecurityValuationInputDto"] {
-        +DateTimeOffset? AsOf
-        +string? ContentSha256
-        +Guid? Id
-        +string Kind
-        +DateTimeOffset? RecordedAt
-        +string Reference
-        +long? Version
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityValuationModelKind["SecurityValuationModelKind"] {
-    }
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
     Meridian_Contracts_SecurityMaster_SecurityMasterReportingReference --> Meridian_Contracts_SecurityMaster_SecurityMasterReportingResolutionMode
@@ -434,6 +440,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityScheduleParseResult --> Meridian_Contracts_SecurityMaster_SecuritySchedulePresence
     Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException --> Meridian_Contracts_SecurityMaster_SecurityScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_SecuritySummaryDto --> Meridian_Contracts_SecurityMaster_SecurityStatusDto
+    Meridian_Contracts_SecurityMaster_SecurityTermBinding --> Meridian_Contracts_SecurityMaster_SecurityTermRead
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
     Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole

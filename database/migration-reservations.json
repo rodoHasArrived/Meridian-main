@@ -93,13 +93,13 @@
       "reservations": []
     },
     {
-      "id": "operator-triage",
+      "id": "identity-access",
       "filename_template": "{ordinal:03d}_{slug}.sql",
       "ordinal_pattern": "^(?P<ordinal>\\d+)_",
       "reservations": []
     },
     {
-      "id": "identity-access",
+      "id": "operator-triage",
       "filename_template": "{ordinal:03d}_{slug}.sql",
       "ordinal_pattern": "^(?P<ordinal>\\d+)_",
       "reservations": []

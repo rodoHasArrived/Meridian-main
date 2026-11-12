@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 523. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 527. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -89,6 +89,10 @@ classDiagram
         +string LabelKey
         +string Value
     }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetTermsCodecBindings["SecurityAssetTermsCodecBindings"] {
+        +IReadOnlyDictionary~string__SecurityClassCodecBinding~ ByAssetClass
+        +IReadOnlyList~SecurityClassCodecBinding~ Classes
+    }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermsFieldEditValidator["SecurityAssetTermsFieldEditValidator"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetTermsSchema["SecurityAssetTermsSchema"] {
@@ -122,6 +126,11 @@ classDiagram
         +DateTimeOffset? LastUpdatedUtc
         +Guid SecurityId
         +StructuredCashFlowSourceKind SourceKind
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding["SecurityClassCodecBinding"] {
+        +string AssetClass
+        +IReadOnlyList~SecurityTermBinding~ Members
+        +bool ReadsResolvedTerms
     }
     class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
         +DateTimeOffset ApprovedAt
@@ -414,22 +423,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityLotUnitKind["SecurityLotUnitKind"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterClosePricesJsonContext["SecurityMasterClosePricesJsonContext"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityMasterConflict["SecurityMasterConflict"] {
-        +Guid ConflictId
-        +string ConflictKind
-        +DateTimeOffset DetectedAt
-        +string FieldPath
-        +string ProviderA
-        +string ProviderB
-        +DateTimeOffset? ResolvedAt
-        +string? ResolvedBy
-        +string? ResolvedReason
-        +string? ResolvedWinnerSource
-        +Guid SecurityId
-        +string Status
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetProfileTermsDto --> Meridian_Contracts_SecurityMaster_SecurityEvidenceLinkDto
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsUpcasterPipeline --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
     Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTermsV0ToCurrentUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
@@ -439,6 +432,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
+    Meridian_Contracts_SecurityMaster_SecurityAssetTermsCodecBindings --> Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityDetailDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityForwardCurve

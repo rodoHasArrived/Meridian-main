@@ -2,11 +2,31 @@
 
 # `security-master-contracts` data objects - page 7 of 7
 
-Objects 481-523 of 523. References crossing pages remain available in the dependency manifest.
+Objects 481-527 of 527. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto["SecurityValuationBlockerDto"] {
+        +string Code
+        +string Reason
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput["SecurityValuationCurveInput"] {
+        +Guid CurveId
+        +Guid? CurveVersionId
+        +string Role
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValuationInputDto["SecurityValuationInputDto"] {
+        +DateTimeOffset? AsOf
+        +string? ContentSha256
+        +Guid? Id
+        +string Kind
+        +DateTimeOffset? RecordedAt
+        +string Reference
+        +long? Version
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValuationModelKind["SecurityValuationModelKind"] {
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValuationObservability["SecurityValuationObservability"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityValuationRequest["SecurityValuationRequest"] {
@@ -355,6 +375,11 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationCurveInput
+    Meridian_Contracts_SecurityMaster_SecurityValuationRequest --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
+    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationBlockerDto
+    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationInputDto
+    Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationModelKind
     Meridian_Contracts_SecurityMaster_SecurityValuationResult --> Meridian_Contracts_SecurityMaster_SecurityValuationObservability
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerLine
     Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPostingResult --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLedgerPosting

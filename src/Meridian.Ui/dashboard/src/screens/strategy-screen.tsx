@@ -16,7 +16,7 @@ import { exportTableQuery } from "@/lib/table-workbench";
 import { formatNumber } from "@/lib/format";
 import { Histogram } from "@/components/charts";
 import { CompareToggle } from "@/components/charts/SelectionCompare";
-import { StrategyRunEquityPathCompare } from "./strategy-screen.equity-path-compare";
+import { StrategyRunEquityPathCompare } from "@/screens/strategy-screen.equity-paths";
 import { SeverityBadge } from "@/components/operations";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

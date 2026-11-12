@@ -1459,15 +1459,6 @@
       "sha256": "d263b7c9ebb519957950ff2a8f5a1826f003fc64a020ba00ad0a4a3d09e2a02e"
     },
     {
-      "filename": "001_operator_triage.sql",
-      "immutable": true,
-      "migration_set_id": "operator-triage",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
-      "schema": "operator_triage",
-      "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
-    },
-    {
       "filename": "001_user_access_assignment.sql",
       "immutable": true,
       "migration_set_id": "identity-access",
@@ -1475,10 +1466,19 @@
       "path": "src/Meridian.Identity/Migrations/001_user_access_assignment.sql",
       "schema": "identity_access",
       "sha256": "58c0dcf87ba23c702f97f102778f3f8ff09b0e5c910a4e892f46157e43f2ce37"
+    },
+    {
+      "filename": "001_operator_triage.sql",
+      "immutable": true,
+      "migration_set_id": "operator-triage",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
+      "schema": "operator_triage",
+      "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
     }
   ],
   "findings": [],
-  "fingerprint": "b69e0c4351b7d7c3b16264f1a725704af5a74f0d33c739d170ff994c3a704207",
+  "fingerprint": "938494673270e97608bd6d2dd27d318fc615158542d54626255701360d99079c",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1692,6 +1692,29 @@
     },
     {
       "connection_variables": [
+        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Identity/Migrations",
+      "display_name": "Identity Scoped Access",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "identity-access",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "identity_access_schema_migrations"
+      },
+      "owner": "src/Meridian.Identity",
+      "quote_schema": true,
+      "schema": "identity_access",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
         "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
         "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
         "MERIDIAN_LEDGER_CONNECTION_STRING"
@@ -1712,29 +1735,6 @@
       "owner": "src/Meridian.Storage/Workstation",
       "quote_schema": false,
       "schema": "operator_triage",
-      "track_ordinals": false
-    },
-    {
-      "connection_variables": [
-        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
-        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
-      ],
-      "directory": "src/Meridian.Identity/Migrations",
-      "display_name": "Identity Scoped Access",
-      "drift_policy": "reapply",
-      "glob": "*.sql",
-      "id": "identity-access",
-      "immutable": true,
-      "ledger": {
-        "checksum_column": "checksum",
-        "checksum_required": false,
-        "key_column": "filename",
-        "ordinal_column": "ordinal",
-        "table": "identity_access_schema_migrations"
-      },
-      "owner": "src/Meridian.Identity",
-      "quote_schema": true,
-      "schema": "identity_access",
       "track_ordinals": false
     }
   ],

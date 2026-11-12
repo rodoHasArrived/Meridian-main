@@ -61,6 +61,7 @@ class SchemaControlWorkstationRegistryTests(unittest.TestCase):
         self.assertNotIn("__SCHEMA__", sql)
         self.assertFalse(self.inventory.migration_sets[0].track_ordinals)
         self.assertEqual("throw", self.module["drift_policy"])
+        self.assertIn("MERIDIAN_LEDGER_CONNECTION_STRING", self.module["connection_variables"])
 
     def test_registered_workstation_migration_still_rejects_applied_checksum_drift(self) -> None:
         connection = FakeConnection(

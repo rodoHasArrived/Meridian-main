@@ -1021,7 +1021,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 .Where(static text => !string.IsNullOrWhiteSpace(text))
                 .Select(static text => text!.Trim()));
 
-        if (string.IsNullOrWhiteSpace(requestedViewId) && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
+        if (selectedView is null && string.IsNullOrWhiteSpace(requestedViewId) &&
+            string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
         {
             return (savedViews, summaryItems, rows);
         }
@@ -1239,8 +1240,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 ColumnIds: [])
         ];
 
-    internal static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
-        IReadOnlyList<FinancialRecordExplorerFilterDto?>? filters, int maximumCount = 24)
+    private static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
+        IReadOnlyList<FinancialRecordExplorerFilterDto?>? filters)
         => filters?
             .Where(static filter =>
                 filter is not null &&
@@ -1255,16 +1256,16 @@ public sealed partial class FinancialRecordExplorerReadService
                     ? "equals"
                     : filter.Operator.Trim()
             })
-            .Take(maximumCount)
+            .Take(24)
             .ToArray()
             ?? [];
 
-    internal static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds, int maximumCount = 32)
+    private static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
         => columnIds?
             .Where(static columnId => !string.IsNullOrWhiteSpace(columnId))
             .Select(static columnId => columnId!.Trim())
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .Take(maximumCount)
+            .Take(32)
             .ToArray()
             ?? [];
 

@@ -365,6 +365,26 @@
     },
     {
       "connection_variables": [
+        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
+        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
+      ],
+      "directory": "src/Meridian.Identity/Migrations",
+      "display_name": "Identity Scoped Access",
+      "drift_policy": "reapply",
+      "glob": "*.sql",
+      "id": "identity-access",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "identity_access_schema_migrations"
+      },
+      "owner": "src/Meridian.Identity",
+      "quote_schema": true,
+      "schema": "identity_access",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
         "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
         "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
         "MERIDIAN_LEDGER_CONNECTION_STRING"
@@ -382,26 +402,6 @@
       "owner": "src/Meridian.Storage/Workstation",
       "quote_schema": false,
       "schema": "operator_triage",
-      "track_ordinals": false
-    },
-    {
-      "connection_variables": [
-        "MERIDIAN_SCOPED_ACCESS_CONNECTION_STRING",
-        "MERIDIAN_SCOPED_ACCESS_SCHEMA"
-      ],
-      "directory": "src/Meridian.Identity/Migrations",
-      "display_name": "Identity Scoped Access",
-      "drift_policy": "reapply",
-      "glob": "*.sql",
-      "id": "identity-access",
-      "ledger": {
-        "checksum_column": "checksum",
-        "key_column": "filename",
-        "table": "identity_access_schema_migrations"
-      },
-      "owner": "src/Meridian.Identity",
-      "quote_schema": true,
-      "schema": "identity_access",
       "track_ordinals": false
     }
   ],
