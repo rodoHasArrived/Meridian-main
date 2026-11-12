@@ -68,6 +68,8 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// windows therefore accrue every coupon exactly once, a little each period.
 /// </param>
 /// <param name="QuoteConvention">The class's declared price convention. Null uses the shared lot unit's default convention.</param>
+/// <param name="AccrualHoldings">Daily retained face holdings, including the coupon's history before the accounting window. This accrual-only mode requires versioned interest segments and cannot be combined with raw OpenLots.</param>
+/// <param name="RetainedProjection">A selected immutable calculation projection, used without rereading a changing source assignment.</param>
 public sealed record AmortizationLedgerPostingContext(
     IReadOnlyList<LedgerTaxLot>? OpenLots = null,
     string? FinancialAccountId = null,
@@ -77,7 +79,9 @@ public sealed record AmortizationLedgerPostingContext(
     DateOnly? AmortizedThrough = null,
     AmortizationAccrualWindow? AccrualWindow = null,
     decimal? CouponPrincipalBasis = null,
-    SecurityQuoteConvention? QuoteConvention = null);
+    SecurityQuoteConvention? QuoteConvention = null,
+    IReadOnlyList<FaceValueAccrualHolding>? AccrualHoldings = null,
+    StructuredCashFlowProjectionDto? RetainedProjection = null);
 
 /// <summary>An inclusive range of accounting dates whose accrual is posted as one entry.</summary>
 public sealed record AmortizationAccrualWindow
@@ -96,7 +100,7 @@ public sealed record AmortizationAccrualWindow
 }
 
 /// <inheritdoc />
-public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
+public sealed partial class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
 {
     private readonly ISecurityMasterCashFlowService _cashFlowService;
     private readonly ILogger<SecurityMasterAmortizationLedgerBridge> _logger;
@@ -121,9 +125,11 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         ArgumentException.ThrowIfNullOrWhiteSpace(ticker);
 
         var postingContext = context ?? new AmortizationLedgerPostingContext();
-        var projection = postingContext.ProjectionAsOf is { } projectionAsOf
+        var projection = postingContext.RetainedProjection ?? (postingContext.ProjectionAsOf is { } projectionAsOf
             ? await _cashFlowService.GetProjectionAsOfAsync(securityId, postingContext.Scenario, projectionAsOf, ct).ConfigureAwait(false)
-            : await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false);
+            : await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false));
+        if (projection is not null && (projection.SecurityId != securityId || projection.Scenario != postingContext.Scenario))
+            throw new InvalidOperationException("The selected cash-flow projection does not match the requested security and scenario.");
         if (projection is null)
         {
             _logger.LogDebug(
@@ -172,6 +178,15 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         var convention = DayCountConventions.Parse(projection.TermsUsed?.DayCountConvention);
         var maturity = projection.TermsUsed?.MaturityDate
             ?? DateOnly.FromDateTime(schedule[^1].PeriodDate.UtcDateTime.Date);
+        if (postingContext.AccrualHoldings is not null)
+        {
+            return PostRetainedAccrual(projection, schedule, postingContext, convention, maturity,
+                securityId, normalizedTicker, ledger, existingIds, carrying, financialAccountId, ct);
+        }
+        if (projection.TermsUsed?.CurrentFactor is { } factor && factor != 1m
+            || projection.FactorSchedule?.Any(point => point.Factor != 1m) == true
+            || schedule.Any(row => row.InterestSegments?.Any(segment => segment.Factor != 1m) == true))
+            throw new InvalidOperationException("Factored accrual requires typed retained holdings and interest principal segment evidence.");
         var amortizingLots = BuildAmortizingLots(postingContext.OpenLots, securityId, convention, maturity, postingContext.QuoteConvention);
 
         var allocatedPremiumDiscount = postingContext.AmortizedThrough is { } amortizedThrough

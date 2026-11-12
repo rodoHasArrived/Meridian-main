@@ -627,3 +627,30 @@ The canonical principal-only call/put mode binds reviewed full long-lot quantiti
 a retained disposal instruction. Approval, period checks and atomic disposal govern lot closure
 and journal posting together. Interest, make-whole and short redemptions remain blocked on this
 path pending their own allocation support.
+
+
+## Unit-safe amortization and pool accrual — 2026-11-12
+
+The follow-up removes the cost-basis service's assumed quantity unit. Amortization targets
+economic face per recorded quantity, with separate factor adjustments and explicit rejection
+of incompatible lot units. Decimal face-unit costs and retained exact monetary basis survive
+relief without ten-place unit rounding.
+
+Calculated fixed-rate Bond and StructuredCredit consumers accept typed daily holdings and
+row-2 interest segments. Dated factors and explicit principal reconcile before projection;
+source reference principal and pre-paydown held face scale interest exactly once. A scoped
+read retains acquisition/disposal history and the final interest day when a full paydown
+closes a lot. Recurring output remains an approval-bound accrual draft, excluding principal cash. The typed
+path captures one version-pinned v5 projection; its receipt hash and model persist in the
+structured recurring source evidence and survive draft restart without a source reread.
+
+Context v5 retains these segments. Contexts v1–v3 keep row 0 and v4 keeps row 1, including
+frozen JSON, hashes and arithmetic. Declared schedules, external/provider schedules, floating
+economics, negative interest, stale sources and unsupported synthetic sinkers retain their gates.
+Positive legacy Bond coupons still require a resolvable rate unit; this change does not add a
+new Bond rate-unit declaration or lift the declared-schedule posting gate. StructuredCredit
+uses its existing governed scalar unit declaration. Consumer admission is not proof that
+every retained record satisfies these existing conditions.
+
+Validation evidence will be recorded after the focused build, financial regressions and
+PostgreSQL history checks complete. No migration or historical journal rewrite is introduced.

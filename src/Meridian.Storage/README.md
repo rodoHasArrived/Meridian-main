@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+`ListTaxLotAccrualSnapshotsAsync` reads one tenant/book/security/position scope under repeatable
+read. It reconstructs daily open shares and pre-paydown interest factors from retained mutations,
+including the final interest day of a fully paid-down lot. It preserves same-day disposals and
+refuses incomplete quantity histories or missing acquisition face terms. The read does not
+change posted journals, lot facts or current concurrency versions.
+
 Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
 including the starting weekday of overnight windows and the offset at each window boundary.
 The scheduler scans deferred queue entries without blocking other due jobs, and counts running

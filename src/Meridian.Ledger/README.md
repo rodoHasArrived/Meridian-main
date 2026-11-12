@@ -11,6 +11,11 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ledger
 
+Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
+economic face represented by that quantity and retains decimal unit-cost precision; share rounding
+is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
+split, factor, amortization, capital-return and wash-sale monetary transform.
+
 `LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
 Canonicalization, grouping and replay preserve the distinction between agreement revisions without
 changing legacy signatures when references are absent. Agreement provenance explains a line; it
