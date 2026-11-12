@@ -66,6 +66,7 @@ public sealed class ReportLedgerAmountProvenanceService(
         var nodes = new Dictionary<string, EvidenceNodeDto>(StringComparer.Ordinal);
         var edges = new List<EvidenceEdgeDto>();
         var warnings = new List<string>();
+        var accountingAttestations = new List<AccountingPreparerAttestationDisclosureDto>();
         foreach (var entryId in amount.LedgerEntryIds)
         {
             var records = population.Journals.Where(record => record.Entry.Lines.Any(line => line.EntryId == entryId)).ToArray();
@@ -80,6 +81,9 @@ public sealed class ReportLedgerAmountProvenanceService(
             // Historical balances may legitimately include earlier periods in the same book.
             // Their source association must retain the journal's own period, never the report period.
             var lineScope = scope with { PeriodId = record.PeriodId };
+            // Classify the exact frozen record before source readiness can withhold its routes.
+            // A report-level approval cannot cure an upstream preparer-only accounting decision.
+            accountingAttestations.AddRange(AccountingPreparerAttestationDisclosure.Read(record, lineScope) ?? []);
             var proof = await postedAmounts.GetRetainedPacketAsync(postedSubject, lineScope, record, amount.Currency, ct)
                 .ConfigureAwait(false);
             var verified = proof?.LedgerAmount;
@@ -127,9 +131,11 @@ public sealed class ReportLedgerAmountProvenanceService(
         // Any incomplete contributor blocks the complete report amount. Do not expose routes from
         // an otherwise valid subset as if that subset proved the retained total.
         if (warnings.Count != 0)
-            return Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency, [], [], warnings.Distinct().ToArray());
+            return Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency, [], [], warnings.Distinct().ToArray(),
+                accountingAttestations: AccountingPreparerAttestationDisclosure.Union(accountingAttestations));
         return Packet(subjectId, scope, amount.Label, amount.Amount, amount.Currency,
-            evidence.Values.ToArray(), nodes.Values.ToArray(), [], edges);
+            evidence.Values.ToArray(), nodes.Values.ToArray(), [], edges,
+            AccountingPreparerAttestationDisclosure.Union(accountingAttestations));
     }
 
     private ReportingOutputManifest? AuthorizedManifest(string runId, ReportAccessQueryContext access)
@@ -172,7 +178,8 @@ public sealed class ReportLedgerAmountProvenanceService(
     private static EvidencePacketDto Packet(string subjectId, LedgerAmountScopeDto scope, string label,
         decimal amount, string currency, IReadOnlyList<LedgerAmountProofEvidenceDto> evidence,
         IReadOnlyList<EvidenceNodeDto> nodes, IReadOnlyList<string> warnings,
-        IReadOnlyList<EvidenceEdgeDto>? sourceEdges = null)
+        IReadOnlyList<EvidenceEdgeDto>? sourceEdges = null,
+        IReadOnlyList<AccountingPreparerAttestationDisclosureDto>? accountingAttestations = null)
     {
         var status = warnings.Count == 0 ? EvidenceStatusDto.Ready : EvidenceStatusDto.Blocked;
         var subject = new EvidenceSubjectDto(subjectId, EvidenceSubjectResolver.LedgerAmountKind,
@@ -190,7 +197,11 @@ public sealed class ReportLedgerAmountProvenanceService(
         var sourceIds = evidence.Where(item => item.Kind != "ledger-record").Select(item => item.EvidenceId).ToArray();
         return new EvidencePacketDto(subject, DateTimeOffset.UtcNow, nodes, sourceEdges ?? [], completeness, [], warnings)
         {
-            LedgerAmount = new LedgerAmountProofDto(subjectId, scope, amount, currency, status, evidence, warnings),
+            LedgerAmount = new LedgerAmountProofDto(subjectId, scope, amount, currency, status, evidence, warnings)
+            {
+                AccountingPreparerAttestations = accountingAttestations,
+                OrdinaryRecordedApprovalSatisfied = accountingAttestations is { Count: > 0 } ? false : null
+            },
             ProofChain = new EvidenceProofChainDto(completeness.Score, status, status == EvidenceStatusDto.Ready ? 2 : 0, 2,
                 [new(EvidenceProofChainLayerKindDto.Source, "Verified retained sources", status,
                     completeness.Score, sourceIds, sourceIds, sourceIds, [], missing, ["source-document"],

@@ -5,6 +5,10 @@ import * as cashFlowApi from "@/lib/api/contractual-cash-flow.api";
 import { ContractualCashFlowWorkbench } from "./contractual-cash-flow-workbench";
 import type { ContractualCashFlowResult, ContractualCashFlowRun } from "@/types/contractual-cash-flow.types";
 
+vi.mock("@/components/meridian/preparer-draft-check-panel", () => ({
+  PreparerDraftCheckPanel: ({ securityId, runId }: { securityId: string; runId: string }) => <div data-testid="retained-draft-check-target">{securityId}/{runId}</div>
+}));
+
 vi.mock("@/lib/api/contractual-cash-flow.api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api/contractual-cash-flow.api")>("@/lib/api/contractual-cash-flow.api");
   return {
@@ -78,6 +82,7 @@ describe("ContractualCashFlowWorkbench", () => {
     expect(request.runId).toBeTruthy();
     expect(request.projection).toEqual(api.previewContractualCashFlows.mock.calls[0][2]);
     expect(screen.getByLabelText("Retained run")).toHaveTextContent(`Run ${request.runId} retained 2026-10-31T10:00:00Z by operator-a`);
+    expect(screen.queryByTestId("retained-draft-check-target")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Retain run" })).toBeDisabled();
   });
 
@@ -123,6 +128,7 @@ describe("ContractualCashFlowWorkbench", () => {
     fireEvent.change(screen.getByLabelText("Retained run identity"), { target: { value: "run-9" } });
     fireEvent.click(screen.getByRole("button", { name: "Load retained run" }));
     expect(await screen.findByLabelText("Loaded retained run")).toHaveTextContent(/Run run-9 .* Down100 .* 1 events .* out-1/);
+    expect(screen.getByTestId("retained-draft-check-target")).toHaveTextContent("sec-1/run-9");
     expect(api.getContractualCashFlowRun).toHaveBeenCalledWith("Security", "sec-1", "run-9", expect.anything());
 
     fireEvent.click(screen.getByRole("button", { name: "Verify replay" }));

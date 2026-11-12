@@ -8,7 +8,7 @@ namespace Meridian.Wpf.Services;
 /// Contractual cash-flow scenario preview and retained runs for securities and loans over the shared
 /// routes. Previews are hypothetical and never post; retained runs are complete replay packets.
 /// </summary>
-public interface IWorkstationContractualCashFlowApiClient
+public interface IWorkstationContractualCashFlowApiClient : IPreparerDraftCheckApiClient
 {
     Task<ApiResponse<ContractualCashFlowResult>> PreviewAsync(string subjectKind, Guid subjectId, ContractualCashFlowRequest request, CancellationToken ct = default);
     /// <summary>A blocked projection comes back with <c>RunId == Guid.Empty</c> and no result; the caller previews again.</summary>
@@ -18,7 +18,7 @@ public interface IWorkstationContractualCashFlowApiClient
     Task<ApiResponse<ContractualCashFlowRunComparison>> CompareRunsAsync(string subjectKind, Guid subjectId, Guid runId, Guid otherRunId, CancellationToken ct = default);
 }
 
-public sealed class WorkstationContractualCashFlowApiClient : IWorkstationContractualCashFlowApiClient
+public sealed partial class WorkstationContractualCashFlowApiClient : IWorkstationContractualCashFlowApiClient
 {
     private readonly ApiClientService _apiClient;
 
