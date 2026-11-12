@@ -52,6 +52,8 @@ public static class DesktopJsonOptions
     {
         WriteIndented = false,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        // Fixed-income HTTP decimals are exact strings; request serialization remains numeric.
+        NumberHandling = JsonNumberHandling.AllowReadingFromString
     };
 }

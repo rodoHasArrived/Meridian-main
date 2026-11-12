@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Contracts
 
+`BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
+for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
+`BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
+fraction, original typed provider observation, recording actor/time, review justification and hash.
+Observed reset evidence is distinct from a forward curve or forecast assumption.
+
 `PriorPeriodAdjustmentSourceDto` binds a newly prepared correction to its retained source journal,
 closed period, original effective date, explicitly selected open target period, operator reason,
 intent identity and expected inverse lines. Workbench saves retain this server-produced authority;

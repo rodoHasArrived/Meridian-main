@@ -1230,7 +1230,12 @@ public sealed partial class ManualJournalEntryWorkbenchService : IManualJournalE
             .Select(static value => value!.Value)
             .Distinct()
             .ToArray();
-        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) ||
+        // A prior-period inverse retains server-owned source authority. A client-supplied
+        // idempotency prefix alone cannot authorize a mixed-security manual journal.
+        var verifiedPriorPeriodAdjustment = securityIds.Length > 1
+            && draft.PriorPeriodAdjustmentSource is not null
+            && await ValidatePriorPeriodAdjustmentAsync(draft, ct).ConfigureAwait(false) is null;
+        if (securityIds.Length > 1 && (IsOpeningBalanceDraft(draft) || verifiedPriorPeriodAdjustment ||
                 draft.TreasuryContext?.IdempotencyKey?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) == true))
         {
             var perLine = new Dictionary<string, ManualJournalSecurityMasterLineage>(StringComparer.Ordinal);

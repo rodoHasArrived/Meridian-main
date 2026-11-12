@@ -4,8 +4,11 @@ using Meridian.Application.Subscriptions.Services;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Workstation;
+using PortfolioSummary = Meridian.Core.Subscriptions.Models.PortfolioSummary;
 using Meridian.Core.Config;
 using Meridian.Core.Subscriptions.Models;
+using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Tests.Storage;
 using Meridian.Ui.Shared.Services;
@@ -26,7 +29,18 @@ public sealed class PortfolioOpeningBalancePostingTests
     public Task NonPrimaryBookOpening_PreparesReviewsAndPostsWithAuthoritativeBasisAndPolicy()
         => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax);
 
-    private static async Task PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto basis)
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task MixedOpening_ClosedSourcePreparesAndPostsCurrentPeriodInverseAndReversal()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Primary, JournalEntryLifecycleActionDto.Reverse);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task MixedTaxOpening_ClosedSourcePreparesAndPostsCurrentPeriodInverseAndRebook()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax, JournalEntryLifecycleActionDto.Rebook);
+
+    private static async Task PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto basis,
+        JournalEntryLifecycleActionDto? correctionAction = null)
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var root = Path.Combine(Path.GetTempPath(), "meridian-opening-post-" + Guid.NewGuid().ToString("N"));
@@ -65,8 +79,9 @@ public sealed class PortfolioOpeningBalancePostingTests
             var configuration = new AccountingConfigurationService(configurationStore, audit);
             var drafts = new InMemoryManualJournalEntryDraftStore();
             using var postingTarget = new DurableLedgerPostingTarget(database.JournalStore);
+            var capturingTarget = new CapturingPostingTarget(postingTarget);
             var workbench = new ManualJournalEntryWorkbenchService(drafts, configuration, audit, securities,
-                database.JournalStore, postingTarget: postingTarget);
+                database.JournalStore, postingTarget: capturingTarget);
             var intake = new AutomatedJournalDraftIntakeService(workbench, drafts, configuration);
             var configPath = Path.Combine(root, "appsettings.json");
             await File.WriteAllTextAsync(configPath, JsonSerializer.Serialize(new AppConfig(DataRoot: root)));
@@ -119,6 +134,149 @@ public sealed class PortfolioOpeningBalancePostingTests
             retained.Metadata.Tags!["securityMaster.lineageMode"].Should().Be("per-line");
             (await queue.QueueAsync(run)).Should().Be(id, "receipt recovery cannot create another opening");
             (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle();
+            if (correctionAction is { } action)
+            {
+                var originalPeriod = (await database.JournalStore.GetPeriodAsync(period))!;
+                await database.JournalStore.SaveHardClosedPeriodAsync(originalPeriod with { Status = "HardClosed", ClosedAt = at },
+                    originalPeriod.Version, new(Guid.NewGuid(), period, "Open", "HardClosed", "close-controller",
+                        "Retain the imported opening before correction.", at));
+                var nextPeriod = Guid.NewGuid();
+                await database.JournalStore.SavePeriodAsync(new(nextPeriod, book, 2026, 12, "2026-12",
+                    new(2026, 12, 1), new(2026, 12, 31), "Open", at, null, 0), 0);
+                var preparation = new PeriodAdjustmentPreparationService(database.JournalStore, intake);
+                var inverse = (await preparation.PrepareAsync(new(book, id, nextPeriod, new(2026, 12, 1),
+                    "correct-mixed-opening", "Correct the closed imported opening."), "adjustment-preparer", tenant, company)).Created.Single();
+                inverse.AccountingBasis.Should().Be(basis);
+                var sourceInstrumentIds = retained.Lines.Where(line => line.Account.Symbol is not null)
+                    .Select(line => line.Dimensions!.InstrumentId!.Value).ToArray();
+                inverse.Lines.Where(line => line.LedgerAccountSymbol is not null).Select(line => line.SecurityId!.Value)
+                    .Should().BeEquivalentTo(sourceInstrumentIds);
+
+                // A serialized client cannot substitute both the inverse and its expected lines.
+                var alteredLines = inverse.Lines.Select(line => line.LedgerAccountSymbol == "AAPL"
+                    ? line with { SecurityId = Guid.NewGuid(), Dimensions = line.Dimensions! with { InstrumentId = Guid.NewGuid() } }
+                    : line).ToArray();
+                var untrusted = JsonSerializer.Deserialize<ManualJournalEntryDraftDto>(JsonSerializer.Serialize(inverse with
+                {
+                    Lines = alteredLines,
+                    PriorPeriodAdjustmentSource = inverse.PriorPeriodAdjustmentSource! with { ExpectedLines = alteredLines }
+                }))!;
+                var refused = await workbench.ValidateDraftAsync(new(untrusted, "adjustment-preparer",
+                    LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                refused.ValidationIssues.Should().Contain(issue => issue.Code == "manual-je.prior-period-authority-required");
+                (await database.JournalStore.GetByPeriodAsync(nextPeriod)).Should().BeEmpty();
+
+                var postedInverse = await ReviewAndPostAsync(inverse);
+                var inverseWrite = capturingTarget.LastWrite!;
+                AssertPerLineIdentity(inverseWrite.Entry);
+                // The public guard does not turn a prior-period prefix into source authority.
+                var retainedNextPeriod = (await database.JournalStore.GetPeriodAsync(nextPeriod))!;
+                var unverified = () => LedgerPeriodPostingGuard.Validate(inverseWrite, retainedNextPeriod);
+                unverified.Should().Throw<LedgerValidationException>().WithMessage("*retained opening*");
+                var wrongRootTags = new Dictionary<string, string>(inverseWrite.Entry.Metadata.Tags!)
+                { ["prior-period.sourceJournalEntryId"] = Guid.NewGuid().ToString("D") };
+                var wrongRoot = inverseWrite with
+                {
+                    Entry = new JournalEntry(inverseWrite.Entry.JournalEntryId,
+                    inverseWrite.Entry.Timestamp, inverseWrite.Entry.Description, inverseWrite.Entry.Lines,
+                    inverseWrite.Entry.Metadata with { Tags = wrongRootTags })
+                };
+                var appendWrongRoot = () => database.JournalStore.AppendAsync(wrongRoot);
+                await appendWrongRoot.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
+                var changedEconomics = inverseWrite with
+                {
+                    Entry = new JournalEntry(inverseWrite.Entry.JournalEntryId,
+                    inverseWrite.Entry.Timestamp, inverseWrite.Entry.Description, inverseWrite.Entry.Lines.Select(line =>
+                        new LedgerEntry(line.EntryId, line.JournalEntryId, line.Timestamp, line.Account,
+                            line.Debit * 2m, line.Credit * 2m, line.Description, line.Dimensions,
+                            new LedgerEntryCurrency("USD", "USD", line.Debit * 2m, line.Credit * 2m, 1m))).ToArray(),
+                    inverseWrite.Entry.Metadata)
+                };
+                var appendChangedEconomics = () => database.JournalStore.AppendAsync(changedEconomics);
+                await appendChangedEconomics.Should().ThrowAsync<LedgerValidationException>()
+                    .WithMessage("*every immutable predecessor inverse leg*");
+                var wrongBasisWrite = inverseWrite with
+                {
+                    AccountingBasis = differentBasis,
+                    PostingCommand = inverseWrite.PostingCommand! with
+                    {
+                        BookContext = inverseWrite.PostingCommand.BookContext is { } retainedContext
+                            ? retainedContext with { AccountingBasis = differentBasis }
+                            : null
+                    }
+                };
+                var wrongBasis = () => database.JournalStore.AppendAsync(wrongBasisWrite);
+                await wrongBasis.Should().ThrowAsync<LedgerValidationException>().WithMessage("*root does not match*");
+                var missingLineTags = new Dictionary<string, string>(inverseWrite.Entry.Metadata.Tags!);
+                var instrumentLine = inverseWrite.Entry.Lines.First(line => line.Account.Symbol is not null);
+                missingLineTags.Remove($"securityMaster.line.{instrumentLine.EntryId:D}.provenance");
+                var missingLine = inverseWrite with
+                {
+                    Entry = new JournalEntry(inverseWrite.Entry.JournalEntryId,
+                    inverseWrite.Entry.Timestamp, inverseWrite.Entry.Description, inverseWrite.Entry.Lines,
+                    inverseWrite.Entry.Metadata with { Tags = missingLineTags })
+                };
+                var appendMissingLine = () => database.JournalStore.AppendAsync(missingLine);
+                await appendMissingLine.Should().ThrowAsync<LedgerValidationException>().WithMessage("*Each opening instrument line*");
+
+                var correctionEvidence = Evidence(postedInverse);
+                var correction = (await workbench.ApplyLifecycleActionAsync(new(postedInverse.JournalEntryId, fund, action,
+                    "correction-preparer", postedInverse.Version, "Correct the posted current-period inverse.",
+                    EvidenceLinks: [correctionEvidence], LedgerBookId: book, TenantId: tenant, CompanyId: company)))
+                    .GeneratedJournalEntries.Single();
+                var postedCorrection = await ReviewAndPostAsync(correction);
+                postedCorrection.AccountingBasis.Should().Be(basis);
+                AssertPerLineIdentity(capturingTarget.LastWrite!.Entry);
+                var current = await database.JournalStore.GetByPeriodAsync(nextPeriod);
+                current.Should().HaveCount(2).And.OnlyContain(row => row.AccountingBasis == basis);
+                var balances = current.SelectMany(row => row.Entry.Lines).GroupBy(line => line.Account)
+                    .ToDictionary(group => group.Key, group => group.Sum(line => line.Debit - line.Credit));
+                foreach (var originalLine in retained.Lines)
+                    balances[originalLine.Account].Should().Be(action == JournalEntryLifecycleActionDto.Reverse
+                        ? 0m : originalLine.Credit - originalLine.Debit,
+                        "a reversal nets the inverse to zero; an unchanged rebook replaces it without counting twice");
+                (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle()
+                    .Which.Entry.Should().BeEquivalentTo(retained);
+                (await database.JournalStore.GetPeriodAsync(period))!.Status.Should().Be("HardClosed");
+                (await drafts.GetAsync(fund, id, tenantId: tenant, companyId: company))!.Should()
+                    .BeEquivalentTo(posted.JournalEntry, "preparing and correcting a later draft cannot mutate the closed source");
+
+                string Evidence(ManualJournalEntryDraftDto item)
+                    => $"evidence://review-correction/tenant/{tenant}/company/{company}/book/{book:D}/journal/{item.JournalEntryId:D}/approval-posting";
+
+                async Task<ManualJournalEntryDraftDto> ReviewAndPostAsync(ManualJournalEntryDraftDto item)
+                {
+                    var validation = await workbench.ValidateDraftAsync(new(item, item.PreparedBy,
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                    validation.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
+                    var evidence = Evidence(item);
+                    var submit = await workbench.SubmitApprovalAsync(new(item.JournalEntryId, fund, item.PreparedBy, item.Version,
+                        Notes: "Submit the source-linked correction.", EvidenceLinks: [evidence],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                    var approve = await workbench.ApplyLifecycleActionAsync(new(item.JournalEntryId, fund,
+                        JournalEntryLifecycleActionDto.Approve, "independent-controller", submit.Version,
+                        Notes: "Review each native-currency source leg.", EvidenceLinks: [evidence],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company));
+                    return (await workbench.ApplyLifecycleActionAsync(new(item.JournalEntryId, fund,
+                        JournalEntryLifecycleActionDto.Post, "independent-controller", approve.JournalEntry.Version,
+                        Notes: "Post the independently approved correction.", EvidenceLinks: [evidence],
+                        LedgerBookId: book, TenantId: tenant, CompanyId: company))).JournalEntry;
+                }
+
+                void AssertPerLineIdentity(JournalEntry journal)
+                {
+                    journal.Metadata.SecurityId.Should().BeNull();
+                    journal.Metadata.Symbol.Should().BeNull();
+                    journal.Metadata.Tags!["securityMaster.lineageMode"].Should().Be("per-line");
+                    foreach (var line in journal.Lines.Where(line => line.Account.Symbol is not null))
+                    {
+                        var prefix = $"securityMaster.line.{line.EntryId:D}.";
+                        journal.Metadata.Tags[prefix + "securityId"].Should().Be(line.Dimensions!.InstrumentId!.Value.ToString("D"));
+                        journal.Metadata.Tags[prefix + "provenance"].Should().Contain(line.Account.Symbol == "AAPL" ? "version:3;" : "version:7;");
+                        line.Currency!.IsFunctionalCurrency.Should().BeTrue();
+                    }
+                }
+            }
         }
         finally { Directory.Delete(root, true); }
     }
@@ -126,5 +284,16 @@ public sealed class PortfolioOpeningBalancePostingTests
     private static SecurityDetailDto Security(string symbol, DateTimeOffset at)
         => new(Guid.NewGuid(), "Equity", SecurityStatusDto.Active, symbol, "USD",
             JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
-            [new(SecurityIdentifierKind.Ticker, symbol, true, at.AddYears(-1), null, null)], [], 1, at.AddYears(-1), null);
+            [new(SecurityIdentifierKind.Ticker, symbol, true, at.AddYears(-1), null, null)], [], symbol == "AAPL" ? 3 : 7, at.AddYears(-1), null);
+
+    private sealed class CapturingPostingTarget(IGovernedLedgerPostingTarget inner) : IGovernedLedgerPostingTarget
+    {
+        public LedgerJournalEntryWrite? LastWrite { get; private set; }
+
+        public Task<GovernedLedgerPostingResult> PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default)
+        {
+            LastWrite = write;
+            return inner.PostAsync(write, ct);
+        }
+    }
 }

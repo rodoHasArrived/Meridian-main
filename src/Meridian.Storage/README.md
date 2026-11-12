@@ -11,6 +11,19 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Storage
 
+Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
+column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
+compatibility mirror, including its limit of eighteen integer digits; new values outside that
+range are still refused. Reads and same-timestamp idempotence use `COALESCE(price_exact, price)`
+so quotes that share a rounded mirror remain distinct. Existing rows keep null exact prices and
+unknown quotation metadata: no missing historical digits are backfilled. Nullable metadata is
+omitted from legacy canonical serialization, and retained receipt payloads and hashes stay unchanged.
+Curve point JSON can retain typed rate observations and reviewed construction
+evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
+Typed-rate retries compare all retained source and construction facts except retrieval time under
+the curve row lock. A retry returns its original immutable version, hash and evidence, including
+after a newer distinct publication; it never makes the older observation latest again.
+
 Hard close now retains `LedgerPeriodCloseSnapshot` in the same PostgreSQL transaction as the
 period transition, close event and audit fact. Migration 055 adds immutable, versioned snapshots.
 The canonical source-generated payload includes the scoped book journal history through the closing
@@ -29,6 +42,10 @@ blocks the opening; once an opening posts, backdated originating activity at or 
 cutoff requires a governed adjustment. Later activity and independently scoped accounts remain
 eligible. This protects the approval interval and concurrent postings as well as draft preparation.
 Declared line functional currencies must match the retained ledger book's base currency.
+Mixed-security prior-period adjustments require the retained hard-closed root, exact same-book
+predecessor, approved typed correction and complete native inverse. Rebook replacements balance
+separately. The append holds the target update fence and a shared root fence through commit;
+ordinary callers cannot enable per-line lineage using a prior-period key prefix alone.
 
 `Export/LedgerJournalExporter` produces CSV and Parquet rows from immutable journal lines. It
 preserves audit metadata, dimensional scope and transaction-currency evidence through source-generated

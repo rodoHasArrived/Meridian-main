@@ -165,7 +165,7 @@ public sealed partial class PostgresLedgerJournalStore :
                 connection,
                 transaction,
                 entry.PeriodId,
-                forUpdate: _options.EnablePeriodLocking,
+                forUpdate: _options.EnablePeriodLocking || IsMixedPriorPeriodAdjustment(entry),
                 callerTenantId: _tenantScope.IsFailClosed ? ResolveCallerTenant() : null,
                 ct: ct)
             .ConfigureAwait(false);
@@ -180,7 +180,11 @@ public sealed partial class PostgresLedgerJournalStore :
                 $"Accounting period version {period.Version} does not match expected version {expectedVersion}.");
         }
 
-        if (verifiedAmortizationReversal)
+        var verifiedPriorPeriodAdjustment = await VerifyMixedPriorPeriodAdjustmentAsync(
+            connection, transaction, entry, period, ct).ConfigureAwait(false);
+        if (verifiedPriorPeriodAdjustment)
+            LedgerPeriodPostingGuard.ValidateRetainedPriorPeriodAdjustment(entry, period);
+        else if (verifiedAmortizationReversal)
             LedgerPeriodPostingGuard.ValidateRetainedAmortizationReversal(entry, period);
         else
             LedgerPeriodPostingGuard.Validate(entry, period);

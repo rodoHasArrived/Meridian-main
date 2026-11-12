@@ -182,7 +182,11 @@ public static class ProviderModuleEndpoints
             if (!EndpointAuthorization.HasPermission(context, Identity.Auth.UserPermission.ManageProviders))
                 return EndpointHelpers.Forbidden();
 
-            return Results.Json(matrixService.GetMatrix(), jsonOptions);
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (!tenant.HasTenantScope)
+                return EndpointHelpers.Forbidden();
+
+            return Results.Json(matrixService.GetMatrixForTenant(tenant.TenantId!), jsonOptions);
         })
         .WithName("GetProviderCapabilityMatrix").RequirePermission(UserPermission.ManageProviders)
         .WithDescription("Returns the provider × instrument-type capability matrix with data-source discovery failures.")

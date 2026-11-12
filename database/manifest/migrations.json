@@ -559,6 +559,15 @@
       "sha256": "3b66440592481b5d7743c7d37e52549dd0f9db1f046abf81db6a33ee94ffba2b"
     },
     {
+      "filename": "065_security_price_quotation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 65,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/065_security_price_quotation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1478,7 +1487,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "3be6ae92ad171e42562ee71b17a6b4f993fe3543d6873d1ff6ba1b073fecc740",
+  "fingerprint": "6989127c063f58b75a144c1c018ef304d75277b615e37f0acfb1311b8083d898",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1716,7 +1725,8 @@
     {
       "connection_variables": [
         "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
-        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA"
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
       ],
       "directory": "src/Meridian.Storage/Workstation/Migrations",
       "display_name": "Operator Triage",
@@ -1739,7 +1749,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 164,
+    "files": 165,
     "migration_sets": 11,
     "waivers": 29,
     "warnings": 0

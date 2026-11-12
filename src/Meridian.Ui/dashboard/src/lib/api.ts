@@ -9,6 +9,7 @@ import type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/prom
 
 export { PAPER_PROMOTION_APPROVAL_CHECKLIST } from "./api/promotion.contracts";
 export type { ApprovePromotionRequest, RejectPromotionRequest } from "./api/promotion.contracts";
+export { resolveProviderIntegrationIdentity } from "./api/provider-integration-identity.api";
 
 import type {
   BackfillPreviewResult,

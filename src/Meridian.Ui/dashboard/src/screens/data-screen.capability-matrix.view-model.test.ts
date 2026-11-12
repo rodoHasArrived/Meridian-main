@@ -79,4 +79,14 @@ describe("buildCapabilityMatrixModel", () => {
     expect(model.summary).toContain("1 discovery failure");
     expect(model.failures).toHaveLength(1);
   });
+
+  it("retains task-specific evidence independently from broad instrument coverage", () => {
+    const input = response();
+    input.providers[0].fixedIncomeTasks = [{
+      task: "ExecutableQuotes", adapterSupport: "Unsupported", detail: "No bond streaming profile", connections: []
+    }];
+    const row = buildCapabilityMatrixModel(input).rows[0];
+    expect(row.fixedIncomeTasks).toEqual(input.providers[0].fixedIncomeTasks);
+    expect(row.cells[0].supported).toBe(true);
+  });
 });

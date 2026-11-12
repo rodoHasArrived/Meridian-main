@@ -10,14 +10,20 @@ namespace Meridian.Storage.Ledger;
 public static class LedgerPeriodPostingGuard
 {
     public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
-        => ValidateCore(entry, period, verifiedAmortizationReversal: false);
+        => ValidateCore(entry, period, verifiedAmortizationReversal: false, verifiedPriorPeriodAdjustment: false);
 
     // Called only after the atomic store locks current authority and verifies the original
     // receipt, unchanged lot and exact inverse. A public journal request cannot opt into it.
     internal static void ValidateRetainedAmortizationReversal(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
-        => ValidateCore(entry, period, verifiedAmortizationReversal: true);
+        => ValidateCore(entry, period, verifiedAmortizationReversal: true, verifiedPriorPeriodAdjustment: false);
 
-    private static void ValidateCore(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period, bool verifiedAmortizationReversal)
+    // Only the transactional store can establish the closed root, retained predecessor and
+    // complete inverse. Public callers cannot opt into mixed prior-period lineage using tags.
+    internal static void ValidateRetainedPriorPeriodAdjustment(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
+        => ValidateCore(entry, period, verifiedAmortizationReversal: false, verifiedPriorPeriodAdjustment: true);
+
+    private static void ValidateCore(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period,
+        bool verifiedAmortizationReversal, bool verifiedPriorPeriodAdjustment)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
@@ -31,7 +37,7 @@ public static class LedgerPeriodPostingGuard
         }
 
         ValidateAdjustmentApprovalMetadata(entry);
-        ValidateSecurityMasterLineage(entry, verifiedAmortizationReversal);
+        ValidateSecurityMasterLineage(entry, verifiedAmortizationReversal, verifiedPriorPeriodAdjustment);
         ValidateTreasuryLedgerMetadata(entry, period);
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
@@ -172,7 +178,8 @@ public static class LedgerPeriodPostingGuard
         }
     }
 
-    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry, bool verifiedAmortizationReversal)
+    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry,
+        bool verifiedAmortizationReversal, bool verifiedPriorPeriodAdjustment)
     {
         var journalEntry = entry.Entry;
         var instrumentLines = journalEntry.Lines
@@ -183,7 +190,8 @@ public static class LedgerPeriodPostingGuard
         {
             var key = metadata.IdempotencyKey;
             if (key?.StartsWith("portfolio-opening:", StringComparison.Ordinal) != true &&
-                key?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) != true)
+                key?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) != true &&
+                !verifiedPriorPeriodAdjustment)
                 throw new LedgerValidationException("Per-line Security Master lineage requires the retained opening or opening-correction source.");
             if (metadata.SecurityId.HasValue || !string.IsNullOrWhiteSpace(metadata.Symbol))
                 throw new LedgerValidationException("A mixed opening uses per-line instrument identity rather than an ambiguous header security.");
