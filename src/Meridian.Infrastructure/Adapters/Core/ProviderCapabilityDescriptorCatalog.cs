@@ -50,6 +50,11 @@ public static class ProviderCapabilityDescriptorCatalog
                 InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex,
                 InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index
             ],
+            // Match IBMarketDataClient's detailed profiles. Bond historical/contract coverage
+            // does not establish streaming trades, executable quotes, or depth.
+            StreamingInstrumentTypes:
+            [InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption,
+                InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex],
             StreamingFactory: static f => f.CreateIbStreamingClient(),
             HistoricalFactory: static f => f.CreateIbBackfillProvider(f.Config.IB),
             BrokerageFactory: static f => f.CreateIbBrokerageGateway()),

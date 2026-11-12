@@ -1476,6 +1476,8 @@ erDiagram
         text recorded_by
         timestamp_with_time_zone recorded_at
         text price_unit
+        jsonb quotation_evidence
+        numeric price_exact
     }
     security_master_security_snapshots {
         uuid security_id PK
@@ -1971,7 +1973,7 @@ erDiagram
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
 | `security_pricing_hierarchy` | table | 6 | `security_id`, `account_id` | 1 | 2 | - |
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
-| `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
+| `security_raw_prices` | table | 9 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
 | `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |
 | `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
