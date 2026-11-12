@@ -13782,6 +13782,7 @@ Meridian-main
 │   │   ├── ViewModels
 │   │   │   ├── AccountingCloseViewModelTests.cs
 │   │   │   ├── AccountingConfigureViewModelTests.cs
+│   │   │   ├── AccountingPreparerAttestationPresentationTests.cs
 │   │   │   ├── AccountPortfolioViewModelTests.cs
 │   │   │   ├── ActivityLogViewModelTests.cs
 │   │   │   ├── AddProviderWizardViewModelTests.cs
