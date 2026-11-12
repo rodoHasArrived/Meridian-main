@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
@@ -19,6 +19,35 @@ The snapshot also carries the selected terms' Base cash-flow calculation blocker
 evaluation time through `GetProjectionBlockerAsync`, a passive read that retains no receipt. Typed
 signed-interest refusals remain visible to both clients and prevent payment, cash-flow, ledger and
 close readiness; current reads never recalculate a legacy receipt to obtain it.
+
+`Evidence/SinglePrincipalAttestationStore` retains separate preparer assertions, declaration
+history, revocations and audit events in a scoped atomic snapshot under a cross-process lease.
+`SinglePrincipalAttestation:EnableEvidenceAcknowledgments` defaults to `false`; a host that leaves
+it unset has no eligible attestation action. Enabling this mechanism still requires a current
+declaration bound to the authenticated human and explicit declaration/read/attestation grants;
+no built-in role receives them automatically. The first adapter supports company-scoped
+`ATTEST-EVIDENCE-ACK` only. Book-scoped subjects, `ATTEST-DRAFT-CHECK` and economic actions are
+not registered.
+
+`EvidenceAttestationSubjectResolver` verifies retained document bytes and tenant/company scope,
+binds the current source and document operands, and refuses incomplete, conflicting or unsupported
+extraction checks. Each acknowledgment creates its own preparer assertion; it does not alter the
+source creator, ordinary document-review state, accounting approval, posting state or coverage
+classification. Fixture evidence stays labeled synthetic and an absent fixture marker stays
+unclassified. The shared receipt carries "Attested by preparer — not independently reviewed".
+It retains the exact evaluated JSON snapshot and its hash, so subsequent document-review changes
+do not erase the operands confirmed by the preparer. Current source-read permissions apply to
+history and command replay. Original source identity retained in the receipt permits authorized
+corrective revocation after withdrawal or source corruption; it does not establish current support.
+
+`Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs` maps the workspace, subject preview,
+declaration, receipt and revocation routes under `/api/workstation/evidence/attestations`.
+Browser mutation controls and WPF read-only history consume the same classification and scope.
+Focused synthetic tests are `SinglePrincipalAttestationStoreTests`,
+`SinglePrincipalAttestationAdditionalTests`, `SinglePrincipalAttestationEndpointTests` and
+`EvidenceAttestationSubjectResolverTests`. They do not establish economic-policy acceptance.
+The [policy disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
+records the limited development scope and outstanding economic-policy acceptance.
 
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 

@@ -396,6 +396,42 @@
                 <StackPanel Grid.Column="1">
                     <Border Style="{StaticResource CardStyle}"
                             Margin="0,0,0,14"
+                            AutomationProperties.AutomationId="EvidenceWorkbenchAttestationsPanel">
+                        <StackPanel>
+                            <TextBlock Text="Preparer attestations" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="{Binding AttestationScopeText}"
+                                       Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,6,0,0" />
+                            <TextBlock Text="{Binding AttestationStatusText}"
+                                       Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,6,0,10"
+                                       AutomationProperties.AutomationId="EvidenceWorkbenchAttestationStatus" />
+                            <ItemsControl ItemsSource="{Binding AttestationRows}"
+                                          AutomationProperties.AutomationId="EvidenceWorkbenchAttestationHistory">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Disclosure}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding ActorAndTime}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding CurrentStatus}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                <TextBlock Text="{Binding Reason}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                <Expander Header="Retained assertion details" Margin="0,6,0,0">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Subject}" TextWrapping="Wrap" />
+                                                        <TextBlock Text="{Binding ReceiptId}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                        <TextBlock Text="{Binding Hashes}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                        <TextBlock Text="{Binding SourceProvenance}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                                                    </StackPanel>
+                                                </Expander>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource CardStyle}"
+                            Margin="0,0,0,14"
                             AutomationProperties.AutomationId="EvidenceWorkbenchSubjectPanel">
                         <StackPanel>
                             <TextBlock Text="Evidence subjects" Style="{StaticResource CardHeaderStyle}" />

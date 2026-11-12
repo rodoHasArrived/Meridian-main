@@ -6,10 +6,20 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui/dashboard
+
+The Evidence Workbench's retained-document panel reads shared single-principal declaration,
+source-snapshot and receipt endpoints without development fallback. Evidence acknowledgment is
+default-off and uses explicit grants, a current declaration, a reason and an exact confirmation.
+It leaves document Accept/Reject unchanged. Retained receipts show the preparer disclosure,
+source provenance and unassessed current support separately; unknown schemas or decision types
+display classification unavailable. Withdrawal preserves history, self-revocation appends a
+correction, and uncertain writes retain one command for retry. Focused coverage lives in
+`single-principal-attestation-panel.test.tsx`, `single-principal-attestation-api.test.ts` and
+`evidence-workbench-screen.view-model.test.tsx`.
 
 The main order ticket retains local quantity and limit/stop-price text while the existing numeric
 model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.

@@ -3,6 +3,7 @@ using Meridian.Documents;
 using Microsoft.Extensions.Options;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
+using Meridian.Contracts.Workstation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +33,30 @@ public static class EvidenceWorkflowServiceCollectionExtensions
                 FileEvidenceArtifactStore.ResolveDataRoot(sp),
                 sp.GetRequiredService<ILogger<FileEvidenceArtifactStore>>(),
                 sp.GetRequiredService<IOptions<EvidenceStorageQuotaOptions>>().Value));
+        services.TryAddSingleton<EvidenceAttestationSubjectResolver>();
+        services.TryAddSingleton(sp => new SinglePrincipalAttestationStore(
+            FileEvidenceArtifactStore.ResolveDataRoot(sp),
+            async (scope, authority, request, ct) =>
+            {
+                if (scope.LedgerBookId is not null || !authority.CanModifyTarget
+                    || request.ActionId != SinglePrincipalAttestationPolicy.EvidenceAcknowledgment
+                    || request.SubjectKind != EvidenceAttestationSubjectResolver.SubjectKind)
+                    return null;
+                var segments = request.SubjectId.Split('/');
+                if (segments.Length != 2 || segments.Any(string.IsNullOrWhiteSpace))
+                    return null;
+                var subject = await sp.GetRequiredService<EvidenceAttestationSubjectResolver>()
+                    .ResolveAsync(segments[0], segments[1], scope.TenantId, scope.CompanyId, ct)
+                    .ConfigureAwait(false);
+                return subject is null ? null : new SinglePrincipalAttestationSubjectSnapshotDto(
+                    subject.SubjectKind, subject.SubjectId, subject.Revision, subject.Hash,
+                    subject.SourceArtifactId, subject.SourceHash, subject.SourceActor,
+                    subject.SourceProvenance, subject.Eligible, subject.Checks,
+                    subject.SourceSubjectKind, subject.SourceSubjectId, subject.SubjectSnapshotJson);
+            },
+            policyEnabled: (sp.GetService<CompositionConfiguration>()?.HostConfiguration
+                ?? sp.GetService<IConfiguration>())?
+                .GetValue<bool>("SinglePrincipalAttestation:EnableEvidenceAcknowledgments") ?? false));
         return services;
     }
 

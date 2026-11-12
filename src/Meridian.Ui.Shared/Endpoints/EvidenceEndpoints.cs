@@ -15,7 +15,7 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>
 /// Serves retained evidence artifacts and maps evidence workflow operations with subject-scope authorization.
 /// </summary>
-public static class EvidenceEndpoints
+public static partial class EvidenceEndpoints
 {
     public static WebApplication MapEvidenceEndpoints(
         this WebApplication app,
@@ -126,6 +126,7 @@ public static class EvidenceEndpoints
         .RequireWorkstationTenantCompanyScope();
 
         var group = app.MapGroup("/api/workstation/evidence");
+        MapSinglePrincipalAttestationEndpoints(group, jsonOptions);
 
         group.MapGet(EvidenceSubroute(UiApiRoutes.WorkstationEvidenceSubjects), async (HttpContext context) =>
         {

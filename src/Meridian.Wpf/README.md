@@ -6,10 +6,18 @@ module_id: SRC-WPF
 path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Wpf
+
+The Evidence Workbench reads the shared single-principal declaration and retained preparer-assertion
+history through `EvidenceWorkbenchApiClient.GetAttestationsAsync`. Its read-only scope panel preserves
+"Attested by preparer — not independently reviewed", source provenance, actor, exact subject revision
+and hashes, and reasoned revocations after declaration withdrawal. Current support is explicitly
+unassessed; these rows never grant approval, posting, close or release authority. Permission failures
+clear prior rows and remain unavailable rather than reading as zero assertions. Native interaction and
+`EvidenceWorkbenchViewModelTests` require Windows; browser mutation controls remain a separate surface.
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.

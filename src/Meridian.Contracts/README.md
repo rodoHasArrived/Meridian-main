@@ -6,10 +6,25 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+`Workstation/SinglePrincipalAttestationDtos.cs` defines versioned preparer assertions separately
+from approval receipts. The scope binds tenant, company and optional book; declarations carry a
+revision and policy identity; receipts retain the exact subject and source hashes, preparer,
+attesting human, origin, confirmation and evidence checks. `SubjectSnapshotJson` preserves the
+server-evaluated document operands, with their digest, independently of later review metadata.
+Declaration history and revocation records preserve the original receipt rather than rewriting it.
+The first HTTP adapter resolves tenant/company scope only; the optional book contract does not
+register a book-scoped evidence provider.
+`SinglePrincipalAttestationPolicy.Disclosure` supplies the shared label,
+"Attested by preparer — not independently reviewed". Neither this decision classification nor
+the evidence acknowledgment supplies accounting approval, posting authority or verified coverage.
+`ATTEST-DRAFT-CHECK` is a reserved policy identifier, not an implemented permission to advance a
+draft. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
+for the bounded default-off scope and outstanding W14 acceptance.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

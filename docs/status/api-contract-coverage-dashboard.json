@@ -4,14 +4,14 @@
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 19.7,
   "endpoint_coverage_percent": 30.3,
-  "contract_coverage_percent": 3.9,
+  "contract_coverage_percent": 3.8,
   "summary": {
     "endpoint_count": 748,
     "documented_endpoint_count": 227,
     "undocumented_endpoint_count": 521,
-    "workstation_contract_count": 1009,
+    "workstation_contract_count": 1020,
     "documented_workstation_contract_count": 39,
-    "undocumented_workstation_contract_count": 970
+    "undocumented_workstation_contract_count": 981
   },
   "endpoints": [
     {
@@ -8152,6 +8152,61 @@
     {
       "name": "SecurityIdentityDrillInDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:56",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationScopeDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:14",
+      "documented": false
+    },
+    {
+      "name": "ChangeSinglePrincipalDeclarationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:19",
+      "documented": false
+    },
+    {
+      "name": "RecordPreparerAttestationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:28",
+      "documented": false
+    },
+    {
+      "name": "RevokePreparerAttestationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:40",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalDeclarationDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:47",
+      "documented": false
+    },
+    {
+      "name": "PreparerAttestationReceiptDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:61",
+      "documented": false
+    },
+    {
+      "name": "PreparerAttestationRevocationDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:92",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationAuditEventDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:100",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationStateDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:109",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationWorkspaceDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:123",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationSubjectSnapshotDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:132",
       "documented": false
     },
     {

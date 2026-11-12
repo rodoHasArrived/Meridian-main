@@ -11,6 +11,11 @@ namespace Meridian.Wpf.Services;
 /// </summary>
 public interface IEvidenceWorkbenchApiClient
 {
+    /// <summary>Scope-level preparer assertions, separate from evidence readiness and approval.</summary>
+    Task<ApiResponse<SinglePrincipalAttestationWorkspaceDto>> GetAttestationsAsync(CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail(
+            "Preparer attestation history is unavailable from this host.", 501));
+
     Task<ApiResponse<EvidenceSubjectDto[]>> ListSubjectsAsync(CancellationToken ct = default);
 
     Task<ApiResponse<EvidencePacketDto>> GetPacketAsync(
@@ -56,6 +61,10 @@ public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
     {
         _apiClient = apiClient ?? throw new ArgumentNullException(nameof(apiClient));
     }
+
+    public Task<ApiResponse<SinglePrincipalAttestationWorkspaceDto>> GetAttestationsAsync(CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<SinglePrincipalAttestationWorkspaceDto>(
+            "/api/workstation/evidence/attestations", ct);
 
     public Task<ApiResponse<EvidenceSubjectDto[]>> ListSubjectsAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<EvidenceSubjectDto[]>(UiApiRoutes.WorkstationEvidenceSubjects, ct);

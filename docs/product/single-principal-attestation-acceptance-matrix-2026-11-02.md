@@ -1,6 +1,6 @@
 # Single-principal attestation: synthetic acceptance matrix
 
-**Status:** draft acceptance design; runtime scenarios not implemented or executed  
+**Status:** draft acceptance design; November 2 runtime baseline not executed
 **Owner:** product owner; independent Security and Accounting review pending  
 **Reviewed:** 2026-11-02  
 **Review scope:** source/test inspection and policy arithmetic only  
@@ -11,7 +11,13 @@
 This matrix specifies what a later implementation must demonstrate. It does not introduce an
 attestation mechanism, new approval authority, deployed controls or a changed metric. Existing
 test names below are source anchors, not claims of execution in this documentation change.
-All proposed runtime rows have execution status **not run — mechanism not implemented**.
+At the November 2 baseline, all proposed runtime rows had execution status
+**not run — mechanism not implemented**. The owner's November 12 authorization to develop a
+default-off evidence-acknowledgment foundation is recorded in the
+[dated policy disposition](single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12).
+It does not retrospectively execute this matrix, adopt option C or authorize live activation.
+Report actual implementation tests with their execution results and scope; do not infer full
+matrix acceptance from a passing subset.
 
 The final baseline is `main` at `a822baa3a46a031a4173be987a707972911cd07e`, which merged PR #3358
 from `6144202102fbf6546cfc51c0aa60a1e7794e5192`. Approval/evidence source is unchanged from the

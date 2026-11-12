@@ -1,12 +1,16 @@
 # Single-principal attestation: security and accounting policy proposal
 
-**Status:** draft decision proposal; not approved policy or implemented authority  
+**Status:** draft operational policy; development foundation authorized, no operational exception adopted
 **Owner:** product owner, with independent Security and Accounting review pending  
-**Reviewed:** 2026-11-02  
-**Review scope:** source inspection and AI-assisted analysis only  
+**Reviewed:** 2026-11-12
+**Review scope:** November 2 policy analysis, with the dated development disposition in Section 12
 **Related direction:** `W14-ATTEST-001`, `DEC-SINGLE-PRINCIPAL-001`, `W11-COVER-001`, `W11-PASSPORT-001`
 
 ## 1. Decision requested
+
+Sections 1–11 retain the November 2 proposal and review record. The owner's subsequent
+authorization to develop the default-off foundation is recorded in Section 12; it does not
+adopt an operational exception or establish independent review.
 
 Adopt a closed, default-off attestation policy before implementing any single-principal exception.
 An attestation records what the preparer asserts; it does not establish independent review or
@@ -374,3 +378,59 @@ Validate with deterministic synthetic inputs and the existing application/store/
 no private accounts, live provider credentials or new infrastructure are prerequisites. Preserve
 the [solo-developer workflow](../ai/solo-developer-workflow.md), ordinary required checks and the
 owner's merge authority. This documentation change neither requests nor performs a merge.
+
+## 12. Development disposition — 2026-11-12
+
+The product owner authorized development of single-principal attestation in the November 12
+session. This instruction permits implementation and synthetic verification of the mechanism;
+it supersedes D7's proposed sequencing requirement for that development work. It is not an
+independent Security or Accounting judgment, permission to merge, production certification, or
+authorization to activate an economic exception against live records.
+
+The development scope is a default-off foundation toward option B: a scoped, versioned declaration,
+separate declaration-administration and preparer-attestation permissions, retained decisions and
+audits, exact evidence/target revision binding, and the explicit preparer-attestation disclosure.
+Only evidence acknowledgment is included in the initial mechanism; draft checking has no
+registered authority provider and remains denied. The named B actions remain non-posting assertions.
+No declaration or receipt supplies ordinary
+approval, independent-review evidence, posting authority, or Verified Coverage credit. Existing
+maker-checker guards and their documented exceptions retain their current behavior.
+
+The work starts from `main` commit `c31dfaf996` (2026-11-11). The implementation boundaries are:
+
+| Source | Bounded behavior |
+| --- | --- |
+| [Shared contracts](../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs) | Versioned preparer-assertion classification, canonical disclosure, declaration revisions, exact subject/source hashes and evaluated JSON operands, separate revocation and retained history. These types are not approval receipts. |
+| [Identity permissions](../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs) | Separate declaration administration, assertion recording and assertion reading; no automatic built-in role assignments. Existing business permissions remain necessary. |
+| [Scoped store](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs) and [persistence](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs) | Default-off declaration and acknowledgment state, command replay/conflict checks, prospective withdrawal, separate revocation, and receipt/audit persistence under one scoped commit boundary. |
+| [Evidence resolver](../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs) and [composition](../../src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs) | Company-scoped evidence acknowledgment only, with retained-byte/hash and extraction checks. `SinglePrincipalAttestation:EnableEvidenceAcknowledgments` defaults to `false`; book-scoped evidence and draft-check providers are not registered. |
+| [HTTP adapter](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs) | Interactive-session identity and tenant/company scope, separate grants, current source-read permission for retained history and replay, and authorized corrective revocation using retained source identity even when source bytes are corrupt. |
+| [Browser panel](../../src/Meridian.Ui/dashboard/src/components/meridian/single-principal-attestation-panel.tsx) and [WPF workbench](../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs) | Browser declaration/acknowledgment/revocation controls and WPF read-only history share the disclosure; withdrawal and revocation preserve the original receipt. Neither surface treats a retained receipt as proof of current support. |
+
+These paths record implemented development boundaries, not completed matrix execution or live
+acceptance. Host configuration, a declaration and explicit grants are separate prerequisites;
+this change supplies no enabled declaration or role grant. Imported fixture evidence retains its
+synthetic provenance and absent provenance remains unclassified rather than being called live.
+Each receipt retains the exact server-evaluated JSON operands and their digest. Later ordinary
+document-review changes do not rewrite that snapshot. This retained assertion snapshot is not
+the full frozen financial report package or the completed export acceptance required by W14.
+
+The new receipts are separate typed records: no ordinary approval ID, `Approved` state or
+automatic approval-reference wiring is created. The existing reconciliation
+`ApprovalReference` input remains arbitrary caller-supplied text, as described in Section 2;
+neither a nonblank reference nor different actor strings authenticates independent human review.
+This foundation does not retrospectively repair that legacy contract or claim the matrix's B13
+typed-authority integration gate complete. A receipt must not be connected to such a consumer
+until that consumer can distinguish and refuse preparer assertions as ordinary approval.
+
+Option C remains undecided. In particular, this foundation does not enable a principal to waive
+a reconciliation break, approve or post a corporate action, change a lot, or release a report
+package by attesting to their own work. A useful economic slice still needs its exact action
+class, accounting treatment, thresholds, evidence requirements and correction rules selected
+explicitly. The outstanding independent-review record in Section 11 remains open for adopting
+that operational exception.
+
+`W14-ATTEST-001` remains `planned`: implementing a foundation does not satisfy the registered
+economic example, full both-workstation workflow and package presentation, retained-export behavior, or end-to-end
+acceptance. The November 2 matrix remains an acceptance design; a source implementation or a
+passing subset of synthetic tests must not be reported as execution of every matrix row.

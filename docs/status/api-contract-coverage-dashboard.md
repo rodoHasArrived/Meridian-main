@@ -13,9 +13,9 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 |---|---:|
 | Weighted score | 19.7% |
 | Endpoint coverage | 30.3% |
-| Workstation contract coverage | 3.9% |
+| Workstation contract coverage | 3.8% |
 | Endpoints documented | 227 / 748 |
-| Workstation contracts documented | 39 / 1009 |
+| Workstation contracts documented | 39 / 1020 |
 
 ## Endpoint Coverage
 
@@ -823,6 +823,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `CashLadderBucketDto` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:946` |
 | `CashSyncSourceAvailability` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:2` |
 | `CashSyncWindow` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:5` |
+| `ChangeSinglePrincipalDeclarationRequestDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:19` |
 | `CloseReadinessBlockerDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:34` |
 | `CloseReadinessContributionDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:28` |
 | `CloseReadinessProjectionDto` | Gap | `src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:46` |
@@ -1230,6 +1231,8 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `PortfolioSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:527` |
 | `PositionDiffEntry` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:834` |
 | `PostLedgerEntries` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:25` |
+| `PreparerAttestationReceiptDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:61` |
+| `PreparerAttestationRevocationDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:92` |
 | `PrivateCapitalCloseCockpitApprovalDto` | Gap | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1421` |
 | `PrivateCapitalCloseCockpitDto` | Gap | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1484` |
 | `PrivateCapitalCloseCockpitLaneDto` | Gap | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1405` |
@@ -1312,6 +1315,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `ReconciliationSummary` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:188` |
 | `ReconciliationTaxonomySnapshot` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:679` |
 | `ReconciliationTaxonomyValue` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:671` |
+| `RecordPreparerAttestationRequestDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:28` |
 | `RecurringJournalOccurrenceDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:8` |
 | `RecurringJournalQueueDto` | Gap | `src/Meridian.Contracts/Workstation/RecurringJournalDtos.cs:28` |
 | `RejectWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:30` |
@@ -1434,6 +1438,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `RetainedLedgerAmountDto` | Gap | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:580` |
 | `ReviewOnboardingWorkspaceRequestDto` | Gap | `src/Meridian.Contracts/Workstation/OnboardingDtos.cs:34` |
 | `ReviewReconciliationBreakRequest` | Gap | `src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1025` |
+| `RevokePreparerAttestationRequestDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:40` |
 | `RunAttributionSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:923` |
 | `RunCashFlowSummary` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:970` |
 | `RunCashLadder` | Gap | `src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:956` |
@@ -1500,6 +1505,12 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `SecurityMasterTrustTone` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7` |
 | `SecurityMasterWorkstationDto` | Gap | `src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:43` |
 | `SettlementInstruction` | Gap | `src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:19` |
+| `SinglePrincipalAttestationAuditEventDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:100` |
+| `SinglePrincipalAttestationScopeDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:14` |
+| `SinglePrincipalAttestationStateDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:109` |
+| `SinglePrincipalAttestationSubjectSnapshotDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:132` |
+| `SinglePrincipalAttestationWorkspaceDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:123` |
+| `SinglePrincipalDeclarationDto` | Gap | `src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:47` |
 | `StartWorkflow` | Gap | `src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18` |
 | `StarterWorkspaceDto` | Gap | `src/Meridian.Contracts/Workstation/FirstRunDtos.cs:69` |
 | `StatementAccountSnapshotPreviewDto` | Gap | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94` |
@@ -1787,7 +1798,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 ## Follow-up Queue
 
 - Document or intentionally suppress 521 mapped endpoint gap(s).
-- Document or intentionally suppress 970 workstation contract gap(s).
+- Document or intentionally suppress 981 workstation contract gap(s).
 
 ---
 
