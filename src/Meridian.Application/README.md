@@ -11,6 +11,25 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
+the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
+security/version, reviewer and justification remain bound to a content hash. Retrieval-only retries
+return the original receipt. Calculations use explicit receipt IDs; retention never changes a prior
+unpinned calculation or selects a changing latest fixing.
+
+Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
+clean/dirty price and market-value bases, and total accrued interest with matching currencies.
+The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,
+normalized consideration, signed variance and calculation inputs). Template v2 requires reviewed
+currency and explicit coupon units, frequency, day count, calendar, settlement, call schedules and
+factor history; its sample-payment preview uses shared schedule and bond kernels before staging.
+Configured holiday calendars are resolved by the host rather than inferred.
+
+Provider capability matrices separate terms, evaluated prices, executable quotes, trades, curves,
+fixings, factors and lifecycle notices. A configured connection or general certification never
+establishes task entitlement, freshness or verification: missing instrument evidence remains unknown.
+IBKR bond support no longer implies unsupported bond streaming in the detailed adapter profiles.
+
 Cash-flow context v4 persists schedule row version 1, including measured accrual dates. A frozen
 v0 serializer keeps v1–v3 receipt hashes and replay arithmetic stable; unsupported row versions
 refuse replay. Accrual posting reads held face from shared lot quantity and multiplier and converts
@@ -607,6 +626,9 @@ Core workstation host. Do not introduce a second listener or independent monitor
   REST dry-run, and quarantine-replay paths all route through it rather than carrying their own
   copies, so a dry run and the replay it predicts coerce a value identically, and the
   operator-visible `transform.*` issue codes have one definition.
+  Identity preview resolves all supplied security identifiers before selecting a match. Conflicting
+  targets block reconciliation; retained operator choices bind the exact source and candidate
+  evidence hash. A changed match or source invalidates the choice without rewriting source data.
   When a workstation endpoint supplies tenant context,
   setup, dry-run, readiness, activation, and monitoring services resolve a tenant-scoped
   provider-integration store before reading or writing manifests, connections, and retained

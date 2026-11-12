@@ -1,0 +1,12 @@
+erDiagram
+    operator_triage_item_metadata {
+        text tenant_id PK
+        text company_id PK
+        text work_item_id PK
+        jsonb state
+    }
+    operator_triage_operator_triage_schema_migrations {
+        text filename PK
+        text checksum
+        timestamp_with_time_zone applied_at
+    }

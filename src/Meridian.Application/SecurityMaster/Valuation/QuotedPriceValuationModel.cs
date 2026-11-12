@@ -44,6 +44,11 @@ public sealed class QuotedPriceValuationModel : ISecurityValuationModel
                 [new SecurityValuationBlockerDto("NoPriceSelection", "No pricing hierarchy is in force at the as-of date, or no typed price observation is eligible under it.")]);
         }
 
+        if (selection.Quotation is { Basis: SecurityPriceBasis.Dirty })
+            return SecurityValuationResult.Blocked(request, security, Kind, Key, Version, knowledgeAsOf,
+                [new SecurityValuationBlockerDto("PriceBasisRequiresNormalization",
+                    "The retained dirty quote includes accrued interest. Review settlement-aware clean/dirty normalization before quoted-price valuation.")]);
+
         var diagnostics = new List<string>();
         if (selection.IsStaleFallback)
         {

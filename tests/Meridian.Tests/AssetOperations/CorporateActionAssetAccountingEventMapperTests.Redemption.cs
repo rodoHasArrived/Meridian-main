@@ -67,8 +67,11 @@ public sealed partial class CorporateActionAssetAccountingEventMapperTests
         var request = CreateRedemptionMap(CorporateActionAccountingTypeDto.PutRedemption, 2);
         var plan = request.Redemption!;
         var first = plan.Disposal.DisposalSelections[0];
-        var result = _sut.Map(request with { Redemption = plan with
-        { Disposal = plan.Disposal with { DisposalSelections = [first, first] } } });
+        var result = _sut.Map(request with
+        {
+            Redemption = plan with
+            { Disposal = plan.Disposal with { DisposalSelections = [first, first] } }
+        });
 
         result.IsMapped.Should().BeFalse();
         result.Blockers.Should().Contain(blocker => blocker.Code == "corporate-action.canonical-redemption-required");
@@ -105,8 +108,12 @@ public sealed partial class CorporateActionAssetAccountingEventMapperTests
         var evidence = CreateRetainedEvidence(projection, projection.EconomicEvent!).ToList();
         var lots = ids.Select((id, index) =>
         {
-            var acquisitionEvidence = evidence[0] with { EvidenceId = $"lot-acquisition-{index}",
-                SubjectType = "OpenLotAcquisition", SubjectId = id.ToString("D") };
+            var acquisitionEvidence = evidence[0] with
+            {
+                EvidenceId = $"lot-acquisition-{index}",
+                SubjectType = "OpenLotAcquisition",
+                SubjectId = id.ToString("D")
+            };
             evidence.Add(acquisitionEvidence);
             return new OpenLotDto(id, SecurityId, PositionId, LedgerBookId, $"lot-{index}", new DateOnly(2026, 8, 25),
                 100m, 100m, 98m, 98m, 1, new OpenLotAcquisitionDto(LotQuantityBasis.Face, "USD", "USD", 1m, 98m, 98m,

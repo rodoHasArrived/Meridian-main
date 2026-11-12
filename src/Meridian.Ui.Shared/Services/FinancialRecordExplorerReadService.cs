@@ -1021,7 +1021,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 .Where(static text => !string.IsNullOrWhiteSpace(text))
                 .Select(static text => text!.Trim()));
 
-        if (selectedView is null && string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
+        if (selectedView is null && string.IsNullOrWhiteSpace(requestedViewId) &&
+            string.IsNullOrWhiteSpace(searchText) && filters.Length == 0)
         {
             return (savedViews, summaryItems, rows);
         }

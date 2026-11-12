@@ -11,6 +11,12 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Contracts
 
+`BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
+for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
+`BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
+fraction, original typed provider observation, recording actor/time, review justification and hash.
+Observed reset evidence is distinct from a forward curve or forecast assumption.
+
 `StructuredCashFlowScheduleEntry` carries an explicit stored row version and serialized measured
 interest dates; record equality covers all stored members. Receipt writers retain a frozen legacy
 row schema for historical receipts. The catalog declares StructuredNote valuation as fair value

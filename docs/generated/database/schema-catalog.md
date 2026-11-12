@@ -13,9 +13,10 @@ This catalog is extracted from a disposable PostgreSQL database after every regi
 | [`identity_access`](modules/identity_access.md) | `identity-access` | 2 | 0 | 0 | 0 | `bef1840f1d59` |
 | [`ledger`](modules/ledger.md) | `ledger` | 37 | 18 | 26 | 0 | `c9cdfce41ee8` |
 | [`money_market`](modules/money_market.md) | `money-market` | 4 | 0 | 0 | 0 | `4c336b5362a4` |
+| [`operator_triage`](modules/operator_triage.md) | `operator-triage` | 2 | 0 | 0 | 0 | `48b74e6e5f43` |
 | [`public`](modules/public.md) | - | 0 | 0 | 0 | 0 | `d50d95b1e1f1` |
 | [`reporting`](modules/reporting.md) | `reporting` | 20 | 18 | 21 | 0 | `33a0abf15576` |
-| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 132 | 13 | 27 | 0 | `ce11387c92bc` |
+| [`security_master`](modules/security_master.md) | `security-master`, `direct-lending` | 132 | 13 | 27 | 0 | `b2c9db4190b1` |
 
 ## Default topology
 

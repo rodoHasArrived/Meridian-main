@@ -454,7 +454,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var ledger = new DomainLedger();
         var lot = new LedgerTaxLot("held", new DateOnly(2026, 1, 1), quantity, unitCost, SecurityId)
         {
-            UnitKind = unit, Multiplier = multiplier,
+            UnitKind = unit,
+            Multiplier = multiplier,
         };
 
         await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
@@ -480,7 +481,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         // The shared lot already holds 500 of remaining face after its paydown.
         var lot = new LedgerTaxLot("pool", new DateOnly(2026, 1, 16), 500m, 100m, SecurityId)
         {
-            UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 1m,
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
         };
 
         await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger, new AmortizationLedgerPostingContext(
@@ -501,7 +503,8 @@ public sealed class SecurityMasterAmortizationLedgerBridgeTests
         var ledger = new DomainLedger();
         var lot = new LedgerTaxLot("canonical", new DateOnly(2026, 1, 1), 1000m, (decimal)price, SecurityId)
         {
-            UnitKind = SecurityLotUnitKind.FaceValue, Multiplier = 1m,
+            UnitKind = SecurityLotUnitKind.FaceValue,
+            Multiplier = 1m,
         };
 
         await bridge.PostProjectedCashFlowsAsync(SecurityId, Ticker, ledger,

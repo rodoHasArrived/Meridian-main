@@ -365,61 +365,61 @@ public sealed partial class CorporateActionAccountingProjectionService : ICorpor
         => request.CanonicalLotRedemptionJournal
             ? ProjectCanonicalRedemption(request, currency, blockers)
             : request.ActionType switch
-        {
-            CorporateActionAccountingTypeDto.RegS144AExchange =>
-                ProjectBookValueExchange(request, currency, blockers, requireAllocatedSuccessors: false),
-            CorporateActionAccountingTypeDto.AdvanceRefunding =>
-                ProjectAdvanceRefunding(request, currency, blockers),
-            CorporateActionAccountingTypeDto.BankruptcyDistribution =>
-                ProjectBankruptcy(request, currency, blockers),
-            CorporateActionAccountingTypeDto.CallRedemption =>
-                ProjectCall(request, currency, blockers),
-            CorporateActionAccountingTypeDto.ConsentSolicitation =>
-                ProjectConsent(request, currency, blockers),
-            CorporateActionAccountingTypeDto.DebtToEquityConversion =>
-                ProjectConversion(request, currency, blockers),
-            CorporateActionAccountingTypeDto.CashDividend =>
-                ProjectCashDividend(request, currency, blockers),
-            CorporateActionAccountingTypeDto.StockDividend =>
-                ProjectStockDividend(request, currency, blockers),
-            CorporateActionAccountingTypeDto.DividendReinvestment =>
-                ProjectDividendReinvestment(request, currency, blockers),
-            CorporateActionAccountingTypeDto.ScripDividend =>
-                ProjectScripDividend(request, blockers),
-            CorporateActionAccountingTypeDto.ExchangeOffer =>
-                ProjectExchangeOffer(request, currency, blockers),
-            CorporateActionAccountingTypeDto.FractionalCashInLieu =>
-                ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.CorporateActionSale),
-            CorporateActionAccountingTypeDto.MergerStock =>
-                ProjectMergerStock(request, currency, blockers),
-            CorporateActionAccountingTypeDto.MergerCash =>
-                ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.CorporateActionSale),
-            CorporateActionAccountingTypeDto.MergerMixed =>
-                ProjectMergerMixed(request, currency, blockers),
-            CorporateActionAccountingTypeDto.NameIdentifierChange =>
-                ProjectBookValueExchange(request, currency, blockers, requireAllocatedSuccessors: false),
-            CorporateActionAccountingTypeDto.PaymentInKind =>
-                ProjectPaymentInKind(request, currency, blockers),
-            CorporateActionAccountingTypeDto.PutRedemption =>
-                ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.Redemption),
-            CorporateActionAccountingTypeDto.ReturnOfCapital =>
-                ProjectReturnOfCapital(request, currency, blockers),
-            CorporateActionAccountingTypeDto.ReverseStockSplit =>
-                ProjectSplit(request, currency, blockers, reverse: true),
-            CorporateActionAccountingTypeDto.RightsDistribution =>
-                ProjectRightsDistribution(request, blockers),
-            CorporateActionAccountingTypeDto.RightsExercise =>
-                ProjectRightsExercise(request, currency, blockers),
-            CorporateActionAccountingTypeDto.RightsExpiration =>
-                ProjectRightsExpiration(request, blockers),
-            CorporateActionAccountingTypeDto.SpinOff =>
-                ProjectSpinOff(request, currency, blockers),
-            CorporateActionAccountingTypeDto.StockSplit =>
-                ProjectSplit(request, currency, blockers, reverse: false),
-            CorporateActionAccountingTypeDto.TenderOffer =>
-                ProjectTender(request, currency, blockers),
-            _ => throw new ArgumentOutOfRangeException(nameof(request.ActionType))
-        };
+            {
+                CorporateActionAccountingTypeDto.RegS144AExchange =>
+                    ProjectBookValueExchange(request, currency, blockers, requireAllocatedSuccessors: false),
+                CorporateActionAccountingTypeDto.AdvanceRefunding =>
+                    ProjectAdvanceRefunding(request, currency, blockers),
+                CorporateActionAccountingTypeDto.BankruptcyDistribution =>
+                    ProjectBankruptcy(request, currency, blockers),
+                CorporateActionAccountingTypeDto.CallRedemption =>
+                    ProjectCall(request, currency, blockers),
+                CorporateActionAccountingTypeDto.ConsentSolicitation =>
+                    ProjectConsent(request, currency, blockers),
+                CorporateActionAccountingTypeDto.DebtToEquityConversion =>
+                    ProjectConversion(request, currency, blockers),
+                CorporateActionAccountingTypeDto.CashDividend =>
+                    ProjectCashDividend(request, currency, blockers),
+                CorporateActionAccountingTypeDto.StockDividend =>
+                    ProjectStockDividend(request, currency, blockers),
+                CorporateActionAccountingTypeDto.DividendReinvestment =>
+                    ProjectDividendReinvestment(request, currency, blockers),
+                CorporateActionAccountingTypeDto.ScripDividend =>
+                    ProjectScripDividend(request, blockers),
+                CorporateActionAccountingTypeDto.ExchangeOffer =>
+                    ProjectExchangeOffer(request, currency, blockers),
+                CorporateActionAccountingTypeDto.FractionalCashInLieu =>
+                    ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.CorporateActionSale),
+                CorporateActionAccountingTypeDto.MergerStock =>
+                    ProjectMergerStock(request, currency, blockers),
+                CorporateActionAccountingTypeDto.MergerCash =>
+                    ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.CorporateActionSale),
+                CorporateActionAccountingTypeDto.MergerMixed =>
+                    ProjectMergerMixed(request, currency, blockers),
+                CorporateActionAccountingTypeDto.NameIdentifierChange =>
+                    ProjectBookValueExchange(request, currency, blockers, requireAllocatedSuccessors: false),
+                CorporateActionAccountingTypeDto.PaymentInKind =>
+                    ProjectPaymentInKind(request, currency, blockers),
+                CorporateActionAccountingTypeDto.PutRedemption =>
+                    ProjectDisposition(request, currency, blockers, CorporateActionEconomicOperationKindDto.Redemption),
+                CorporateActionAccountingTypeDto.ReturnOfCapital =>
+                    ProjectReturnOfCapital(request, currency, blockers),
+                CorporateActionAccountingTypeDto.ReverseStockSplit =>
+                    ProjectSplit(request, currency, blockers, reverse: true),
+                CorporateActionAccountingTypeDto.RightsDistribution =>
+                    ProjectRightsDistribution(request, blockers),
+                CorporateActionAccountingTypeDto.RightsExercise =>
+                    ProjectRightsExercise(request, currency, blockers),
+                CorporateActionAccountingTypeDto.RightsExpiration =>
+                    ProjectRightsExpiration(request, blockers),
+                CorporateActionAccountingTypeDto.SpinOff =>
+                    ProjectSpinOff(request, currency, blockers),
+                CorporateActionAccountingTypeDto.StockSplit =>
+                    ProjectSplit(request, currency, blockers, reverse: false),
+                CorporateActionAccountingTypeDto.TenderOffer =>
+                    ProjectTender(request, currency, blockers),
+                _ => throw new ArgumentOutOfRangeException(nameof(request.ActionType))
+            };
 
     private static ProjectionComputation ProjectBookValueExchange(
         CorporateActionAccountingProjectionRequest request,

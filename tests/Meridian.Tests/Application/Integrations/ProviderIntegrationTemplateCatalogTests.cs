@@ -29,6 +29,19 @@ public sealed class ProviderIntegrationTemplateCatalogTests
     }
 
     [Fact]
+    public void FixedIncomeTemplate_RequiresExplicitReviewedConventionsAndNoCurrencyDefault()
+    {
+        var manifest = new ProviderIntegrationTemplateCatalog().GetManifest("template-fixed-income-security-master-v1")!;
+        manifest.ManifestVersion.Should().Be(2);
+        manifest.FieldMappings.Single(mapping => mapping.TargetField == "security.currency")
+            .DefaultValue.Should().BeNull();
+        manifest.Capabilities.Single().RequiredCanonicalFields.Should().Contain([
+            "security.couponRateUnit", "security.couponCashBasis", "security.paymentFrequency", "security.dayCount",
+            "security.paymentCalendars", "security.settlementConvention", "security.settlementCalendars",
+            "security.callSchedule", "security.factorHistory", "security.currencyReview"]);
+    }
+
+    [Fact]
     public void ListManifests_SeedsRequiredMappingsForEveryEnabledCapability()
     {
         var catalog = new ProviderIntegrationTemplateCatalog();

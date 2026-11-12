@@ -219,7 +219,8 @@ public sealed partial class CorporateActionAssetAccountingEventMapper : ICorpora
             }
         }
         AssetLotMutationInstructionDto? redemption = null;
-        try { redemption = ResolveRedemption(request, blockers); }
+        try
+        { redemption = ResolveRedemption(request, blockers); }
         catch (OverflowException)
         {
             blockers.Add(new CorporateActionProjectionBlockerDto("corporate-action.canonical-redemption-required",
@@ -250,7 +251,8 @@ public sealed partial class CorporateActionAssetAccountingEventMapper : ICorpora
             request.RetainedEvidence,
             request.Notes,
             request.Correction,
-            successorInstruction, capitalReturn) { Disposal = redemption };
+            successorInstruction, capitalReturn)
+        { Disposal = redemption };
 
         var postingIdempotencyKey = BuildPostingIdempotencyKey(
             projection,

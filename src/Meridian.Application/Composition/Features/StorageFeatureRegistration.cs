@@ -505,6 +505,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<ISecurityMasterCorporateActionCommandService, NullSecurityMasterCorporateActionCommandService>();
         services.TryAddSingleton<IBondReferenceService, NullBondReferenceService>();
         services.TryAddSingleton<IBondAnalyticsService, BondAnalyticsService>();
+        services.TryAddSingleton<IBondObservedFixingStore, FileBondObservedFixingStore>();
         services.TryAddSingleton<IBondSettlementConsiderationService, BondSettlementConsiderationService>();
         services.TryAddSingleton<FileBondCalculationPolicy>(sp => new FileBondCalculationPolicy(
             Path.Combine(sp.GetRequiredService<StorageOptions>().RootPath, "bonds", "cutover.json"),

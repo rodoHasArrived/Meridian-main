@@ -50,6 +50,13 @@ security/account identity. Replay by receipt preserves what was actually evaluat
 transaction with an earlier recorded timestamp commits later. Timestamp cutoffs alone are
 eligibility predicates, not durable certification or a commit-consistent snapshot.
 
+Bond quotation evidence also declares clean/dirty basis, per-100 or currency-per-unit convention,
+bid/ask/evaluated status and settlement facts. Analytics can consume an immutable retained receipt
+instead of a manually copied price; incompatible, stale or incomplete evidence blocks calculation.
+Imported holdings retain original face, factor, accrued interest and consideration basis alongside
+provider value, normalized value and variance. Import identity preview resolves every supplied
+identifier and retains an operator's conflict decision against the exact matching evidence.
+
 `GetRecordedByIdentifierAsOfAsync` applies that same timestamp limitation to retained Security
 Master event state and alias revisions. Its recorded cutoff filters stored timestamps; the separate
 effective cutoff selects identifier validity. Event timestamps and alias transaction timestamps can

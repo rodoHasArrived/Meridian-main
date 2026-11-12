@@ -174,8 +174,16 @@ public sealed class StructuredCashFlowScheduleRowVersionTests
         Guid.Parse("172d94fe-0000-4000-8000-000000000099"), "Deposit", SecurityStatusDto.Active, "Row version deposit", "USD",
         JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new
         {
-            assetClassTermsVersion = 2, issueDate = "2026-01-01", maturity = "2028-01-01", par = 100m,
-            depositType = "Term", institutionName = "Synthetic Bank", rateUnit = "Fraction", interestRate = 0.05m,
-            paymentFrequency = "Annual", dayCount = "30/360", isCallable = false
+            assetClassTermsVersion = 2,
+            issueDate = "2026-01-01",
+            maturity = "2028-01-01",
+            par = 100m,
+            depositType = "Term",
+            institutionName = "Synthetic Bank",
+            rateUnit = "Fraction",
+            interestRate = 0.05m,
+            paymentFrequency = "Annual",
+            dayCount = "30/360",
+            isCallable = false
         }), [], [], 1, AsOf, null);
 }

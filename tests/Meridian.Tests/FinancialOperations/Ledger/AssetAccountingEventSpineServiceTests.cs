@@ -694,8 +694,11 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         if (eventKind == AssetAccountingEventKindDto.Disposal)
         {
             var lot = BuildAdjustedDisposalLot(fixture, face: true, adjustedBasis: fixture.Request.EventAmount);
-            fixture = fixture with { Request = fixture.Request with
-            { Disposal = BuildDisposalInstruction(fixture, lot, lot.OpenQuantity, fixture.Request.EventAmount, "Fifo") } };
+            fixture = fixture with
+            {
+                Request = fixture.Request with
+                { Disposal = BuildDisposalInstruction(fixture, lot, lot.OpenQuantity, fixture.Request.EventAmount, "Fifo") }
+            };
         }
         var eventStore = Substitute.For<IAssetAccountingEventProjectionStore>();
         eventStore.AppendAsync(
@@ -1207,7 +1210,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         var fixture = BuildDisposalFixture(basis);
         var lot = BuildAdjustedDisposalLot(fixture, face: true, adjustedBasis: basis);
         var instruction = BuildDisposalInstruction(fixture, lot, lot.OpenQuantity, basis, "Fifo")
-            with { DisposalSalePrice = 45m };
+            with
+        { DisposalSalePrice = 45m };
         fixture = fixture with { Request = fixture.Request with { Disposal = instruction } };
         var (service, builder) = BuildDisposalService(fixture, [lot], [lot]);
         if (replace)
@@ -1245,15 +1249,30 @@ public sealed partial class AssetAccountingEventSpineServiceTests
         {
             Request = mapped.Event,
             Security = baseline.Security with { AssetClass = "Bond" },
-            Position = baseline.Position with { Version = scope.ExpectedBookPositionVersion,
-                BookContext = baseline.Position.BookContext with { LedgerBookId = scope.LedgerBookId,
-                    PeriodId = scope.PeriodId, Dimensions = scope.Dimensions },
-                OriginEvent = mapped.Event.EconomicEvent, ProjectionLineage = mapped.Event.ProjectionLineage,
-                RetainedEvidence = mapped.Event.RetainedEvidence },
+            Position = baseline.Position with
+            {
+                Version = scope.ExpectedBookPositionVersion,
+                BookContext = baseline.Position.BookContext with
+                {
+                    LedgerBookId = scope.LedgerBookId,
+                    PeriodId = scope.PeriodId,
+                    Dimensions = scope.Dimensions
+                },
+                OriginEvent = mapped.Event.EconomicEvent,
+                ProjectionLineage = mapped.Event.ProjectionLineage,
+                RetainedEvidence = mapped.Event.RetainedEvidence
+            },
             Book = baseline.Book with { LedgerBookId = scope.LedgerBookId },
-            Period = baseline.Period with { PeriodId = scope.PeriodId, LedgerBookId = scope.LedgerBookId,
-                Version = mapped.Event.ExpectedPeriodVersion, PeriodNo = 8, Label = "August 2026",
-                StartDate = new DateOnly(2026, 8, 1), EndDate = new DateOnly(2026, 8, 31) }
+            Period = baseline.Period with
+            {
+                PeriodId = scope.PeriodId,
+                LedgerBookId = scope.LedgerBookId,
+                Version = mapped.Event.ExpectedPeriodVersion,
+                PeriodNo = 8,
+                Label = "August 2026",
+                StartDate = new DateOnly(2026, 8, 1),
+                EndDate = new DateOnly(2026, 8, 31)
+            }
         };
         var canonical = mapRequest.Redemption!.Lots.Single();
         var selection = mapped.LotMutation!.DisposalSelections.Single();
@@ -1395,7 +1414,8 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             request.ProjectionLineage,
             request.RetainedEvidence,
             [expectedStage, projectedStage],
-            request.ProjectedEffect) { Disposal = request.Disposal };
+            request.ProjectedEffect)
+        { Disposal = request.Disposal };
     }
 
     private static string ComputeFingerprint(AssetAccountingEventSpineDto spine)
@@ -1507,8 +1527,11 @@ public sealed partial class AssetAccountingEventSpineServiceTests
             line.Debit, line.Credit, entry.Description,
             currency: new LedgerEntryCurrency("USD", "USD", line.Debit, line.Credit, 1m))).ToArray();
         return new AccountingPostingCandidateWriteResult(baseline.Candidate with { GeneratedPostingLines = generated },
-            baseline.Write! with { Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp,
-                entry.Description, lines, entry.Metadata) });
+            baseline.Write! with
+            {
+                Entry = new JournalEntry(entry.JournalEntryId, entry.Timestamp,
+                entry.Description, lines, entry.Metadata)
+            });
     }
 
     private static AccountingPostingCandidateWriteResult BuildPreApprovedCandidateWrite(

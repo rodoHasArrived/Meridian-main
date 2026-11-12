@@ -59,7 +59,8 @@ public sealed partial class CorporateActionAssetAccountingEventMapper
         }
         foreach (var lot in plan.Lots)
         {
-            try { OpenLotValidation.Validate(lot); }
+            try
+            { OpenLotValidation.Validate(lot); }
             catch (ArgumentException exception) { Block(exception.Message); continue; }
             var selection = instruction.DisposalSelections.FirstOrDefault(item => item.TaxLotRecordId == lot.TaxLotRecordId);
             var mutation = projection.LotMutations.Mutations.FirstOrDefault(item => item.SourceLotId == lot.TaxLotRecordId);
