@@ -397,6 +397,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         readback.ApprovalId.Should().BeNull();
         readback.CashDividendAttestationId.Should().Be(attested.Attestation.AttestationId);
         readback.PostedJournalEntryId.Should().Be(posted.Posting.JournalEntryId);
+        await AssertCashDividendHistoryImmutableAsync(securityOptions, ct);
         await using var nativeConnection = new Npgsql.NpgsqlConnection(securityOptions.ConnectionString);
         await nativeConnection.OpenAsync(ct);
         await using var reservationCount = nativeConnection.CreateCommand();

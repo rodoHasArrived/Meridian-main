@@ -29,6 +29,27 @@ public sealed class SecurityMasterCurveEndpointsTests
     private static readonly DateTimeOffset AsOfInstant = new(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
+    public async Task GenericPublication_RefusesClientAssertedVerifiedRateEvidence()
+    {
+        var definition = Definition();
+        var store = Substitute.For<ISecurityCurveStore>();
+        store.GetDefinitionAsync(definition.CurveId, Arg.Any<CancellationToken>()).Returns(definition);
+        await using var app = await CreateAppAsync(store);
+        var observation = new SecurityRateObservationDto("fred", "SOFR", 4.5m, "4.5", SecurityRateUnit.Percent,
+            "Percent", AsOf, null, AsOf, AsOf, AsOfInstant, "lin", SecurityRateObservationKind.ObservedFixing, "USD");
+        var point = new SecurityCurvePointDto(AsOf, 1m)
+        {
+            RateEvidence = new SecurityRatePointEvidenceDto(observation, SecurityRateConstructionMethod.ReviewedDiscountFactors,
+                "Client-asserted construction", "forged-reviewer")
+        };
+        var request = new PublishSecurityCurveVersionRequest(definition.CurveId, AsOf, [point], "fred");
+        var response = await app.GetTestClient().PostAsJsonAsync($"/api/security-master/curves/{definition.CurveId}/versions", request, Json);
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        (await response.Content.ReadAsStringAsync()).Should().Contain("verified rates ingestion");
+        await store.DidNotReceiveWithAnyArgs().PublishVersionAsync(default!, default);
+    }
+
+    [Fact]
     public async Task Publish_StampsTheActorFromTheSession_AndMapsARuleFailureToBadRequest()
     {
         var definition = Definition();

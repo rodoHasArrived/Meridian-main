@@ -2,13 +2,13 @@
   "dashboard": "api-contract-coverage",
   "title": "API Contract Coverage Dashboard",
   "generated_at": "1970-01-01T00:00:00+00:00",
-  "score_percent": 19.7,
-  "endpoint_coverage_percent": 30.3,
+  "score_percent": 19.6,
+  "endpoint_coverage_percent": 30.2,
   "contract_coverage_percent": 3.8,
   "summary": {
-    "endpoint_count": 748,
+    "endpoint_count": 751,
     "documented_endpoint_count": 227,
-    "undocumented_endpoint_count": 521,
+    "undocumented_endpoint_count": 524,
     "workstation_contract_count": 1024,
     "documented_workstation_contract_count": 39,
     "undocumented_workstation_contract_count": 985
@@ -707,91 +707,91 @@
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/settlement-consideration",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:21",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/analytics",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:31",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/exercise-notices",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:96",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/migration-preview",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:19",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:20",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/migration-preview/batch",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:27",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/migration-submit",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:47",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/cutover-readiness",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:68",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:69",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/reference-data/bonds/cutover",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:74",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:75",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:27",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:28",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/lifecycle",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:43",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:44",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/{securityId:guid}/accrual-convention",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:59",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:60",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/issuer-ladder",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:72",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:73",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/maturity-ladder",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:96",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:97",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/issuer-ladder/page",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:18",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:19",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/reference-data/bonds/maturity-ladder/page",
-      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:26",
+      "source": "src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:27",
       "documented": false
     },
     {
@@ -3293,7 +3293,7 @@
     {
       "method": "POST",
       "path": "/api/providers/restart",
-      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:193",
+      "source": "src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:197",
       "documented": false
     },
     {
@@ -3839,121 +3839,127 @@
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1632",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1635",
       "documented": false
     },
     {
       "method": "PUT",
       "path": "/api/security-master/{securityId:guid}/pricing-hierarchy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1646",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1649",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/raw-price",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1687",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1690",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-golden-copy",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1728",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1731",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/security-master/{securityId:guid}/price-golden-copy/observations",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1752",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/{securityId:guid}/price-comparison",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1749",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1765",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1766",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1782",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/data-entitlements/expiring",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1776",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1792",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/data-entitlements",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1788",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1804",
       "documented": false
     },
     {
       "method": "DELETE",
       "path": "/api/security-master/data-entitlements/{entitlementId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1816",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1832",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/quality-report/run",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1848",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1864",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/quality-report/latest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1863",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1879",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/structured-credit-reclassification/report",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1881",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1897",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/exceptions/aging",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1901",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1917",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/curves",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:38",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:42",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/curves",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:60",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:64",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/curves/{curveId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:81",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:85",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/curves/{curveId:guid}/versions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:97",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:101",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/curves/{curveId:guid}/versions",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:125",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:129",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/curves/{curveId:guid}/versions/{version:long}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:160",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:167",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/{securityId:guid}/valuation",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:181",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:188",
       "documented": false
     },
     {
@@ -4080,6 +4086,18 @@
       "method": "GET",
       "path": "/api/security-master/otc/netting-sets/{nettingSetId:guid}",
       "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcContracts.cs:185",
+      "documented": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/security-master/rates/observations",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:18",
+      "documented": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/security-master/rates/ingest",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:49",
       "documented": false
     },
     {

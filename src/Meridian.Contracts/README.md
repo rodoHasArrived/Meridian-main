@@ -42,9 +42,19 @@ register a book-scoped evidence provider.
 `SinglePrincipalAttestationPolicy.Disclosure` supplies the shared label,
 "Attested by preparer — not independently reviewed". Neither this decision classification nor
 the evidence acknowledgment supplies accounting approval, posting authority or verified coverage.
-`ATTEST-DRAFT-CHECK` is a reserved policy identifier, not an implemented permission to advance a
-draft. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
+`ATTEST-DRAFT-CHECK` supports only an exact newly server-bound, retained, non-postable Security
+contractual-cash-flow run owned by its original human preparer. Explicit v2 declaration
+reaffirmation and the separate default-off host gate are required; legacy/unbound runs and Loan
+calculations remain unsupported. The receipt records a preparer check without advancing a
+controlled workflow or granting approval/posting authority. This B assertion remains distinct
+from the separate native C cash-dividend lane. See the [development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
 for the bounded default-off scope and outstanding W14 acceptance.
+
+`BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
+for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
+`BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
+fraction, original typed provider observation, recording actor/time, review justification and hash.
+Observed reset evidence is distinct from a forward curve or forecast assumption.
 
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;

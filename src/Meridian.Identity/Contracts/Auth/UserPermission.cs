@@ -151,7 +151,7 @@ public enum UserPermission : long
     /// <summary>Administer a reasoned, scoped single-principal declaration; confers no domain approval authority.</summary>
     ManageSinglePrincipalDeclarations = 1L << 40,
 
-    /// <summary>Record or revoke non-posting preparer assertions with the existing target-modification permission.</summary>
+    /// <summary>Record non-posting preparer assertions with the existing target-modification permission.</summary>
     RecordPreparerAttestations = 1L << 41,
 
     /// <summary>Read scoped preparer-assertion receipts, declaration history and audit evidence.</summary>

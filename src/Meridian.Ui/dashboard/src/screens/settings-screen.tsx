@@ -1,8 +1,11 @@
+import { FixedIncomePaymentPreview } from "@/components/data/fixed-income-payment-preview";
 import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { resolveFigureEvidence, useWorkspaceFigureContext } from "@/lib/workspace-figure-context";
 import { OwnedProviderCredentialPanel } from "./settings-owned-provider-credentials";
+import { BondImportValuePreview } from "./bond-import-value-preview";
+import { ProviderIdentityEvidence } from "@/components/data/provider-identity-evidence";
 import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, MonitorCheck, RefreshCcw, Save, Search, ShieldCheck, Trash2, User } from "lucide-react";
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
@@ -5310,6 +5313,7 @@ function ProviderIntegrationRuntimePanel({
         runtimeState={state}
         operatorName={operatorName}
       />
+      <BondImportValuePreview stagedRecords={state.staging?.records ?? []} quarantinedRecords={state.quarantine?.records ?? []} />
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow
           label="Last sync"
@@ -5517,6 +5521,7 @@ function ProviderIntegrationRuntimePanel({
           ))}
         </div>
       ) : null}
+      {state.identity ? <ProviderIdentityEvidence preview={state.identity} onResolved={onLoad} /> : null}
       {state.promotion && state.promotion.rows.length > 0 ? (
         <div className="mt-3 grid gap-2" aria-label={`${row.displayName} provider integration promotion readiness rows`}>
           {state.promotion.rows.slice(0, 3).map((promotionRow) => (
@@ -6018,6 +6023,7 @@ function ProviderIntegrationWorkbenchPanel({
           Schema drift
         </Button>
       </div>
+      <FixedIncomePaymentPreview mappedRecords={state.dryRunResult?.mappedRecordPreviews ?? []} />
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
         <SettingsFieldRow label="Manifest" value={manifestId || "Not selected"} tone={manifestId ? "success" : "muted"} />
         <SettingsFieldRow label="Connection" value={state.connection?.connectionName ?? runtimeState.monitor?.connectionName ?? "Runtime connection"} tone="muted" />
@@ -6026,6 +6032,7 @@ function ProviderIntegrationWorkbenchPanel({
         <SettingsFieldRow label="Schema drift" value={state.driftResult ? (state.driftResult.driftDetected ? `${state.driftResult.issues.length} issues` : "No drift") : "Not checked"} tone={state.driftResult ? (state.driftResult.shouldPauseCapability ? "danger" : state.driftResult.driftDetected ? "warning" : "success") : "muted"} />
         <SettingsFieldRow label="Activation" value={state.activationResult ? state.activationResult.connectionState : "Not requested"} tone={state.activationResult?.activated ? "success" : "muted"} />
       </dl>
+      <BondImportValuePreview mappedRecords={state.dryRunResult?.mappedRecordPreviews ?? []} />
       {state.message ? (
         <div role={state.tone === "danger" ? "alert" : "status"} className={cn("mt-3 text-xs", itemToneClass[state.tone])}>
           <div>{state.message}</div>

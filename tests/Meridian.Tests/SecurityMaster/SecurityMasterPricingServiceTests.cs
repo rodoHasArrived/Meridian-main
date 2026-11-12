@@ -28,6 +28,40 @@ public sealed class SecurityMasterPricingServiceTests
     }
 
     [Fact]
+    public async Task ObservationPicker_RetainsSourceChoicesWithExactQuotationAndFreshness()
+    {
+        var (sut, store, query) = BuildSut();
+        var asOf = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero);
+        query.GetByIdAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(BuildSecurity("Bond"));
+        var hierarchy = new SecurityPricingHierarchyDto(SecurityId, null,
+            [new(1, "dealer", "Dealer", 1), new(2, "evaluated", "Evaluated", 1)], asOf.AddDays(-10), "operator");
+        store.GetHierarchyAsOfAsync(SecurityId, null, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(hierarchy);
+        var quotation = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Clean,
+            SecurityQuotationConvention.Per100Face, SecurityQuoteStatus.Bid, new(2026, 6, 2), "T+1");
+        store.GetRawPricesAsync(SecurityId, asOf, Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(
+            new SecurityRawPriceDto[]
+            {
+                new("dealer", 98.5m, asOf, SecurityPriceUnit.PercentOfPar) { Quotation = quotation },
+                new("evaluated", 99m, asOf.AddDays(-3), SecurityPriceUnit.PercentOfPar)
+                    { Quotation = quotation with { Status = SecurityQuoteStatus.Evaluated } }
+            });
+        var observations = await sut.GetObservationSelectionsAsync(SecurityId, null, asOf);
+        observations.Should().HaveCount(2);
+        observations[0].Quotation.Should().Be(quotation);
+        observations[0].IsStaleFallback.Should().BeFalse();
+        observations[1].IsStaleFallback.Should().BeTrue();
+        observations.Should().OnlyContain(row => row.SelectionReceiptId.HasValue && row.PriceKind == SecurityPriceKind.Raw);
+        await store.Received(2).RetainPriceSelectionAsync(Arg.Any<SecurityPriceGoldenCopyDto>(), null, Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public void LegacyQuotationSerialization_RemainsUnchangedWhenUnspecified()
+    {
+        var observation = new SecurityRawPriceDto("legacy", 100m, DateTimeOffset.UnixEpoch, SecurityPriceUnit.PercentOfPar);
+        System.Text.Json.JsonSerializer.Serialize(observation).Should().NotContain("Quotation");
+    }
+
+    [Fact]
     public async Task GetGoldenCopyPriceAsync_ReturnsNull_WhenSecurityNotFound()
     {
         var (sut, _, queryService) = BuildSut();

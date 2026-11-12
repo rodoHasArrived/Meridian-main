@@ -197,7 +197,8 @@ public sealed class BondSettlementConsiderationTests
     {
         var json = System.Text.Json.JsonSerializer.Serialize(Receipt(), new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         json.Should().NotContain("functionalCurrency").And.NotContain("settlementFxRateToFunctional")
-            .And.NotContain("isForeignCurrency").And.NotContain("effectiveFunctionalCurrency").And.NotContain("effectiveFxRateToFunctional");
+            .And.NotContain("isForeignCurrency").And.NotContain("effectiveFunctionalCurrency").And.NotContain("effectiveFxRateToFunctional")
+            .And.NotContain("selectionReceiptId").And.NotContain("priceAccountId");
         var foreign = System.Text.Json.JsonSerializer.Serialize(Receipt() with { Currency = "EUR", FunctionalCurrency = "USD", SettlementFxRateToFunctional = 1.0875m },
             new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
         foreign.Should().Contain("\"functionalCurrency\":\"USD\"").And.NotContain("effective").And.NotContain("isForeignCurrency");

@@ -19,6 +19,7 @@ public static class BondReferenceEndpoints
 
     public static void MapBondReferenceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         var group = app.MapGroup(string.Empty).WithTags("BondReference");
         group.AddEndpointFilter(EndpointAuthorization.RequireAny(
             UserPermission.ViewSecurityMaster,

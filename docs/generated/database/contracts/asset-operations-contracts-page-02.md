@@ -2,11 +2,15 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-130 of 130. References crossing pages remain available in the dependency manifest.
+Objects 81-132 of 132. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_CorporateActionProjectionBlockerDto["CorporateActionProjectionBlockerDto"] {
+        +string Code
+        +string Message
+    }
     class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto["CorporateActionProjectionEvidenceDependencyDto"] {
         +string ContentHashSha256
         +string EvidenceId
@@ -229,6 +233,16 @@ classDiagram
         +decimal? OriginalFaceAmount
         +decimal? ParAmount
         +Guid PositionId
+    }
+    class Meridian_Contracts_AssetOperations_PostAttestedCashDividendPostingCandidateRequestDto["PostAttestedCashDividendPostingCandidateRequestDto"] {
+        +Meridian_Contracts_Workstation_OperationsActionOriginDto ActionOrigin
+        +string Actor
+        +Guid AttestationId
+        +Meridian_Contracts_Ledger_PostingRuleJournalCandidateRequestDto Candidate
+        +string CompanyId
+        +string? CorrelationId
+        +string Reason
+        +string TenantId
     }
     class Meridian_Contracts_AssetOperations_PostedJournalImpactDto["PostedJournalImpactDto"] {
         +AccountingBasisKindDto AccountingBasis

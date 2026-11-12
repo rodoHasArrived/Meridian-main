@@ -30,7 +30,7 @@ content digest excludes workflow-only case-version increments so recovery after 
 stage can reuse unchanged source facts.
 
 The bounded W14 cash-dividend path uses a native PostgreSQL book declaration, separate immutable
-capacity reservations, and a sealed invocation lease. Migration 065 preserves ordinary approval
+capacity reservations, and a sealed invocation lease. Migration 066 preserves ordinary approval
 rows and adds distinct preparer receipts and posted proof. Source ex-date fixes the monthly bucket;
 provider aliases cannot move a retained event into another bucket. Exact reaffirmation reuses its
 reservation, while rollback or withdrawal never releases uncertain capacity. Declaration withdrawal
@@ -52,6 +52,19 @@ scope lock: a queued command sees the preceding budget commit rather than retain
 from before its lock wait. Exact case versions, the complete-book inventory lock, period-row
 locking and the event-stream compare-and-swap remain enforced through the final commit. Ordinary
 transaction isolation is unchanged.
+
+Security Master migration 065 adds nullable quotation evidence and an unconstrained `price_exact`
+column for new CLR-decimal observations. The existing `price numeric(28,10)` column remains a
+compatibility mirror, including its limit of eighteen integer digits; new values outside that
+range are still refused. Reads and same-timestamp idempotence use `COALESCE(price_exact, price)`
+so quotes that share a rounded mirror remain distinct. Existing rows keep null exact prices and
+unknown quotation metadata: no missing historical digits are backfilled. Nullable metadata is
+omitted from legacy canonical serialization, and retained receipt payloads and hashes stay unchanged.
+Curve point JSON can retain typed rate observations and reviewed construction
+evidence; only evidence-bearing versions add it to content hashes, preserving legacy curve hashes.
+Typed-rate retries compare all retained source and construction facts except retrieval time under
+the curve row lock. A retry returns its original immutable version, hash and evidence, including
+after a newer distinct publication; it never makes the older observation latest again.
 
 Security Master migration 062 now checks its apply conditions in the runner without changing
 the shipped SQL: upgrades require explicit stopped-writer and retired-legacy-writer attestations,

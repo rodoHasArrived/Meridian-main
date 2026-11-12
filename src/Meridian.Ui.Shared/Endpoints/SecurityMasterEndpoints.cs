@@ -1435,6 +1435,8 @@ public static partial class SecurityMasterEndpoints
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);
+        if (app.Services.GetService<Meridian.Contracts.FixedIncome.IBondObservedFixingStore>() is not null)
+            MapObservedBondFixingEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);
@@ -1629,6 +1631,7 @@ public static partial class SecurityMasterEndpoints
 
     private static void MapPricingEndpoints(RouteGroupBuilder group, JsonSerializerOptions jsonOptions)
     {
+        jsonOptions = FixedIncomeHttpJson.Options(jsonOptions);
         group.MapGet(UiApiRoutes.SecurityMasterPricingHierarchy, async (
             Guid securityId,
             string? accountId,
@@ -1745,6 +1748,19 @@ public static partial class SecurityMasterEndpoints
         .Produces<SecurityPriceGoldenCopyDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status404NotFound);
+
+        group.MapGet(UiApiRoutes.SecurityMasterRetainedPriceObservations, async (
+            Guid securityId, string? accountId, DateTimeOffset asOf, DateTimeOffset? knownAt,
+            [FromServices] ISecurityMasterPricingService pricingService, CancellationToken ct) =>
+        {
+            if (asOf == default || asOf.Offset != TimeSpan.Zero || knownAt is { Offset: var offset } && offset != TimeSpan.Zero)
+                return Results.BadRequest(new { error = "Observation cutoffs must be explicit UTC timestamps." });
+            return Results.Json(await pricingService.GetObservationSelectionsAsync(securityId, accountId, asOf, ct, knownAt)
+                .ConfigureAwait(false), jsonOptions);
+        })
+        .WithName("GetSecurityMasterRetainedPricingObservations")
+        .Produces<IReadOnlyList<SecurityPriceGoldenCopyDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet(UiApiRoutes.SecurityMasterPriceComparison, async (
             Guid securityId,

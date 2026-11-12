@@ -176,11 +176,11 @@ classDiagram
         +AccountingPostingApprovalStateDto ApprovalState
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
+        +AssetAccountingPreparerAttestationDto? CashDividendAttestation
         +Guid? CausationId
         +Guid CommandId
         +Guid? CorrelationId
         +EconomicEventReferenceDto? EconomicEvent
-        +DateOnly EffectiveDate
     }
     class Meridian_Contracts_Ledger_AccountingPostingEvidenceKindDto["AccountingPostingEvidenceKindDto"] {
     }

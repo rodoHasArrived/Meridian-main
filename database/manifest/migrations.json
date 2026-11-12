@@ -559,6 +559,24 @@
       "sha256": "3b66440592481b5d7743c7d37e52549dd0f9db1f046abf81db6a33ee94ffba2b"
     },
     {
+      "filename": "065_security_price_quotation_evidence.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 65,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/065_security_price_quotation_evidence.sql",
+      "schema": "security_master",
+      "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
+    },
+    {
+      "filename": "066_corporate_action_cash_dividend_attestations.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 66,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
+      "schema": "security_master",
+      "sha256": "b5f6dcb254945b0547fb40db6d12d96f10832182325d39784050aa5a524c69de"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1457,10 +1475,19 @@
       "path": "src/Meridian.Identity/Migrations/001_user_access_assignment.sql",
       "schema": "identity_access",
       "sha256": "58c0dcf87ba23c702f97f102778f3f8ff09b0e5c910a4e892f46157e43f2ce37"
+    },
+    {
+      "filename": "001_operator_triage.sql",
+      "immutable": true,
+      "migration_set_id": "operator-triage",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/Workstation/Migrations/001_operator_triage.sql",
+      "schema": "operator_triage",
+      "sha256": "45827327de6385564826a009bdfe7037fbd62b9d4f0ad9dd56b76dce11cad600"
     }
   ],
   "findings": [],
-  "fingerprint": "8ed43ed9dd9dc667cc8eab3757fa0831e3a62ceb509ae139f9d1a236a8f85212",
+  "fingerprint": "c34c06bcc3e926352b181340aa1d1e75fb890028f6087f482e000a280617fb8e",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1694,13 +1721,37 @@
       "quote_schema": true,
       "schema": "identity_access",
       "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA",
+        "MERIDIAN_LEDGER_CONNECTION_STRING"
+      ],
+      "directory": "src/Meridian.Storage/Workstation/Migrations",
+      "display_name": "Operator Triage",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "operator-triage",
+      "immutable": true,
+      "ledger": {
+        "checksum_column": "checksum",
+        "checksum_required": false,
+        "key_column": "filename",
+        "ordinal_column": "ordinal",
+        "table": "operator_triage_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Workstation",
+      "quote_schema": false,
+      "schema": "operator_triage",
+      "track_ordinals": false
     }
   ],
   "summary": {
     "errors": 0,
-    "files": 162,
-    "migration_sets": 10,
-    "waivers": 29,
+    "files": 165,
+    "migration_sets": 11,
+    "waivers": 30,
     "warnings": 0
   },
   "waivers": [
@@ -1898,6 +1949,13 @@
       "path": "src/Meridian.Storage/SecurityMaster/Migrations/062_security_master_identifier_revisions.sql",
       "reason": "Requires independent human schema/storage review. Authorized by the repository owner on 2026-11-11, who stated they had reviewed the migration and the findings of the agent-run technical review of 2026-11-10 (recorded in docs/architecture/security-master-extensibility-review.md). It found the DDL, the Baseline contents and the append-only guards sound and set three apply conditions: stop every Security Master writer while the migration runs, because the Baseline backfill can deadlock with a writer that holds a securities row lock; let no pre-062 binary write after it commits, because such a writer changes security_identifiers without recording a revision; and above about one million identifier rows raise the command timeout for that start. The lexical TRUNCATE match declares a BEFORE TRUNCATE trigger that rejects truncation of the append-only identifier revision history (security_identifier_revisions); no data is truncated. The migration creates the table, one index, three comments, the rejection function and two triggers, and appends Baseline revisions for existing security_identifiers rows; it changes nothing in security_identifiers. PostgreSQL regression coverage (SecurityIdentifierHistoryPostgresTests, SecurityMasterIdentifierRevisionMigrationTests) attempts update, delete and truncate, runs the backfill on a populated pre-062 schema across failure, retry and restart, and verifies refusal and retention.",
       "review_after": "2027-05-04",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_corporate_action_cash_dividend_attestations.sql",
+      "reason": "The lexical TRUNCATE matches declare only BEFORE TRUNCATE rejection triggers on the newly created bounded cash-dividend declaration history, reservations, event aliases, postings and attestation receipts. No TRUNCATE command or data removal is executed. UPDATE and DELETE guards remain intact. The real PostgreSQL native-post regression attempts UPDATE, DELETE and raw TRUNCATE CASCADE after a successful posting, requires SQLSTATE 55000 from the rejection triggers, and checks that every original row remains unchanged. This exception covers only this migration's truncation-rejection trigger declarations.",
+      "review_after": "2027-05-12",
       "rule_id": "migration-truncate"
     },
     {

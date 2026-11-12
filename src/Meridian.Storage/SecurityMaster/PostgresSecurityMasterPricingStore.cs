@@ -120,11 +120,13 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         await using var command = connection.CreateCommand();
         command.CommandText = $"""
             insert into {Qualified("security_raw_prices")} as retained
-                (security_id, source_id, price, price_as_of, price_unit, recorded_by, recorded_at)
-            values (@security_id, @source_id, @price, @price_as_of, @price_unit, @recorded_by, now())
+                (security_id, source_id, price, price_exact, price_as_of, price_unit, recorded_by, recorded_at, quotation_evidence)
+            values (@security_id, @source_id, @price, @price, @price_as_of, @price_unit, @recorded_by, now(), @quotation::jsonb)
             on conflict (security_id, source_id, price_as_of) do update set price = retained.price
-            where retained.price = excluded.price and retained.price_unit = excluded.price_unit
+            where coalesce(retained.price_exact, retained.price) = coalesce(excluded.price_exact, excluded.price)
+                and retained.price_unit = excluded.price_unit
                 and retained.recorded_by = excluded.recorded_by
+                and retained.quotation_evidence is not distinct from excluded.quotation_evidence
             returning 1;
             """;
         command.Parameters.AddWithValue("security_id", request.SecurityId);
@@ -133,6 +135,8 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         command.Parameters.AddWithValue("price_as_of", request.PriceAsOf.UtcDateTime);
         command.Parameters.AddWithValue("price_unit", request.Unit.ToString());
         command.Parameters.AddWithValue("recorded_by", request.RecordedBy);
+        command.Parameters.AddWithValue("quotation", NpgsqlTypes.NpgsqlDbType.Text,
+            request.Quotation is null ? DBNull.Value : JsonSerializer.Serialize(request.Quotation, JsonOptions));
         if (await command.ExecuteScalarAsync(ct).ConfigureAwait(false) is null)
             throw new InvalidOperationException("A retained price observation cannot be replaced; record a new observation timestamp.");
     }
@@ -143,7 +147,7 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
         await using var command = connection.CreateCommand();
         command.CommandText = $"""
-            select distinct on (source_id) source_id, price, price_as_of, price_unit
+            select distinct on (source_id) source_id, coalesce(price_exact, price), price_as_of, price_unit, quotation_evidence
             from {Qualified("security_raw_prices")}
             where security_id = @security_id and price_as_of <= @as_of and recorded_at <= @known_at
             order by source_id, price_as_of desc;
@@ -155,7 +159,8 @@ public sealed partial class PostgresSecurityMasterPricingStore : ISecurityMaster
         var results = new List<SecurityRawPriceDto>();
         while (await reader.ReadAsync(ct).ConfigureAwait(false))
             results.Add(new SecurityRawPriceDto(reader.GetString(0), reader.GetDecimal(1),
-                reader.GetFieldValue<DateTimeOffset>(2), Enum.Parse<SecurityPriceUnit>(reader.GetString(3))));
+                reader.GetFieldValue<DateTimeOffset>(2), Enum.Parse<SecurityPriceUnit>(reader.GetString(3)))
+            { Quotation = reader.IsDBNull(4) ? null : JsonSerializer.Deserialize<SecurityPriceQuotationEvidence>(reader.GetString(4), JsonOptions) });
         return results;
     }
 

@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 132
-- Functions/procedures: 13
-- Triggers: 27
+- Relations: 138
+- Functions/procedures: 15
+- Triggers: 37
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -100,6 +100,85 @@ erDiagram
         numeric_28_10_ premium_amount
         text primary_identifier_value
         bigint version
+    }
+    security_master_cash_dividend_attestation_declaration_history {
+        text tenant_id PK
+        text company_id PK
+        uuid declaration_id
+        bigint revision PK
+        uuid ledger_book_id
+        timestamp_with_time_zone recorded_at
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_declarations {
+        text tenant_id PK
+        text company_id PK
+        uuid declaration_id
+        bigint revision
+        uuid ledger_book_id
+        boolean enabled
+        text principal_id
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_event_aliases {
+        text tenant_id PK
+        text company_id PK
+        text provider_id PK
+        text source_event_id PK
+        text source_event_version
+        character_64_ source_evidence_hash
+        text related_event_key
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_cash_dividend_attestation_postings {
+        uuid posting_id PK
+        uuid attestation_id FK
+        uuid case_id FK
+        uuid projection_id FK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid period_id
+        uuid journal_entry_id
+        timestamp_with_time_zone posted_at
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_reservations {
+        uuid reservation_id PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid case_id FK
+        text posting_idempotency_key
+        text related_event_key
+        date budget_month
+        numeric_38_18_ gross_usd
+        numeric whole_event_gross_usd
+        character_64_ economic_fingerprint
+        timestamp_with_time_zone reserved_at
+    }
+    security_master_cash_dividend_attestations {
+        uuid attestation_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        uuid reservation_id FK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid declaration_id
+        bigint declaration_revision
+        bigint bound_case_version
+        text attested_by
+        timestamp_with_time_zone attested_at
+        jsonb payload
+        character_64_ payload_hash
+        jsonb projection_payload
+        character_64_ projection_hash
+        timestamp_with_time_zone voided_at
+        text voided_by
     }
     security_master_cash_sweep_projection {
         uuid security_id PK
@@ -1476,6 +1555,8 @@ erDiagram
         text recorded_by
         timestamp_with_time_zone recorded_at
         text price_unit
+        jsonb quotation_evidence
+        numeric price_exact
     }
     security_master_security_snapshots {
         uuid security_id PK
@@ -1759,12 +1840,19 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_cash_dividend_attestation_reservations ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_reservation_id_fkey"
+    security_master_cash_dividend_attestations ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_attestation_id_fkey"
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
     security_master_commitment_guarantee_projection ||--o{ security_master_commitment_guarantee_covenant_projection : "commitment_guarantee_covenant_projection_security_id_fkey"
     security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_projection_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestation_reservations : "cash_dividend_attestation_reservations_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_projections : "corporate_action_case_accounting_projections_case_id_fkey"
@@ -1867,6 +1955,12 @@ erDiagram
 | `bond_lifecycle_projection` | table | 13 | `security_id` | 1 | 1 | - |
 | `bond_projection` | table | 11 | `security_id` | 1 | 2 | - |
 | `cap_floor_projection` | table | 15 | `security_id` | 0 | 3 | Relational projection of CapFloor asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
+| `cash_dividend_attestation_declaration_history` | table | 8 | `tenant_id`, `company_id`, `revision` | 0 | 1 | - |
+| `cash_dividend_attestation_declarations` | table | 9 | `tenant_id`, `company_id` | 0 | 2 | - |
+| `cash_dividend_attestation_event_aliases` | table | 8 | `tenant_id`, `company_id`, `provider_id`, `source_event_id` | 0 | 1 | - |
+| `cash_dividend_attestation_postings` | table | 12 | `posting_id` | 3 | 5 | - |
+| `cash_dividend_attestation_reservations` | table | 12 | `reservation_id` | 1 | 4 | - |
+| `cash_dividend_attestations` | table | 18 | `attestation_id` | 3 | 2 | - |
 | `cash_sweep_projection` | table | 10 | `security_id` | 0 | 1 | Relational projection of CashSweep asset-specific terms, keyed by security_id. Additive read model over securities.asset_specific_terms. |
 | `cash_transaction` | table | 13 | `cash_transaction_id` | 2 | 5 | - |
 | `certificate_of_deposit_projection` | table | 10 | `security_id` | 0 | 3 | - |
@@ -1971,7 +2065,7 @@ erDiagram
 | `security_price_selection_receipts` | table | 6 | `receipt_id` | 1 | 2 | Immutable golden-copy evaluation result, exact hierarchy snapshot, and quote comparisons; scoped receipt replay is the reproducibility authority. |
 | `security_pricing_hierarchy` | table | 6 | `security_id`, `account_id` | 1 | 2 | - |
 | `security_pricing_hierarchy_history` | table | 6 | `security_id`, `account_id`, `as_of` | 1 | 1 | Dated account-specific pricing hierarchy evidence, retaining source priorities, effective timestamp, author, and recording timestamp for historical price selection. |
-| `security_raw_prices` | table | 7 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
+| `security_raw_prices` | table | 9 | `security_id`, `source_id`, `price_as_of` | 1 | 2 | - |
 | `security_snapshots` | table | 4 | `security_id` | 0 | 1 | - |
 | `security_underlying_links` | table | 12 | `link_id` | 1 | 3 | The underlying graph: one edge per row from an instrument to the security or named reference it depends on, in a stated role, with its validity window. Derived rows follow the terms; declared rows are governed through the graph API. |
 | `security_workbench_generations` | table | 2 | `security_id` | 0 | 1 | - |
