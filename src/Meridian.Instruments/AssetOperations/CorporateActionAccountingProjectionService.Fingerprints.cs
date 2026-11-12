@@ -79,6 +79,8 @@ public sealed partial class CorporateActionAccountingProjectionService
         // Absent mode preserves the retained fingerprint grammar.
         if (request.CanonicalLotTransferJournal)
             AppendToken(builder, "canonical-lot-transfer-journal/v1");
+        if (request.CanonicalLotRedemptionJournal)
+            AppendToken(builder, "canonical-lot-redemption-journal/v1");
 
         foreach (var mutation in request.AuthoritativeLotMutations)
         {
