@@ -12178,6 +12178,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
     },
     {
@@ -12221,6 +12227,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
       "kind": "contract-set-member",
@@ -12838,6 +12850,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBlocks"
     },
     {
@@ -12851,6 +12869,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermConventions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermRead"
     },
     {
       "kind": "contract-set-member",
@@ -26878,6 +26902,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
     },
     {
@@ -26921,6 +26951,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
       "kind": "contract-set-member",
@@ -27538,6 +27574,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBlocks"
     },
     {
@@ -27551,6 +27593,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermConventions"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermRead"
     },
     {
       "kind": "contract-set-member",
@@ -40605,6 +40653,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt",
       "target": "contract:Meridian.Contracts.FixedIncome.BondCalculationContext"
     },
@@ -40643,6 +40697,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowSourceKind"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding"
     },
     {
       "kind": "contract-reference",
@@ -41045,6 +41105,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecuritySummaryDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityStatusDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermRead"
     },
     {
       "kind": "contract-reference",
@@ -58406,7 +58472,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "b6796595afac5c806761c430674b9eca33fb229f40de9d1d27fb33c3ac734341",
+  "fingerprint": "ce51977d77e8efe75a95dd57151813c38c7e0e5cd973fadc0e1e15510490c24b",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -70635,6 +70701,12 @@
     },
     {
       "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsCodecBindings"
+    },
+    {
+      "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetTermsFieldEditValidator"
@@ -70680,6 +70752,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityClassCodecBinding"
     },
     {
       "classification": "dto",
@@ -71294,6 +71372,12 @@
       "label": "Meridian.Contracts.SecurityMaster.SecuritySummaryDto"
     },
     {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBinding",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermBinding"
+    },
+    {
       "classification": "class",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermBlocks",
       "kind": "contract-type",
@@ -71310,6 +71394,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermConventions",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermConventions"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermRead",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermRead"
     },
     {
       "classification": "class",
@@ -85611,11 +85701,11 @@
     }
   ],
   "summary": {
-    "contract_references": 3703,
-    "contract_set_memberships": 4656,
-    "edges": 9704,
+    "contract_references": 3706,
+    "contract_set_memberships": 4664,
+    "edges": 9715,
     "foreign_keys": 165,
     "logical_references": 6,
-    "nodes": 4721
+    "nodes": 4725
   }
 }

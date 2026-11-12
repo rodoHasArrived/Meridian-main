@@ -779,6 +779,31 @@ screen, Today panel, and unrouted Settings admin operations console are recorded
 tombstones under `archive/code/src/Meridian.Ui/dashboard/src/screens/` until the 2026-09-11 archive cleanup (`982eea2d`) removed `archive/code/`; [the last copies](https://github.com/rodoHasArrived/Meridian-main/tree/8a420730765d99de02c2ac4e9ba6cea062987f9b/archive/code/src/Meridian.Ui/dashboard/src/screens) remain in history.
 
 
+## Chart accessibility contract
+
+Strategy equity-path comparison is composed by `strategy-screen.equity-paths.tsx` and
+`strategy-screen.equity-paths.view-model.ts`; the run-library view model retains its existing
+exports. The chart set remains separate from Compare, Diff and Promote selection.
+
+The SVG charts in `src/components/charts/` (`CandleChart`, `EquityCurve`, `DrawdownChart`,
+`Histogram`, `DepthChart`) render through the shared `ChartSvg` frame in `chart-a11y.tsx` and
+accept three optional props:
+
+- `ariaLabel` names the graphic. Each chart defaults to a generic type label, so screens should
+  pass a specific one (run, symbol, or study) and must not wrap the chart in their own
+  `role="img"` element.
+- `ariaDescription` carries the takeaway (range, extremes, final values) as the accessible
+  description.
+- `accessibleData` (`{ caption?, columns, rows }`) renders a visually hidden table beside the
+  graphic. Pass a memoized reference for long series; skip it when the same values are already
+  on screen as a table or list.
+
+Charts with crosshair callbacks render the keyboard slider from `chart-interaction.tsx` as a
+sibling of the image inside a `role="group"` svg, never inside `role="img"`, and the slider shows
+the `--focus-ring` outline on keyboard focus. Coverage lives in `charts.test.tsx` and the
+Portfolio, covered-call, Live Quotes, and Strategy screen tests.
+
+
 ## Dense row detail accessibility contract
 
 Dense row lists that drive an adjacent detail panel must use the shared contract in
@@ -2083,7 +2108,10 @@ mode stays pure Node while `npm run design-system:sync` reconverts changed fonts
 pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
 marks, lockups, the identity sheet, and module icons use the canonical copied
 assets in `src/assets/` and the typed asset bridge. Vite bundles these local
-assets for hosted and offline-capable deployments.
+assets for hosted and offline-capable deployments. Assets linked by `index.html`, including
+the favicon, remain emitted files when JavaScript imports them too; the URL does not depend
+on which build pipeline processes the shared asset first. Other assets retain Vite's size-based
+inlining behavior. `src/vite-config.assets.test.ts` covers the JavaScript-first case.
 
 Asset drift is checked before dev/build and by Vite's build hook. Run
 `npm run design-system:check` to verify the copied bytes,

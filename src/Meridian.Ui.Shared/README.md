@@ -1146,6 +1146,12 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
+operator's view ID yields no records. Their normalized search/filter values reach the shared
+read service without an unresolved personal ID, while the response retains that view's active marker.
+Run-filter-only requests preserve the resolved run's active picker entry, including runs beyond the
+bounded candidate list. Explorer save requests trim presentation values and discard null filters or
+blank/duplicate columns before the personal store enforces its unchanged field and collection limits.
 Portfolio explorer column headers and record fields spell profit and loss "P&L" ("Realized P&L",
 "Unrealized P&L"), the spelling the workspace metric cards already use.
 The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses

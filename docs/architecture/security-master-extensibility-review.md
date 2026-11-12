@@ -852,6 +852,68 @@ Validation (local, .NET SDK 10.0.403): `dotnet test tests/Meridian.Tests -c Rele
 active-plus-inactive gauge, and the zero case. The full local `bash scripts/ci.sh` was not run;
 GitHub `Meridian CI / quality-gate` remains authoritative.
 
+### ADR-027 stage-3 — the flat codec is generated from a binding table (cohort 1) — 2026-11-11
+
+Stage 3 allowed the codec arms to be generated or fully asserted, and until now they were
+asserted: the 32-class decode switch in `SecurityMasterMapping.ToSecurityKind` and the per-kind
+F# writer in `SecurityMasterSnapshotWrapper` were hand-written, with schema-driven sweeps
+holding them to the schema. A new class still cost one arm in each. For 20 of the 32 classes
+both arms are now generated.
+
+**The table.** `SecurityAssetTermsCodecBindings` (Contracts) states, per class, which flat key
+carries which member of the class's record, as `Field.Member`. Key types and requiredness stay
+in `SecurityAssetTermsSchema`, and record shapes are read from the F# types, so a row names only
+what neither says: the member, the reader's tolerance (plain, strict or convention-aware), and
+the few values a class fixes or derives. Three kinds of row cover the cohort:
+
+| Row | Meaning | Count in cohort 1 |
+| --- | --- | --- |
+| Plain | Key read into the member and written from it | 138 |
+| Written through a record property | The writer reads the record's own computed property, which supplies the written form a missing required value takes | 24 of the plain rows |
+| Fixed or derived | The decode sets the member without reading a key of its own (a treasury bill's issuer, a CDS issue date read from the effective date), or reads it through its own vocabulary (the option exercise style) | 5 |
+
+A member with no row decodes as absent, which is what `SecurityKindPersistence` refuses on a
+directly built record.
+
+**The output.** `SecurityFlatCodecGenerator` (tests) emits two committed source files:
+`SecurityMasterMapping.GeneratedDecode.cs` (one `DecodeGenerated<Class>` method per class) and
+`Interop.SecurityMaster.GeneratedWriter.fs` (one `GeneratedFlatWriter.write<Class>` function per
+class). They are ordinary code, compiled with the rest, with no reflection at run time; the
+hand-written arms for these classes are deleted and call the generated ones.
+`SecurityFlatCodecGenerationTests` regenerates both and fails when the committed text differs,
+requires every generated class to be a catalog class, and requires each class's rows to write
+exactly the keys the schema declares. The generator itself refuses a row that names a member the
+record lacks, binds a member twice, reads an optional key as required, or leaves a non-optional
+member unbound.
+
+**Behaviour.** Unchanged. The generated arms read the same keys through the same readers in
+the same order and write the same anonymous-record shapes, so no golden, corpus or fixture
+moved and no existing test changed apart from the asset-class literal ratchet, which lists the
+two new class-naming files.
+
+**Cohort 1 (20 classes).** Option, Future, FxSpot, MoneyMarketFund, TreasuryBill, Repo,
+OtherSecurity, PrivateFundInterest, PrivateCompanyEquity, RealEstateHolding, Commodity,
+CryptoCurrency, Cfd, Warrant, FxForward, NonDeliverableForward, CreditDefaultSwap, Swaption,
+CapFloor, StructuredNote.
+
+**Still hand-written (12 classes), and why.**
+
+| Classes | What the generator lacks |
+| --- | --- |
+| Deposit, CertificateOfDeposit, CommercialPaper, CashSweep | A module built by a helper or a vocabulary conversion (the scalar call module, the coupon-kind constant, the asset-backed flag, the sweep vehicle and frequency) |
+| Bond, Swap, DirectLoan, StructuredCredit, CommitmentGuarantee | Structural members: coupon structures, schedules, legs, covenants, the declared-schedule containers and their version gating |
+| Equity, InvestmentFund, CustomAsset | A bespoke classification decode, a pinned historical read order, and the verbatim profile document |
+
+The first group needs only a module-level row kind. The second needs the structural codecs
+named in the table. Neither is started.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,006 passed, 1 skipped (the 6,983 before, plus this suite's 23); adjacent suites —
+5,142 passed, 134 skipped; `Meridian.FSharp.Tests` — 642 passed; `Meridian.FundStructure.Tests` —
+231 passed; `Meridian.Contracts.UnitTests` — 384 passed. `dotnet format whitespace
+--verify-no-changes` and schema-control verification pass. The full local `bash scripts/ci.sh`
+was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
 ### ADR-027 stage-3 — the codec-only validation remainder ends — 2026-11-11
 
 The follow-through contraction (pull request #3496) put every per-class field on a shared term
@@ -912,9 +974,10 @@ a structural module the class recovers, and every field a flattening copies verb
 module added after the identity gate. Two things are left out on purpose. `declaredSchedule`
 keeps the existing rule that an empty declared call or put list is filled from the retained
 document, so it stays in step with the older `call` summary module. And fields the economic
-document carried before stage 3 keep the old fill, because historical and hand-shaped documents
-hold values there that the flat decode does not reproduce; clearing one of those on a row with
-a retained document is still refilled, as before.
+document carried before stage 3 are not on the list, because historical and hand-shaped documents
+hold values there that the flat decode does not reproduce; at this entry's merge, clearing one
+of those on a row with a retained document was still refilled. The second follow-up below
+closes that.
 `EveryFlatAuthoritativeField_IsRebuiltFromTheFlatRow` proves, for every asset class, that each
 listed field is reproduced from the flat row alone.
 
@@ -991,6 +1054,51 @@ namespaces — 6,983 passed, 1 skipped (the 6,916 before, plus this suite's 67);
 accepted, a persisted member wrongly refused, a derived rule removed) the suite failed on each.
 No golden or corpus byte changed, and no existing test needed a change. The full local
 `bash scripts/ci.sh` was not run; GitHub `Meridian CI / quality-gate` remains authoritative.
+
+#### Follow-up — the fold stops refilling any value the row held — 2026-11-11
+
+The fold fix above covered the stage-3 homes only. A value in a field the economic document
+carried before stage 3 — a bond's call date, issue date or issuer name, a loan's reference
+index, a treasury bill's auction date, a repo's haircut, a pool id — was still written back
+after an amendment cleared it, on any row that kept a retained document. Eight such cases were
+added to `SecurityRetainedFoldClearedValueTests` and all eight failed before the change.
+
+No per-class list can settle these: a historical or hand-shaped document can hold a value in
+one of those fields that the flat decode never reproduced, and that value must keep folding
+back. So the question is asked of the document itself. On the write path
+(`SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried`) the retained document is flattened
+for the row's class, exactly as the replay that attached it did, and rebuilt with no carry. A
+field that rebuild populates was on the row, so a revision that has it empty cleared it and the
+fold leaves it empty. A field the rebuild leaves empty, or fills with a different value, was
+never on the row and is filled as before. The second case matters where the rebuild derives a
+field from another key: a structured-credit row stores only the pool id and derives the issuer
+name from it, so a document whose issuer name differs from its pool id keeps that name folding
+back when the pool id is cleared. (Found in automated review; pinned by
+`AValueTheRebuildDerivesFromAnotherKey_IsNotTreatedAsCarried`.) The static stage-3 list is kept and unioned with this, and a document that cannot be
+flattened or rebuilt names no field, which leaves the fold exactly as it was.
+
+With no amendment the rebuild and the row are the same thing, so nothing a replay produces
+changes: the replay corpus and every golden are untouched. One side effect is a correction, not
+a regression: a derived value no longer folds back after the terms that derived it change (a
+bond amended from fixed to floating no longer gets its old scalar coupon rate written back into
+the coupon module).
+
+Tests: the eight cleared-value cases; a bond document carrying both an issuer name (on the row)
+and an LEI (not on the row), where clearing the name loses the name and keeps the LEI; the
+fixed-to-floating amendment above; and the existing sinking-fund and ESG cases, unchanged.
+
+**The floating-coupon bond and the identity gate.** The stage-1 notes recorded that a
+floating-coupon bond image did not shed its retained document at the identity gate. That is no
+longer true and had not been re-checked since the stage-3 contraction. A theory over every
+asset class now pins it: each class's fully populated image, the floating bond included, sheds
+its carry on replay.
+
+Validation (local, .NET SDK 10.0.403): `Meridian.Tests` SecurityMaster and Architecture
+namespaces — 7,024 passed, 1 skipped (the 6,983 before, plus 41 new cases); the
+fixed-to-floating case was added after that sweep and passes with its suite and the replay
+corpus (165 passed). Adjacent suites — 5,142 passed, 134 skipped. No golden or corpus byte
+changed. The full local `bash scripts/ci.sh` was not run; GitHub
+`Meridian CI / quality-gate` remains authoritative.
 
 ### ADR-027 stage-3 S3-E4 — the profile envelope gains a module home — 2026-11-10
 
