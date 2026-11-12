@@ -47,7 +47,7 @@ class IntegrationEvidenceTests(unittest.TestCase):
         for name in MODULE.SCHEMA_FILES:
             (self.results / name).write_text("schema evidence\n")
         (self.results / "skip-evidence.json").write_text(json.dumps({
-            "certifiable": True, "totals": {"passed": 2, "failed": 0, "skipped": 0, "other": 0},
+            "certifiable": True, "totals": {"passed": len(MODULE.SUITES), "failed": 0, "skipped": 0, "other": 0},
         }))
         self.name = "meridian-ci-integrations-20-2"
         self.receipt, self.sha256 = MODULE.create(self.results, self.name, self.identity, self.root)
@@ -61,7 +61,7 @@ class IntegrationEvidenceTests(unittest.TestCase):
 
     def test_complete_same_commit_run_attempt_is_reusable(self):
         receipt = self.verify()
-        self.assertEqual(receipt["totals"]["passed"], 2)
+        self.assertEqual(receipt["totals"]["passed"], len(MODULE.SUITES))
         self.assertEqual(set(receipt["suites"]), set(MODULE.SUITES))
         self.assertIn("database-schema.sql", receipt["files"])
         self.assertEqual(receipt["identity"], self.identity)
@@ -123,19 +123,35 @@ class IntegrationEvidenceTests(unittest.TestCase):
             self.verify()
 
     def test_missing_failed_skipped_empty_and_unknown_test_results_are_rejected(self):
-        path = self.results / "meridian-integrations/meridian-integrations.trx"
-        original = path.read_text()
-        for outcome in ("Failed", "NotExecuted", "Timeout"):
-            with self.subTest(outcome=outcome):
-                path.write_text(original.replace("Passed", outcome))
-                with self.assertRaises(ValueError):
+        for prefix in MODULE.SUITES:
+            path = self.results / prefix / f"{prefix}.trx"
+            original = path.read_text()
+            for outcome in ("Failed", "NotExecuted", "Timeout"):
+                with self.subTest(suite=prefix, outcome=outcome):
+                    path.write_text(original.replace("Passed", outcome))
+                    with self.assertRaises(ValueError):
+                        MODULE.create(self.results, self.name, self.identity, self.root)
+                    with self.assertRaises(ValueError):
+                        self.verify()
+            path.write_text("<TestRun/>")
+            with self.subTest(suite=prefix, outcome="empty"):
+                with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
                     MODULE.create(self.results, self.name, self.identity, self.root)
-        path.write_text("<TestRun/>")
-        with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
-            MODULE.create(self.results, self.name, self.identity, self.root)
-        path.unlink()
-        with self.assertRaisesRegex(ValueError, "required TRX suite"):
-            MODULE.create(self.results, self.name, self.identity, self.root)
+                with self.assertRaisesRegex(ValueError, "zero discovered|no passing"):
+                    self.verify()
+            path.unlink()
+            with self.subTest(suite=prefix, outcome="missing"):
+                with self.assertRaisesRegex(ValueError, "required TRX suite"):
+                    MODULE.create(self.results, self.name, self.identity, self.root)
+                with self.assertRaisesRegex(ValueError, "required TRX suite"):
+                    self.verify()
+            path.write_text(original)
+
+    def test_demo_evidence_contract_follows_the_moved_project(self):
+        self.assertEqual(MODULE.SUITES["demo-integrations"], {
+            "project": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+            "filter": "Category=Integration&Category!=LiveProvider",
+        })
 
     def test_missing_or_invalid_coverage_rejects_certification(self):
         path = self.results / "meridian-integrations/coverage.cobertura.xml"

@@ -250,10 +250,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
         var convention = DayCountConventions.Parse(terms.DayCountConvention);
 
-        // Fixed-income lots are recorded as a price per 100 of par (bond quotation convention);
-        // premium/discount amortizes straight-line toward par, weighted by the day-count year
-        // fraction from acquisition to the sale/as-of date.
-        const decimal parPrice = 100m;
+        // Relief unit cost is money per recorded quantity, not a market quote. The lot's shared
+        // quantity states how much face one recorded unit carries, whether one or one hundred.
+        // Amortization moves that monetary unit cost toward the face per recorded unit.
         var amortizeTo = asOf < maturity ? asOf : maturity;
 
         foreach (var lot in openLots)
@@ -262,10 +261,14 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             // unlinked lots (no SecurityId) relieve at their recorded basis.
             if (lot.SecurityId != securityId)
                 continue;
+            if (lot.UnitKind != SecurityLotUnitKind.FaceValue)
+                throw new InvalidOperationException(
+                    $"Lot '{lot.LotId}' is measured in {lot.UnitKind}; par amortization requires a face-value lot.");
             if (lot.AcquiredDate >= amortizeTo || lot.AcquiredDate >= maturity)
                 continue;
 
-            var premiumOrDiscount = lot.UnitCost - parPrice;
+            var parPerUnit = LotQuantity.Of(lot).EconomicUnits / lot.Quantity;
+            var premiumOrDiscount = lot.UnitCost - parPerUnit;
             if (premiumOrDiscount == 0m)
                 continue;
 
@@ -282,7 +285,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
             // Signed per-unit delta that moves basis toward par: premium (unit cost > par) yields a
             // negative delta (write-down); discount (unit cost < par) yields a positive delta.
-            var delta = decimal.Round((parPrice - lot.UnitCost) * fraction, 10, MidpointRounding.AwayFromZero);
+            // Keep decimal precision until monetary relief is rounded. Rounding a per-face delta
+            // here loses cents on large holdings and depends on the lot's chosen quantity unit.
+            var delta = (parPerUnit - lot.UnitCost) * fraction;
             if (delta == 0m)
                 continue;
 

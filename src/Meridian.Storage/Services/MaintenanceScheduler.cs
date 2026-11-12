@@ -28,6 +28,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
     private readonly IDataQualityService _dataQualityService;
     private readonly IStorageSearchService? _storageSearchService;
     private readonly IOperationalCaseHistoryStore? _caseHistoryStore;
+    private readonly TimeProvider _timeProvider;
 
     private readonly ConcurrentQueue<ScheduledJob> _jobQueue = new();
     private readonly ConcurrentDictionary<string, ScheduledJob> _runningJobs = new();
@@ -46,7 +47,8 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         ITierMigrationService tierMigrationService,
         IDataQualityService dataQualityService,
         IStorageSearchService? storageSearchService = null,
-        IOperationalCaseHistoryStore? caseHistoryStore = null)
+        IOperationalCaseHistoryStore? caseHistoryStore = null,
+        TimeProvider? timeProvider = null)
     {
         _config = config;
         _fileMaintenanceService = fileMaintenanceService;
@@ -54,6 +56,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         _dataQualityService = dataQualityService;
         _storageSearchService = storageSearchService;
         _caseHistoryStore = caseHistoryStore;
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public void Start()
@@ -76,7 +79,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
                 Allowed: false,
                 Reason: "No active maintenance window",
                 CurrentWindow: null,
-                WaitTime: nextWindow != null ? GetTimeUntilWindow(now, nextWindow) : null,
+                WaitTime: nextWindow?.Start - now,
                 ApplicableLimits: null
             ));
         }
@@ -134,7 +137,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
             {
                 return Task.FromResult<ScheduleSlot?>(new ScheduleSlot(
                     Start: now,
-                    End: now + remainingTime,
+                    End: TimeZoneInfo.ConvertTime(now + remainingTime, _config.PrimaryTimeZone),
                     Window: currentWindow,
                     Limits: currentWindow.Limits,
                     AvailableConcurrencySlots: currentWindow.MaxConcurrentJobs - _runningJobs.Count
@@ -143,37 +146,10 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         }
 
         // Find next suitable window
-        for (int daysAhead = 0; daysAhead < 7; daysAhead++)
+        foreach (var slot in GetUpcomingWindows(now))
         {
-            var checkDate = now.Date.AddDays(daysAhead);
-            var dayOfWeek = checkDate.DayOfWeek;
-
-            foreach (var window in _config.MaintenanceWindows)
-            {
-                if (!window.Days.Contains(dayOfWeek))
-                    continue;
-
-                if (!IsOperationAllowed(window, operation))
-                    continue;
-
-                var windowStart = checkDate + window.Start;
-                var windowEnd = checkDate + window.End;
-
-                // Handle overnight windows
-                if (window.End < window.Start)
-                    windowEnd = windowEnd.AddDays(1);
-
-                if (windowStart > now && (windowEnd - windowStart) >= estimatedDuration)
-                {
-                    return Task.FromResult<ScheduleSlot?>(new ScheduleSlot(
-                        Start: windowStart,
-                        End: windowEnd,
-                        Window: window,
-                        Limits: window.Limits,
-                        AvailableConcurrencySlots: window.MaxConcurrentJobs
-                    ));
-                }
-            }
+            if (IsOperationAllowed(slot.Window, operation) && slot.End - slot.Start >= estimatedDuration)
+                return Task.FromResult<ScheduleSlot?>(slot);
         }
 
         return Task.FromResult<ScheduleSlot?>(null);
@@ -191,7 +167,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         var scheduledJob = new ScheduledJob(
             Id: scheduledId,
             Job: job with { Id = scheduledId },
-            ScheduledStart: slot?.Start ?? DateTimeOffset.UtcNow.AddDays(1),
+            ScheduledStart: slot?.Start ?? _timeProvider.GetUtcNow().AddDays(1),
             Status: JobStatus.Pending,
             CreatedAt: DateTimeOffset.UtcNow
         );
@@ -215,9 +191,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
             CurrentMaintenanceWindow: currentWindow,
             RunningMaintenanceJobs: _runningJobs.Count,
             PendingJobs: _jobQueue.ToArray(),
-            NextMaintenanceWindowStart: nextWindow != null
-                ? now.Date + nextWindow.Start
-                : DateTimeOffset.UtcNow.AddDays(1)
+            NextMaintenanceWindowStart: nextWindow?.Start ?? _timeProvider.GetUtcNow().AddDays(1)
         );
     }
 
@@ -236,7 +210,7 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         if (session == null || !IsWithinTradingHours(now, session))
             return null;
 
-        var endTime = now.Date + session.AfterHoursEnd;
+        var endTime = GetWindowBoundary(now.Date, session.IncludesAfterHours ? session.AfterHoursEnd : session.RegularEnd);
         return endTime - now;
     }
 
@@ -277,6 +251,23 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
             return status;
         }
 
+        // Reserve the slot before history I/O can yield, so the queue counts admitted
+        // work while its durable running transition is being written.
+        if (!_runningJobs.TryAdd(job.Id, new ScheduledJob(job.Id, job, startTime, JobStatus.Running, startTime)))
+        {
+            var completedAt = DateTimeOffset.UtcNow;
+            var message = $"Maintenance job {job.Id} is already being admitted or executed.";
+            return status with
+            {
+                CompletedAt = completedAt,
+                Status = JobStatus.Blocked,
+                Message = message,
+                Errors = [message],
+                Outcome = BuildOutcome(job, startTime, completedAt, MaintenanceOperationResult.Blocked(
+                    message, "Wait for the existing attempt to finish before retrying this job."))
+            };
+        }
+
         try
         {
             await EnsureHistoryHydratedAsync(ct).ConfigureAwait(false);
@@ -290,7 +281,6 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
 
             runningHistory = await AppendRunningHistoryAsync(job, startTime, predecessor, ct).ConfigureAwait(false);
             admissionRetained = true;
-            _runningJobs[job.Id] = new ScheduledJob(job.Id, job, startTime, JobStatus.Running, startTime);
             status = status with { Message = $"Executing {job.Type}..." };
 
             // Execute based on job type
@@ -459,24 +449,32 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
     private async Task ProcessJobQueueAsync(CancellationToken ct)
     {
         await EnsureHistoryHydratedAsync(ct).ConfigureAwait(false);
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
 
-        while (_jobQueue.TryPeek(out var job))
+        // Scan the existing queue once. Deferred or incompatible jobs must not
+        // prevent another due job from using the current window.
+        var pendingCount = _jobQueue.Count;
+        for (var i = 0; i < pendingCount && _jobQueue.TryDequeue(out var job); i++)
         {
             // Requeued admission failures carry a future retry instant. Respect it so a broken
             // history store cannot create a hot retry loop or an ever-growing set of executions.
             if (job.ScheduledStart > now)
-                break;
+            {
+                _jobQueue.Enqueue(job);
+                continue;
+            }
 
             var decision = await CanRunNowAsync(job.Job.Type, job.Job.Requirements, ct);
 
-            if (!decision.Allowed)
-                break;
-
-            if (_jobQueue.TryDequeue(out job))
+            if (!decision.Allowed ||
+                (decision.CurrentWindow is { } window &&
+                 GetRemainingWindowTime(GetCurrentTime(), window) < job.Job.EstimatedDuration))
             {
-                TrackScheduledExecution(job, ct);
+                _jobQueue.Enqueue(job);
+                continue;
             }
+
+            TrackScheduledExecution(job, ct);
         }
     }
 
@@ -1361,55 +1359,26 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         }
     }
 
-    private DateTimeOffset GetCurrentTime() => DateTimeOffset.Now;
+    private DateTimeOffset GetCurrentTime() =>
+        TimeZoneInfo.ConvertTime(_timeProvider.GetUtcNow(), _config.PrimaryTimeZone);
 
     private MaintenanceWindow? FindCurrentMaintenanceWindow(DateTimeOffset now)
     {
-        var timeOfDay = now.TimeOfDay;
-        var dayOfWeek = now.DayOfWeek;
-
         foreach (var window in _config.MaintenanceWindows)
         {
-            if (!window.Days.Contains(dayOfWeek))
-                continue;
-
-            var start = window.Start;
-            var end = window.End;
-
-            // Handle overnight windows
-            if (end < start)
+            // An overnight occurrence is governed by its starting weekday, even
+            // after midnight. Compare instants so repeated DST hours use the same
+            // boundaries as duration checks and future-slot generation.
+            for (var daysBack = 0; daysBack <= 1; daysBack++)
             {
-                if (timeOfDay >= start || timeOfDay < end)
-                    return window;
-            }
-            else
-            {
-                if (timeOfDay >= start && timeOfDay < end)
-                    return window;
-            }
-        }
+                var startDate = now.Date.AddDays(-daysBack);
+                if (!window.Days.Contains(startDate.DayOfWeek))
+                    continue;
 
-        return null;
-    }
-
-    private MaintenanceWindow? FindNextMaintenanceWindow(DateTimeOffset now)
-    {
-        var timeOfDay = now.TimeOfDay;
-
-        // Check windows for today
-        foreach (var window in _config.MaintenanceWindows.OrderBy(w => w.Start))
-        {
-            if (window.Days.Contains(now.DayOfWeek) && window.Start > timeOfDay)
-                return window;
-        }
-
-        // Check tomorrow and subsequent days
-        for (int i = 1; i < 7; i++)
-        {
-            var checkDate = now.AddDays(i);
-            foreach (var window in _config.MaintenanceWindows.OrderBy(w => w.Start))
-            {
-                if (window.Days.Contains(checkDate.DayOfWeek))
+                var start = GetWindowBoundary(startDate, window.Start);
+                var endDate = window.End < window.Start ? startDate.AddDays(1) : startDate;
+                var end = GetWindowBoundary(endDate, window.End);
+                if (now >= start && now < end)
                     return window;
             }
         }
@@ -1417,27 +1386,51 @@ public sealed class MaintenanceScheduler : IMaintenanceScheduler, IAsyncDisposab
         return null;
     }
 
-    private TimeSpan? GetTimeUntilWindow(DateTimeOffset now, MaintenanceWindow window)
+    private ScheduleSlot? FindNextMaintenanceWindow(DateTimeOffset now) =>
+        GetUpcomingWindows(now).FirstOrDefault();
+
+    private IEnumerable<ScheduleSlot> GetUpcomingWindows(DateTimeOffset now)
     {
-        for (int i = 0; i < 7; i++)
+        // Include the same weekday next week when today's only window has ended.
+        for (int i = 0; i <= 7; i++)
         {
             var checkDate = now.Date.AddDays(i);
-            if (window.Days.Contains(checkDate.DayOfWeek))
+            foreach (var window in _config.MaintenanceWindows.OrderBy(window => window.Start))
             {
-                var windowStart = checkDate + window.Start;
-                if (windowStart > now)
-                    return windowStart - now;
+                if (!window.Days.Contains(checkDate.DayOfWeek))
+                    continue;
+
+                var start = GetWindowBoundary(checkDate, window.Start);
+                var endDate = window.End < window.Start ? checkDate.AddDays(1) : checkDate;
+                var end = GetWindowBoundary(endDate, window.End);
+                if (start > now)
+                {
+                    yield return new ScheduleSlot(
+                        start, end, window, window.Limits, window.MaxConcurrentJobs);
+                }
             }
         }
-        return null;
     }
 
     private TimeSpan GetRemainingWindowTime(DateTimeOffset now, MaintenanceWindow window)
     {
-        var end = now.Date + window.End;
-        if (window.End < window.Start)
-            end = end.AddDays(1);
-        return end - now;
+        var startDate = GetWindowBoundary(now.Date, window.Start) <= now
+            ? now.Date
+            : now.Date.AddDays(-1);
+        var endDate = window.End < window.Start ? startDate.AddDays(1) : startDate;
+        return GetWindowBoundary(endDate, window.End) - now;
+    }
+
+    private DateTimeOffset GetWindowBoundary(DateTime date, TimeSpan time)
+    {
+        var localTime = DateTime.SpecifyKind(date + time, DateTimeKind.Unspecified);
+        // A boundary inside the spring-forward gap opens/closes at the first valid
+        // instant after the gap. Resolve each date separately so DST changes cannot
+        // inherit the current offset into a future slot.
+        while (_config.PrimaryTimeZone.IsInvalidTime(localTime))
+            localTime = localTime.AddMinutes(1);
+
+        return new DateTimeOffset(localTime, _config.PrimaryTimeZone.GetUtcOffset(localTime));
     }
 
     private bool IsOperationAllowed(MaintenanceWindow window, MaintenanceType operation)

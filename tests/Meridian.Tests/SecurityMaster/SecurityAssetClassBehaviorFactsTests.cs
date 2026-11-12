@@ -28,9 +28,9 @@ public sealed class SecurityAssetClassBehaviorFactsTests
         => Classes(static d => d.CarriesBondCouponStructure).Should().Equal("Bond");
 
     [Fact]
-    public void SupportsRecurringFixedIncomeAccrual_AdmitsBondOnly()
+    public void SupportsRecurringFixedIncomeAccrual_AdmitsBondAndStructuredCredit()
     {
-        Classes(static d => d.SupportsRecurringFixedIncomeAccrual).Should().Equal("Bond");
+        Classes(static d => d.SupportsRecurringFixedIncomeAccrual).Should().Equal("Bond", "StructuredCredit");
         SecurityAssetClassCatalog.GetOrDefault("NotAClass").SupportsRecurringFixedIncomeAccrual.Should().BeFalse();
     }
 

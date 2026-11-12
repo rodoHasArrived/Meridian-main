@@ -11,6 +11,24 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ledger
 
+Cost-basis relief uses monetary cost per recorded quantity. Face-value amortization targets the
+economic face represented by that quantity and retains decimal unit-cost precision; share rounding
+is unchanged. Unaffected lots retain their exact basis. Known exact whole-lot basis follows each
+split, factor, amortization, capital-return and wash-sale monetary transform.
+
+`JournalEntryMetadata.PreparerAttestation` retains the exact native cash-dividend preparer receipt,
+owner scope and posting fingerprints on the immutable journal for current and frozen report proof.
+The absent property is omitted from JSON so historical journal hashes remain unchanged. This
+classification establishes preparer attestation only; source verification, independent approval
+and financial coverage remain separate.
+
+`LedgerLineDimensionSet` retains optional `IntercompanyAgreementId` and approved version as a pair.
+Canonicalization, grouping and replay preserve the distinction between agreement revisions without
+changing legacy signatures when references are absent. Agreement provenance explains a line; it
+does not create paired postings, settlement or agreement-level consolidation. The durable storage
+boundary validates supplied references and historical reversals. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 `StructuredNoteAccountingTemplate` recognizes dated fair-value gains and losses in profit or loss
 through the existing governed daily-valuation drafts. It converts face quantities and raw percentage
 quotes through the shared lot model, applies currency minor units, and retains template/convention
@@ -284,9 +302,14 @@ restates open lots by reference-data-derived `LedgerTaxLotBasisAdjustment`s — 
 splits and return of capital, pool-factor paydowns, and day-count premium/discount amortization —
 before relief, keeping the ledger engine free of Security Master contracts while relieving basis
 against the effective lots. The Application-layer `SecurityMasterCostBasisAdjustmentService` reads
-the master and produces those adjustments; `SecurityMasterAmortizationLedgerBridge` posts the
-matching coupon-accrual, premium-amortization/discount-accretion, and principal-paydown journal
-entries so cash flow projections are booked instead of remaining display-only.
+the master and produces those adjustments. The separate `SecurityMasterAmortizationLedgerBridge`
+remains available to the recurring `FixedIncomeAccrualCalculation`, which invokes it on a scratch
+ledger and retains coupon-accrual and premium-amortization/discount-accretion lines in a governed
+draft. This recurring route requires explicit Bond accrual admission, measured coupon intervals,
+dated holdings and matching book currency; real posting follows the ordinary approval lifecycle.
+Projected principal paydowns are excluded from that draft and arrive through cash activity.
+The retired `StructuredCashFlowLedgerBridge` and `BuildLedgerPostingsAsync` facade do not provide
+an alternate whole-coupon posting path.
 `AutomatedJournalDraftProjector` produces balanced drafts for dividend declarations, dividend
 receipts, cash-interest credits, corporate-action cash events, and recurring accrual obligations
 such as management fees, performance fees, commissions, and withholding taxes before workflow
@@ -411,6 +434,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

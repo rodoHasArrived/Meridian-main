@@ -49,6 +49,64 @@ function parseArgs(argv) {
   return { values, valueLists, flags };
 }
 
+export function parseCaptureWorkers(value = 1) {
+  const workers = Number(value);
+  if (!Number.isInteger(workers) || workers < 1 || workers > 8) {
+    throw new Error("--workers must be an integer between 1 and 8.");
+  }
+  return workers;
+}
+
+/** Run isolated captures with bounded concurrency and one manifest writer. */
+export async function runCaptureWorkers(captures, workers, capture, checkpoint) {
+  const workerCount = Math.min(parseCaptureWorkers(workers), captures.length);
+  const completed = new Array(captures.length);
+  let nextIndex = 0;
+  let fatalError = null;
+  let checkpointTail = Promise.resolve();
+  const shellMountFailureLimit = 3;
+  const isShellMountFailure = (result) => result?.status === "failed"
+    && /App shell failed to mount/.test(String(result.error));
+
+  async function worker() {
+    while (!fatalError && nextIndex < captures.length) {
+      const index = nextIndex++;
+      try {
+        completed[index] = await capture(captures[index], index);
+      } catch (error) {
+        fatalError ??= error;
+        return;
+      }
+
+      // Captures may finish out of order. Snapshot in catalog order and serialize
+      // writes so the manifest's shared temporary file never has competing owners.
+      checkpointTail = checkpointTail.then(async () => {
+        const results = completed.filter(Boolean);
+        await checkpoint(results);
+        if (
+          completed.slice(0, shellMountFailureLimit).length === shellMountFailureLimit
+          && Array.from({ length: shellMountFailureLimit }, (_, index) => completed[index]).every(isShellMountFailure)
+          && results.every(isShellMountFailure)
+        ) {
+          fatalError ??= new Error(
+            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
+            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
+            + "compile error), so every remaining route would fail the same way. See the manifest logs."
+          );
+        }
+      }).catch((error) => { fatalError ??= error; });
+      await checkpointTail;
+    }
+  }
+
+  // Drain every started capture before returning or throwing. Browser teardown
+  // must not race a worker that is still closing its context or writing evidence.
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  await checkpointTail;
+  if (fatalError) throw fatalError;
+  return completed.filter(Boolean);
+}
+
 async function pathExists(candidate) {
   try {
     await fs.access(candidate);
@@ -771,7 +829,95 @@ function assertNoCaptureBrowserError(pageErrors, captureName) {
   }
 }
 
-async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs, textDir = null) {
+/** Track data requests independently of transport quiet periods and UI busy labels. */
+export function createCaptureApiTracker(page) {
+  const pending = new Set();
+  const waiters = new Set();
+  let revision = 0;
+  const onRequest = (request) => {
+    if (new URL(request.url()).pathname.startsWith("/api/")) {
+      pending.add(request);
+      revision += 1;
+    }
+  };
+  const onFinished = (request) => {
+    if (pending.delete(request)) {
+      revision += 1;
+      if (pending.size === 0) for (const finish of [...waiters]) finish();
+    }
+  };
+  page.on("request", onRequest);
+  page.on("requestfinished", onFinished);
+  page.on("requestfailed", onFinished);
+  return {
+    get revision() { return revision; },
+    get pendingCount() { return pending.size; },
+    waitForIdle(timeoutMs) {
+      if (pending.size === 0) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        const finish = (error) => {
+          clearTimeout(timer);
+          waiters.delete(finish);
+          if (error) reject(error);
+          else resolve();
+        };
+        const timer = setTimeout(() => finish(new Error(
+          `Screenshot API requests did not finish within ${timeoutMs}ms.`
+        )), timeoutMs);
+        waiters.add(finish);
+      });
+    },
+    dispose() {
+      page.off("request", onRequest);
+      page.off("requestfinished", onFinished);
+      page.off("requestfailed", onFinished);
+      for (const finish of [...waiters]) finish(new Error("Screenshot API request tracker closed."));
+      pending.clear();
+    }
+  };
+}
+
+/** Wait for rendered content, not for an unrelated interval without network traffic. */
+export async function waitForCaptureReadiness(page, timeoutMs, apiTracker = null) {
+  const deadline = Date.now() + timeoutMs;
+  do {
+    await apiTracker?.waitForIdle(Math.max(1, deadline - Date.now()));
+    const revision = apiTracker?.revision;
+    await page.waitForFunction(async () => {
+      const snapshot = () => {
+        const root = document.querySelector("main") ?? document.body;
+        if (!root || document.fonts?.status === "loading") return null;
+        const visible = (element) => element.getClientRects().length > 0
+          && getComputedStyle(element).visibility !== "hidden";
+        if ((root.matches("[aria-busy='true']") && visible(root))
+          || Array.from(root.querySelectorAll("[aria-busy='true']")).some(visible)) return null;
+        if (Array.from(document.images).some((image) => visible(image) && !image.complete)) return null;
+        const elements = [root, ...root.querySelectorAll("*")].filter(visible);
+        return JSON.stringify([
+          root.innerText,
+          root.scrollWidth,
+          root.scrollHeight,
+          elements.map((element) => {
+            const bounds = element.getBoundingClientRect();
+            return [bounds.x, bounds.y, bounds.width, bounds.height];
+          })
+        ]);
+      };
+      const before = snapshot();
+      if (before === null) return false;
+      // Two painted frames expose font, grid and data-region layout changes without
+      // imposing networkidle's fixed 500ms quiet period on every route.
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      return snapshot() === before;
+    }, undefined, { timeout: Math.max(1, deadline - Date.now()) });
+    // Data can start loading while the DOM settles, even if its panel exposes no
+    // aria-busy marker. Recheck after those responses have painted their content.
+    if (!apiTracker || (apiTracker.pendingCount === 0 && apiTracker.revision === revision)) return;
+  } while (Date.now() < deadline);
+  throw new Error(`Screenshot content did not settle within ${timeoutMs}ms.`);
+}
+
+async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defaults, minBytes, minTextLength, timeoutMs, readinessTimeoutMs, textDir = null, apiTracker = null) {
   pageErrors.reset();
   const viewport = {
     width: Number(capture.viewport?.width ?? defaults.width ?? 1440),
@@ -828,7 +974,6 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       }
     }
   }
-  await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
   for (const waitForAbsentText of collectCaptureWaitForAbsentTexts(capture)) {
     await waitForCaptureStep(
       page.getByText(waitForAbsentText, { exact: false })
@@ -840,6 +985,12 @@ async function captureRoute(page, pageErrors, capture, outputDir, baseUrl, defau
       `waiting for transitional text '${waitForAbsentText}' to clear`
     );
   }
+  await waitForCaptureStep(
+    waitForCaptureReadiness(page, readinessTimeoutMs, apiTracker),
+    pageErrors,
+    capture.name,
+    "waiting for fonts, images and settled content layout"
+  );
   assertNoCaptureBrowserError(pageErrors, capture.name);
 
   const textLength = await page.evaluate(() => document.body.innerText.trim().length);
@@ -953,11 +1104,13 @@ export async function captureRouteWithRetries(
     // page from the attempt that just failed.
     let context = null;
     let tracker = null;
+    let apiTracker = null;
     let attemptError = null;
     try {
       context = await browser.newContext();
       const page = await context.newPage();
       tracker = createPageErrorTracker(page);
+      apiTracker = createCaptureApiTracker(page);
       onTrackerChange(tracker);
       const resolver = createApiResolver();
       await setupScenarioApiMocking(page, resolver, tracker.record);
@@ -972,7 +1125,8 @@ export async function captureRouteWithRetries(
         minTextLength,
         timeoutMs,
         readinessTimeoutMs,
-        textDir
+        textDir,
+        apiTracker
       );
       resolver.assertNoUnexpectedRequests();
       result.attempts = attempt;
@@ -992,6 +1146,7 @@ export async function captureRouteWithRetries(
       }
     } finally {
       tracker?.dispose();
+      apiTracker?.dispose();
       onTrackerChange(null);
       try {
         if (context) await context.close();
@@ -1053,6 +1208,8 @@ export async function finalizeCaptureRun(manifest, manifestPath, startedUtc, log
 
 async function main() {
   const { values, valueLists, flags } = parseArgs(process.argv.slice(2));
+  if (flags.has("workers")) throw new Error("--workers requires an integer between 1 and 8.");
+  const workers = parseCaptureWorkers(values.get("workers"));
   const repoRoot = values.has("repo-root")
     ? path.resolve(values.get("repo-root"))
     : await findRepoRoot(process.cwd());
@@ -1123,7 +1280,7 @@ async function main() {
   const readinessTimeoutMs = Number(values.get("readiness-timeout-ms") ?? "30000");
   const minBytes = Number(values.get("min-bytes") ?? "12000");
   const minTextLength = Number(values.get("min-text-length") ?? "80");
-  // A transient render or network-idle hiccup on a single route should not fail
+  // A transient render or readiness hiccup on a single route should not fail
   // the whole catalog. Retry each capture a bounded number of times (fresh
   // context each attempt) before recording it as failed.
   const parsedCaptureRetries = Number(values.get("capture-retries") ?? "1");
@@ -1135,7 +1292,7 @@ async function main() {
   const startedUtc = new Date();
   let server = null;
   let browser = null;
-  let pageErrors = null;
+  const activeTrackers = new Set();
   const results = [];
 
   const manifest = {
@@ -1150,6 +1307,7 @@ async function main() {
     selectedCaptureCount: captures.length,
     totalCaptureCount: allCaptures.length,
     maxAttemptsPerCapture: captureAttempts,
+    workers: Math.min(workers, captures.length),
     scenario: selectedScenario?.id ?? null,
     accountingScenario: selectedScenario?.id ?? "accounting.normal",
     previewUrl: selectedScenario ? scenarioSource.module.scenarioPreviewUrl(selectedScenario) : null,
@@ -1207,12 +1365,12 @@ async function main() {
     }
     browser = await chromium.launch(launchOptions);
 
-    for (const capture of captures) {
+    await runCaptureWorkers(captures, workers, async (capture) => {
       // Each capture renders in a fresh browser context so it shows the
       // route's default first-load state. The app shell persists
       // workflow-continuity, activity, and focus state across navigations,
       // so a shared context makes capture results depend on visit order.
-      let fatalError = null;
+      let activeTracker = null;
       try {
         const result = await captureRouteWithRetries(
           browser,
@@ -1227,12 +1385,14 @@ async function main() {
           readinessTimeoutMs,
           captureAttempts,
           (tracker) => {
-            pageErrors = tracker;
+            if (activeTracker) activeTrackers.delete(activeTracker);
+            activeTracker = tracker;
+            if (tracker) activeTrackers.add(tracker);
           },
           { textDir }
         );
-        results.push(result);
         console.log(`Captured ${capture.name} -> ${result.path}`);
+        return result;
       } catch (error) {
         // Fault isolation: a screen that still fails after its retries is
         // recorded with its error and skipped so the run continues through the
@@ -1252,32 +1412,15 @@ async function main() {
           attempts: captureAttempts,
           error: message
         };
-        results.push(failed);
         console.error(`::warning::Skipped ${capture.name} (${capture.path}): ${message.split(/\r?\n/)[0]}`);
-
-        // Systemic-failure circuit breaker: per-route fault isolation exists so one broken
-        // screen never blocks the rest of the catalog, but when the shared app shell itself
-        // never mounts, every remaining route is guaranteed to fail the same slow way
-        // (2 x timeoutMs each) until the CI job ceiling cancels the run. If the first few
-        // routes ALL failed to mount the shell, abort now with a pointed error instead.
-        const shellMountFailureLimit = 3;
-        if (
-          results.length >= shellMountFailureLimit
-          && results.every((result) => result.status === "failed"
-            && /App shell failed to mount/.test(String(result.error)))
-        ) {
-          fatalError = new Error(
-            `Aborting capture run: the app shell failed to mount on the first ${results.length} route(s). `
-            + "This is a shell-level failure (activation gate, missing shell fixtures, or a dev server "
-            + "compile error), so every remaining route would fail the same way. See the manifest logs."
-          );
-        }
+        return failed;
       }
+    }, async (completed) => {
       // Persist every completed route so a cancelled job still has a useful
       // partial manifest, including counts when the shell circuit breaker trips.
+      results.splice(0, results.length, ...completed);
       await writeCaptureManifest(manifest, manifestPath, logs);
-      if (fatalError) throw fatalError;
-    }
+    });
 
     const proxyErrors = logs.filter((line) => /http proxy error:\s*\/api\//i.test(line));
     const failedCaptures = results.filter((result) => result.status === "failed");
@@ -1329,7 +1472,7 @@ async function main() {
     throw error;
   } finally {
     await finalizeCaptureRun(manifest, manifestPath, startedUtc, logs, [
-      { name: "page error tracker", run: () => pageErrors?.dispose() },
+      { name: "page error trackers", run: () => { for (const tracker of activeTrackers) tracker.dispose(); } },
       { name: "browser", run: () => browser?.close() },
       { name: "dev server", run: () => stopProcess(server) },
       { name: "scenario module", run: () => scenarioSource.close() }
