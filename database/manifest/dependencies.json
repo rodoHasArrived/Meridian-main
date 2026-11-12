@@ -12208,6 +12208,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassRegistry"
     },
     {
@@ -27263,6 +27269,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
     },
     {
       "kind": "contract-set-member",
@@ -59820,7 +59832,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "222db5b5a30af752c38cbc9aefc5bc83f418354ff444fa4b60c43d1b88c70198",
+  "fingerprint": "b87d7219baa6678e6b44c0c767a432ccc82320bc28061fc8dd04f69f1db36e59",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -72076,6 +72088,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassLabelResolution"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityAssetClassNames",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityAssetClassNames"
     },
     {
       "classification": "catalog",
@@ -87680,10 +87698,10 @@
   ],
   "summary": {
     "contract_references": 3787,
-    "contract_set_memberships": 4773,
-    "edges": 9939,
+    "contract_set_memberships": 4775,
+    "edges": 9941,
     "foreign_keys": 169,
     "logical_references": 6,
-    "nodes": 4836
+    "nodes": 4837
   }
 }

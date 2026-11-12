@@ -2,11 +2,16 @@
 
 # `security-master-contracts` data objects - page 6 of 7
 
-Objects 401-480 of 553. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto["SecurityFactorHistoryDto"] {
+        +IReadOnlyList~SecurityFactorHistoryConflict~ Conflicts
+        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
+        +Guid SecurityId
+    }
     class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint["SecurityFactorHistoryPoint"] {
         +DateOnly AsOfDate
         +Guid? CorpActId
@@ -399,16 +404,7 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityScheduleValidationException["SecurityScheduleValidationException"] {
         +IReadOnlyList~SecurityScheduleDiagnostic~ Diagnostics
     }
-    class Meridian_Contracts_SecurityMaster_SecuritySearchRequest["SecuritySearchRequest"] {
-        +bool ActiveOnly
-        +string? CustomProfileId
-        +string? ProfileFieldKey
-        +string? ProfileFieldValue
-        +int? ProfileVersion
-        +string Query
-        +int Skip
-        +int Take
-    }
+    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint
     Meridian_Contracts_SecurityMaster_SecurityFactorHistoryPoint --> Meridian_Contracts_SecurityMaster_SecurityFactorSource
     Meridian_Contracts_SecurityMaster_SecurityForwardCurve --> Meridian_Contracts_SecurityMaster_SecurityForwardCurvePoint
     Meridian_Contracts_SecurityMaster_SecurityIdentifierDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierKind

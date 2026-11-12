@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 5 of 7
 
-Objects 321-400 of 553. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 554. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -42,6 +42,8 @@ classDiagram
         +IReadOnlyList~InstrumentType~? InstrumentTypes
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassLabelResolution["SecurityAssetClassLabelResolution"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityAssetClassNames["SecurityAssetClassNames"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityAssetClassRegistry["SecurityAssetClassRegistry"] {
         +IReadOnlyList~SecurityAssetClassDefinition~ All
@@ -483,11 +485,6 @@ classDiagram
         +DateOnly AsOfDate
         +IReadOnlyList~SecurityFactorHistoryPoint~ Points
     }
-    class Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto["SecurityFactorHistoryDto"] {
-        +IReadOnlyList~SecurityFactorHistoryConflict~ Conflicts
-        +IReadOnlyList~SecurityFactorHistoryPoint~ Points
-        +Guid SecurityId
-    }
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetClassDescriptor
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermField
     Meridian_Contracts_SecurityMaster_SecurityAssetClassDefinition --> Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint
@@ -539,5 +536,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster --> Meridian_Contracts_SecurityMaster_SecurityAssetSpecificTerms
-    Meridian_Contracts_SecurityMaster_SecurityFactorHistoryDto --> Meridian_Contracts_SecurityMaster_SecurityFactorHistoryConflict
 ```
