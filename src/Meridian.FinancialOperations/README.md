@@ -11,6 +11,10 @@ last_reviewed: 2026-11-10
 
 # src/Meridian.FinancialOperations
 
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when

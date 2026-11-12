@@ -964,12 +964,19 @@ public static partial class LedgerEndpoints
                 var actor = ResolveMutationActor(context, request.Actor);
                 var result = await service
                     .ReopenClosePeriodScopedAsync(
-                        request with
-                        {
-                            Actor = actor,
-                            Role = controllerRole,
-                            ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
-                        },
+                        new ReopenClosePeriodRequestDto(
+                            WorkflowId: request.WorkflowId,
+                            ExpectedWorkflowVersion: request.ExpectedWorkflowVersion,
+                            Actor: actor,
+                            Role: controllerRole,
+                            Rationale: request.Rationale,
+                            IncidentId: request.IncidentId,
+                            Justification: request.Justification,
+                            ApprovalReference: request.ApprovalReference,
+                            ImpactSummary: request.ImpactSummary,
+                            EvidenceLinks: request.EvidenceLinks,
+                            CorrelationId: request.CorrelationId,
+                            ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)),
                         actor,
                         scope.TenantContext.TenantId,
                         scope.TenantContext.CompanyId,

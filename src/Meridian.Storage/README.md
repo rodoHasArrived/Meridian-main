@@ -130,21 +130,25 @@ version stamps remain unchanged. Forward migration 058 widens only the two sched
 to unconstrained numeric, preserving full accepted decimal precision. See
 [dated economic schedules](../../docs/domain/security.md#dated-economic-schedule-validation).
 
-Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, if the rename
-is denied while an existing destination is open, publication uses `File.Replace` with a temporary
-backup. Sync and async overwrite publication share bounded gates within this process, keyed by
-the normalized, case-insensitive destination path; temporary-file writes and flushes
-remain concurrent. This prevents competing replacements and their recovery steps from overlapping.
-Readers that share deletion keep their old generation while fresh readers see the complete
-replacement. A failed replacement restores the old generation only when the destination is absent;
-an unrestored `.atomic-recovery.<id>.tmp` backup is retained beside the destination for recovery.
-The recovery error log identifies that generated backup name and the error code without logging
-caller-controlled paths or exception text. Backup cleanup after successful publication is best
-effort. Transient Windows sharing/access failures use the existing ten-attempt, growing 20 ms
-backoff, including when a brief deletion-denying handle coexists with a retained snapshot reader.
-Async waits release the thread. A retained backup that could not be restored ends retries so later
-attempts cannot overwrite the recovery evidence. A handle that stays open still fails publication,
-and permission failures remain visible.
+Atomic writes retain the existing flushed-temp-then-publish sequence. On Windows, publication
+uses one `SetFileInformationByHandle(FileRenameInfoEx)` replacement with POSIX semantics, so
+readers that share deletion keep their old generation while every fresh open sees a complete
+published file. There is no rename-away interval at the live path. Native rename support is
+required; unsupported filesystems fail before the live file changes. Delete-access handles retain
+the sharing protection of readers that deny deletion. Sync and async publishers share bounded
+gates within this process, keyed by normalized, case-insensitive destination paths; temporary-file
+writes and flushes remain concurrent. Local, UNC and extended-length paths use the same primitive.
+
+`ReplaceAsync` stages and flushes the previous generation in a recovery file created with the
+original DACL, then prepares both live and backup publications. A failure before the live commit
+preserves the destination and existing `.bak`. After the live rename commits, the staged snapshot
+is promoted to `.bak`. If a later filesystem fault prevents backup promotion, the committed write
+still returns successfully and the durable `.atomic-recovery.<id>.bak` snapshot remains beside
+the destination. Its `.bak` suffix protects recovery evidence from temporary-file orphan cleanup.
+The error log identifies only that generated recovery filename and an error code, without
+caller-controlled paths or exception text. Transient Windows sharing/access failures use the
+existing ten-attempt, growing 20 ms backoff; async waits release the thread. A handle that stays
+open still fails publication, and permission failures remain visible.
 `AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
 retention, including coordinated publishers using equivalent path spellings. These locks do not
 coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.

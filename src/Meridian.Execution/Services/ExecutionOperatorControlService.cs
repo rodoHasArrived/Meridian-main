@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Execution.Models;
+using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Meridian.Storage.Archival;
@@ -607,10 +608,12 @@ public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
         {
             // A probe that throws has established nothing. Refusing is the same answer as an
             // absent probe, and it keeps a faulting book from admitting an unbounded close.
+            // A custom probe may echo order text in its exception; retain the diagnostic
+            // without allowing the exception renderer to bypass log neutralization.
             _logger.LogWarning(
-                exception,
-                "Close-only admission refused: the working-reduction probe failed for {Symbol}",
-                normalizedSymbol);
+                "Close-only admission refused: the working-reduction probe failed for {Symbol} ({FailureType}: {FailureMessage})",
+                LogSanitizer.Sanitize(normalizedSymbol), exception.GetType().Name,
+                LogSanitizer.Sanitize(exception.Message));
             return false;
         }
 

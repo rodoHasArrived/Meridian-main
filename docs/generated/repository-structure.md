@@ -7387,6 +7387,7 @@ Meridian-main
 │   │   │   ├── ArchivalStorageService.cs
 │   │   │   ├── ArchiveAppendLock.cs
 │   │   │   ├── AtomicFileWriter.cs
+│   │   │   ├── AtomicFileWriter.Windows.cs
 │   │   │   ├── AtomicFileWriterAdapter.cs
 │   │   │   ├── CompressionProfileManager.cs
 │   │   │   ├── JsonlAppendWriter.cs
@@ -11742,6 +11743,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.CloseReadiness.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.cs
 │   │   │   ├── OperationsContinuityWorkflowServiceTests.PreparedStart.cs
+│   │   │   ├── OperationsContinuityWorkflowServiceTests.Privacy.cs
 │   │   │   ├── ReconciliationGovernanceServiceTests.cs
 │   │   │   ├── ReconciliationRunServiceTests.cs
 │   │   │   ├── SecurityMasterCashFlowProjectionShapeTests.cs
@@ -12078,6 +12080,7 @@ Meridian-main
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.FactorPaydown.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.HistoricalLots.cs
+│   │   │   │   ├── AccountingPostingCandidateServiceTests.Origin.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.RetainedEvidenceMerge.cs
 │   │   │   │   ├── AccountingPostingCandidateServiceTests.Successors.cs
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.AcquisitionAdmission.cs
@@ -13436,6 +13439,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportWorkflowServiceTests.cs
 │   │   │   ├── StatementToDeliveryAuthorityTests.cs
 │   │   │   ├── StatusDevelopmentSessionTests.cs
+│   │   │   ├── StorageEndpointOptionsBindingTests.cs
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs

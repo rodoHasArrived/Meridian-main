@@ -11,6 +11,13 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui.Shared
 
+Storage route options bind explicitly from server services; request bodies cannot supply a
+storage root when service registration is missing. Financial posting adapters construct trusted
+commands with server-derived actor, scope and origin while retaining reviewed evidence. Undefined
+origin values downgrade to nonhuman authority and cannot post a reviewed human candidate.
+Unavailable fund-registry diagnostics retain the failure type without fund identities or exception
+payloads; tenant lookup and downstream authorization retain their existing responsibilities.
+
 Large workspace implementations have explicit responsibility seams: `FundReportArtifactRenderer`
 owns deterministic branding and JSON/CSV/XLSX/HTML/PDF rendering, while
 `FundOperationsWorkspaceReadService` retains scope, authoritative reads and governed report

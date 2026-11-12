@@ -11,6 +11,9 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+Backfill diagnostics render date ranges invariantly and encode line breaks in untrusted log fields.
+Provider requests and coverage checkpoints retain the original symbol identities.
+
 Intraday historical-backfill coverage and resume checkpoints follow the date of the bar's start
 in its session timezone. The current US-equity providers default to `America/New_York`; callers
 for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending after UTC midnight

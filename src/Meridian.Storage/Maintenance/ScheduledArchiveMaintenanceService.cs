@@ -349,7 +349,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         _logger.LogDebug(
             "Queued maintenance execution {ExecutionId} for schedule '{ScheduleName}'",
-            execution.ExecutionId, schedule.Name);
+            SanitizeLogText(execution.ExecutionId), SanitizeLogText(schedule.Name));
 
         return execution;
     }
@@ -1325,7 +1325,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         _logger.LogInformation(
             "Manually triggered maintenance schedule '{Name}' (ID: {ScheduleId})",
-            execution.ScheduleName, scheduleId);
+            SanitizeLogText(execution.ScheduleName), SanitizeLogText(scheduleId));
 
         return execution;
     }
@@ -1338,7 +1338,7 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             {
                 _explicitCancellations[executionId] = 0;
                 cts.Cancel();
-                _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", executionId);
+                _logger.LogInformation("Cancelled maintenance execution {ExecutionId}", SanitizeLogText(executionId));
                 return Task.FromResult(true);
             }
             catch (ObjectDisposedException)
@@ -1349,6 +1349,9 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
 
         return Task.FromResult(false);
     }
+
+    private static string SanitizeLogText(string? value) =>
+        (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
 
     public MaintenanceServiceStatus GetStatus()
     {
