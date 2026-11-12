@@ -6,6 +6,9 @@
 
 | Script | Status | Duration (s) | Output |
 |--------|--------|--------------|--------|
+| `check-public-type-reference` | `success` | `0.000` | `-` |
+| `check-endpoint-reference` | `success` | `0.000` | `-` |
+| `check-configuration-reference` | `success` | `0.000` | `-` |
 | `scan-todos` | `success` | `0.000` | `docs/status/TODO.md` |
 | `validate-docs-structure` | `success` | `0.000` | `-` |
 | `check-docfx-navigation` | `success` | `0.000` | `-` |

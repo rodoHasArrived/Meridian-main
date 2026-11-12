@@ -21,7 +21,8 @@ Reference content here must stay schema/procedure-neutral and claim-stable. Proc
 
 | Question | Reference |
 | --- | --- |
-| Which environment variable or JSON field does the host actually read? | [Environment Variables](environment-variables.md) and [Appsettings Schema](appsettings-schema.md); CLI validation and host readiness are separate checks. |
+| Where is a public C# type declared, and what members does it expose? | [Source API Reference](source-api/README.md) for declarations, XML summaries, member signatures, enum values, and source links by module. |
+| Which environment variable or JSON field does the host actually read? | [Environment Variables](environment-variables.md) and [Appsettings Schema](appsettings-schema.md); [Sample Configuration Reference](../generated/configuration-schema.md) lists the checked-in example's exact keys, types, and values. CLI validation and host readiness are separate checks. |
 | What does stored market data contain? | [Data Dictionary](data-dictionary.md#event-container) and [JSON serialization](data-dictionary.md#json-serialization); distinguish runtime events, compatibility DTOs, and endpoint-specific JSON options. |
 | How do I authenticate a script or handle a stale mutation? | [API Authentication](api-reference.md#authentication), [Conflict Contract](api-conflict-contract.md), and [Verified Operation Outcomes](verified-operation-outcomes.md). |
 | Is an adapter implemented, and is it approved for this use? | [Generated Adapter Readiness](../source/generated/adapter-readiness-matrix.md) for implementation; [Provider Validation](provider-validation-matrix.md) for evidence requirements. |
@@ -64,6 +65,8 @@ Stable lookup details for storage and streaming should live in reference, genera
 
 | Document | Description |
 | --- | --- |
+| [Source API Reference](source-api/README.md) | Generated C# type declarations, public member signatures, XML summaries, enum values, and source provenance. |
+| [Sample Configuration Reference](../generated/configuration-schema.md) | Generated dotted-key paths, JSON types, and sample values from the checked-in configuration example. |
 | [API Reference](api-reference.md) | HTTP API endpoints, request/response schemas. |
 | [API Conflict Contract](api-conflict-contract.md) | Canonical 409 body, `ExpectedVersion` request field, and per-family conflict migration state. |
 | [Backtest Preflight and Stage Telemetry](backtest-preflight-and-stage-telemetry.md) | Backtest trust-gate DTOs/service contract and stage-aware progress telemetry fields. |
@@ -103,6 +106,13 @@ Stable lookup details for storage and streaming should live in reference, genera
 | [Research Briefing](research-briefing-workflow.md) and [Governance Report Packs](governance-report-packs.md) | Redirects to the current Strategy and Accounting contracts; retained identifiers are compatibility surfaces. |
 
 ## Migration Rules
+
+The [documentation coverage report](../status/coverage-report.md) measures source-name and route
+presence in its reference corpus, configuration-key references, and available ADR records. Full
+coverage means those measured items have reference documentation. It does not establish complete
+behavioral documentation, compiled API compatibility, provider readiness, or production certification.
+Generated declarations describe checked-in source; the linked implementation and maintained
+workflow references remain the authorities for behavior and runtime configuration.
 
 - Do not put step-by-step setup guides here; use [Operators](../operators/README.md) or [Start](../start/README.md).
 - Do not put architecture narrative here; use [Engineering](../engineering/README.md) and route to architecture source material from there.

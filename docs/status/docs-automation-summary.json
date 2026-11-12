@@ -2,6 +2,9 @@
   "dry_run": false,
   "profile": "core",
   "selected_scripts": [
+    "check-public-type-reference",
+    "check-endpoint-reference",
+    "check-configuration-reference",
     "scan-todos",
     "validate-docs-structure",
     "check-docfx-navigation",
@@ -27,6 +30,45 @@
     "generate-workflow-manifest"
   ],
   "results": [
+    {
+      "name": "check-public-type-reference",
+      "command": [
+        "python3",
+        "build/scripts/docs/render-public-type-reference.py",
+        "--check"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-endpoint-reference",
+      "command": [
+        "python3",
+        "build/scripts/docs/render-endpoint-reference.py",
+        "--check"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
+    {
+      "name": "check-configuration-reference",
+      "command": [
+        "python3",
+        "build/scripts/docs/generate-configuration-reference.py",
+        "--check"
+      ],
+      "return_code": 0,
+      "duration_seconds": 0.0,
+      "status": "success",
+      "output_file": null,
+      "error": null
+    },
     {
       "name": "scan-todos",
       "command": [
