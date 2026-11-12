@@ -1,6 +1,6 @@
 using FluentAssertions;
-using Meridian.Core.Config;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Core.Config;
 using Meridian.Domain.Collectors;
 using Meridian.Domain.Events;
 using Meridian.Execution.Sdk;
@@ -76,11 +76,11 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
     {
         foreach (var descriptor in ProviderCapabilityDescriptorCatalog.Descriptors)
         {
-            var expectedOwner = descriptor.ProviderId == "fred"
+            var expectedOwner = descriptor.ProviderId is "fred" or "yahoo"
                 ? ProviderCapabilityFactoryOwner.Module
                 : ProviderCapabilityFactoryOwner.Descriptor;
             descriptor.FactoryOwner.Should().Be(expectedOwner,
-                "FRED is the audited module-owned built-in; all other built-ins retain descriptor ownership");
+                "FRED and Yahoo are the audited module-owned built-ins; all other built-ins retain descriptor ownership");
             (Type? Implementation, Delegate? Factory, string Capability)[] slots =
             [
                 (descriptor.Streaming, descriptor.StreamingFactory, nameof(IMarketDataClient)),
@@ -148,6 +148,41 @@ public sealed class ProviderCapabilityDescriptorCatalogTests
         Action resolveTyped = () => disabled.GetRequiredService<ISecurityRateObservationProvider>();
         resolveTyped.Should().Throw<InvalidOperationException>().WithMessage("*no configured historical capability*");
         credentialReads.Should().Be(1, "the typed alias cannot bypass the historical opt-in gate to read credentials");
+    }
+
+    [Fact]
+    public void Fred_typed_rate_alias_reuses_an_explicitly_registered_historical_instance()
+    {
+        var services = new ServiceCollection();
+        new FredProviderModule().Register(services, new DataSourceRegistry());
+        using var client = new HttpClient();
+        var historical = new FredHistoricalDataProvider("synthetic-key", client);
+        services.AddSingleton(historical);
+        using var provider = services.BuildServiceProvider();
+        provider.GetRequiredService<ISecurityRateObservationProvider>().Should().BeSameAs(historical,
+            "rate observations must reuse the same late-gated historical implementation");
+    }
+
+    [Fact]
+    public void Yahoo_module_owns_the_late_gated_factory_for_its_complete_declared_contract_inventory()
+    {
+        var descriptor = ProviderCapabilityDescriptorCatalog.Descriptors.Single(value => value.ProviderId == "yahoo");
+        descriptor.Should().BeSameAs(YahooFinanceProviderModule.Descriptor);
+        descriptor.FactoryOwner.Should().Be(ProviderCapabilityFactoryOwner.Module);
+        descriptor.Historical.Should().Be(typeof(YahooFinanceHistoricalDataProvider));
+        descriptor.Registrations().Should().BeEmpty("hosted construction requires successful module registration");
+        var module = new YahooFinanceProviderModule();
+        module.Should().BeAssignableTo<IProviderModuleCapabilityAvailability>();
+        var services = new ServiceCollection();
+
+        module.Register(services, new DataSourceRegistry());
+
+        services.Should().ContainSingle();
+        services.Select(service => service.ServiceType).Should().BeEquivalentTo(descriptor.Implementations(),
+            "the historical implementation must have a module-owned factory");
+        services.Should().OnlyContain(service => service.Lifetime == ServiceLifetime.Singleton
+            && service.ImplementationFactory != null,
+            "the module must own concrete factory construction and container lifetime");
     }
 
     [Fact]

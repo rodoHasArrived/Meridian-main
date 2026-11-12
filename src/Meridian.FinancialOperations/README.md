@@ -24,6 +24,20 @@ later cash and typed reversals verify the original entitlement, source allocatio
 native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
 canonical noncash amortization remains distinct from coupon recognition and cash consumption.
 
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the same instruction at drafting. Selections are compared by their
+retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
+Adopted bond scheduled principal uses its separate governed paydown instruction to preserve
+scheduled basis relief without also applying disposal treatment.
+
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
 `AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
@@ -201,6 +215,13 @@ Ambiguous interrupted starts retain their claim and require recovery instead of 
 `OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
 and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
 and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
+`OperationsReviewedAutomationProjection` owns the read-only automation review stages, allowed and
+prohibited action guidance, and evidence-linked artifacts projected by
+`OperationsContinuityWorkflowService`. The workflow service retains transition, audit, posting,
+and close authority; the projection consumes retained state without writing it. Focused proof
+lives in `OperationsReviewedAutomationProjectionTests`, with service integration covered by
+`OperationsContinuityWorkflowServiceTests`.
 
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
@@ -1202,7 +1223,7 @@ evidence deletion.
 
 ```bash
 dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityWorkflowServiceTests|FullyQualifiedName~OperationsReviewedAutomationProjectionTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true

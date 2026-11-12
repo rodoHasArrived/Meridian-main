@@ -2,11 +2,16 @@
 
 # `ledger-contracts` data objects - page 5 of 5
 
-Objects 321-367 of 367. References crossing pages remain available in the dependency manifest.
+Objects 321-368 of 368. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% ledger-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_Ledger_PrivateCapitalCallPreviewDto["PrivateCapitalCallPreviewDto"] {
+        +IReadOnlyList~string~ Blockers
+        +PrivateCapitalCallDto? Call
+        +bool IsReady
+    }
     class Meridian_Contracts_Ledger_PrivateCapitalCapitalAccountActivityDto["PrivateCapitalCapitalAccountActivityDto"] {
         +string CapitalAccountId
         +decimal Contributions

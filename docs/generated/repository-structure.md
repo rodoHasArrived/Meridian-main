@@ -4851,6 +4851,7 @@ Meridian-main
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CompositionConfiguration.cs
 │   │   │   ├── DatabaseMigrationReadinessReceipt.cs
+│   │   │   ├── DatabaseStartupPlan.cs
 │   │   │   ├── DefaultProviderSetupHandlerRegistration.cs
 │   │   │   ├── DirectLendingStartup.cs
 │   │   │   ├── FundAccountsStartup.cs
@@ -5012,7 +5013,6 @@ Meridian-main
 │   │   │   │   ├── FileBondObservedFixingStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
-│   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
 │   │   │   │   └── StructuredCashFlowLedgerGate.cs
 │   │   │   ├── CorporateActions
 │   │   │   │   ├── CorporateActionCaseAccountingService.cs
@@ -5082,6 +5082,7 @@ Meridian-main
 │   │   │   ├── SecurityAssetProfileGovernanceService.cs
 │   │   │   ├── SecurityAssetTermsFieldSnapshot.cs
 │   │   │   ├── SecurityCashFlowReceiptJsonContext.cs
+│   │   │   ├── SecurityCashFlowScheduleRowCodec.cs
 │   │   │   ├── SecurityDayCountWriteGuard.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.BondWorkflow.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.CapitalHomes.cs
@@ -5112,7 +5113,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
-│   │   │   ├── SecurityMasterLedgerBridge.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterMapping.EquityCapital.cs
 │   │   │   ├── SecurityMasterMapping.GeneratedDecode.cs
@@ -6422,6 +6422,7 @@ Meridian-main
 │   │   │   ├── OperationsContinuityWorkflowService.Transitions.cs
 │   │   │   ├── OperationsContinuityWorkflowText.cs
 │   │   │   ├── OperationsLedgerPostingService.cs
+│   │   │   ├── OperationsReviewedAutomationProjection.cs
 │   │   │   ├── OperationsStatusDerivationService.cs
 │   │   │   ├── OperationsWorkflowAuditHashing.cs
 │   │   │   ├── OperationsWorkflowAuditHashJsonContext.cs
@@ -6822,7 +6823,8 @@ Meridian-main
 │   │   │   │   ├── TwelveDataHistoricalDataProvider.cs
 │   │   │   │   └── TwelveDataSymbolSearchProvider.cs
 │   │   │   └── YahooFinance
-│   │   │       └── YahooFinanceHistoricalDataProvider.cs
+│   │   │       ├── YahooFinanceHistoricalDataProvider.cs
+│   │   │       └── YahooFinanceProviderModule.cs
 │   │   ├── Contracts
 │   │   │   ├── ContractVerificationExtensions.cs
 │   │   │   └── ContractVerificationService.cs
@@ -6890,6 +6892,7 @@ Meridian-main
 │   │   │   ├── CorporateActionAccountingProjectionService.Fingerprints.cs
 │   │   │   ├── CorporateActionAccountingProjectionService.LotPlans.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapper.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapper.Redemption.cs
 │   │   │   ├── CorporateActionMappedAccountingEffectAttestor.cs
 │   │   │   ├── DirectLoanProjectionService.cs
 │   │   │   ├── FactorPaydownProjectionService.cs
@@ -7131,6 +7134,7 @@ Meridian-main
 │   │   ├── ShortCarryProjector.cs
 │   │   ├── ShortLotJournalProjector.cs
 │   │   ├── StalePricePolicy.cs
+│   │   ├── StructuredNoteAccountingTemplate.cs
 │   │   ├── TaxCharacter.cs
 │   │   ├── ValuationFreshnessPolicy.cs
 │   │   ├── ValuationMarkEvidence.cs
@@ -7369,11 +7373,13 @@ Meridian-main
 │   │   ├── CertifiedReportingSnapshotBuilder.cs
 │   │   ├── DefaultReportingTemplateCatalog.cs
 │   │   ├── DesignModule.cs
+│   │   ├── IReportingTemplateGovernanceStore.cs
 │   │   ├── Meridian.Reporting.csproj
 │   │   ├── NavAttributionService.cs
 │   │   ├── PartnersCapitalProjection.cs
 │   │   ├── README.md
 │   │   ├── ReportGenerationService.cs
+│   │   ├── ReportingAccessPolicyEvaluator.cs
 │   │   ├── ReportingArtifactContracts.cs
 │   │   ├── ReportingArtifactDeclaration.cs
 │   │   ├── ReportingCanonicalParameterSerializer.cs
@@ -7396,6 +7402,7 @@ Meridian-main
 │   │   ├── ReportingRetainedLedgerPopulationValidation.cs
 │   │   ├── ReportingSchedulePeriodPlanner.cs
 │   │   ├── ReportingStarterKitCatalog.cs
+│   │   ├── ReportingTemplateRegistryService.cs
 │   │   ├── ReportSnapshotDiffEngine.cs
 │   │   ├── ReportWriterFormulaReferences.cs
 │   │   ├── ReportWriterGridEngine.cs
@@ -11585,6 +11592,7 @@ Meridian-main
 │   │   │   │   ├── BusinessDayCalendarSourceCompositionTests.cs
 │   │   │   │   ├── CanonicalLotAmortizationCompositionTests.cs
 │   │   │   │   ├── ConsolidationPostingAuthorityCompositionTests.cs
+│   │   │   │   ├── DatabaseStartupPlanTests.cs
 │   │   │   │   ├── DiagnosticsFeatureRegistrationTests.cs
 │   │   │   │   ├── DirectLendingStartupTests.cs
 │   │   │   │   ├── FactorPaydownLotInstructionCompositionTests.cs
@@ -11613,12 +11621,14 @@ Meridian-main
 │   │   │   │   ├── SecurityMasterTermsCapabilityFloorTests.cs
 │   │   │   │   ├── SecurityMasterTermsCapabilityStartupTests.cs
 │   │   │   │   ├── SecurityMasterWorkbenchDeclaredExerciseCompositionTests.cs
+│   │   │   │   ├── ServiceCompositionRootTests.cs
 │   │   │   │   ├── StartupRefusalPreflightTests.cs
 │   │   │   │   ├── StorageFeatureRegistrationTests.cs
 │   │   │   │   ├── TenantCutoverConfigurationTests.cs
 │   │   │   │   ├── TenantCutoverGuardServiceTests.cs
 │   │   │   │   ├── TenantGuardedLocalFundAccountServiceTests.cs
-│   │   │   │   └── TenantPostureHostedServiceTests.cs
+│   │   │   │   ├── TenantPostureHostedServiceTests.cs
+│   │   │   │   └── YahooFinanceProviderModuleCompositionTests.cs
 │   │   │   ├── Config
 │   │   │   │   ├── AppSettingsSampleTests.cs
 │   │   │   │   ├── ConfigSchemaIntegrationTests.cs
@@ -11677,6 +11687,7 @@ Meridian-main
 │   │   │   │   ├── BondHoldingTemplateImportTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationBondValueNormalizationTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
 │   │   │   │   ├── ProviderIntegrationFixedIncomeTermsValidationTests.cs
@@ -11818,7 +11829,8 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowServiceTests.RecordRateUnit.cs
 │   │   │   ├── SecurityMasterCashFlowServiceTests.ScheduleCharacterization.cs
 │   │   │   ├── SecurityMasterScheduleCompatibilityTests.cs
-│   │   │   ├── StructuredCashFlowLedgerBridgeTests.cs
+│   │   │   ├── StructuredCashFlowLedgerGateTests.cs
+│   │   │   ├── StructuredCashFlowScheduleEntryEqualityTests.cs
 │   │   │   └── StructuredCashFlowTermsResolverTests.cs
 │   │   ├── Architecture
 │   │   │   ├── AccountingSemanticsBoundaryTests.cs
@@ -11863,6 +11875,7 @@ Meridian-main
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
 │   │   │   ├── CorporateActionAccountingProjectionServiceTests.cs
 │   │   │   ├── CorporateActionAssetAccountingEventMapperTests.cs
+│   │   │   ├── CorporateActionAssetAccountingEventMapperTests.Redemption.cs
 │   │   │   ├── FactorPaydownProjectionServiceTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.cs
 │   │   │   ├── InMemoryAssetAccountingEventProjectionStoreTests.PreparationRevision.cs
@@ -12169,7 +12182,8 @@ Meridian-main
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.AcceptanceTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.PublicationTests.cs
 │   │   │   │   ├── FinancialOperationsCommandCenterReadService.ScopeTests.cs
-│   │   │   │   └── FinancialOperationsCommandCenterReadServiceTests.cs
+│   │   │   │   ├── FinancialOperationsCommandCenterReadServiceTests.cs
+│   │   │   │   └── OperationsReviewedAutomationProjectionTests.cs
 │   │   │   ├── PrivateCapital
 │   │   │   │   ├── CapitalCallDraftFactoryTests.cs
 │   │   │   │   ├── CapitalCallPlanBuilderTests.cs
@@ -12551,6 +12565,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalEvidenceTests.cs
 │   │   │   ├── RecurringJournalScheduleTests.cs
 │   │   │   ├── ShareClassUnitRegisterTests.cs
+│   │   │   ├── StructuredNoteAccountingTemplateTests.cs
 │   │   │   └── YearEndCloseTests.cs
 │   │   ├── Mcp
 │   │   │   ├── McpRepoRootFixture.cs
@@ -12677,6 +12692,7 @@ Meridian-main
 │   │   │   ├── ReportingSchedulePeriodPlannerTests.cs
 │   │   │   ├── ReportingSecureDistributionAuthorizationTests.cs
 │   │   │   ├── ReportingSecureDistributionTests.cs
+│   │   │   ├── ReportingTemplateRegistryServiceTests.cs
 │   │   │   ├── ReportSnapshotDiffEngineTests.cs
 │   │   │   └── ReportWriterGridEngineTests.cs
 │   │   ├── Risk
@@ -12768,6 +12784,7 @@ Meridian-main
 │   │   │   ├── FaceValueLotOddPeriodTests.cs
 │   │   │   ├── FaceValueLotTests.cs
 │   │   │   ├── ForwardCurveCashFlowTests.cs
+│   │   │   ├── HistoricalCorporateActionLedgerFixture.cs
 │   │   │   ├── InMemorySecurityForwardCurveProvider.cs
 │   │   │   ├── InstrumentTypeDescriptorDomainLabelTests.cs
 │   │   │   ├── InstrumentTypeDescriptorMultiplierTests.cs
@@ -12968,6 +12985,7 @@ Meridian-main
 │   │   │   ├── SecurityValuationServiceTests.cs
 │   │   │   ├── SecurityVersionedTermsTests.cs
 │   │   │   ├── SpecializedProjectionGoldenTests.cs
+│   │   │   ├── StructuredCashFlowScheduleRowVersionTests.cs
 │   │   │   ├── SwapLegRoundTripTests.cs
 │   │   │   ├── UnitizedLotTests.cs
 │   │   │   └── ValuationTestSecurities.cs

@@ -277,6 +277,12 @@ public sealed record LedgerDimensionSetDto(
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
     public Guid? PositionId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntercompanyAgreementId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? IntercompanyAgreementVersion { get; init; }
 }
 
 public sealed record OperationalFinanceScopeDto(

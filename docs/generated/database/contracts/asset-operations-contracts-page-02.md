@@ -283,6 +283,7 @@ classDiagram
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +OpenLotDirection Direction
+        +AssetLotMutationInstructionDto? Disposal
         +EconomicEventReferenceDto EconomicEvent
         +decimal EventAmount
         +AssetAccountingEventKindDto EventKind

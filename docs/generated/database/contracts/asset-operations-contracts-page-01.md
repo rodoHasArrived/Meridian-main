@@ -173,6 +173,7 @@ classDiagram
         +AssetAccountingCorrectionReferenceDto? Correction
         +string Currency
         +OpenLotDirection Direction
+        +AssetLotMutationInstructionDto? Disposal
         +PostingRuleJournalCandidateRequestDto? DraftedCandidate
         +string? DraftedCandidateFingerprint
         +PostingRuleJournalCandidateResultDto? DraftedCandidateResult
@@ -499,6 +500,7 @@ classDiagram
     class Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionDto["CorporateActionAccountingProjectionDto"] {
         +CorporateActionAccountingProjectionScopeDto? AccountingScope
         +IReadOnlyList~CorporateActionProjectionBlockerDto~ Blockers
+        +bool CanonicalLotRedemptionJournal
         +bool CanonicalLotTransferJournal
         +Guid CaseId
         +long CaseVersion
@@ -508,7 +510,6 @@ classDiagram
         +decimal EventAmount
         +IReadOnlyList~CorporateActionProjectionEvidenceDependencyDto~ EvidenceManifest
         +CorporateActionLotMutationSetDto? LotMutations
-        +Guid LotSnapshotId
     }
     class Meridian_Contracts_AssetOperations_CorporateActionAccountingProjectionScopeDto["CorporateActionAccountingProjectionScopeDto"] {
         +string CompanyId

@@ -129,7 +129,7 @@ public static class SecurityAssetClassCatalog
                     rationale: "Version 3 adds the optional callSchedule and putSchedule arrays and changes no version-2 term, so a version-2 payload reads them as unset (ADR-024, 2026-10-25)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 3, rationale: "Version 4 adds the optional calculation-only cashFlowContract companion without changing earlier terms (ADR-024/025, 2026-10-29)."),
                 SecurityAssetClassTermsUpgrade.Identity(fromVersion: 4, rationale: "Version 5 adds explicit overnight and inflation workflow conventions without changing earlier terms; historical calculations retain their versions.")
-            ]) { StampFloor = 1 },
+            ]) { StampFloor = 1, SupportsRecurringFixedIncomeAccrual = true },
         new(
             AssetClass: "FxSpot",
             AssetPackIds: ["derivatives-fx"],
@@ -685,12 +685,16 @@ public static class SecurityAssetClassCatalog
                 SecurityIdentifierKind.Cusip,
                 SecurityIdentifierKind.InternalCode
             ],
-            // Outside the accounting slice by explicit disposition (review D10, slice 4): the note's
-            // FixedIncome taxonomy must not route it into bond posting. Its accounting treatment is an
-            // open domain-owner decision (D3); no bond treatment is assigned here.
+            // The owner chose valuation-mark FVTPL (2026-11-11). This is deliberately outside the
+            // coupon/accrual event slice: FixedIncome taxonomy must not route it into bond posting.
             RequiresMaturity: true,
             TermsVersion: 2,
-            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")]) { StampFloor = 1, AccountingOutsideSlice = true },
+            TermsUpgrades: [SecurityAssetClassTermsUpgrade.Identity(fromVersion: 1, rationale: "Version 2 adds the optional governed scalar rateUnit declaration; existing values and units are unchanged.")])
+        {
+            StampFloor = 1,
+            AccountingOutsideSlice = true,
+            ValuationAccountingTreatment = SecurityValuationAccountingTreatment.FairValueThroughProfitOrLoss
+        },
         new(
             AssetClass: "InvestmentFund",
             AssetPackIds: ["public-equity-etf"],
@@ -1288,11 +1292,24 @@ public sealed record SecurityAssetClassDescriptor(
     public bool SettlesDailyVariationMargin { get; init; }
 
     /// <summary>
+    /// Whether the class is admitted to recurring coupon-accrual and premium/discount journals.
+    /// Admission is explicit and independent of coupon structure, valuation treatment, or lot unit;
+    /// source freshness, supported accrual intervals and held-lot evidence must still pass their gates.
+    /// </summary>
+    public bool SupportsRecurringFixedIncomeAccrual { get; init; }
+
+    /// <summary>
     /// Declares the class intentionally outside the Security Master accounting slice. Every catalogued
     /// class states its accounting disposition, an <see cref="AccountingInstrumentClass"/> or this
     /// marker (review D10, slice 4), so an outside-slice class is distinguishable from a missing mapping.
     /// </summary>
     public bool AccountingOutsideSlice { get; init; }
+
+    /// <summary>
+    /// Explicit valuation treatment, separate from admission to the coupon/accrual event slice.
+    /// The daily valuation projector consumes this declaration when selecting a mark template.
+    /// </summary>
+    public SecurityValuationAccountingTreatment ValuationAccountingTreatment { get; init; }
 
     /// <summary>
     /// The declared accounting disposition: <see cref="SecurityAccountingDisposition.InSlice"/> when the
@@ -1318,13 +1335,14 @@ public sealed record SecurityAssetClassDescriptor(
     /// bilateral contracts against a counterparty under a master agreement, so the instrument
     /// carries <c>OtcContractDto</c> records rather than exchange-traded lots),
     /// <see cref="SettlesDailyVariationMargin"/> (positions settle the daily price change in cash
-    /// rather than exchanging notional) and a
+    /// rather than exchanging notional), <see cref="SupportsRecurringFixedIncomeAccrual"/>
+    /// (the class is admitted to governed recurring accrual journals) and a
     /// <see cref="DefaultValuationModel"/> other than the quoted price (the class is valued from its
     /// projected cash flows and a stored discount curve unless a request names another model).
     /// </summary>
     public bool HasDeclaredBehaviorFacts
         => RequiresProfileReference || SupportsEquityClassification || CarriesBondCouponStructure || UsesOccOptionSymbols || QuotesRatesAsFractions || TradesAsBilateralContract || SupportsCreditLifecycle
-           || SettlesDailyVariationMargin || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
+           || SettlesDailyVariationMargin || SupportsRecurringFixedIncomeAccrual || DefaultValuationModel != SecurityValuationModelKind.QuotedPrice;
 
     /// <summary>
     /// Whether positions are held as face-value lots (par-denominated quantity). Derived from
@@ -1365,6 +1383,13 @@ public enum SecurityAccountingDisposition
 
     /// <summary>The class is intentionally outside the slice and must not reach any posting by fallback.</summary>
     OutsideSlice
+}
+
+/// <summary>The declared mark-based accounting treatment for an asset class.</summary>
+public enum SecurityValuationAccountingTreatment
+{
+    Unspecified,
+    FairValueThroughProfitOrLoss
 }
 
 /// <summary>

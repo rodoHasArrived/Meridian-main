@@ -25,6 +25,12 @@ public sealed record LedgerLineDimensionSet(
 {
     public Guid? PositionId { get; init; }
 
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntercompanyAgreementId { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public int? IntercompanyAgreementVersion { get; init; }
+
     public IReadOnlyDictionary<string, string> ExternalGlDimensions { get; init; } =
         ExternalGlDimensions ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 }

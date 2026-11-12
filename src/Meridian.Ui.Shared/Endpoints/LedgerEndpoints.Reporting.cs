@@ -459,6 +459,9 @@ public static partial class LedgerEndpoints
         string? ProjectId,
         IReadOnlyDictionary<string, string> ExternalGlDimensions)
     {
+        public string? IntercompanyAgreementId { get; init; }
+        public string? IntercompanyAgreementVersion { get; init; }
+
         public bool HasCriteria
             => FundId is not null
                || EntityId is not null
@@ -468,6 +471,8 @@ public static partial class LedgerEndpoints
                || CapitalAccountId is not null
                || InstrumentId is not null
                || PositionId is not null
+               || IntercompanyAgreementId is not null
+               || IntercompanyAgreementVersion is not null
                || TaxLotId is not null
                || CostCenterId is not null
                || CounterpartyId is not null

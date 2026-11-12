@@ -780,7 +780,9 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             dimensions?.VendorId,
             dimensions?.ProjectId)
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            IntercompanyAgreementId = dimensions?.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions?.IntercompanyAgreementVersion
         };
     }
 
@@ -889,6 +891,8 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
         && MatchesOptional(actual.ProjectId, expected.ProjectId)
         && (expected.InstrumentId is null || actual.InstrumentId == expected.InstrumentId)
         && (expected.PositionId is null || actual.PositionId == expected.PositionId)
+        && (expected.IntercompanyAgreementId is null || actual.IntercompanyAgreementId == expected.IntercompanyAgreementId)
+        && (expected.IntercompanyAgreementVersion is null || actual.IntercompanyAgreementVersion == expected.IntercompanyAgreementVersion)
         && expected.ExternalGlDimensions.All(pair =>
             actual.ExternalGlDimensions.TryGetValue(pair.Key, out var value)
             && string.Equals(value?.Trim(), pair.Value?.Trim(), StringComparison.OrdinalIgnoreCase));
@@ -928,6 +932,9 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
             throw Unavailable(
                 $"Ledger line '{lineId:D}' position dimension '{actual.PositionId?.ToString("D") ?? "<missing>"}' does not match certified value '{expected.PositionId.Value:D}'.");
         }
+        if ((expected.IntercompanyAgreementId.HasValue && actual.IntercompanyAgreementId != expected.IntercompanyAgreementId)
+            || (expected.IntercompanyAgreementVersion.HasValue && actual.IntercompanyAgreementVersion != expected.IntercompanyAgreementVersion))
+            throw Unavailable($"Ledger line '{lineId:D}' agreement provenance does not match the certified scope.");
         foreach (var pair in expected.ExternalGlDimensions)
         {
             if (!actual.ExternalGlDimensions.TryGetValue(pair.Key, out var value)
@@ -1018,6 +1025,8 @@ public sealed partial class LedgerReportingAuthoritativeSource : IReportingAutho
                 AddOptional(row, "capitalAccountId", dimensions.CapitalAccountId);
                 AddOptional(row, "instrumentId", dimensions.InstrumentId?.ToString("D"));
                 AddOptional(row, "positionId", dimensions.PositionId?.ToString("D"));
+                AddOptional(row, "intercompanyAgreementId", dimensions.IntercompanyAgreementId?.ToString("D"));
+                AddOptional(row, "intercompanyAgreementVersion", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 AddOptional(row, "taxLotId", dimensions.TaxLotId);
                 AddOptional(row, "costCenterId", dimensions.CostCenterId);
                 AddOptional(row, "counterpartyId", dimensions.CounterpartyId);

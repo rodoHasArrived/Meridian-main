@@ -763,26 +763,14 @@ public sealed class BrokeragePortfolioSyncService
                 link = await ResolveLinkAsync(fundAccountId, request: null, ct).ConfigureAwait(false)
                     ?? await LoadLinkAsync(fundAccountId, ct).ConfigureAwait(false);
             }
-            // The identifier in these two warnings is what makes a skipped link actionable: without
-            // it an operator learns that some link was unreadable but not which one to repair. It is
-            // a Meridian-generated Guid surrogate key, not a credential and not a provider-side
-            // account number, and it is already the name of the file being read
-            // (links/{guid}.json), so the warning discloses nothing the storage layout does not.
-            //
-            // Code scanning reads the identifier's name and raises
-            // cs/cleartext-storage-of-sensitive-information on both calls below. LogSanitizer is not
-            // the answer -- its own contract excludes server-generated identifiers, and a Guid cannot
-            // carry the control characters it neutralizes -- so there is no barrier to route this
-            // through that would mean anything. The alerts are dismissed on the security tab; this
-            // note is here so the next reader does not re-derive the analysis from scratch.
             catch (JsonException ex)
             {
-                _logger.LogWarning(ex, "Skipping unreadable brokerage link for fund account {FundAccountId}", fundAccountId);
+                _logger.LogWarning("Skipping unreadable brokerage link; failure type {FailureType}", ex.GetType().Name);
                 continue;
             }
             catch (IOException ex)
             {
-                _logger.LogWarning(ex, "Skipping locked brokerage link for fund account {FundAccountId}", fundAccountId);
+                _logger.LogWarning("Skipping locked brokerage link; failure type {FailureType}", ex.GetType().Name);
                 continue;
             }
 
@@ -1268,13 +1256,9 @@ public sealed class BrokeragePortfolioSyncService
         }
         catch (InvalidOperationException ex)
         {
-            // Same Guid surrogate key, same code-scanning alert, same reason it stays: a sync run
-            // whose history could not be recorded is only actionable if the warning names the account
-            // it belonged to.
             _logger.LogWarning(
-                ex,
-                "Brokerage sync history could not be recorded for fund account {FundAccountId}.",
-                fundAccountId);
+                "Brokerage sync history could not be recorded; failure type {FailureType}",
+                ex.GetType().Name);
         }
     }
 

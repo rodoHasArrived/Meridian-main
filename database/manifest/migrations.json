@@ -568,15 +568,6 @@
       "sha256": "44d8a4092656b1287c5e60db0a18190e42ef915c76d78faab8bc670345ebca7b"
     },
     {
-      "filename": "066_security_curve_rate_policy.sql",
-      "immutable": true,
-      "migration_set_id": "security-master",
-      "ordinal": 66,
-      "path": "src/Meridian.Storage/SecurityMaster/Migrations/066_security_curve_rate_policy.sql",
-      "schema": "security_master",
-      "sha256": "65ece037c876aafba9dbe039c3a21e8b7ae21737d5cc5b0c2a70a98c8bc12457"
-    },
-    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1198,15 +1189,6 @@
       "sha256": "ffd9c31c13791ac9f7e2c36f3b9f81d1c80cbc5ec81a13571a9eb2e9d310ee5b"
     },
     {
-      "filename": "V_ledger_055__bond_coupon_recognition.sql",
-      "immutable": true,
-      "migration_set_id": "ledger",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_055__bond_coupon_recognition.sql",
-      "schema": "ledger",
-      "sha256": "0805f0d84b7e11dd086e8a93e08417307c8e831611538edf61ddcc4af13e1c57"
-    },
-    {
       "filename": "001_fund_structure.sql",
       "immutable": true,
       "migration_set_id": "fund-structure",
@@ -1250,6 +1232,15 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
       "schema": "fund_structure",
       "sha256": "3855a01189025fdd047b6cd4270de1cb6dd67a24502ac4e2475b9d58a479ae30"
+    },
+    {
+      "filename": "006_intercompany_agreements.sql",
+      "immutable": true,
+      "migration_set_id": "fund-structure",
+      "ordinal": null,
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "schema": "fund_structure",
+      "sha256": "61fa511ef5c478c4828c521dc3850de05203afe078da24a93969176929784b60"
     },
     {
       "filename": "001_fund_accounts.sql",
@@ -1322,15 +1313,6 @@
       "path": "src/Meridian.Storage/FundAccounts/Migrations/008_plaid_transaction_feed_backfill.sql",
       "schema": "fund_accounts",
       "sha256": "4fc0e5464b31d9a5a068f7f8b0114001a25e72848e1ec185f3deb7930e0f48f4"
-    },
-    {
-      "filename": "009_custodian_snapshot_authority.sql",
-      "immutable": true,
-      "migration_set_id": "fund-accounts",
-      "ordinal": null,
-      "path": "src/Meridian.Storage/FundAccounts/Migrations/009_custodian_snapshot_authority.sql",
-      "schema": "fund_accounts",
-      "sha256": "45207b1ce0f3618d05aa953a1cf117fc8c60df055d549d06500143b973b329e0"
     },
     {
       "filename": "001_banking.sql",
@@ -1505,7 +1487,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "400183f0f313f9b4820dd5d00ec2ab10a5e9f6f45608f6aa6b1b21ee790a11c5",
+  "fingerprint": "e8e355d9a50dbc932fd4eef9d989e19b8a0de26ae0636266facb613699ec478a",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -1767,9 +1749,9 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 167,
+    "files": 165,
     "migration_sets": 11,
-    "waivers": 29,
+    "waivers": 30,
     "warnings": 0
   },
   "waivers": [
@@ -1785,6 +1767,13 @@
       "path": "src/Meridian.Storage/FundStructure/Migrations/005_tenant_backfill_receipts.sql",
       "reason": "The lexical TRUNCATE match is a BEFORE TRUNCATE guard trigger that rejects deletion of immutable tenant-backfill receipts. This migration truncates no data; PostgreSQL regression coverage attempts truncation and verifies refusal with the receipt retained.",
       "review_after": "2027-03-22",
+      "rule_id": "migration-truncate"
+    },
+    {
+      "category": "destructive_changes",
+      "path": "src/Meridian.Storage/FundStructure/Migrations/006_intercompany_agreements.sql",
+      "reason": "The lexical TRUNCATE matches declare BEFORE TRUNCATE rejection triggers that preserve immutable agreement snapshots, approved revisions, audit events and command receipts. The migration truncates no data. This follows fund-structure migration 005; PostgreSQL regression coverage attempts truncation and verifies refusal with retained history unchanged.",
+      "review_after": "2027-02-12",
       "rule_id": "migration-truncate"
     },
     {

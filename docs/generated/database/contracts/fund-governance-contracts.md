@@ -5,9 +5,10 @@
 This is an explicit module association, not a claim that a DTO is identical to a table.
 
 Mapped physical schemas: `fund_accounts`, `fund_structure`.
-Catalogued objects: 149.
+Catalogued objects: 166.
 
-The catalog is split into 2 reviewable diagrams; no objects are omitted.
+The catalog is split into 3 reviewable diagrams; no objects are omitted.
 
 - [Page 1: objects 1-80](fund-governance-contracts-page-01.md)
-- [Page 2: objects 81-149](fund-governance-contracts-page-02.md)
+- [Page 2: objects 81-160](fund-governance-contracts-page-02.md)
+- [Page 3: objects 161-166](fund-governance-contracts-page-03.md)

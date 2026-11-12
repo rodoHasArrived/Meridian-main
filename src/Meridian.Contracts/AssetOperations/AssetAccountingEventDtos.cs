@@ -210,6 +210,11 @@ public sealed record AssetAccountingEventSpineDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
+
+    /// <summary>Reviewed redemption disposal frozen before drafting; omitted on historical events.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetLotMutationInstructionDto? Disposal { get; init; }
+
     // Keep the populated recovery payload's original order for retained canonical fingerprints.
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public AssetAccountingPreparationRevisionDto? PreparationRevision { get; init; }
@@ -251,6 +256,11 @@ public sealed record ProjectAssetAccountingEventRequestDto(
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public BondCouponRecognitionInstructionDto? BondCouponRecognition { get; init; }
+
+    /// <summary>Reviewed redemption disposal frozen before drafting; omitted on historical events.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AssetLotMutationInstructionDto? Disposal { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public OpenLotDirection Direction { get; init; }
 
@@ -761,6 +771,17 @@ public static class AssetAccountingEventSpineValidator
         }
         if (hasDraftedStage && !PayloadEquals(spine.CapitalReturn, spine.DraftedLotMutation?.CapitalReturn))
             issues.Add("The canonical capital-return instruction cannot be dropped or replaced between Projected and Drafted.");
+        if (spine.Disposal is { } retainedDisposal)
+        {
+            if (spine.EventKind != AssetAccountingEventKindDto.Disposal)
+                issues.Add("Retained disposal authority requires the canonical Disposal event kind.");
+            issues.AddRange(AssetLotMutationInstructionValidator.Validate(AssetAccountingEventKindDto.Disposal,
+                retainedDisposal, spine.EventAmount, spine.EffectiveDate, spine.RetainedEvidence));
+            if (hasDraftedStage && !PayloadEquals(
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(retainedDisposal),
+                AssetLotMutationInstructionValidator.CanonicalizeDisposalSelections(spine.DraftedLotMutation)))
+                issues.Add("The retained disposal instruction cannot be dropped or replaced between Projected and Drafted.");
+        }
         if (spine.FactorPaydown is { } factorPaydown)
         {
             issues.AddRange(AssetLotMutationInstructionValidator.Validate(spine.EventKind,
@@ -993,6 +1014,20 @@ public static class AssetAccountingEventSpineValidator
 public static class AssetLotMutationInstructionValidator
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    /// <summary>
+    /// Orders a disposal's versioned selections by their retained ordinal before freezing or
+    /// comparing the instruction. Every selection field and all other instruction fields remain exact.
+    /// Null historical instructions and already ordered instructions keep their original shape.
+    /// </summary>
+    public static AssetLotMutationInstructionDto? CanonicalizeDisposalSelections(AssetLotMutationInstructionDto? instruction)
+    {
+        if (instruction is not { Intent: AssetLotMutationIntentDto.Dispose })
+            return instruction;
+        var ordered = instruction.DisposalSelections.OrderBy(static selection => selection.SelectionOrdinal).ToArray();
+        return instruction.DisposalSelections.SequenceEqual(ordered)
+            ? instruction : instruction with { DisposalSelections = ordered };
+    }
 
     public static IReadOnlyList<string> Validate(
         AssetAccountingEventKindDto eventKind,
