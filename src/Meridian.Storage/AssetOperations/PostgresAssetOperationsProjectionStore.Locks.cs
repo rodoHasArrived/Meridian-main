@@ -9,12 +9,30 @@ namespace Meridian.Storage.AssetOperations;
 
 public sealed partial class PostgresAssetOperationsProjectionStore
 {
+    private async Task AcquireSecurityBookEntitlementLocksAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, Guid securityId, IEnumerable<BookPositionDto> incoming, CancellationToken ct)
+    {
+        var books = incoming.Select(position => position.BookContext.LedgerBookId).ToHashSet();
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = $"select distinct ledger_book_id from {Qualified("book_position_projections")} where security_id=@security";
+            command.Parameters.AddWithValue("security", securityId);
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false)) books.Add(reader.GetGuid(0));
+        }
+        foreach (var bookId in books.Order())
+            await Meridian.Storage.Ledger.CashDividendEntitlementLock.AcquireAsync(connection, transaction, bookId, false, ct).ConfigureAwait(false);
+    }
+
     private async Task AcquirePositionScopeLockAsync(
         NpgsqlConnection connection,
         NpgsqlTransaction transaction,
         BookPositionDto position,
         CancellationToken ct)
     {
+        await Meridian.Storage.Ledger.CashDividendEntitlementLock.AcquireAsync(connection, transaction,
+            position.BookContext.LedgerBookId, false, ct).ConfigureAwait(false);
         if (!InstrumentPositionProjectionRules.ParticipatesInActiveOverlap(position.Status))
         {
             return;

@@ -6,10 +6,16 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ledger
+
+`JournalEntryMetadata.PreparerAttestation` retains the exact native cash-dividend preparer receipt,
+owner scope and posting fingerprints on the immutable journal for current and frozen report proof.
+The absent property is omitted from JSON so historical journal hashes remain unchanged. This
+classification establishes preparer attestation only; source verification, independent approval
+and financial coverage remain separate.
 
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 
@@ -407,6 +413,7 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-LEDGER -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

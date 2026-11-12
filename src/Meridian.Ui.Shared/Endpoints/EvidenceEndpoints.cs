@@ -190,7 +190,7 @@ public static partial class EvidenceEndpoints
             if (scopeError is not null)
                 return scopeError;
             var graph = await service.GetGraphAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
-                BuildAmountReportAccess(context)).ConfigureAwait(false);
+                BuildAmountReportAccess(context), BuildPreparerAttestationReadContext(context)).ConfigureAwait(false);
             return graph is null
                 ? Results.NotFound(Error(
                     "evidence-subject-not-found",
@@ -662,7 +662,7 @@ public static partial class EvidenceEndpoints
         if (scopeError is not null)
             return (null, scopeError);
         var packet = await service.GetPacketAsync(subjectKind, subjectId, context.RequestAborted, ledgerBookId, amountScope,
-            BuildAmountReportAccess(context)).ConfigureAwait(false);
+            BuildAmountReportAccess(context), BuildPreparerAttestationReadContext(context)).ConfigureAwait(false);
         return packet is null
             ? (null, Results.NotFound(Error(
                 "evidence-subject-not-found",

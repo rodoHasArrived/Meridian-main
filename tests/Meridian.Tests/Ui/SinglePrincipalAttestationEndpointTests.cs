@@ -31,6 +31,30 @@ public sealed class SinglePrincipalAttestationEndpointTests
     };
 
     [Fact]
+    public async Task DraftAndEvidenceCapabilitiesRequireTheirOwnDomainGrant_AndCorrectiveRevocationNeedsNoFreshRecordGrant()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.Permissions = Read | UserPermission.RecordPreparerAttestations | UserPermission.ModifySecurityMaster;
+        var workspace = await fixture.WorkspaceAsync();
+        workspace.CanAttest.Should().BeFalse();
+        workspace.CanRevoke.Should().BeFalse();
+        workspace.CanAttestDrafts.Should().BeTrue();
+        workspace.CanRevokeDrafts.Should().BeTrue();
+
+        fixture.Permissions = Read | UserPermission.ModifySecurityMaster;
+        workspace = await fixture.WorkspaceAsync();
+        workspace.CanAttestDrafts.Should().BeFalse();
+        workspace.CanRevokeDrafts.Should().BeTrue();
+
+        fixture.Permissions = Read | UserPermission.RecordPreparerAttestations | UserPermission.ManageReporting;
+        workspace = await fixture.WorkspaceAsync();
+        workspace.CanAttest.Should().BeTrue();
+        workspace.CanRevoke.Should().BeTrue();
+        workspace.CanAttestDrafts.Should().BeFalse();
+        workspace.CanRevokeDrafts.Should().BeFalse();
+    }
+
+    [Fact]
     public async Task ExplicitGrantsAndFeatureGateAreRequired_AndDefaultRolesDoNotAcquireGrants()
     {
         await using var fixture = await Fixture.CreateAsync(enabled: false);
@@ -114,6 +138,7 @@ public sealed class SinglePrincipalAttestationEndpointTests
         var receipt = (await response.Content.ReadFromJsonAsync<PreparerAttestationReceiptDto>(Json))!;
         (await fixture.Client.PostAsJsonAsync(Route + "/declaration", Declaration(1, false))).EnsureSuccessStatusCode();
         await File.WriteAllTextAsync(Path.Combine(fixture.Root, intake.VaultIdentity.Artifacts.Single().RelativePath), "corrupt");
+        fixture.Permissions = Read | UserPermission.ManageReporting;
         var revocation = new RevokePreparerAttestationRequestDto(Guid.NewGuid(), receipt.ReceiptId, 1, "The preparer assertion was erroneous");
         (await fixture.Client.PostAsJsonAsync(Route + "/revocations", revocation)).EnsureSuccessStatusCode();
         var state = (await fixture.WorkspaceAsync()).State;
@@ -138,6 +163,59 @@ public sealed class SinglePrincipalAttestationEndpointTests
         (await fixture.Client.PostAsJsonAsync(Route + "/receipts", command)).StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
+    [Fact]
+    public async Task OriginalProofExportIsStableAfterWithdrawalRevocationAndSourceCorruption()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        var intake = await fixture.IntakeAsync();
+        (await fixture.Client.PostAsJsonAsync(Route + "/declaration", Declaration())).EnsureSuccessStatusCode();
+        var response = await fixture.Client.PostAsJsonAsync(Route + "/receipts", Acknowledgment(await fixture.SubjectAsync(intake)));
+        response.EnsureSuccessStatusCode();
+        var receipt = (await response.Content.ReadFromJsonAsync<PreparerAttestationReceiptDto>(Json))!;
+        var exportRoute = Route + $"/receipts/{receipt.ReceiptId:D}/export";
+        var original = await fixture.Client.GetAsync(exportRoute);
+        original.EnsureSuccessStatusCode();
+        var originalBytes = await original.Content.ReadAsByteArrayAsync();
+        var etag = original.Headers.ETag;
+        original.Headers.CacheControl!.NoStore.Should().BeTrue();
+        using (var proof = JsonDocument.Parse(originalBytes))
+        {
+            proof.RootElement.GetProperty("disclosure").GetString().Should().Be(SinglePrincipalAttestationPolicy.Disclosure);
+            proof.RootElement.GetProperty("receiptReference").GetString().Should().StartWith("preparer-attestation:v1:");
+            proof.RootElement.GetProperty("receipt").GetProperty("receiptId").GetGuid().Should().Be(receipt.ReceiptId);
+            proof.RootElement.GetProperty("declaration").GetProperty("enabled").GetBoolean().Should().BeTrue();
+            proof.RootElement.TryGetProperty("revocations", out _).Should().BeFalse();
+        }
+        (await fixture.WorkspaceAsync()).State.AuditTrail.Should().HaveCount(2, "a read-only proof export creates no authority or success event");
+        (await fixture.Client.PostAsJsonAsync(Route + "/declaration", Declaration(1, false))).EnsureSuccessStatusCode();
+        (await fixture.Client.PostAsJsonAsync(Route + "/revocations", new RevokePreparerAttestationRequestDto(
+            Guid.NewGuid(), receipt.ReceiptId, 1, "Correcting the original assertion"))).EnsureSuccessStatusCode();
+        await File.WriteAllTextAsync(Path.Combine(fixture.Root, intake.VaultIdentity.Artifacts.Single().RelativePath), "corrupt");
+        fixture.Permissions = Read;
+        var historical = await fixture.Client.GetAsync(exportRoute);
+        historical.EnsureSuccessStatusCode();
+        (await historical.Content.ReadAsByteArrayAsync()).Should().Equal(originalBytes);
+        historical.Headers.ETag.Should().Be(etag);
+        var state = (await fixture.WorkspaceAsync()).State;
+        state.Declaration!.Enabled.Should().BeFalse();
+        state.Revocations.Should().ContainSingle();
+        fixture.TenantId = "foreign-tenant";
+        (await fixture.Client.GetAsync(exportRoute)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task ProofExportStillRequiresAnInteractiveAuthorizedReader()
+    {
+        await using var fixture = await Fixture.CreateAsync();
+        fixture.IsApiKey = true;
+        (await fixture.Client.GetAsync(Route + $"/receipts/{Guid.NewGuid():D}/export"))
+            .StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        fixture.IsApiKey = false;
+        fixture.Permissions = UserPermission.ViewReporting;
+        (await fixture.Client.GetAsync(Route + $"/receipts/{Guid.NewGuid():D}/export"))
+            .StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
     private static ChangeSinglePrincipalDeclarationRequestDto Declaration(long revision = 0, bool enabled = true) => new(
         Guid.NewGuid(), revision, enabled, "principal-a", SinglePrincipalAttestationPolicy.Version, "I am the principal for this scope");
 
@@ -151,6 +229,7 @@ public sealed class SinglePrincipalAttestationEndpointTests
         public UserPermission Permissions { get; set; } = All;
         public string? TenantId { get; set; } = "tenant-a";
         public string? CompanyId { get; set; } = "company-a";
+        public bool IsApiKey { get; set; }
         public WebApplication App { get; private set; } = null!;
         public HttpClient Client { get; private set; } = null!;
         public IEvidenceArtifactStore Artifacts => App.Services.GetRequiredService<IEvidenceArtifactStore>();
@@ -177,6 +256,8 @@ public sealed class SinglePrincipalAttestationEndpointTests
             {
                 context.Items[LoginSessionMiddleware.CurrentUserKey] = "principal-a";
                 context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = fixture.Permissions;
+                if (fixture.IsApiKey)
+                    context.Items[ApiKeyMiddleware.ApiKeyPrincipalKey] = new object();
                 if (fixture.CompanyId is not null)
                     context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = fixture.CompanyId;
                 if (fixture.TenantId is not null)

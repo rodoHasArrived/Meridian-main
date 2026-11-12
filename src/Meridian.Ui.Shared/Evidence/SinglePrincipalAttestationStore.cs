@@ -13,7 +13,8 @@ public sealed record SinglePrincipalAttestationAuthority(
     bool CanAdministerDeclaration = false,
     bool CanAttest = false,
     bool CanRevoke = false,
-    bool CanModifyTarget = false);
+    bool CanModifyTarget = false,
+    bool CanModifyDraftTarget = false);
 
 public sealed class SinglePrincipalAttestationException(string code, string message)
     : InvalidOperationException(message)
@@ -22,7 +23,7 @@ public sealed class SinglePrincipalAttestationException(string code, string mess
 }
 
 /// <summary>
-/// Scoped, default-off storage for non-posting evidence acknowledgments. Declarations, assertions,
+/// Scoped, default-off storage for non-posting evidence acknowledgments and explicit draft checks. Declarations, assertions,
 /// revocations and their audit events share one atomic snapshot and a cross-process lease.
 /// No method creates an ordinary approval, changes evidence review status or grants domain authority.
 /// </summary>
@@ -32,6 +33,7 @@ public sealed partial class SinglePrincipalAttestationStore
     private readonly RootedPathGuard _guard;
     private readonly string _directory;
     private readonly bool _policyEnabled;
+    private readonly bool _draftChecksEnabled;
     private readonly Func<SinglePrincipalAttestationScopeDto, SinglePrincipalAttestationAuthority,
         RecordPreparerAttestationRequestDto, CancellationToken, Task<SinglePrincipalAttestationSubjectSnapshotDto?>> _resolveSubject;
     private readonly Func<string, string, CancellationToken, Task> _write;
@@ -40,13 +42,21 @@ public sealed partial class SinglePrincipalAttestationStore
         SinglePrincipalAttestationPolicy.Version + "\n" +
         SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + "\n" +
         SinglePrincipalAttestationPolicy.Confirmation + "\nNo approval, posting, waiver, certification or release authority.");
+    public static string DraftPolicyHash { get; } = Digest(
+        SinglePrincipalAttestationPolicy.DraftVersion + "\n" +
+        SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + "\n" +
+        SinglePrincipalAttestationPolicy.DraftCheck + "\n" +
+        SinglePrincipalAttestationPolicy.Confirmation + "\n" +
+        SinglePrincipalAttestationPolicy.DraftConfirmation + "\nNo approval, posting, waiver, certification or release authority.");
+    private string ActivePolicyVersion => _draftChecksEnabled ? SinglePrincipalAttestationPolicy.DraftVersion : SinglePrincipalAttestationPolicy.Version;
 
     public SinglePrincipalAttestationStore(
         string dataRoot,
         Func<SinglePrincipalAttestationScopeDto, SinglePrincipalAttestationAuthority,
             RecordPreparerAttestationRequestDto, CancellationToken, Task<SinglePrincipalAttestationSubjectSnapshotDto?>> resolveSubject,
         bool policyEnabled = false,
-        Func<string, string, CancellationToken, Task>? stateWriter = null)
+        Func<string, string, CancellationToken, Task>? stateWriter = null,
+        bool draftChecksEnabled = false)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
         ArgumentNullException.ThrowIfNull(resolveSubject);
@@ -54,6 +64,7 @@ public sealed partial class SinglePrincipalAttestationStore
         _directory = _guard.ResolvePath("single-principal-attestations");
         _resolveSubject = resolveSubject;
         _policyEnabled = policyEnabled;
+        _draftChecksEnabled = draftChecksEnabled;
         _write = stateWriter ?? ((path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct));
     }
 
@@ -87,10 +98,11 @@ public sealed partial class SinglePrincipalAttestationStore
         var current = state.Declarations.LastOrDefault();
         if (request.ExpectedRevision != (current?.Revision ?? 0))
             throw Denied("stale_declaration", "The declaration changed; refresh before confirming.");
-        if (request.PolicyVersion != SinglePrincipalAttestationPolicy.Version)
+        if (!IsKnownPolicy(request.PolicyVersion, PolicyHashFor(request.PolicyVersion))
+            || request.Enabled && request.PolicyVersion != ActivePolicyVersion)
             throw Denied("unsupported_policy", "The confirmed attestation policy is unsupported.");
-        if (request.Enabled && !_policyEnabled)
-            throw Denied("policy_disabled", "The evidence-acknowledgment policy is disabled on this host.");
+        if (request.Enabled && !_policyEnabled && !_draftChecksEnabled)
+            throw Denied("policy_disabled", "The non-posting preparer attestation policy is disabled on this host.");
         if (string.IsNullOrWhiteSpace(request.PrincipalId))
             throw Denied("principal_required", "A declaration must name its bound human principal.");
         // The first slice declares the authenticated human's own principal, never another account.
@@ -99,7 +111,7 @@ public sealed partial class SinglePrincipalAttestationStore
         var now = DateTimeOffset.UtcNow;
         var declaration = new SinglePrincipalDeclarationDto(
             current?.DeclarationId ?? Guid.NewGuid(), checked((current?.Revision ?? 0) + 1), normalized,
-            request.Enabled, authority.Actor.Trim(), SinglePrincipalAttestationPolicy.Version, PolicyHash,
+            request.Enabled, authority.Actor.Trim(), request.PolicyVersion, PolicyHashFor(request.PolicyVersion),
             authority.Actor.Trim(), now, request.Reason);
         var next = state with { Declarations = [.. state.Declarations, declaration] };
         next = Complete(next, request.CommandId, fingerprint, declaration,
@@ -122,20 +134,24 @@ public sealed partial class SinglePrincipalAttestationStore
         var state = await ReadAsync(normalized, ct).ConfigureAwait(false);
         if (Replay<PreparerAttestationReceiptDto>(state, request.CommandId, fingerprint) is { } completed)
             return completed;
-        if (!_policyEnabled)
-            throw Denied("policy_disabled", "The evidence-acknowledgment policy is disabled on this host.");
-        if (!authority.CanAttest || !authority.CanModifyTarget)
+        if (!_policyEnabled && !_draftChecksEnabled)
+            throw Denied("policy_disabled", "The non-posting preparer attestation policy is disabled on this host.");
+        if (!IsRegisteredAction(request.ActionId)
+            || request.ActionId == SinglePrincipalAttestationPolicy.EvidenceAcknowledgment && !_policyEnabled
+            || request.ActionId == SinglePrincipalAttestationPolicy.DraftCheck && !_draftChecksEnabled)
+            throw Denied("excluded_action", "This action has no enabled, registered non-posting attestation provider.");
+        if (!authority.CanAttest || !(request.ActionId == SinglePrincipalAttestationPolicy.DraftCheck
+                ? authority.CanModifyDraftTarget : authority.CanModifyTarget))
             throw Denied("attestation_permission", "A domain attestation grant and target-modification permission are required.");
-        if (request.ActionId != SinglePrincipalAttestationPolicy.EvidenceAcknowledgment)
-            throw Denied("excluded_action", "Only retained evidence acknowledgment is currently registered; this action grants no attestation authority.");
         var declaration = state.Declarations.LastOrDefault();
         if (declaration is not { Enabled: true } || !SameActor(declaration.PrincipalId, authority.Actor))
             throw Denied("declaration_required", "An enabled declaration bound to this human principal is required.");
         if (request.ExpectedDeclarationRevision != declaration.Revision)
             throw Denied("stale_declaration", "The declaration changed; refresh before confirming.");
-        if (declaration.PolicyVersion != SinglePrincipalAttestationPolicy.Version || declaration.PolicyHash != PolicyHash)
+        if (!IsKnownPolicy(declaration.PolicyVersion, declaration.PolicyHash)
+            || !PolicyAllowsAction(declaration.PolicyVersion, request.ActionId))
             throw Denied("unsupported_policy", "The retained declaration targets a different policy.");
-        if (request.Confirmation != SinglePrincipalAttestationPolicy.Confirmation)
+        if (request.Confirmation != ConfirmationFor(request.ActionId))
             throw Denied("confirmation_required", "Confirm the exact preparer responsibility and independent-review disclosure.");
         var subject = await _resolveSubject(normalized, authority, request, ct).ConfigureAwait(false);
         if (subject is null || !subject.Eligible || subject.Checks.Count == 0 ||
@@ -143,6 +159,8 @@ public sealed partial class SinglePrincipalAttestationStore
             string.IsNullOrWhiteSpace(subject.SourceSubjectKind) || string.IsNullOrWhiteSpace(subject.SourceSubjectId) ||
             !ValidSubjectSnapshot(subject.SubjectSnapshotJson, subject.Hash))
             throw Denied("unsupported_subject", "The scoped retained evidence is unavailable, unsupported or has unresolved checks.");
+        if (request.ActionId == SinglePrincipalAttestationPolicy.DraftCheck && !SameActor(subject.PreparedBy, authority.Actor))
+            throw Denied("preparer_mismatch", "Only the original authenticated preparer can check this exact non-postable draft.");
         if (subject.SubjectKind != request.SubjectKind || subject.SubjectId != request.SubjectId ||
             subject.Revision != request.SubjectRevision || subject.Hash != request.SubjectHash)
             throw Denied("stale_subject", "The evidence or reviewed operands changed; inspect and confirm the current revision.");
@@ -150,7 +168,7 @@ public sealed partial class SinglePrincipalAttestationStore
         // ACK creates a NEW assertion task owned by the authenticated human. It does not purport
         // to complete somebody else's task or to replace the external source creator/importer.
         var receipt = new PreparerAttestationReceiptDto(
-            Guid.NewGuid(), request.CommandId, request.CommandId, SinglePrincipalAttestationPolicy.SchemaVersion,
+            Meridian.Contracts.Operations.PreparerAttestationApprovalBoundary.NewReceiptId(), request.CommandId, request.CommandId, SinglePrincipalAttestationPolicy.SchemaVersion,
             SinglePrincipalAttestationPolicy.DecisionKind, SinglePrincipalAttestationPolicy.Disclosure,
             normalized, request.ActionId, subject.SubjectKind, subject.SubjectId, subject.Revision, subject.Hash,
             subject.SourceArtifactId, subject.SourceHash, subject.SourceActor, subject.SourceProvenance,
@@ -181,7 +199,9 @@ public sealed partial class SinglePrincipalAttestationStore
             return completed;
         var receipt = state.Receipts.SingleOrDefault(item => item.ReceiptId == request.ReceiptId)
             ?? throw Denied("receipt_not_found", "The receipt was not found in this scope.");
-        if (!authority.CanModifyTarget || (!SameActor(receipt.AttestedBy, authority.Actor) && !authority.CanRevoke))
+        var canModifyReceipt = receipt.ActionId == SinglePrincipalAttestationPolicy.DraftCheck
+            ? authority.CanModifyDraftTarget : authority.CanModifyTarget;
+        if (!canModifyReceipt || (!SameActor(receipt.AttestedBy, authority.Actor) && !authority.CanRevoke))
             throw Denied("revocation_permission", "Only the bound attester or a specifically authorized governance actor may revoke this assertion.");
         if (request.ExpectedReceiptRevision != 1 || state.Revocations.Any(item => item.ReceiptId == request.ReceiptId))
             throw Denied("stale_receipt", "The assertion changed or was already revoked.");

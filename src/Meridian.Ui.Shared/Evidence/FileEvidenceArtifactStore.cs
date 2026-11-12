@@ -221,6 +221,7 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
         ArgumentNullException.ThrowIfNull(packet);
         request ??= new EvidencePacketExportRequest(null, null);
         var (tenantId, scope) = RequireWriteScope(request.TenantId, request.Scope);
+        ValidatePreparerDisclosures(packet.PreparerAttestations, tenantId, scope);
 
         var generatedAt = DateTimeOffset.UtcNow;
         var subjectKind = SanitizePathSegment(packet.Subject.SubjectKind);
@@ -246,7 +247,8 @@ public sealed partial class FileEvidenceArtifactStore : IEvidenceArtifactStore
             Linkage: ResolveManifestLinkage(packet, request))
         {
             TenantId = tenantId,
-            Scope = scope
+            Scope = scope,
+            PreparerAttestations = packet.PreparerAttestations
         };
         ValidateRetainedArtifactReferences(packet);
         var retainedExportJson = JsonSerializer.Serialize(manifest, _jsonOptions);

@@ -586,6 +586,83 @@ public sealed class ReportLedgerAmountProvenanceTests
         };
     }
 
+    [Fact]
+    public async Task FrozenNativeAccountingDecision_DisclosesUpstreamPreparerWithoutOrdinaryApprovalCredit()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync(preparerAttested: true);
+        var retained = fixture.Opening.Entry.Metadata.PreparerAttestation!;
+        // Current records are irrelevant to an already retained report's classification.
+        fixture.LiveRecords.Clear();
+
+        var packet = await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access);
+
+        var amount = packet!.LedgerAmount!;
+        amount.Status.Should().Be(EvidenceStatusDto.Ready);
+        amount.Amount.Should().Be(100m);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.PreparerAttestation);
+        disclosure.AttestationId.Should().Be(retained.Receipt.AttestationId);
+        disclosure.SourceScope.PeriodId.Should().Be(fixture.Opening.PeriodId).And.NotBe(fixture.Scope.PeriodId);
+        amount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        // Even an independent report-level approval does not reclassify the upstream posting.
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        JsonSerializer.Serialize(packet, Json).Should().NotContain("private-retained-operands")
+            .And.NotContain("entitlementSnapshotJson");
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task MissingNativeContributorsSource_BlocksProofButDoesNotEraseAccountingDecision()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync(preparerAttested: true);
+        var attestationId = fixture.Opening.Entry.Metadata.PreparerAttestation!.Receipt.AttestationId;
+        File.Delete(fixture.OpeningSourcePath!);
+
+        var packet = await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access);
+
+        AssertBlocked(packet);
+        packet!.LedgerAmount!.AccountingPreparerAttestations.Should().ContainSingle()
+            .Which.AttestationId.Should().Be(attestationId);
+        packet.LedgerAmount.OrdinaryRecordedApprovalSatisfied.Should().BeFalse();
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task InvalidFrozenNativeScope_IsUnknownWithoutBorrowingCurrentOrReportApproval()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync("invalid-native-scope", preparerAttested: true);
+
+        var amount = (await fixture.Service.GetPacketAsync(fixture.ReportSubject, fixture.Scope, fixture.Access))!.LedgerAmount!;
+
+        amount.Status.Should().Be(EvidenceStatusDto.Ready);
+        var disclosure = amount.AccountingPreparerAttestations.Should().ContainSingle().Which;
+        disclosure.Classification.Should().Be(LedgerAmountApprovalClassification.Unknown);
+        disclosure.AttestationId.Should().BeNull();
+        disclosure.ValidationIssues.Should().NotBeEmpty();
+        LedgerAmountApprovalClassification.MayCountAsOrdinaryApproval(amount, true).Should().BeFalse();
+        JsonSerializer.Serialize(amount, Json).Should().NotContain("foreign-private-tenant");
+        fixture.LiveJournals.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public void NativeDecisionUnion_DeduplicatesExactReceiptsAndRejectsConflictingBindings()
+    {
+        var scope = new LedgerAmountScopeDto("tenant", "company", "fund", Guid.NewGuid(), Guid.NewGuid());
+        var item = new AccountingPreparerAttestationDisclosureDto(1,
+            LedgerAmountApprovalClassification.PreparerAttestation, "Attested by preparer", scope, [Guid.NewGuid()], [])
+            { AttestationId = Guid.NewGuid(), EventId = Guid.NewGuid() };
+
+        AccountingPreparerAttestationDisclosure.Union([item, item])!.Should().ContainSingle().Which.Should().Be(item);
+        var conflicting = item with { EventId = Guid.NewGuid(), JournalEntryIds = [Guid.NewGuid()] };
+        var result = AccountingPreparerAttestationDisclosure.Union([item, conflicting])!.Should().ContainSingle().Which;
+        result.Classification.Should().Be(LedgerAmountApprovalClassification.Unknown);
+        result.AttestationId.Should().BeNull();
+        result.JournalEntryIds.Should().HaveCount(2);
+    }
+
     private sealed class Fixture : IDisposable
     {
         public const string RunId = "retained-trial-balance";
@@ -620,6 +697,7 @@ public sealed class ReportLedgerAmountProvenanceTests
         public string PacketRoute => $"/api/workstation/evidence/subjects/ledger-amount/{ReportSubject}/packet"
             + $"?fundProfileId={Scope.FundProfileId}&ledgerBookId={Scope.LedgerBookId:D}&periodId={Scope.PeriodId:D}";
         public string? CurrentSourcePath { get; private set; }
+        public string? OpeningSourcePath { get; private set; }
         public string? CurrentManifestPath { get; private set; }
 
         public Fixture()
@@ -633,7 +711,7 @@ public sealed class ReportLedgerAmountProvenanceTests
                 new PostedLedgerAmountProvenanceService(LiveJournals.Object, null, null, _artifacts));
         }
 
-        public async Task CaptureAsync(string? condition = null)
+        public async Task CaptureAsync(string? condition = null, bool preparerAttested = false)
         {
             // "shared-source" retains one document identity against both contributing lines.
             var sharedSource = condition == "shared-source";
@@ -650,6 +728,15 @@ public sealed class ReportLedgerAmountProvenanceTests
                 1, 125m, [opening], _openingJournalId, _openingCashId);
             Current = NewRecord(Scope.PeriodId, new DateTimeOffset(2026, 10, 5, 12, 0, 0, TimeSpan.Zero),
                 2, -25m, [current], _currentJournalId, _currentCashId);
+            if (preparerAttested)
+            {
+                Opening = AccountingPreparerAttestationTestData.Attach(Opening, Scope with { PeriodId = _openingPeriodId });
+                if (condition == "invalid-native-scope")
+                    Opening = AccountingPreparerAttestationTestData.WithMetadata(Opening, Opening.Entry.Metadata with
+                    {
+                        PreparerAttestation = Opening.Entry.Metadata.PreparerAttestation! with { TenantId = "foreign-private-tenant" }
+                    });
+            }
             LiveRecords.AddRange([Opening, Current]);
             var periodStart = new DateTimeOffset(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
             var cutoff = new DateTimeOffset(2026, 10, 31, 23, 59, 59, TimeSpan.Zero);
@@ -714,6 +801,8 @@ public sealed class ReportLedgerAmountProvenanceTests
                 CurrentManifestPath = Path.Combine(_root, identity!.ManifestPath);
                 CurrentSourcePath = Path.Combine(_root, identity.Artifacts[0].RelativePath);
             }
+            if (evidenceId == "opening-source")
+                OpeningSourcePath = Path.Combine(_root, identity!.Artifacts[0].RelativePath);
             return new JournalEvidenceReference(evidenceId, "vault:" + identity!.VaultId,
                 "source-document", "bank", identity.RetainedAt, "preparer", retainedSubject,
                 identity.ContentHashSha256, evidenceId, ReviewStatus: "Accepted", ReviewedBy: "reviewer",

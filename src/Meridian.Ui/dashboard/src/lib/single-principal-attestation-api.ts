@@ -1,4 +1,4 @@
-import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
+import { apiGetBlob, apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
 
 export const EVIDENCE_ACKNOWLEDGMENT = "ATTEST-EVIDENCE-ACK";
 export const PREPARER_ATTESTATION_DISCLOSURE = "Attested by preparer — not independently reviewed";
@@ -40,7 +40,7 @@ export interface AttestationSubject {
 
 export function isSupportedPreparerReceipt(receipt: PreparerReceipt) {
   return receipt.schemaVersion === 1 && receipt.decisionKind === "PreparerAttestation"
-    && receipt.actionId === EVIDENCE_ACKNOWLEDGMENT;
+    && receipt.actionId === EVIDENCE_ACKNOWLEDGMENT && receipt.disclosure === PREPARER_ATTESTATION_DISCLOSURE;
 }
 export interface DeclarationRequest {
   commandId: string; expectedRevision: number; enabled: boolean;
@@ -75,4 +75,21 @@ export function recordPreparerAttestation(request: AttestationRequest, options: 
 }
 export function revokePreparerAttestation(request: RevocationRequest, options: ApiRequestOptions = {}) {
   return apiPostJson<unknown>(`${endpoint}/revocations`, request, options);
+}
+
+/** Preserve original proof bytes; parsing checks identity but never rewrites financial JSON. */
+export async function getPreparerAttestationProof(receiptId: string, options: ApiRequestOptions = {}) {
+  const blob = await apiGetBlob(`${endpoint}/receipts/${encodeURIComponent(receiptId)}/export`,
+    { ...options, allowDevelopmentFallback: false });
+  let proof: unknown;
+  try { proof = JSON.parse(await blob.text()); }
+  catch { throw new Error("The original attestation proof is not a readable JSON artifact."); }
+  const value = proof as { schemaVersion?: unknown; kind?: unknown; disclosure?: unknown; receipt?: { receiptId?: unknown; schemaVersion?: unknown; decisionKind?: unknown; disclosure?: unknown } } | null;
+  if (!value || value.schemaVersion !== 1 || value.kind !== "PreparerAttestationEvidence"
+      || value.disclosure !== PREPARER_ATTESTATION_DISCLOSURE || value.receipt?.receiptId !== receiptId
+      || value.receipt.schemaVersion !== 1 || value.receipt.decisionKind !== "PreparerAttestation"
+      || value.receipt.disclosure !== PREPARER_ATTESTATION_DISCLOSURE) {
+    throw new Error("The original proof does not match this supported preparer receipt.");
+  }
+  return blob;
 }

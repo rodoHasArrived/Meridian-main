@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PreparerAttestationProofDownload } from "@/components/meridian/preparer-attestation-evidence";
 import { isApiError } from "@/lib/api-errors";
 import {
   EVIDENCE_ACKNOWLEDGMENT, PREPARER_ATTESTATION_DISCLOSURE, changePrincipalDeclaration, getAttestationSubject, getAttestationWorkspace, isSupportedPreparerReceipt,
@@ -97,6 +98,7 @@ function AttestationPanel({ vaultId, documentId }: { vaultId: string; documentId
   const state = workspace?.state;
   const declaration = state?.declaration;
   const ownsDeclaration = declaration?.enabled && sameActor(declaration.principalId, workspace?.actor);
+  const policyReconfirmationRequired = ownsDeclaration && declaration?.policyVersion !== state?.policyVersion;
   const locked = loading || busy || pending !== null;
   const canAttest = !locked && state?.policyEnabled === true && workspace?.canAttest === true
     && ownsDeclaration && subject?.eligible === true && state.allowedActions.includes(EVIDENCE_ACKNOWLEDGMENT);
@@ -151,6 +153,7 @@ function AttestationPanel({ vaultId, documentId }: { vaultId: string; documentId
         <details className="rounded-md border border-border/60 p-2">
           <summary className="cursor-pointer text-sm font-semibold">Single-principal declaration and history</summary>
           <p className="mt-2 text-sm">Enabling names the current principal only. Withdrawal stops new attestations; retained receipts remain visible.</p>
+          {policyReconfirmationRequired ? <p className="mt-2 text-sm">The host offers a newer policy. Reconfirmation records a new declaration revision; the original policy and receipts remain historical.</p> : null}
           <form className="mt-2 space-y-2" onSubmit={(event) => {
             event.preventDefault();
             if (locked || (!state.policyEnabled && !declaration?.enabled) || !workspace.canAdministerDeclaration || !declarationReason.trim()) return;
@@ -159,6 +162,12 @@ function AttestationPanel({ vaultId, documentId }: { vaultId: string; documentId
           }}>
             <label className="grid gap-1 text-sm">Declaration reason<Input disabled={locked || !workspace.canAdministerDeclaration || (!state.policyEnabled && !declaration?.enabled)} value={declarationReason} onChange={(event) => setDeclarationReason(event.target.value)} required maxLength={2000} /></label>
             <Button type="submit" variant="outline" size="sm" disabled={locked || (!state.policyEnabled && !declaration?.enabled) || !workspace.canAdministerDeclaration || !declarationReason.trim()}>{declaration?.enabled ? "Withdraw declaration" : "Enable declaration for myself"}</Button>
+            {policyReconfirmationRequired ? <Button type="button" variant="outline" size="sm"
+              disabled={locked || !state.policyEnabled || !workspace.canAdministerDeclaration || !declarationReason.trim()}
+              onClick={() => void submit({ kind: "declaration", request: {
+                commandId: crypto.randomUUID(), expectedRevision: declaration.revision, enabled: true,
+                principalId: workspace.actor, policyVersion: state.policyVersion, reason: declarationReason.trim()
+              } })}>Reconfirm current policy</Button> : null}
           </form>
           <ul className="mt-2 space-y-2 text-sm" aria-label="Declaration history">{state.declarationHistory.map((entry) => <li key={entry.revision} className="break-words">Revision {entry.revision}: {entry.enabled ? "Enabled" : "Withdrawn"} by {entry.changedBy} at {entry.recordedAt}. {entry.reason}</li>)}</ul>
         </details>
@@ -174,6 +183,7 @@ function AttestationPanel({ vaultId, documentId }: { vaultId: string; documentId
               <p className="break-all text-xs">Receipt {receipt.receiptId}. Evidence revision {receipt.subjectRevision}.</p>
               <p className="break-words text-xs">Source provenance: {receipt.sourceProvenance}. Source actor: {receipt.sourceActor ?? "Unrecorded"}.</p>
               <p className="text-sm">{revocation ? `Revoked by ${revocation.actor} at ${revocation.recordedAt}: ${revocation.reason}` : "Historical assertion; current support is not assessed. No independent approval."}</p>
+              {supported ? <PreparerAttestationProofDownload receiptId={receipt.receiptId} disabled={loading || busy} /> : null}
               {supported && !revocation && sameActor(receipt.attestedBy, workspace.actor) && workspace.canRevoke ? <form className="space-y-2" onSubmit={(event) => {
                 event.preventDefault();
                 if (locked || !revokeReason.trim()) return;

@@ -19,14 +19,42 @@ public sealed partial class SinglePrincipalAttestationStore
     private sealed record Envelope(Snapshot Payload, string Hash);
 
     private SinglePrincipalAttestationStateDto Project(Snapshot snapshot) => new(
-        snapshot.Scope, _policyEnabled, SinglePrincipalAttestationPolicy.Version, PolicyHash,
+        snapshot.Scope, _policyEnabled || _draftChecksEnabled, ActivePolicyVersion, PolicyHashFor(ActivePolicyVersion),
         SinglePrincipalAttestationPolicy.Disclosure, SinglePrincipalAttestationPolicy.Confirmation,
-        _policyEnabled ? [SinglePrincipalAttestationPolicy.EvidenceAcknowledgment] : [],
+        EnabledActions(),
         snapshot.Declarations.LastOrDefault(), snapshot.Declarations, snapshot.Receipts,
         snapshot.Revocations, snapshot.AuditTrail);
 
     private static Snapshot Empty(SinglePrincipalAttestationScopeDto scope) => new(
         SinglePrincipalAttestationPolicy.SchemaVersion, scope, [], [], [], [], []);
+
+    private IReadOnlyList<string> EnabledActions()
+    {
+        var actions = new List<string>();
+        if (_policyEnabled) actions.Add(SinglePrincipalAttestationPolicy.EvidenceAcknowledgment);
+        if (_draftChecksEnabled) actions.Add(SinglePrincipalAttestationPolicy.DraftCheck);
+        return actions;
+    }
+
+    private static string PolicyHashFor(string version) => version switch
+    {
+        SinglePrincipalAttestationPolicy.Version => PolicyHash,
+        SinglePrincipalAttestationPolicy.DraftVersion => DraftPolicyHash,
+        _ => string.Empty
+    };
+
+    private static bool IsKnownPolicy(string version, string hash) =>
+        !string.IsNullOrEmpty(hash) && PolicyHashFor(version) == hash;
+
+    private static bool IsRegisteredAction(string action) => action is
+        SinglePrincipalAttestationPolicy.EvidenceAcknowledgment or SinglePrincipalAttestationPolicy.DraftCheck;
+
+    private static bool PolicyAllowsAction(string version, string action) =>
+        action == SinglePrincipalAttestationPolicy.EvidenceAcknowledgment
+        || version == SinglePrincipalAttestationPolicy.DraftVersion && action == SinglePrincipalAttestationPolicy.DraftCheck;
+
+    private static string ConfirmationFor(string action) => action == SinglePrincipalAttestationPolicy.DraftCheck
+        ? SinglePrincipalAttestationPolicy.DraftConfirmation : SinglePrincipalAttestationPolicy.Confirmation;
 
     private static void RequireRead(SinglePrincipalAttestationAuthority authority)
     {
@@ -157,23 +185,24 @@ public sealed partial class SinglePrincipalAttestationStore
             !state.AuditTrail.Select(item => item.CommandId).SequenceEqual(state.Commands.Select(item => item.CommandId)))
             return false;
         if (state.Declarations.Where((item, index) => item is null || item.Scope != scope || item.DeclarationId == Guid.Empty ||
-                item.Revision != index + 1 || item.PolicyVersion != SinglePrincipalAttestationPolicy.Version || item.PolicyHash != PolicyHash ||
+                item.Revision != index + 1 || !IsKnownPolicy(item.PolicyVersion, item.PolicyHash) ||
                 string.IsNullOrWhiteSpace(item.PrincipalId) || !SameActor(item.PrincipalId, item.ChangedBy) ||
                 (index > 0 && item.DeclarationId != state.Declarations[0].DeclarationId)).Any())
             return false;
         if (state.Receipts.Any(item => item is null || item.Scope != scope || item.ReceiptId == Guid.Empty || item.CommandId == Guid.Empty ||
                 item.AssertionId != item.CommandId || item.SchemaVersion != SinglePrincipalAttestationPolicy.SchemaVersion ||
                 item.DecisionKind != SinglePrincipalAttestationPolicy.DecisionKind || item.Disclosure != SinglePrincipalAttestationPolicy.Disclosure ||
-                item.PolicyVersion != SinglePrincipalAttestationPolicy.Version || item.PolicyHash != PolicyHash ||
-                item.ActionId != SinglePrincipalAttestationPolicy.EvidenceAcknowledgment || item.Origin != OperationsActionOriginDto.HumanOperator ||
-                item.Confirmation != SinglePrincipalAttestationPolicy.Confirmation || !SameActor(item.PreparedBy, item.AttestedBy) ||
+                !IsKnownPolicy(item.PolicyVersion, item.PolicyHash) || !IsRegisteredAction(item.ActionId) || !PolicyAllowsAction(item.PolicyVersion, item.ActionId)
+                || item.Origin != OperationsActionOriginDto.HumanOperator ||
+                item.Confirmation != ConfirmationFor(item.ActionId) || !SameActor(item.PreparedBy, item.AttestedBy) ||
                 string.IsNullOrWhiteSpace(item.SubjectId) || string.IsNullOrWhiteSpace(item.SubjectHash) ||
                 string.IsNullOrWhiteSpace(item.SubjectRevision) || string.IsNullOrWhiteSpace(item.SourceArtifactId) ||
                 string.IsNullOrWhiteSpace(item.SourceHash) || string.IsNullOrWhiteSpace(item.SourceProvenance) ||
                 string.IsNullOrWhiteSpace(item.SourceSubjectKind) || string.IsNullOrWhiteSpace(item.SourceSubjectId) || item.Checks is not { Count: > 0 } ||
                 !ValidSubjectSnapshot(item.SubjectSnapshotJson, item.SubjectHash) ||
                 !state.Declarations.Any(declaration => declaration.DeclarationId == item.DeclarationId && declaration.Revision == item.DeclarationRevision &&
-                    declaration.Enabled && SameActor(declaration.PrincipalId, item.AttestedBy))))
+                    declaration.Enabled && declaration.PolicyVersion == item.PolicyVersion && declaration.PolicyHash == item.PolicyHash
+                    && SameActor(declaration.PrincipalId, item.AttestedBy))))
             return false;
         if (state.Receipts.Select(item => item.ReceiptId).Distinct().Count() != state.Receipts.Length ||
             state.Receipts.Any(item => !state.Commands.Any(command => command.CommandId == item.CommandId)) ||

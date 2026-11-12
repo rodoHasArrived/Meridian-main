@@ -11,6 +11,17 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Shared
 
+`SecurityMasterEndpoints.CashDividendAttestation` exposes the bounded, default-off regular USD
+dividend-declaration workspace. Commands derive the case, tenant/company, actor and capabilities
+from the interactive session and retained case; supplied mismatches are refused. Enabling binds
+existing receivable/income accounts and the exact promoted native rule from the authoritative
+preview, with separate declaration-administration and financial-configuration grants. Attest and
+post remain separate commands and retain preparer disclosures. Current scoped readers can retry
+exact retained commands after write-grant loss; native services decide whether a command is replay
+or a new effect. Persisted history and declaration withdrawal remain available with the policy off
+or the readiness composition unavailable. `CorporateActionCashDividendAttestationEndpointTests`
+uses synthetic TestServer fixtures to pin these boundaries.
+
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
 requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
@@ -22,12 +33,14 @@ close readiness; current reads never recalculate a legacy receipt to obtain it.
 
 `Evidence/SinglePrincipalAttestationStore` retains separate preparer assertions, declaration
 history, revocations and audit events in a scoped atomic snapshot under a cross-process lease.
-`SinglePrincipalAttestation:EnableEvidenceAcknowledgments` defaults to `false`; a host that leaves
-it unset has no eligible attestation action. Enabling this mechanism still requires a current
+`SinglePrincipalAttestation:EnableEvidenceAcknowledgments` and the separate
+`SinglePrincipalAttestation:EnableDraftChecks` both default to `false`. Enabling either requires a current
 declaration bound to the authenticated human and explicit declaration/read/attestation grants;
-no built-in role receives them automatically. The first adapter supports company-scoped
-`ATTEST-EVIDENCE-ACK` only. Book-scoped subjects, `ATTEST-DRAFT-CHECK` and economic actions are
-not registered.
+no built-in role receives them automatically. The company-scoped adapters support
+`ATTEST-EVIDENCE-ACK` and an explicit version-2 `ATTEST-DRAFT-CHECK` on a retained Security
+cash-flow calculation bound to its original human preparer. Legacy unbound runs are ineligible.
+Book-scoped generic subjects and economic effects remain excluded from this file store; the
+native cash-dividend lane above has a separate book declaration, policy and transaction boundary.
 
 `EvidenceAttestationSubjectResolver` verifies retained document bytes and tenant/company scope,
 binds the current source and document operands, and refuses incomplete, conflicting or unsupported
@@ -42,12 +55,37 @@ corrective revocation after withdrawal or source corruption; it does not establi
 
 `Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs` maps the workspace, subject preview,
 declaration, receipt and revocation routes under `/api/workstation/evidence/attestations`.
-Browser mutation controls and WPF read-only history consume the same classification and scope.
+Browser and WPF controls consume the same classification and scope. New acknowledgments require
+the preparer grant plus reporting modification; new draft checks require the preparer grant plus
+Security Master modification. Corrective revocation by the original attester needs the respective
+domain modification permission and current source-read access, without a fresh recording grant.
+The original JSON receipt/declaration export retains its original bytes after withdrawal and
+revocation; current applicability is assessed separately.
 Focused synthetic tests are `SinglePrincipalAttestationStoreTests`,
 `SinglePrincipalAttestationAdditionalTests`, `SinglePrincipalAttestationEndpointTests` and
 `EvidenceAttestationSubjectResolverTests`. They do not establish economic-policy acceptance.
 The [policy disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12)
-records the limited development scope and outstanding economic-policy acceptance.
+records the development scope and outstanding acceptance evidence.
+
+`PreparerAttestationEvidenceProjectionService` attaches separate evidence-task disclosures to
+exact visible retained documents. A trusted server read context supplies scope and source-read
+authority. Manifest route/digest or exact retained artifact path/digest/canonical-subject matching
+prevents identical source bytes from transferring an acknowledgment to another document. Current
+applicability reuses the byte-verifying resolver; historical, stale, revoked and unavailable
+assertions never change evidence readiness, ordinary approval, proof-layer coverage or financial
+Verified Coverage. Receipt counts describe tasks only; denied or corrupt history reports unknown
+counts rather than zero. Evidence manifest exports freeze that projection, its original declaration
+and dated source assessment; later withdrawal or revocation does not rewrite retained bytes.
+Focused coverage is `PreparerAttestationEvidenceProjectionTests`.
+
+`CorporateActionCashDividendReconciliationSupport` requires retained sided statement membership,
+completed recovery-checkpoint hashes, verified Evidence Vault bytes and recorded security identity.
+It bridges a prior statement to the entitlement cutoff only when the complete canonical lot IDs,
+accounts and quantities are unchanged. A second deterministic read rejects source, checkpoint,
+population, queue or lot drift. Completion badges and inferred symbols cannot supply this proof.
+Amount-proof readers preserve the native journal's distinct preparer classification in posted and
+frozen report populations. Unknown bindings cannot receive ordinary-approval credit; task counts
+do not define a financial coverage denominator.
 
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
@@ -3285,6 +3323,7 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-roadmap-traceability:begin module=SRC-UI-SHARED -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W10-LOT-002` | Security-identified open-lot convergence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W2-TRD-001` | Paper trading cockpit reliability |

@@ -399,14 +399,68 @@
                             AutomationProperties.AutomationId="EvidenceWorkbenchAttestationsPanel">
                         <StackPanel>
                             <TextBlock Text="Preparer attestations" Style="{StaticResource CardHeaderStyle}" />
+                            <TextBlock Text="Packet-specific evidence assessment" FontWeight="SemiBold" Margin="0,8,0,4" />
+                            <TextBlock Text="{Binding PacketAttestationSummaryText}" TextWrapping="Wrap" />
+                            <ItemsControl ItemsSource="{Binding PacketAttestationDisclosures}" Margin="0,6,0,10">
+                                <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,8" /></DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Scope-level declaration and history" FontWeight="SemiBold" Margin="0,4,0,4" />
                             <TextBlock Text="{Binding AttestationScopeText}"
                                        Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,6,0,0" />
                             <TextBlock Text="{Binding AttestationStatusText}"
                                        Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" Margin="0,6,0,10"
                                        AutomationProperties.AutomationId="EvidenceWorkbenchAttestationStatus" />
-                            <ItemsControl ItemsSource="{Binding AttestationRows}"
-                                          AutomationProperties.AutomationId="EvidenceWorkbenchAttestationHistory">
-                                <ItemsControl.ItemTemplate>
+                            <TextBlock Text="{Binding AttestationActionStatus}" TextWrapping="Wrap" Margin="0,0,0,10"
+                                       AutomationProperties.LiveSetting="Polite" />
+                            <TextBlock Text="{Binding PendingAttestationCommandText}" TextWrapping="Wrap" Margin="0,0,0,8"
+                                       Visibility="{Binding HasPendingAttestationCommand, Converter={StaticResource BoolToVisibilityConverter}}" />
+                            <Button Content="Retry the same uncertain command" Command="{Binding RetryAttestationCommand}"
+                                    HorizontalAlignment="Left" Margin="0,0,0,10"
+                                    Visibility="{Binding HasPendingAttestationCommand, Converter={StaticResource BoolToVisibilityConverter}}"
+                                    AutomationProperties.AutomationId="EvidenceWorkbenchRetryAttestation" />
+                            <Expander Header="Inspect and attest retained evidence" Margin="0,0,0,12">
+                                <StackPanel Margin="0,8,0,0">
+                                    <TextBlock Text="This records a preparer assertion only. It does not accept the document or grant approval, posting, close or release authority."
+                                               TextWrapping="Wrap" Margin="0,0,0,8" />
+                                    <Label Content="Retained document" Target="{Binding ElementName=AttestationDocument}" />
+                                    <ComboBox x:Name="AttestationDocument" ItemsSource="{Binding AttestationDocuments}" DisplayMemberPath="Label"
+                                              SelectedItem="{Binding SelectedAttestationDocument}" IsEnabled="{Binding CanEditAttestationInputs}"
+                                              AutomationProperties.Name="Retained document to inspect" />
+                                    <Button Content="Inspect exact source and checks" Command="{Binding PreviewAttestationCommand}"
+                                            HorizontalAlignment="Left" Margin="0,8,0,8" />
+                                    <TextBlock Text="{Binding AttestationPreviewText}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                    <ItemsControl ItemsSource="{Binding AttestationChecks}" Margin="0,0,0,8">
+                                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,4" /></DataTemplate></ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Label Content="Attestation reason" Target="{Binding ElementName=AttestationReason}" />
+                                    <TextBox x:Name="AttestationReason" Text="{Binding AttestationReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="4000"
+                                             IsEnabled="{Binding CanEditAttestationInputs}" AutomationProperties.Name="Attestation reason" />
+                                    <CheckBox IsChecked="{Binding IsAttestationConfirmed}" IsEnabled="{Binding CanEditAttestationInputs}" Margin="0,8,0,8"
+                                              AutomationProperties.Name="Confirm preparer responsibility for the exact inspected source">
+                                        <TextBlock Text="{Binding AttestationConfirmationText}" TextWrapping="Wrap" />
+                                    </CheckBox>
+                                    <Button Content="Attest evidence inspection" Command="{Binding RecordAttestationCommand}"
+                                            HorizontalAlignment="Left" AutomationProperties.AutomationId="EvidenceWorkbenchRecordAttestation" />
+                                </StackPanel>
+                            </Expander>
+                            <Expander Header="Single-principal declaration" Margin="0,0,0,12">
+                                <StackPanel Margin="0,8,0,0">
+                                    <TextBlock Text="Enable only for the authenticated principal. Withdrawal stops new assertions while retaining historical receipts. Separate declaration-administration and domain grants remain required."
+                                               TextWrapping="Wrap" Margin="0,0,0,8" />
+                                    <Label Content="Declaration reason" Target="{Binding ElementName=DeclarationReason}" />
+                                    <TextBox x:Name="DeclarationReason" Text="{Binding DeclarationReason, UpdateSourceTrigger=PropertyChanged}" MaxLength="4000"
+                                             IsEnabled="{Binding CanEditAttestationInputs}" AutomationProperties.Name="Declaration reason" />
+                                    <Button Content="{Binding DeclarationActionText}" Command="{Binding ToggleAttestationDeclarationCommand}"
+                                            HorizontalAlignment="Left" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Expander>
+                            <TextBlock Text="Retained assertion history — select your own assertion for a reasoned revocation."
+                                       TextWrapping="Wrap" Margin="0,0,0,6" />
+                            <ListBox ItemsSource="{Binding AttestationRows}" SelectedItem="{Binding SelectedAttestationReceipt}"
+                                     IsEnabled="{Binding CanEditAttestationInputs}"
+                                     HorizontalContentAlignment="Stretch" ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                                     AutomationProperties.AutomationId="EvidenceWorkbenchAttestationHistory">
+                                <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <Border Style="{StaticResource CompactCardStyle}" Margin="0,0,0,8">
                                             <StackPanel>
@@ -425,8 +479,18 @@
                                             </StackPanel>
                                         </Border>
                                     </DataTemplate>
-                                </ItemsControl.ItemTemplate>
-                            </ItemsControl>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Label Content="Revocation reason" Target="{Binding ElementName=AttestationRevocationReason}" />
+                            <TextBox x:Name="AttestationRevocationReason" Text="{Binding AttestationRevocationReason, UpdateSourceTrigger=PropertyChanged}"
+                                     MaxLength="4000" IsEnabled="{Binding CanEditAttestationInputs}" AutomationProperties.Name="Revocation reason" />
+                            <Button Content="Revoke my selected assertion" Command="{Binding RevokeAttestationCommand}"
+                                    HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            <Button Content="Read original receipt proof export" Command="{Binding ExportAttestationProofCommand}"
+                                    HorizontalAlignment="Left" Margin="0,8,0,0" />
+                            <TextBox Text="{Binding AttestationExportText, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap"
+                                     MaxHeight="240" VerticalScrollBarVisibility="Auto" Margin="0,8,0,0"
+                                     AutomationProperties.Name="Original retained receipt JSON; current status is shown separately" />
                         </StackPanel>
                     </Border>
 

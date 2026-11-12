@@ -1,16 +1,18 @@
 # Single-principal attestation: security and accounting policy proposal
 
-**Status:** draft operational policy; development foundation authorized, no operational exception adopted
+**Status:** default-off B and bounded C development authorized; operational acceptance open
 **Owner:** product owner, with independent Security and Accounting review pending  
 **Reviewed:** 2026-11-12
-**Review scope:** November 2 policy analysis, with the dated development disposition in Section 12
+**Review scope:** historical November 2 policy analysis and November 12 implementation disposition
 **Related direction:** `W14-ATTEST-001`, `DEC-SINGLE-PRINCIPAL-001`, `W11-COVER-001`, `W11-PASSPORT-001`
 
 ## 1. Decision requested
 
-Sections 1–11 retain the November 2 proposal and review record. The owner's subsequent
-authorization to develop the default-off foundation is recorded in Section 12; it does not
-adopt an operational exception or establish independent review.
+Sections 1–11 retain the historical November 2 proposal and review record. Section 12 records
+the owner's later authorization of default-off B development and the specific option-2 C
+treatment, along with current implementation limits. Earlier statements that no implementation
+or C choice exists describe the November 2 baseline, not the November 12 development candidate.
+The later authorization establishes no independent review or live operational acceptance.
 
 Adopt a closed, default-off attestation policy before implementing any single-principal exception.
 An attestation records what the preparer asserts; it does not establish independent review or
@@ -45,7 +47,7 @@ Its Windows 11 x64/ARM64 support and PRD-000 release evidence obligations remain
 charter's older deployment summary must not substitute for the accepted ADR. This policy
 adds no remote reviewer access, identity provider, service, tenant topology, or release authority.
 
-## 2. Current contracts and their limits
+## 2. Contracts inspected at the November 2 baseline
 
 | Surface inspected | Current enforcement or evidence | Consequence for W14 |
 | --- | --- | --- |
@@ -353,8 +355,10 @@ decision, preserving its original meaning.
 
 ## 11. Outstanding owner decisions and review record
 
-Every entry is **open**. The recommendations are supplied to make the decision concrete; silence,
-AI review, a document merge or a declaration toggle is not policy adoption or live activation.
+At the November 2 baseline every entry below was **open**. The later owner development
+disposition in Section 12 resolves the bounded development choices; independent operational
+review and financial-coverage adoption remain open. Silence, AI review, a document merge or a
+declaration toggle is not live activation or independent human review.
 
 | Decision | Proposed answer | Owner/review needed |
 | --- | --- | --- |
@@ -381,56 +385,122 @@ owner's merge authority. This documentation change neither requests nor performs
 
 ## 12. Development disposition — 2026-11-12
 
-The product owner authorized development of single-principal attestation in the November 12
-session. This instruction permits implementation and synthetic verification of the mechanism;
-it supersedes D7's proposed sequencing requirement for that development work. It is not an
-independent Security or Accounting judgment, permission to merge, production certification, or
-authorization to activate an economic exception against live records.
+The owner instructed “Validate, then implement #1” and subsequently selected development
+**option 2**, the bounded routine cash-dividend lane below, during the same session. This
+authorizes implementation and synthetic verification of B and this specific C treatment.
+It supersedes D7's proposed sequencing requirement for this development work. It is not an
+independent Security or Accounting judgment, operator acceptance, permission to merge,
+production certification, or authorization to activate the exception against live records.
+The historical November 2 proposal and its unanswered operational-review questions remain
+visible in Sections 1–11; its statements that C was undecided describe that earlier baseline.
 
-The development scope is a default-off foundation toward option B: a scoped, versioned declaration,
-separate declaration-administration and preparer-attestation permissions, retained decisions and
-audits, exact evidence/target revision binding, and the explicit preparer-attestation disclosure.
-Only evidence acknowledgment is included in the initial mechanism; draft checking has no
-registered authority provider and remains denied. The named B actions remain non-posting assertions.
-No declaration or receipt supplies ordinary
-approval, independent-review evidence, posting authority, or Verified Coverage credit. Existing
-maker-checker guards and their documented exceptions retain their current behavior.
+### Selected C treatment: regular mandatory USD dividend recognition
 
-The work starts from `main` commit `c31dfaf996` (2026-11-11). The implementation boundaries are:
+The development policy is `single-principal-cash-dividend-v1`. Its closed eligibility boundary is:
 
-| Source | Bounded behavior |
+- A confirmed, uncorrected **regular mandatory cash-dividend declaration**, in USD, on a
+  selected USD book. Recognize the exact source **ex-date** by debiting the existing governed
+  dividend-receivable account and crediting the existing dividend-income revenue account.
+  This is ex-date income recognition; it does not book cash settlement, move money or settle a receivable.
+- Explicit source dates must satisfy ex-date <= record date <= payment date, and the record date
+  must be strictly before the trusted server's current UTC date. Canonical lot identities
+  and quantities held at the day-before-ex-date cutoff must be unchanged through record date.
+  This conservative rule infers no settlement or due-bill entitlement. Missing dates, a future
+  record date, changed lot sets/quantities, or an ambiguous related dividend/special-dividend
+  source peer are ineligible even when the gross amount is below the cap.
+- One active, unambiguous canonical Security Master ticker must agree with the retained native
+  candidate, held lots and explicit chart mappings. The existing builder retains this server-owned
+  identity; the posting transaction checks it again. A caller-supplied ticker cannot supply authority.
+- At most **$10,000 gross for the complete related event** and **$100,000 gross for the
+  selected book and source-ex-date calendar month**. Both boundaries are inclusive. The complete
+  security/ex-date entitlement is resolved across the selected book before an account-level
+  projection qualifies. Source aliases and split account cases do not create new event buckets.
+  Amounts are not netted; missing population, negative/unknown entitlement or unsupported
+  valuation prevents eligibility.
+- The preparer explicitly confirms a server-resolved binding to **existing chart accounts and
+  an already promoted rule pack/version and selected rule/version** for that book. The retained
+  binding includes account paths and chart names; the native journal must contain exactly the
+  declared receivable debit and revenue credit, of equal gross amount, in USD at FX 1.
+  The declaration creates no accounts, mappings or accounting policy and supplies no rule-promotion authority.
+- A current declaration binds the authenticated human, tenant, company, selected book, policy
+  version/hash and account/rule binding. Declaration administration remains separate from
+  `RecordPreparerAttestations` plus `ApproveCorporateActionAccounting`, and from
+  `PostCorporateActionAccounting`. No built-in role or declaration toggle grants these permissions.
+- The current case, original preparer, projection, source identity/version/hash, complete-book
+  entitlement hash and JSON operands, reconciliation support, retained Drafted asset-event spine
+  and candidate fingerprints must agree. The open period/version, balanced journal, scope,
+  human origin, source chronology, data provenance and existing posting controls still apply.
+- A durable budget reservation counts retries once and remains counted after an uncertain
+  outcome. Serializing the exact book's event/month budget prevents concurrent split cases
+  exceeding a cap. Withdrawal or voiding does not erase the original reservation or receipt.
+  Native posting uses the actual ledger transaction and event-spine boundary; a receipt alone
+  cannot authorize a generic journal append or substitute for the native posting lease.
+
+Only this named C class is selected. Voluntary/elective or corrected corporate actions,
+reorganizations, disputed rights, estimates, foreign currency/FX, specialist tax treatment,
+lot quantity/basis mutations, cash settlement, payment, reconciliation waiver/supersession,
+period reopening, report release and live execution remain excluded. A new class or threshold
+requires another explicit policy choice; neither a low amount nor a generic Approve action
+inherits eligibility.
+
+### Implemented development boundaries
+
+All three host gates default to off. `SinglePrincipalAttestation:EnableEvidenceAcknowledgments`
+controls B acknowledgments; `SinglePrincipalAttestation:EnableDraftChecks` separately controls
+B draft checks; `SinglePrincipalAttestation:EnableCashDividends` binds
+`SecurityMasterOptions.EnableSinglePrincipalCashDividendAttestations` for the native C lane.
+Host enablement is not a declaration, role grant or operational activation
+decision. No enabled declaration or new role assignment is supplied by this change.
+
+B action grants are specific to the effect: acknowledgment requires
+`RecordPreparerAttestations` and `ManageReporting`; draft checking requires
+`RecordPreparerAttestations` and `ModifySecurityMaster`, alongside the common/current source-read
+gates. Authorized own corrective revocation retains the applicable domain-modify requirement;
+it does not require a fresh Record grant, an active declaration or a currently enabled feature.
+It removes no original receipt and supplies no new attestation or posting authority.
+
+The initial ACK foundation was recorded locally at `6422229ac2`; the source paths below
+describe the expanded development candidate. They are implementation anchors, not a
+commit-bound test report or a claim that every acceptance-matrix row passed.
+
+| Source | Current bounded behavior |
 | --- | --- |
-| [Shared contracts](../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs) | Versioned preparer-assertion classification, canonical disclosure, declaration revisions, exact subject/source hashes and evaluated JSON operands, separate revocation and retained history. These types are not approval receipts. |
-| [Identity permissions](../../src/Meridian.Identity/Contracts/Auth/UserPermission.cs) | Separate declaration administration, assertion recording and assertion reading; no automatic built-in role assignments. Existing business permissions remain necessary. |
-| [Scoped store](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs) and [persistence](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs) | Default-off declaration and acknowledgment state, command replay/conflict checks, prospective withdrawal, separate revocation, and receipt/audit persistence under one scoped commit boundary. |
-| [Evidence resolver](../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs) and [composition](../../src/Meridian.Ui.Shared/Evidence/EvidenceWorkflowServiceCollectionExtensions.cs) | Company-scoped evidence acknowledgment only, with retained-byte/hash and extraction checks. `SinglePrincipalAttestation:EnableEvidenceAcknowledgments` defaults to `false`; book-scoped evidence and draft-check providers are not registered. |
-| [HTTP adapter](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs) | Interactive-session identity and tenant/company scope, separate grants, current source-read permission for retained history and replay, and authorized corrective revocation using retained source identity even when source bytes are corrupt. |
-| [Browser panel](../../src/Meridian.Ui/dashboard/src/components/meridian/single-principal-attestation-panel.tsx) and [WPF workbench](../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.cs) | Browser declaration/acknowledgment/revocation controls and WPF read-only history share the disclosure; withdrawal and revocation preserve the original receipt. Neither surface treats a retained receipt as proof of current support. |
+| [Shared B contracts](../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs), [scoped store](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs) and [persistence](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs) | Versioned declarations, separate preparer receipts/audits, exact evaluated JSON and hashes, stable command retry/conflict handling, prospective withdrawal and corrective revocation. Original v1 declarations, receipt results and export bytes remain readable; the v2 draft policy requires explicit reaffirmation rather than upgrading authority automatically. |
+| [Evidence resolver](../../src/Meridian.Ui.Shared/Evidence/EvidenceAttestationSubjectResolver.cs) and [draft resolver](../../src/Meridian.Ui.Shared/Evidence/ContractualCashFlowDraftAttestationSubjectResolver.cs) | ACK verifies exact retained source bytes and extraction checks. Draft checking supports only a newly server-bound, retained, non-postable Security contractual-cash-flow run owned by the actual preparer. Historical/unbound runs, loans, another principal, changed source terms or a missing provider remain ineligible. Run scope/origin/preparer, source hash, calculation version and raw operands are retained; no client claim or synthetic authority substitutes for them. |
+| [HTTP adapter](../../src/Meridian.Ui.Shared/Endpoints/EvidenceEndpoints.SinglePrincipalAttestation.cs) and [run adapter](../../src/Meridian.Ui.Shared/Endpoints/ContractualCashFlowRunEndpoints.cs) | Identity, human origin and tenant/company are trusted server values; domain grants and exact target revisions are checked. Current source-read authority protects history/export/replay. Corrective revocation remains separately authorized after withdrawal or source corruption; it supplies no new downstream authority. |
+| [Approval boundary](../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs), [ordinary-consumer tests](../../tests/Meridian.Tests/Ui/PreparerAttestationOrdinaryReferenceConsumerTests.cs) and [boundary tests](../../tests/Meridian.Tests/Ui/PreparerAttestationApprovalBoundaryTests.cs) | Reserved typed references/receipt identities and scoped retained-receipt classification are refused by the connected ordinary authority consumers. Opaque legacy approval text and unequal actor strings still do not authenticate a second independent human; historical records are not rewritten. |
+| [Evidence projection](../../src/Meridian.Ui.Shared/Evidence/PreparerAttestationEvidenceProjectionService.cs) and [original-proof export](../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs) | Exact visible documents carry separate current/historical/stale/revoked/unavailable evidence-task disclosures. Frozen evidence manifests and original receipt exports retain the original declaration, disclosure, snapshot and dated source assessment; current state is separate. These are not financial amount attestations or report-release approval. |
+| [Native C contracts](../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs), [application service](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCaseAccountingService.CashDividend.cs) and [entitlement resolver](../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionCashDividendEligibilityResolver.cs) | Separate `PreparerAttested` decision/case state, exact closed-policy preview, account/rule binding, scoped authority and complete-book gross eligibility. Ordinary `Approved` state and independent approval IDs are not fabricated. |
+| [C persistence](../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.CashDividendAttestations.cs), [migration 065](../../src/Meridian.Storage/SecurityMaster/Migrations/065_corporate_action_cash_dividend_attestations.sql) and [native posting](../../src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidatePostService.CashDividendAttestation.cs) | Durable declarations, retained receipts, source-alias identity and event/month reservations; native lease-backed ledger/event-spine posting with ordinary control checks. The PostgreSQL round-trip tests cover this boundary; current-candidate verification is separate from the presence of that source. |
+| [Typed journal binding](../../src/Meridian.Contracts/AssetOperations/AssetAccountingPreparerAttestationDto.cs), [posted reader](../../src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs) and [frozen report reader](../../src/Meridian.Ui.Shared/Services/ReportLedgerAmountProvenanceService.cs) | Validate exact native scope/event/journal gross/actor/fingerprints and account/rule context. Compact amount disclosures survive missing source support; invalid or unknown bindings disclose Unknown and cannot establish ordinary approval. Frozen reports union unique native decisions from retained journal metadata before source-readiness branching; they never substitute mutable current journals. Source readiness and proof-layer coverage calculations are unchanged. |
+| [Financial package disclosure](../../src/Meridian.Ledger/LedgerReportPreparerAttestation.cs), [package builder](../../src/Meridian.Ledger/LedgerReportPackBuilder.cs) and [export tests](../../tests/Meridian.Tests/Ledger/LedgerReportPreparerAttestationExportTests.cs) | Compact native classifications appear in the signed JSON sidecar, financial-statements JSON, shared PDF/workbook/CSV presentation and scheduled JSON/XML. Prior-period journals supporting opening balances remain included. The classification is frozen with the journal population; it includes no raw entitlement operands and grants no independent approval. Legacy packages without this metadata retain their prior shape. |
+| [Browser ACK](../../src/Meridian.Ui/dashboard/src/components/meridian/single-principal-attestation-panel.tsx), [draft panel](../../src/Meridian.Ui/dashboard/src/components/meridian/preparer-draft-check-panel.tsx), [cash-dividend panel](../../src/Meridian.Ui/dashboard/src/components/meridian/cash-dividend-attestation-panel.tsx) and [Number Passport](../../src/Meridian.Ui/dashboard/src/components/meridian/number-passport.tsx) | Exact server preview, separate confirmations, reasons, explicit policy reaffirmation and stable uncertain-command retry. Canonical disclosures and original B proof downloads distinguish retained history from current support. Unknown schemas/classifications fail closed. |
+| [WPF evidence commands](../../src/Meridian.Wpf/ViewModels/EvidenceWorkbenchViewModel.Attestations.cs), [draft commands](../../src/Meridian.Wpf/ViewModels/CashFlows/PreparerDraftCheckViewModel.cs), [cash-dividend commands](../../src/Meridian.Wpf/ViewModels/SecurityMaster/CashDividendAttestationViewModel.cs) and [amount drawer](../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs) | Shared ACK declaration/record/revoke/export controls, B draft-check controls over exact retained Security runs, native C case/preview/declaration/attest/post controls, and the same evidence-task/native accounting disclosures. Source implementation, cross-compilation and view-model tests do not establish native Windows interaction evidence; current both-workstation verification remains separate. |
 
-These paths record implemented development boundaries, not completed matrix execution or live
-acceptance. Host configuration, a declaration and explicit grants are separate prerequisites;
-this change supplies no enabled declaration or role grant. Imported fixture evidence retains its
-synthetic provenance and absent provenance remains unclassified rather than being called live.
-Each receipt retains the exact server-evaluated JSON operands and their digest. Later ordinary
-document-review changes do not rewrite that snapshot. This retained assertion snapshot is not
-the full frozen financial report package or the completed export acceptance required by W14.
+B acknowledgments and draft checks remain **non-posting preparer assertions**. They cannot
+resolve a break, complete a controlled close task, change an ordinary document review,
+satisfy accounting approval or post a journal. C uses its own selected native boundary; it
+does not turn B receipts into economic authority or weaken the ordinary maker-checker path.
 
-The new receipts are separate typed records: no ordinary approval ID, `Approved` state or
-automatic approval-reference wiring is created. The existing reconciliation
-`ApprovalReference` input remains arbitrary caller-supplied text, as described in Section 2;
-neither a nonblank reference nor different actor strings authenticates independent human review.
-This foundation does not retrospectively repair that legacy contract or claim the matrix's B13
-typed-authority integration gate complete. A receipt must not be connected to such a consumer
-until that consumer can distinguish and refuse preparer assertions as ordinary approval.
+Financial Verified Coverage remains outside this development's acceptance. B task counts
+describe evidence tasks only. C amount classifications establish neither a financial-leaf
+inventory nor a denominator, and they cannot satisfy ordinary approval. A report-level
+approval cannot cure an upstream preparer-only dependency. No combined headline, formula
+adoption, independent-review credit or live-verification claim is introduced.
 
-Option C remains undecided. In particular, this foundation does not enable a principal to waive
-a reconciliation break, approve or post a corporate action, change a lot, or release a report
-package by attesting to their own work. A useful economic slice still needs its exact action
-class, accounting treatment, thresholds, evidence requirements and correction rules selected
-explicitly. The outstanding independent-review record in Section 11 remains open for adopting
-that operational exception.
+### Verification and status meaning
 
-`W14-ATTEST-001` remains `planned`: implementing a foundation does not satisfy the registered
-economic example, full both-workstation workflow and package presentation, retained-export behavior, or end-to-end
-acceptance. The November 2 matrix remains an acceptance design; a source implementation or a
-passing subset of synthetic tests must not be reported as execution of every matrix row.
+The [matrix's implementation reconciliation](single-principal-attestation-acceptance-matrix-2026-11-02.md#6-november-12-implementation-reconciliation)
+links focused tests and states the remaining scope. Isolated Chromium checks exercised the
+actual browser components against synthetic transport responses; they are not full-backend
+or native Windows runtime evidence. Current-candidate .NET, PostgreSQL, WPF, browser-build
+and hosted checks must be reported by the execution that ran them. A source anchor or a
+passing subset never executes every row of the original matrix.
+
+`W14-ATTEST-001` is now `in_progress`, with yellow health: the owner's development
+authorization, active implementation and linked implementation/exclusion/browser/WPF
+paths meet the taxonomy's active-work meaning. This is not ready-for-acceptance, operator
+acceptance or release. End-to-end matrix acceptance, native Windows runtime evidence,
+full both-workstation validation and financial-coverage decisions remain open. Independent
+human Security and Accounting review has not been supplied or inferred; the owner's
+authorization permits this development without fabricating either review.

@@ -6,6 +6,7 @@ using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Ui.Services.Services.Accounting;
 using Meridian.Wpf.Services;
+using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -21,6 +22,8 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
     private string _scopeText = string.Empty;
     private string _subjectId = string.Empty;
     private string _manifestText = string.Empty;
+    private string _preparerAttestationSummaryText = "Preparer evidence classification was not returned.";
+    private string _accountingAttestationSummaryText = "Accounting review classification was not returned.";
     private LedgerAmountScopeDto? _scope;
     private readonly Dictionary<string, string> _artifactSubjects = new(StringComparer.Ordinal);
 
@@ -35,6 +38,10 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
     public IAsyncRelayCommand<LedgerAmountProofEvidenceDto> OpenManifestCommand { get; }
     public ObservableCollection<LedgerAmountProofEvidenceDto> Evidence { get; } = [];
     public ObservableCollection<string> Warnings { get; } = [];
+    public ObservableCollection<string> PreparerAttestationDisclosures { get; } = [];
+    public ObservableCollection<string> AccountingAttestationDisclosures { get; } = [];
+    public string AccountingAttestationSummaryText { get => _accountingAttestationSummaryText; private set => SetProperty(ref _accountingAttestationSummaryText, value); }
+    public string PreparerAttestationSummaryText { get => _preparerAttestationSummaryText; private set => SetProperty(ref _preparerAttestationSummaryText, value); }
 
     public bool IsOpen { get => _isOpen; private set => SetProperty(ref _isOpen, value); }
     public bool IsLoading { get => _isLoading; private set => SetProperty(ref _isLoading, value); }
@@ -51,6 +58,10 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
         IsLoading = false;
         Evidence.Clear();
         Warnings.Clear();
+        PreparerAttestationDisclosures.Clear();
+        AccountingAttestationDisclosures.Clear();
+        AccountingAttestationSummaryText = "Accounting review classification was not returned. No ordinary or independent approval is inferred.";
+        PreparerAttestationSummaryText = "Preparer evidence classification was not returned. Evidence-task receipts are not financial approvals or Verified Coverage.";
         ScopeText = string.Empty;
         SubjectId = string.Empty;
         ManifestText = string.Empty;
@@ -129,6 +140,16 @@ public sealed class LedgerAmountProofDrawerViewModel : BindableBase
 
             ScopeText = $"Tenant {proof.Scope.TenantId} · company {proof.Scope.CompanyId} · fund {proof.Scope.FundProfileId}"
                 + $" · book {proof.Scope.LedgerBookId:D} · period {proof.Scope.PeriodId:D}";
+            var accountingDetails = AccountingPreparerAttestationPresentation.Describe(proof, out var accountingSummary);
+            AccountingAttestationSummaryText = accountingSummary;
+            foreach (var detail in accountingDetails) AccountingAttestationDisclosures.Add(detail);
+            var preparerProjection = packet.PreparerAttestations;
+            if (preparerProjection is not null && !PreparerAttestationEvidencePresentation.MatchesScope(
+                preparerProjection, proof.Scope.TenantId, proof.Scope.CompanyId, proof.Scope.LedgerBookId))
+                preparerProjection = null;
+            var preparerDetails = PreparerAttestationEvidencePresentation.Describe(preparerProjection, out var preparerSummary);
+            PreparerAttestationSummaryText = preparerSummary;
+            foreach (var detail in preparerDetails) PreparerAttestationDisclosures.Add(detail);
             foreach (var warning in proof.Warnings)
             {
                 Warnings.Add(warning);

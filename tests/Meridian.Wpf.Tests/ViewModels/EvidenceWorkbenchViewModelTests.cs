@@ -6,7 +6,7 @@ using Meridian.Wpf.Workstation.Models;
 
 namespace Meridian.Wpf.Tests.ViewModels;
 
-public sealed class EvidenceWorkbenchViewModelTests
+public sealed partial class EvidenceWorkbenchViewModelTests
 {
     [Theory]
     [InlineData("accounting-record/accounting-record-2026-05", "accounting-record", "accounting-record-2026-05")]
@@ -615,7 +615,7 @@ public sealed class EvidenceWorkbenchViewModelTests
         };
     }
 
-    private sealed class FakeEvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
+    private sealed partial class FakeEvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
     {
         public ApiResponse<SinglePrincipalAttestationWorkspaceDto> AttestationsResponse { get; set; } =
             ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail("Preparer attestation history is unavailable.", 403);

@@ -4,10 +4,12 @@ namespace Meridian.Contracts.Workstation;
 public static class SinglePrincipalAttestationPolicy
 {
     public const string Version = "single-principal-evidence-v1";
+    public const string DraftVersion = "single-principal-evidence-v2";
     public const string EvidenceAcknowledgment = "ATTEST-EVIDENCE-ACK";
     public const string DraftCheck = "ATTEST-DRAFT-CHECK";
     public const string Disclosure = "Attested by preparer — not independently reviewed";
     public const string Confirmation = "I inspected the exact retained evidence and accept responsibility for this preparer assertion. This is not independent review or approval.";
+    public const string DraftConfirmation = "I inspected the exact retained non-postable calculation and listed checks. This preparer check grants no approval or posting authority.";
     public const string DecisionKind = "PreparerAttestation";
     public const int SchemaVersion = 1;
 }
@@ -126,7 +128,9 @@ public sealed record SinglePrincipalAttestationWorkspaceDto(
     string Actor,
     bool CanAdministerDeclaration,
     bool CanAttest,
-    bool CanRevoke);
+    bool CanRevoke,
+    bool CanAttestDrafts = false,
+    bool CanRevokeDrafts = false);
 
 /// <summary>Server-resolved target revision and source identity; it is not an authority grant.</summary>
 public sealed record SinglePrincipalAttestationSubjectSnapshotDto(
@@ -142,4 +146,8 @@ public sealed record SinglePrincipalAttestationSubjectSnapshotDto(
     IReadOnlyList<string> Checks,
     string? SourceSubjectKind = null,
     string? SourceSubjectId = null,
-    string? SubjectSnapshotJson = null);
+    string? SubjectSnapshotJson = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? PreparedBy = null,
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? Confirmation = null);

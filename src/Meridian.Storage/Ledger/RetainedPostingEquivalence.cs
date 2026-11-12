@@ -154,6 +154,8 @@ public static class RetainedPostingEquivalence
     {
         var retained = retainedEntry.Metadata.Normalize();
         var candidate = candidateEntry.Metadata.Normalize();
+        if (retained.PreparerAttestation != candidate.PreparerAttestation)
+            return "native preparer attestation";
         if (!TextMatches(retained.ActivityType, candidate.ActivityType))
             return "activity type";
         if (!TextMatches(retained.Symbol, candidate.Symbol))

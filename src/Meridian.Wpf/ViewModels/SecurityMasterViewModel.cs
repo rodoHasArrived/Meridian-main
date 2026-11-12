@@ -201,6 +201,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                     }
 
                     ClearSelectedSecurityAssuranceState();
+                    CashDividendAttestation?.SetSecurity(value?.SecurityId);
                 }
 
                 if (value is not null)
@@ -614,6 +615,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
     private SecurityPassportEditorViewModel _passportEditor;
     /// <summary>Issuer and maturity ladders over the bounded keyset routes (web-UI parity).</summary>
     public SecurityMaster.BondReferenceLadderViewModel ReferenceLadders { get; }
+    public SecurityMaster.CashDividendAttestationViewModel CashDividendAttestation { get; }
 
     public SecurityPassportEditorViewModel PassportEditor
     {
@@ -1571,6 +1573,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
         _passportEditor = new SecurityPassportEditorViewModel(_workstationSecurityMasterApiClient, _cashFlowClient);
         ReferenceLadders = new SecurityMaster.BondReferenceLadderViewModel(_workstationSecurityMasterApiClient);
+        CashDividendAttestation = new SecurityMaster.CashDividendAttestationViewModel(_workstationSecurityMasterApiClient);
 
         CreateNewCommand = new RelayCommand(OnCreateNew, () => CanModifySecurityMaster);
         EditSelectedCommand = new RelayCommand(OnEditSelected, () => HasSelectedSecurity && CanModifySecurityMaster);
@@ -2042,6 +2045,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
 
     private void ClearSelectedSecurityAssuranceState()
     {
+        _passportEditor?.CashFlowScenarios?.DraftCheck.SetRetainedTarget(null, null);
         // The contextual editor targets the previously-selected security, so close it when the
         // selection changes; reopening for the new security re-hydrates and resets its inputs.
         IsPassportEditorOpen = false;
@@ -3554,6 +3558,7 @@ public sealed partial class SecurityMasterViewModel : BindableBase, IDisposable
                 OnAuthenticationSessionAuthenticationChanged);
         }
 
+        CashDividendAttestation.Dispose();
         Stop();
     }
 

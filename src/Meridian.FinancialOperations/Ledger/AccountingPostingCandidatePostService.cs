@@ -28,7 +28,7 @@ public interface IAccountingPostingCandidatePostService
 /// <summary>
 /// Posts reviewed accounting candidates while checking approval, reference, and ledger authority.
 /// </summary>
-public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService
+public sealed partial class AccountingPostingCandidatePostService : IAccountingPostingCandidatePostService, IAccountingCashDividendAttestedPostService
 {
     private static readonly JsonSerializerOptions CanonicalJsonOptions = new(JsonSerializerDefaults.Web);
 
@@ -91,6 +91,13 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
         }
 
         var approvalId = RequireText(request.ApprovalId, nameof(request.ApprovalId));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalId, nameof(request.ApprovalId));
+        if (request.ApprovalEvidence.Any(evidence =>
+            PreparerAttestationApprovalBoundary.IsReservedReference(evidence.EvidenceId)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.EvidenceUri)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.SourceReference)
+            || PreparerAttestationApprovalBoundary.IsReservedReference(evidence.SubjectId)))
+            throw new InvalidOperationException("A preparer attestation cannot supply ordinary posting approval evidence.");
         var ledgerBookId = request.Candidate.LedgerBookId
             ?? throw new ArgumentException("Generated accounting posting candidates require a ledger book id.", nameof(request));
         if (ledgerBookId == Guid.Empty)
@@ -463,7 +470,8 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
 
             var hasDrafted = HasStage(retained.Projection, AssetAccountingLifecycleStageDto.Drafted);
             var hasApproved = HasStage(retained.Projection, AssetAccountingLifecycleStageDto.Approved);
-            if (drafted is null && hasDrafted && !hasApproved)
+            if (drafted is null && hasDrafted && !hasApproved
+                && !HasStage(retained.Projection, AssetAccountingLifecycleStageDto.PreparerAttested))
             {
                 drafted = retained;
             }
@@ -504,7 +512,9 @@ public sealed partial class AccountingPostingCandidatePostService : IAccountingP
             candidate.ExpectedPeriodVersion!.Value,
             rulePack.RulePackId,
             rulePack.RulePackVersion,
-            drafted.Projection.Scope.ExpectedSecurityVersion);
+            drafted.Projection.Scope.ExpectedSecurityVersion,
+            CanonicalInstrumentSymbol: eventKind == AssetAccountingEventKindDto.CorporateAction
+                && drafted.Projection.DraftedLotMutation is null ? drafted.Projection.DraftedCandidate!.InstrumentSymbol : null);
         return new AssetPostingAuthoritySnapshot(projected, drafted, latest, context);
     }
 

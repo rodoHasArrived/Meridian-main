@@ -332,7 +332,15 @@ decisions:
       principals in a small-team single-node envelope remains a separate future ADR-019 decision.
       The decision changes no existing rank, status, dependency, acceptance, metric formula,
       deployment envelope text, PRD-000 sign-off, source enforcement, or release authority, reopens
-      no deferred lane, and does not create a retail product segment.
+      no deferred lane, and does not create a retail product segment. The dated 2026-11-12
+      development disposition in the linked W14 policy records the subsequent owner instruction
+      to validate and implement recommendation 1 and selection of development option 2: default-off
+      regular mandatory USD dividend recognition on source ex-date, capped at USD 10000 complete
+      related-event gross and USD 100000 selected-book/source-ex-date-calendar-month gross, with
+      explicit existing receivable/income accounts and promoted rule binding. W14 moves to
+      in_progress with yellow health under active implementation and linked evidence, not under
+      a new acceptance decision. Historical acceptance, independent-review requirements for any
+      operational exception, financial-coverage adoption and release authority are not inferred.
     related_roadmap_items:
       - W14-ATTEST-001
       - W11-COVER-001

@@ -422,10 +422,14 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             "A retained factor-paydown projection requires the exact canonical lot instruction; it cannot be omitted or replaced.");
         await ResolveCorrectionAuthorityAsync(source, ct).ConfigureAwait(false);
 
-        await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
+        var authoritativeSecurity = await ResolveAuthoritativeSecurityAsync(source, request.AccountingTimestamp, ct, request.LotMutation?.CorporateAction,
                 allowRetainedAmortizationCorrection: source.EventKind == AssetAccountingEventKindDto.DepreciationAmortization
                     && source.Correction is not null && request.LotMutation?.Amortization?.Reversal is not null)
             .ConfigureAwait(false);
+        var canonicalInstrumentSymbol = source.EventKind == AssetAccountingEventKindDto.CorporateAction
+            && request.LotMutation is null
+            ? SecurityMasterLedgerSymbol.ResolveUniqueActiveTicker(authoritativeSecurity.Identifiers, request.AccountingTimestamp)
+            : null;
 
         var position = await _positionStore
             .GetBookPositionAsync(source.Scope.BookPositionId, ct)
@@ -496,7 +500,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
                     book.LedgerBookId,
                     dimensions,
                     dimensions.CounterpartyId,
-                    InstrumentSymbol: null,
+                    InstrumentSymbol: canonicalInstrumentSymbol,
                     CorrelationId: source.EconomicEvent.CorrelationId?.ToString("D"),
                     TenantId: source.Scope.TenantId,
                     CompanyId: source.Scope.CompanyId,
@@ -540,7 +544,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             book.LedgerBookId,
             dimensions,
             dimensions.CounterpartyId,
-            InstrumentSymbol: null,
+            InstrumentSymbol: canonicalInstrumentSymbol,
             CorrelationId: source.EconomicEvent.CorrelationId,
             SourceEventId: source.EventId,
             SourceJournalEntryId: correction?.PostedJournalEntryId,
@@ -577,7 +581,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
             period.Version,
             rulePack.RulePackId,
             rulePack.RulePackVersion,
-            source.Scope.ExpectedSecurityVersion);
+            source.Scope.ExpectedSecurityVersion, CanonicalInstrumentSymbol: canonicalInstrumentSymbol);
 
         var candidateWrite = await _authorityBuilder
             .BuildAuthoritativeCandidateWriteAsync(candidateRequest, authority, ct)
@@ -878,7 +882,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         }
     }
 
-    private async Task ResolveAuthoritativeSecurityAsync(
+    private async Task<SecurityDetailDto> ResolveAuthoritativeSecurityAsync(
         AssetAccountingEventSpineDto source,
         DateTimeOffset accountingAsOfUtc,
         CancellationToken ct,
@@ -949,6 +953,7 @@ public sealed partial class AssetAccountingEventSpineService : IAssetAccountingE
         RequireAssertion(corporateAction is not null || allowRetainedAmortizationCorrection || (security.EffectiveFrom <= accountingAsOfUtc &&
                          (security.EffectiveTo is null || accountingAsOfUtc <= security.EffectiveTo.Value)),
             "Resolved Security Master record is not effective at the accounting timestamp.");
+        return security;
     }
 
     private async Task ValidateSuccessorSecurityHashesAsync(

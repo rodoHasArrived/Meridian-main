@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { SinglePrincipalAttestationPanel } from "@/components/meridian/single-principal-attestation-panel";
+import { PreparerAttestationEvidence } from "@/components/meridian/preparer-attestation-evidence";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
 import { evidenceStatusToneToTextClass, readinessToneToBadgeVariant } from "@/lib/shared-tone-mappings";
@@ -265,6 +266,8 @@ export function EvidenceWorkbenchScreen() {
 
       {vm.hasPacket && vm.packet ? (
         <>
+          <PreparerAttestationEvidence projection={vm.packet.preparerAttestations}
+            expectedScope={vm.packet.ledgerAmount?.scope} />
           <section className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
             <div className="space-y-4">
               <Card className="panel-surface">

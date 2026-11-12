@@ -16,6 +16,25 @@ public interface IEvidenceWorkbenchApiClient
         => Task.FromResult(ApiResponse<SinglePrincipalAttestationWorkspaceDto>.Fail(
             "Preparer attestation history is unavailable from this host.", 501));
 
+    Task<ApiResponse<SinglePrincipalAttestationSubjectSnapshotDto>> GetAttestationSubjectAsync(
+        string vaultId, string documentId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SinglePrincipalAttestationSubjectSnapshotDto>.Fail("Attestation preview is unavailable from this host.", 501));
+
+    Task<ApiResponse<string>> ReadAttestationProofExportAsync(Guid receiptId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<string>.Fail("Original attestation proof is unavailable from this host.", 501));
+
+    Task<ApiResponse<SinglePrincipalDeclarationDto>> ChangeAttestationDeclarationAsync(
+        ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<SinglePrincipalDeclarationDto>.Fail("Declaration administration is unavailable from this host.", 501));
+
+    Task<ApiResponse<PreparerAttestationReceiptDto>> RecordAttestationAsync(
+        RecordPreparerAttestationRequestDto request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<PreparerAttestationReceiptDto>.Fail("Preparer acknowledgment is unavailable from this host.", 501));
+
+    Task<ApiResponse<PreparerAttestationRevocationDto>> RevokeAttestationAsync(
+        RevokePreparerAttestationRequestDto request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<PreparerAttestationRevocationDto>.Fail("Assertion revocation is unavailable from this host.", 501));
+
     Task<ApiResponse<EvidenceSubjectDto[]>> ListSubjectsAsync(CancellationToken ct = default);
 
     Task<ApiResponse<EvidencePacketDto>> GetPacketAsync(
@@ -65,6 +84,39 @@ public sealed class EvidenceWorkbenchApiClient : IEvidenceWorkbenchApiClient
     public Task<ApiResponse<SinglePrincipalAttestationWorkspaceDto>> GetAttestationsAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<SinglePrincipalAttestationWorkspaceDto>(
             "/api/workstation/evidence/attestations", ct);
+
+    public Task<ApiResponse<SinglePrincipalAttestationSubjectSnapshotDto>> GetAttestationSubjectAsync(
+        string vaultId, string documentId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<SinglePrincipalAttestationSubjectSnapshotDto>(
+            "/api/workstation/evidence/attestations/subjects?vaultId=" + Uri.EscapeDataString(vaultId)
+            + "&documentId=" + Uri.EscapeDataString(documentId), ct);
+
+    public async Task<ApiResponse<string>> ReadAttestationProofExportAsync(Guid receiptId, CancellationToken ct = default)
+    {
+        var response = await _apiClient.GetWithResponseAsync<System.Text.Json.JsonDocument>(
+            $"/api/workstation/evidence/attestations/receipts/{receiptId:D}/export", ct).ConfigureAwait(false);
+        if (!response.Success || response.Data is null)
+            return ApiResponse<string>.Fail(response.ErrorMessage ?? "Original proof export is unavailable.", response.StatusCode, response.IsConnectionError);
+        using var document = response.Data;
+        return document.RootElement.ValueKind == System.Text.Json.JsonValueKind.Object
+            ? ApiResponse<string>.Ok(document.RootElement.GetRawText(), response.StatusCode)
+            : ApiResponse<string>.Fail("The original proof export is malformed.");
+    }
+
+    public Task<ApiResponse<SinglePrincipalDeclarationDto>> ChangeAttestationDeclarationAsync(
+        ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<SinglePrincipalDeclarationDto>(
+            "/api/workstation/evidence/attestations/declaration", request, ct: ct);
+
+    public Task<ApiResponse<PreparerAttestationReceiptDto>> RecordAttestationAsync(
+        RecordPreparerAttestationRequestDto request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<PreparerAttestationReceiptDto>(
+            "/api/workstation/evidence/attestations/receipts", request, ct: ct);
+
+    public Task<ApiResponse<PreparerAttestationRevocationDto>> RevokeAttestationAsync(
+        RevokePreparerAttestationRequestDto request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<PreparerAttestationRevocationDto>(
+            "/api/workstation/evidence/attestations/revocations", request, ct: ct);
 
     public Task<ApiResponse<EvidenceSubjectDto[]>> ListSubjectsAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<EvidenceSubjectDto[]>(UiApiRoutes.WorkstationEvidenceSubjects, ct);

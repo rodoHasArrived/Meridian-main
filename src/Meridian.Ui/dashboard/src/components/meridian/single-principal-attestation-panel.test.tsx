@@ -9,7 +9,7 @@ import type { AttestationSubject, AttestationWorkspace, PreparerReceipt } from "
 vi.mock("@/lib/single-principal-attestation-api", async (importOriginal) => ({
   ...await importOriginal<typeof import("@/lib/single-principal-attestation-api")>(),
   getAttestationWorkspace: vi.fn(), getAttestationSubject: vi.fn(), changePrincipalDeclaration: vi.fn(),
-  recordPreparerAttestation: vi.fn(), revokePreparerAttestation: vi.fn()
+  recordPreparerAttestation: vi.fn(), revokePreparerAttestation: vi.fn(), getPreparerAttestationProof: vi.fn()
 }));
 
 const scope = { tenantId: "tenant-1", companyId: "company-1", ledgerBookId: null };
@@ -54,6 +54,19 @@ beforeEach(() => {
 });
 
 describe("single-principal evidence acknowledgment", () => {
+  it("requires an explicit audited reconfirmation before upgrading the current declaration policy", async () => {
+    const value = workspace(); value.state.policyVersion = "policy-v2";
+    vi.mocked(api.getAttestationWorkspace).mockResolvedValue(value);
+    render(<SinglePrincipalAttestationPanel vaultId="vault-1" documentId="document-1" />);
+    await loaded();
+    expect(api.changePrincipalDeclaration).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: "Reconfirm current policy" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Declaration reason"), { target: { value: "Reviewed the new non-posting policy" } });
+    fireEvent.click(screen.getByRole("button", { name: "Reconfirm current policy" }));
+    await waitFor(() => expect(api.changePrincipalDeclaration).toHaveBeenCalledOnce());
+    expect(api.changePrincipalDeclaration).toHaveBeenCalledWith({ commandId: expect.any(String), expectedRevision: 4,
+      enabled: true, principalId: "preparer-1", policyVersion: "policy-v2", reason: "Reviewed the new non-posting policy" });
+  });
   it("keeps the default-off policy and missing grants explicit without offering approval", async () => {
     const value = workspace();
     value.state.policyEnabled = false;

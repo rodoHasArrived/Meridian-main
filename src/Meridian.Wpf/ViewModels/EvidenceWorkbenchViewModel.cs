@@ -14,7 +14,7 @@ namespace Meridian.Wpf.ViewModels;
 /// documents; it never evaluates completeness, SLA, or retention policy locally. Deep links arrive
 /// as <c>EvidenceWorkbench:{subjectKind}/{subjectId}</c> navigation parameters.
 /// </summary>
-public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
+public sealed partial class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 {
     private const int VaultQueueMaxResults = 25;
 
@@ -66,6 +66,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         OpenPacketActionCommand = new RelayCommand<EvidencePacketActionRowModel>(
             OpenPacketAction,
             static action => action is not null && !string.IsNullOrWhiteSpace(action.TargetPageTag));
+        InitializeAttestationCommands();
     }
 
     public IAsyncRelayCommand RefreshCommand { get; }
@@ -213,7 +214,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         }
     }
 
-    public bool IsBusy => IsRefreshing || IsValidating || IsExporting;
+    public bool IsBusy => IsRefreshing || IsValidating || IsExporting || IsAttestationBusy;
 
     public bool HasPacket => _packet is not null;
 
@@ -356,6 +357,8 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         AttestationRows.Clear();
         AttestationScopeText = "Scope unavailable";
         AttestationStatusText = "Loading preparer attestation history…";
+        ApplyPacketAttestationProjection(null);
+        ResetAttestationForRefresh();
         try
         {
             var subjectsResponse = await _apiClient.ListSubjectsAsync(ct).ConfigureAwait(true);
@@ -632,6 +635,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
     private void ApplyAttestations(ApiResponse<SinglePrincipalAttestationWorkspaceDto> response)
     {
+        ApplyAttestationWorkspace(response.Success ? response.Data : null);
         AttestationRows.Clear();
         if (!response.Success || response.Data is null)
         {
@@ -697,12 +701,14 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         DocumentQueue = EvidenceVaultPresentationMapper.BuildDocumentQueue(
             documentsResponse.Success ? documentsResponse.Data ?? [] : [],
             manifestSnapshot: null);
+        ApplyAttestationDocuments(documentsResponse.Success ? documentsResponse.Data ?? [] : []);
     }
 
     private void ApplyPacketResponse(
         EvidenceWorkbenchSubjectRowModel? selection,
         ApiResponse<EvidencePacketDto>? packetResponse)
     {
+        ApplyPacketAttestationProjection(packetResponse?.Success == true ? packetResponse.Data?.PreparerAttestations : null);
         if (selection is null)
         {
             _packet = null;
@@ -826,6 +832,7 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
 
         ValidateCommand.NotifyCanExecuteChanged();
         ExportManifestCommand.NotifyCanExecuteChanged();
+        NotifyAttestationCommands();
     }
 
     private void ApplyLoadFailure(string message)
@@ -910,5 +917,6 @@ public sealed class EvidenceWorkbenchViewModel : BindableBase, IDisposable
         RefreshCommand.NotifyCanExecuteChanged();
         ValidateCommand.NotifyCanExecuteChanged();
         ExportManifestCommand.NotifyCanExecuteChanged();
+        NotifyAttestationCommands();
     }
 }
