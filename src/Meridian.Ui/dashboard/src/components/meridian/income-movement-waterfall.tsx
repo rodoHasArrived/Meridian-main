@@ -16,7 +16,7 @@ export function IncomeMovementWaterfall({ comparison, onSupport }: { comparison:
   const y = (pct: number) => 210 - pct * 1.8;
   return <section aria-labelledby={titleId} className="space-y-2 rounded-sm border border-border p-3">
     <h3 id={titleId} className="text-sm font-semibold">Income movement waterfall</h3>
-    {model.reason ? <p role="status" className="text-sm text-warning">Waterfall unavailable. {model.reason}</p> : <>
+    {model.reason ? <p role="status" className="text-sm text-[var(--orange-dim)]">Waterfall unavailable. {model.reason}</p> : <>
       <p className="text-xs text-muted-foreground">{currency} · {comparison.current.accountingBasis} · {comparison.current.periodId} · {comparison.current.population}. Baseline and current are totals; floating bars show signed changes.</p>
       <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Income waterfall chart and exact amounts">
         <div className="min-w-[720px]">

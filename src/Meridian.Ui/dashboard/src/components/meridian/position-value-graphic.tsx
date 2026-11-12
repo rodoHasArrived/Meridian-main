@@ -29,6 +29,6 @@ export function PositionValueGraphic({ value, measurement, kind, reviewRequired 
         }} />
     </span> : <span className="text-xs font-normal text-muted-foreground">Graphic unavailable</span>}
     <span className="sr-only">{scaleLabel}</span>
-    {needsReviewCue ? <span className="text-xs font-normal text-warning">Largest · mark review</span> : null}
+    {needsReviewCue ? <span className="text-xs font-normal text-[var(--orange-dim)]">Largest · mark review</span> : null}
   </span>;
 }

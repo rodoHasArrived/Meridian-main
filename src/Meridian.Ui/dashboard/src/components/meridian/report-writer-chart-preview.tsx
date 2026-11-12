@@ -58,7 +58,7 @@ export function ReportWriterChartPreview({ chart, className }: ReportWriterChart
           </li>
         ))}
       </ul>
-      {chart.warnings.length > 0 ? <p className="mt-2 text-xs text-warning">{chart.warnings.join("; ")}</p> : null}
+      {chart.warnings.length > 0 ? <p className="mt-2 text-xs text-[var(--orange-dim)]">{chart.warnings.join("; ")}</p> : null}
     </section>
   );
 }
