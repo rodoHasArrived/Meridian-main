@@ -17,6 +17,16 @@ and book independently; terminal metrics are not required. Backtests retain thei
 
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
 
+Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
+ties account charges to the run. The context's private ledger and an account's expense balance do
+not establish that allocation. `BacktestEngineMetadata.FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest` survive durable history and the execution, portfolio and comparison
+read models; `Available` with `0` differs from `Unavailable` with `null`. Existing decimal
+`TotalMarginInterest` remains a compatibility placeholder when coverage is unavailable, and gross
+P&L financing decomposition is provisional. Continuity and comparison reads expose a financing
+review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
+Legacy and backtest results with no coverage declaration retain an unassessed null status.
+
 Live strategy-run cash flows scale the quoted fill price by the report's `LotMultiplier` (stamped by the
 OMS), so a run's retained cash-flow history reconciles with the paper portfolio for multiplied contracts;
 face-value fills keep their par scaling.

@@ -22,7 +22,7 @@ public sealed class LiveRunMetricsTrackerTests
     private static readonly DateTimeOffset StartedAt = new(2024, 1, 2, 0, 0, 0, TimeSpan.Zero);
 
     [Fact]
-    public void Build_FinancingExpenseWithinRun_AdjustsGrossProfitAndInterestMetric()
+    public void Build_ExplicitRunAttributedFinancing_AdjustsGrossProfitAndInterestMetric()
     {
         var ledger = new MeridianLedger();
         ledger.PostLines(StartedAt.AddHours(2), "Assessed financing",
@@ -36,10 +36,40 @@ public sealed class LiveRunMetricsTrackerTests
             (Meridian.Ledger.LedgerAccounts.Cash, 0m, 100m)
         ]);
         var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
-            new HashSet<string>(), 987.50m, ledger, StartedAt.AddDays(1));
+            new HashSet<string>(), 987.50m, ledger, StartedAt.AddDays(1), runAttributedMarginInterest: 12.50m);
         result.Metrics.TotalMarginInterest.Should().Be(12.50m);
         result.Metrics.NetPnl.Should().Be(-12.50m);
         result.Metrics.GrossPnl.Should().Be(0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(12.50m);
+    }
+
+    [Fact]
+    public void Build_AccountExpenseLedgerWithoutRunAllocation_RemainsUnavailable()
+    {
+        var accountLedger = new MeridianLedger();
+        accountLedger.PostLines(StartedAt.AddHours(1), "Account financing",
+        [
+            (Meridian.Ledger.LedgerAccounts.MarginInterestExpense, 12.50m, 0m),
+            (Meridian.Ledger.LedgerAccounts.Cash, 0m, 12.50m)
+        ]);
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 987.50m, accountLedger, StartedAt.AddDays(1));
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().BeNull();
+        result.EngineMetadata.CoverageWarnings.Should().Contain(LiveRunMetricsTracker.FinancingUnavailableWarning);
+        result.Metrics.TotalMarginInterest.Should().Be(0m, "the legacy decimal is only a compatibility placeholder");
+        result.Metrics.GrossPnl.Should().Be(-12.50m, "unknown account costs cannot be allocated to a run by inspecting its ledger");
+    }
+
+    [Fact]
+    public void Build_ExplicitMeasuredZero_IsAvailableAndDistinctFromUnavailable()
+    {
+        var result = new LiveRunMetricsTracker(1_000m, StartedAt).Build("BrokerPaper",
+            new HashSet<string>(), 1_000m, new MeridianLedger(), StartedAt.AddDays(1), runAttributedMarginInterest: 0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().Be(0m);
+        result.EngineMetadata.CoverageWarnings.Should().NotContain(LiveRunMetricsTracker.FinancingUnavailableWarning);
     }
 
     [Fact]

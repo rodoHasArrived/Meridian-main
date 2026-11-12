@@ -1300,7 +1300,8 @@ public sealed partial class LiveTradingEngineTests
         ILiveStrategyCatalog? catalog = null,
         LiveTradingEngineOptions? options = null,
         BrokerageConfiguration? brokerageConfiguration = null,
-        StrategyLifecycleManager? lifecycleManager = null)
+        StrategyLifecycleManager? lifecycleManager = null,
+        Meridian.Execution.Models.IPortfolioState? portfolio = null)
     {
         // `Meridian.Execution` and `Meridian.Execution.Adapters` both declare `PaperTradingGateway`
         // and this file imports both. Only the Adapters one implements `IOrderGateway`, which is
@@ -1316,7 +1317,7 @@ public sealed partial class LiveTradingEngineTests
             cache,
             gateway,
             orderManager,
-            new PaperTradingPortfolio(100_000m),
+            portfolio ?? new PaperTradingPortfolio(100_000m),
             repository,
             options: options ?? new LiveTradingEngineOptions(),
             loggerFactory: NullLoggerFactory.Instance,

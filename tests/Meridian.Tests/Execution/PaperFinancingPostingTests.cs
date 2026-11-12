@@ -9,6 +9,8 @@ using Meridian.Storage.Ledger;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Text.Json;
 using System.Globalization;
+using Meridian.Contracts.FundStructure;
+using Meridian.Contracts.Ledger;
 
 namespace Meridian.Tests.Execution;
 
@@ -311,10 +313,82 @@ public sealed class PaperFinancingPostingTests
         await using (var service = CreatePostingService(root, Scope, target))
             await service.PostAsync(Charge());
         target.Period = target.Period! with { Status = "HardClosed", Version = 2 };
+        target.Book = target.Book! with { AccountingBasis = AccountingBasisKindDto.Tax, AccountingPolicyId = "later-policy" };
         await using var recovered = CreatePostingService(root, Scope, target);
         (await recovered.LoadAndRecoverAsync("paper-1")).Should().Equal(Charge());
         (await recovered.PostAsync(Charge())).Should().BeFalse();
         target.AppendCount.Should().Be(1);
+    }
+
+    [Theory]
+    [InlineData("tax")]
+    [InlineData("wrong-policy")]
+    [InlineData("wrong-version")]
+    [InlineData("missing")]
+    [InlineData("wrong-book")]
+    [InlineData("consolidation")]
+    public async Task IncompatibleAuthoritativeBook_IsNotAcceptedOrLatched_AndValidPrimaryStillWorks(string defect)
+    {
+        var root = TempRoot();
+        var target = new RetainedTarget();
+        var validBook = target.Book!;
+        var scope = defect == "consolidation" ? Scope with { AccountingPolicyId = "consolidation-v1" } : Scope;
+        target.Book = defect switch
+        {
+            "tax" => validBook with { AccountingBasis = AccountingBasisKindDto.Tax },
+            "wrong-policy" => validBook with { AccountingPolicyId = "other-policy" },
+            "wrong-version" => validBook with { AccountingPolicyVersion = "other-version" },
+            "missing" => null,
+            "wrong-book" => validBook with { LedgerBookId = Guid.NewGuid() },
+            "consolidation" => validBook with { AccountingPolicyId = "consolidation-v1" },
+            _ => throw new ArgumentOutOfRangeException(nameof(defect))
+        };
+        var store = new JsonlFilePaperSessionStore(Path.Combine(root, "sessions"), NullLogger<JsonlFilePaperSessionStore>.Instance);
+        string id;
+        await using (var financing = CreatePostingService(root, scope, target))
+        await using (var sessions = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
+            store, financing: financing))
+        {
+            id = (await sessions.CreateSessionAsync(new("strategy-1", null, 1_000m))).SessionId;
+            await sessions.Invoking(service => service.RecordFinancingAsync(Charge(id) with { SourceReference = "rejected-book-source" }))
+                .Should().ThrowAsync<LedgerValidationException>();
+            (await financing.LoadSourcesAsync(id)).Should().BeEmpty();
+            target.Records.Should().BeEmpty();
+            // Close remains usable: admission refused the source rather than creating a
+            // durable recovery obligation. Consolidation cannot be silently changed in place.
+            if (defect == "consolidation")
+            {
+                (await sessions.CloseSessionAsync(id)).Should().BeTrue();
+            }
+            else
+            {
+                target.Book = validBook;
+                (await sessions.RecordFinancingAsync(Charge(id))).Should().BeTrue();
+                sessions.GetSession(id)!.Portfolio!.Cash.Should().Be(987.50m);
+            }
+        }
+        await using var recoveredFinancing = CreatePostingService(root, scope, target);
+        await using var recoveredSessions = new PaperSessionPersistenceService(NullLogger<PaperSessionPersistenceService>.Instance,
+            store, financing: recoveredFinancing);
+        await recoveredSessions.InitialiseAsync();
+        if (defect == "consolidation")
+            (await recoveredFinancing.LoadSourcesAsync(id)).Should().BeEmpty();
+        else
+            (await recoveredFinancing.LoadSourcesAsync(id)).Should().Equal(Charge(id));
+    }
+
+    [Fact]
+    public async Task AuthoritativeBookPolicyMatching_UsesRetainedStoreCaseAndWhitespaceRules()
+    {
+        var target = new RetainedTarget();
+        target.Book = target.Book! with
+        {
+            AccountingPolicyId = "  EXECUTION-TRADE-FILL ",
+            AccountingPolicyVersion = " 1 "
+        };
+        await using var service = CreatePostingService(TempRoot(), Scope, target);
+        (await service.PostAsync(Charge())).Should().BeTrue();
+        target.Records.Values.Single().AggregateId.Should().Be(Scope.AggregateId);
     }
 
     [Fact]
@@ -366,7 +440,7 @@ public sealed class PaperFinancingPostingTests
 
     private static PaperFinancingPostingService CreatePostingService(string root,
         TradeFillLedgerPostingContext scope, RetainedTarget target) =>
-        new(root, scope, target, target.ReadPeriodAsync);
+        new(root, scope, target, target.ReadPeriodAsync, target.ReadBookAsync);
 
     private static string TempRoot() => Path.Combine(Path.GetTempPath(), "meridian-financing-tests", Guid.NewGuid().ToString("N"));
 
@@ -379,6 +453,10 @@ public sealed class PaperFinancingPostingTests
         public LedgerAccountingPeriod? Period { get; set; } = new(Scope.PeriodId, Scope.LedgerBookId,
             2026, 11, "November 2026", new DateOnly(2026, 11, 1), new DateOnly(2026, 11, 30),
             "Open", DateTimeOffset.UtcNow, null, 1);
+        public LedgerBookRecord? Book { get; set; } = new(Scope.LedgerBookId, "test-fund",
+            Guid.NewGuid(), FundStructureNodeKindDto.Account, "Primary financing book", "USD",
+            DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
+            AccountingPolicyId: Scope.AccountingPolicyId, AccountingPolicyVersion: Scope.AccountingPolicyVersion);
         public Action? BeforeAppend { get; set; }
         public TaskCompletionSource AppendStarted { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
         public TaskCompletionSource? AppendRelease { get; init; }
@@ -387,6 +465,13 @@ public sealed class PaperFinancingPostingTests
         {
             ct.ThrowIfCancellationRequested();
             return Task.FromResult(Period);
+        }
+
+        public Task<LedgerBookRecord?> ReadBookAsync(Guid ledgerBookId, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            ledgerBookId.Should().Be(Scope.LedgerBookId, "book admission resolves the bound book, not the aggregate");
+            return Task.FromResult(Book);
         }
 
         public async Task<TradeFillLedgerPostingConfirmation> PostAndConfirmAsync(LedgerJournalEntryWrite write, CancellationToken ct = default)

@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Meridian.Contracts.Tenancy;
 using Meridian.Execution.Services;
+using Meridian.Execution.Events;
 using Meridian.Identity.Auth;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
@@ -48,7 +49,8 @@ public static partial class LedgerEndpoints
                     context.RequestServices.GetService<IDirectLendingStateStore>(),
                     context.RequestServices.GetServices<ILedgerAccountingSourceReader>(),
                     context.RequestServices.GetService<IPaperSessionStore>(),
-                    context.RequestServices.GetService<IAssetAccountingEventProjectionStore>());
+                    context.RequestServices.GetService<IAssetAccountingEventProjectionStore>(),
+                    context.RequestServices.GetService<PaperFinancingPostingService>());
                 var report = await service.ReadAsync(new(ledgerBookId, periodId, aggregateId,
                     financialAccountId, selected, sessionId), context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(report, LedgerAccountingCompletenessJsonContext.Default.LedgerAccountingCompletenessReadResult);

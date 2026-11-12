@@ -45,11 +45,11 @@ Total items: **240**
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1019 | `NOTE` | ❌ | Note: request.ResolutionNote, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1413 | `NOTE` | ❌ | Note: request.Note, |
 | `src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs` | 1455 | `NOTE` | ❌ | Note: request.Note, |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1224 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1235 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1246 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1257 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
-| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1271 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1239 | `NOTE` | ❌ | Note: hasParams ? null : "Run was started without a captured parameter set.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1250 | `NOTE` | ❌ | Note: hasPortfolio ? null : "No portfolio seam is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1261 | `NOTE` | ❌ | Note: hasLedger ? null : "No ledger reference is associated with this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1272 | `NOTE` | ❌ | Note: hasAudit ? null : "No audit reference was captured for this run.")); |
+| `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1286 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
 | `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 502 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |

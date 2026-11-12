@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.DirectLending;
+using Meridian.Execution.Events;
 using Meridian.Execution.Services;
 using Meridian.Ledger;
 using Meridian.Storage.DirectLending;
@@ -9,7 +10,9 @@ using Meridian.Storage.Ledger;
 
 namespace Meridian.Ui.Shared.Services;
 
-/// <summary>One exact retained posting population. Source kinds are explicitly selected, never inferred from journal presence.</summary>
+/// <summary>One exact retained account posting population. Source kinds are explicitly selected,
+/// never inferred from journal presence. SessionId is an optional verified scope anchor; all
+/// retained sessions sharing the account scope remain in the source population.</summary>
 public sealed record LedgerAccountingCompletenessQuery(
     Guid LedgerBookId,
     Guid PeriodId,
@@ -21,12 +24,18 @@ public sealed record LedgerAccountingCompletenessQuery(
 public sealed record LedgerAccountingSourceCoverage(
     LedgerAccountingSourceKind SourceKind,
     bool IsComplete,
-    string? Limitation);
+    string? Limitation)
+{
+    public IReadOnlyList<string> CoveredSessionIds { get; init; } = [];
+}
 
 public sealed record LedgerAccountingSourcePopulation(
     IReadOnlyList<LedgerAccountingExpectation> Expectations,
     bool IsComplete,
-    string? Limitation = null);
+    string? Limitation = null)
+{
+    public IReadOnlyList<string> CoveredSessionIds { get; init; } = [];
+}
 
 public sealed record LedgerAccountingCompletenessReadResult(
     LedgerAccountingCompletenessQuery Scope,
@@ -51,6 +60,7 @@ public sealed class LedgerAccountingCompletenessReadService
 {
     private readonly ILedgerJournalStore _journalStore;
     private readonly IPaperSessionStore? _sessions;
+    private readonly PaperFinancingPostingService? _financing;
     private readonly IReadOnlyDictionary<LedgerAccountingSourceKind, ILedgerAccountingSourceReader> _readers;
 
     public LedgerAccountingCompletenessReadService(
@@ -58,10 +68,12 @@ public sealed class LedgerAccountingCompletenessReadService
         IDirectLendingStateStore? lending = null,
         IEnumerable<ILedgerAccountingSourceReader>? readers = null,
         IPaperSessionStore? sessions = null,
-        IAssetAccountingEventProjectionStore? assets = null)
+        IAssetAccountingEventProjectionStore? assets = null,
+        PaperFinancingPostingService? financing = null)
     {
         _journalStore = journalStore ?? throw new ArgumentNullException(nameof(journalStore));
         _sessions = sessions;
+        _financing = financing;
         var configured = (readers ?? []).ToList();
         if (lending is not null && configured.All(reader => reader.SourceKind != LedgerAccountingSourceKind.LoanEvent))
             configured.Add(new LoanAccountingSourceReader(lending, journalStore));
@@ -88,22 +100,32 @@ public sealed class LedgerAccountingCompletenessReadService
         if (period.LedgerBookId != query.LedgerBookId)
             throw new InvalidOperationException("The requested accounting period belongs to a different ledger book.");
         PaperSessionAccountingBinding? sessionBinding = null;
-        if (_sessions is not null && !string.IsNullOrWhiteSpace(query.SessionId))
+        if (_sessions is not null)
         {
             var sessions = await _sessions.LoadAllSessionsAsync(ct).ConfigureAwait(false);
-            var session = sessions.SingleOrDefault(item => item.SessionId == query.SessionId);
-            if (session?.AccountingContext is { } context && context.AggregateId == query.AggregateId
-                && context.LedgerBookId == query.LedgerBookId && context.PeriodId == query.PeriodId
-                && session.FinancialAccountId == query.FinancialAccountId)
+            var session = string.IsNullOrWhiteSpace(query.SessionId)
+                ? sessions.Where(item => PaperAccountingSessionPopulation.MatchesScope(item, query))
+                    .OrderBy(item => item.SessionId, StringComparer.Ordinal).FirstOrDefault()
+                : sessions.SingleOrDefault(item => item.SessionId == query.SessionId);
+            if (session is not null && PaperAccountingSessionPopulation.MatchesScope(session, query)
+                && session.AccountingContext is { } context)
                 sessionBinding = new(session.SessionId, context.AggregateId, context.LedgerBookId, context.PeriodId, session.FinancialAccountId);
         }
         var sources = new List<LedgerAccountingExpectation>();
         var coverage = new List<LedgerAccountingSourceCoverage>();
         foreach (var kind in query.SourceKinds.Order())
         {
+            if ((kind is LedgerAccountingSourceKind.Fill or LedgerAccountingSourceKind.FinancingCharge)
+                && !string.IsNullOrWhiteSpace(query.SessionId) && sessionBinding is null)
+            {
+                coverage.Add(new(kind, false, "The requested paper-session anchor has no matching retained accounting binding."));
+                continue;
+            }
             _readers.TryGetValue(kind, out var reader);
             if (kind == LedgerAccountingSourceKind.Fill && sessionBinding is not null && _sessions is not null)
                 reader = new PaperSessionAccountingSourceReader(_sessions, sessionBinding);
+            if (kind == LedgerAccountingSourceKind.FinancingCharge && sessionBinding is not null && _sessions is not null && _financing is not null)
+                reader = new PaperFinancingAccountingSourceReader(_sessions, sessionBinding, _financing);
             if (reader is null)
             {
                 coverage.Add(new(kind, false, "No complete retained source reader is configured for this population."));
@@ -111,7 +133,8 @@ public sealed class LedgerAccountingCompletenessReadService
             }
             var population = await reader.ReadAsync(query, period, ct).ConfigureAwait(false);
             sources.AddRange(population.Expectations);
-            coverage.Add(new(kind, population.IsComplete, population.Limitation));
+            coverage.Add(new(kind, population.IsComplete, population.Limitation)
+            { CoveredSessionIds = population.CoveredSessionIds });
         }
         var records = await _journalStore.QueryAsync(new(
             LedgerBookId: query.LedgerBookId, PeriodId: query.PeriodId, AggregateId: query.AggregateId), ct).ConfigureAwait(false);
@@ -148,7 +171,7 @@ public sealed class LedgerAccountingCompletenessReadService
             var account = metadata.FinancialAccountId
                 ?? record.Entry.Lines.Select(line => line.Account.FinancialAccountId)
                     .Where(value => value is not null).Distinct(StringComparer.Ordinal).SingleOrDefault();
-            if (account is null && kind == LedgerAccountingSourceKind.Fill
+            if (account is null && (kind is LedgerAccountingSourceKind.Fill or LedgerAccountingSourceKind.FinancingCharge)
                 && sessionBinding?.FinancialAccountId == "default")
                 account = "default";
             if (account is null)
@@ -236,9 +259,46 @@ public sealed class LoanAccountingSourceReader(IDirectLendingStateStore store, I
 public sealed record PaperSessionAccountingBinding(
     string SessionId, Guid AggregateId, Guid LedgerBookId, Guid PeriodId, string FinancialAccountId);
 
+internal static class PaperAccountingSessionPopulation
+{
+    internal sealed record Selection(IReadOnlyList<PersistedSessionRecord> Sessions, bool IsComplete, string? Limitation = null);
+
+    private static bool MatchesLedgerScope(PersistedSessionRecord session, LedgerAccountingCompletenessQuery query)
+        => session.AccountingContext is { } context && context.AggregateId == query.AggregateId
+            && context.LedgerBookId == query.LedgerBookId && context.PeriodId == query.PeriodId;
+
+    internal static bool MatchesScope(PersistedSessionRecord session, LedgerAccountingCompletenessQuery query)
+        => MatchesLedgerScope(session, query) && session.FinancialAccountId == query.FinancialAccountId;
+
+    internal static async Task<Selection> ReadAsync(
+        IPaperSessionStore store, PaperSessionAccountingBinding binding,
+        LedgerAccountingCompletenessQuery query, CancellationToken ct)
+    {
+        if (query.AggregateId != binding.AggregateId || query.LedgerBookId != binding.LedgerBookId
+            || query.PeriodId != binding.PeriodId || query.FinancialAccountId != binding.FinancialAccountId)
+            return new([], false, "The paper session is not bound to this exact accounting scope.");
+        var sessions = await store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
+        var anchors = sessions.Where(session => session.SessionId == binding.SessionId).ToArray();
+        if (anchors.Length != 1 || !MatchesScope(anchors[0], query))
+            return new([], false, "The retained paper session lacks the exact authoritative accounting binding.");
+        if (!string.IsNullOrWhiteSpace(query.SessionId) &&
+            sessions.Count(session => session.SessionId == query.SessionId && MatchesScope(session, query)) != 1)
+            return new([], false, "The requested paper-session anchor has no matching retained accounting binding.");
+        var population = sessions.Where(session => MatchesScope(session, query))
+            .OrderBy(session => session.SessionId, StringComparer.Ordinal).ToArray();
+        if (population.Any(session => string.IsNullOrWhiteSpace(session.SessionId)) ||
+            population.Any(selected => sessions.Count(session => session.SessionId == selected.SessionId) != 1))
+            throw new InvalidDataException("The retained paper-session accounting population has an ambiguous session identity.");
+        var ambiguous = sessions.Any(session => MatchesLedgerScope(session, query) && string.IsNullOrWhiteSpace(session.FinancialAccountId));
+        return new(population, !ambiguous, ambiguous
+            ? "Some retained sessions in this ledger scope lack financial-account lineage." : null);
+    }
+}
+
 /// <summary>
-/// Reads full retained paper-session fills, not the compacting pending-fill WAL. The binding must
-/// come from the owning session's trusted execution composition. Variation-margin populations need
+/// Reads full retained fills from every session sharing the exact account posting scope, not the
+/// compacting pending-fill WAL. The anchor binding must come from trusted retained session metadata.
+/// Closed sessions remain part of the population. Variation-margin populations need
 /// retained realized-P&amp;L/settlement policy and remain explicitly incomplete here.
 /// </summary>
 public sealed class PaperSessionAccountingSourceReader(
@@ -250,42 +310,81 @@ public sealed class PaperSessionAccountingSourceReader(
     public async Task<LedgerAccountingSourcePopulation> ReadAsync(
         LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default)
     {
-        if (query.AggregateId != binding.AggregateId || query.LedgerBookId != binding.LedgerBookId
-            || query.PeriodId != binding.PeriodId || query.FinancialAccountId != binding.FinancialAccountId)
-            return new([], false, "The paper session is not bound to this exact accounting scope.");
-        var sessions = await store.LoadAllSessionsAsync(ct).ConfigureAwait(false);
-        var matches = sessions.Where(session => session.SessionId == binding.SessionId).ToArray();
-        if (matches.Length != 1)
-            return new([], false, "The exact retained paper session is unavailable or ambiguous.");
-        var session = matches[0];
-        if (session.AccountingContext is not { } context || context.AggregateId != binding.AggregateId
-            || context.LedgerBookId != binding.LedgerBookId || context.PeriodId != binding.PeriodId
-            || session.FinancialAccountId != binding.FinancialAccountId)
-            return new([], false, "The retained paper session lacks the exact authoritative accounting binding.");
-        var records = await store.LoadFillRecordsAsync(binding.SessionId, ct).ConfigureAwait(false);
+        var population = await PaperAccountingSessionPopulation.ReadAsync(store, binding, query, ct).ConfigureAwait(false);
+        var sessions = population.Sessions;
+        if (sessions.Count == 0)
+            return new([], false, population.Limitation);
         var scope = new LedgerAccountingScope(query.LedgerBookId.ToString("D"), query.FinancialAccountId);
         var expectations = new List<LedgerAccountingExpectation>();
-        var complete = true;
-        foreach (var source in records)
+        var complete = population.IsComplete;
+        var limitation = population.Limitation;
+        foreach (var session in sessions)
         {
-            source.Validate();
-            if (source.FillId != PaperSessionFillRecord.ComputeCanonicalFillId(source.Fill))
-                throw new InvalidDataException("A retained paper fill does not carry its canonical execution identity.");
-            var date = DateOnly.FromDateTime(source.Fill.Timestamp.UtcDateTime);
-            if (date < period.StartDate || date > period.EndDate)
-                continue;
-            if (source.Fill.BookedVariationMargin == true)
+            var records = await store.LoadFillRecordsAsync(session.SessionId, ct).ConfigureAwait(false);
+            foreach (var source in records)
             {
-                complete = false;
-                continue;
+                source.Validate();
+                if (source.FillId != PaperSessionFillRecord.ComputeCanonicalFillId(source.Fill))
+                    throw new InvalidDataException("A retained paper fill does not carry its canonical execution identity.");
+                var date = DateOnly.FromDateTime(source.Fill.Timestamp.UtcDateTime);
+                if (date < period.StartDate || date > period.EndDate)
+                {
+                    complete = false;
+                    limitation ??= "A retained fill falls outside the session's bound accounting period.";
+                    continue;
+                }
+                if (source.Fill.BookedVariationMargin == true)
+                {
+                    complete = false;
+                    limitation ??= "Variation-margin fills require retained settlement and realized-P&L policy coverage.";
+                    continue;
+                }
+                var keys = new List<string> { "trade-fill" };
+                if (source.Fill.Commission > 0m)
+                    keys.Add("commission");
+                expectations.Add(new(scope, SourceKind, source.FillId.ToString("D"), keys.AsReadOnly()));
             }
-            var keys = new List<string> { "trade-fill" };
-            if (source.Fill.Commission > 0m)
-                keys.Add("commission");
-            expectations.Add(new(scope, SourceKind, source.FillId.ToString("D"), keys.AsReadOnly()));
         }
-        return new(expectations.AsReadOnly(), complete,
-            complete ? null : "Variation-margin fills require retained settlement and realized-P&L policy coverage.");
+        return new(expectations.AsReadOnly(), complete, limitation)
+        { CoveredSessionIds = Array.AsReadOnly(sessions.Select(session => session.SessionId).ToArray()) };
+    }
+}
+
+/// <summary>Reads independent financing assessments for the same exhaustive retained session population.</summary>
+public sealed class PaperFinancingAccountingSourceReader(
+    IPaperSessionStore store, PaperSessionAccountingBinding binding,
+    PaperFinancingPostingService financing) : ILedgerAccountingSourceReader
+{
+    public LedgerAccountingSourceKind SourceKind => LedgerAccountingSourceKind.FinancingCharge;
+
+    public async Task<LedgerAccountingSourcePopulation> ReadAsync(
+        LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default)
+    {
+        var population = await PaperAccountingSessionPopulation.ReadAsync(store, binding, query, ct).ConfigureAwait(false);
+        var sessions = population.Sessions;
+        if (sessions.Count == 0)
+            return new([], false, population.Limitation);
+        var ownedSessions = sessions.Where(session => session.AccountingContext == financing.PostingContext).ToArray();
+        var complete = population.IsComplete && ownedSessions.Length == sessions.Count;
+        var limitation = ownedSessions.Length == sessions.Count ? population.Limitation
+            : "Not every retained session in this account scope has its financing source owner available.";
+        var scope = new LedgerAccountingScope(query.LedgerBookId.ToString("D"), query.FinancialAccountId);
+        var expectations = new List<LedgerAccountingExpectation>();
+        foreach (var session in ownedSessions)
+        {
+            var charges = await financing.LoadSourcesAsync(session.SessionId, ct).ConfigureAwait(false);
+            foreach (var charge in charges)
+            {
+                charge.Validate();
+                if (charge.SessionId != session.SessionId || charge.AccountId != query.FinancialAccountId)
+                    throw new InvalidDataException("The financing source owner returned an assessment outside the retained session/account scope.");
+                if (charge.AccrualDate < period.StartDate || charge.AccrualDate > period.EndDate)
+                    throw new InvalidDataException("A bound financing assessment falls outside its retained accounting period.");
+                expectations.Add(new(scope, SourceKind, charge.SourceEventId.ToString("D"), ["execution.margin-interest"]));
+            }
+        }
+        return new(expectations.AsReadOnly(), complete, limitation)
+        { CoveredSessionIds = Array.AsReadOnly(ownedSessions.Select(session => session.SessionId).ToArray()) };
     }
 }
 

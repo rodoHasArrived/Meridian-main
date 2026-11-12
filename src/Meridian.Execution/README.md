@@ -110,7 +110,9 @@ without increasing the loan principal. The authoritative journal remains in the 
 ledger store; the outbox retains source evidence and delivery state.
 Before retaining a new source, admission reads the authoritative period and validates the exact
 book, dates, open status and expected version, normalizes the complete posting command, and requires
-an amount represented exactly by the journal's numeric(38,10) storage. A rejected assessment creates
+the retained book's identity, Primary basis and policy/version to match the command. Dedicated
+consolidation books are refused. The amount must fit the journal's numeric(38,10) storage exactly.
+A rejected assessment creates
 no pending source and does not block the next valid assessment. Existing accepted-source retries keep
 their immutable context and can confirm already-posted journals after the period closes.
 This admission read does not lock the period across the local WAL and database append. A close that

@@ -15,6 +15,7 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
     private readonly TradeFillLedgerPostingContext _context;
     private readonly ITradeFillLedgerPostingTarget _target;
     private readonly Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> _readPeriod;
+    private readonly Func<Guid, CancellationToken, Task<LedgerBookRecord?>> _readBook;
     private readonly string _snapshotPath;
     private readonly string _initializationMarkerPath;
     private readonly WriteAheadLog _wal;
@@ -30,11 +31,13 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
 
     public PaperFinancingPostingService(string rootDirectory, TradeFillLedgerPostingContext context,
         ITradeFillLedgerPostingTarget target,
-        Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> readPeriod)
+        Func<Guid, CancellationToken, Task<LedgerAccountingPeriod?>> readPeriod,
+        Func<Guid, CancellationToken, Task<LedgerBookRecord?>> readBook)
     {
         _context = (context ?? throw new ArgumentNullException(nameof(context))).Validate();
         _target = target ?? throw new ArgumentNullException(nameof(target));
         _readPeriod = readPeriod ?? throw new ArgumentNullException(nameof(readPeriod));
+        _readBook = readBook ?? throw new ArgumentNullException(nameof(readBook));
         var root = Path.Combine(new TradeFillPostingStoreOptions(rootDirectory, context).ScopeDirectory, "financing");
         Directory.CreateDirectory(root);
         // The snapshot and WAL have one owner. A second host must fail before it can
@@ -100,6 +103,17 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
             if (period.Version != _context.ExpectedPeriodVersion)
                 throw new LedgerValidationException("The financing accounting period version differs from the bound posting context.");
             LedgerPeriodPostingGuard.Validate(write, period);
+            var book = await _readBook(_context.LedgerBookId, ct).ConfigureAwait(false)
+                ?? throw new LedgerValidationException("The financing ledger book is unavailable.");
+            if (book.LedgerBookId != _context.LedgerBookId || book.AccountingBasis != write.AccountingBasis)
+                throw new LedgerValidationException("The financing ledger book identity or accounting basis differs from the bound posting command.");
+            if (!AuthoritativeTextMatches(book.AccountingPolicyId, write.AccountingPolicyId)
+                || !AuthoritativeTextMatches(book.AccountingPolicyVersion, write.AccountingPolicyVersion))
+                throw new LedgerValidationException("The financing accounting policy differs from the retained ledger book policy.");
+            // Ordinary financing carries no reviewed consolidation evidence. Matching a
+            // dedicated elimination book's policy does not authorize an ordinary journal.
+            if (AuthoritativeTextMatches(book.AccountingPolicyId, "consolidation-v1"))
+                throw new LedgerValidationException("Dedicated consolidation books do not accept ordinary financing assessments.");
             ct.ThrowIfCancellationRequested();
         }
         catch (Exception error)
@@ -109,6 +123,10 @@ public sealed class PaperFinancingPostingService : IAsyncDisposable
             throw new PaperFinancingAdmissionException(error);
         }
     }
+
+    private static bool AuthoritativeTextMatches(string? retained, string? requested) =>
+        !string.IsNullOrWhiteSpace(retained) && !string.IsNullOrWhiteSpace(requested)
+        && string.Equals(retained.Trim(), requested.Trim(), StringComparison.OrdinalIgnoreCase);
 
     /// <summary>Replays pending assessments before exposing a rebuilt session book.</summary>
     public async Task<IReadOnlyList<PaperFinancingCharge>> LoadAndRecoverAsync(

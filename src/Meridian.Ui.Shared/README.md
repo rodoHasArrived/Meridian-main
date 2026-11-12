@@ -56,6 +56,11 @@ read permission. Asset-event sources use the scoped spine enumeration. Missing l
 source versions or unavailable readers report incomplete coverage rather than an empty successful
 population. Loan reversal events retain their own source identity and count their adjustment
 journals separately from the original accrual.
+Paper-account completeness reads every retained session bound to the exact book, period,
+aggregate and account, including closed sessions. An optional `sessionId` verifies a scope
+anchor; it never narrows the shared journal population. Per-source `CoveredSessionIds` reports
+the sessions actually covered. Unknown source receipts remain breaks, and unavailable financing
+ownership or ambiguous session lineage reports incomplete coverage.
 
 Broker account imports are available at `POST /api/portfolio/import-runs` and the scoped
 `GET /api/portfolio/import-runs/{runId}` read. The command binds a retained financial account,
@@ -65,6 +70,8 @@ account/book source and enter the ordinary manual journal approval queue, preser
 source even when subscription filters exclude assets. Workstation saves cannot change the retained
 opening economics, source account paths or reservation key. Configure the source chart mapping
 before intake; an accounting-role correction requires the governed correction workflow.
+Opening intake retains the selected book's accounting basis, including parallel Tax books,
+and posting retains the book's authoritative accounting policy and version.
 Opening header and line entity dimensions come from the retained financial account. An absent or
 changed entity blocks intake instead of borrowing the account ID or adding a placeholder entity.
 Mixed-symbol openings retain active, same-currency Security Master identities and approved mapping

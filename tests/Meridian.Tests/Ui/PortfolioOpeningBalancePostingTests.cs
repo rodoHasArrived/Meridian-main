@@ -18,7 +18,15 @@ public sealed class PortfolioOpeningBalancePostingTests
 {
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
-    public async Task TwoSymbolImport_PreparesReviewsAndPostsOneBalancedOpeningJournal()
+    public Task TwoSymbolImport_PreparesReviewsAndPostsOneBalancedOpeningJournal()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Primary);
+
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public Task NonPrimaryBookOpening_PreparesReviewsAndPostsWithAuthoritativeBasisAndPolicy()
+        => PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto.Tax);
+
+    private static async Task PrepareReviewAndPostOpeningAsync(AccountingBasisKindDto basis)
     {
         await using var database = await LedgerPostgresTestDatabase.CreateAsync();
         var root = Path.Combine(Path.GetTempPath(), "meridian-opening-post-" + Guid.NewGuid().ToString("N"));
@@ -34,7 +42,8 @@ public sealed class PortfolioOpeningBalancePostingTests
             var book = Guid.NewGuid();
             var period = Guid.NewGuid();
             await database.JournalStore.SaveLedgerBookAsync(new(book, fund, account,
-                FundStructureNodeKindDto.Account, "Imported brokerage", "USD", at.AddDays(-1), at.AddDays(-1)));
+                FundStructureNodeKindDto.Account, "Imported brokerage", "USD", at.AddDays(-1), at.AddDays(-1),
+                AccountingBasis: basis, AccountingPolicyId: "broker-opening-policy", AccountingPolicyVersion: "v2"));
             await database.JournalStore.SavePeriodAsync(new(period, book, 2026, 11, "2026-11",
                 new(2026, 11, 1), new(2026, 11, 30), "Open", at.AddDays(-1), null, 0), 0);
             var securities = Substitute.For<ISecurityMasterQueryService>();
@@ -76,6 +85,10 @@ public sealed class PortfolioOpeningBalancePostingTests
             var id = await queue.QueueAsync(run);
             (await database.JournalStore.GetByPeriodAsync(period)).Should().BeEmpty("intake must never approve or post automatically");
             var draft = (await drafts.GetAsync(fund, id, tenantId: tenant, companyId: company))!;
+            draft.AccountingBasis.Should().Be(basis, "opening intake must retain the selected book's accounting basis");
+            var differentBasis = basis == AccountingBasisKindDto.Primary ? AccountingBasisKindDto.Tax : AccountingBasisKindDto.Primary;
+            Assert.Throws<InvalidOperationException>(() => ManualJournalEntryWorkbenchService.EnsureOpeningBalanceSaveAuthority(
+                draft with { AccountingBasis = differentBasis }, draft, trustedAutomatedIntake: false));
             var validated = await workbench.ValidateDraftAsync(new(draft, "import-preparer", LedgerBookId: book, TenantId: tenant, CompanyId: company));
             validated.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
             draft.ValidationIssues.Should().NotContain(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical);
@@ -83,14 +96,21 @@ public sealed class PortfolioOpeningBalancePostingTests
             var review = $"evidence://review/tenant/{tenant}/company/{company}/book/{book:D}/journal/{id:D}/approval-posting";
             var submitted = await workbench.SubmitApprovalAsync(new(id, fund, "import-preparer", draft.Version,
                 Notes: "Submit retained broker opening", EvidenceLinks: [review], LedgerBookId: book, TenantId: tenant, CompanyId: company));
+            submitted.AccountingBasis.Should().Be(basis);
             var approved = await workbench.ApplyLifecycleActionAsync(new(id, fund, JournalEntryLifecycleActionDto.Approve,
                 "controller", submitted.Version, Notes: "Reviewed source cost and cash", EvidenceLinks: [review],
                 LedgerBookId: book, TenantId: tenant, CompanyId: company));
+            approved.JournalEntry.AccountingBasis.Should().Be(basis);
             var posted = await workbench.ApplyLifecycleActionAsync(new(id, fund, JournalEntryLifecycleActionDto.Post,
                 "controller", approved.JournalEntry.Version, Notes: "Post reviewed opening balances", EvidenceLinks: [review],
                 LedgerBookId: book, TenantId: tenant, CompanyId: company));
             posted.JournalEntry.Status.Should().Be(ManualJournalEntryStatusDto.Posted);
-            var retained = (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle().Subject.Entry;
+            posted.JournalEntry.AccountingBasis.Should().Be(basis);
+            var record = (await database.JournalStore.GetByPeriodAsync(period)).Should().ContainSingle().Subject;
+            record.AccountingBasis.Should().Be(basis);
+            record.AccountingPolicyId.Should().Be("broker-opening-policy");
+            record.AccountingPolicyVersion.Should().Be("v2");
+            var retained = record.Entry;
             retained.Lines.Sum(line => line.Debit).Should().Be(375m);
             retained.Lines.Sum(line => line.Credit).Should().Be(375m);
             retained.Lines.Where(line => line.Account.Symbol is not null).Should().HaveCount(2)

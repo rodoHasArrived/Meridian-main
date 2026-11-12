@@ -18,6 +18,11 @@ it does not reopen or modify the source period or grant approval/posting authori
 Its optional `Correction` identifies the immediate posted adjustment being reversed or rebooked,
 preserving the original closed-period source as the root across later corrections.
 
+Strategy execution, portfolio and comparison reads expose `FinancingCoverageStatus` and nullable
+`RunAttributedMarginInterest`. An unavailable total remains explicit JSON null and carries
+coverage warnings into continuity reads. Existing decimal totals remain compatibility fields;
+financing comparisons require complete run-allocation evidence. Legacy coverage stays unassessed.
+
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
 absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`

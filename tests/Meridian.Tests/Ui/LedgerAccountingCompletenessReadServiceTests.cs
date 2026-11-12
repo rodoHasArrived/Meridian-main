@@ -51,6 +51,23 @@ public sealed class LedgerAccountingCompletenessReadServiceTests
     }
 
     [Fact]
+    public async Task ReadAsync_UnverifiedSessionAnchorCannotFallBackToACustomAccountReader()
+    {
+        var query = Query with { SessionId = "unverified-anchor" };
+        var reader = Substitute.For<ILedgerAccountingSourceReader>();
+        reader.SourceKind.Returns(LedgerAccountingSourceKind.Fill);
+        reader.ReadAsync(Arg.Any<LedgerAccountingCompletenessQuery>(), Arg.Any<LedgerAccountingPeriod>(), Arg.Any<CancellationToken>())
+            .Returns(new LedgerAccountingSourcePopulation([], true));
+
+        var result = await new LedgerAccountingCompletenessReadService(Store([]), readers: [reader]).ReadAsync(query);
+
+        result.Report.IsComplete.Should().BeFalse();
+        result.Coverage.Should().ContainSingle().Which.Limitation.Should().Contain("anchor");
+        await reader.DidNotReceive().ReadAsync(Arg.Any<LedgerAccountingCompletenessQuery>(),
+            Arg.Any<LedgerAccountingPeriod>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task ReadAsync_OtherAccountPostingDoesNotSatisfyExpectedReceipt()
     {
         var reader = Substitute.For<ILedgerAccountingSourceReader>();

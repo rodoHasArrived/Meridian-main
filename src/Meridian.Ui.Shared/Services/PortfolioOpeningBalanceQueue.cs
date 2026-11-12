@@ -84,7 +84,7 @@ public sealed class PortfolioOpeningBalanceQueue(
         var result = await intake.IntakeDraftsAsync(new AutomatedJournalPreparedDraftIntakeRequest(
             scope.FundProfileId, run.Snapshot!.Currency, [draft], scope.Actor,
             scope.LedgerBookId, scope.PeriodId.ToString("D"), EntityId: scope.EntityId!.Value.ToString("D"), TenantId: scope.TenantId, CompanyId: scope.CompanyId,
-            BatchCorrelationId: run.Request.RunId.ToString("D")), ct);
+            BatchCorrelationId: run.Request.RunId.ToString("D"), AccountingBasis: book.AccountingBasis), ct);
         var id = result.Created.SingleOrDefault()?.JournalEntryId ?? result.Skipped.SingleOrDefault()?.JournalEntryId
             ?? throw new InvalidOperationException("The opening draft was not retained.");
         if (result.Skipped.Any(skip => skip.Disposition is AutomatedJournalDraftIntakeDisposition.ExistingDraftRejected

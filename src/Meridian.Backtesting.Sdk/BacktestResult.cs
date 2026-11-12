@@ -70,7 +70,22 @@ public sealed record BacktestEngineMetadata(
     string EngineId,
     string? ExternalRunId = null,
     string ResultKind = BacktestResultKinds.Full,
-    IReadOnlyList<string>? CoverageWarnings = null);
+    IReadOnlyList<string>? CoverageWarnings = null)
+{
+    /// <summary>Null retains legacy/unassessed coverage; unavailable financing is never a measured zero.</summary>
+    public string? FinancingCoverageStatus { get; init; }
+
+    /// <summary>The actual run-attributed margin interest, or null when no complete allocation is available.
+    /// When unavailable, Metrics.TotalMarginInterest is only a compatibility placeholder and GrossPnl is provisional.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
+    public decimal? RunAttributedMarginInterest { get; init; }
+}
+
+public static class BacktestFinancingCoverageStatuses
+{
+    public const string Available = "Available";
+    public const string Unavailable = "Unavailable";
+}
 
 /// <summary>Canonical result coverage categories shared by native and external backtest engines.</summary>
 public static class BacktestResultKinds

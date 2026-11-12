@@ -688,7 +688,11 @@ public sealed partial class StrategyRunReadService
                 HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
                 HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
                 CompatibilityWarnings: compatibilityWarnings,
-                ArtifactCompleteness: artifactCompleteness));
+                ArtifactCompleteness: artifactCompleteness)
+            {
+                FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+                RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+            });
         }
 
         return results
@@ -782,7 +786,11 @@ public sealed partial class StrategyRunReadService
                 LedgerCoverageStatus: continuity.LedgerCoverageStatus,
                 CashFlowHealth: continuity.CashFlowHealth,
                 CompatibilityWarnings: compatibilityWarnings,
-                ArtifactCompleteness: artifactCompleteness));
+                ArtifactCompleteness: artifactCompleteness)
+            {
+                FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+                RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+            });
         }
 
         var ordered = governanceFirst
@@ -805,7 +813,9 @@ public sealed partial class StrategyRunReadService
         var ledgerEntryCount = run.RetainedJournalEntryCount;
         var hasLedgerEntryCoverage = hasLedgerReference && ledgerEntryCount > 0;
         var cashFlowEntries = run.Metrics?.CashFlows?.Count ?? 0;
-        var hasCashFlowCoverage = cashFlowEntries > 0;
+        var financingUnavailable = run.Metrics?.EngineMetadata?.FinancingCoverageStatus
+            == BacktestFinancingCoverageStatuses.Unavailable;
+        var hasCashFlowCoverage = cashFlowEntries > 0 && !financingUnavailable;
         var hasAuditTrail = !string.IsNullOrWhiteSpace(run.AuditReference);
 
         var continuityStatus = (hasLedgerEntryCoverage, hasCashFlowCoverage, hasAuditTrail) switch
@@ -821,7 +831,8 @@ public sealed partial class StrategyRunReadService
             HighestSeverity: ReconciliationBreakSeverity.Info,
             HasLedgerEntryCoverage: hasLedgerEntryCoverage,
             LedgerCoverageStatus: hasLedgerEntryCoverage ? LedgerCoverageStatusCovered : LedgerCoverageStatusMissing,
-            CashFlowHealth: hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
+            CashFlowHealth: financingUnavailable ? "Incomplete"
+                : hasCashFlowCoverage ? CashFlowHealthHealthy : CashFlowHealthMissing);
     }
 
     private sealed record ComparisonContinuitySignals(
@@ -1012,7 +1023,11 @@ public sealed partial class StrategyRunReadService
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),
             HasAuditTrail: !string.IsNullOrWhiteSpace(run.AuditReference),
-            AuditReference: run.AuditReference);
+            AuditReference: run.AuditReference)
+        {
+            FinancingCoverageStatus = run.Metrics?.EngineMetadata?.FinancingCoverageStatus,
+            RunAttributedMarginInterest = run.Metrics?.EngineMetadata?.RunAttributedMarginInterest
+        };
     }
 
     private static IEnumerable<StrategyRunLineageTimelineEntry> BuildLineageTimelineEntries(
