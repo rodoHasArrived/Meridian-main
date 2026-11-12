@@ -140,6 +140,13 @@ The JSON/Markdown summaries retain every result in roster order and include elap
 All shards are attempted after a test failure, and the lane fails if any shard fails. The
 test filters, complete project roster, catch-all shard, and hang timeout are unchanged.
 
+Demo Smoke builds the focused `Meridian.Demo.Tests` project instead of compiling all of
+`Meridian.Tests` and filtering execution. Its 26 cases retain their existing assertions and
+namespaces. The CLI seed keeps normal `dotnet run` restore/build behavior; serve and reset
+reuse that Release output with `--no-build`, with the same cleared environment defaults.
+The solution and canonical test roster include the project, and the shared PostgreSQL gate
+runs its eight integration cases as the required `demo-integrations` evidence suite.
+
 Golden Path starts its browser, WPF, and pilot harness jobs independently. The existing
 `Pilot Acceptance Evidence` check waits for all three and rejects failure, cancellation,
 or skipped validation. Uploaded harness artifacts are diagnostic evidence, not a substitute
@@ -149,7 +156,7 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET`, browser workstation, docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
-| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs both deterministic integration projects independently against disposable PostgreSQL, validates every TRX and both required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, validates every TRX and all three required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
