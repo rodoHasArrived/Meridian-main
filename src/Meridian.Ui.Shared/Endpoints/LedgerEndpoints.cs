@@ -29,6 +29,11 @@ public static partial class LedgerEndpoints
     {
         MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
+        MapConsolidationFxEndpoints(app, jsonOptions);
+        MapConsolidationTransitionEndpoints(app, jsonOptions);
+        MapIntercompanyAccountBindingEndpoints(app, jsonOptions);
+        MapLegacyIntercompanyAttributionEndpoints(app, jsonOptions);
+        MapEntityControlEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
         MapPrivateCapitalEndpoints(app, jsonOptions);
         MapPostedPeriodComparisonEndpoints(app, jsonOptions);
@@ -2537,7 +2542,12 @@ public static partial class LedgerEndpoints
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId)
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AgreementId = dimensions.AgreementId,
+            AgreementRevisionId = dimensions.AgreementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId
         };
 
         return CanonicalizeDimensions(result);
@@ -2709,7 +2719,12 @@ public static partial class LedgerEndpoints
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AgreementId = dimensions.AgreementId,
+            AgreementRevisionId = dimensions.AgreementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId
         };
 
         return LedgerDimensionTags.HasAnyDimension(canonical) ? canonical : null;

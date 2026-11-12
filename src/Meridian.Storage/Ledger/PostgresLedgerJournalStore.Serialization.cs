@@ -193,7 +193,12 @@ public sealed partial class PostgresLedgerJournalStore
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AgreementId = NormalizeOptional(dimensions.AgreementId),
+            AgreementRevisionId = NormalizeOptional(dimensions.AgreementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyLineDimension(canonical) ? canonical : null;
@@ -230,6 +235,11 @@ public sealed partial class PostgresLedgerJournalStore
            !string.IsNullOrWhiteSpace(dimensions.CustomerId) ||
            !string.IsNullOrWhiteSpace(dimensions.VendorId) ||
            !string.IsNullOrWhiteSpace(dimensions.ProjectId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AgreementId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AgreementRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId) ||
+           !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId) ||
+           !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId) ||
            dimensions.ExternalGlDimensions.Any(static pair => !string.IsNullOrWhiteSpace(pair.Key) && !string.IsNullOrWhiteSpace(pair.Value));
 
     private static LedgerAdjustmentApprovalMetadataDto DeserializeAdjustmentApproval(string json)

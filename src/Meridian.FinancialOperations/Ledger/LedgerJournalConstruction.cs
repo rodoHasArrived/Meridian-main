@@ -53,7 +53,12 @@ internal static class LedgerJournalConstruction
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AgreementId = NormalizeOptional(dimensions.AgreementId),
+            AgreementRevisionId = NormalizeOptional(dimensions.AgreementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyDimension(mapped) ? mapped : null;
@@ -78,7 +83,12 @@ internal static class LedgerJournalConstruction
             || dimensions.AccountId is not null
             || dimensions.CustomerId is not null
             || dimensions.VendorId is not null
-            || dimensions.ProjectId is not null;
+            || dimensions.ProjectId is not null
+            || dimensions.AgreementId is not null
+            || dimensions.AgreementRevisionId is not null
+            || dimensions.ChartAccountNodeId is not null
+            || dimensions.AccountBindingRevisionId is not null
+            || dimensions.IntercompanyTransactionId is not null;
 
     private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
         IReadOnlyDictionary<string, string>? dimensions)

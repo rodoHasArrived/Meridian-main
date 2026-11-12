@@ -74,6 +74,10 @@ modules:
       - W5-ACCT-001
       - W9-GOV-008
       - W10-MARK-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -85,7 +89,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-29
+    last_reviewed: 2026-11-12
 
   - id: SRC-CONTRACTS
     path: src/Meridian.Contracts
@@ -118,6 +122,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -143,7 +151,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-29
+    last_reviewed: 2026-11-12
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -259,6 +267,10 @@ modules:
       - W5-ACCT-001
       - W9-ASSET-010
       - W10-JRNL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - DataConfidence
       - PaperSession
@@ -278,7 +290,7 @@ modules:
       - DIA-ASSURANCE-LOOP
       - DIA-STORAGE-TOPOLOGY
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-11-12
 
   - id: SRC-EXECUTION
     path: src/Meridian.Execution
@@ -645,6 +657,8 @@ modules:
     roadmap_items:
       - W4-RECON-001
       - W5-ACCT-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -657,7 +671,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-06-07
+    last_reviewed: 2026-11-12
 
   - id: SRC-DESIGN-DATA-INTEGRATION
     path: src/Meridian.DataIntegration
@@ -792,6 +806,10 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PortfolioLedgerReview
       - AccountingRecords
@@ -811,7 +829,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-10-02
+    last_reviewed: 2026-11-12
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -957,6 +975,7 @@ modules:
       - W4-RECON-001
       - W4-RPT-001
       - W5-ACCT-001
+      - W12-ENTITY-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -969,7 +988,7 @@ modules:
       - DIA-BROWSER-WORKSTATION
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-05-20
+    last_reviewed: 2026-11-12
 
   - id: SRC-UI-SHARED
     path: src/Meridian.Ui.Shared
@@ -1003,6 +1022,10 @@ modules:
       - W10-PERF-001
       - W10-CONSOL-001
       - W9-SAFETY-007
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001
     stage_gates:
       - PaperSession
       - PortfolioLedgerReview
@@ -1016,7 +1039,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-10-29
+    last_reviewed: 2026-11-12
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1037,6 +1060,8 @@ modules:
       - W5X-EVIDENCE-001
       - W5X-STMT-ONBOARD-001
       - W6-BTSTUDIO-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
     stage_gates:
       - PaperSession
       - PromotionReview
@@ -1054,7 +1079,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-08-04
+    last_reviewed: 2026-11-12
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -1082,6 +1107,7 @@ modules:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+      - W12-ENTITY-001
     stage_gates:
       - PortfolioLedgerReview
       - GovernedReportPack
@@ -1092,4 +1118,4 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-09-28
+    last_reviewed: 2026-11-12

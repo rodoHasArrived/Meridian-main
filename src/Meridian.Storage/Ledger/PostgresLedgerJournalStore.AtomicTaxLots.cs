@@ -95,6 +95,8 @@ public sealed partial class PostgresLedgerJournalStore
             return replay;
         }
 
+        await using var postingAuthority = await AcquirePostingAuthorityAsync(connection, transaction, [command.Journal], ct).ConfigureAwait(false);
+
         // Historical receipts may predate canonical acquisition facts. Exact replay above must
         // retain that shape, but a new lot cannot create another legacy-backfill exception.
         if (command.Direction == OpenLotDirection.Short

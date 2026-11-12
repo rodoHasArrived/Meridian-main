@@ -1,6 +1,7 @@
 using System.Data;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
+using Meridian.FinancialOperations.Ledger;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Npgsql;
@@ -10,6 +11,74 @@ namespace Meridian.Tests.Storage;
 [Trait("Category", "Integration")]
 public sealed class ConsolidationSourcesPostgresTests
 {
+    [LedgerDatabaseFact]
+    public async Task TransitionActivation_QueuedBookWriterAndRealAppend_CompleteAndRejectStaleReview()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(1));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        var preview = ConsolidationTransitionStoreTests.Preview();
+        await ConsolidationTransitionPostgresTests.SeedBooksAsync(database, preview);
+        var activationName = $"transition-activation-order-{Guid.NewGuid():N}";
+        var transitions = new ConsolidationTransitionPostgresStore(new LedgerJournalStoreOptions
+        {
+            ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+                { ApplicationName = activationName }.ConnectionString,
+            SchemaName = database.Options.SchemaName
+        }, new ConsolidationTransitionStoreTests.TenantAccessor("tenant-a"));
+        await transitions.RetainPreviewAsync(preview, ct);
+        var (books, periods) = await CreateBooksAsync(database, ct);
+        var write = await ReviewedWriteAsync(database, books, periods, ct);
+        var policies = new AccountingPolicyService();
+        var authority = new PolicyPausedAuthority(policies, transitions);
+        var journalStore = new PostgresLedgerJournalStore(database.Options, consolidationAuthority: () => authority,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
+        var posting = journalStore.AppendAsync(write, ct);
+        try
+        {
+            // This is the real append path after its book mapping SHARE fence and before policy.
+            await authority.Entered.Task.WaitAsync(ct);
+            var metadataName = $"transition-metadata-order-{Guid.NewGuid():N}";
+            await using var metadataConnection = new NpgsqlConnection(new NpgsqlConnectionStringBuilder(database.Options.ConnectionString)
+                { ApplicationName = metadataName }.ConnectionString);
+            await metadataConnection.OpenAsync(ct);
+            await using var metadataTransaction = await metadataConnection.BeginTransactionAsync(ct);
+            var metadataWrite = ChangeBookMetadataAsync();
+            await WaitUntilBlockedAsync(database, metadataName, ct);
+
+            // PostgreSQL queues this new SHARE behind the metadata writer. It must not own
+            // the process policy gate while waiting, because the first append needs that gate.
+            var activation = transitions.AppendValidatedWithAuthorityAsync(ConsolidationTransitionStoreTests.Receipt(preview),
+                token => policies.AcquireConsolidationAuthorityLeaseAsync(token), async token =>
+                {
+                    await using var read = new NpgsqlConnection(database.Options.ConnectionString);
+                    await read.OpenAsync(token);
+                    await using var command = new NpgsqlCommand($"select description from \"{database.Options.SchemaName}\".ledger_books where ledger_book_id=@id", read);
+                    command.Parameters.AddWithValue("id", preview.Request.NewEliminationBookId);
+                    if ((string?)await command.ExecuteScalarAsync(token) == "changed-after-review")
+                        throw new InvalidOperationException("Book metadata changed; renew transition review.");
+                }, ct);
+            await WaitUntilBlockedAsync(database, activationName, ct);
+            authority.Continue.TrySetResult();
+            await posting.WaitAsync(ct);
+            await metadataWrite.WaitAsync(ct);
+            var rejected = await Assert.ThrowsAsync<InvalidOperationException>(() => activation.WaitAsync(ct));
+            Assert.Contains("renew transition review", rejected.Message);
+            Assert.Single(await database.JournalStore.GetByPeriodAsync(periods[2].PeriodId, ct));
+            Assert.Null(await transitions.GetAsync(preview.Request.TransitionId, ct));
+
+            async Task ChangeBookMetadataAsync()
+            {
+                await using var command = new NpgsqlCommand($"update \"{database.Options.SchemaName}\".ledger_books set description='changed-after-review' where ledger_book_id=@id",
+                    metadataConnection, metadataTransaction);
+                command.Parameters.AddWithValue("id", preview.Request.NewEliminationBookId);
+                await command.ExecuteNonQueryAsync(ct);
+                await metadataTransaction.CommitAsync(ct);
+            }
+        }
+        finally { authority.Continue.TrySetResult(); }
+    }
+
     [LedgerDatabaseFact]
     public async Task LaterEliminationPostedAfterValidation_BlocksEarlierAppendOutsideReviewedVersionWindow()
     {
@@ -25,7 +94,8 @@ public sealed class ConsolidationSourcesPostgresTests
             evidence with { Request = evidence.Request with { PeriodId = laterPeriod.PeriodId, AsOf = laterDate } });
 
         var authority = new PausedSourceOnlyAuthority();
-        var store = new PostgresLedgerJournalStore(database.Options, consolidationAuthority: () => authority);
+        var store = new PostgresLedgerJournalStore(database.Options, consolidationAuthority: () => authority,
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var earlierAppend = store.AppendAsync(earlier, ct);
         await authority.Validated.Task.WaitAsync(ct);
         // Both source versions through May are still identical. A later elimination must not
@@ -110,8 +180,10 @@ public sealed class ConsolidationSourcesPostgresTests
         await using var sourceConnection = new NpgsqlConnection(database.Options.ConnectionString);
         await sourceConnection.OpenAsync(ct);
         await using var sourceTransaction = await sourceConnection.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        await database.JournalStore.AppendAsync(sourceConnection, sourceTransaction,
-            ConsolidationStorageFixture.Write(books[0], periods[0]), ct);
+        var sourceWrite = ConsolidationStorageFixture.Write(books[0], periods[0]);
+        await using var sourceAuthority = await database.JournalStore.AcquirePostingAuthorityAsync(
+            sourceConnection, sourceTransaction, [sourceWrite], ct);
+        await database.JournalStore.AppendAsync(sourceConnection, sourceTransaction, sourceWrite, ct);
 
         var name = $"consolidation-source-race-{Guid.NewGuid():N}";
         var options = new LedgerJournalStoreOptions
@@ -119,7 +191,8 @@ public sealed class ConsolidationSourcesPostgresTests
             ConnectionString = new NpgsqlConnectionStringBuilder(database.Options.ConnectionString) { ApplicationName = name }.ConnectionString,
             SchemaName = database.Options.SchemaName
         };
-        var store = new PostgresLedgerJournalStore(options, consolidationAuthority: () => new SourceOnlyAuthority());
+        var store = new PostgresLedgerJournalStore(options, consolidationAuthority: () => new SourceOnlyAuthority(),
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
         var posting = store.AppendAsync(elimination, ct);
         await WaitUntilBlockedAsync(database, name, ct);
         await sourceTransaction.CommitAsync(ct);
@@ -142,13 +215,39 @@ public sealed class ConsolidationSourcesPostgresTests
     // This suite isolates journal-version concurrency. Production authority and lease lifetime
     // are exercised against real ownership storage in ConsolidationAuthorityPostgresTests.
     private static PostgresLedgerJournalStore SourceOnlyStore(LedgerPostgresTestDatabase database) =>
-        new(database.Options, consolidationAuthority: () => new SourceOnlyAuthority());
+        new(database.Options, consolidationAuthority: () => new SourceOnlyAuthority(),
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
 
     private sealed class SourceOnlyAuthority : IConsolidationPostingAuthority, IAsyncDisposable
     {
         public Task<IAsyncDisposable> AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
             => Task.FromResult<IAsyncDisposable>(this);
         public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class PolicyPausedAuthority(AccountingPolicyService policies, IConsolidationTransitionStore transitions)
+        : IConsolidationPostingAuthority
+    {
+        public TaskCompletionSource Entered { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        public TaskCompletionSource Continue { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public async Task<IAsyncDisposable> AcquireValidatedLeaseAsync(ConsolidationEvidenceDto evidence, CancellationToken ct = default)
+        {
+            Entered.TrySetResult();
+            await Continue.Task.WaitAsync(ct);
+            var policy = await policies.AcquireConsolidationAuthorityLeaseAsync(ct);
+            try { return new PolicyRouteLease(policy, await transitions.AcquireAuthorityLeaseAsync(ct)); }
+            catch { await policy.DisposeAsync(); throw; }
+        }
+    }
+
+    private sealed class PolicyRouteLease(IAsyncDisposable policy, IAsyncDisposable route) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            try { await route.DisposeAsync(); }
+            finally { await policy.DisposeAsync(); }
+        }
     }
 
     private sealed class PausedSourceOnlyAuthority : IConsolidationPostingAuthority, IAsyncDisposable

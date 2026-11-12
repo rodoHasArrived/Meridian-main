@@ -98,6 +98,8 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         // background workers that have not yet migrated.
         services.AddSingleton<IWorkstationAccountingApiClient, WorkstationAccountingApiClient>();
         services.AddSingleton<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>();
+        services.AddSingleton<IWorkstationEntityConsolidationApiClient, WorkstationEntityConsolidationApiClient>();
+        services.AddSingleton<IWorkstationManualJournalApiClient, WorkstationManualJournalApiClient>();
         // Audit-chain verification (W9-GOV-008) is read-only and AdminMaintenance-gated server side.
         services.AddSingleton<IAccountingAuditIntegrityApiClient, AccountingAuditIntegrityApiClient>();
         services.AddSingleton<IFactorPaydownApiClient, FactorPaydownApiClient>();

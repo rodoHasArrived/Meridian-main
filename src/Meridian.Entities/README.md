@@ -6,10 +6,16 @@ module_id: SRC-DESIGN-ENTITIES
 path: src/Meridian.Entities
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-06-07
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Entities
+
+Intercompany agreement policy validates distinct legal parties, explicit facility terms and account
+mappings. Effective lifecycle policy supports evidenced controlled close during wind-down, refuses
+new commitments, and retains dissolved/merged entities for read and residual-balance inspection.
+Immutable timeline windows establish historical eligibility; a current status is not prior evidence.
+See [the adopted implementation sequence](../../docs/engineering/plans/intercompany-entity-controls.md).
 
 Ownership-percent validation sums `Owns` links by the owned child, allowing a fund to wholly own
 multiple legal entities while rejecting overlapping co-owners above 100%. `AllocatesTo` continues
@@ -55,6 +61,8 @@ and validating governance cash-flow query windows.
 | --- | --- |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

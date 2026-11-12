@@ -55,7 +55,12 @@ public static class LedgerDimensionTags
                || !string.IsNullOrWhiteSpace(dimensions.AccountId)
                || !string.IsNullOrWhiteSpace(dimensions.CustomerId)
                || !string.IsNullOrWhiteSpace(dimensions.VendorId)
-               || !string.IsNullOrWhiteSpace(dimensions.ProjectId);
+               || !string.IsNullOrWhiteSpace(dimensions.ProjectId)
+            || !string.IsNullOrWhiteSpace(dimensions.AgreementId)
+            || !string.IsNullOrWhiteSpace(dimensions.AgreementRevisionId)
+            || !string.IsNullOrWhiteSpace(dimensions.ChartAccountNodeId)
+            || !string.IsNullOrWhiteSpace(dimensions.AccountBindingRevisionId)
+            || !string.IsNullOrWhiteSpace(dimensions.IntercompanyTransactionId);
     }
 
     /// <summary>

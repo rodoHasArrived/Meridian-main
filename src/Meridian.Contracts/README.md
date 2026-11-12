@@ -6,10 +6,16 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Contracts
+
+Intercompany contracts retain immutable agreement terms, lifecycle timelines, source proposal facts,
+stable account-role bindings, approved FX sets and exact legacy-attribution digests. New optional
+ledger dimensions omit null fields to preserve legacy evidence hashes. Consolidation evidence pins
+participating policy versions; shared browser/WPF contracts carry translation and rounding separately.
+See [intercompany domain guidance](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 
 `BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
 for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
@@ -2028,6 +2034,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

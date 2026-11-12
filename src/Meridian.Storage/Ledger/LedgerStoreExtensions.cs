@@ -53,7 +53,8 @@ public static class LedgerStoreExtensions
         services.AddSingleton<ILedgerBookService>(sp =>
             new PostgresLedgerBookService(
                 sp.GetRequiredService<ILedgerJournalStore>(),
-                sp.GetService<IOperatorInboxService>()));
+                    sp.GetService<IOperatorInboxService>(),
+                    sp.GetService<IConsolidationBookPolicyValidator>()));
 
         return services;
     }

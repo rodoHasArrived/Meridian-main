@@ -51,9 +51,18 @@ internal static class LedgerLineDimensionSetFields
         ("projectId", static dimensions => dimensions.ProjectId)
     ];
 
+    internal static readonly (string Name, Func<LedgerLineDimensionSet, string?> GetValue)[] IntercompanyStringFields =
+    [
+        ("agreementId", static dimensions => dimensions.AgreementId),
+        ("agreementRevisionId", static dimensions => dimensions.AgreementRevisionId),
+        ("chartAccountNodeId", static dimensions => dimensions.ChartAccountNodeId),
+        ("accountBindingRevisionId", static dimensions => dimensions.AccountBindingRevisionId),
+        ("intercompanyTransactionId", static dimensions => dimensions.IntercompanyTransactionId)
+    ];
+
     /// <summary>All string-valued dimension fields in canonical order.</summary>
     internal static readonly (string Name, Func<LedgerLineDimensionSet, string?> GetValue)[] StringFields =
-        [.. LeadingStringFields, .. TrailingStringFields];
+        [.. LeadingStringFields, .. TrailingStringFields, .. IntercompanyStringFields];
 
     /// <summary>
     /// Enumerates the populated fields of a canonicalized dimension set in canonical order,
@@ -77,7 +86,7 @@ internal static class LedgerLineDimensionSetFields
         if (dimensions.PositionId is not null)
             yield return new LedgerDimensionField("positionId", dimensions.PositionId.Value.ToString("D"));
 
-        foreach (var (name, getValue) in TrailingStringFields)
+        foreach (var (name, getValue) in TrailingStringFields.Concat(IntercompanyStringFields))
         {
             if (getValue(dimensions) is { } value)
                 yield return new LedgerDimensionField(name, value);
@@ -119,6 +128,10 @@ internal static class LedgerLineDimensionSetFields
                 .Append(dimensions.PositionId.Value.ToString("D", CultureInfo.InvariantCulture));
         }
 
+        // New optional dimensions never change a legacy scope key when absent.
+        foreach (var (name, getValue) in IntercompanyStringFields)
+            if (getValue(dimensions) is { } value)
+                builder.Append('\u001e').Append(name).Append('=').Append(value);
         return builder.ToString();
     }
 }

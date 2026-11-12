@@ -935,7 +935,12 @@ public sealed partial class AccountingConfigurationService
             VendorId: FirstText(overlay.VendorId, baseDimensions?.VendorId),
             ProjectId: FirstText(overlay.ProjectId, baseDimensions?.ProjectId))
         {
-            PositionId = overlay.PositionId ?? baseDimensions?.PositionId
+            PositionId = overlay.PositionId ?? baseDimensions?.PositionId,
+            AgreementId = FirstText(overlay.AgreementId, baseDimensions?.AgreementId),
+            AgreementRevisionId = FirstText(overlay.AgreementRevisionId, baseDimensions?.AgreementRevisionId),
+            ChartAccountNodeId = FirstText(overlay.ChartAccountNodeId, baseDimensions?.ChartAccountNodeId),
+            AccountBindingRevisionId = FirstText(overlay.AccountBindingRevisionId, baseDimensions?.AccountBindingRevisionId),
+            IntercompanyTransactionId = FirstText(overlay.IntercompanyTransactionId, baseDimensions?.IntercompanyTransactionId)
         };
     }
 

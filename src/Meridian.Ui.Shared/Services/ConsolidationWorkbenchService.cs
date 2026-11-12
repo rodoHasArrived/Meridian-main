@@ -74,7 +74,7 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
     public static ConsolidationViewDto Project(ConsolidationCalculation calculation,
         IReadOnlyList<ManualJournalEntryDraftDto> retained)
     {
-        var rows = calculation.SourceRecords.SelectMany(x => x.Entry.Lines).Select(x => x.Account)
+        var rows = calculation.GovernedSources is not null ? ProjectGovernedBalances(calculation) : calculation.SourceRecords.SelectMany(x => x.Entry.Lines).Select(x => x.Account)
             .Concat(calculation.Posted.SelectMany(x => x.Entry.Lines).Select(x => x.Account))
             .GroupBy(x => new { x.Name, x.AccountType }).Select(x => x.First())
             .OrderBy(x => x.Name, StringComparer.Ordinal).Select(account =>
@@ -114,9 +114,43 @@ public sealed class ConsolidationWorkbenchService(ConsolidationService consolida
             .ToArray();
         return new ConsolidationViewDto(calculation.Request, calculation.Book.FundProfileId,
             calculation.Perimeter.Currency, calculation.Perimeter.ScopeLimitation +
-            " Primary basis; one Primary book per entity; dedicated elimination book; receivable/payable rule w10-v1. No FX, minority interests, investment/equity or income/expense elimination.",
+            (calculation.Evidence.RuleVersion == "w10-v1"
+                ? " Primary basis; one Primary book per entity; dedicated elimination book; receivable/payable rule w10-v1. No FX, minority interests, investment/equity or income/expense elimination."
+                : $" Primary basis; governed rule {calculation.Evidence.RuleVersion}; no minority-interest or investment/equity elimination."),
             calculation.Perimeter.Entities.Select(x => x.EntityId.ToString("D")).ToArray(),
             calculation.Perimeter.OwnershipEvidence.Select(x => x.OwnershipLinkId).ToArray(), rows,
-            calculation.Matches, summaries, calculation.Blockers, calculation.Evidence.SourceFingerprint);
+            calculation.Matches, summaries, calculation.Blockers, calculation.Evidence.SourceFingerprint)
+        { RuleVersion = calculation.Evidence.RuleVersion, TranslationFingerprint = calculation.Evidence.TranslationFingerprint,
+          TranslationReserve = calculation.TranslationReserve,
+          TranslationDifferences = calculation.TranslationDifferences, RoundingDifferences = calculation.RoundingDifferences,
+          EntityNames = calculation.Perimeter.Entities.ToDictionary(entity => entity.EntityId.ToString("D"), entity => entity.Name) };
+    }
+
+    private static ConsolidationBalanceDto[] ProjectGovernedBalances(ConsolidationCalculation calculation)
+    {
+        var sources = calculation.GovernedSources!;
+        if (calculation.Evidence.TranslationFingerprint is not null && calculation.Blockers.Count > 0 && sources.Count == 0)
+            return [];
+        var bindings = calculation.Evidence.AccountBindings!.Where(x => x.LedgerBookId == calculation.Book.LedgerBookId).ToArray();
+        string Normalize(LedgerAccount account) => bindings.SingleOrDefault(x => x.AccountName == account.Name ||
+            x.AccountPath == account.Name || x.HistoricalNames.Contains(account.Name, StringComparer.Ordinal))?.AccountPath ?? account.Name;
+        var posted = calculation.Posted.SelectMany(x => x.Entry.Lines).ToArray();
+        var accounts = sources.Select(x => (Name: x.AccountPath, Type: x.AccountType!))
+            .Concat(posted.Select(x => (Name: Normalize(x.Account), Type: x.Account.AccountType.ToString())))
+            .Concat(calculation.ProposedLines.Select(x => (Name: x.AccountPath,
+                Type: bindings.Single(b => b.ChartAccountNodeId == x.Dimensions?.ChartAccountNodeId).AccountType)))
+            .Distinct().OrderBy(x => x.Name, StringComparer.Ordinal);
+        return accounts.Select(account =>
+        {
+            var factor = account.Type is "Liability" or "Equity" or "Revenue" ? -1m : 1m;
+            var supporting = sources.Where(x => x.AccountPath == account.Name && x.AccountType == account.Type).ToArray();
+            var gross = supporting.Sum(x => x.Debit - x.Credit) * factor;
+            var committed = posted.Where(x => Normalize(x.Account) == account.Name && x.Account.AccountType.ToString() == account.Type)
+                .Sum(x => x.Debit - x.Credit) * factor;
+            var proposed = calculation.Blockers.Count > 0 ? 0m : calculation.ProposedLines.Where(x => x.AccountPath == account.Name)
+                .Sum(x => x.Side == AccountingTemplateLineSideDto.Debit ? x.Amount : -x.Amount) * factor;
+            return new ConsolidationBalanceDto(account.Name, account.Type, gross, proposed, committed,
+                gross + committed, gross + committed + proposed, supporting);
+        }).ToArray();
     }
 }

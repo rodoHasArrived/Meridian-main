@@ -735,7 +735,8 @@ export type EvidenceDocumentLinkKind =
   | "CloseTask"
   | "Fund"
   | "StatementRun"
-  | "StatementImport";
+  | "StatementImport"
+  | "IntercompanyAgreement";
 
 export type EvidenceDocumentReviewStatus = "Unreviewed" | "NeedsReview" | "Accepted" | "Rejected";
 
@@ -1388,6 +1389,11 @@ export interface LedgerDimensionSet {
   customerId?: string | null;
   vendorId?: string | null;
   projectId?: string | null;
+  agreementId?: string | null;
+  agreementRevisionId?: string | null;
+  chartAccountNodeId?: string | null;
+  accountBindingRevisionId?: string | null;
+  intercompanyTransactionId?: string | null;
 }
 
 export interface DimensionMappingProfile {

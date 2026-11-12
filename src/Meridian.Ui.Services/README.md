@@ -6,10 +6,22 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Services
+
+`Services/Accounting/WorkstationEntityConsolidationApiClient` consumes the shared entity timeline,
+period list and consolidation preview/draft routes without calculating finance locally. Responses
+must retain the requested organization/entity/as-of or consolidation scope. Its companion
+`WorkstationManualJournalApiClient` lets Accounting Configure review the same retained server
+drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
+tenant authority. Refused, stale and unavailable responses never produce local success.
+
+The shared entity/consolidation API client supplies authorized organization/entity/book/period
+choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
+scope and server-calculated capabilities; no workstation client derives financial truth locally.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
 
 Shared API response options accept exact decimal strings as well as legacy numeric tokens, so
 typed fixed-income reads preserve nullable and nested financial values. API request serialization
@@ -167,6 +179,7 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W4-RPT-001` | Governed report pack readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

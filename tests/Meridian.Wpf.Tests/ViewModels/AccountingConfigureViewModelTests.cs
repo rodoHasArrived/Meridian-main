@@ -26,6 +26,43 @@ public sealed class AccountingConfigureViewModelTests : IDisposable
         Guid.NewGuid().ToString("N"));
 
     [Fact]
+    public async Task RetainedConsolidationDraft_KeepsAllLinesAndUsesGovernedReviewActions()
+    {
+        Directory.CreateDirectory(_root);
+        var context = new FundContextService(Path.Combine(_root, "consolidation-fund-context.json"));
+        var profile = await context.UpsertProfileAsync(new FundProfileDetail(
+            "alpha-fund", "Alpha Fund", "Alpha Fund LP", "USD", "accounting", "FundAccountingConfigure",
+            FundLedgerScope.Consolidated, ["entity-alpha"], ["sleeve-credit"], ["vehicle-master"], IsDefault: true));
+        await context.SelectFundProfileAsync(profile.FundProfileId);
+        var harness = CreateHarness(context);
+        await harness.ViewModel.LoadAsync();
+        await harness.ViewModel.SeedBaselineConfigurationAsync();
+        harness.ViewModel.DraftAmount = 100m;
+        await harness.ViewModel.SaveManualJournalDraftAsync();
+        var store = new FileManualJournalEntryDraftStore(harness.DraftsPath);
+        var draft = (await store.ListAsync("alpha-fund")).Single();
+        var retained = draft with
+        {
+            Lines = draft.Lines.Concat(draft.Lines.Select(line => line with { LineId = Guid.NewGuid().ToString("D") })).ToArray(),
+            RequiresConsolidationEvidence = true
+        };
+        await store.SaveAsync(retained);
+        await harness.ViewModel.RefreshAsync();
+        var view = harness.ViewModel;
+        view.SelectedManualJournalDraftRow = view.ManualJournalDraftRows.Single();
+        view.IsConsolidationDraft.Should().BeTrue();
+        view.IsReadOnlyRetainedDraft.Should().BeTrue();
+        view.IsAssetAccountingDraft.Should().BeFalse();
+        view.CanEditManualJournalDraft.Should().BeFalse();
+        view.AssetAccountingDraftLines.Should().HaveCount(4).And.BeEquivalentTo(retained.Lines);
+        view.SaveManualJournalDraftCommand.CanExecute(null).Should().BeFalse();
+        view.ApproveManualJournalCommand.CanExecute(null).Should().BeTrue();
+        view.PostManualJournalCommand.CanExecute(null).Should().BeTrue();
+        view.ReverseManualJournalCommand.CanExecute(null).Should().BeFalse();
+        view.RebookManualJournalCommand.CanExecute(null).Should().BeFalse();
+    }
+
+    [Fact]
     public async Task LocalRetainedAssetDraft_RemainsVisibleAndBlocksGenericLifecycle()
     {
         Directory.CreateDirectory(_root);

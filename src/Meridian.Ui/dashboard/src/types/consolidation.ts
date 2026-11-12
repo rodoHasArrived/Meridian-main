@@ -20,6 +20,17 @@ export interface ConsolidationSource {
   credit: number;
   effectiveDate: string;
   drillThrough: string;
+  originalAccountPath?: string | null;
+  currency?: string | null;
+  chartAccountNodeId?: string | null;
+  accountBindingRevisionId?: string | null;
+  agreementId?: string | null;
+  agreementRevisionId?: string | null;
+  intercompanyTransactionId?: string | null;
+  transactionCurrency?: string | null;
+  transactionDebit?: number | null;
+  transactionCredit?: number | null;
+  counterpartyDisposition?: string | null;
 }
 
 export interface ConsolidationBalance {
@@ -42,6 +53,14 @@ export interface ConsolidationMatch {
   unmatchedReceivable: number;
   unmatchedPayable: number;
   sources: ConsolidationSource[];
+  agreementId?: string | null;
+  treatment?: string | null;
+  matchingCurrency?: string | null;
+  matchedTransactionAmount?: number | null;
+  unmatchedFirstTransactionAmount?: number | null;
+  unmatchedSecondTransactionAmount?: number | null;
+  translationDifference?: number | null;
+  intercompanyTransactionId?: string | null;
 }
 
 export interface ConsolidationDraftSummary {
@@ -65,4 +84,10 @@ export interface ConsolidationView {
   blockers: string[];
   sourceFingerprint: string;
   canCreateDrafts?: boolean;
+  ruleVersion?: string | null;
+  translationFingerprint?: string | null;
+  translationReserve?: Record<string, number> | null;
+  translationDifferences?: Record<string, number> | null;
+  roundingDifferences?: Record<string, number> | null;
+  entityNames?: Record<string, string> | null;
 }

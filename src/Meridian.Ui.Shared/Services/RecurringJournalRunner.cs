@@ -368,7 +368,12 @@ public sealed class RecurringJournalRunner(
             CustomerId = line.CustomerId ?? schedule.CustomerId,
             VendorId = line.VendorId ?? schedule.VendorId,
             ProjectId = line.ProjectId ?? schedule.ProjectId,
-            PositionId = line.PositionId ?? schedule.PositionId
+            PositionId = line.PositionId ?? schedule.PositionId,
+            AgreementId = line.AgreementId ?? schedule.AgreementId,
+            AgreementRevisionId = line.AgreementRevisionId ?? schedule.AgreementRevisionId,
+            ChartAccountNodeId = line.ChartAccountNodeId ?? schedule.ChartAccountNodeId,
+            AccountBindingRevisionId = line.AccountBindingRevisionId ?? schedule.AccountBindingRevisionId,
+            IntercompanyTransactionId = line.IntercompanyTransactionId ?? schedule.IntercompanyTransactionId
         };
     }
 

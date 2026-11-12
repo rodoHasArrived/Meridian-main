@@ -152,6 +152,7 @@ public sealed partial class AccountingConfigurationService
     {
         var issues = new List<AccountingConfigurationValidationIssueDto>();
         var chartByPath = BuildChartByPath(workspace.ChartOfAccounts);
+        issues.AddRange(ValidateIntercompanyAccountRoles(workspace.ChartOfAccounts));
         if (requireLedgerBookSetup && workspace.LedgerBookId is { } ledgerBookId &&
             !workspace.LedgerBooks.Any(book => book.LedgerBookId == ledgerBookId))
         {

@@ -21,7 +21,9 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
         Guid organizationId,
         Guid ownershipRootId,
         DateTimeOffset asOf,
-        CancellationToken ct = default)
+        CancellationToken ct = default,
+        bool allowMultipleEntities = false,
+        bool allowTranslation = false)
     {
         if (organizationId == Guid.Empty || ownershipRootId == Guid.Empty)
             throw new ArgumentException("Consolidation requires organization and ownership-root identifiers.");
@@ -57,7 +59,8 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
 
         var memberLinks = links.Where(link => link.ParentNodeId == ownershipRootId
             && link.RelationshipType == OwnershipRelationshipTypeDto.Owns).ToArray();
-        if (memberLinks.Length != 2 || memberLinks.Select(link => link.ChildNodeId).Distinct().Count() != 2)
+        if ((!allowMultipleEntities && memberLinks.Length != 2) || memberLinks.Length < 2 ||
+            memberLinks.Select(link => link.ChildNodeId).Distinct().Count() != memberLinks.Length)
             throw new InvalidOperationException("The first consolidation slice requires exactly two directly owned legal entities.");
 
         var entities = new List<LegalEntitySummaryDto>(2);
@@ -76,7 +79,7 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
         }
 
         var currency = NormalizeCurrency(entities[0].BaseCurrency);
-        if (!StringComparer.Ordinal.Equals(currency, NormalizeCurrency(entities[1].BaseCurrency)))
+        if (!allowTranslation && entities.Any(entity => !StringComparer.Ordinal.Equals(currency, NormalizeCurrency(entity.BaseCurrency))))
             throw new InvalidOperationException("Both consolidation entities must use the same base currency; currency translation is unsupported.");
 
         var evidence = memberLinks.Concat([organizationLink, businessLink]).OrderBy(link => link.OwnershipLinkId).ToArray();
@@ -85,7 +88,9 @@ public sealed class ConsolidationPerimeterResolver(IFundStructureService structu
             throw new InvalidOperationException("Ownership evidence requires unique, nonempty link identifiers.");
 
         return new ConsolidationPerimeter(organizationId, ownershipRootId, asOf, currency,
-            entities.OrderBy(entity => entity.EntityId).ToArray(), evidence, FirstSliceLimitation);
+            entities.OrderBy(entity => entity.EntityId).ToArray(), evidence,
+            allowMultipleEntities ? "All direct 100%-owned entities; no partial ownership or minority interest. " +
+                (allowTranslation ? "Governed reporting-currency translation." : "One shared functional currency.") : FirstSliceLimitation);
     }
 
     private static T RequireSingle<T>(IEnumerable<T> items, string description)

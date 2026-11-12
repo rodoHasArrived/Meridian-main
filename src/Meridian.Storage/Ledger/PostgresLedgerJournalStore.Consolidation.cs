@@ -43,6 +43,8 @@ public sealed partial class PostgresLedgerJournalStore
         if (evidence is null)
             return;
 
+        await ValidateConsolidationReportingRouteUnderAuditAsync(connection, transaction, evidence, ct).ConfigureAwait(false);
+
         // The ledger audit head is already locked. All supported journal append paths take that
         // lock, so a source/correction cannot commit between this check and the elimination.
         // READ COMMITTED sees the preceding writer; SERIALIZABLE retries the whole transaction
@@ -89,14 +91,53 @@ public sealed partial class PostgresLedgerJournalStore
                     "Consolidation source balances or posted eliminations changed after review; rerun consolidation and obtain renewed review.");
         }
     }
+    private async Task ValidateConsolidationReportingRouteUnderAuditAsync(NpgsqlConnection connection,
+        NpgsqlTransaction transaction, ConsolidationEvidenceDto evidence, CancellationToken ct)
+    {
+        // Two empty replacement books can be previewed concurrently. Recheck the complete root
+        // under the append audit head so only the first untransitioned book can acquire history.
+        await using var command = connection.CreateCommand();
+        command.Transaction = transaction;
+        command.CommandText = $"""
+            select exists(
+                select 1 from {Qualified("ledger_books")} current_book
+                join {Qualified("ledger_books")} other on other.fund_profile_id=current_book.fund_profile_id
+                    and other.fund_structure_node_id=current_book.fund_structure_node_id
+                    and other.fund_structure_node_kind='Fund' and other.accounting_basis='Primary'
+                    and other.ledger_book_id<>current_book.ledger_book_id
+                    and other.tenant_id is not distinct from current_book.tenant_id
+                where current_book.ledger_book_id=@book
+                  and exists(select 1 from {Qualified("journal_entries")} je
+                    join {Qualified("accounting_periods")} p on p.period_id=je.period_id
+                    where p.ledger_book_id=other.ledger_book_id
+                      and ((je.metadata->'tags') ? 'consolidation.evidence'
+                        or coalesce(je.metadata->>'idempotencyKey','') like 'consolidation:%'))
+                  and not exists(select 1 from {Qualified("consolidation_transition_receipts")} future_route
+                    where future_route.new_book_id=other.ledger_book_id and future_route.organization_id=@organization
+                      and future_route.ownership_root_id=@root and future_route.cutover_date>@as_of
+                      and lower(future_route.tenant_id)=lower(coalesce(current_book.tenant_id,@tenant)))
+                  and not exists(select 1 from {Qualified("consolidation_transition_receipts")} r
+                    where r.previous_book_id=other.ledger_book_id and r.organization_id=@organization
+                      and r.ownership_root_id=@root and r.cutover_date<=@as_of
+                      and lower(r.tenant_id)=lower(coalesce(current_book.tenant_id,@tenant))));
+            """;
+        command.Parameters.AddWithValue("book", evidence.Request.EliminationBookId);
+        command.Parameters.AddWithValue("organization", evidence.Request.OrganizationId);
+        command.Parameters.AddWithValue("root", evidence.Request.OwnershipRootId);
+        command.Parameters.AddWithValue("as_of", evidence.Request.AsOf);
+        command.Parameters.AddWithValue("tenant", ResolveCallerTenant() ?? string.Empty);
+        if ((bool)(await command.ExecuteScalarAsync(ct).ConfigureAwait(false))!)
+            throw new LedgerValidationException("Another established reporting book is active for this root; approve an explicit reporting cutover before posting a replacement overlay.");
+    }
+
 }
 
 /// <summary>Reserved evidence is checked even when a caller bypasses the workbench.</summary>
-internal static class ConsolidationPostingEvidenceGuard
+public static class ConsolidationPostingEvidenceGuard
 {
     private static readonly JsonSerializerOptions EvidenceJsonOptions = new(JsonSerializerDefaults.Web);
 
-    internal static ConsolidationEvidenceDto? Validate(LedgerJournalEntryWrite write)
+    public static ConsolidationEvidenceDto? Validate(LedgerJournalEntryWrite write)
     {
         var tags = write.Entry.Metadata.Tags;
         var hasEvidence = tags?.TryGetValue("consolidation.evidence", out _) == true;
@@ -144,7 +185,7 @@ internal static class ConsolidationPostingEvidenceGuard
             throw new LedgerValidationException("Consolidation reviewed evidence must match the posting book, period and effective date.");
 
         if (!string.Equals(write.RuleId, "consolidation.receivable-payable", StringComparison.Ordinal)
-            || !string.Equals(evidence.RuleVersion, "w10-v1", StringComparison.Ordinal)
+            || evidence.RuleVersion is not ("w10-v1" or "w10-v2" or "w10-v3" or "w10-v4")
             || !string.Equals(write.RuleVersion, evidence.RuleVersion, StringComparison.Ordinal)
             || (command.RulePackReference?.SelectedRuleId is { } selectedRuleId
                 && !string.Equals(selectedRuleId, write.RuleId, StringComparison.Ordinal))
@@ -152,10 +193,13 @@ internal static class ConsolidationPostingEvidenceGuard
                 && !string.Equals(selectedRuleVersion, evidence.RuleVersion, StringComparison.Ordinal)))
             throw new LedgerValidationException("Consolidation posting rule lineage must match the reviewed receivable/payable rule w10-v1.");
 
-        if (evidence.BookVersions is not { Count: 3 }
+        var expectedBooks = evidence.RuleVersion == "w10-v1" ? 3 :
+            evidence.EntityIds is { Count: >= 2 } entities && entities.Distinct(StringComparer.Ordinal).Count() == entities.Count
+                ? entities.Count + 1 : 0;
+        if (expectedBooks < 3 || evidence.BookVersions is null || evidence.BookVersions.Count != expectedBooks
             || evidence.BookVersions.Any(item => item is null || item.LedgerBookId == Guid.Empty
                 || item.JournalCount < 0 || item.MaxSequence < 0 || (item.JournalCount == 0) != (item.MaxSequence == 0))
-            || evidence.BookVersions.Select(item => item.LedgerBookId).Distinct().Count() != 3
+            || evidence.BookVersions.Select(item => item.LedgerBookId).Distinct().Count() != expectedBooks
             || !evidence.BookVersions.Any(item => item.LedgerBookId == evidence.Request.EliminationBookId))
             throw new LedgerValidationException("Consolidation requires reviewed versions for both source books and the elimination book.");
 
@@ -192,6 +236,23 @@ internal static class ConsolidationPostingEvidenceGuard
                 || sourceId != command.SourceJournalEntryId.Value)))
             throw new LedgerValidationException("Consolidation source journal metadata must match the reviewed correction lineage.");
 
+        if (evidence.RuleVersion != "w10-v1")
+        {
+            var expectedRules = evidence.RuleVersion == "w10-v4"
+                ? new[] { "consolidation.receivable-payable", "consolidation.revenue-expense" }
+                : new[] { "consolidation.receivable-payable" };
+            if (evidence.RulePackReference is null || command.RulePackReference != evidence.RulePackReference ||
+                evidence.RulePackReference.SelectedRuleId != write.RuleId || evidence.RulePackReference.SelectedRuleVersion != evidence.RuleVersion)
+                throw new LedgerValidationException("Governed consolidation requires its exact reviewed accounting rule-pack reference.");
+            if (evidence.ParticipatingRules is null || evidence.ParticipatingRules.Count != expectedRules.Length ||
+                evidence.ParticipatingRules.Any(x => x.RuleVersion != evidence.RuleVersion) ||
+                !expectedRules.Order(StringComparer.Ordinal).SequenceEqual(evidence.ParticipatingRules.Select(x => x.RuleId).Order(StringComparer.Ordinal)) ||
+                evidence.AccountBindings is not { Count: > 0 })
+                throw new LedgerValidationException("Governed consolidation requires exact participating policy rules and stable account binding evidence.");
+            if (evidence.RuleVersion is "w10-v3" or "w10-v4" &&
+                (string.IsNullOrWhiteSpace(evidence.TranslationFingerprint) || string.IsNullOrWhiteSpace(evidence.TranslationEvidenceJson)))
+                throw new LedgerValidationException("Translated consolidation requires retained governed FX evidence.");
+        }
         ValidateLines(write, evidence);
         return evidence;
     }
@@ -205,8 +266,8 @@ internal static class ConsolidationPostingEvidenceGuard
             var expected = evidence.ExpectedLines[index];
             var actual = write.Entry.Lines[index];
             if (expected is null || expected.Amount <= 0m || !Enum.IsDefined(expected.Side)
-                || actual.Account.Name != expected.AccountPath
-                || !IsSupportedAccount(actual.Account)
+                || (evidence.RuleVersion == "w10-v1" && actual.Account.Name != expected.AccountPath)
+                || !IsSupportedAccount(actual.Account, expected, evidence)
                 || actual.Debit != (expected.Side == AccountingTemplateLineSideDto.Debit ? expected.Amount : 0m)
                 || actual.Credit != (expected.Side == AccountingTemplateLineSideDto.Credit ? expected.Amount : 0m)
                 || actual.Account.Symbol != expected.LedgerAccountSymbol
@@ -222,7 +283,27 @@ internal static class ConsolidationPostingEvidenceGuard
         }
     }
 
-    private static bool IsSupportedAccount(LedgerAccount account) => (account.Name, account.AccountType) is
-        ("Assets:Intercompany Receivable", LedgerAccountType.Asset) or
-        ("Liabilities:Intercompany Payable", LedgerAccountType.Liability);
+    private static bool IsSupportedAccount(LedgerAccount account, ManualJournalEntryLineDto line, ConsolidationEvidenceDto evidence)
+    {
+        if (evidence.RuleVersion == "w10-v1")
+            return (account.Name, account.AccountType) is
+                ("Assets:Intercompany Receivable", LedgerAccountType.Asset) or
+                ("Liabilities:Intercompany Payable", LedgerAccountType.Liability);
+        var matches = evidence.AccountBindings!.Where(binding =>
+            binding.LedgerBookId == evidence.Request.EliminationBookId && !binding.IsArchived &&
+            binding.ChartAccountNodeId == line.Dimensions?.ChartAccountNodeId &&
+            binding.RevisionId.ToString("D") == line.Dimensions?.AccountBindingRevisionId &&
+            binding.AccountPath == line.AccountPath && binding.AccountName == account.Name &&
+            string.Equals(binding.AccountType, account.AccountType.ToString(), StringComparison.OrdinalIgnoreCase)).ToArray();
+        if (matches.Length != 1 || account.Symbol is not null || account.FinancialAccountId is not null) return false;
+        return (matches[0].Role, account.AccountType) switch
+        {
+            (IntercompanyAccountRoleDto.Receivable, LedgerAccountType.Asset) => true,
+            (IntercompanyAccountRoleDto.Payable, LedgerAccountType.Liability) => true,
+            (IntercompanyAccountRoleDto.TranslationReserve, LedgerAccountType.Equity) => evidence.RuleVersion is "w10-v3" or "w10-v4",
+            (IntercompanyAccountRoleDto.Revenue, LedgerAccountType.Revenue) => evidence.RuleVersion == "w10-v4",
+            (IntercompanyAccountRoleDto.Expense, LedgerAccountType.Expense) => evidence.RuleVersion == "w10-v4",
+            _ => false
+        };
+    }
 }

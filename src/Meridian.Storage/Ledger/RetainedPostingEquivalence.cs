@@ -207,6 +207,8 @@ public static class RetainedPostingEquivalence
     /// </summary>
     private static bool IsRebuildableTag(string key)
         => !key.StartsWith("lineDimensions.", StringComparison.OrdinalIgnoreCase)
+           // The append boundary adds this immutable decision receipt after command review.
+           && !string.Equals(key, "controls.eligibility", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(key, "approvalState", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(key, "approvalId", StringComparison.OrdinalIgnoreCase)
            && !string.Equals(
@@ -302,6 +304,11 @@ public static class RetainedPostingEquivalence
             && TextMatches(retained.CustomerId, candidate.CustomerId)
             && TextMatches(retained.VendorId, candidate.VendorId)
             && TextMatches(retained.ProjectId, candidate.ProjectId)
+            && TextMatches(retained.AgreementId, candidate.AgreementId)
+            && TextMatches(retained.AgreementRevisionId, candidate.AgreementRevisionId)
+            && TextMatches(retained.ChartAccountNodeId, candidate.ChartAccountNodeId)
+            && TextMatches(retained.AccountBindingRevisionId, candidate.AccountBindingRevisionId)
+            && TextMatches(retained.IntercompanyTransactionId, candidate.IntercompanyTransactionId)
             && ExternalDimensionsMatch(retained.ExternalGlDimensions, candidate.ExternalGlDimensions);
     }
 

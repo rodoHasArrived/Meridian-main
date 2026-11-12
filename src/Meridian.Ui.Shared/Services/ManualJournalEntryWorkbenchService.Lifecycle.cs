@@ -1018,7 +1018,12 @@ public sealed partial class ManualJournalEntryWorkbenchService
             VendorId: NormalizeOptional(dimensions?.VendorId),
             ProjectId: NormalizeOptional(dimensions?.ProjectId))
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            AgreementId = NormalizeOptional(dimensions?.AgreementId),
+            AgreementRevisionId = NormalizeOptional(dimensions?.AgreementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions?.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions?.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions?.IntercompanyTransactionId)
         };
 
         return LedgerDimensionTags.HasAnyDimension(normalized) ? normalized : null;

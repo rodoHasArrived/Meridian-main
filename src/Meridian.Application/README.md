@@ -6,10 +6,17 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Application
+
+`IntercompanyEntityServiceRegistration` composes shared agreement/lifecycle, account-binding,
+legacy-attribution and FX authority for CLI and workstation hosts. PostgreSQL registration supplies
+book-control, atomic proposal and consolidation commit boundaries; local file counterparts preserve
+scope and explicit unavailable capabilities. Generic posting delegates validated consolidation to
+its specialized authority instead of reacquiring the same fences. See
+[the staged implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
 
 Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
 the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
@@ -1478,6 +1485,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W5-ACCT-001` | Accounting records and operational evidence |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W10-MARK-001` | Fail-closed stale-mark policy and mark-age surfacing |
+| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

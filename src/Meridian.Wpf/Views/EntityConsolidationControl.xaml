@@ -1,0 +1,197 @@
+<UserControl x:Class="Meridian.Wpf.Views.EntityConsolidationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Entities and governed consolidation">
+    <UserControl.Resources>
+        <Style x:Key="EvidenceGrid" TargetType="DataGrid">
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="MaxHeight" Value="300" />
+            <Setter Property="Margin" Value="0,10,0,12" />
+            <Setter Property="EnableRowVirtualization" Value="True" />
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto" />
+        </Style>
+        <Style x:Key="ScopeLabel" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0,0,0,5" />
+            <Setter Property="Foreground" Value="{DynamicResource ConsoleTextSecondaryBrush}" />
+        </Style>
+    </UserControl.Resources>
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="0,16,0,0">
+            <TextBlock Text="ENTITIES AND GOVERNED CONSOLIDATION" Style="{DynamicResource CardHeaderStyle}" />
+            <TextBlock Text="Inspect retained entity history. Compare gross balances with reviewed elimination overlays before creating journal drafts."
+                       TextWrapping="Wrap" Margin="0,6,0,12" Foreground="{DynamicResource ConsoleTextSecondaryBrush}" />
+            <WrapPanel>
+                <Button Content="Load authorized organizations" Command="{Binding LoadChoicesCommand}" Margin="0,0,12,10"
+                        AutomationProperties.AutomationId="EntityConsolidationLoadScope" />
+                <StackPanel Width="260" Margin="0,0,12,10">
+                    <TextBlock Text="Organization" Style="{StaticResource ScopeLabel}" />
+                    <ComboBox ItemsSource="{Binding Organizations}" SelectedItem="{Binding SelectedOrganization}" DisplayMemberPath="Name"
+                              AutomationProperties.Name="Organization" />
+                </StackPanel>
+                <StackPanel Width="180" Margin="0,0,12,10">
+                    <TextBlock Text="As of (UTC date)" Style="{StaticResource ScopeLabel}" />
+                    <DatePicker SelectedDate="{Binding AsOf}" AutomationProperties.Name="As of UTC date" />
+                </StackPanel>
+            </WrapPanel>
+            <TextBlock Text="{Binding Status}" TextWrapping="Wrap" Margin="0,0,0,14"
+                       AutomationProperties.LiveSetting="Polite" AutomationProperties.AutomationId="EntityConsolidationStatus" />
+
+            <Border Padding="14" Margin="0,0,0,16" BorderThickness="1" BorderBrush="{DynamicResource ConsoleBorderBrush}">
+                <StackPanel>
+                    <TextBlock Text="ENTITY TIMELINE" Style="{DynamicResource CardHeaderStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <ComboBox Width="320" ItemsSource="{Binding Entities}" SelectedItem="{Binding SelectedEntity}" DisplayMemberPath="Name"
+                                  AutomationProperties.Name="Legal entity" Margin="0,0,12,10" />
+                        <Button Content="Load entity timeline" Command="{Binding LoadTimelineCommand}" Margin="0,0,0,10"
+                                AutomationProperties.AutomationId="LoadEntityTimeline" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding EntityDetail}" TextWrapping="Wrap" />
+                    <ItemsControl ItemsSource="{Binding Warnings}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Expander Header="Lifecycle revisions and retained evidence" IsExpanded="True" Margin="0,12,0,0">
+                        <DataGrid ItemsSource="{Binding TimelineRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Lifecycle revisions">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Revision / status" Binding="{Binding Name}" Width="210" />
+                                <DataGridTextColumn Header="Event" Binding="{Binding Status}" Width="140" />
+                                <DataGridTextColumn Header="Effective window" Binding="{Binding Detail}" Width="360" />
+                                <DataGridTextColumn Header="Actor / reason / evidence / hash" Binding="{Binding Evidence}" Width="600" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Ownership links" Margin="0,6,0,0">
+                        <DataGrid ItemsSource="{Binding OwnershipRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Entity ownership links">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Relationship" Binding="{Binding Name}" Width="140" />
+                                <DataGridTextColumn Header="Ownership %" Binding="{Binding Status}" Width="120" />
+                                <DataGridTextColumn Header="Parent → child" Binding="{Binding Detail}" Width="540" />
+                                <DataGridTextColumn Header="Window / source identity" Binding="{Binding Evidence}" Width="500" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Intercompany agreements" Margin="0,6,0,0">
+                        <DataGrid ItemsSource="{Binding AgreementRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Entity agreements">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Kind" Binding="{Binding Name}" Width="160" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                                <DataGridTextColumn Header="Currency / settlement" Binding="{Binding Detail}" Width="250" />
+                                <DataGridTextColumn Header="Agreement / effective window" Binding="{Binding Evidence}" Width="650" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Ledger books" Margin="0,6,0,0">
+                        <DataGrid ItemsSource="{Binding BookRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Entity ledger books">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Book" Binding="{Binding Name}" Width="260" />
+                                <DataGridTextColumn Header="Basis" Binding="{Binding Status}" Width="140" />
+                                <DataGridTextColumn Header="Currency" Binding="{Binding Detail}" Width="120" />
+                                <DataGridTextColumn Header="Book / policy identity" Binding="{Binding Evidence}" Width="600" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                </StackPanel>
+            </Border>
+
+            <Border Padding="14" Margin="0,0,0,16" BorderThickness="1" BorderBrush="{DynamicResource ConsoleBorderBrush}">
+                <StackPanel>
+                    <TextBlock Text="CONSOLIDATION" Style="{DynamicResource CardHeaderStyle}" />
+                    <WrapPanel Margin="0,12,0,0">
+                        <StackPanel Width="280" Margin="0,0,12,10">
+                            <TextBlock Text="Fund ownership root" Style="{StaticResource ScopeLabel}" />
+                            <ComboBox ItemsSource="{Binding OwnershipRoots}" SelectedItem="{Binding SelectedOwnershipRoot}" DisplayMemberPath="Name"
+                                      AutomationProperties.Name="Fund ownership root" />
+                        </StackPanel>
+                        <StackPanel Width="280" Margin="0,0,12,10">
+                            <TextBlock Text="Dedicated elimination book" Style="{StaticResource ScopeLabel}" />
+                            <ComboBox ItemsSource="{Binding EliminationBooks}" SelectedItem="{Binding SelectedEliminationBook}" DisplayMemberPath="DisplayName"
+                                      AutomationProperties.Name="Elimination book" />
+                        </StackPanel>
+                        <StackPanel Width="230" Margin="0,0,12,10">
+                            <TextBlock Text="Elimination period" Style="{StaticResource ScopeLabel}" />
+                            <ComboBox ItemsSource="{Binding Periods}" SelectedItem="{Binding SelectedPeriod}" DisplayMemberPath="Label"
+                                      AutomationProperties.Name="Elimination period" />
+                        </StackPanel>
+                    </WrapPanel>
+                    <WrapPanel Margin="0,0,0,12">
+                        <Button Content="Preview consolidation" Command="{Binding PreviewCommand}" Margin="0,0,12,8" AutomationProperties.AutomationId="PreviewGovernedConsolidation" />
+                        <Button Content="Create review drafts" Command="{Binding CreateDraftsCommand}" Margin="0,0,12,8" AutomationProperties.AutomationId="CreateConsolidationDrafts" />
+                        <Button Content="Open drafts in Manual Journals" Click="OnReviewDraftsClick" IsEnabled="{Binding HasDrafts}" Margin="0,0,0,8" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding ScopeDetail}" TextWrapping="Wrap" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding Blockers}" AutomationProperties.Name="Consolidation blockers">
+                        <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" /></DataTemplate></ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <DataGrid ItemsSource="{Binding Balances}" Style="{StaticResource EvidenceGrid}" AutomationProperties.AutomationId="GovernedConsolidationBalances">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="300" />
+                            <DataGridTextColumn Header="Gross" Binding="{Binding GrossBalance}" Width="150" />
+                            <DataGridTextColumn Header="Proposed eliminations" Binding="{Binding ProposedEliminations}" Width="180" />
+                            <DataGridTextColumn Header="Posted eliminations" Binding="{Binding PostedEliminations}" Width="180" />
+                            <DataGridTextColumn Header="Actual consolidated" Binding="{Binding ConsolidatedBalance}" Width="180" />
+                            <DataGridTextColumn Header="Preview after proposals" Binding="{Binding PreviewBalance}" Width="190" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Expander Header="Matching breaks and translation differences" IsExpanded="True">
+                        <DataGrid ItemsSource="{Binding Matches}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Intercompany matching and FX differences">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Entity → counterparty" Binding="{Binding PostingEntityId}" Width="260" />
+                                <DataGridTextColumn Header="Counterparty" Binding="{Binding CounterpartyId}" Width="260" />
+                                <DataGridTextColumn Header="Treatment" Binding="{Binding Treatment}" Width="170" />
+                                <DataGridTextColumn Header="Matching currency" Binding="{Binding MatchingCurrency}" Width="140" />
+                                <DataGridTextColumn Header="Agreement matched" Binding="{Binding MatchedTransactionAmount}" Width="170" />
+                                <DataGridTextColumn Header="Agreement unmatched party 1" Binding="{Binding UnmatchedFirstTransactionAmount}" Width="210" />
+                                <DataGridTextColumn Header="Agreement unmatched party 2" Binding="{Binding UnmatchedSecondTransactionAmount}" Width="210" />
+                                <DataGridTextColumn Header="Reporting matched" Binding="{Binding MatchedAmount}" Width="170" />
+                                <DataGridTextColumn Header="Reporting unmatched receivable" Binding="{Binding UnmatchedReceivable}" Width="230" />
+                                <DataGridTextColumn Header="Reporting unmatched payable" Binding="{Binding UnmatchedPayable}" Width="220" />
+                                <DataGridTextColumn Header="Reporting FX difference" Binding="{Binding TranslationDifference}" Width="190" />
+                                <DataGridTextColumn Header="Agreement" Binding="{Binding AgreementId}" Width="260" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Translation reserve and rate evidence">
+                        <DataGrid ItemsSource="{Binding TranslationReserveRows}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Translation reserve">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Reserve component" Binding="{Binding Name}" Width="260" />
+                                <DataGridTextColumn Header="Reporting currency" Binding="{Binding Status}" Width="160" />
+                                <DataGridTextColumn Header="Server amount" Binding="{Binding Detail}" Width="220" />
+                                <DataGridTextColumn Header="Translation evidence fingerprint" Binding="{Binding Evidence}" Width="600" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Retained review drafts">
+                        <DataGrid ItemsSource="{Binding Drafts}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Consolidation review drafts">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Draft identity" Binding="{Binding JournalEntryId}" Width="300" />
+                                <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="140" />
+                                <DataGridCheckBoxColumn Header="Renewed review required" Binding="{Binding RequiresRenewedReview}" Width="190" />
+                                <DataGridTextColumn Header="Adjusts prior journal" Binding="{Binding AdjustsJournalEntryId}" Width="300" />
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Expander>
+                    <Expander Header="Source journals, agreements and account bindings">
+                        <StackPanel>
+                            <DataGrid ItemsSource="{Binding Sources}" SelectedItem="{Binding SelectedSource}" Style="{StaticResource EvidenceGrid}" AutomationProperties.Name="Consolidation source journals">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Effective date" Binding="{Binding EffectiveDate}" Width="130" />
+                                    <DataGridTextColumn Header="Account" Binding="{Binding AccountPath}" Width="300" />
+                                    <DataGridTextColumn Header="Currency" Binding="{Binding Currency}" Width="100" />
+                                    <DataGridTextColumn Header="Debit" Binding="{Binding Debit}" Width="160" />
+                                    <DataGridTextColumn Header="Credit" Binding="{Binding Credit}" Width="160" />
+                                    <DataGridTextColumn Header="Transaction currency" Binding="{Binding TransactionCurrency}" Width="160" />
+                                    <DataGridTextColumn Header="Transaction debit" Binding="{Binding TransactionDebit}" Width="170" />
+                                    <DataGridTextColumn Header="Transaction credit" Binding="{Binding TransactionCredit}" Width="170" />
+                                    <DataGridTextColumn Header="Journal" Binding="{Binding JournalEntryId}" Width="300" />
+                                </DataGrid.Columns>
+                            </DataGrid>
+                            <TextBox Text="{Binding SourceDetail, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="92"
+                                     AutomationProperties.Name="Selected source evidence identities" />
+                        </StackPanel>
+                    </Expander>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

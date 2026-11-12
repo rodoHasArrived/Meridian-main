@@ -6,10 +6,16 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-02
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ledger
+
+Optional intercompany agreement/revision, chart-node/binding and transaction identities retain
+source provenance on immutable journal legs. Null fields are omitted to preserve historic evidence
+serialization. Reviewed legacy-attribution sidecars add missing historical identity without editing
+posted legs; consolidation output remains a separate reviewed overlay. See
+[the domain dictionary](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md).
 
 `LedgerAccounts.ShortSaleCollateralReceivable` is the asset account for collateral the broker holds against open Reg T short sales.
 

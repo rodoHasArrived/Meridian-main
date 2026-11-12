@@ -1804,7 +1804,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             VendorId: dimensions?.VendorId,
             ProjectId: dimensions?.ProjectId)
         {
-            PositionId = dimensions?.PositionId
+            PositionId = dimensions?.PositionId,
+            AgreementId = dimensions?.AgreementId,
+            AgreementRevisionId = dimensions?.AgreementRevisionId,
+            ChartAccountNodeId = dimensions?.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions?.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions?.IntercompanyTransactionId
         };
     }
 
@@ -2088,7 +2093,12 @@ public sealed class AccountingReportPackageService : IAccountingReportPackageSer
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AgreementId = dimensions.AgreementId,
+            AgreementRevisionId = dimensions.AgreementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId
         };
         return HasAnyDimension(normalized) ? normalized : null;
     }

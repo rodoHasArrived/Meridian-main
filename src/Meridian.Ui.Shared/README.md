@@ -6,10 +6,26 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui.Shared
+
+Consolidation transition routes retain a server preview for independent reopening/review and an
+exact-fingerprint activation receipt. They check both books' current tenant/company ownership;
+workstation clients cannot supply preparer identity or silently replace the reporting path.
+
+Entity timelines, intercompany agreements, role bindings, legacy attribution and counterpart
+proposal delivery share host read models and existing journal review APIs. Consolidation projects
+server-authoritative gross/proposed/posted/actual/preview values and separate FX/rounding evidence.
+Browser and WPF consume the same seams; destination permissions remain authoritative.
+See [intercompany operations](../../docs/operators/intercompany-entity-controls.md).
+
+Entity lifecycle revisions, book-control preflight/activation, and controlled-close authorization
+use shared endpoints in `LedgerEndpoints.EntityControls.cs`. The manual journal workbench
+authorizes only an exact approved draft with retained obligation evidence and a reviewer other
+than its preparer. Posting retains the authorization identity and rechecks its economic hash at
+the ledger boundary, so browser and WPF clients consume the same policy.
 
 Observed bond-fixing retention and selection routes require workstation tenant scope and Security
 Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
@@ -3308,6 +3324,10 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
 | `W9-SAFETY-007` | Kill-switch cancel-all and fat-finger, notional, and collar rules |
+| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist

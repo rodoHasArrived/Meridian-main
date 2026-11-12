@@ -6,10 +6,30 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.FinancialOperations
+
+`ConsolidationTransitionService` reviews membership cutover into a new empty dedicated reporting
+book. Source/mapping/rate changes stale the preview; independent approval preserves old history and
+opens the new gross-derived target without carrying old overlays. Former-member exposures remain
+gross and explicitly non-eliminable; unapproved member or replacement-book changes remain blocked.
+
+`IntercompanyBalanceScheduleService` projects actual posted due-to/due-from amounts with
+approved agreement/account revisions and separately approved legacy attribution receipts.
+It follows authorized counterpart and consolidation source books, keeps opposing creditor/debtor
+directions separate, and reports missing mappings explicitly. Terms supply no balances.
+The close cockpit consumes this structured schedule instead of intercompany keywords.
+NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
+and freshness alongside the existing external NetSuite evidence requirements.
+
+Intercompany services own approved agreement revisions and governed counterpart templates.
+Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book
+reporting translation v3, and separately enabled income elimination v4. Legacy adoption may create
+reviewed overlay reclassification but never changes source journals. Missing authority blocks output.
+See [versioned consolidation](../../docs/domain/intercompany-consolidation.md); current tests and
+Windows evidence remain separate from source implementation status.
 
 The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
 
@@ -1177,6 +1197,10 @@ evidence deletion.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Governed intercompany agreement registry and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
