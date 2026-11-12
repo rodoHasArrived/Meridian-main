@@ -8574,6 +8574,7 @@ Meridian-main
 │   │   │   │   │   ├── first-run
 │   │   │   │   │   │   ├── activation-progress.test.tsx
 │   │   │   │   │   │   ├── activation-progress.tsx
+│   │   │   │   │   │   ├── first-run-screen.test.tsx
 │   │   │   │   │   │   ├── first-run-screen.tsx
 │   │   │   │   │   │   ├── getting-started.view-model.test.ts
 │   │   │   │   │   │   ├── getting-started.view-model.ts
@@ -12333,6 +12334,7 @@ Meridian-main
 │   │   │   │   ├── WebSocketProviderBaseTests.cs
 │   │   │   │   └── YahooFinanceHistoricalDataProviderTests.cs
 │   │   │   ├── Resilience
+│   │   │   │   ├── HttpResiliencePolicyTests.cs
 │   │   │   │   ├── PollingProviderBaseTests.cs
 │   │   │   │   ├── ProviderConnectionSupervisorTests.cs
 │   │   │   │   ├── WebSocketConnectionManagerTests.cs
@@ -13020,6 +13022,7 @@ Meridian-main
 │   │   │   ├── CorporateActionSuccessorAncestryTests.CapitalReturn.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.cs
 │   │   │   ├── CorporateActionSuccessorAncestryTests.Fixtures.cs
+│   │   │   ├── DataDateParsingTests.cs
 │   │   │   ├── DataLineageServiceTests.cs
 │   │   │   ├── DataQualityScoringServiceTests.cs
 │   │   │   ├── DataReplacementCostEstimatorTests.cs
@@ -13397,6 +13400,7 @@ Meridian-main
 │   │   │   ├── RecurringJournalSubjectAuthorityTests.cs
 │   │   │   ├── ReferenceDataEndpointAuthorizationTests.cs
 │   │   │   ├── RegistryFundProfileTenantGuardTests.cs
+│   │   │   ├── ReplayCapabilityEndpointsTests.cs
 │   │   │   ├── ReplayPreviewEndpointsTests.cs
 │   │   │   ├── ReplayScanLifetimeTests.cs
 │   │   │   ├── ReportingArtifactVaultServiceTests.cs

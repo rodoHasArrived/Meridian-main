@@ -11,6 +11,16 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Storage
 
+Maintenance windows and trading-session checks use the configured `PrimaryTimeZone`,
+including the starting weekday of overnight windows and the offset at each window boundary.
+The scheduler scans deferred queue entries without blocking other due jobs, and counts running
+admissions before case-history writes complete when enforcing scheduled-job concurrency.
+Explicit `ExecuteJobAsync` calls retain their existing manual-execution bypass of window admission.
+
+Date-only natural-language search filters use UTC midnight boundaries. Parquet timestamp-column
+conversion shares the export timestamp parser, treating date-only strings and unspecified
+`DateTime` values as UTC while preserving the instant carried by explicit timestamp offsets.
+
 `PostgresIntercompanyAgreementStore` uses fund-structure migration `006`: a tenant-qualified head
 points to immutable command snapshots, approved revisions, audit decisions and command receipts.
 One command atomically checks its expected head and retains its result; command identities are

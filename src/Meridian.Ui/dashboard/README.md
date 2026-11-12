@@ -643,6 +643,9 @@ shared first-run API remains the source of truth for starter kits, sample safety
 recommendations, and completed activation outcomes. Sample mode stays offline-capable
 and visibly labelled `SAMPLE · PAPER` throughout the shell. Until activation status is known, the
 normal shell stays closed and a failed status read exposes a retry instead of assuming setup is complete.
+The first-run concierge also exposes an accessible error and Retry when it loads status itself;
+retry shows loading progress and leaving the screen cancels the pending read. Accounting money
+helpers preserve statement trailing-minus signs when formatting and balancing amounts.
 
 After setup the masthead `Getting started n/m` chip opens the activation checklist, which lists
 every outcome the host tracks and routes to the surface that completes the next one. Completion is
