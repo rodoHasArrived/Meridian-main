@@ -11,6 +11,10 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Application
 
+Subscription application trims symbol names and keeps the first declaration when names repeat
+case-insensitively. Duplicate declarations are logged; providers receive the trimmed symbol and
+hot reloads preserve the existing subscription instead of failing on a duplicate dictionary key.
+
 `IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
 receipts and effective-date selection over the durable agreement store. Retrospective amendments
 preserve posted versions; semantic bases follow effective chronology rather than approval order.
