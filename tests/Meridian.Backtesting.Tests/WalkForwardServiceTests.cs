@@ -7,6 +7,28 @@ namespace Meridian.Backtesting.Tests;
 
 public sealed class WalkForwardServiceTests
 {
+    [Fact]
+    public void ComputeStitchedOosMetrics_UsesCalendarBasisForWeekendSnapshots()
+    {
+        var start = new DateOnly(2024, 1, 5);
+        double[] returns = [0.01, 0, 0, -0.005];
+        var request = CreateBaseRequest(start, start.AddDays(3));
+        var window = new WalkForwardWindowResult
+        {
+            Window = new WalkForwardWindow(0, start.AddDays(-5), start.AddDays(-1), start, start.AddDays(3)),
+            TestResult = CreateResult(request, netPnl: 0m, dailyReturns: returns)
+        };
+
+        var metrics = WalkForwardService.ComputeStitchedOosMetrics([window], annualRiskFreeRate: 0.0365)!;
+
+        var excess = returns.Select(value => value - 0.0001).ToArray();
+        var mean = excess.Average();
+        var std = Math.Sqrt(excess.Sum(value => (value - mean) * (value - mean)) / excess.Length);
+        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(365), 1e-10);
+        var growth = returns.Aggregate(1.0, (balance, value) => balance * (1 + value));
+        metrics.AnnualizedReturn.Should().BeApproximately((decimal)(Math.Pow(growth, 365.0 / 4) - 1), 1e-10m);
+    }
+
     // ────────────────────────────────────────────────────────────────────────
     // Window construction
     // ────────────────────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ using Meridian.Contracts.Tenancy;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Ui.Shared.Contracts.Reconciliation;

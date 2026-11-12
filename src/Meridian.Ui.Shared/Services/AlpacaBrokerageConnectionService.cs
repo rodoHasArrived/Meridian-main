@@ -133,7 +133,9 @@ public sealed class AlpacaBrokerageConnectionService
         string environment,
         CancellationToken ct)
     {
-        using var client = _httpClientFactory?.CreateClient(nameof(AlpacaBrokerageConnectionService)) ?? new HttpClient();
+        using var client = (_httpClientFactory ?? throw new InvalidOperationException(
+            "An HTTP client factory is required to verify a brokerage connection."))
+            .CreateClient(nameof(AlpacaBrokerageConnectionService));
         using var request = new HttpRequestMessage(HttpMethod.Get, $"{TradingApiEndpoint(environment)}/account");
         request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
         request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);

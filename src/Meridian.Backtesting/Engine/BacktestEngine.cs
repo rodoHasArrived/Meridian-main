@@ -194,7 +194,7 @@ public sealed class BacktestEngine(
             pendingOrders.AddRange(newOrders);
 
             // Try to fill pending orders against current event
-            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
+            ProcessPendingOrders(pendingOrders, evt, orderBookFillModel, barFillModel, marketImpactFillModel, commissionModel, portfolio, strategy, ctx, allFills, logger, rollingState, request.DefaultExecutionModel, request.FillTiming);
         }
 
         // Final day-end for the last processed day and any remaining asset-event-only dates.
@@ -643,6 +643,7 @@ public sealed class BacktestEngine(
         IFillModel lobModel,
         IFillModel barModel,
         IFillModel marketImpactModel,
+        ICommissionModel commissionModel,
         SimulatedPortfolio portfolio,
         IBacktestStrategy strategy,
         BacktestContext ctx,
@@ -668,9 +669,20 @@ public sealed class BacktestEngine(
             var model = SelectFillModel(order, evt, lobModel, barModel, marketImpactModel, requestDefault);
             var result = model.TryFill(order, evt);
             var acceptedFilledQuantity = 0L;
+            var acceptedCommission = 0m;
+            var acceptedNotional = 0m;
+            var commissionOrder = order;
 
-            foreach (var fill in result.Fills)
+            foreach (var candidate in result.Fills)
             {
+                // A preceding model slice may have been refused by the account. Its fee was
+                // never booked, so only accepted executions may consume a per-order minimum
+                // or maximum. Re-price this candidate before checking available cash.
+                var fill = candidate with
+                {
+                    Commission = OrderCommission.CalculateIncrement(commissionModel, commissionOrder,
+                        candidate.FilledQuantity, candidate.FillPrice)
+                };
                 try
                 {
                     portfolio.ProcessFill(fill);
@@ -688,6 +700,14 @@ public sealed class BacktestEngine(
                 ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, order, fill);
                 allFills.Add(fill);
                 acceptedFilledQuantity += fill.FilledQuantity;
+                acceptedCommission += fill.Commission;
+                acceptedNotional += Math.Abs(fill.FilledQuantity) * fill.FillPrice;
+                commissionOrder = commissionOrder with
+                {
+                    FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                    CommissionCharged = order.CommissionCharged + acceptedCommission,
+                    FilledNotional = order.FilledNotional + acceptedNotional
+                };
                 rollingState.IncrementFills();
                 strategy.OnOrderFill(fill, ctx);
 
@@ -707,6 +727,8 @@ public sealed class BacktestEngine(
             var updatedOrder = order with
             {
                 FilledQuantity = order.FilledQuantity + acceptedFilledQuantity,
+                CommissionCharged = order.CommissionCharged + acceptedCommission,
+                FilledNotional = order.FilledNotional + acceptedNotional,
                 Status = order.RemainingQuantity - Math.Abs(acceptedFilledQuantity) == 0
                     ? OrderStatus.Filled
                     : OrderStatus.PartiallyFilled,
@@ -1224,7 +1246,7 @@ internal sealed class RollingMetricsState
             var mean = _sumExcess / n;
             var variance = (_sumSqExcess / n) - (mean * mean);
             var stdDev = variance > 0 ? Math.Sqrt(variance) : 0;
-            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(252) : 0;
+            sharpe = stdDev > 0 ? mean / stdDev * Math.Sqrt(365) : 0;
         }
 
         var drawdownPct = _peakEquity > 0

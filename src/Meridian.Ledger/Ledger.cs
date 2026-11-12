@@ -1008,6 +1008,7 @@ public sealed class Ledger : IReadOnlyLedger
             Debit = line.Debit,
             Credit = line.Credit,
             Description = line.Description,
+            FunctionalCurrency = line.Currency?.FunctionalCurrency ?? string.Empty,
         };
 
     private static bool IsWithinRange(DateTimeOffset timestamp, DateTimeOffset? from, DateTimeOffset? to)

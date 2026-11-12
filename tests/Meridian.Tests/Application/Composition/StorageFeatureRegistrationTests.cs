@@ -18,7 +18,7 @@ using Meridian.Contracts.Store;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Ledger;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Instruments.FixedIncome;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Storage;

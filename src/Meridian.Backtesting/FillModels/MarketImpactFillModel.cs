@@ -86,6 +86,7 @@ internal sealed class MarketImpactFillModel(
         numFills = Math.Max(numFills, 1);
 
         var fills = new List<FillEvent>();
+        var commissionOrder = order;
         var perSliceQuantity = fillableAbsolute / numFills;
         var remainder = fillableAbsolute % numFills;
 
@@ -112,8 +113,15 @@ internal sealed class MarketImpactFillModel(
                     continue;
             }
 
+            fillPrice = Math.Round(fillPrice, 4);
             var signedQuantity = isBuy ? sliceQty : -sliceQty;
-            var commission = commissionModel.Calculate(order.Symbol, signedQuantity, fillPrice);
+            var commission = OrderCommission.CalculateIncrement(commissionModel, commissionOrder, signedQuantity, fillPrice);
+            commissionOrder = commissionOrder with
+            {
+                FilledQuantity = commissionOrder.FilledQuantity + signedQuantity,
+                CommissionCharged = commissionOrder.CommissionCharged + commission,
+                FilledNotional = commissionOrder.FilledNotional + Math.Abs(signedQuantity) * fillPrice
+            };
             fills.Add(new FillEvent(
                 Guid.NewGuid(),
                 order.OrderId,
@@ -138,6 +146,8 @@ internal sealed class MarketImpactFillModel(
         var updated = order with
         {
             FilledQuantity = order.FilledQuantity + totalFilled,
+            CommissionCharged = commissionOrder.CommissionCharged,
+            FilledNotional = commissionOrder.FilledNotional,
             Status = order.RemainingQuantity - Math.Abs(totalFilled) == 0
                 ? OrderStatus.Filled
                 : OrderStatus.PartiallyFilled,

@@ -106,8 +106,13 @@ public sealed class OrderManagementSystemTests : IDisposable
     public async Task PlaceOrderAsync_WithPaperTradingPortfolio_AppliesFillToSharedPortfolio()
     {
         var portfolio = new PaperTradingPortfolio(100_000m);
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("MSFT", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "MSFT", 25m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
+        await using var gateway = new ExecutionGateway(
+            NullLogger<ExecutionGateway>.Instance, liveFeed: feed,
+            costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         using var oms = new OrderManagementSystem(
-            _gateway,
+            gateway,
             NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio);
         await oms.StartAsync();

@@ -43,7 +43,12 @@ export function FirstRunScreen({ initialStatus, onStatusChange }: { initialStatu
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!status) apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus).then(setStatus).catch((reason) => setError(String(reason)));
+    if (status) return;
+    const controller = new AbortController();
+    void apiGetJson<FirstRunStatus>(WORKSTATION_API_ENDPOINTS.firstRunStatus, { signal: controller.signal })
+      .then((next) => { if (!controller.signal.aborted) setStatus(next); })
+      .catch((reason) => { if (!controller.signal.aborted) setError(String(reason)); });
+    return () => controller.abort();
   }, [status]);
 
   useEffect(() => {

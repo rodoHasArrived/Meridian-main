@@ -101,8 +101,9 @@ public sealed class SecurityMasterRevisionStateException : Exception
 /// <c>SecurityMasterConflictService</c>; the durable Postgres-backed implementation is wired in the
 /// subsequent slice. State transitions are compare-and-set so concurrent lifecycle calls are safe.
 /// </summary>
-public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisionStore
+public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvider = null) : ISecurityMasterRevisionStore
 {
+    private readonly TimeProvider _timeProvider = timeProvider ?? TimeProvider.System;
     private readonly ConcurrentDictionary<Guid, SecurityMasterRevisionRecord> _revisions = new();
 
     public Task<SecurityMasterRevisionRecord> CreateDraftAsync(Guid securityId, string actor, CancellationToken ct = default)
@@ -128,7 +129,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         string? fundProfileId,
         SecurityMasterRevisionFieldValue? fieldValue)
     {
-        var now = DateTimeOffset.UtcNow;
+        var now = _timeProvider.GetUtcNow();
         var record = new SecurityMasterRevisionRecord(
             RevisionId: Guid.NewGuid(),
             SecurityId: securityId,
@@ -182,7 +183,7 @@ public sealed class InMemorySecurityMasterRevisionStore : ISecurityMasterRevisio
         var workflowId = next == SecurityMasterRevisionStateDto.Submitted && workflowIdForSubmit.HasValue
             ? workflowIdForSubmit
             : existing.WorkflowId;
-        var updated = existing with { State = next, Actor = actor, UpdatedAt = DateTimeOffset.UtcNow, WorkflowId = workflowId };
+        var updated = existing with { State = next, Actor = actor, UpdatedAt = _timeProvider.GetUtcNow(), WorkflowId = workflowId };
 
         // Compare-and-set: only the caller whose view still matches the stored record wins; a
         // concurrent transition that already advanced the revision loses and is rejected.

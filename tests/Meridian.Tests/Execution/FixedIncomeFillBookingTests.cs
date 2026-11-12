@@ -253,8 +253,11 @@ public sealed class FixedIncomeFillBookingTests
         // capability, the OMS stamps the fill, and the paper book moves the par-scaled cash.
         var portfolio = new PaperTradingPortfolio(200_000m);
         var publisher = new RecordingTradeEventPublisher();
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("912797AB1", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "912797AB1", 101.25m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
         var gateway = new PaperTradingGateway(
             NullLogger<PaperTradingGateway>.Instance,
+            liveFeed: feed,
             costOptions: new Meridian.Execution.PaperMatching.PaperTradingCostOptions { CommissionRate = 0m });
         using var oms = new OrderManagementSystem(
             gateway,
@@ -263,8 +266,8 @@ public sealed class FixedIncomeFillBookingTests
             tradeEventPublisher: publisher);
         await oms.StartAsync();
 
-        // A market order carrying a simulated observation via LimitPrice, per the paper
-        // gateway's documented pricing contract.
+        // The market order uses the synthetic feed observation; its caller price hint
+        // supplies no execution-price authority.
         var result = await oms.PlaceOrderAsync(new OrderRequest
         {
             Symbol = "912797AB1",

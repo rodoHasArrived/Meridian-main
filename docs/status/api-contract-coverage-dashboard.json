@@ -17,25 +17,25 @@
     {
       "method": "GET",
       "path": "/api/system/lifecycle",
-      "source": "src/Meridian/UiServer.cs:662",
+      "source": "src/Meridian/UiServer.cs:666",
       "documented": true
     },
     {
       "method": "POST",
       "path": "/api/system/shutdown",
-      "source": "src/Meridian/UiServer.cs:696",
+      "source": "src/Meridian/UiServer.cs:700",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/{operationId}",
-      "source": "src/Meridian/UiServer.cs:750",
+      "source": "src/Meridian/UiServer.cs:754",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/system/shutdown/receipts/latest",
-      "source": "src/Meridian/UiServer.cs:771",
+      "source": "src/Meridian/UiServer.cs:775",
       "documented": true
     },
     {
@@ -4445,13 +4445,13 @@
     {
       "method": "GET",
       "path": "/api/strategies/{strategyId}/runs",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2857",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:958",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/strategies/runs/compare",
-      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:2998",
+      "source": "src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs:1099",
       "documented": false
     }
   ],

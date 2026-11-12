@@ -703,6 +703,12 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             {
                 ct.ThrowIfCancellationRequested();
 
+                // Quarantine is recovery evidence, never disposable orphan data. Keep this
+                // guard even for alternate IFileMaintenanceService implementations.
+                if (string.Equals(orphan.Reason, "quarantined_file", StringComparison.OrdinalIgnoreCase) ||
+                    IsQuarantinedPath(orphan.Path))
+                    continue;
+
                 // Only delete orphans older than threshold
                 if (orphan.LastModified < DateTime.UtcNow.AddDays(-options.OrphanAgeDays))
                 {
@@ -730,6 +736,8 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
                 foreach (var tempFile in tempFiles)
                 {
                     ct.ThrowIfCancellationRequested();
+                    if (IsQuarantinedPath(tempFile))
+                        continue;
                     try
                     {
                         var info = new FileInfo(tempFile);
@@ -765,6 +773,10 @@ public sealed class ScheduledArchiveMaintenanceService : BackgroundService, IArc
             IssuesResolved = deletedFiles
         };
     }
+
+    private static bool IsQuarantinedPath(string path) =>
+        Path.GetFullPath(path).Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+            .Any(segment => segment.StartsWith("_quarantine", StringComparison.OrdinalIgnoreCase));
 
     private async Task<MaintenanceResult> RunDefragmentationAsync(
         MaintenanceTaskOptions options,

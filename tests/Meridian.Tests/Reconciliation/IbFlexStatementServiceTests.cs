@@ -7,7 +7,7 @@ using System.Text;
 using FluentAssertions;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Xunit;
 
 namespace Meridian.Tests.Reconciliation;

@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Meridian.Core.Resilience;
 using Meridian.Domain.Events;
 using Meridian.Storage.Interfaces;
@@ -63,6 +64,17 @@ public sealed class CompositeSink : IStorageSink
     private readonly TimeProvider _timeProvider;
 
     private long _appendFailures;
+
+    // EventPipeline retains the same event instance for an in-process append retry. Weak keys
+    // retain per-child acknowledgements only as long as that event is alive; successful children
+    // must not receive it again when another child fails or cancellation interrupts fan-out.
+    private readonly ConditionalWeakTable<MarketEvent, AppendProgress> _appendProgress = new();
+
+    private sealed class AppendProgress(int sinkCount)
+    {
+        public readonly SemaphoreSlim Gate = new(1, 1);
+        public readonly bool[] Succeeded = new bool[sinkCount];
+    }
 
     /// <summary>
     /// Per-sink circuit breaker (shared <see cref="CircuitBreaker"/> primitive), indexed by
@@ -141,20 +153,37 @@ public sealed class CompositeSink : IStorageSink
 
     public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default)
     {
-        if (_sinks.Count == 1)
+        if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
         {
-            // Fast path: single sink — skip Task.WhenAll overhead.
-            await AppendToSinkAsync(0, evt, ct).ConfigureAwait(false);
+            var progress = _appendProgress.GetValue(evt, _ => new AppendProgress(_sinks.Count));
+            await progress.Gate.WaitAsync(ct).ConfigureAwait(false);
+            try
+            {
+                var tasks = new List<Task>(_sinks.Count);
+                for (var i = 0; i < _sinks.Count; i++)
+                {
+                    if (!progress.Succeeded[i])
+                        tasks.Add(AppendAndAcknowledgeAsync(i, evt, progress, ct));
+                }
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+            finally
+            {
+                progress.Gate.Release();
+            }
             return;
         }
 
-        // Multi-sink: fan out in parallel. Independent sinks are written concurrently so that
-        // total append latency equals max(sink latencies) rather than sum(sink latencies).
-        var tasks = new Task[_sinks.Count];
+        var writes = new Task[_sinks.Count];
         for (var i = 0; i < _sinks.Count; i++)
-            tasks[i] = AppendToSinkAsync(i, evt, ct);
+            writes[i] = AppendToSinkAsync(i, evt, ct);
+        await Task.WhenAll(writes).ConfigureAwait(false);
+    }
 
-        await Task.WhenAll(tasks).ConfigureAwait(false);
+    private async Task AppendAndAcknowledgeAsync(int index, MarketEvent evt, AppendProgress progress, CancellationToken ct)
+    {
+        await AppendToSinkAsync(index, evt, ct).ConfigureAwait(false);
+        progress.Succeeded[index] = true;
     }
 
     private async Task AppendToSinkAsync(int i, MarketEvent evt, CancellationToken ct)
@@ -168,6 +197,8 @@ public sealed class CompositeSink : IStorageSink
             _logger.LogDebug(
                 "Skipping sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open until {CircuitResetTime}",
                 i + 1, _sinks.Count, _sinkTypeNames[i], breaker.OpenUntil);
+            if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+                throw new InvalidOperationException($"Sink {_sinkTypeNames[i]} is unavailable while its circuit breaker is open.");
             return;
         }
 
@@ -231,6 +262,9 @@ public sealed class CompositeSink : IStorageSink
                 _logger.LogDebug(
                     "Skipping flush for sink {SinkIndex}/{SinkCount} ({SinkType}) — circuit breaker open",
                     i + 1, _sinks.Count, _sinkTypeNames[i]);
+                if (_failurePolicy == FailurePolicy.FailOnAnyFailure)
+                    (exceptions ??= new List<Exception>()).Add(
+                        new InvalidOperationException($"Sink {_sinkTypeNames[i]} cannot flush while its circuit breaker is open."));
                 continue;
             }
 

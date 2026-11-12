@@ -8,7 +8,7 @@ using Meridian.Core.ReferenceData;
 using Meridian.Domain.Reconciliation;
 using Meridian.Core.IO;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 internal sealed record BrokerStatementFileSnapshot(string Path, byte[] Content, string Sha256);
 

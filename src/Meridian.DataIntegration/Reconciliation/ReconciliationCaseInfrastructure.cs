@@ -4,7 +4,7 @@ using Meridian.Domain.Reconciliation;
 using Meridian.Core.IO;
 using Meridian.Contracts.Integrity;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 /// <summary>
 /// Retains reconciliation cases and their run and casework projections.

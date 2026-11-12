@@ -18,6 +18,7 @@ let private line debit credit =
         Debit = debit
         Credit = credit
         Description = "test"
+        FunctionalCurrency = ""
     }
 
 let private accrualEntry loanId accrualDate interest commitmentFee penalty currency sourceEventId =
@@ -1351,3 +1352,11 @@ let ``LedgerInterop ReconcilePortfolioLedgerChecks preserves category and status
         r.Category |> should equal "timing_mismatch"
         r.Status |> should equal "open"
         r.Severity |> should equal "Medium"
+
+[<Fact>]
+let ``Ledger validation rejects mixed functional currencies even when amounts balance`` () =
+    let debit = { line 100m 0m with FunctionalCurrency = "USD" }
+    let credit = { line 0m 100m with FunctionalCurrency = "EUR" }
+    let result = LedgerInterop.ValidateJournalEntry(debit.JournalEntryId, debit.Timestamp, "test", [| debit; credit |], [||], [||])
+    result.IsValid |> should equal false
+    result.Errors |> should contain "Journal entry lines must use one functional currency."

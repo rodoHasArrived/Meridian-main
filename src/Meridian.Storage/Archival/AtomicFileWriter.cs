@@ -525,6 +525,7 @@ public static partial class AtomicFileWriter
         bool keepBackup = true,
         CancellationToken ct = default)
     {
+        destinationPath = Path.GetFullPath(destinationPath);
         var directory = Path.GetDirectoryName(destinationPath);
         if (!string.IsNullOrEmpty(directory))
         {
@@ -536,57 +537,49 @@ public static partial class AtomicFileWriter
 
         try
         {
-            // Write new content to temp
-            await File.WriteAllTextAsync(tempPath, newContent, Encoding.UTF8, ct);
+            await File.WriteAllTextAsync(tempPath, newContent, Utf8NoBom, ct);
             await SyncFileAsync(tempPath, ct);
+            ct.ThrowIfCancellationRequested();
 
-            // If destination exists, create backup
-            if (File.Exists(destinationPath))
+            // File.Replace publishes the new generation and retains the old one without
+            // ever renaming the live path out of the way. A reader always sees a complete
+            // destination. Serialize backup ownership with the other Windows publishers.
+            var gate = WindowsPublicationGate(Path.GetFullPath(destinationPath));
+            await gate.WaitAsync(ct).ConfigureAwait(false);
+            try
             {
-                if (File.Exists(backupPath))
+                ct.ThrowIfCancellationRequested();
+                for (var attempt = 1; ; attempt++)
                 {
-                    File.Delete(backupPath);
+                    try
+                    {
+                        if (File.Exists(destinationPath))
+                            File.Replace(tempPath, destinationPath, keepBackup ? backupPath : null);
+                        else
+                            File.Move(tempPath, destinationPath, overwrite: false);
+                        break;
+                    }
+                    catch (Exception exception) when (attempt < ReplaceAttempts && IsTransientReplaceFailure(exception))
+                    {
+                        await Task.Delay(ReplaceRetryDelay * attempt).ConfigureAwait(false);
+                    }
                 }
-                await MoveWithRetryAsync(destinationPath, backupPath, overwrite: false);
-
-                // Make the backup rename durable before the destination is overwritten, so a
-                // crash mid-sequence can never leave both the original and its backup missing.
-                await SyncDirectoryAsync(directory!, ct);
+                // Commit has happened; cancellation or backup cleanup must not report a
+                // committed replacement as a failed write.
+                await SyncCommittedDirectoryAsync(directory!);
+                if (!keepBackup)
+                    TryDeleteFile(backupPath);
             }
-
-            // Move temp to destination
-            await MoveWithRetryAsync(tempPath, destinationPath, overwrite: false);
-
-            // Sync directory (post-commit: non-cancellable)
-            await SyncCommittedDirectoryAsync(directory!);
-
-            // Optionally remove backup
-            if (!keepBackup && File.Exists(backupPath))
+            finally
             {
-                File.Delete(backupPath);
+                gate.Release();
             }
-
             Log.Debug("Atomically replaced file");
         }
-        catch (Exception writeException)
+        catch
         {
-            // On failure, try to restore the backup without masking the original exception.
-            if (File.Exists(backupPath) && !File.Exists(destinationPath))
-            {
-                try
-                {
-                    MoveWithRetry(backupPath, destinationPath, overwrite: false);
-                }
-                catch (Exception restoreException)
-                {
-                    Log.Error("Failed to restore file backup ({FailureType})", restoreException.GetType().Name);
-                }
-            }
-
             TryDeleteFile(tempPath);
-
-            // Re-throw the original failure with its stack trace intact.
-            ExceptionDispatchInfo.Throw(writeException);
+            throw;
         }
     }
 

@@ -1,7 +1,7 @@
 using Meridian.Domain.Reconciliation;
 using Meridian.Contracts.Integrity;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 /// <summary>
 /// Normalizes broker statement fields into canonical rows according to their statement row kind.

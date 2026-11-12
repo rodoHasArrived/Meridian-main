@@ -78,3 +78,23 @@ Before adding or moving docs:
 - Removed or unexpected top-level folders are errors. Add active documentation to a canonical or
   supporting lane, or archive historical material under `archive/docs/`.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
+
+## Retained binary evidence
+
+New PNG revisions under `docs/diagrams`, `docs/screenshots`, and `docs/testing/evidence`
+use the `.gitattributes` Git LFS filters. Install Git LFS and run `git lfs install` before
+adding or updating those artifacts. Preserve textual source diagrams and evidence manifests
+in ordinary Git, including the capture commit, date, and hashes. Generated status reports
+are refreshed through their owning commands; changing a report date alone is not refresh.
+
+The 2026-11-12 source inventory contained 338 tracked PNGs (97.14 MiB). Current-tip PNGs
+in the three scoped folders were converted to LFS pointers; their working-tree bytes and
+local LFS object SHA-256 hashes were verified and recorded in
+`docs/testing/evidence/review-remediation-2026-11-12/lfs-migration.json`. Upload the LFS
+objects when publishing the branch and verify a fresh LFS-enabled clone. No LFS objects
+were uploaded during local remediation. Existing history remains intact. A separate
+owner-coordinated historical migration can run `git lfs migrate import --include="docs/diagrams/**/*.png,docs/screenshots/**/*.png,docs/testing/evidence/**/*.png"`
+after arranging LFS hosting, backup, and fresh-clone verification. This rewrites history and
+requires coordination with all consumers; it is not part of routine remediation. A new LFS
+rule cannot remove blobs already present in historical commits. Retained evidence must not
+be deleted merely to reduce the working tree or clone size.

@@ -16,6 +16,65 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
 {
 
     [Fact]
+    public async Task FlushAsync_ReleasesEmptyPartitionBuffersAndAcceptsLateWrites()
+    {
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot),
+            new JsonlBatchOptions { Enabled = true, BatchSize = 1000, FlushInterval = TimeSpan.FromHours(1) });
+        for (var day = 1; day <= 10; day++)
+            await sink.AppendAsync(CreateTestEvent($"DAY{day}", day));
+        sink.GetStatistics().BufferCount.Should().Be(10);
+
+        await sink.FlushAsync();
+        sink.GetStatistics().BufferCount.Should().Be(0);
+        await sink.AppendAsync(CreateTestEvent("DAY1", 11));
+        await sink.FlushAsync();
+
+        sink.GetStatistics().BufferCount.Should().Be(0);
+        sink.EventsWritten.Should().Be(11);
+        sink.EventsBuffered.Should().Be(0);
+    }
+
+    [Fact]
+    public async Task FlushAsync_ConcurrentAppendDuringWrite_RetainsTheNextBatchBeforeRetirement()
+    {
+        var enteredWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseWrite = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var written = new List<long>();
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        await using var sink = new JsonlStorageSink(options, new TestStoragePolicy(TestDataRoot),
+            new JsonlBatchOptions { Enabled = true, BatchSize = 1000, FlushInterval = TimeSpan.FromHours(1) },
+            writeBatchAsync: async (_, events, ct) =>
+            {
+                if (events[0].Sequence == 1)
+                {
+                    enteredWrite.SetResult();
+                    await releaseWrite.Task.WaitAsync(ct);
+                }
+                written.AddRange(events.Select(e => e.Sequence));
+            });
+        await sink.AppendAsync(CreateTestEvent("SPY", 1));
+        var flush = sink.FlushAsync();
+        try
+        {
+            await enteredWrite.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await sink.AppendAsync(CreateTestEvent("SPY", 2));
+        }
+        finally
+        {
+            releaseWrite.TrySetResult();
+        }
+        await flush;
+        sink.GetStatistics().BufferCount.Should().Be(1,
+            "the buffer receiving a concurrent append must not be retired with an unfinished batch");
+
+        await sink.FlushAsync();
+
+        written.Should().Equal(1, 2);
+        sink.GetStatistics().BufferCount.Should().Be(0);
+    }
+
+    [Fact]
     public async Task AppendAsync_WithBatchingDisabled_WritesImmediately()
     {
         // Arrange

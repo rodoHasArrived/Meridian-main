@@ -178,6 +178,54 @@ public sealed class WriteAheadLogCorruptionModeTests : TempDirectoryAsyncTestBas
         options.CorruptionMode.Should().Be(WalCorruptionMode.Alert);
     }
 
+    [Theory]
+    [InlineData(WalCorruptionMode.Alert, "3|partial")]
+    [InlineData(WalCorruptionMode.Halt, "3|partial")]
+    [InlineData(WalCorruptionMode.Alert, "3|2026-01-01T00:00:00.0000000Z|trade|0000|{\"price\":")]
+    [InlineData(WalCorruptionMode.Halt, "3|2026-01-01T00:00:00.0000000Z|trade|0000|{\"price\":")]
+    public async Task InitializeAsync_TornFinalWrite_RecoversCompleteRecordsWithoutCorruptionAlert(
+        WalCorruptionMode mode, string tail)
+    {
+        await WriteSeedWalAsync(seedRecords: 2, corruptLines: 0);
+        var source = Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle().Subject;
+        await File.AppendAllTextAsync(source, tail);
+        var retainedBytes = await File.ReadAllBytesAsync(source);
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync, CorruptionMode = mode
+        });
+        var alerts = 0;
+        wal.CorruptionDetected += _ => alerts++;
+
+        await wal.InitializeAsync();
+
+        wal.LastRecoveryEventCount.Should().Be(2);
+        wal.CorruptedRecordCount.Should().Be(0, "a crash-torn suffix is distinct from a corrupt complete record");
+        wal.SkippedRecordCount.Should().Be(0);
+        alerts.Should().Be(0);
+        (await File.ReadAllBytesAsync(source)).Should().Equal(retainedBytes, "recovery must retain the crash evidence");
+        var next = await wal.AppendAsync(new { Index = 3 }, "trade");
+        next.Sequence.Should().Be(3, "preceding valid sequence numbers remain authoritative");
+    }
+
+    [Fact]
+    public async Task InitializeAsync_ChecksumValidFinalRecordWithoutNewline_IsRecovered()
+    {
+        await WriteSeedWalAsync(seedRecords: 2, corruptLines: 0);
+        var source = Directory.GetFiles(TestDataRoot, "*.wal").Should().ContainSingle().Subject;
+        var text = (await File.ReadAllTextAsync(source)).TrimEnd('\r', '\n');
+        await File.WriteAllTextAsync(source, text);
+        await using var wal = new WriteAheadLog(TestDataRoot, new WalOptions
+        {
+            SyncMode = WalSyncMode.NoSync, CorruptionMode = WalCorruptionMode.Halt
+        });
+
+        await wal.InitializeAsync();
+
+        wal.LastRecoveryEventCount.Should().Be(2, "a fully checksummed record contains no torn payload to discard");
+        wal.CorruptedRecordCount.Should().Be(0);
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────
 
     /// <summary>

@@ -1,0 +1,36 @@
+<Project>
+  <!-- Shared compile ownership: no duplicated discovery in Meridian.Tests. -->
+  <ItemGroup>
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/*Sink*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/*Storage*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/WriteAheadLog*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/AtomicFileWriter*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/ArchiveCompressionCrashTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/ArchiveMaintenanceScheduleManagerDurabilityTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/EventBufferTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/FileMaintenance*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/FilePermissionsServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Maintenance*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Jsonl*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MemoryMappedJsonlReaderTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/PortableDataPackagerTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Parquet*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/QuotaEnforcementServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/QualityTrendStoreTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataValidatorTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataLineageServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataQualityScoringServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataReplacementCostEstimatorTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/ExportValidatorTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/AdaptivePartitionPlacementPlannerTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Analysis*Tests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DuckDbQueryServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/LifecyclePolicyEngineTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MetadataTagServiceTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/PositionSnapshotStoreTests.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Backfill/**/*.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Etl/**/*.cs" />
+    <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Maintenance/**/*.cs" />
+    <StorageCoreTestSource Remove="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MaintenanceSchedulerTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataValidatorTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/JsonlBackfillBarWriterTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/WriteAheadLogProcessTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Backfill/BackfillStatusStoreTests.cs" />
+  </ItemGroup>
+</Project>

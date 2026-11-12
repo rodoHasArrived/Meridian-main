@@ -11,6 +11,13 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+Settings provider runtime evidence and integration setup components are owned by
+`settings-provider-integration.tsx`; the Settings screen composes them without changing routes
+or mutation authority. Accounting Security Master selection/search state belongs to
+`accounting-screen.security-master.ts`, while schedules, corporate actions, open lots and
+instrument-passport projections belong to `accounting-screen.security-projections.ts`.
+The existing view-model entrypoint re-exports their public contracts for current callers.
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,

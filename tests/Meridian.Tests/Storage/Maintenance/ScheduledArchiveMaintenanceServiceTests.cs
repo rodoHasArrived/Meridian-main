@@ -302,6 +302,24 @@ public sealed partial class ScheduledArchiveMaintenanceServiceTests : IDisposabl
     }
 
     [Fact]
+    public async Task ExecuteMaintenanceAsync_Cleanup_PreservesQuarantineIncludingTemporaryEvidence()
+    {
+        var quarantinePath = WriteFile("_quarantine/evidence.jsonl", "retained evidence");
+        var quarantineTemp = WriteFile("_quarantine/partial.tmp", "retained partial evidence");
+        File.SetLastWriteTimeUtc(quarantineTemp, DateTime.UtcNow.AddDays(-30));
+        SetupOrphans(new OrphanedFile(quarantinePath, "quarantined_file", 2048, DateTime.UtcNow.AddDays(-30)));
+        var sut = CreateSut();
+
+        var execution = await sut.ExecuteMaintenanceAsync(MaintenanceTaskType.Cleanup,
+            new MaintenanceTaskOptions { DeleteOrphans = true, DeleteTemporaryFiles = true });
+
+        File.Exists(quarantinePath).Should().BeTrue();
+        File.Exists(quarantineTemp).Should().BeTrue();
+        execution.Result!.IssuesResolved.Should().Be(0);
+        execution.Result.BytesSaved.Should().Be(0);
+    }
+
+    [Fact]
     public async Task ExecuteMaintenanceAsync_CleanupTemporaryFiles_DeletesOnlyStaleTmpFiles()
     {
         var stalePath = WriteFile("stale.tmp", "stale");

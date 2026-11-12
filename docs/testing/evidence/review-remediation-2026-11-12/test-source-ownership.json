@@ -1,0 +1,25 @@
+{
+  "schema": "meridian.test-source-ownership.v1",
+  "evaluation": "dotnet msbuild -getItem:Compile",
+  "projects": {
+    "main": {
+      "compileFiles": 1557,
+      "duplicateIdentities": 0
+    },
+    "storage": {
+      "compileFiles": 50,
+      "duplicateIdentities": 0,
+      "testCaseSourceOverlapWithMain": 0
+    },
+    "execution": {
+      "compileFiles": 83,
+      "duplicateIdentities": 0,
+      "testCaseSourceOverlapWithMain": 0
+    }
+  },
+  "executionHostCompositionSourcesRetainedInMain": [
+    "RobinhoodHostedSynchronizationTests.cs",
+    "PaperSessionPersistenceServiceTests.cs",
+    "HostedBrokerageGatewayRegistrationTests.cs"
+  ]
+}

@@ -120,8 +120,14 @@ public sealed record LivePromotionControlDecision(bool IsAllowed, string? Reject
 /// Control changes are persisted atomically because they are infrequent, while order
 /// evaluation stays entirely in-memory to keep routing latency predictable.
 /// </summary>
-public sealed class ExecutionOperatorControlService
+public sealed class ExecutionOperatorControlService : IRiskCircuitBreakerControl
 {
+    bool IRiskCircuitBreakerControl.IsCircuitBreakerOpen => GetSnapshot().CircuitBreaker.IsOpen;
+
+    async Task IRiskCircuitBreakerControl.SetCircuitBreakerAsync(bool isOpen, string? reason,
+        string? changedBy, string? correlationId, CancellationToken ct) =>
+        await SetCircuitBreakerAsync(isOpen, reason, changedBy, correlationId, ct).ConfigureAwait(false);
+
     private readonly ExecutionOperatorControlOptions _options;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly ILogger<ExecutionOperatorControlService> _logger;

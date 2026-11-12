@@ -6,10 +6,19 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-31
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Storage
+
+JSONL and Parquet sinks retire empty partition buffers after successful flushes. Admission and
+retirement share the buffer lock, so a producer holding an evicted buffer retries admission to
+the current buffer. Failed flushes restore their batches and retain the buffer. Parquet filenames
+and policy directories both use the event's UTC date. `CompositeSink` in `FailOnAnyFailure` mode
+retains per-child acknowledgements for the same in-process event admission, preventing retries
+from re-appending to successful children; this is not cross-process replay deduplication.
+`CatalogSyncSink` carries whole-file counts and ranges across flush windows and restarts, with
+directory indexes persisted when a file first enters the catalog.
 
 Governed short opening/cover now binds explicit direction to the authoritative Short/Liability
 position and liability carrying account. Opening debits cash and credits retained proceeds;
@@ -51,6 +60,16 @@ and permission failures remain visible.
 `AtomicFileWriterTests` covers the seven overwrite surfaces, concurrent publishers, and failure
 retention, including coordinated publishers using equivalent path spellings. These locks do not
 coordinate separate processes, add a Windows power-loss guarantee, or make concurrent appends transactional.
+
+Defragmentation defaults to a one-day quiet period and leaves current or unrecognizable event-time
+partitions untouched. It merges only fragments with identical partition metadata, preserving the
+partition-bearing filename before a `.merged-<guid>` suffix. In-process and cross-process JSONL writer
+leases remain held through publication and source deletion; any open writer refuses the group.
+Cleanup checks names relative to the data root and retains quarantine evidence.
+`ReplaceAsync` publishes its replacement and optional `.bak` with one filesystem replacement,
+without a period in which the live destination is missing. WAL recovery tolerates an invalid,
+unterminated final record as a crash-torn suffix while retaining the source bytes; complete corrupt
+records still follow the configured Alert/Halt policy.
 
 Fund Accounts migrations `005` and `006` retain reconciliation replacement/resolution links and
 canonical sync-attempt correlation identity. Reconciliation append and supersession share one
@@ -388,7 +407,7 @@ preserved from truncation. Older binaries cannot replay v2 segments, so drain th
 before downgrading. The [checksum format and benchmark boundary](../../docs/engineering/pipeline-benchmark.md)
 define the encoding and the unchanged portable budgets. Focused proof is
 `WriteAheadLogChecksumTests` and `WriteAheadLogChecksumVersionTests`; run
-`dotnet test tests/Meridian.Tests/Meridian.Tests.csproj -c Release --filter "FullyQualifiedName~WriteAheadLog" -p:EnableWindowsTargeting=true`
+`dotnet test tests/Meridian.Storage.Tests/Meridian.Storage.Tests.csproj -c Release --filter "FullyQualifiedName~WriteAheadLog" -p:EnableWindowsTargeting=true`
 and `python3 build/scripts/ci/benchmark-pipeline.py --local`.
 
 Tax-lot disposal history now returns the atomic batch's exact `PolicyRevision` and `RecordedAt`,
@@ -795,6 +814,13 @@ Ancestry coverage lives in `CorporateActionSuccessorAncestryTests` and
 open/closed lot-label collision and dimension refusals live in `AtomicTaxLotJournalStoreTests.SuccessorGuards`.
 `AtomicTaxLotJournalStoreTests.Amortization` covers migration 043 null-basis reversal/rebook and
 ungoverned adjustment-removal refusal. Current validation results are recorded on the canonical PR.
+
+Business store source folders (`Ledger`, `Reporting`, `SecurityMaster`, `AssetOperations`, and the
+other explicitly linked PostgreSQL domains) compile in
+[`Meridian.Storage.Accounting`](../Meridian.Storage.Accounting/README.md). This Storage assembly
+owns WAL, market-data sinks, catalog, maintenance and shared durable IO; it has no Ledger or
+Reporting project reference. Historical domain guidance below still describes the linked source
+files and their unchanged schemas. Run primitive tests with `tests/Meridian.Storage.Tests`.
 
 ## Purpose
 

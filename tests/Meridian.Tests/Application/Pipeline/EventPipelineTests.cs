@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Application.Pipeline;
@@ -406,35 +407,29 @@ public class EventPipelineTests : IAsyncLifetime
     [Fact]
     public async Task TimeSinceLastFlush_UpdatesAfterFlush()
     {
-        // Arrange
-        await Task.Delay(5);
-        var timeBefore = _pipeline.TimeSinceLastFlush;
+        var time = new FakeTimeProvider();
+        await using var sink = new MockStorageSink();
+        await using var pipeline = new EventPipeline(sink, enablePeriodicFlush: false, timeProvider: time);
+        time.Advance(TimeSpan.FromMinutes(1));
+        pipeline.TimeSinceLastFlush.Should().Be(TimeSpan.FromMinutes(1));
 
-        // Act
-        await _pipeline.FlushAsync();
-        var timeAfter = _pipeline.TimeSinceLastFlush;
+        await pipeline.FlushAsync();
 
-        // Assert
-        timeAfter.Should().BeLessThan(timeBefore);
+        pipeline.TimeSinceLastFlush.Should().Be(TimeSpan.Zero);
     }
 
     [Fact]
     public async Task PeriodicFlush_WhenEnabled_FlushesAutomatically()
     {
-        // Arrange
+        var time = new FakeTimeProvider();
         await using var sink = new MockStorageSink();
         await using var pipeline = new EventPipeline(
-            sink,
-            capacity: 1000,
-            flushInterval: TimeSpan.FromMilliseconds(50),
-            enablePeriodicFlush: true);
+            sink, capacity: 1000, flushInterval: TimeSpan.FromMilliseconds(50),
+            enablePeriodicFlush: true, timeProvider: time);
 
-        pipeline.TryPublish(CreateTradeEvent("SPY"));
+        time.Advance(TimeSpan.FromMilliseconds(50));
+        await sink.FirstFlush.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        // Act - Wait for periodic flush (generous margin for CI runners)
-        await Task.Delay(300);
-
-        // Assert
         sink.FlushCount.Should().BeGreaterThanOrEqualTo(1);
     }
 
@@ -518,9 +513,6 @@ public class EventPipelineTests : IAsyncLifetime
             pipeline.TryPublish(CreateTradeEvent("SPY"));
         }
 
-        // Give consumer time to start processing before disposal
-        await Task.Delay(5);
-
         // Act
         await pipeline.DisposeAsync();
 
@@ -544,15 +536,10 @@ public class EventPipelineTests : IAsyncLifetime
             finalFlushTimeout: TimeSpan.FromSeconds(1));
 
         pipeline.TryPublish(CreateTradeEvent("SPY"));
-        await Task.Delay(5); // Let consumer process the event
 
         // Act - Dispose should not hang; the final flush will be cancelled by finalFlushTimeout
         var disposeTask = pipeline.DisposeAsync().AsTask();
-        var completed = await Task.WhenAny(disposeTask, Task.Delay(TimeSpan.FromSeconds(3)));
-
-        // Assert - Disposal must complete (not hang indefinitely)
-        completed.Should().Be(disposeTask,
-            "DisposeAsync should complete within the timeout, not hang indefinitely");
+        await disposeTask.WaitAsync(TimeSpan.FromSeconds(3));
     }
 
     [Fact]
@@ -563,7 +550,6 @@ public class EventPipelineTests : IAsyncLifetime
         var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false);
 
         pipeline.TryPublish(CreateTradeEvent("SPY"));
-        await Task.Delay(5); // Let consumer process
 
         // Act
         await pipeline.DisposeAsync();
@@ -853,6 +839,7 @@ internal sealed class MockStorageSink : IStorageSink
     }
 
     public int FlushCount { get; private set; }
+    public TaskCompletionSource FirstFlush { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public TimeSpan ProcessingDelay { get; set; } = TimeSpan.Zero;
 
@@ -883,6 +870,7 @@ internal sealed class MockStorageSink : IStorageSink
     public Task FlushAsync(CancellationToken ct = default)
     {
         FlushCount++;
+        FirstFlush.TrySetResult();
         return Task.CompletedTask;
     }
 

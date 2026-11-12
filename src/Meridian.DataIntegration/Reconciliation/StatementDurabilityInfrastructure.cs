@@ -9,7 +9,7 @@ using Meridian.Contracts.Text;
 using Meridian.Domain.Reconciliation;
 using Meridian.Core.IO;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 public sealed record StatementRunMatchArtifact(
     string RunId,

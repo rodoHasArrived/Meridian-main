@@ -11,6 +11,12 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+Intraday historical-backfill coverage and resume checkpoints follow the date of the bar's start
+in its session timezone. The current US-equity providers default to `America/New_York`; callers
+for other markets can pass `intradaySessionTimeZone` explicitly. A bar ending after UTC midnight
+does not mark the following US trading session as covered. Daily bars retain their declared
+`SessionDate`.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -1069,6 +1075,10 @@ Core workstation host. Do not introduce a second listener or independent monitor
   credential-gated data providers resolvable in composition slices.
 
 ## Important workflows
+
+Detailed health reports include latency degradation in their overall status, retain elapsed
+dependency downtime on recovery, and report the built assembly version. The periodic status writer
+retries transient I/O and permission failures at the next interval instead of ending its loop.
 
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.

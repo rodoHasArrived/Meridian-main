@@ -356,7 +356,9 @@ public sealed partial class ProviderConnectionLifecycleService
 
         try
         {
-            using var client = _httpClientFactory?.CreateClient(nameof(ProviderConnectionLifecycleService)) ?? new HttpClient();
+            using var client = (_httpClientFactory ?? throw new InvalidOperationException(
+                "An HTTP client factory is required to verify a provider connection."))
+                .CreateClient(nameof(ProviderConnectionLifecycleService));
             using var request = new HttpRequestMessage(HttpMethod.Get, $"{AlpacaTradingApiEndpoint(environment)}/account");
             request.Headers.TryAddWithoutValidation("APCA-API-KEY-ID", keyId);
             request.Headers.TryAddWithoutValidation("APCA-API-SECRET-KEY", secretKey);

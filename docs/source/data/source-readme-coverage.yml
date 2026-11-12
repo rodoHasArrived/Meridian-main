@@ -49,6 +49,11 @@ modules:
     readme: src/Meridian.Infrastructure/README.md
     status: covered
     last_reviewed: 2026-05-20
+  - module_id: SRC-STORAGE-ACCOUNTING
+    path: src/Meridian.Storage.Accounting
+    readme: src/Meridian.Storage.Accounting/README.md
+    status: covered
+    last_reviewed: 2026-11-12
   - module_id: SRC-STORAGE
     path: src/Meridian.Storage
     readme: src/Meridian.Storage/README.md
@@ -169,6 +174,11 @@ modules:
     readme: src/Meridian.Audit/README.md
     status: covered
     last_reviewed: 2026-06-04
+  - module_id: SRC-REPORTING-READMODELS
+    path: src/Meridian.Reporting.ReadModels
+    readme: src/Meridian.Reporting.ReadModels/README.md
+    status: covered
+    last_reviewed: 2026-11-12
   - module_id: SRC-DESIGN-REPORTING
     path: src/Meridian.Reporting
     readme: src/Meridian.Reporting/README.md

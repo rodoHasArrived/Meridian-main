@@ -71,6 +71,8 @@ class RunDotnetCiTestsTests(unittest.TestCase):
                 "core-market-instruments",
                 "core-platform-domain-root",
                 "core-reporting",
+                "storage-unit",
+                "execution-unit",
                 "contracts-unit",
                 "core-unit",
                 "fsharp",
@@ -203,7 +205,7 @@ class RunDotnetCiTestsTests(unittest.TestCase):
             self.assertEqual(solution["projects"], [
                 project.path.replace("/", "\\") for project in MODULE.get_unique_build_projects(projects)
             ])
-            self.assertEqual(len(solution["projects"]), 11)
+            self.assertEqual(len(solution["projects"]), 13)
             self.assertTrue(all((resolved_solution.parent / path.replace("\\", "/")).is_file()
                                 for path in solution["projects"]))
 

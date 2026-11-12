@@ -50,7 +50,7 @@ Total items: **236**
 | `src/Meridian.Strategies/Services/StrategyRunReadService.cs` | 1268 | `NOTE` | ❌ | Note: promo?.ApprovedBy is not null ? $"Approved by {promo.ApprovedBy}." : null)); |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 266 | `NOTE` | ❌ | /// Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy |
 | `src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs` | 398 | `NOTE` | ❌ | // NOTE: SelfTest*, ErrorCodes*, ShowConfig*, QuickCheck* models are defined in DiagnosticsService.cs |
-| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 502 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
+| `src/Meridian.Ui.Services/Services/ProviderHealthService.cs` | 511 | `NOTE` | ❌ | // NOTE: ProviderComparison is defined in AdvancedAnalyticsModels.cs for cross-provider comparison |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 33 | `NOTE` | ❌ | // NOTE: GET /schedules, GET /schedules/{id}, POST /schedules, POST /schedules/{id}/enable, |
 | `src/Meridian.Ui.Shared/Endpoints/ArchiveMaintenanceEndpoints.cs` | 116 | `NOTE` | ❌ | // NOTE: POST /schedules/{id}/enable and POST /schedules/{id}/disable are registered |
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.DataProviders.cs` | 136 | `NOTE` | ❌ | Note: note, |
@@ -109,11 +109,11 @@ Total items: **236**
 | `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 404 | `NOTE` | ❌ | note: "Board portal delivery.", |
 | `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 428 | `NOTE` | ❌ | note: "Investor email-link delivery.", |
 | `src/Meridian.Ui/dashboard/src/scenarios/accounting-payload.ts` | 533 | `NOTE` | ❌ | note: "pricing-correction" |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-projections.ts` | 109 | `NOTE` | ❌ | note: string \| null; |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.security-projections.ts` | 430 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 528 | `NOTE` | ❌ | note: "Coupon posted." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 548 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
 | `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.test.ts` | 2205 | `NOTE` | ❌ | note: "Expected-versus-actual variance." |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 924 | `NOTE` | ❌ | note: string \| null; |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.view-model.ts` | 6063 | `NOTE` | ❌ | note: event.sourceReason ?? (event.isCurrentProjection ? "Current schedule projection." : null) |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 304 | `NOTE` | ❌ | note: string; |
 | `src/Meridian.Ui/dashboard/src/screens/covered-call-screen.view-model.ts` | 1111 | `NOTE` | ❌ | note: "Covered-call net curve requires the underlying cost basis which is not yet threaded through the API. The chart shows the short-call leg only." |
 | `src/Meridian.Ui/dashboard/src/screens/daily-control-tower-screen.test.tsx` | 76 | `NOTE` | ❌ | note: "Paper endpoint returned intermittent quote gaps.", |
@@ -193,8 +193,8 @@ Total items: **236**
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2020 | `NOTE` | ❌ | note: "Reviewed from the Settings Provider Connection Center runtime evidence panel." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2071 | `NOTE` | ❌ | note: "Marked from the Settings Provider Connection Center for replay after mapping changes." |
 | `src/Meridian.Ui/dashboard/src/screens/settings-screen.test.tsx` | 2092 | `NOTE` | ❌ | note: "Ignored from the Settings Provider Connection Center after operator review." |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1411 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1539 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1313 | `NOTE` | ❌ | note: "Approved from the Settings Provider Connection Center promotion readiness panel.", |
+| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | 1441 | `NOTE` | ❌ | note: providerRuntimeQuarantineActionNote(action) |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 429 | `NOTE` | ❌ | note: "Close evidence reviewed." |
 | `src/Meridian.Ui/dashboard/src/screens/w4-acceptance-parity.test.ts` | 437 | `NOTE` | ❌ | note: "Published to investor portal." |
 | `src/Meridian.Ui/dashboard/src/types/reporting-governance.ts` | 124 | `NOTE` | ❌ | note: string \| null; |
@@ -216,14 +216,14 @@ Total items: **236**
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1647 | `NOTE` | ❌ | note: "Canonical pilot run created from the certified renderer manifest."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1660 | `NOTE` | ❌ | note: "Certified renderer output reconciliation started."); |
 | `tests/Meridian.Tests/Integration/EndpointTests/PilotAcceptanceHarnessTests.cs` | 1673 | `NOTE` | ❌ | note: "Exact certified renderer output was retained."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2102 | `NOTE` | ❌ | Note: "Ready for review."); |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2128 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2173 | `NOTE` | ❌ | Note: "Retry after a crashed submission.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2215 | `NOTE` | ❌ | Note: "Attempt to claim someone else's submitted workflow.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2240 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2265 | `NOTE` | ❌ | Note: "Submit.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2289 | `NOTE` | ❌ | Note: "Submit through gate.", |
-| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3339 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2112 | `NOTE` | ❌ | Note: "Ready for review."); |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2138 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2183 | `NOTE` | ❌ | Note: "Retry after a crashed submission.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2225 | `NOTE` | ❌ | Note: "Attempt to claim someone else's submitted workflow.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2250 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2275 | `NOTE` | ❌ | Note: "Submit.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 2299 | `NOTE` | ❌ | Note: "Submit through gate.", |
+| `tests/Meridian.Tests/SecurityMaster/Workbench/SecurityMasterWorkbenchCommandServiceTests.cs` | 3349 | `NOTE` | ❌ | Note: "Submit while an edit is mid-flight.", |
 | `tests/Meridian.Tests/Storage/StorageChecksumServiceTests.cs` | 99 | `NOTE` | ❌ | // NOTE: File.WriteAllTextAsync uses UTF-8 with BOM by default on some platforms, |
 | `tests/Meridian.Tests/Strategies/ReconciliationBreakQueueRepositoryTests.cs` | 868 | `NOTE` | ❌ | Note: "Automation suggested reopened-case resolution.", |
 | `tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs` | 5563 | `NOTE` | ❌ | Note: "Delivered after approval.", |

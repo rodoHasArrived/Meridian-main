@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Time.Testing;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
@@ -1358,13 +1359,20 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         // observed concurrency across ALL calls must be one.
         var concurrentCalls = 0;
         var maxConcurrentCalls = 0;
+        var trackedCallCount = 0;
+        var firstStoreCallEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseFirstStoreCall = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         async Task<T> Tracked<T>(Func<T> result)
         {
             var now = Interlocked.Increment(ref concurrentCalls);
             InterlockedMax(ref maxConcurrentCalls, now);
             try
             {
-                await Task.Delay(30);
+                if (Interlocked.Increment(ref trackedCallCount) == 1)
+                {
+                    firstStoreCallEntered.TrySetResult();
+                    await releaseFirstStoreCall.Task;
+                }
                 return result();
             }
             finally
@@ -1391,9 +1399,11 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             Actor: "ops.analyst",
             Justification: "Par correction.");
 
-        await Task.WhenAll(
-            harness.Service.UpdateSecurityFieldAsync(EditWith("60")),
-            harness.Service.UpdateSecurityFieldAsync(EditWith("70")));
+        var firstEdit = harness.Service.UpdateSecurityFieldAsync(EditWith("60"));
+        await firstStoreCallEntered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        var secondEdit = harness.Service.UpdateSecurityFieldAsync(EditWith("70"));
+        releaseFirstStoreCall.TrySetResult();
+        await Task.WhenAll(firstEdit, secondEdit);
 
         maxConcurrentCalls.Should().Be(1,
             "the second edit's overlay reads must not begin until the first edit's patch completed");
@@ -2537,7 +2547,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         var harness = new Harness(currentVersion: 3);
         var abandoned = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit.");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit.");
 
@@ -2562,7 +2572,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         var harness = new Harness(currentVersion: 3);
         var abandoned = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit.");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var approved = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Winning edit.");
         await harness.Revisions.TransitionAsync(
@@ -2648,7 +2658,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         var harness = new Harness(currentVersion: 3);
         var superseded = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit (100).");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var latest = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit (200).");
 
@@ -2680,7 +2690,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "First edit (100).");
         await harness.Revisions.TransitionAsync(
             submitted.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var latest = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Second edit (200).");
 
@@ -2715,7 +2725,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             approved.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Submitted, "ops.analyst");
         await harness.Revisions.TransitionAsync(
             approved.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var latest = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Abandoned edit (200).",
             fieldValue: new SecurityMasterRevisionFieldValue("200"));
@@ -2749,7 +2759,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow.AddMinutes(-10), "Clear par.",
             fieldValue: new SecurityMasterRevisionFieldValue(null));
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var latest = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Assert par (200).",
             fieldValue: new SecurityMasterRevisionFieldValue("200"));
@@ -2783,7 +2793,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             fieldValue: new SecurityMasterRevisionFieldValue("100"));
         await harness.Revisions.TransitionAsync(
             rejected.RevisionId, SecurityMasterRevisionStateDto.Draft, SecurityMasterRevisionStateDto.Rejected, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var published = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Winning edit (200).",
             fieldValue: new SecurityMasterRevisionFieldValue("200"));
@@ -3285,10 +3295,10 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         await revisions.DraftEntered.Task;
 
         // The edit has committed its patch and is parked inside draft creation: start the approval
-        // and give it a head start — without the shared gate it would record the decision now.
+        // synchronously advances to its first incomplete await: the shared per-security gate.
         var approveTask = harness.Service.ApproveRevisionAsync(new ApproveSecurityMasterRevisionRequest(
             SecurityId, revisionId, workflowId, 3, "ops.actor", "ops.reviewer", "Approved.", "rp-1"));
-        await Task.Delay(100);
+        approveTask.IsCompleted.Should().BeFalse("the in-flight edit still owns the per-security gate");
         revisions.ReleaseDrafts.TrySetResult();
 
         await Task.WhenAll(editTask, approveTask);
@@ -3342,7 +3352,6 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             ExpectedWorkflowVersion: 2,
             Reviewer: "ops.reviewer",
             ReportPackId: "rp-1"));
-        await Task.Delay(100);
         submitTask.IsCompleted.Should().BeFalse(
             "the submission must wait for the per-security gate the in-flight edit holds");
 
@@ -3372,7 +3381,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
         await harness.Revisions.TransitionAsync(
             published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var deferring = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.couponRate", DateTimeOffset.UtcNow, "Abandoned edit.",
             fieldValue: new SecurityMasterRevisionFieldValue("5"));
@@ -3423,7 +3432,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
         await harness.Revisions.TransitionAsync(
             published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var latest = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Abandoned edit (200).",
             fieldValue: new SecurityMasterRevisionFieldValue("200"));
@@ -3497,7 +3506,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             published.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
         await harness.Revisions.TransitionAsync(
             published.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var deferring = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.couponRate", DateTimeOffset.UtcNow, "Abandoned edit.",
             fieldValue: new SecurityMasterRevisionFieldValue("5"));
@@ -3545,7 +3554,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             legacy.RevisionId, SecurityMasterRevisionStateDto.Submitted, SecurityMasterRevisionStateDto.Approved, "ops.reviewer");
         await harness.Revisions.TransitionAsync(
             legacy.RevisionId, SecurityMasterRevisionStateDto.Approved, SecurityMasterRevisionStateDto.Published, "ops.analyst");
-        await Task.Delay(10);
+        harness.Time.Advance(TimeSpan.FromMilliseconds(10));
         var revision = await harness.Revisions.CreateDraftAsync(
             SecurityId, "ops.analyst", "assetSpecificTerms.par", DateTimeOffset.UtcNow, "Par correction.",
             fieldValue: new SecurityMasterRevisionFieldValue("80"));
@@ -3642,7 +3651,6 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
                 SetValues: new Dictionary<string, string> { ["annotations.freeform"] = "raw patch" },
                 RemoveKeys: null),
             "ops.analyst");
-        await Task.Delay(100);
         patchTask.IsCompleted.Should().BeFalse(
             "the raw patch must wait for the per-security gate the in-flight edit holds");
 
@@ -3911,7 +3919,6 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             EffectiveFrom: DateTimeOffset.UtcNow,
             Actor: "ops.analyst",
             Justification: "Par correction."));
-        await Task.Delay(100);
         editTask.IsCompleted.Should().BeFalse(
             "the edit must wait until the publish's decision+transition step releases the gate");
 
@@ -4328,7 +4335,8 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityFieldProvenanceStore> FieldProvenance { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterStore> ProjectionStore { get; } = new(MockBehavior.Loose);
-        public ISecurityMasterRevisionStore Revisions { get; } = new InMemorySecurityMasterRevisionStore();
+        public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);
+        public ISecurityMasterRevisionStore Revisions { get; }
         public SecurityMasterWorkbenchCommandService Service { get; }
 
         public Harness(
@@ -4337,6 +4345,7 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
             Meridian.ReferenceData.SecurityMaster.ISecurityAssetProfileCatalog? assetProfileCatalog = null,
             ISecurityMasterRevisionStore? revisions = null)
         {
+            Revisions = new InMemorySecurityMasterRevisionStore(Time);
             _assetProfileCatalog = assetProfileCatalog
                 ?? Meridian.ReferenceData.SecurityMaster.StaticSecurityAssetProfileCatalog.CreateDefault();
             if (revisions is not null)

@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Threading.Channels;
 using FluentAssertions;
 using Meridian.Contracts.Monitoring;
 using Meridian.Core.Config;
@@ -9,6 +10,28 @@ namespace Meridian.Tests.Application.Monitoring;
 public sealed class StatusWriterTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-status-writer-tests", Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public async Task Start_TransientIoFailureRetriesAtNextInterval()
+    {
+        Directory.CreateDirectory(_root);
+        var blockedDirectory = Path.Combine(_root, "blocked");
+        File.WriteAllText(blockedDirectory, "a file temporarily occupies the output directory");
+        var path = Path.Combine(blockedDirectory, "status.json");
+        var clock = new ControlledDelayClock();
+        await using var writer = new StatusWriter(path, () => new AppConfig(), timeProvider: clock);
+
+        writer.Start(TimeSpan.FromMinutes(1));
+        var retry = await clock.NextTimerAsync();
+        File.Exists(path).Should().BeFalse();
+
+        File.Delete(blockedDirectory);
+        retry.Fire();
+        _ = await clock.NextTimerAsync(); // The next interval is scheduled only after the retried write finishes.
+
+        using var document = JsonDocument.Parse(await File.ReadAllTextAsync(path));
+        document.RootElement.GetProperty("metrics").GetProperty("published").GetInt64().Should().Be(0);
+    }
 
     [Fact]
     public async Task WriteOnceAsync_WritesReadableStatusSnapshot()
@@ -83,5 +106,26 @@ public sealed class StatusWriterTests : IDisposable
             MemoryUsageMb: 0,
             HeapSizeMb: 0,
             DateTimeOffset.UtcNow);
+    }
+
+    private sealed class ControlledDelayClock : TimeProvider
+    {
+        private readonly Channel<ControlledTimer> _timers = Channel.CreateUnbounded<ControlledTimer>();
+        public Task<ControlledTimer> NextTimerAsync() => _timers.Reader.ReadAsync().AsTask().WaitAsync(TimeSpan.FromSeconds(5));
+        public override ITimer CreateTimer(TimerCallback callback, object? state, TimeSpan dueTime, TimeSpan period)
+        {
+            var timer = new ControlledTimer(callback, state);
+            _timers.Writer.TryWrite(timer);
+            return timer;
+        }
+    }
+
+    private sealed class ControlledTimer(TimerCallback callback, object? state) : ITimer
+    {
+        private bool _disposed;
+        public void Fire() { if (!_disposed) callback(state); }
+        public bool Change(TimeSpan dueTime, TimeSpan period) => !_disposed;
+        public void Dispose() => _disposed = true;
+        public ValueTask DisposeAsync() { Dispose(); return ValueTask.CompletedTask; }
     }
 }

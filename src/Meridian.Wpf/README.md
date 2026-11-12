@@ -11,6 +11,12 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Wpf
 
+`SecurityMasterPresentation` and `AccountingWorkbenchPresentation` own stateless display and
+readiness projections formerly embedded in their large workspace view models. View models retain
+selection, asynchronous commands and mutable workflow state; the presentation helpers retain the
+same financial labels, evidence links and authorization-independent formatting. Existing view-model
+tests exercise these projections through the operator-facing properties and commands.
+
 Fund Ledger defaults and resets to all reconciliation cases, includes explicitly fund-scoped statement cases without strategy runs, and shows retained source observation and occurrence age separately from case status. Exact lineage evidence is available in the source-observation disclosure. Missing strategy comparison detail preserves the selected case and reports unknown counts.
 
 The Security Master passport editor offers the browser's bond analytics and convention-migration
@@ -200,6 +206,12 @@ scope fails before any provider rows are read.
 - `Shell/` and `Services/` - navigation, route, launch, and desktop service seams.
 
 ## Important workflows
+
+Desktop startup asynchronously initializes `ConfigService` before constructing the host.
+Synchronous Strategy and Accounting DI factories consume its `ConfiguredDataRoot` snapshot;
+they must not reload configuration from disk or block on an async read. Embedded desktop hosts
+must also await `ConfigService.InitializeAsync()` before resolving data-backed services.
+Ticker refreshes serialize pending timer polls, and stopping the strip cancels pending requests.
 
 The desktop's independent host registers the shared tenant-enforcement setting through
 `AddDesktopTenantScopeServices`. An omitted setting selects strict enforcement, and the identity

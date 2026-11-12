@@ -483,6 +483,59 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task ReplaceAsync_ConcurrentReaders_AlwaysSeeOneCompletePublishedGeneration()
+    {
+        var path = Path.Combine(TestDataRoot, "continuous-reader.txt");
+        var generations = Enumerable.Range(0, 32).Select(i => $"generation-{i}:" + new string('x', 4096)).ToArray();
+        await File.WriteAllTextAsync(path, generations[0]);
+        using var stop = new CancellationTokenSource();
+        var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var reader = Task.Run(async () =>
+        {
+            while (!stop.IsCancellationRequested)
+            {
+                using var snapshot = new StreamReader(new FileStream(path, FileMode.Open,
+                    FileAccess.Read, FileShare.Read | FileShare.Delete));
+                generations.Should().Contain(await snapshot.ReadToEndAsync());
+                started.TrySetResult();
+            }
+        });
+
+        try
+        {
+            await started.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            foreach (var generation in generations.Skip(1))
+                await AtomicFileWriter.ReplaceAsync(path, generation, keepBackup: true);
+        }
+        finally
+        {
+            stop.Cancel();
+            await reader;
+        }
+
+        (await File.ReadAllTextAsync(path)).Should().Be(generations[^1]);
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be(generations[^2]);
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task ReplaceAsync_PreCancelled_PreservesDestinationAndBackup()
+    {
+        var path = Path.Combine(TestDataRoot, "cancelled-replace.txt");
+        await File.WriteAllTextAsync(path, "original");
+        await File.WriteAllTextAsync(path + ".bak", "older");
+        using var cancellation = new CancellationTokenSource();
+        cancellation.Cancel();
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            AtomicFileWriter.ReplaceAsync(path, "unpublished", keepBackup: true, cancellation.Token));
+
+        (await File.ReadAllTextAsync(path)).Should().Be("original");
+        (await File.ReadAllTextAsync(path + ".bak")).Should().Be("older");
+        Directory.GetFiles(TestDataRoot, "*.tmp").Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task WriteAsync_String_UsesUTF8Encoding()
     {
         var path = Path.Combine(TestDataRoot, "utf8.txt");
@@ -687,8 +740,7 @@ public sealed class AtomicFileWriterTests : TempDirectoryTestBase
         (await reader.ReadToEndAsync()).Should().Be("original");
     }
 
-    // ReplaceAsync renames the existing destination aside before moving the temp file in; both
-    // moves must wait for a briefly held handle the same way the overwrite rename does.
+    // An atomic replacement must wait for readers that briefly deny replacement on Windows.
     [Fact]
     public async Task ReplaceAsync_WaitsForABrieflyHeldDestinationHandleOnWindows()
     {

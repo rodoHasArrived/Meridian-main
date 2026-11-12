@@ -5,7 +5,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Meridian.Domain.Reconciliation;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 /// <summary>
 /// Imports Interactive Brokers Flex Query XML statements into canonical statement rows.

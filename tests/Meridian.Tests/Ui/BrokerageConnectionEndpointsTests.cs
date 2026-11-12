@@ -15,7 +15,7 @@ using Meridian.Contracts.Workstation;
 using Meridian;
 using Meridian.Domain.Reconciliation;
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Ui.Shared.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;

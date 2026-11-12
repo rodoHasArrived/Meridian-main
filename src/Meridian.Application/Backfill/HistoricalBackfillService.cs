@@ -29,6 +29,7 @@ public sealed class HistoricalBackfillService
     private readonly BackfillJobsConfig _jobsConfig;
     private readonly BackfillStatusStore? _checkpointStore;
     private readonly Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? _symbolTimelineResolver;
+    private readonly TimeZoneInfo _intradaySessionTimeZone;
 
     public HistoricalBackfillService(
         IEnumerable<IHistoricalDataProvider> providers,
@@ -36,7 +37,8 @@ public sealed class HistoricalBackfillService
         IEventMetrics? metrics = null,
         BackfillJobsConfig? jobsConfig = null,
         BackfillStatusStore? checkpointStore = null,
-        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null)
+        Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
+        TimeZoneInfo? intradaySessionTimeZone = null)
     {
         _providers = providers.ToDictionary(p => p.Name.ToLowerInvariant());
         _log = logger ?? LoggingSetup.ForContext<HistoricalBackfillService>();
@@ -44,6 +46,9 @@ public sealed class HistoricalBackfillService
         _jobsConfig = jobsConfig ?? new BackfillJobsConfig();
         _checkpointStore = checkpointStore;
         _symbolTimelineResolver = symbolTimelineResolver;
+        // The current intraday backfill providers serve US equity sessions. Keep the
+        // session zone explicit so other markets can supply their own date convention.
+        _intradaySessionTimeZone = intradaySessionTimeZone ?? TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
     }
 
     public IReadOnlyCollection<IHistoricalDataProvider> Providers => _providers.Values.ToList();
@@ -318,7 +323,11 @@ public sealed class HistoricalBackfillService
                         Interlocked.Increment(ref barsWritten);
                         symbolBars++;
 
-                        var barDate = DateOnly.FromDateTime(bar.EndTime.UtcDateTime);
+                        // Coverage follows the session containing the beginning of the
+                        // bar, not the UTC date of its exclusive end. An after-hours bar
+                        // can end on the next UTC day without covering that next session.
+                        var barDate = DateOnly.FromDateTime(
+                            TimeZoneInfo.ConvertTime(bar.StartTime, _intradaySessionTimeZone).DateTime);
                         if (firstBarDate is null || barDate < firstBarDate.Value)
                             firstBarDate = barDate;
                         if (lastBarDate is null || barDate > lastBarDate.Value)

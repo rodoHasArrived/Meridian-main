@@ -11,7 +11,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Bai2;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Camt;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
 using Meridian.Tests.Reconciliation.Connectors;

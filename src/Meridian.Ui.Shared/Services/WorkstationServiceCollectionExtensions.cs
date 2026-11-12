@@ -498,6 +498,8 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<Microsoft.Extensions.Logging.ILogger<RiskEscalationQueueService>>(),
             sp.GetService<ExecutionAuditTrailService>(),
             sp.GetService<RiskEscalationQueueOptions>()));
+        services.TryAddSingleton<Meridian.Execution.Services.IRiskEscalationQueue>(sp =>
+            sp.GetRequiredService<RiskEscalationQueueService>());
         // On-trip kill switch: when a Critical rule trips the circuit breaker automatically,
         // the same cancel-all sweep the operator breaker endpoint performs must empty the open
         // book — a halt that only blocks new submissions leaves resting orders filling. The
@@ -1169,12 +1171,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IStatementReconciliationCaseworkHandoffService>(sp =>
             new StatementReconciliationCaseworkHandoffService(
                 sp.GetRequiredService<IReconciliationBreakQueueRepository>(),
-                sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationBreakStore>(),
-                sp.GetService<Meridian.Infrastructure.Reconciliation.IReconciliationCaseStore>(),
+                sp.GetService<Meridian.DataIntegration.Reconciliation.IReconciliationBreakStore>(),
+                sp.GetService<Meridian.DataIntegration.Reconciliation.IReconciliationCaseStore>(),
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<ILedgerJournalStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementCaseworkCommitStore>()));
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.IStatementCaseworkCommitStore>()));
         services.TryAddSingleton<SecurityMasterExceptionCaseworkService>(sp =>
             new SecurityMasterExceptionCaseworkService(
                 sp.GetService<IReconciliationBreakQueueRepository>(),
@@ -1195,8 +1197,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IStatementRunWorkflowService>(),
                 sp.GetService<Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.ICanonicalStatementStore>(),
-                sp.GetRequiredService<Meridian.Infrastructure.Reconciliation.IStatementRunMatchArtifactStore>(),
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.ICanonicalStatementStore>(),
+                sp.GetRequiredService<Meridian.DataIntegration.Reconciliation.IStatementRunMatchArtifactStore>(),
                 sp.GetRequiredService<IStatementRunRecoveryRepository>()));
         services.TryAddSingleton<IOperationsContinuityReconciliationBridge>(sp =>
             new OperationsContinuityReconciliationBridge(

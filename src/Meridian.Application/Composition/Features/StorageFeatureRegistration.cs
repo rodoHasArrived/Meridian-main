@@ -45,7 +45,7 @@ using Meridian.Entities.FundStructure;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Edgar;
 using Meridian.Infrastructure.Adapters.Polygon;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Identity;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Instruments.Commodities;

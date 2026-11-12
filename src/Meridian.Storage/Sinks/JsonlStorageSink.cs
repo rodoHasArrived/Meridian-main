@@ -254,8 +254,12 @@ public sealed class JsonlStorageSink : IStorageSink
         }
 
         // Batched write mode
-        var buffer = _buffers.GetOrAdd(path, _bufferFactory);
-        buffer.Add(evt);
+        MarketEventBuffer buffer;
+        do
+        {
+            buffer = _buffers.GetOrAdd(path, _bufferFactory);
+        }
+        while (!buffer.TryAdd(evt));
         Interlocked.Increment(ref _eventsBuffered);
 
         // Flush if buffer is full
@@ -319,6 +323,8 @@ public sealed class JsonlStorageSink : IStorageSink
         Interlocked.Add(ref _eventsWritten, events.Count);
         Interlocked.Add(ref _eventsBuffered, -events.Count);
         Interlocked.Increment(ref _batchesWritten);
+        if (buffer.TryRetireWhenEmpty())
+            _buffers.TryRemove(new KeyValuePair<string, MarketEventBuffer>(path, buffer));
     }
 
     private async Task FlushAllBuffersAsync(CancellationToken ct = default)
@@ -412,6 +418,7 @@ public sealed class JsonlStorageSink : IStorageSink
             if (kv.Value.IsValueCreated)
                 await kv.Value.Value.FlushAsync(ct).ConfigureAwait(false);
         }
+        await CloseIdleWritersAsync().ConfigureAwait(false);
     }
 
     public async ValueTask DisposeAsync()

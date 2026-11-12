@@ -235,9 +235,9 @@ public sealed class MarketImpactFillModelTests
     // =========================================================================
 
     [Fact]
-    public void TryFill_FixedCommission_AppliedPerSlice()
+    public void TryFill_FixedCommission_AppliedOnceAcrossAllSlices()
     {
-        // Fixed $2 per-order commission → each slice carries its share
+        // Splitting execution must not multiply a fixed per-order commission.
         var model = new MarketImpactFillModel(new FixedCommissionModel(2m), impactCoefficient: 0.1m, maxPartialFills: 5);
         var order = MakeMarketOrder("SPY", 50_000L);
         var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 100_000L);
@@ -245,7 +245,8 @@ public sealed class MarketImpactFillModelTests
         var result = model.TryFill(order, evt);
 
         result.Fills.Should().NotBeEmpty();
-        result.Fills.All(f => f.Commission > 0m).Should().BeTrue("every fill slice should carry commission");
+        result.Fills.Sum(f => f.Commission).Should().Be(2m);
+        result.UpdatedOrder.CommissionCharged.Should().Be(2m);
     }
 
     // =========================================================================

@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="FsCheck.Xunit" />
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Meridian.Infrastructure\Meridian.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Storage\Meridian.Storage.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Core\Meridian.Core.csproj" />
+    <ProjectReference Include="..\..\src\Meridian.Domain\Meridian.Domain.csproj" />
+  </ItemGroup>
+  <Import Project="StorageCoreTestSources.props" />
+  <ItemGroup>
+    <Compile Include="@(StorageCoreTestSource-&gt;Distinct())" Link="Storage/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Meridian.Tests/Storage/AtomicSnapshotTestWriter.cs" Link="Support/AtomicSnapshotTestWriter.cs" />
+    <Compile Include="../Meridian.Tests/Infrastructure/Shared/TempDirectoryFixture.cs" Link="Support/TempDirectoryFixture.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Meridian.Tests/TestCollections.cs" Link="Support/TestCollections.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Meridian.Tests/GlobalUsings.cs" Link="Support/GlobalUsings.cs" />
+  </ItemGroup>
+</Project>

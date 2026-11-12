@@ -1,0 +1,6 @@
+<Project>
+  <ItemGroup>
+    <ExecutionTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/**/*.cs"
+      Exclude="$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/RobinhoodHostedSynchronizationTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/PaperSessionPersistenceServiceTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Execution/HostedBrokerageGatewayRegistrationTests.cs" />
+  </ItemGroup>
+</Project>

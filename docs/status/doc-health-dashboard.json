@@ -1,11 +1,11 @@
 {
-  "total_files": 795,
-  "total_lines": 180519,
-  "orphaned_count": 259,
+  "total_files": 799,
+  "total_lines": 181031,
+  "orphaned_count": 260,
   "no_heading_count": 157,
   "stale_count": 0,
-  "todo_count": 326,
-  "average_lines": 227.1,
+  "todo_count": 328,
+  "average_lines": 226.6,
   "health_score": 83,
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
@@ -210,6 +210,7 @@
     "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
     "docs/engineering/archive-compression-replay-safety.md",
+    "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/configuration-schema.md",
     "docs/generated/interfaces.md",
     "docs/generated/project-dependencies.md",
@@ -1551,7 +1552,7 @@
     },
     {
       "path": "docs/architecture/layer-boundaries.md",
-      "line_count": 183,
+      "line_count": 192,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1599,7 +1600,7 @@
     },
     {
       "path": "docs/architecture/module-map.md",
-      "line_count": 227,
+      "line_count": 236,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1631,7 +1632,7 @@
     },
     {
       "path": "docs/architecture/project-structure.md",
-      "line_count": 85,
+      "line_count": 93,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -1664,6 +1665,14 @@
     {
       "path": "docs/architecture/reporting-workstation-model.md",
       "line_count": 319,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/architecture/review-boundary-extractions.md",
+      "line_count": 48,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2159,7 +2168,7 @@
     },
     {
       "path": "docs/documentation-ownership.md",
-      "line_count": 80,
+      "line_count": 100,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -2544,6 +2553,14 @@
     {
       "path": "docs/engineering/plans/README.md",
       "line_count": 24,
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/review-remediation-2026-11-12.md",
+      "line_count": 109,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3031,7 +3048,7 @@
     },
     {
       "path": "docs/generated/repository-structure.md",
-      "line_count": 13180,
+      "line_count": 13230,
       "has_heading": true,
       "todo_count": 7,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4231,7 +4248,7 @@
     },
     {
       "path": "docs/source/generated/source-module-index.md",
-      "line_count": 62,
+      "line_count": 64,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4239,7 +4256,7 @@
     },
     {
       "path": "docs/source/generated/source-roadmap-traceability.md",
-      "line_count": 213,
+      "line_count": 219,
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6231,7 +6248,7 @@
     },
     {
       "path": "src/Meridian.Application/README.md",
-      "line_count": 1403,
+      "line_count": 1413,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6255,7 +6272,7 @@
     },
     {
       "path": "src/Meridian.Backtesting/README.md",
-      "line_count": 244,
+      "line_count": 251,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6279,7 +6296,7 @@
     },
     {
       "path": "src/Meridian.DataIntegration/README.md",
-      "line_count": 465,
+      "line_count": 471,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6383,7 +6400,7 @@
     },
     {
       "path": "src/Meridian.Infrastructure/README.md",
-      "line_count": 537,
+      "line_count": 544,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6470,6 +6487,14 @@
       "stale": false
     },
     {
+      "path": "src/Meridian.Reporting.ReadModels/README.md",
+      "line_count": 75,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "src/Meridian.Reporting/README.md",
       "line_count": 297,
       "has_heading": true,
@@ -6479,7 +6504,7 @@
     },
     {
       "path": "src/Meridian.Risk/README.md",
-      "line_count": 199,
+      "line_count": 204,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6494,8 +6519,16 @@
       "stale": false
     },
     {
+      "path": "src/Meridian.Storage.Accounting/README.md",
+      "line_count": 74,
+      "has_heading": true,
+      "todo_count": 1,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "src/Meridian.Storage/README.md",
-      "line_count": 1502,
+      "line_count": 1528,
       "has_heading": true,
       "todo_count": 1,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6519,7 +6552,7 @@
     },
     {
       "path": "src/Meridian.Ui.Shared/README.md",
-      "line_count": 3006,
+      "line_count": 3028,
       "has_heading": true,
       "todo_count": 3,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6527,7 +6560,7 @@
     },
     {
       "path": "src/Meridian.Ui/dashboard/README.md",
-      "line_count": 1896,
+      "line_count": 1903,
       "has_heading": true,
       "todo_count": 5,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6575,7 +6608,7 @@
     },
     {
       "path": "src/Meridian.Wpf/README.md",
-      "line_count": 1073,
+      "line_count": 1085,
       "has_heading": true,
       "todo_count": 2,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

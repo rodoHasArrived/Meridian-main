@@ -11,6 +11,15 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Ui.Shared
 
+Large workspace implementations have explicit responsibility seams: `FundReportArtifactRenderer`
+owns deterministic branding and JSON/CSV/XLSX/HTML/PDF rendering, while
+`FundOperationsWorkspaceReadService` retains scope, authoritative reads and governed report
+coordination. `ReportingScheduleStore.cs` owns schedule persistence and compatibility adapters;
+`ReportingScheduleService` owns execution orchestration. Workstation route registration is split
+into operations-continuity, reconciliation and Security Master read modules, retaining the same
+route order, tenant-scoped group and per-route authorization. These seams preserve public contracts
+and do not create another source of financial or workflow authority.
+
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
 Shared cash-flow preview endpoints expose calculation-only exercise and prepayment scenarios with view permission. Separate retention endpoints require modification permission, bind retries to immutable run IDs, and retrieve the complete replay evidence. Loan retention preserves the existing tenant write gate. Loan preview and retention share the actor-scoped direct-lending mutation budget; exhaustion refuses the request before calculation or retained-evidence access. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
@@ -587,6 +596,13 @@ This module owns cross-surface operator-facing projection types and shared endpo
 compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, and
 `src/Meridian.Wpf`.
 
+Leaf reporting comparisons, access-policy evaluation, journal disposal-tax reads, partners-capital
+reads, retained ledger-population replay, and amount binding compile in
+[`Meridian.Reporting.ReadModels`](../Meridian.Reporting.ReadModels/README.md). Their existing
+source paths and public namespaces remain stable, and Ui.Shared forwards their public identities.
+That assembly depends only on Contracts, Ledger, Reporting, and Storage.Accounting; it can build
+without endpoint or workstation orchestration. The larger cross-domain workflows remain here.
+
 ## Key folders and files
 
 - `Services/HostStartupEscalation` - the rule a host uses to decide whether a fault raised while
@@ -631,6 +647,12 @@ compatibility across `src/Meridian.Ui.Services`, `src/Meridian.Ui/dashboard`, an
 - Project metadata - UI shared dependencies and build settings.
 
 ## Important workflows
+
+`GET /api/config` requires configuration-read permission and masks every configured backfill
+provider credential in a cloned response projection. Persisted credentials remain unchanged.
+Connection services use the injected `IHttpClientFactory` for credential verification and OAuth
+exchanges; manually constructed instances can inspect local status without a factory, but cannot
+silently create an unconfigured network client.
 
 The seeded development launcher identifies its host through the `/readyz`
 `x-meridian-dev-session` response header. `StatusEndpoints` captures `MERIDIAN_DEV_SESSION`

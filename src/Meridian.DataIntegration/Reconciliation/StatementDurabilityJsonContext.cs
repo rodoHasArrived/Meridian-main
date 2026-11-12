@@ -2,7 +2,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Domain.Reconciliation;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 /// <summary>
 /// ADR-014 source-generated metadata for retained statement-run and statement-casework authority.

@@ -5,7 +5,7 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Platform.Results;
 using Meridian.Domain.Reconciliation;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Xunit;

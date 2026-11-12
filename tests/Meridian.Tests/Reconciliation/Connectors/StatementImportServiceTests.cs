@@ -13,7 +13,7 @@ using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Alpaca;
 using Meridian.FinancialOperations.Reconciliation.Connectors.IbFlex;
 using Meridian.FinancialOperations.Reconciliation.Connectors.Ofx;
-using Meridian.Infrastructure.Reconciliation;
+using Meridian.DataIntegration.Reconciliation;
 using Meridian.Tests.TestHelpers;
 using Xunit;
 

@@ -2,7 +2,7 @@ using System.Text.Json;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Reconciliation;
 
-namespace Meridian.Infrastructure.Reconciliation;
+namespace Meridian.DataIntegration.Reconciliation;
 
 internal static class StatementExecutedMappingEvidence
 {

@@ -92,14 +92,14 @@ public sealed class BacktestMetricsEngineTests
         var metrics = BacktestMetricsEngine.Compute(snapshots, [], [], request);
 
         var returns = snapshots.Select(s => (double)s.DailyReturn).ToList();
-        var dailyRf = 0.05 / 252.0;
+        var dailyRf = 0.05 / 365.0;
         var excess = returns.Select(r => r - dailyRf).ToList();
         var mean = excess.Average();
         var std = SampleStdDev(excess);
         var downside = excess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
-        var expectedSharpe = mean / std * Math.Sqrt(252.0);
-        var expectedSortino = mean / downsideDev * Math.Sqrt(252.0);
+        var expectedSharpe = mean / std * Math.Sqrt(365.0);
+        var expectedSortino = mean / downsideDev * Math.Sqrt(365.0);
 
         metrics.SharpeRatio.Should().BeApproximately(expectedSharpe, 1e-10);
         metrics.SortinoRatio.Should().BeApproximately(expectedSortino, 1e-10);
@@ -114,8 +114,8 @@ public sealed class BacktestMetricsEngineTests
         var series = new Dictionary<DateOnly, double>
         {
             [startDate] = 0.00,
-            [startDate.AddDays(1)] = 0.252, // daily 0.1%
-            [startDate.AddDays(3)] = 0.126  // daily 0.05%
+            [startDate.AddDays(1)] = 0.365, // daily 0.1%
+            [startDate.AddDays(3)] = 0.1825 // daily 0.05%
         };
 
         var request = new BacktestRequest(
@@ -131,7 +131,7 @@ public sealed class BacktestMetricsEngineTests
             .Select(s =>
             {
                 var annual = series.TryGetValue(s.Date, out var rate) ? rate : 0.05;
-                return (double)s.DailyReturn - annual / 252.0;
+                return (double)s.DailyReturn - annual / 365.0;
             })
             .ToList();
         var mean = expectedExcess.Average();
@@ -139,8 +139,8 @@ public sealed class BacktestMetricsEngineTests
         var downside = expectedExcess.Where(r => r < 0).ToList();
         var downsideDev = Math.Sqrt(downside.Select(r => r * r).Average());
 
-        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(252.0), 1e-10);
-        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(252.0), 1e-10);
+        metrics.SharpeRatio.Should().BeApproximately(mean / std * Math.Sqrt(365.0), 1e-10);
+        metrics.SortinoRatio.Should().BeApproximately(mean / downsideDev * Math.Sqrt(365.0), 1e-10);
     }
 
     // ------------------------------------------------------------------ //
