@@ -55,6 +55,8 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
             || request.OriginalFace <= 0m || request.Fees < 0m || request.CleanPricePer100 < 0m
             || !Enum.IsDefined(request.PriceBasis))
             return Block("InvalidRequest", "Explicit UTC cutoffs, positive original face and nonnegative quote/fees are required.");
+        if (context.ObservedFixingReceiptIds is { Count: > 0 })
+            return Block("UnsupportedObservedFixingSelection", "This workflow cannot consume legacy observed-fixing receipt pins. Replay the selected receipts with floating v3 analytics; this workflow requires retained typed bond-market observations.");
         if (security.EffectiveFrom > context.AsOf || security.EffectiveTo is { } end && context.AsOf >= end
             || context.SecurityVersion is { } version && security.Version != version)
             return Block("TermsNotEffective", "Retained terms do not match the requested economic date/version.");
@@ -105,6 +107,14 @@ public sealed class BondWorkflowService(ISecurityMasterQueryService securities,
                         ? selection.SelectedSource == pricingSource
                         : selection.SelectedSource == selectedQuote.Input.ProviderId || selection.SelectedSource == selectedQuote.Input.SourceName))
                     return Block("PriceSelectionUnavailable", "An exact scoped price selection and matching typed quote metadata are required.");
+                if (selection.Quotation is { } quotation
+                    && (quotation.Convention != SecurityQuotationConvention.Per100Face
+                        || quotation.Basis != (quoteIsDirty ? SecurityPriceBasis.Dirty : SecurityPriceBasis.Clean)
+                        || quotation.SettlementDate != selectedQuote.Input.Quote!.SettlementDate
+                        || string.IsNullOrWhiteSpace(quotation.SettlementBasis)
+                        || string.IsNullOrWhiteSpace(selectedQuote.Input.Quote.SettlementBasis)
+                        || !string.Equals(quotation.SettlementBasis, selectedQuote.Input.Quote.SettlementBasis, StringComparison.Ordinal)))
+                    return Block("PriceSelectionQuotationMismatch", "The retained selection's clean/dirty basis, per-100 convention and exact settlement date/basis must match the selected typed quote; retain matching settlement metadata before replay.");
                 inputs.Add(new("PriceSelectionReceipt", receiptId.ToString("D"), VersionId: receiptId,
                     AsOf: selection.PriceAsOf, RecordedAt: selection.KnowledgeAsOf));
             }

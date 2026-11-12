@@ -2,11 +2,31 @@
 
 # `asset-operations-contracts` data objects - page 2 of 2
 
-Objects 81-130 of 130. References crossing pages remain available in the dependency manifest.
+Objects 81-135 of 135. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% asset-operations-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineAllocationDto["CorporateActionPostingComponentLineAllocationDto"] {
+        +decimal ComponentAmount
+        +int EffectLineIndex
+    }
+    class Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto["CorporateActionPostingComponentLineMappingDto"] {
+        +IReadOnlyList~CorporateActionPostingComponentLineAllocationDto~ Allocations
+        +int ComponentIndex
+        +CorporateActionPostingComponentKindDto ComponentKind
+        +string? MappingRole
+    }
+    class Meridian_Contracts_AssetOperations_CorporateActionPostingSetDto["CorporateActionPostingSetDto"] {
+        +AccountingBasisKindDto AccountingBasis
+        +IReadOnlyList~CorporateActionPostingComponentDto~ Components
+        +string Currency
+        +bool RequiresJournalCandidate
+    }
+    class Meridian_Contracts_AssetOperations_CorporateActionProjectionBlockerDto["CorporateActionProjectionBlockerDto"] {
+        +string Code
+        +string Message
+    }
     class Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto["CorporateActionProjectionEvidenceDependencyDto"] {
         +string ContentHashSha256
         +string EvidenceId
@@ -90,6 +110,8 @@ classDiagram
         +string? SourceContentHash
     }
     class Meridian_Contracts_AssetOperations_FactorPaydownProjectionIdentity["FactorPaydownProjectionIdentity"] {
+    }
+    class Meridian_Contracts_AssetOperations_IAccountBondHoldingsSource["IAccountBondHoldingsSource"] {
     }
     class Meridian_Contracts_AssetOperations_IAccountCashForecastService["IAccountCashForecastService"] {
     }
@@ -255,6 +277,7 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_ProjectAssetAccountingEventRequestDto["ProjectAssetAccountingEventRequestDto"] {
         +string Actor
+        +BondCouponRecognitionInstructionDto? BondCouponRecognition
         +Meridian_Contracts_Accounting_Lots_OpenLotCapitalReturnInstructionDto? CapitalReturn
         +Meridian_Contracts_Accounting_Lots_OpenLotSuccessorInstructionDto? CorporateAction
         +AssetAccountingCorrectionReferenceDto? Correction
@@ -265,7 +288,6 @@ classDiagram
         +AssetAccountingEventKindDto EventKind
         +long ExpectedPeriodVersion
         +Meridian_Contracts_Accounting_Lots_OpenLotFactorPaydownInstructionDto? FactorPaydown
-        +string? Notes
     }
     class Meridian_Contracts_AssetOperations_ProjectedAccountingEffectDto["ProjectedAccountingEffectDto"] {
         +string Currency
@@ -335,6 +357,7 @@ classDiagram
         +decimal OriginalFace
         +string? PoolId
     }
+    Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineMappingDto --> Meridian_Contracts_AssetOperations_CorporateActionPostingComponentLineAllocationDto
     Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceDependencyDto --> Meridian_Contracts_AssetOperations_CorporateActionProjectionEvidenceRoleDto
     Meridian_Contracts_AssetOperations_CorporateActionSuccessorAllocationDto --> Meridian_Contracts_AssetOperations_CorporateActionSuccessorRoleDto
     Meridian_Contracts_AssetOperations_CorporateActionTreatmentDecisionDto --> Meridian_Contracts_AssetOperations_CorporateActionTaxClassificationDto

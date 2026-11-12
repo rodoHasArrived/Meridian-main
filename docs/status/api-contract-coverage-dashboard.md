@@ -11,10 +11,10 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 | Metric | Value |
 |---|---:|
-| Weighted score | 19.2% |
-| Endpoint coverage | 29.4% |
+| Weighted score | 19.1% |
+| Endpoint coverage | 29.3% |
 | Workstation contract coverage | 3.9% |
-| Endpoints documented | 227 / 772 |
+| Endpoints documented | 227 / 775 |
 | Workstation contracts documented | 39 / 1009 |
 
 ## Endpoint Coverage
@@ -473,7 +473,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/providers/modules/{moduleId}/test` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:159` |
 | `GET` | `/api/providers/rate-limits` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:118` |
 | `GET` | `/api/providers/readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:416` |
-| `POST` | `/api/providers/restart` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:193` |
+| `POST` | `/api/providers/restart` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderModuleEndpoints.cs:197` |
 | `GET` | `/api/providers/status` | Documented | `src/Meridian.Ui.Shared/Endpoints/ProviderEndpoints.cs:428` |
 | `POST` | `/api/providers/switch` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderExtendedEndpoints.cs:167` |
 | `DELETE` | `/api/providers/{providerId}/credentials` | Gap | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:135` |
@@ -529,27 +529,27 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/reconciliation/{runId:guid}/results` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1230` |
 | `POST` | `/api/reference-data/bonds/comparisons/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:104` |
 | `GET` | `/api/reference-data/bonds/connection-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:65` |
-| `POST` | `/api/reference-data/bonds/cutover` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:74` |
-| `GET` | `/api/reference-data/bonds/cutover-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:68` |
+| `POST` | `/api/reference-data/bonds/cutover` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:75` |
+| `GET` | `/api/reference-data/bonds/cutover-readiness` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:69` |
 | `POST` | `/api/reference-data/bonds/fred-observations/import` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:82` |
 | `POST` | `/api/reference-data/bonds/identifier-discovery` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:77` |
-| `GET` | `/api/reference-data/bonds/issuer-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:72` |
-| `GET` | `/api/reference-data/bonds/issuer-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:18` |
+| `GET` | `/api/reference-data/bonds/issuer-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:73` |
+| `GET` | `/api/reference-data/bonds/issuer-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:19` |
 | `GET` | `/api/reference-data/bonds/market-observations` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:36` |
 | `POST` | `/api/reference-data/bonds/market-observations` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:53` |
-| `GET` | `/api/reference-data/bonds/maturity-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:96` |
-| `GET` | `/api/reference-data/bonds/maturity-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:26` |
-| `POST` | `/api/reference-data/bonds/migration-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:19` |
-| `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:26` |
-| `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:46` |
+| `GET` | `/api/reference-data/bonds/maturity-ladder` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:97` |
+| `GET` | `/api/reference-data/bonds/maturity-ladder/page` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferencePagingEndpoints.cs:27` |
+| `POST` | `/api/reference-data/bonds/migration-preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:20` |
+| `POST` | `/api/reference-data/bonds/migration-preview/batch` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:27` |
+| `POST` | `/api/reference-data/bonds/migration-submit` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:47` |
 | `GET` | `/api/reference-data/bonds/provider-responses/{contentSha256}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:94` |
 | `POST` | `/api/reference-data/bonds/screen` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:71` |
-| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:20` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:27` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:59` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:30` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:77` |
-| `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:43` |
+| `POST` | `/api/reference-data/bonds/settlement-consideration` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:21` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:28` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/accrual-convention` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:60` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/analytics` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:31` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/exercise-notices` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondAnalyticsEndpoints.cs:96` |
+| `GET` | `/api/reference-data/bonds/{securityId:guid}/lifecycle` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondReferenceEndpoints.cs:44` |
 | `POST` | `/api/reference-data/bonds/{securityId:guid}/workflow` | Gap | `src/Meridian.Ui.Shared/Endpoints/BondWorkflowEndpoints.cs:24` |
 | `GET` | `/api/reference-data/certificates-of-deposit/by-issuer` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:33` |
 | `GET` | `/api/reference-data/certificates-of-deposit/maturing-before` | Gap | `src/Meridian.Ui.Shared/Endpoints/CertificateOfDepositReferenceEndpoints.cs:44` |
@@ -639,18 +639,18 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:238` |
 | `POST` | `/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:256` |
 | `GET` | `/api/security-master/coverage/draft/{symbol}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:979` |
-| `GET` | `/api/security-master/curves` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:38` |
-| `POST` | `/api/security-master/curves` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:60` |
-| `GET` | `/api/security-master/curves/{curveId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:81` |
-| `GET` | `/api/security-master/curves/{curveId:guid}/versions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:97` |
-| `POST` | `/api/security-master/curves/{curveId:guid}/versions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:125` |
-| `GET` | `/api/security-master/curves/{curveId:guid}/versions/{version:long}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:160` |
-| `GET` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1766` |
-| `POST` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1788` |
-| `GET` | `/api/security-master/data-entitlements/expiring` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1776` |
-| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1816` |
+| `GET` | `/api/security-master/curves` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:42` |
+| `POST` | `/api/security-master/curves` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:64` |
+| `GET` | `/api/security-master/curves/{curveId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:85` |
+| `GET` | `/api/security-master/curves/{curveId:guid}/versions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:101` |
+| `POST` | `/api/security-master/curves/{curveId:guid}/versions` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:129` |
+| `GET` | `/api/security-master/curves/{curveId:guid}/versions/{version:long}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:167` |
+| `GET` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1782` |
+| `POST` | `/api/security-master/data-entitlements` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1804` |
+| `GET` | `/api/security-master/data-entitlements/expiring` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1792` |
+| `DELETE` | `/api/security-master/data-entitlements/{entitlementId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1832` |
 | `POST` | `/api/security-master/deactivate` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:508` |
-| `GET` | `/api/security-master/exceptions/aging` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1901` |
+| `GET` | `/api/security-master/exceptions/aging` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1917` |
 | `POST` | `/api/security-master/import` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1120` |
 | `POST` | `/api/security-master/ingest/edgar` | Documented | `src/Meridian.Ui.Shared/Endpoints/EdgarReferenceDataEndpoints.cs:24` |
 | `GET` | `/api/security-master/ingest/status` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1158` |
@@ -674,11 +674,13 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `GET` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:48` |
 | `POST` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/exposure-snapshots` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:31` |
 | `GET` | `/api/security-master/otc/netting-sets/{nettingSetId:guid}/margin-calls` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.OtcCollateral.cs:138` |
-| `GET` | `/api/security-master/quality-report/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1863` |
-| `POST` | `/api/security-master/quality-report/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1848` |
+| `GET` | `/api/security-master/quality-report/latest` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1879` |
+| `POST` | `/api/security-master/quality-report/run` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1864` |
+| `POST` | `/api/security-master/rates/ingest` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:49` |
+| `GET` | `/api/security-master/rates/observations` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Rates.cs:18` |
 | `POST` | `/api/security-master/resolve` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:279` |
 | `POST` | `/api/security-master/search` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:316` |
-| `POST` | `/api/security-master/structured-credit-reclassification/report` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1881` |
+| `POST` | `/api/security-master/structured-credit-reclassification/report` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1897` |
 | `GET` | `/api/security-master/{securityId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:46` |
 | `GET` | `/api/security-master/{securityId:guid}/cashflow-projections` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:140` |
 | `POST` | `/api/security-master/{securityId:guid}/cashflow-projections/preview` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CashFlowPreview.cs:20` |
@@ -701,18 +703,19 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 | `POST` | `/api/security-master/{securityId:guid}/operator-overrides/decision` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1296` |
 | `GET` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:600` |
 | `PATCH` | `/api/security-master/{securityId:guid}/preferred-equity-terms` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:621` |
-| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1749` |
-| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1728` |
-| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1632` |
-| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1646` |
-| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1687` |
+| `GET` | `/api/security-master/{securityId:guid}/price-comparison` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1765` |
+| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1731` |
+| `GET` | `/api/security-master/{securityId:guid}/price-golden-copy/observations` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1752` |
+| `GET` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1635` |
+| `PUT` | `/api/security-master/{securityId:guid}/pricing-hierarchy` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1649` |
+| `POST` | `/api/security-master/{securityId:guid}/raw-price` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:1690` |
 | `PUT` | `/api/security-master/{securityId:guid}/terms/{blockKey}` | Documented | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:441` |
 | `GET` | `/api/security-master/{securityId:guid}/trading-parameters` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:577` |
 | `GET` | `/api/security-master/{securityId:guid}/underlyings` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:821` |
 | `POST` | `/api/security-master/{securityId:guid}/underlyings` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:865` |
 | `DELETE` | `/api/security-master/{securityId:guid}/underlyings/{linkId:guid}` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:903` |
 | `GET` | `/api/security-master/{securityId:guid}/validation` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs:67` |
-| `POST` | `/api/security-master/{securityId:guid}/valuation` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:181` |
+| `POST` | `/api/security-master/{securityId:guid}/valuation` | Gap | `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:188` |
 | `POST` | `/api/servicer-reports` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1271` |
 | `GET` | `/api/servicer-reports/{batchId:guid}` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1299` |
 | `GET` | `/api/servicer-reports/{batchId:guid}/position-lines` | Documented | `src/Meridian.Ui.Shared/Endpoints/DirectLendingEndpoints.cs:1307` |
@@ -1810,7 +1813,7 @@ Tracks whether mapped API routes and workstation DTO contracts are visible in th
 
 ## Follow-up Queue
 
-- Document or intentionally suppress 545 mapped endpoint gap(s).
+- Document or intentionally suppress 548 mapped endpoint gap(s).
 - Document or intentionally suppress 970 workstation contract gap(s).
 
 ---

@@ -52,6 +52,18 @@
       "object_type": "column"
     },
     {
+      "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+      "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+      "object": "security_master.security_raw_prices.price_exact",
+      "object_type": "column"
+    },
+    {
+      "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+      "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+      "object": "security_master.security_raw_prices.quotation_evidence",
+      "object_type": "column"
+    },
+    {
       "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
       "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
       "object": "security_master.structured_credit_projection.attachment_point",
@@ -1504,6 +1516,18 @@
       "target": "security_master.securities.terms_format",
       "target_kind": "table column",
       "target_name": "securities",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "1df7736b1e55d4f12f799e0bc0e310e22e98d582c4b24789a669fb85a75c55b5",
+      "kind": "normal",
+      "source": "security_master.ck_security_curves_rate_policy on security_master.security_curves",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_curves.rate_policy",
+      "target_kind": "table column",
+      "target_name": "security_curves",
       "target_schema": "security_master"
     },
     {
@@ -4679,7 +4703,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+  "fingerprint": "c8f998e6c490c4393ad9ca21e62389671440fa26b770f5ccbe88ff9b5a04ec55",
   "foreign_tables": [],
   "functions": [
     {
@@ -40893,10 +40917,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'LegacyNonNegative'::text",
+          "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rate_policy",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
       "constraints": [
+        {
+          "columns": [
+            "rate_policy"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+          "delete_action": null,
+          "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_curves_rate_policy",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "currency"
@@ -41001,7 +41061,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+      "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -45766,6 +45826,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quotation_evidence",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+          "data_type": "numeric",
+          "default": null,
+          "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_exact",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -45837,7 +45929,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+      "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -89906,10 +89998,46 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": "'LegacyNonNegative'::text",
+          "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "rate_policy",
+          "nullable": false,
+          "ordinal_position": 13,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
       "constraints": [
+        {
+          "columns": [
+            "rate_policy"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+          "delete_action": null,
+          "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_curves_rate_policy",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
         {
           "columns": [
             "currency"
@@ -90014,7 +90142,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+      "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -94620,6 +94748,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "quotation_evidence",
+          "nullable": true,
+          "ordinal_position": 8,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+          "data_type": "numeric",
+          "default": null,
+          "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "price_exact",
+          "nullable": true,
+          "ordinal_position": 9,
+          "security_labels": [],
+          "type_name": "numeric",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -94691,7 +94851,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+      "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [

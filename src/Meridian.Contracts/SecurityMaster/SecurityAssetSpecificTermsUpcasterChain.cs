@@ -1175,9 +1175,11 @@ public sealed partial class SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster 
     /// Two things are deliberately left out. The <c>declaredSchedule</c> module keeps the
     /// existing rule that an empty declared call or put list is filled from the retained
     /// document, because the older <c>call</c> summary module is filled the same way and the two
-    /// must not disagree. And fields the economic document carried before stage 3 keep the old
-    /// fill: historical and hand-shaped documents hold values there that the flat decode does not
-    /// reproduce.
+    /// must not disagree. And fields the economic document carried before stage 3 are not listed
+    /// here: historical and hand-shaped documents hold values there that the flat decode does not
+    /// reproduce, so no per-class list can say which were on the row. The write path settles
+    /// those per document instead, by rebuilding the retained document's own flat row
+    /// (<c>SecurityEconomicDefinitionAdapter.FieldsTheFlatRowCarried</c>).
     /// </para>
     /// </summary>
     public static IReadOnlyList<(string Module, string Field)> FlatAuthoritativeFields(string? assetClass)

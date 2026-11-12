@@ -133,6 +133,70 @@ public sealed class BondWorkflowServiceTests
         result.Issues.Should().Contain(i => i.Code == "PriceSelectionUnavailable");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyObservedFixingReceiptPinCannotSilentlySelectLatestTypedObservations(bool invalidIdentity)
+    {
+        var observations = Substitute.For<IBondWorkflowObservationSource>();
+        var curves = Curves();
+        var result = (await Service(Bond(), curves, observations: observations).CalculateAsync(new(Id,
+            Context() with { ObservedFixingReceiptIds = [invalidIdentity ? Guid.Empty : Guid.NewGuid()] }, CleanPricePer100: 100m)))!;
+
+        result.IsBlocked.Should().BeTrue();
+        result.Issues.Should().Contain(issue => issue.Code == "UnsupportedObservedFixingSelection"
+            && issue.Reason.Contains("floating v3", StringComparison.Ordinal));
+        await observations.DidNotReceive().GetAsync(Arg.Any<string>(), Arg.Any<DateOnly>(), Arg.Any<DateOnly>(),
+            Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>());
+        await curves.DidNotReceive().ListDefinitionsAsync(Arg.Any<SecurityCurveKind?>(), Arg.Any<string?>(),
+            Arg.Any<string?>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData("matching", false)]
+    [InlineData("clean-dirty", true)]
+    [InlineData("quotation-unit", true)]
+    [InlineData("settlement-date", true)]
+    [InlineData("settlement-basis", true)]
+    [InlineData("missing-typed-basis", true)]
+    public async Task SelectionQuotationMustBindExactTypedQuoteEconomicMeaning(string scenario, bool blocked)
+    {
+        var quotes = Substitute.For<IBondWorkflowQuoteSource>();
+        var quote = Quote(AsOf);
+        quote = quote with
+        {
+            Input = quote.Input with
+            {
+                Quote = quote.Input.Quote! with
+                { SettlementBasis = scenario == "missing-typed-basis" ? null : "regular-way" }
+            }
+        };
+        quotes.GetAsync(quote.ObservationId, Arg.Any<CancellationToken>()).Returns(quote);
+        var pricing = Substitute.For<ISecurityMasterPricingService>();
+        var receiptId = Guid.NewGuid();
+        pricing.GetGoldenCopySelectionAsync(Id, null, receiptId, Arg.Any<CancellationToken>())
+            .Returns(new SecurityPriceGoldenCopyDto(Id, 100m, SecurityPriceKind.MarketGoldenCopy, "provider-one", AsOf,
+                false, 0, [], SecurityPriceUnit.PercentOfPar, EvaluatedAsOf: AsOf, KnowledgeAsOf: AsOf,
+                SelectionReceiptId: receiptId)
+            {
+                Quotation = new(scenario == "clean-dirty" ? SecurityPriceBasis.Dirty : SecurityPriceBasis.Clean,
+                    scenario == "quotation-unit" ? SecurityQuotationConvention.CurrencyPerUnit : SecurityQuotationConvention.Per100Face,
+                    SecurityQuoteStatus.Mid, scenario == "settlement-date" ? new(2026, 1, 2) : new(2026, 1, 1),
+                    scenario == "settlement-basis" ? "cash-settlement" : "regular-way")
+            });
+
+        var result = (await Service(Bond(), quotes: quotes, pricing: pricing).CalculateAsync(new(Id, Context())
+        { QuoteObservationId = quote.ObservationId, PriceSelectionReceiptId = receiptId }))!;
+
+        result.IsBlocked.Should().Be(blocked);
+        if (blocked)
+            result.Issues.Should().Contain(issue => issue.Code == "PriceSelectionQuotationMismatch");
+    }
+
+    [Fact]
+    public void AbsentOptionalTypedSettlementBasisDoesNotChangeLegacyQuoteBytes()
+        => JsonSerializer.Serialize(Quote(AsOf)).Should().NotContain("SettlementBasis").And.NotContain("settlementBasis");
+
     [Fact]
     public async Task BackwardCarryBeforeCurveOriginLeavesProjectionAvailable()
     {
@@ -186,13 +250,14 @@ public sealed class BondWorkflowServiceTests
 
     private static BondCalculationContext Context() => new(AsOf, new DateOnly(2026, 1, 1), AsOf);
     private static BondWorkflowService Service(SecurityDetailDto bond, ISecurityCurveStore? curves = null,
-        IBondWorkflowQuoteSource? quotes = null, ISecurityMasterPricingService? pricing = null)
+        IBondWorkflowQuoteSource? quotes = null, ISecurityMasterPricingService? pricing = null,
+        IBondWorkflowObservationSource? observations = null)
     {
         var query = Substitute.For<ISecurityMasterQueryService>();
         query.GetByIdAsync(Id, Arg.Any<CancellationToken>()).Returns(bond);
         query.GetRecordedByIdAsOfAsync(Id, Arg.Any<DateTimeOffset>(), Arg.Any<CancellationToken>()).Returns(bond);
         return new(query, new StaticBusinessDayCalendarSource([BusinessDayCalendars.WeekendsOnly]), curves,
-            quotes: quotes, pricing: pricing);
+            observations: observations, quotes: quotes, pricing: pricing);
     }
 
     private static SecurityDetailDto Bond(decimal rate = 5m)

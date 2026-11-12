@@ -9,6 +9,15 @@ public sealed class ProviderIntegrationTemplateCatalog
 {
     private const string SeedAuthor = "meridian-system";
     private static readonly DateTimeOffset SeededAt = DateTimeOffset.Parse("2026-06-16T00:00:00Z");
+    private static readonly string[] FixedIncomeRequiredFields =
+    [
+        "security.cusip", "security.name", "security.coupon", "security.couponRateUnit", "security.couponCashBasis",
+        "security.paymentFrequency", "security.dayCount", "security.issueDate", "security.maturityDate",
+        "security.currency", "security.currencyReview", "security.paymentCalendars", "security.businessDayConvention",
+        "security.accrualAdjusted", "security.settlementDays", "security.settlementConvention", "security.settlementCalendars",
+        "security.callSchedule", "security.factorHistory"
+    ];
+
     private static readonly IReadOnlyList<ProviderIntegrationManifestDto> Templates =
     [
         CreateManualCsvUploadTemplate(),
@@ -40,6 +49,18 @@ public sealed class ProviderIntegrationTemplateCatalog
         ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
         return Templates.FirstOrDefault(template =>
             StringComparer.OrdinalIgnoreCase.Equals(template.ManifestId, manifestId));
+    }
+
+    /// <summary>Version-pinned lookup preserves the original template when reviewing retained imports.</summary>
+    public ProviderIntegrationManifestDto? GetManifest(string manifestId, int manifestVersion)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(manifestId);
+        if (manifestVersion <= 0)
+            throw new ArgumentOutOfRangeException(nameof(manifestVersion));
+        if (manifestVersion == 1 && StringComparer.OrdinalIgnoreCase.Equals(manifestId, "template-fixed-income-security-master-v1"))
+            return CreateLegacyFixedIncomeSecurityMasterTemplate();
+        var current = GetManifest(manifestId);
+        return current?.ManifestVersion == manifestVersion ? current : null;
     }
 
     private static ProviderIntegrationManifestDto CreateManualCsvUploadTemplate()
@@ -251,20 +272,66 @@ public sealed class ProviderIntegrationTemplateCatalog
     private static ProviderIntegrationManifestDto CreateFixedIncomeSecurityMasterTemplate()
         => new(
             "template-fixed-income-security-master-v1",
+            2,
+            "fixed-income-security-master",
+            "Fixed Income Security Master",
+            IntegrationTypeDto.SftpFile,
+            "template",
+            NoAuth(),
+            [Capability(ProviderCapabilityKindDto.SecurityReferenceData, FixedIncomeRequiredFields)],
+            [],
+            [
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.terms_profile", "security.importTermsProfile", constantValue: "fixed-income-v2"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.cusip", "security.cusip", "uppercase", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.isin", "security.isin", "uppercase"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.ticker", "security.ticker", "uppercase"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.issuer", "security.issuer", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.description", "security.name", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.coupon", "security.coupon", "decimal", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.coupon_units", "security.couponRateUnit", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.coupon_cash_basis", "security.couponCashBasis", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.payment_frequency", "security.paymentFrequency", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.day_count", "security.dayCount", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.issue_date", "security.issueDate", "date", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.maturity_date", "security.maturityDate", "date", required: true),
+                // A constant such as USD is an operator-reviewed mapping choice, never an implicit default.
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.currency", "security.currency", "uppercase", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.currency_review", "security.currencyReview", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.payment_calendars", "security.paymentCalendars", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.business_day_convention", "security.businessDayConvention", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.accrual_adjusted", "security.accrualAdjusted", "lowercase", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_days", "security.settlementDays", "decimal", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_convention", "security.settlementConvention", "trim", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.settlement_calendars", "security.settlementCalendars", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.call_schedule", "security.callSchedule", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.factor_history", "security.factorHistory", required: true),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.rating", "security.rating", "uppercase"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.sector", "security.sector", "trim"),
+                Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.naic_designation", "security.naicDesignation", "trim")
+            ],
+            ManualSync(),
+            [RequiredRule(ProviderCapabilityKindDto.SecurityReferenceData, FixedIncomeRequiredFields)],
+            ManualActivationPolicy(),
+            ProviderIntegrationActivationStateDto.Draft,
+            SeedAuthor,
+            SeededAt,
+            null,
+            null,
+            "Reviewed fixed-income terms: explicit coupon units and cash basis, calendars, settlement, call schedules and dated factors. " +
+            "Currency has no default; set currency_review to Reviewed only after reviewing the source or an explicit mapping constant. " +
+            "Use JSON arrays (including [] for explicitly absent calls/factors) and review the sample coupon before staging terms.");
+
+    private static ProviderIntegrationManifestDto CreateLegacyFixedIncomeSecurityMasterTemplate()
+        => new(
+            "template-fixed-income-security-master-v1",
             1,
             "fixed-income-security-master",
             "Fixed Income Security Master",
             IntegrationTypeDto.SftpFile,
             "template",
             NoAuth(),
-            [
-                Capability(
-                    ProviderCapabilityKindDto.SecurityReferenceData,
-                    "security.cusip",
-                    "security.name",
-                    "security.maturityDate",
-                    "security.currency")
-            ],
+            [Capability(ProviderCapabilityKindDto.SecurityReferenceData,
+                "security.cusip", "security.name", "security.maturityDate", "security.currency")],
             [],
             [
                 Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.cusip", "security.cusip", "uppercase", required: true),
@@ -280,9 +347,7 @@ public sealed class ProviderIntegrationTemplateCatalog
                 Mapping(ProviderCapabilityKindDto.SecurityReferenceData, "$.naic_designation", "security.naicDesignation", "trim")
             ],
             ManualSync(),
-            [
-                RequiredRule(ProviderCapabilityKindDto.SecurityReferenceData, "security.cusip", "security.name", "security.maturityDate", "security.currency")
-            ],
+            [RequiredRule(ProviderCapabilityKindDto.SecurityReferenceData, "security.cusip", "security.name", "security.maturityDate", "security.currency")],
             ManualActivationPolicy(),
             ProviderIntegrationActivationStateDto.Draft,
             SeedAuthor,
@@ -293,7 +358,9 @@ public sealed class ProviderIntegrationTemplateCatalog
 
     private static ProviderIntegrationManifestDto CreateFixedIncomeWorkflowTemplate()
     {
-        var reference = CreateFixedIncomeSecurityMasterTemplate();
+        // This independent profile retains its original mappings; inheriting the newer reviewed
+        // terms profile would require incompatible columns and duplicate coupon/call mappings.
+        var reference = CreateLegacyFixedIncomeSecurityMasterTemplate();
         var referenceFields = reference.FieldMappings.Select(mapping => mapping.TargetField == "security.currency"
             ? mapping with { DefaultValue = null } : mapping).ToList();
         referenceFields.AddRange([

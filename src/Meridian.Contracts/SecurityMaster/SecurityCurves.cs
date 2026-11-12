@@ -43,7 +43,11 @@ public enum SecurityCurveRatePolicy { LegacyNonNegative, SignedRates }
 /// FRACTION (Forward: 0.04, never 4) or an index level (Inflation). <paramref name="Tenor"/> is a
 /// label such as <c>3M</c>; the date is authoritative.
 /// </summary>
-public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null);
+public sealed record SecurityCurvePointDto(DateOnly Date, decimal Value, string? Tenor = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityRatePointEvidenceDto? RateEvidence { get; init; }
+}
 
 /// <summary>The write-once identity of a stored curve.</summary>
 public sealed record SecurityCurveDefinitionDto(
@@ -253,6 +257,10 @@ public static class SecurityCurveRules
                 .Append(point.Value.ToString("G29", CultureInfo.InvariantCulture));
             if (NormalizeOptional(point.Tenor) is { } tenor)
                 builder.Append('@').Append(tenor);
+            // Existing curves keep exactly the same canonical bytes and hashes. New typed-rate
+            // pillars bind their raw observation and reviewed construction into the immutable hash.
+            if (point.RateEvidence is { } evidence)
+                builder.Append("|rate-evidence:").Append(System.Text.Json.JsonSerializer.Serialize(evidence));
         }
 
         return Sha256Digest.ComputeUtf8(builder.ToString());

@@ -370,7 +370,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
+  "fingerprint": "d46f504e484843023900b66f5964b61d45b85b677ecaf8f08ecf749c060a3cb0",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -4617,6 +4617,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "authority",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_sha256",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -4666,7 +4698,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -4690,6 +4722,30 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+          "expression": null,
+          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "as_of_date",
+            "ingested_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_custodian_snapshot_authority",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],
@@ -9388,6 +9444,38 @@
           "security_labels": [],
           "type_name": "text",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "authority",
+          "nullable": true,
+          "ordinal_position": 10,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "content_sha256",
+          "nullable": true,
+          "ordinal_position": 11,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
@@ -9437,7 +9525,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -9461,6 +9549,30 @@
           "ready": true,
           "security_labels": [],
           "unique": true,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+          "expression": null,
+          "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "account_id",
+            "as_of_date",
+            "ingested_at"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_custodian_snapshot_authority",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
           "valid": true
         }
       ],

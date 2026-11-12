@@ -83,7 +83,7 @@ Retain quote category (evaluated valuation, reported trade, indicative or execut
 basis, unit, source, observation/publication time, original settlement, optional size/expiry and
 provider yield/convention. Imported yield remains distinct from Meridian's calculated yield.
 An existing price-selection receipt remains the pricing authority: pair it only with matching typed
-source, observation time, value and unit. A matching number alone is insufficient. Expired liquidity
+source, observation time, value and unit. A matching number alone is insufficient. New selections carrying quotation evidence also require the exact clean/dirty convention, per-100 basis, settlement date and `quote.settlementBasis`; import matching typed metadata before replay. Expired liquidity
 is flagged. Settlement normalization needs retained curve coverage and a uniquely calibrated spread;
 an old date is not given an invented carry factor. Confirmation cash is an evidenced comparison input.
 
@@ -350,3 +350,7 @@ Deployment performs no customer cutover, posting, exercise, funds transfer or li
 analytics, ladder, amortization and journal dispatch/payloads remain preserved. Follow the repository's
 financial-change verification and the owner's merge/activation decisions; synthetic development
 evidence is not production certification.
+
+Legacy floating-v3 observed-fixing receipt pins remain replayable through floating-v3 analytics.
+The new workflow explicitly refuses those receipt pins and uses retained typed bond-market inputs;
+no selected receipt silently becomes a latest observation.

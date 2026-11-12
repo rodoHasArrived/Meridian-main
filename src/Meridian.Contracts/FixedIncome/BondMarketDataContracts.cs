@@ -27,6 +27,8 @@ public sealed record BondMarketQuoteDetails(
 {
     public string? PricingSourceId { get; init; }
     public DateTimeOffset? ObservedAtUtc { get; init; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SettlementBasis { get; init; }
 }
 
 /// <summary>
@@ -155,6 +157,7 @@ public static class BondMarketDataRules
                     || quote.SettlementDate == default || quote.AvailableFace <= 0m
                     || quote.ProviderYield.HasValue != !string.IsNullOrWhiteSpace(quote.ProviderYieldConvention)
                     || quote.PricingSourceId is { } pricingSource && string.IsNullOrWhiteSpace(pricingSource)
+                    || quote.SettlementBasis is { } settlementBasis && string.IsNullOrWhiteSpace(settlementBasis)
                     || quote.ObservedAtUtc is { } observed && (observed == default || observed.Offset != TimeSpan.Zero)
                     || quote.ExpiresAtUtc is { } expiry && (expiry == default || expiry.Offset != TimeSpan.Zero))
                     throw new ArgumentException("A quote requires security, currency, category, clean/dirty basis, settlement date and quotation units; provider yield must name its convention.");

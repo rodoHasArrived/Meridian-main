@@ -613,12 +613,12 @@ classDiagram
         +LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval
         +Guid AggregateId
         +AssetLotMutationInstructionDto? AssetLotMutation
+        +Meridian_Contracts_Accounting_Lots_BondCouponRecognitionInstructionDto? BondCouponRecognition
         +AccountingBookContextDto? BookContext
         +Guid? BookPositionId
         +string? CompanyId
         +Guid? CorrelationId
         +string? CounterpartyId
-        +string Currency
     }
     class Meridian_Contracts_Ledger_PostingRuleJournalCandidateResultDto["PostingRuleJournalCandidateResultDto"] {
         +AccountingBookContextDto? BookContext

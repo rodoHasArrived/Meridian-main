@@ -43,6 +43,110 @@ public sealed class SecurityCurvesPostgresTests : IClassFixture<SecurityMasterDa
     }
 
     [SecurityMasterDatabaseFact]
+    public async Task TypedRateEvidence_RoundTripsImmutably_AndVintageChangesAppendAVersion()
+    {
+        var store = new PostgresSecurityCurveStore(_fixture.Options);
+        var definition = await store.DefineAsync(new DefineSecurityCurveRequest(UniqueKey("USD-SOFR-RATES"),
+            SecurityCurveKind.Forward, "USD", "SOFR", null, "ACT/360", SecurityCurveInterpolation.Linear,
+            "fred", "Typed rate source evidence", "operator"));
+        var observation = new SecurityRateObservationDto("fred", "SOFR", 4.125m, "4.125", SecurityRateUnit.Percent,
+            "Percent", June30, null, June30, new DateOnly(9999, 12, 31), DateTimeOffset.UtcNow,
+            "lin (untransformed provider level)", SecurityRateObservationKind.ObservedFixing, "USD");
+        var request = new IngestSecurityRatesRequest(definition.CurveId, June30,
+            SecurityRateConstructionMethod.ObservedFixingFlatForecast, "Reviewed flat forecast assumption",
+            [new SecurityRateIngestionPointDto(June30.AddYears(1), observation)]);
+        var v1 = await store.PublishVersionAsync(SecurityRateIngestionRules.BuildPublication(request, definition, "operator"));
+        var reloaded = await store.GetVersionByIdAsync(definition.CurveId, v1.CurveVersionId);
+        reloaded!.Points[0].RateEvidence!.Observation.Should().BeEquivalentTo(observation);
+        reloaded.Points[0].Value.Should().Be(0.04125m);
+        var same = await store.PublishVersionAsync(SecurityRateIngestionRules.BuildPublication(request, definition, "operator"));
+        same.CurveVersionId.Should().Be(v1.CurveVersionId);
+        var revised = request with { Points = [new SecurityRateIngestionPointDto(June30.AddYears(1), observation with { VintageDate = June30.AddDays(1) })] };
+        var v2 = await store.PublishVersionAsync(SecurityRateIngestionRules.BuildPublication(revised, definition, "operator"));
+        v2.CurveVersionId.Should().NotBe(v1.CurveVersionId);
+        v2.Points[0].Value.Should().Be(v1.Points[0].Value, "the source vintage is independently significant even when values agree");
+        (await store.GetVersionByIdAsync(definition.CurveId, v1.CurveVersionId))!.Points[0].RateEvidence!.Observation.VintageDate.Should().Be(June30);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task TypedRateRetry_WithNewRetrievalTime_ReturnsOriginalFullVersionAndEvidence()
+    {
+        var store = new PostgresSecurityCurveStore(_fixture.Options);
+        var governance = new PostgresSecurityGovernanceEventLog(_fixture.Options);
+        var definition = await DefineTypedRateCurveAsync(store);
+        var request = TypedRatePublication(definition, 4.125m, "4.125");
+        var first = await store.PublishVersionAsync(request);
+        var retryRequest = WithRetrievalTime(request, request.Points[0].RateEvidence!.Observation.RetrievedAt.AddHours(1));
+        SecurityCurveRules.ContentSha256(retryRequest.AsOf, retryRequest.Points).Should().NotBe(first.ContentSha256,
+            "hashes still bind full retrieval evidence; semantic retry recognition does not weaken canonical hashes");
+        var retry = await store.PublishVersionAsync(retryRequest);
+        retry.Should().BeEquivalentTo(first, "the retry returns original timestamps, evidence, identity and hash unchanged");
+        (await store.ListVersionsAsync(definition.CurveId)).Should().ContainSingle();
+        (await CurveEventsAsync(governance, definition.CurveId)).Should().HaveCount(2,
+            "only the definition and original publication produce governance events");
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task TypedRateRetry_AfterDifferentPublication_ReturnsOriginalWithoutRestoringItAsLatest()
+    {
+        var store = new PostgresSecurityCurveStore(_fixture.Options);
+        var definition = await DefineTypedRateCurveAsync(store);
+        var requestA = TypedRatePublication(definition, 4.125m, "4.125");
+        var first = await store.PublishVersionAsync(requestA);
+        var second = await store.PublishVersionAsync(TypedRatePublication(definition, 4.25m, "4.25"));
+        var retry = await store.PublishVersionAsync(WithRetrievalTime(requestA,
+            requestA.Points[0].RateEvidence!.Observation.RetrievedAt.AddHours(2)));
+        retry.Should().BeEquivalentTo(first);
+        (await store.GetLatestVersionAsOfAsync(definition.CurveId, June30))!.CurveVersionId.Should().Be(second.CurveVersionId);
+        (await store.ListVersionsAsync(definition.CurveId)).Select(static version => version.CurveVersionId)
+            .Should().Equal(first.CurveVersionId, second.CurveVersionId);
+    }
+
+    [SecurityMasterDatabaseFact]
+    public async Task TypedRateConcurrentRetries_WithDifferentRetrievalTimes_AppendOnlyOneVersion()
+    {
+        var store = new PostgresSecurityCurveStore(_fixture.Options);
+        var governance = new PostgresSecurityGovernanceEventLog(_fixture.Options);
+        var definition = await DefineTypedRateCurveAsync(store);
+        var request = TypedRatePublication(definition, 4.125m, "4.125");
+        var retrievedAt = request.Points[0].RateEvidence!.Observation.RetrievedAt;
+        var results = await Task.WhenAll(Enumerable.Range(0, 8)
+            .Select(index => store.PublishVersionAsync(WithRetrievalTime(request, retrievedAt.AddSeconds(index)))));
+        results.Select(static version => version.CurveVersionId).Distinct().Should().ContainSingle();
+        foreach (var result in results)
+            result.Should().BeEquivalentTo(results[0], "every caller receives the same original full evidence");
+        (await store.ListVersionsAsync(definition.CurveId)).Should().ContainSingle();
+        (await CurveEventsAsync(governance, definition.CurveId)).Should().HaveCount(2);
+    }
+
+    private static Task<SecurityCurveDefinitionDto> DefineTypedRateCurveAsync(PostgresSecurityCurveStore store)
+        => store.DefineAsync(new DefineSecurityCurveRequest(UniqueKey("USD-SOFR-RETRY"), SecurityCurveKind.Forward,
+            "USD", "SOFR", null, "ACT/360", SecurityCurveInterpolation.Linear, "fred", "Atomic typed-rate retry", "operator"));
+
+    private static PublishSecurityCurveVersionRequest TypedRatePublication(SecurityCurveDefinitionDto definition, decimal value, string originalValue)
+    {
+        var observation = new SecurityRateObservationDto("fred", "SOFR", value, originalValue, SecurityRateUnit.Percent,
+            "Percent", June30, null, June30, new DateOnly(9999, 12, 31),
+            new DateTimeOffset(2026, 7, 1, 12, 0, 0, TimeSpan.Zero), "lin (untransformed provider level)",
+            SecurityRateObservationKind.ObservedFixing, "USD");
+        return SecurityRateIngestionRules.BuildPublication(new IngestSecurityRatesRequest(definition.CurveId, June30,
+            SecurityRateConstructionMethod.ObservedFixingFlatForecast, "Reviewed flat forecast assumption",
+            [new SecurityRateIngestionPointDto(June30.AddYears(1), observation)]), definition, "operator");
+    }
+
+    private static PublishSecurityCurveVersionRequest WithRetrievalTime(PublishSecurityCurveVersionRequest request, DateTimeOffset retrievedAt)
+        => request with
+        {
+            Points = request.Points.Select(point => point with
+            {
+                RateEvidence = point.RateEvidence! with
+                {
+                    Observation = point.RateEvidence.Observation with { RetrievedAt = retrievedAt }
+                }
+            }).ToArray()
+        };
+
+    [SecurityMasterDatabaseFact]
     public async Task Versions_AreAppended_ReadBitemporally_AndIdenticalContentIsRetainedNotRepeated()
     {
         var store = new PostgresSecurityCurveStore(_fixture.Options);

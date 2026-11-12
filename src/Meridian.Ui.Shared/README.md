@@ -29,6 +29,25 @@ review is rechecked after fetching. The service archives and reopens exact provi
 through a tenant/company-scoped content-addressed store. API responses keep the separate
 `LiveUntested` evidence status.
 
+Observed bond-fixing retention and selection routes require workstation tenant scope and Security
+Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
+version/index/currency and contractual reset, and retain immutable evidence. They do not amend
+terms or publish forecasts. Analytics accepts explicit observed-fixing receipt UUIDs; missing,
+stale, ambiguous or cutoff-ineligible selections block rather than falling back to a latest value.
+
+Fixed-income HTTP responses for bond reference, analytics, migration, pricing and curves emit CLR
+decimal amounts and rates as invariant decimal strings. This transport-only serializer leaves
+canonical retained receipt bytes and hashes unchanged; identifiers and integer versions retain
+their types. Raw provider JSON remains source evidence. Precision checks cover the actual analytics
+endpoint, exact browser request binding and response parsing/display.
+
+The typed rates observation and ingestion routes preserve source units, observation and vintage
+dates and transformations. Ingestion re-fetches selected facts, enforces currency/index agreement,
+and stamps the authenticated reviewer before immutable curve publication. Generic curve publication
+cannot attach verified rate evidence. Observed fixings become forecasts only through an explicit
+assumption. Treasury constant-maturity yields require an externally reviewed construction and
+explicit discount factors; the endpoint does not bootstrap them implicitly.
+
 Security Master trust snapshots include read-only `Governance` evidence from the effective
 `ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
 requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
@@ -1058,6 +1077,12 @@ under `/api/workstation/financial-record-explorers/{explorerId}` for `ledger`, `
 `security-instrument`, and `report-line-provenance`. `FinancialRecordExplorerReadService` composes
 source-backed strategy run ledger, portfolio, Security Master, report-pack line provenance,
 delivery history, evidence, reconciliation, reporting, and audit projections into the shared DTO.
+Personal explorer views apply only after tenant/operator ownership is resolved; unknown or another
+operator's view ID yields no records. Their normalized search/filter values reach the shared
+read service without an unresolved personal ID, while the response retains that view's active marker.
+Run-filter-only requests preserve the resolved run's active picker entry, including runs beyond the
+bounded candidate list. Explorer save requests trim presentation values and discard null filters or
+blank/duplicate columns before the personal store enforces its unchanged field and collection limits.
 Portfolio explorer column headers and record fields spell profit and loss "P&L" ("Realized P&L",
 "Unrealized P&L"), the spelling the workspace metric cards already use.
 The Security & Instrument Explorer remains productized as a thin shared-read-model surface: it uses
@@ -1321,7 +1346,11 @@ staging records, reconciliation-ready counts, warning groups, and capability sum
 promoting those records to Portfolio, Security Master, Ledger, or Accounting stores. The identity-resolution
 route previews provider account and Security Master match posture for staged records, including
 missing identifiers, unresolved securities, and review-required account mappings before
-reconciliation promotion. The promotion-readiness route composes that posture into ready,
+reconciliation promotion. Every supplied CUSIP, ISIN, SEDOL, FIGI, provider ID, ticker/symbol
+and internal security ID is checked; disagreement blocks promotion. The identity-resolution
+POST retains the authenticated operator’s selected active match and reason without rewriting
+staged source records. The choice binds the complete source and matching-evidence hash; changed
+evidence requires a fresh review. Settings shows all matches together and the retained decision. The promotion-readiness route composes that posture into ready,
 review-required, and blocked rows for the reconciliation-staging handoff while remaining read-only.
 The reconciliation-handoff route requires provider configuration permission, persists only
 operator-approved ready rows as handoff evidence, and exposes handoff history for the same

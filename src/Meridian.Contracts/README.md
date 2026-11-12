@@ -21,6 +21,12 @@ curve-definition opt-in; omitted policy retains legacy nonnegative admission and
 analytical cash, observed transactions, accounting-income instructions and posting receipts distinct.
 See the [operator workflow and source schemas](../../docs/operators/bond-workflows.md).
 
+`BondCalculationContext.ObservedFixingReceiptIds` explicitly pins immutable observed-reset evidence
+for floating v3 analytics. Its null omission preserves legacy context serialization and hashes.
+`BondObservedFixingReceipt` retains the scoped security/version, exact contractual reset, annual
+fraction, original typed provider observation, recording actor/time, review justification and hash.
+Observed reset evidence is distinct from a forward curve or forecast assumption.
+
 `SecurityRecordRateUnit` reads the optional governed `rateUnit` declaration on scalar-rate
 classes that lack schedule anchors. Fraction, Percent and BasisPoints are explicit stored units;
 absence adds no default, and older stamped rows keep stray declarations inert. The `rateConvention`

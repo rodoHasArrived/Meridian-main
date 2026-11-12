@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 250,
-    "warning": 250
+    "total": 258,
+    "warning": 258
   },
   "failed": false,
   "findings": [
@@ -510,6 +510,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Business table ledger.bond_coupon_cash_consumption does not have a table comment.",
+      "object": "ledger.bond_coupon_cash_consumption",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Business table ledger.bond_coupon_recognition does not have a table comment.",
+      "object": "ledger.bond_coupon_recognition",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "fund_profile_tenancy"
       },
       "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
@@ -724,6 +744,26 @@
       },
       "message": "Business table money_market.mmf_rebuild_checkpoints does not have a table comment.",
       "object": "money_market.mmf_rebuild_checkpoints",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "item_metadata"
+      },
+      "message": "Business table operator_triage.item_metadata does not have a table comment.",
+      "object": "operator_triage.item_metadata",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "operator_triage_schema_migrations"
+      },
+      "message": "Business table operator_triage.operator_triage_schema_migrations does not have a table comment.",
+      "object": "operator_triage.operator_triage_schema_migrations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -1795,20 +1835,6 @@
     {
       "details": {
         "columns": [
-          "account_id"
-        ],
-        "constraint": "custodian_statement_batch_account_id_fkey",
-        "schema": "fund_accounts",
-        "table": "custodian_statement_batch"
-      },
-      "message": "Foreign key fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey is not covered by a left-prefix index.",
-      "object": "fund_accounts.custodian_statement_batch.custodian_statement_batch_account_id_fkey",
-      "rule_id": "foreign-key-must-be-indexed",
-      "severity": "warning"
-    },
-    {
-      "details": {
-        "columns": [
           "corrects_mutation_batch_id"
         ],
         "constraint": "atomic_tax_lot_posting_batches_corrects_mutation_batch_id_fkey",
@@ -1831,6 +1857,76 @@
       },
       "message": "Foreign key ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey is not covered by a left-prefix index.",
       "object": "ledger.atomic_tax_lot_posting_batches.atomic_tax_lot_posting_batches_period_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "receipt_id"
+        ],
+        "constraint": "bond_coupon_cash_consumption_receipt_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Foreign key ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_receipt_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_receipt_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tax_lot_record_id"
+        ],
+        "constraint": "bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_cash_consumption"
+      },
+      "message": "Foreign key ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "journal_entry_id"
+        ],
+        "constraint": "bond_coupon_recognition_journal_entry_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_journal_entry_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_journal_entry_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "previous_receipt_id"
+        ],
+        "constraint": "bond_coupon_recognition_previous_receipt_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_previous_receipt_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_previous_receipt_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "tax_lot_record_id"
+        ],
+        "constraint": "bond_coupon_recognition_tax_lot_record_id_fkey",
+        "schema": "ledger",
+        "table": "bond_coupon_recognition"
+      },
+      "message": "Foreign key ledger.bond_coupon_recognition.bond_coupon_recognition_tax_lot_record_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.bond_coupon_recognition.bond_coupon_recognition_tax_lot_record_id_fkey",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -2753,5 +2849,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "d45f8bf8166ca7663e7dd237ef113a5a7ce736fb3c3e92d0655814742e4788a9"
+  "fingerprint": "541d3f05710902f3e0902e7ce6fc66afbc997747ce86de891b2bc0f41987c95e"
 }

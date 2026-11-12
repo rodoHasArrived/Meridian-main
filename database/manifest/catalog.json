@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "c38b561e8a4c3306f34a09c6981c7ac3124c1b4a8892e03640ce03250f265c96",
+  "database_fingerprint": "0b47e058e994b9c76aaf1c7a39ed5634e1bf6593a45bd4298e178f86e06cbe1b",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -1247,6 +1247,174 @@
       "target": "ledger.accounting_periods_pkey",
       "target_kind": "index",
       "target_name": "accounting_periods_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d1bd5fabd861f07d07073db80b2f75ceddbb06c0dac3cb84a89c53ca58445cb5",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition.receipt_id",
+      "target_kind": "table column",
+      "target_name": "bond_coupon_recognition",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "70550a0bbf3e573314fb000e54c37989cbb910ff4e94c225899140b5dc575bad",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition_pkey",
+      "target_kind": "index",
+      "target_name": "bond_coupon_recognition_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "189777f9514bf569860951047970c59a38c7e7e3a97a32b7811b353735cf60d7",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.tax_lot_record_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b8aeb879ab151b0f2a41e0c4a32cd0909aea930e626ed9bf061090f11569beb8",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots_pkey",
+      "target_kind": "index",
+      "target_name": "tax_lots_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "ddeaf619a22404d66b33bdff9de8a44a0372c76c2e7f526b498d680d2bdb6c95",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries.journal_entry_id",
+      "target_kind": "table column",
+      "target_name": "journal_entries",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "b1ee534262f43a0782df7e9d3321ffc2869f72552c812b5ec6e871e3c22ab87d",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.journal_entries_journal_entry_id_key",
+      "target_kind": "index",
+      "target_name": "journal_entries_journal_entry_id_key",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "70cdc2ad2f0d3a65a0dd325d022812e1c6f8a1ab997a4e21d226ea8325534e7b",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "ledger_books",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "869b18db601caed9298709ee2d9506fe413098fd129293d953f961f2c4fb5f96",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.ledger_books_pkey",
+      "target_kind": "index",
+      "target_name": "ledger_books_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "eca9525117d0ddeff2576d17d99f9d4d6d9268e99b03689450d1c70ad3757d5c",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition.receipt_id",
+      "target_kind": "table column",
+      "target_name": "bond_coupon_recognition",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "6c54b174637a3ee2f3057f9292d1dd2f4283e91135ec191494485f67f7a587bc",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition_pkey",
+      "target_kind": "index",
+      "target_name": "bond_coupon_recognition_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "695bddc8a0d3bb5c6aead948a03ce2f3ac95190298bd5c712b1eadea97214c72",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition.receipt_id",
+      "target_kind": "table column",
+      "target_name": "bond_coupon_recognition",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "bdd3fea36764aa26108b453b544c69fe822d94932d00e3ca80ed63eb7732e3a2",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.bond_coupon_recognition_pkey",
+      "target_kind": "index",
+      "target_name": "bond_coupon_recognition_pkey",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "d90e71d2ac8faa28f8058efbb31e93a031b76ed9f6351211641dbfac1d2bc7ad",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots.tax_lot_record_id",
+      "target_kind": "table column",
+      "target_name": "tax_lots",
+      "target_schema": "ledger"
+    },
+    {
+      "fingerprint": "9f3e0c35df099ec1daa41bc5d58ac3b358dc8d6c5421de1c8b87167c3ae5036c",
+      "kind": "normal",
+      "source": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "ledger",
+      "target": "ledger.tax_lots_pkey",
+      "target_kind": "index",
+      "target_name": "tax_lots_pkey",
       "target_schema": "ledger"
     },
     {
@@ -7610,6 +7778,18 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "1df7736b1e55d4f12f799e0bc0e310e22e98d582c4b24789a669fb85a75c55b5",
+      "kind": "normal",
+      "source": "security_master.ck_security_curves_rate_policy on security_master.security_curves",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_curves.rate_policy",
+      "target_kind": "table column",
+      "target_name": "security_curves",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "83dcefa50abea855290bdbff7f8a1a3449e64e63191ed7965b5aaee1dec974fb",
       "kind": "normal",
       "source": "security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
@@ -10787,6 +10967,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "public",
     "reporting",
     "security_master"
@@ -10831,6 +11012,11 @@
       "display_name": "Money Market",
       "id": "money-market",
       "physical_schema": "money_market"
+    },
+    {
+      "display_name": "Operator Triage",
+      "id": "operator-triage",
+      "physical_schema": "operator_triage"
     },
     {
       "display_name": "Reporting",
@@ -12241,8 +12427,16 @@
       "object": "column:fund_accounts.custodian_statement_batch.as_of_date"
     },
     {
+      "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+      "object": "column:fund_accounts.custodian_statement_batch.authority"
+    },
+    {
       "fingerprint": "5c45a5847ecbc50fb2ddbca89e005533a2cffb365f2f30b3343408dba69d7be5",
       "object": "column:fund_accounts.custodian_statement_batch.batch_id"
+    },
+    {
+      "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+      "object": "column:fund_accounts.custodian_statement_batch.content_sha256"
     },
     {
       "fingerprint": "6cdf1088339909e35b1654bf477108c6343b386237cda4635d8d5a1632f165ee",
@@ -13539,6 +13733,94 @@
     {
       "fingerprint": "92545fe34325b7e78a551faab4413f8628cedbf5dd85b0e4fe628e68ad290c83",
       "object": "column:ledger.atomic_tax_lot_posting_batches.source_event_id"
+    },
+    {
+      "fingerprint": "3a3b30edaba6861a4dfd671904739ef241fcbcd883a5b0f69f7ec79df5703c98",
+      "object": "column:ledger.bond_coupon_cash_consumption.account_id"
+    },
+    {
+      "fingerprint": "1467dba40dc21c483c993998b8c4f472f5f6724389900f3c78767eaf26b27580",
+      "object": "column:ledger.bond_coupon_cash_consumption.allocation_id"
+    },
+    {
+      "fingerprint": "f9a370ce4edc45618c0cfdfabc08fc5011784bbcc648c7a64afdbc1d6b907601",
+      "object": "column:ledger.bond_coupon_cash_consumption.expected_flow_id"
+    },
+    {
+      "fingerprint": "e0269d96b0f8afa83777f08fd8e26e68ccc17cd5de373fb6b4aa33766af0cbfa",
+      "object": "column:ledger.bond_coupon_cash_consumption.fees"
+    },
+    {
+      "fingerprint": "cfab527e23a30ed71060bfc708c3c10b5e71303911e542d42530f40c75d463f2",
+      "object": "column:ledger.bond_coupon_cash_consumption.gross_amount"
+    },
+    {
+      "fingerprint": "9ff615e10eb412656c2c63ffd15650e1e6417469dcb40abc71a6eedc1910baf3",
+      "object": "column:ledger.bond_coupon_cash_consumption.ledger_book_id"
+    },
+    {
+      "fingerprint": "d7cf97e9a4884bcbbd16eff9baa90bbea8e9aa9899e68f8338f071475594aae2",
+      "object": "column:ledger.bond_coupon_cash_consumption.net_amount"
+    },
+    {
+      "fingerprint": "70865784249bed4b192bdc7097c551ea8738c5587e9416c6301da1bc89cb5551",
+      "object": "column:ledger.bond_coupon_cash_consumption.payment_flow_id"
+    },
+    {
+      "fingerprint": "6e1fb830735749f464d93e4a0ecce230064df0da09b6e28057520c99bdb63f88",
+      "object": "column:ledger.bond_coupon_cash_consumption.payment_version_id"
+    },
+    {
+      "fingerprint": "8e4d72c99b3dac437ce1de1fcdf2a9ece97046411ddbd1bcb80604148cfb7b7e",
+      "object": "column:ledger.bond_coupon_cash_consumption.receipt_id"
+    },
+    {
+      "fingerprint": "d94d0a4bbda09a24915dd239256426daf01e07a3340aa98afdb4575da426123b",
+      "object": "column:ledger.bond_coupon_cash_consumption.tax_lot_record_id"
+    },
+    {
+      "fingerprint": "452df3d350060dbf08e3743482faac96e5679b6d5bfcff6c0600deeb1452c241",
+      "object": "column:ledger.bond_coupon_cash_consumption.withholding_tax"
+    },
+    {
+      "fingerprint": "c6305039fc4ab129f5dc7621d0af22b8d78cbb80f3d3be2cddb642ec1c6f8da6",
+      "object": "column:ledger.bond_coupon_recognition.account_id"
+    },
+    {
+      "fingerprint": "05c405557199249f484769acca2125800cacae05a19011b41f157edfac53ec8f",
+      "object": "column:ledger.bond_coupon_recognition.journal_entry_id"
+    },
+    {
+      "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+      "object": "column:ledger.bond_coupon_recognition.ledger_book_id"
+    },
+    {
+      "fingerprint": "f7cdf8af1f6a165d79a4b20ce9642a65e799f6f30d1546e98561631f17bb8ead",
+      "object": "column:ledger.bond_coupon_recognition.payload"
+    },
+    {
+      "fingerprint": "17ec5ca6882e23ff02ffc55ef4dbbcca5846fbba863ceede47112ec1de1c1776",
+      "object": "column:ledger.bond_coupon_recognition.posted_at"
+    },
+    {
+      "fingerprint": "f95d2c9359266bb5ea5473625cf4ef8a98de1ff67d9a07912e61cc693f4fa925",
+      "object": "column:ledger.bond_coupon_recognition.previous_receipt_id"
+    },
+    {
+      "fingerprint": "c1bb1e52f9524531d7b9537b321e8aa268dc5fa98bf34bcedceb538352e046a4",
+      "object": "column:ledger.bond_coupon_recognition.receipt_id"
+    },
+    {
+      "fingerprint": "ca9b12cf4a51d036a6bbb607f1019940ffe421c7eccfbeec8e8e276cddb7e0ba",
+      "object": "column:ledger.bond_coupon_recognition.reverses_receipt_id"
+    },
+    {
+      "fingerprint": "db99e2811f4c95918ca415b5e5f8b49e4c7f13ffd60c7a00b7b3499141375f63",
+      "object": "column:ledger.bond_coupon_recognition.run_id"
+    },
+    {
+      "fingerprint": "e4960ffdee76731f7ed0f9b46c16840f058dd622a9d435763b1040b8b35ef4b8",
+      "object": "column:ledger.bond_coupon_recognition.tax_lot_record_id"
     },
     {
       "fingerprint": "cee90ba7645e85c34176913acb860750854c703e084f54b97098c61f34d7aebc",
@@ -14839,6 +15121,34 @@
     {
       "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
       "object": "column:money_market.schema_migrations.filename"
+    },
+    {
+      "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+      "object": "column:operator_triage.item_metadata.company_id"
+    },
+    {
+      "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+      "object": "column:operator_triage.item_metadata.state"
+    },
+    {
+      "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+      "object": "column:operator_triage.item_metadata.tenant_id"
+    },
+    {
+      "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+      "object": "column:operator_triage.item_metadata.work_item_id"
+    },
+    {
+      "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+      "object": "column:operator_triage.operator_triage_schema_migrations.applied_at"
+    },
+    {
+      "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+      "object": "column:operator_triage.operator_triage_schema_migrations.checksum"
+    },
+    {
+      "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+      "object": "column:operator_triage.operator_triage_schema_migrations.filename"
     },
     {
       "fingerprint": "65f4c57eede1346c9b829f7a5de35e762a98bd72eab6a75e984da1802989341b",
@@ -20089,6 +20399,10 @@
       "object": "column:security_master.security_curves.kind"
     },
     {
+      "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+      "object": "column:security_master.security_curves.rate_policy"
+    },
+    {
       "fingerprint": "3110fcbd79407a65479727c63735ae17ebb25a06637e3f42610c834cfaae2695",
       "object": "column:security_master.security_curves.source"
     },
@@ -20605,8 +20919,16 @@
       "object": "column:security_master.security_raw_prices.price_as_of"
     },
     {
+      "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+      "object": "column:security_master.security_raw_prices.price_exact"
+    },
+    {
       "fingerprint": "c684376ef520a400a384a049aa1bdd0f30d2be98032349508f68512d1e758a98",
       "object": "column:security_master.security_raw_prices.price_unit"
+    },
+    {
+      "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+      "object": "column:security_master.security_raw_prices.quotation_evidence"
     },
     {
       "fingerprint": "05e663a913cf9e98ebdf7d0bad03bd6b9d3c48c3ec6277a3d499ccdf7333a154",
@@ -21617,6 +21939,14 @@
       "object": "comment:column:security_master.security_identifier_revisions.history_available_from"
     },
     {
+      "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+      "object": "comment:column:security_master.security_raw_prices.price_exact"
+    },
+    {
+      "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+      "object": "comment:column:security_master.security_raw_prices.quotation_evidence"
+    },
+    {
       "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
       "object": "comment:column:security_master.structured_credit_projection.attachment_point"
     },
@@ -22369,6 +22699,50 @@
       "object": "constraint:ledger.atomic_tax_lot_posting_batches.ck_atomic_tax_lot_successor_instruction"
     },
     {
+      "fingerprint": "625258a80985e67d79463e5523704045d8e1f9a04f36ed390218385f1f15569c",
+      "object": "constraint:ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_pkey"
+    },
+    {
+      "fingerprint": "ed36927675dfdd9c94475f9602d35247b3f74fb24e38a8470557b409f716e997",
+      "object": "constraint:ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_receipt_id_fkey"
+    },
+    {
+      "fingerprint": "78f6270dc78238526e0aff726f4c4051d4dd9cfaa62ca8283c9a25a07b15e637",
+      "object": "constraint:ledger.bond_coupon_cash_consumption.bond_coupon_cash_consumption_tax_lot_record_id_fkey"
+    },
+    {
+      "fingerprint": "399d9152a1776b54c7562498d3dec91d9dfd251e0be52b69679a814831943027",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_journal_entry_id_fkey"
+    },
+    {
+      "fingerprint": "74dc385b05a648222632225591df0550648e35d0ef904a5b0a1630d581cbf3c0",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key"
+    },
+    {
+      "fingerprint": "8b82f37e972c4993cd276591f4e8b6628068c746c48adc84c939650ca79e4815",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_ledger_book_id_fkey"
+    },
+    {
+      "fingerprint": "6fe621524a41ca025e64ad9523a99a736290437dff264c3796b32ff1250665ce",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_pkey"
+    },
+    {
+      "fingerprint": "dfb50b35830bbaa57a9196224b172b204b269a9b63e5ffd90b1f40eeee0adf82",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_previous_receipt_id_fkey"
+    },
+    {
+      "fingerprint": "3707432120c28ebb3ba1edfb85f6364f2b88d0d4a5ed64f1c17cb29fbc12b183",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_reverses_receipt_id_fkey"
+    },
+    {
+      "fingerprint": "a1ad7d818724edf3bfdf7a4dea20f6863e89440dd78f6f598bfd58d6d59bbc3d",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_reverses_receipt_id_key"
+    },
+    {
+      "fingerprint": "7479d1752f3ea818fadc13d11af1485f6058be91e6db286bce47e8c2707b41be",
+      "object": "constraint:ledger.bond_coupon_recognition.bond_coupon_recognition_tax_lot_record_id_fkey"
+    },
+    {
       "fingerprint": "d3a787a67d2f505c499aaf6eae81ef838757a15ca55765a29ddca2562c113e1c",
       "object": "constraint:ledger.fund_profile_tenancy.fund_profile_tenancy_pkey"
     },
@@ -22891,6 +23265,14 @@
     {
       "fingerprint": "f15d373bffeb0d61ac995ee43ad7b7d17132475f719b05197db7d392c4104560",
       "object": "constraint:money_market.schema_migrations.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+      "object": "constraint:operator_triage.item_metadata.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+      "object": "constraint:operator_triage.operator_triage_schema_migrations.operator_triage_schema_migrations_pkey"
     },
     {
       "fingerprint": "1287069ffaea7de02274ce4bbc14913987d1ed6f78fdabb111f5f39453df88df",
@@ -24669,6 +25051,10 @@
       "object": "constraint:security_master.security_curve_versions.security_curve_versions_version_check"
     },
     {
+      "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+      "object": "constraint:security_master.security_curves.ck_security_curves_rate_policy"
+    },
+    {
       "fingerprint": "196991165f57a13eb4f577811f68d7dead01b92c5b9fd47506aded41ad1c38ac",
       "object": "constraint:security_master.security_curves.security_curves_currency_check"
     },
@@ -25379,6 +25765,62 @@
     {
       "fingerprint": "8bc229cb9e51a19dc6a947b00d78d8435998835639b9c8c49155d6c8387a4fe0",
       "object": "dependency:ledger.atomic_tax_lot_posting_batches_period_id_fkey on ledger.atomic_tax_lot_posting_batches->ledger.accounting_periods_pkey:normal"
+    },
+    {
+      "fingerprint": "d1bd5fabd861f07d07073db80b2f75ceddbb06c0dac3cb84a89c53ca58445cb5",
+      "object": "dependency:ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption->ledger.bond_coupon_recognition.receipt_id:normal"
+    },
+    {
+      "fingerprint": "70550a0bbf3e573314fb000e54c37989cbb910ff4e94c225899140b5dc575bad",
+      "object": "dependency:ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption->ledger.bond_coupon_recognition_pkey:normal"
+    },
+    {
+      "fingerprint": "189777f9514bf569860951047970c59a38c7e7e3a97a32b7811b353735cf60d7",
+      "object": "dependency:ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption->ledger.tax_lots.tax_lot_record_id:normal"
+    },
+    {
+      "fingerprint": "b8aeb879ab151b0f2a41e0c4a32cd0909aea930e626ed9bf061090f11569beb8",
+      "object": "dependency:ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption->ledger.tax_lots_pkey:normal"
+    },
+    {
+      "fingerprint": "ddeaf619a22404d66b33bdff9de8a44a0372c76c2e7f526b498d680d2bdb6c95",
+      "object": "dependency:ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition->ledger.journal_entries.journal_entry_id:normal"
+    },
+    {
+      "fingerprint": "b1ee534262f43a0782df7e9d3321ffc2869f72552c812b5ec6e871e3c22ab87d",
+      "object": "dependency:ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition->ledger.journal_entries_journal_entry_id_key:normal"
+    },
+    {
+      "fingerprint": "70cdc2ad2f0d3a65a0dd325d022812e1c6f8a1ab997a4e21d226ea8325534e7b",
+      "object": "dependency:ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition->ledger.ledger_books.ledger_book_id:normal"
+    },
+    {
+      "fingerprint": "869b18db601caed9298709ee2d9506fe413098fd129293d953f961f2c4fb5f96",
+      "object": "dependency:ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition->ledger.ledger_books_pkey:normal"
+    },
+    {
+      "fingerprint": "eca9525117d0ddeff2576d17d99f9d4d6d9268e99b03689450d1c70ad3757d5c",
+      "object": "dependency:ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition->ledger.bond_coupon_recognition.receipt_id:normal"
+    },
+    {
+      "fingerprint": "6c54b174637a3ee2f3057f9292d1dd2f4283e91135ec191494485f67f7a587bc",
+      "object": "dependency:ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition->ledger.bond_coupon_recognition_pkey:normal"
+    },
+    {
+      "fingerprint": "695bddc8a0d3bb5c6aead948a03ce2f3ac95190298bd5c712b1eadea97214c72",
+      "object": "dependency:ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition->ledger.bond_coupon_recognition.receipt_id:normal"
+    },
+    {
+      "fingerprint": "bdd3fea36764aa26108b453b544c69fe822d94932d00e3ca80ed63eb7732e3a2",
+      "object": "dependency:ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition->ledger.bond_coupon_recognition_pkey:normal"
+    },
+    {
+      "fingerprint": "d90e71d2ac8faa28f8058efbb31e93a031b76ed9f6351211641dbfac1d2bc7ad",
+      "object": "dependency:ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition->ledger.tax_lots.tax_lot_record_id:normal"
+    },
+    {
+      "fingerprint": "9f3e0c35df099ec1daa41bc5d58ac3b358dc8d6c5421de1c8b87167c3ae5036c",
+      "object": "dependency:ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition->ledger.tax_lots_pkey:normal"
     },
     {
       "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
@@ -27501,6 +27943,10 @@
       "object": "dependency:security_master.ck_securities_terms_format on security_master.securities->security_master.securities.terms_format:normal"
     },
     {
+      "fingerprint": "1df7736b1e55d4f12f799e0bc0e310e22e98d582c4b24789a669fb85a75c55b5",
+      "object": "dependency:security_master.ck_security_curves_rate_policy on security_master.security_curves->security_master.security_curves.rate_policy:normal"
+    },
+    {
       "fingerprint": "83dcefa50abea855290bdbff7f8a1a3449e64e63191ed7965b5aaee1dec974fb",
       "object": "dependency:security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection->security_master.commitment_guarantee_projection.security_id:normal"
     },
@@ -28621,6 +29067,10 @@
       "object": "function:ledger.reject_atomic_tax_lot_audit_mutation()"
     },
     {
+      "fingerprint": "8e8cc1fce5e65b2df1a9a8c93074a3289bfbf97f3a726d2fd0fca07df071b944",
+      "object": "function:ledger.reject_bond_coupon_receipt_rewrite()"
+    },
+    {
       "fingerprint": "885cffaa167852e2cb1b592625903d8f949b67946ef477695003ea64452bc6f5",
       "object": "function:ledger.reject_journal_entry_mutation()"
     },
@@ -29057,6 +29507,10 @@
       "object": "index:fund_accounts.ix_custodian_position_account_date"
     },
     {
+      "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+      "object": "index:fund_accounts.ix_custodian_snapshot_authority"
+    },
+    {
       "fingerprint": "57e5ffe769189d5d6530009b00a294a4ffbcf07b8e84052619115a2bfbbb845e",
       "object": "index:fund_accounts.ix_margin_snapshot_account"
     },
@@ -29265,6 +29719,22 @@
       "object": "index:ledger.atomic_tax_lot_posting_batches_pkey"
     },
     {
+      "fingerprint": "ac49a491beb52c749a0d92b394e09b425b3516071ca24c9d94442181641f407e",
+      "object": "index:ledger.bond_coupon_cash_consumption_pkey"
+    },
+    {
+      "fingerprint": "657df636f91e179a2de4d31f6d41758bdeac4d07fd04083fba1dacff679ee8fc",
+      "object": "index:ledger.bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key"
+    },
+    {
+      "fingerprint": "e0a1b532c64e7bd7577b630bfbe92cc2c8fe36a273eb7386bed9487512d10cc0",
+      "object": "index:ledger.bond_coupon_recognition_pkey"
+    },
+    {
+      "fingerprint": "24c182cf2aa2b514dde1723d07fee9248610297e1e0f2ee0fc4d78b04d8db481",
+      "object": "index:ledger.bond_coupon_recognition_reverses_receipt_id_key"
+    },
+    {
       "fingerprint": "28702b4b27892e4ab4af9205cd333e725ca2bf144541ecf483aaaa0a0a41754b",
       "object": "index:ledger.fund_profile_tenancy_pkey"
     },
@@ -29331,6 +29801,14 @@
     {
       "fingerprint": "e67f32cb09caec114ebac4538fa9e86456dca23eed030e00e3e1e219a157413d",
       "object": "index:ledger.ix_atomic_tax_lot_batch_correction"
+    },
+    {
+      "fingerprint": "6c6c59982704db569eedc129d97ce6ec2d2be811b98480c0575767c03147faba",
+      "object": "index:ledger.ix_bond_coupon_cash_flow"
+    },
+    {
+      "fingerprint": "f7dc141349ac070f713338e57e393672196f450ba318d6f774758255ae868e4e",
+      "object": "index:ledger.ix_bond_coupon_cash_obligation"
     },
     {
       "fingerprint": "f5094f09502d9e5c7ae82488b125f2a19a6b4c3cd95f6cb5d8c2e393c1c59e3c",
@@ -29657,6 +30135,10 @@
       "object": "index:ledger.ux_atomic_tax_lot_batch_journal"
     },
     {
+      "fingerprint": "112af417ad9ed0cd7134b200cf7d9412f63df74871477b5fb62c9431484ae45d",
+      "object": "index:ledger.ux_bond_coupon_recognition_parent"
+    },
+    {
       "fingerprint": "223ca112bc24249f0e0f56ad442101bc0e38acf92d472610ab79171738ac09ed",
       "object": "index:ledger.ux_journal_entries_aggregate_idempotency_key"
     },
@@ -29751,6 +30233,14 @@
     {
       "fingerprint": "80d8c42285e79c5c6df20b2c25cd9d123dac12f27d30aaf4af2387da628a36d0",
       "object": "index:money_market.schema_migrations_pkey"
+    },
+    {
+      "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+      "object": "index:operator_triage.item_metadata_pkey"
+    },
+    {
+      "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+      "object": "index:operator_triage.operator_triage_schema_migrations_pkey"
     },
     {
       "fingerprint": "46fb9195989bc4d94d890b7ca772f2c01b58105c5351185c2b97650d44dcae80",
@@ -31449,6 +31939,14 @@
       "object": "rls:ledger.atomic_tax_lot_posting_batches"
     },
     {
+      "fingerprint": "5d44744a09a4a040c9ad2712597d36f52301415f0fd47d46778c9d694ad6c5e3",
+      "object": "rls:ledger.bond_coupon_cash_consumption"
+    },
+    {
+      "fingerprint": "42b3b55260e925e56459ff2bce0a00f3caf7b027a4578e48095392589b637cde",
+      "object": "rls:ledger.bond_coupon_recognition"
+    },
+    {
       "fingerprint": "432428fe18fbcf1426a64a9ccf7dd7c790bbd68d68bb6f89f767d77e923f733e",
       "object": "rls:ledger.fund_profile_tenancy"
     },
@@ -31563,6 +32061,14 @@
     {
       "fingerprint": "41992f51682d986cea6461b23a6bed92498ddaa6e8e1ef6956f584536b7e4ecf",
       "object": "rls:money_market.schema_migrations"
+    },
+    {
+      "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+      "object": "rls:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+      "object": "rls:operator_triage.operator_triage_schema_migrations"
     },
     {
       "fingerprint": "126a90253412551ea2694fba5515ec4c4ac7045eccda00e51fcf76a5053323f2",
@@ -32157,7 +32663,7 @@
       "object": "schema:banking"
     },
     {
-      "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
+      "fingerprint": "d46f504e484843023900b66f5964b61d45b85b677ecaf8f08ecf749c060a3cb0",
       "object": "schema:fund_accounts"
     },
     {
@@ -32169,12 +32675,16 @@
       "object": "schema:identity_access"
     },
     {
-      "fingerprint": "c9cdfce41ee87d59104010dc4f6d8f565ff67004a15aa73fea77d15faf19f1c7",
+      "fingerprint": "597d624f45a1c7aecdaf7fbce62e46c23ab8447542a10ac0507c94719f47f02f",
       "object": "schema:ledger"
     },
     {
       "fingerprint": "4c336b5362a4019a14aafa69a48e98ab382d27eebd20da0ab1591f6b6eccf31b",
       "object": "schema:money_market"
+    },
+    {
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "object": "schema:operator_triage"
     },
     {
       "fingerprint": "d50d95b1e1f14ff63c78aa659d07cab43b51d2ee16152371176bb5564e18c5b3",
@@ -32185,7 +32695,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "c8f998e6c490c4393ad9ca21e62389671440fa26b770f5ccbe88ff9b5a04ec55",
       "object": "schema:security_master"
     },
     {
@@ -32337,7 +32847,7 @@
       "object": "table:fund_accounts.custodian_position_line"
     },
     {
-      "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+      "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
       "object": "table:fund_accounts.custodian_statement_batch"
     },
     {
@@ -32457,6 +32967,14 @@
       "object": "table:ledger.atomic_tax_lot_posting_batches"
     },
     {
+      "fingerprint": "b846a6c27c8cd45b5ace99fd0944aea20815045bd9e777d2b160e0bf3a03f981",
+      "object": "table:ledger.bond_coupon_cash_consumption"
+    },
+    {
+      "fingerprint": "71f07144e3d0592d1633262258403999239e554b3179a7a2c43b59ce02febcd2",
+      "object": "table:ledger.bond_coupon_recognition"
+    },
+    {
       "fingerprint": "3400800d7d93e15780c896dcb17364ba0abc6cad1fe5c0fbe40d98fee38d2fd9",
       "object": "table:ledger.fund_profile_tenancy"
     },
@@ -32571,6 +33089,14 @@
     {
       "fingerprint": "6a4357c5c692173a5cc545a4f4dc95d1db5a3ef3f76dbd1a78f8a1598809a68b",
       "object": "table:money_market.schema_migrations"
+    },
+    {
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+      "object": "table:operator_triage.item_metadata"
+    },
+    {
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+      "object": "table:operator_triage.operator_triage_schema_migrations"
     },
     {
       "fingerprint": "98ca98760d135dbef6f9b34d034f24d25064637af018c65080fd16660e6785a8",
@@ -33017,7 +33543,7 @@
       "object": "table:security_master.security_curve_versions"
     },
     {
-      "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+      "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
       "object": "table:security_master.security_curves"
     },
     {
@@ -33073,7 +33599,7 @@
       "object": "table:security_master.security_pricing_hierarchy_history"
     },
     {
-      "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+      "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
       "object": "table:security_master.security_raw_prices"
     },
     {
@@ -33187,6 +33713,14 @@
     {
       "fingerprint": "57a2ad6ea0967bc4aa0d0d1ad4c2b3e459340707c36002dcf6344b35467b3a5a",
       "object": "trigger:ledger.atomic_tax_lot_posting_batches.trg_atomic_tax_lot_batches_immutable"
+    },
+    {
+      "fingerprint": "ba0f7af41075dfd59edc754464102f3650a0c69c4bc4210c1a34371102a51f92",
+      "object": "trigger:ledger.bond_coupon_cash_consumption.bond_coupon_consumption_immutable"
+    },
+    {
+      "fingerprint": "373008bbd5e8854024b2241b9ea6acdd9fc058c6d528fa91c62bf61aefebd7e9",
+      "object": "trigger:ledger.bond_coupon_recognition.bond_coupon_recognition_immutable"
     },
     {
       "fingerprint": "be7b67ee5e10fb0548e96535ea81f33d1999a6fd2c611fd4f9791f2b4fe11315",
@@ -33493,6 +34027,7 @@
     "identity_access",
     "ledger",
     "money_market",
+    "operator_triage",
     "reporting",
     "security_master"
   ],
@@ -48304,7 +48839,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "b88d70b4f769dc43e7235337e069e5bf7484d39e55209c5c2401e83a0ccfee10",
+      "fingerprint": "d46f504e484843023900b66f5964b61d45b85b677ecaf8f08ecf749c060a3cb0",
       "foreign_tables": [],
       "functions": [],
       "logical_modules": [
@@ -52551,6 +53086,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "authority",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_sha256",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -52600,7 +53167,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+          "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -52624,6 +53191,30 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+              "expression": null,
+              "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "account_id",
+                "as_of_date",
+                "ingested_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_custodian_snapshot_authority",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -57322,6 +57913,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "94ed9a523d9fdda3e6fdfea5fb7ecfdbd1b6c93f856d19ea713a21a1d4a7db89",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "authority",
+              "nullable": true,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "862e9352afb99460a08c24230b2a52fd7cd1c62a5efa1fcbe300214da4856797",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "content_sha256",
+              "nullable": true,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -57371,7 +57994,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "20bee3feb2c73d5dff0b3bc1d78dcd8d80a38dafa81017fac6960e567202d5e4",
+          "fingerprint": "2c7711b2c5c02828749074a6865b59a353e1d1c939b36b8f411c304751d19b72",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -57395,6 +58018,30 @@
               "ready": true,
               "security_labels": [],
               "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_custodian_snapshot_authority ON fund_accounts.custodian_statement_batch USING btree (account_id, as_of_date DESC, ingested_at DESC)",
+              "expression": null,
+              "fingerprint": "f1400141e8579823ff3bffa68785f3db35c4b7ccae13e7c7c393753b6394a843",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "account_id",
+                "as_of_date",
+                "ingested_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_custodian_snapshot_authority",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
               "valid": true
             }
           ],
@@ -69474,6 +70121,174 @@
           "target_schema": "ledger"
         },
         {
+          "fingerprint": "d1bd5fabd861f07d07073db80b2f75ceddbb06c0dac3cb84a89c53ca58445cb5",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition.receipt_id",
+          "target_kind": "table column",
+          "target_name": "bond_coupon_recognition",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "70550a0bbf3e573314fb000e54c37989cbb910ff4e94c225899140b5dc575bad",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_cash_consumption_receipt_id_fkey on ledger.bond_coupon_cash_consumption",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition_pkey",
+          "target_kind": "index",
+          "target_name": "bond_coupon_recognition_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "189777f9514bf569860951047970c59a38c7e7e3a97a32b7811b353735cf60d7",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.tax_lot_record_id",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "b8aeb879ab151b0f2a41e0c4a32cd0909aea930e626ed9bf061090f11569beb8",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_cash_consumption_tax_lot_record_id_fkey on ledger.bond_coupon_cash_consumption",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots_pkey",
+          "target_kind": "index",
+          "target_name": "tax_lots_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "ddeaf619a22404d66b33bdff9de8a44a0372c76c2e7f526b498d680d2bdb6c95",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_entries.journal_entry_id",
+          "target_kind": "table column",
+          "target_name": "journal_entries",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "b1ee534262f43a0782df7e9d3321ffc2869f72552c812b5ec6e871e3c22ab87d",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_journal_entry_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.journal_entries_journal_entry_id_key",
+          "target_kind": "index",
+          "target_name": "journal_entries_journal_entry_id_key",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "70cdc2ad2f0d3a65a0dd325d022812e1c6f8a1ab997a4e21d226ea8325534e7b",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books.ledger_book_id",
+          "target_kind": "table column",
+          "target_name": "ledger_books",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "869b18db601caed9298709ee2d9506fe413098fd129293d953f961f2c4fb5f96",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_ledger_book_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.ledger_books_pkey",
+          "target_kind": "index",
+          "target_name": "ledger_books_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "eca9525117d0ddeff2576d17d99f9d4d6d9268e99b03689450d1c70ad3757d5c",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition.receipt_id",
+          "target_kind": "table column",
+          "target_name": "bond_coupon_recognition",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "6c54b174637a3ee2f3057f9292d1dd2f4283e91135ec191494485f67f7a587bc",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_previous_receipt_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition_pkey",
+          "target_kind": "index",
+          "target_name": "bond_coupon_recognition_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "695bddc8a0d3bb5c6aead948a03ce2f3ac95190298bd5c712b1eadea97214c72",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition.receipt_id",
+          "target_kind": "table column",
+          "target_name": "bond_coupon_recognition",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "bdd3fea36764aa26108b453b544c69fe822d94932d00e3ca80ed63eb7732e3a2",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_reverses_receipt_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.bond_coupon_recognition_pkey",
+          "target_kind": "index",
+          "target_name": "bond_coupon_recognition_pkey",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "d90e71d2ac8faa28f8058efbb31e93a031b76ed9f6351211641dbfac1d2bc7ad",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots.tax_lot_record_id",
+          "target_kind": "table column",
+          "target_name": "tax_lots",
+          "target_schema": "ledger"
+        },
+        {
+          "fingerprint": "9f3e0c35df099ec1daa41bc5d58ac3b358dc8d6c5421de1c8b87167c3ae5036c",
+          "kind": "normal",
+          "source": "ledger.bond_coupon_recognition_tax_lot_record_id_fkey on ledger.bond_coupon_recognition",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "ledger",
+          "target": "ledger.tax_lots_pkey",
+          "target_kind": "index",
+          "target_name": "tax_lots_pkey",
+          "target_schema": "ledger"
+        },
+        {
           "fingerprint": "3603dafc9f618d6717e6342f08eac1fdf440fcc3d94d5d7b0329891377117ba3",
           "kind": "normal",
           "source": "ledger.ck_accounting_audit_chain_genesis on ledger.accounting_action_audit_chain_head",
@@ -71986,7 +72801,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "c9cdfce41ee87d59104010dc4f6d8f565ff67004a15aa73fea77d15faf19f1c7",
+      "fingerprint": "597d624f45a1c7aecdaf7fbce62e46c23ab8447542a10ac0507c94719f47f02f",
       "foreign_tables": [],
       "functions": [
         {
@@ -72389,6 +73204,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "reject_atomic_tax_lot_audit_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "83f1f4996f5b84f943c55b295d02a1d62f700b0b3167da9d781b386de8fc63a7",
+          "fingerprint": "8e8cc1fce5e65b2df1a9a8c93074a3289bfbf97f3a726d2fd0fca07df071b944",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_bond_coupon_receipt_rewrite",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "ledger",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_bond_coupon_receipt_rewrite()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -76879,6 +77725,948 @@
               "level": "row",
               "name": "trg_atomic_tax_lot_batches_immutable",
               "relation": "atomic_tax_lot_posting_batches",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "9ff615e10eb412656c2c63ffd15650e1e6417469dcb40abc71a6eedc1910baf3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3a3b30edaba6861a4dfd671904739ef241fcbcd883a5b0f69f7ec79df5703c98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e1fb830735749f464d93e4a0ecce230064df0da09b6e28057520c99bdb63f88",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_version_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "70865784249bed4b192bdc7097c551ea8738c5587e9416c6301da1bc89cb5551",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_flow_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d94d0a4bbda09a24915dd239256426daf01e07a3340aa98afdb4575da426123b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tax_lot_record_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9a370ce4edc45618c0cfdfabc08fc5011784bbcc648c7a64afdbc1d6b907601",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "expected_flow_id",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1467dba40dc21c483c993998b8c4f472f5f6724389900f3c78767eaf26b27580",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "allocation_id",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "8e4d72c99b3dac437ce1de1fcdf2a9ece97046411ddbd1bcb80604148cfb7b7e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_id",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "d7cf97e9a4884bcbbd16eff9baa90bbea8e9aa9899e68f8338f071475594aae2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "net_amount",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "cfab527e23a30ed71060bfc708c3c10b5e71303911e542d42530f40c75d463f2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "gross_amount",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "452df3d350060dbf08e3743482faac96e5679b6d5bfcff6c0600deeb1452c241",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "withholding_tax",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "e0269d96b0f8afa83777f08fd8e26e68ccc17cd5de373fb6b4aa33766af0cbfa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fees",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "ed36927675dfdd9c94475f9602d35247b3f74fb24e38a8470557b409f716e997",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_cash_consumption_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "tax_lot_record_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+              "delete_action": "no_action",
+              "fingerprint": "78f6270dc78238526e0aff726f4c4051d4dd9cfaa62ca8283c9a25a07b15e637",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "tax_lot_record_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "tax_lots",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id",
+                "account_id",
+                "allocation_id",
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (ledger_book_id, account_id, allocation_id, receipt_id)",
+              "delete_action": null,
+              "fingerprint": "625258a80985e67d79463e5523704045d8e1f9a04f36ed390218385f1f15569c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_cash_consumption_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "b846a6c27c8cd45b5ace99fd0944aea20815045bd9e777d2b160e0bf3a03f981",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_cash_consumption_pkey ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, allocation_id, receipt_id)",
+              "expression": null,
+              "fingerprint": "ac49a491beb52c749a0d92b394e09b425b3516071ca24c9d94442181641f407e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "allocation_id",
+                "receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_cash_consumption_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bond_coupon_cash_flow ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, payment_flow_id)",
+              "expression": null,
+              "fingerprint": "6c6c59982704db569eedc129d97ce6ec2d2be811b98480c0575767c03147faba",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "payment_flow_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bond_coupon_cash_flow",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bond_coupon_cash_obligation ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, tax_lot_record_id, expected_flow_id)",
+              "expression": null,
+              "fingerprint": "f7dc141349ac070f713338e57e393672196f450ba318d6f774758255ae868e4e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "expected_flow_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bond_coupon_cash_obligation",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "bond_coupon_cash_consumption",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER bond_coupon_consumption_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_cash_consumption FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+              "definition_hash": "fb3cc1cad48a813498f024de7b9cccd1a7a99508ac8d1acc7b11ea4d5e3c0863",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "ba0f7af41075dfd59edc754464102f3650a0c69c4bc4210c1a34371102a51f92",
+              "function_schema": "ledger",
+              "function_signature": "reject_bond_coupon_receipt_rewrite()",
+              "level": "row",
+              "name": "bond_coupon_consumption_immutable",
+              "relation": "bond_coupon_cash_consumption",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c1bb1e52f9524531d7b9537b321e8aa268dc5fa98bf34bcedceb538352e046a4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c6305039fc4ab129f5dc7621d0af22b8d78cbb80f3d3be2cddb642ec1c6f8da6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e4960ffdee76731f7ed0f9b46c16840f058dd622a9d435763b1040b8b35ef4b8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tax_lot_record_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "db99e2811f4c95918ca415b5e5f8b49e4c7f13ffd60c7a00b7b3499141375f63",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "run_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f95d2c9359266bb5ea5473625cf4ef8a98de1ff67d9a07912e61cc693f4fa925",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "previous_receipt_id",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ca9b12cf4a51d036a6bbb607f1019940ffe421c7eccfbeec8e8e276cddb7e0ba",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reverses_receipt_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "05c405557199249f484769acca2125800cacae05a19011b41f157edfac53ec8f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "17ec5ca6882e23ff02ffc55ef4dbbcca5846fbba863ceede47112ec1de1c1776",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "posted_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f7cdf8af1f6a165d79a4b20ce9642a65e799f6f30d1546e98561631f17bb8ead",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "journal_entry_id"
+              ],
+              "comment": null,
+              "deferrable": true,
+              "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) DEFERRABLE INITIALLY DEFERRED",
+              "delete_action": "no_action",
+              "fingerprint": "399d9152a1776b54c7562498d3dec91d9dfd251e0be52b69679a814831943027",
+              "initially_deferred": true,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_journal_entry_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "journal_entry_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "journal_entries",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "8b82f37e972c4993cd276591f4e8b6628068c746c48adc84c939650ca79e4815",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "previous_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (previous_receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "dfb50b35830bbaa57a9196224b172b204b269a9b63e5ffd90b1f40eeee0adf82",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_previous_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "reverses_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (reverses_receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "3707432120c28ebb3ba1edfb85f6364f2b88d0d4a5ed64f1c17cb29fbc12b183",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_reverses_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "tax_lot_record_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+              "delete_action": "no_action",
+              "fingerprint": "7479d1752f3ea818fadc13d11af1485f6058be91e6db286bce47e8c2707b41be",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_tax_lot_record_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "tax_lot_record_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "tax_lots",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (receipt_id)",
+              "delete_action": null,
+              "fingerprint": "6fe621524a41ca025e64ad9523a99a736290437dff264c3796b32ff1250665ce",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "run_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (ledger_book_id, account_id, tax_lot_record_id, run_id)",
+              "delete_action": null,
+              "fingerprint": "74dc385b05a648222632225591df0550648e35d0ef904a5b0a1630d581cbf3c0",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "reverses_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (reverses_receipt_id)",
+              "delete_action": null,
+              "fingerprint": "a1ad7d818724edf3bfdf7a4dea20f6863e89440dd78f6f598bfd58d6d59bbc3d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_reverses_receipt_id_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "71f07144e3d0592d1633262258403999239e554b3179a7a2c43b59ce02febcd2",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key ON ledger.bond_coupon_recognition USING btree (ledger_book_id, account_id, tax_lot_record_id, run_id)",
+              "expression": null,
+              "fingerprint": "657df636f91e179a2de4d31f6d41758bdeac4d07fd04083fba1dacff679ee8fc",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "run_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_pkey ON ledger.bond_coupon_recognition USING btree (receipt_id)",
+              "expression": null,
+              "fingerprint": "e0a1b532c64e7bd7577b630bfbe92cc2c8fe36a273eb7386bed9487512d10cc0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_reverses_receipt_id_key ON ledger.bond_coupon_recognition USING btree (reverses_receipt_id)",
+              "expression": null,
+              "fingerprint": "24c182cf2aa2b514dde1723d07fee9248610297e1e0f2ee0fc4d78b04d8db481",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "reverses_receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_reverses_receipt_id_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_bond_coupon_recognition_parent ON ledger.bond_coupon_recognition USING btree (ledger_book_id, account_id, tax_lot_record_id, COALESCE(previous_receipt_id, ''::text))",
+              "expression": "COALESCE(previous_receipt_id, ''::text)",
+              "fingerprint": "112af417ad9ed0cd7134b200cf7d9412f63df74871477b5fb62c9431484ae45d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "COALESCE(previous_receipt_id, ''::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_bond_coupon_recognition_parent",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "bond_coupon_recognition",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER bond_coupon_recognition_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_recognition FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+              "definition_hash": "1c778d2152ca92f76a754bbdc84c1c61704ba5d619187f9b2e176c61627ef0e0",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "373008bbd5e8854024b2241b9ea6acdd9fc058c6d528fa91c62bf61aefebd7e9",
+              "function_schema": "ledger",
+              "function_signature": "reject_bond_coupon_receipt_rewrite()",
+              "level": "row",
+              "name": "bond_coupon_recognition_immutable",
+              "relation": "bond_coupon_recognition",
               "schema": "ledger",
               "timing": "before"
             }
@@ -89090,6 +90878,22 @@
         },
         {
           "enabled": false,
+          "fingerprint": "5d44744a09a4a040c9ad2712597d36f52301415f0fd47d46778c9d694ad6c5e3",
+          "forced": false,
+          "policies": [],
+          "relation": "bond_coupon_cash_consumption",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "42b3b55260e925e56459ff2bce0a00f3caf7b027a4578e48095392589b637cde",
+          "forced": false,
+          "policies": [],
+          "relation": "bond_coupon_recognition",
+          "schema": "ledger"
+        },
+        {
+          "enabled": false,
           "fingerprint": "432428fe18fbcf1426a64a9ccf7dd7c790bbd68d68bb6f89f767d77e923f733e",
           "forced": false,
           "policies": [],
@@ -93667,6 +95471,948 @@
               "level": "row",
               "name": "trg_atomic_tax_lot_batches_immutable",
               "relation": "atomic_tax_lot_posting_batches",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "9ff615e10eb412656c2c63ffd15650e1e6417469dcb40abc71a6eedc1910baf3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "3a3b30edaba6861a4dfd671904739ef241fcbcd883a5b0f69f7ec79df5703c98",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "6e1fb830735749f464d93e4a0ecce230064df0da09b6e28057520c99bdb63f88",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_version_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "70865784249bed4b192bdc7097c551ea8738c5587e9416c6301da1bc89cb5551",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payment_flow_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "d94d0a4bbda09a24915dd239256426daf01e07a3340aa98afdb4575da426123b",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tax_lot_record_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f9a370ce4edc45618c0cfdfabc08fc5011784bbcc648c7a64afdbc1d6b907601",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "expected_flow_id",
+              "nullable": false,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "1467dba40dc21c483c993998b8c4f472f5f6724389900f3c78767eaf26b27580",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "allocation_id",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "8e4d72c99b3dac437ce1de1fcdf2a9ece97046411ddbd1bcb80604148cfb7b7e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_id",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "d7cf97e9a4884bcbbd16eff9baa90bbea8e9aa9899e68f8338f071475594aae2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "net_amount",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "cfab527e23a30ed71060bfc708c3c10b5e71303911e542d42530f40c75d463f2",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "gross_amount",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "452df3d350060dbf08e3743482faac96e5679b6d5bfcff6c0600deeb1452c241",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "withholding_tax",
+              "nullable": false,
+              "ordinal_position": 11,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(38,12)",
+              "default": null,
+              "fingerprint": "e0269d96b0f8afa83777f08fd8e26e68ccc17cd5de373fb6b4aa33766af0cbfa",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "fees",
+              "nullable": false,
+              "ordinal_position": 12,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "ed36927675dfdd9c94475f9602d35247b3f74fb24e38a8470557b409f716e997",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_cash_consumption_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "tax_lot_record_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+              "delete_action": "no_action",
+              "fingerprint": "78f6270dc78238526e0aff726f4c4051d4dd9cfaa62ca8283c9a25a07b15e637",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_cash_consumption_tax_lot_record_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "tax_lot_record_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "tax_lots",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id",
+                "account_id",
+                "allocation_id",
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (ledger_book_id, account_id, allocation_id, receipt_id)",
+              "delete_action": null,
+              "fingerprint": "625258a80985e67d79463e5523704045d8e1f9a04f36ed390218385f1f15569c",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_cash_consumption_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "b846a6c27c8cd45b5ace99fd0944aea20815045bd9e777d2b160e0bf3a03f981",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_cash_consumption_pkey ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, allocation_id, receipt_id)",
+              "expression": null,
+              "fingerprint": "ac49a491beb52c749a0d92b394e09b425b3516071ca24c9d94442181641f407e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "allocation_id",
+                "receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_cash_consumption_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bond_coupon_cash_flow ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, payment_flow_id)",
+              "expression": null,
+              "fingerprint": "6c6c59982704db569eedc129d97ce6ec2d2be811b98480c0575767c03147faba",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "payment_flow_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bond_coupon_cash_flow",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_bond_coupon_cash_obligation ON ledger.bond_coupon_cash_consumption USING btree (ledger_book_id, account_id, tax_lot_record_id, expected_flow_id)",
+              "expression": null,
+              "fingerprint": "f7dc141349ac070f713338e57e393672196f450ba318d6f774758255ae868e4e",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "expected_flow_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_bond_coupon_cash_obligation",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "bond_coupon_cash_consumption",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER bond_coupon_consumption_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_cash_consumption FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+              "definition_hash": "fb3cc1cad48a813498f024de7b9cccd1a7a99508ac8d1acc7b11ea4d5e3c0863",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "ba0f7af41075dfd59edc754464102f3650a0c69c4bc4210c1a34371102a51f92",
+              "function_schema": "ledger",
+              "function_signature": "reject_bond_coupon_receipt_rewrite()",
+              "level": "row",
+              "name": "bond_coupon_consumption_immutable",
+              "relation": "bond_coupon_cash_consumption",
+              "schema": "ledger",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "c1bb1e52f9524531d7b9537b321e8aa268dc5fa98bf34bcedceb538352e046a4",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "receipt_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "7c4e1cc816bd0597436fcc96eb373f1525f8fdef77ffd899d6165514f55e6fef",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "ledger_book_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "c6305039fc4ab129f5dc7621d0af22b8d78cbb80f3d3be2cddb642ec1c6f8da6",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "account_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "e4960ffdee76731f7ed0f9b46c16840f058dd622a9d435763b1040b8b35ef4b8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tax_lot_record_id",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "db99e2811f4c95918ca415b5e5f8b49e4c7f13ffd60c7a00b7b3499141375f63",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "run_id",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f95d2c9359266bb5ea5473625cf4ef8a98de1ff67d9a07912e61cc693f4fa925",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "previous_receipt_id",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "ca9b12cf4a51d036a6bbb607f1019940ffe421c7eccfbeec8e8e276cddb7e0ba",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "reverses_receipt_id",
+              "nullable": true,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "05c405557199249f484769acca2125800cacae05a19011b41f157edfac53ec8f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "journal_entry_id",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": null,
+              "fingerprint": "17ec5ca6882e23ff02ffc55ef4dbbcca5846fbba863ceede47112ec1de1c1776",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "posted_at",
+              "nullable": false,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f7cdf8af1f6a165d79a4b20ce9642a65e799f6f30d1546e98561631f17bb8ead",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "payload",
+              "nullable": false,
+              "ordinal_position": 10,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "journal_entry_id"
+              ],
+              "comment": null,
+              "deferrable": true,
+              "definition": "FOREIGN KEY (journal_entry_id) REFERENCES ledger.journal_entries(journal_entry_id) DEFERRABLE INITIALLY DEFERRED",
+              "delete_action": "no_action",
+              "fingerprint": "399d9152a1776b54c7562498d3dec91d9dfd251e0be52b69679a814831943027",
+              "initially_deferred": true,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_journal_entry_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "journal_entry_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "journal_entries",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (ledger_book_id) REFERENCES ledger.ledger_books(ledger_book_id)",
+              "delete_action": "no_action",
+              "fingerprint": "8b82f37e972c4993cd276591f4e8b6628068c746c48adc84c939650ca79e4815",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_ledger_book_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "ledger_book_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "ledger_books",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "previous_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (previous_receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "dfb50b35830bbaa57a9196224b172b204b269a9b63e5ffd90b1f40eeee0adf82",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_previous_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "reverses_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (reverses_receipt_id) REFERENCES ledger.bond_coupon_recognition(receipt_id)",
+              "delete_action": "no_action",
+              "fingerprint": "3707432120c28ebb3ba1edfb85f6364f2b88d0d4a5ed64f1c17cb29fbc12b183",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_reverses_receipt_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "receipt_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "bond_coupon_recognition",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "tax_lot_record_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "FOREIGN KEY (tax_lot_record_id) REFERENCES ledger.tax_lots(tax_lot_record_id)",
+              "delete_action": "no_action",
+              "fingerprint": "7479d1752f3ea818fadc13d11af1485f6058be91e6db286bce47e8c2707b41be",
+              "initially_deferred": false,
+              "match_type": "simple",
+              "name": "bond_coupon_recognition_tax_lot_record_id_fkey",
+              "no_inherit": true,
+              "referenced_columns": [
+                "tax_lot_record_id"
+              ],
+              "referenced_schema": "ledger",
+              "referenced_table": "tax_lots",
+              "type": "foreign_key",
+              "update_action": "no_action",
+              "validated": true
+            },
+            {
+              "columns": [
+                "receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (receipt_id)",
+              "delete_action": null,
+              "fingerprint": "6fe621524a41ca025e64ad9523a99a736290437dff264c3796b32ff1250665ce",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "run_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (ledger_book_id, account_id, tax_lot_record_id, run_id)",
+              "delete_action": null,
+              "fingerprint": "74dc385b05a648222632225591df0550648e35d0ef904a5b0a1630d581cbf3c0",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "reverses_receipt_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "UNIQUE (reverses_receipt_id)",
+              "delete_action": null,
+              "fingerprint": "a1ad7d818724edf3bfdf7a4dea20f6863e89440dd78f6f598bfd58d6d59bbc3d",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "bond_coupon_recognition_reverses_receipt_id_key",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "unique",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "71f07144e3d0592d1633262258403999239e554b3179a7a2c43b59ce02febcd2",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key ON ledger.bond_coupon_recognition USING btree (ledger_book_id, account_id, tax_lot_record_id, run_id)",
+              "expression": null,
+              "fingerprint": "657df636f91e179a2de4d31f6d41758bdeac4d07fd04083fba1dacff679ee8fc",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "run_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_ledger_book_id_account_id_tax_lot_r_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_pkey ON ledger.bond_coupon_recognition USING btree (receipt_id)",
+              "expression": null,
+              "fingerprint": "e0a1b532c64e7bd7577b630bfbe92cc2c8fe36a273eb7386bed9487512d10cc0",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX bond_coupon_recognition_reverses_receipt_id_key ON ledger.bond_coupon_recognition USING btree (reverses_receipt_id)",
+              "expression": null,
+              "fingerprint": "24c182cf2aa2b514dde1723d07fee9248610297e1e0f2ee0fc4d78b04d8db481",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "reverses_receipt_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "bond_coupon_recognition_reverses_receipt_id_key",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX ux_bond_coupon_recognition_parent ON ledger.bond_coupon_recognition USING btree (ledger_book_id, account_id, tax_lot_record_id, COALESCE(previous_receipt_id, ''::text))",
+              "expression": "COALESCE(previous_receipt_id, ''::text)",
+              "fingerprint": "112af417ad9ed0cd7134b200cf7d9412f63df74871477b5fb62c9431484ae45d",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "ledger_book_id",
+                "account_id",
+                "tax_lot_record_id",
+                "COALESCE(previous_receipt_id, ''::text)"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ux_bond_coupon_recognition_parent",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "bond_coupon_recognition",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "ledger",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER bond_coupon_recognition_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_recognition FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+              "definition_hash": "1c778d2152ca92f76a754bbdc84c1c61704ba5d619187f9b2e176c61627ef0e0",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "373008bbd5e8854024b2241b9ea6acdd9fc058c6d528fa91c62bf61aefebd7e9",
+              "function_schema": "ledger",
+              "function_signature": "reject_bond_coupon_receipt_rewrite()",
+              "level": "row",
+              "name": "bond_coupon_recognition_immutable",
+              "relation": "bond_coupon_recognition",
               "schema": "ledger",
               "timing": "before"
             }
@@ -105565,6 +108311,42 @@
         },
         {
           "comment": null,
+          "definition": "CREATE TRIGGER bond_coupon_consumption_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_cash_consumption FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+          "definition_hash": "fb3cc1cad48a813498f024de7b9cccd1a7a99508ac8d1acc7b11ea4d5e3c0863",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "ba0f7af41075dfd59edc754464102f3650a0c69c4bc4210c1a34371102a51f92",
+          "function_schema": "ledger",
+          "function_signature": "reject_bond_coupon_receipt_rewrite()",
+          "level": "row",
+          "name": "bond_coupon_consumption_immutable",
+          "relation": "bond_coupon_cash_consumption",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER bond_coupon_recognition_immutable BEFORE DELETE OR UPDATE ON ledger.bond_coupon_recognition FOR EACH ROW EXECUTE FUNCTION ledger.reject_bond_coupon_receipt_rewrite()",
+          "definition_hash": "1c778d2152ca92f76a754bbdc84c1c61704ba5d619187f9b2e176c61627ef0e0",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "373008bbd5e8854024b2241b9ea6acdd9fc058c6d528fa91c62bf61aefebd7e9",
+          "function_schema": "ledger",
+          "function_signature": "reject_bond_coupon_receipt_rewrite()",
+          "level": "row",
+          "name": "bond_coupon_recognition_immutable",
+          "relation": "bond_coupon_recognition",
+          "schema": "ledger",
+          "timing": "before"
+        },
+        {
+          "comment": null,
           "definition": "CREATE CONSTRAINT TRIGGER ctrg_journal_entry_complete AFTER INSERT ON ledger.journal_entries DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION ledger.seal_complete_journal_entry()",
           "definition_hash": "999d916207141d5fa17cbf75e4b8d6de0cb9ef1d031d066b68e7409b7bd20717",
           "enabled": "origin",
@@ -107946,6 +110728,756 @@
           "rls_enabled": false,
           "rls_forced": false,
           "schema": "money_market",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "triggers": [],
+      "views": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "create"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "usage"
+        }
+      ],
+      "comment": null,
+      "comments": [],
+      "composite_types": [],
+      "dependencies": [],
+      "domains": [],
+      "enums": [],
+      "exists": true,
+      "extensions": [],
+      "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+      "foreign_tables": [],
+      "functions": [],
+      "logical_modules": [
+        "operator-triage"
+      ],
+      "materialized_views": [],
+      "name": "operator_triage",
+      "owner": "meridian",
+      "partitions": [],
+      "policies": [],
+      "procedures": [],
+      "relations": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        }
+      ],
+      "row_level_security": [
+        {
+          "enabled": false,
+          "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+          "forced": false,
+          "policies": [],
+          "relation": "item_metadata",
+          "schema": "operator_triage"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+          "forced": false,
+          "policies": [],
+          "relation": "operator_triage_schema_migrations",
+          "schema": "operator_triage"
+        }
+      ],
+      "security_labels": [],
+      "sequences": [],
+      "tables": [
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "tenant_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "company_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "work_item_id",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "state",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+              "delete_action": null,
+              "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "item_metadata_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+              "expression": null,
+              "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "tenant_id",
+                "company_id",
+                "work_item_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "item_metadata_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "item_metadata",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": []
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "filename",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "checksum",
+              "nullable": true,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "applied_at",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": null,
+          "constraints": [
+            {
+              "columns": [
+                "filename"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (filename)",
+              "delete_action": null,
+              "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "operator_triage_schema_migrations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+              "expression": null,
+              "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "filename"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "operator_triage_schema_migrations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "operator_triage_schema_migrations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "operator_triage",
           "security_labels": [],
           "sequence": null,
           "triggers": []
@@ -131887,6 +135419,18 @@
           "object_type": "column"
         },
         {
+          "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+          "fingerprint": "e871b29e3493056fb738589547f743fe132ae637dcc4c2e11864d6e4d518d37d",
+          "object": "security_master.security_raw_prices.price_exact",
+          "object_type": "column"
+        },
+        {
+          "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+          "fingerprint": "1627e1a683e5a50f99f4331fc42e298023c64f6c8f24e994095ed835808e76d5",
+          "object": "security_master.security_raw_prices.quotation_evidence",
+          "object_type": "column"
+        },
+        {
           "comment": "Loss attachment point as a fraction of the deal balance (0..1).",
           "fingerprint": "9af3a9c01d3e7201b7b8f1bded226afb864952fa26ac93e83eb83a6d100e473d",
           "object": "security_master.structured_credit_projection.attachment_point",
@@ -133339,6 +136883,18 @@
           "target": "security_master.securities.terms_format",
           "target_kind": "table column",
           "target_name": "securities",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "1df7736b1e55d4f12f799e0bc0e310e22e98d582c4b24789a669fb85a75c55b5",
+          "kind": "normal",
+          "source": "security_master.ck_security_curves_rate_policy on security_master.security_curves",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_curves.rate_policy",
+          "target_kind": "table column",
+          "target_name": "security_curves",
           "target_schema": "security_master"
         },
         {
@@ -136514,7 +140070,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "ce11387c92bc0d630a305de2db610ee13e0f9917c46322002626b604c98f4234",
+      "fingerprint": "c8f998e6c490c4393ad9ca21e62389671440fa26b770f5ccbe88ff9b5a04ec55",
       "foreign_tables": [],
       "functions": [
         {
@@ -172728,10 +176284,46 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": "'LegacyNonNegative'::text",
+              "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rate_policy",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
           "constraints": [
+            {
+              "columns": [
+                "rate_policy"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+              "delete_action": null,
+              "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_curves_rate_policy",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "currency"
@@ -172836,7 +176428,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+          "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -177601,6 +181193,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -177672,7 +181296,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -221741,10 +225365,46 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": "'LegacyNonNegative'::text",
+              "fingerprint": "8f26f8cb30ba4b208a34eb2974c1ec122dfd8259cfebcfc2a04a3a8a2e8a0e37",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "rate_policy",
+              "nullable": false,
+              "ordinal_position": 13,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": "Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source.",
           "constraints": [
+            {
+              "columns": [
+                "rate_policy"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (rate_policy = ANY (ARRAY['LegacyNonNegative'::text, 'SignedRates'::text]))",
+              "delete_action": null,
+              "fingerprint": "ff08a1489cf53f5467ced74c3e3139641c160b6fa788c2ff36e0f9bf75afa300",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_curves_rate_policy",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
             {
               "columns": [
                 "currency"
@@ -221849,7 +225509,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "c1a2163612e6cc298b30e9d85bf675efad18f70c3758e10c7095924796276ed1",
+          "fingerprint": "67e9226085d1f25292b0f9a2274da6a51a272ca995724b022abd00ec89d371dd",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
@@ -226455,6 +230115,38 @@
               "security_labels": [],
               "type_name": "text",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Provider-declared clean/dirty basis, quotation convention, quote status and explicit settlement facts. Null means unknown.",
+              "data_type": "jsonb",
+              "default": null,
+              "fingerprint": "139b808a92b318cb3d07ea27f3668e2ba632d73a94fe75405771c0d82ef66990",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "quotation_evidence",
+              "nullable": true,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "jsonb",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": "Exact price retained by the current writer. Null selects the unchanged legacy price; never backfilled from rounded observations.",
+              "data_type": "numeric",
+              "default": null,
+              "fingerprint": "c05db72388e5ff9acce3bc9df816d3ed4c9d99319e67de22c9c5f2244fbb4052",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "price_exact",
+              "nullable": true,
+              "ordinal_position": 9,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -226526,7 +230218,7 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "7d63ff569446a0cebd7b47574444696747bfcde9629c8236611f10b9a2fd0d7b",
+          "fingerprint": "509ce79a2944e6b5a5d1fab4047485af61485acdb2b418a3f57a9fafd6008d83",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [

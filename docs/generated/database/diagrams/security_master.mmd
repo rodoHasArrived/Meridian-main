@@ -1295,6 +1295,7 @@ erDiagram
         text description
         text created_by
         timestamp_with_time_zone created_at
+        text rate_policy
     }
     security_master_security_events {
         bigint global_sequence PK
@@ -1464,6 +1465,8 @@ erDiagram
         text recorded_by
         timestamp_with_time_zone recorded_at
         text price_unit
+        jsonb quotation_evidence
+        numeric price_exact
     }
     security_master_security_snapshots {
         uuid security_id PK
