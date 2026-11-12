@@ -1239,7 +1239,8 @@ public sealed partial class FinancialRecordExplorerReadService
                 ColumnIds: [])
         ];
 
-    private static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
+    /// <summary>Drops filters without an identity or label, trims the rest, and defaults the operator to <c>equals</c>.</summary>
+    internal static IReadOnlyList<FinancialRecordExplorerFilterDto> NormalizeFilters(
         IReadOnlyList<FinancialRecordExplorerFilterDto?>? filters)
         => filters?
             .Where(static filter =>
@@ -1259,7 +1260,8 @@ public sealed partial class FinancialRecordExplorerReadService
             .ToArray()
             ?? [];
 
-    private static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
+    /// <summary>Drops blank column ids, trims the rest, and removes case-insensitive duplicates.</summary>
+    internal static IReadOnlyList<string> NormalizeColumnIds(IReadOnlyList<string?>? columnIds)
         => columnIds?
             .Where(static columnId => !string.IsNullOrWhiteSpace(columnId))
             .Select(static columnId => columnId!.Trim())

@@ -40,6 +40,8 @@ public static partial class WorkstationEndpoints
             }
 
             var query = BuildFinancialRecordExplorerQuery(context);
+            // The query carries "" when no view was requested; only a real id may decide which view is active.
+            var requestedViewId = query?.ViewId?.Trim();
             var personalViews = Array.Empty<FinancialRecordExplorerSavedViewDto>();
             if (context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>() is { } viewStore &&
                 TryResolveCurrentUser(context, out var actor))
@@ -48,10 +50,13 @@ public static partial class WorkstationEndpoints
                 {
                     personalViews = (await viewStore.LoadPersonalViewsAsync(tenantId, actor, explorerId, context.RequestAborted).ConfigureAwait(false))
                         .Where(view => !view.IsReadOnly).Select(ToExplorerPersonalView).ToArray();
-                    var selected = personalViews.FirstOrDefault(view => view.ViewId == query?.ViewId);
+                    var selected = personalViews.FirstOrDefault(view => view.ViewId == requestedViewId);
                     if (selected is not null)
+                        // The read service only knows system and tenant views and scopes an unknown view id
+                        // to no rows, so a personal view reaches it as its search text and filters alone.
                         query = query! with
                         {
+                            ViewId = string.Empty,
                             SearchText = context.Request.Query.ContainsKey("searchText") ? query.SearchText : selected.SearchText,
                             Filters = query.Filters?.Count > 0 ? query.Filters : selected.Filters
                         };
@@ -79,7 +84,9 @@ public static partial class WorkstationEndpoints
                 {
                     IsReadOnly = true,
                     Origin = view.IsSystem ? "System view" : "Legacy tenant view — save a personal copy"
-                }).Concat(personalViews).Select(view => query?.ViewId == null ? view : view with { IsActive = view.ViewId == query.ViewId }).ToArray();
+                }).Concat(personalViews).Select(view => string.IsNullOrEmpty(requestedViewId)
+                    ? view
+                    : view with { IsActive = string.Equals(view.ViewId, requestedViewId, StringComparison.OrdinalIgnoreCase) }).ToArray();
                 explorer = explorer with { SavedViews = views };
             }
             return explorer is null
@@ -152,15 +159,18 @@ public static partial class WorkstationEndpoints
                 var store = context.RequestServices.GetService<IFinancialRecordExplorerSavedViewStore>();
                 if (store is null)
                     return Results.Problem("Personal view persistence is unavailable.", statusCode: 501);
-                if (request.Filters?.Any(filter => filter is null || string.IsNullOrWhiteSpace(filter.FilterId)) == true)
-                    return Results.BadRequest(new { error = "Saved-view filters require an identity." });
-                var filters = (request.Filters ?? []).GroupBy(filter => filter.FilterId)
-                    .ToDictionary(group => group.Key, group => group.Last().Value ?? string.Empty);
+                // Same normalization the explorer applies to queries: filters without an identity are
+                // dropped, values are trimmed, and duplicate or blank columns are removed.
+                var explorerFilters = FinancialRecordExplorerReadService.NormalizeFilters(request.Filters);
+                var columnIds = FinancialRecordExplorerReadService.NormalizeColumnIds(request.ColumnIds);
+                var description = request.Description?.Trim() ?? string.Empty;
+                var filters = explorerFilters.GroupBy(filter => filter.FilterId)
+                    .ToDictionary(group => group.Key, group => group.Last().Value);
                 var saved = await store.SavePersonalViewAsync(tenantId, actor, explorerId,
-                    new WorkstationTableViewSaveRequest(request.Label, request.SearchText, request.ColumnIds?.Count > 0 ? request.ColumnIds : ["__all__"], "compact", Filters: filters)
-                    { Description = request.Description, ExplorerFilters = request.Filters ?? [] },
+                    new WorkstationTableViewSaveRequest(request.Label?.Trim() ?? string.Empty, request.SearchText?.Trim() ?? string.Empty, columnIds.Count > 0 ? columnIds : ["__all__"], "compact", Filters: filters)
+                    { Description = description, ExplorerFilters = explorerFilters },
                     context.RequestAborted).ConfigureAwait(false);
-                return Results.Json(ToExplorerPersonalView(saved) with { Description = request.Description, Filters = request.Filters ?? [] }, jsonOptions);
+                return Results.Json(ToExplorerPersonalView(saved) with { Description = description, Filters = explorerFilters }, jsonOptions);
             }
             catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
             {
