@@ -122,7 +122,8 @@ public sealed record StructuredCashFlowScheduleEntry(
 
     // Two rows are the same row when their serialized members agree. The unserialized measured
     // interval is working data for accruals and must not make a replayed row differ from the
-    // retained row it reproduces.
+    // retained row it reproduces. Every serialized member must be compared here;
+    // StructuredCashFlowScheduleEntryEqualityTests fails when a member is added without it.
     public bool Equals(StructuredCashFlowScheduleEntry? other)
         => other is not null && PeriodDate == other.PeriodDate && PrincipalAmount == other.PrincipalAmount &&
            InterestAmount == other.InterestAmount && Factor == other.Factor &&

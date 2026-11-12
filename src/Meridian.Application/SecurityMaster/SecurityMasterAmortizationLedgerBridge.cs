@@ -35,8 +35,9 @@ public interface ISecurityMasterAmortizationLedgerBridge
 /// <summary>
 /// Position-level context for posting projected cash flows. Coupon and principal amounts are
 /// taken from the projection as-is (in the projection's own par basis); the premium/discount is
-/// derived from the actual open tax lots (bond lots record <see cref="LedgerTaxLot.UnitCost"/> as a
-/// price per 100 of par) and amortized by the projection's own day-count year fraction — the same
+/// derived from the actual open tax lots (cost of quantity × <see cref="LedgerTaxLot.UnitCost"/>
+/// against the face the lot states as quantity × <see cref="LedgerTaxLot.Multiplier"/>; only
+/// face-value lots are accepted) and amortized by the projection's own day-count year fraction — the same
 /// method the cost-basis relief engine uses — so GL postings and cost-basis relief tie by
 /// construction instead of amortizing a caller-supplied purchase price on a different schedule.
 /// </summary>
@@ -96,8 +97,6 @@ public sealed record AmortizationAccrualWindow
 /// <inheritdoc />
 public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmortizationLedgerBridge
 {
-    private const decimal ParPrice = 100m;
-
     private readonly ISecurityMasterCashFlowService _cashFlowService;
     private readonly ILogger<SecurityMasterAmortizationLedgerBridge> _logger;
 
@@ -124,7 +123,7 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         var projection = postingContext.ProjectionAsOf is { } projectionAsOf
             ? await _cashFlowService.GetProjectionAsOfAsync(securityId, postingContext.Scenario, projectionAsOf, ct).ConfigureAwait(false)
             : await _cashFlowService.GetProjectionAsync(securityId, postingContext.Scenario, ct).ConfigureAwait(false);
-        if (projection is null || projection.Schedule.Count == 0)
+        if (projection is null)
         {
             _logger.LogDebug(
                 "SecurityMasterAmortizationLedgerBridge: no cash flow projection for {SecurityId} under scenario {Scenario}.",
@@ -133,12 +132,22 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         // Shared freshness/scenario gate: never post a stale source or a rate-shocked what-if
-        // projection to the general ledger, matching the preview bridge's posting rules.
+        // projection to the general ledger, matching the preview bridge's posting rules. Evaluated
+        // before the empty-schedule check, because a blocked projection (a negative rate, say)
+        // can carry no rows and must be reported as blocked, not as having nothing to post.
         if (StructuredCashFlowLedgerGate.EvaluateBlockReason(projection) is { } blockReason)
         {
             _logger.LogWarning(
                 "SecurityMasterAmortizationLedgerBridge: cash flow projection for {SecurityId} is not postable ({Reason}); no ledger entries posted.",
                 securityId, blockReason);
+            return 0;
+        }
+
+        if (projection.Schedule.Count == 0)
+        {
+            _logger.LogDebug(
+                "SecurityMasterAmortizationLedgerBridge: cash flow projection for {SecurityId} under scenario {Scenario} has no scheduled periods.",
+                securityId, postingContext.Scenario);
             return 0;
         }
 
@@ -250,11 +259,6 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
     }
 
     /// <summary>
-    /// The part of one coupon period's interest that accrues inside <paramref name="window"/>: the
-    /// rounded amount accrued through the window's end less the rounded amount accrued through
-    /// the day before it starts, so the shares of consecutive windows sum to the coupon exactly.
-    /// </summary>
-    /// <summary>
     /// Coupon accrued in the window on the lots actually held: every lot linked to the security
     /// earns its face share of each coupon period's interest, and only from the day it was acquired.
     /// </summary>
@@ -271,14 +275,18 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate > window.End)
                 continue;
 
-            // Bond lots hold quantity in units of 100 of par.
-            var share = lot.Quantity * ParPrice / principalBasis;
+            var share = FaceOf(lot) / principalBasis;
             total += schedule.Sum(entry => CouponAccruedInWindow(entry, convention, window, share, lot.AcquiredDate));
         }
 
         return total;
     }
 
+    /// <summary>
+    /// The part of one coupon period's interest that accrues inside <paramref name="window"/>: the
+    /// rounded amount accrued through the window's end less the rounded amount accrued through
+    /// the day before it starts, so the shares of consecutive windows sum to the coupon exactly.
+    /// </summary>
     private static decimal CouponAccruedInWindow(
         StructuredCashFlowScheduleEntry entry, DayCountConvention convention, AmortizationAccrualWindow window,
         decimal share, DateOnly? heldFrom)
@@ -433,9 +441,10 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
             if (lot.SecurityId != securityId || lot.AcquiredDate >= maturity)
                 continue;
 
-            // Bond lots record UnitCost as a price per 100 of par, so quantity × (unit cost − par)
-            // is the lot's signed premium (positive) or discount (negative) in dollars.
-            var total = lot.Quantity * (lot.UnitCost - ParPrice);
+            // The ledger engines cost a lot at quantity × unit cost, and the shared lot shape states
+            // its face as quantity × multiplier, so their difference is the lot's signed premium
+            // (positive) or discount (negative) in money, whatever unit the lot was booked in.
+            var total = lot.Quantity * lot.UnitCost - FaceOf(lot);
             if (total == 0m)
                 continue;
 
@@ -447,6 +456,24 @@ public sealed class SecurityMasterAmortizationLedgerBridge : ISecurityMasterAmor
         }
 
         return lots;
+    }
+
+    /// <summary>
+    /// The face amount a lot holds, read from the shared lot shape (quantity × multiplier) instead
+    /// of assuming the bond convention of one unit per 100 of par, so a loan, deposit or CD booked
+    /// one unit per currency unit of face earns its true share. A lot that is not face-denominated
+    /// has no face share of a coupon or par to amortize toward, so it is refused rather than guessed.
+    /// </summary>
+    private static decimal FaceOf(LedgerTaxLot lot)
+    {
+        if (lot.UnitKind != SecurityLotUnitKind.FaceValue)
+        {
+            throw new InvalidOperationException(
+                $"Lot '{lot.LotId}' is held in {lot.UnitKind} units, not face value; coupon accrual and " +
+                "premium/discount amortization need a face-denominated lot.");
+        }
+
+        return LotQuantity.Of(lot).EconomicUnits;
     }
 
     private static DateTimeOffset ToUtcStartOfDay(DateOnly date)
