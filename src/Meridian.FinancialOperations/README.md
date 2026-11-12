@@ -11,6 +11,31 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.FinancialOperations
 
+`AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
+default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
+candidate through existing accounting authority, checks the declared receivable/income account
+roles and current open-period version, then retains `PreparerAttested` and `Posted` stages with the
+journal in the native transaction. It creates no ordinary `ApprovalId` or `Approved` stage and grants
+no lot, correction, short-position or FX authority. Ordinary candidate posting still requires an
+independent reviewer.
+
+New non-lot corporate-action candidates retain the unique active Security Master ticker selected
+by the server. The existing candidate engine uses that retained authority on mapped accounts and
+native lineage; caller-selected symbols remain refused. Cash-dividend posting checks the exact
+retained symbol and Security Master version again through the native lease transaction. Missing,
+ambiguous or changed symbol authority blocks posting; historical ordinary drafts with no retained
+symbol keep their existing rebuild behavior. The native lineage guard remains authoritative.
+
+Operations Continuity refuses reserved W14 preparer-assertion references when disposing a break
+or reopening a controlled workflow. These refusals preserve the current workflow state and its
+ordinary approval requirements; legacy opaque references still do not prove independent review.
+
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Agreement coverage remains advisory and separate from the
+existing reciprocal-entity consolidation calculation; terms do not generate accruals, paired
+entries or settlements. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 The asset-accounting event spine freezes an optional canonical redemption disposal instruction
 at projection and requires the same instruction at drafting. Selections are compared by their
 retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
@@ -1175,6 +1200,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |

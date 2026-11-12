@@ -40,6 +40,8 @@ public static class LedgerDimensionTags
                || !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId)
                || dimensions.InstrumentId.HasValue
                || dimensions.PositionId.HasValue
+               || dimensions.IntercompanyAgreementId.HasValue
+               || dimensions.IntercompanyAgreementVersion.HasValue
                || !string.IsNullOrWhiteSpace(dimensions.TaxLotId)
                || !string.IsNullOrWhiteSpace(dimensions.CostCenterId)
                || !string.IsNullOrWhiteSpace(dimensions.CounterpartyId)

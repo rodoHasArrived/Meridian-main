@@ -1,4 +1,5 @@
 import type { LedgerAmountProof } from "./ledger-amount-proof";
+import type { PreparerAttestationEvidenceProjection } from "./preparer-attestation-evidence";
 import type {
   AccountingConfigurationValidationIssue,
   OperationsActionOrigin,
@@ -600,6 +601,7 @@ export interface EvidenceProofChain {
 }
 
 export interface EvidencePacket {
+  preparerAttestations?: PreparerAttestationEvidenceProjection | null;
   ledgerAmount?: LedgerAmountProof | null;
   subject: EvidenceSubject;
   generatedAt: string;
@@ -612,6 +614,7 @@ export interface EvidencePacket {
 }
 
 export interface EvidenceGraph {
+  preparerAttestations?: PreparerAttestationEvidenceProjection | null;
   subject: EvidenceSubject;
   generatedAt: string;
   nodes: EvidenceNode[];
@@ -1380,6 +1383,8 @@ export interface LedgerDimensionSet {
   taxLotId?: string | null;
   costCenterId?: string | null;
   counterpartyId?: string | null;
+  intercompanyAgreementId?: string | null;
+  intercompanyAgreementVersion?: number | null;
   externalGlDimensions?: Record<string, string> | null;
   organizationId?: string | null;
   portfolioId?: string | null;

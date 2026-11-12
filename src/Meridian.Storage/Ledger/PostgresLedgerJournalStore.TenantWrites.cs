@@ -37,6 +37,8 @@ public sealed partial class PostgresLedgerJournalStore
     private async Task EnsureBookWriteAuthorityAsync(NpgsqlConnection connection, NpgsqlTransaction? transaction,
         Guid? bookId, CancellationToken ct)
     {
+        if (transaction is not null && bookId is { } retainedBookId)
+            await CashDividendEntitlementLock.AcquireAsync(connection, transaction, retainedBookId, false, ct).ConfigureAwait(false);
         if (!_tenantScope.IsFailClosed)
             return;
         var caller = RequireWriteTenant();

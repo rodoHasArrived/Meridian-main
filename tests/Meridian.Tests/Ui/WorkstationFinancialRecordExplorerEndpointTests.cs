@@ -963,6 +963,45 @@ public sealed partial class WorkstationEndpointsTests
             item.Value == scoped.Rows.Count.ToString(CultureInfo.InvariantCulture));
     }
 
+    [Theory]
+    [InlineData("missing")]
+    [InlineData("other-operator")]
+    [InlineData("other-tenant")]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldNotApplyUnknownOrForeignPersonalViews(
+        string ownership)
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+        var client = app.GetTestClient();
+        await app.Services.GetRequiredService<IStrategyRepository>()
+            .RecordRunAsync(BuildActivePaperRun("explorer-unreadable-personal-view", withBreaks: false));
+        var unfiltered = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            "/api/workstation/financial-record-explorers/ledger", ServerJsonOptions);
+        unfiltered!.Rows.Should().HaveCountGreaterThan(1, "the caller has source records to filter");
+
+        var viewId = Guid.NewGuid().ToString("N");
+        if (ownership != "missing")
+        {
+            var view = await app.Services.GetRequiredService<IFinancialRecordExplorerSavedViewStore>()
+                .SavePersonalViewAsync(
+                    ownership == "other-tenant" ? "another-tenant" : "tenant-test",
+                    ownership == "other-operator" ? "another-operator" : "ops-user",
+                    "ledger",
+                    new WorkstationTableViewSaveRequest("Private cash view", "Cash", ["accountName"], "compact"));
+            viewId = view.ViewId;
+        }
+
+        var scoped = await client.GetFromJsonAsync<FinancialRecordExplorerDto>(
+            $"/api/workstation/financial-record-explorers/ledger?viewId={Uri.EscapeDataString(viewId)}&searchText=Cash",
+            ServerJsonOptions);
+
+        scoped!.Rows.Should().BeEmpty("an unresolved view id must not fall back to the caller's full source population");
+        scoped.SelectedRecord.Should().BeNull();
+        scoped.RecordGraph.Nodes.Should().BeEmpty();
+        scoped.SavedViews.Should().NotContain(view => view.ViewId == viewId || view.IsActive);
+    }
+
     [Fact]
     public async Task MapWorkstationEndpoints_FinancialRecordExplorer_ShouldApplyDimensionFilterOnServer()
     {
@@ -1035,6 +1074,29 @@ public sealed partial class WorkstationEndpointsTests
         saved.Filters[0].Value.Should().Be("Asset");
         saved.Filters[0].Operator.Should().Be("equals");
         saved.ColumnIds.Should().Equal(["balance"]);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData(" ")]
+    public async Task MapWorkstationEndpoints_FinancialRecordExplorerSavedViews_ShouldRejectUnidentifiedNonNullFilters(
+        string? filterId)
+    {
+        await using var app = await CreateAppAsync(
+            services => RegisterFinancialRecordExplorerTestServices(services),
+            currentUserPermissions: ExplorerOperatorPermissions);
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            "/api/workstation/financial-record-explorers/ledger/saved-views",
+            new FinancialRecordExplorerSavedViewSaveRequestDto(
+                "Invalid filter identity", "", "Cash", [new(filterId!, "Account type", "Asset")]),
+            ServerJsonOptions);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var retained = await app.Services.GetRequiredService<IFinancialRecordExplorerSavedViewStore>()
+            .LoadPersonalViewsAsync("tenant-test", "ops-user", "ledger");
+        retained.Should().BeEmpty("malformed non-null filters must be refused before persistence");
     }
 
     [Fact]
@@ -1672,6 +1734,7 @@ public sealed partial class WorkstationEndpointsTests
         private static readonly DateTimeOffset PostedTimestamp = DateTimeOffset.Parse("2026-03-22T16:00:00Z");
 
         public bool ReturnSpine { get; set; } = true;
+        public AssetAccountingEventSpineDto? OverrideSpine { get; set; }
 
         public Task<AssetAccountingEventSpineDto?> GetLatestAsync(
             Guid eventId,
@@ -1683,6 +1746,8 @@ public sealed partial class WorkstationEndpointsTests
             {
                 return Task.FromResult<AssetAccountingEventSpineDto?>(null);
             }
+            if (OverrideSpine is not null)
+                return Task.FromResult<AssetAccountingEventSpineDto?>(OverrideSpine);
 
             var effectiveDate = new DateOnly(2026, 3, 22);
             var sourceHash = new string('a', 64);
@@ -1893,6 +1958,7 @@ public sealed partial class WorkstationEndpointsTests
     private sealed class FinancialRecordExplorerJournalStore : ILedgerJournalStore
     {
         public LedgerJournalEntryQuery? LastQuery { get; private set; }
+        public IReadOnlyList<LedgerJournalEntryRecord>? OverrideRecords { get; set; }
 
         public Task<IReadOnlyList<LedgerJournalEntryRecord>> QueryAsync(
             LedgerJournalEntryQuery query,
@@ -1900,6 +1966,8 @@ public sealed partial class WorkstationEndpointsTests
         {
             ct.ThrowIfCancellationRequested();
             LastQuery = query;
+            if (OverrideRecords is not null)
+                return Task.FromResult(OverrideRecords);
             var timestamp = DateTimeOffset.Parse("2026-03-22T16:00:00Z");
             var dimensions = new LedgerLineDimensionSet(
                 FundId: "northwind-income",

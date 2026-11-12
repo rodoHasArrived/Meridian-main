@@ -21,6 +21,7 @@ using Meridian.FinancialOperations.Ledger;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.Application.SecurityMaster;
+using Meridian.Application.SecurityMaster.CorporateActions;
 using Meridian.Application.SecurityMaster.CashFlow;
 using Meridian.Application.SecurityMaster.Curves;
 using Meridian.Application.SecurityMaster.Valuation;
@@ -257,6 +258,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<PostgresLedgerJournalStore>();
             services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<ITransactionalLedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
             services.AddSingleton(sp => new DurableAutomatedJournalPoster(
                 sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
@@ -298,6 +300,18 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IValidateOptions<SecurityMasterOptions>, SecurityMasterOptionsValidator>();
             services.AddSingleton<ISecurityMasterEventStore, PostgresSecurityMasterEventStore>();
             services.AddSingleton<ICorporateActionOperationsStore, PostgresCorporateActionOperationsStore>();
+            services.TryAddSingleton<ICorporateActionCashDividendAccountingStore>(sp =>
+                (ICorporateActionCashDividendAccountingStore)sp.GetRequiredService<ICorporateActionOperationsStore>());
+            services.TryAddSingleton<ICorporateActionCashDividendEligibilityResolver>(sp =>
+                new CorporateActionCashDividendEligibilityResolver(
+                    sp.GetService<ILedgerJournalStore>() as ILedgerSecurityEntitlementInventory,
+                    sp.GetService<IInstrumentPositionProjectionStore>(),
+                    sp.GetService<ISecurityMasterStore>(),
+                    sp.GetService<ICorporateActionOperationsStore>(),
+                    sp.GetService<IAccountingConfigurationService>(),
+                    sp.GetService<ICorporateActionCashDividendReconciliationSupport>(),
+                    sp.GetService<ISecurityCorporateActionsQueryService>(),
+                    sp.GetService<ICorporateActionCashDividendAccountingStore>()));
             services.AddSingleton<ICorporateActionOperationsService>(sp => new CorporateActionOperationsService(
                 sp.GetRequiredService<ICorporateActionOperationsStore>(),
                 sp.GetRequiredService<ISecurityMasterEventStore>(),
@@ -306,14 +320,20 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 // Resolved optionally on purpose: the scope authority is composed only where the
                 // holdings and tenancy stores exist, and acceptance fails closed without it.
                 sp.GetService<ICorporateActionScopeFanOutGate>()));
-            services.AddSingleton<ICorporateActionCaseAccountingService>(sp => new CorporateActionCaseAccountingService(
+            services.AddSingleton<CorporateActionCaseAccountingService>(sp => new CorporateActionCaseAccountingService(
                 sp.GetRequiredService<ICorporateActionOperationsStore>(),
                 // Resolved optionally on purpose: the accounting lane fails closed with a typed
                 // persistence-unavailable refusal when the spine store, spine posting authority,
                 // or ledger book/period authority is not composed.
                 sp.GetService<IAssetAccountingEventProjectionStore>(),
                 sp.GetService<IAccountingPostingCandidatePostService>(),
-                sp.GetService<ILedgerBookService>()));
+                sp.GetService<ILedgerBookService>(),
+                sp.GetService<ICorporateActionCashDividendAccountingStore>(),
+                sp.GetService<ICorporateActionCashDividendEligibilityResolver>()));
+            services.AddSingleton<ICorporateActionCaseAccountingService>(sp =>
+                sp.GetRequiredService<CorporateActionCaseAccountingService>());
+            services.AddSingleton<ICorporateActionCashDividendAccountingService>(sp =>
+                sp.GetRequiredService<CorporateActionCaseAccountingService>());
             services.AddSingleton<ISecurityMasterSnapshotStore, PostgresSecurityMasterSnapshotStore>();
             services.AddSingleton<ISecurityMasterStore, PostgresSecurityMasterStore>();
             // Read-only view of the identifier history the projection store appends (migration 062).
@@ -648,6 +668,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
                 Schema = configuration.GetSchema(FundStructureStartup.SchemaVariable, FundStructureStartup.DefaultSchema)
             });
             services.TryAddSingleton<IFundStructureStore, PostgresFundStructureStore>();
+            services.TryAddSingleton<IIntercompanyAgreementStore, PostgresIntercompanyAgreementStore>();
+            services.TryAddSingleton<IIntercompanyAgreementPostingAuthority, PostgresIntercompanyAgreementPostingAuthority>();
             services.TryAddSingleton<PostgresFundStructureService>();
             services.TryAddSingleton<IFundStructureService>(sp => sp.GetRequiredService<PostgresFundStructureService>());
         }
@@ -819,7 +841,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             ResolveInactiveByDefault = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_RESOLVE_INACTIVE", true),
             IdentifierHistoryMigrationWritersStopped = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_WRITERS_STOPPED", false),
             IdentifierHistoryMigrationLegacyWritersRetired = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_IDENTIFIER_HISTORY_LEGACY_WRITERS_RETIRED", false),
-            ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true)
+            ProjectionCacheNotificationsEnabled = configuration.GetBoolean("MERIDIAN_SECURITY_MASTER_PROJECTION_NOTIFICATIONS", true),
+            EnableSinglePrincipalCashDividendAttestations = configuration.GetBoolean("SinglePrincipalAttestation:EnableCashDividends", false)
         };
 
     private static DirectLendingOptions CreateDirectLendingOptions(CompositionConfiguration configuration)
