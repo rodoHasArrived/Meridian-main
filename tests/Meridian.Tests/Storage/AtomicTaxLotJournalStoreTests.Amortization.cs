@@ -1035,7 +1035,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
             var origin = new EconomicEventReferenceDto(Guid.NewGuid(), "Trade", 1, AmortAcquired, at, "custodian", "trade-amort")
             { SecurityId = Security.SecurityId, BookPositionId = PositionId, RetainedEvidence = [evidence], EvidenceLinks = [evidence.EvidenceUri] };
             var roleId = Guid.NewGuid();
-            var role = new InstrumentRoleDto(roleId, Security.SecurityId, "amort-fund", "Fund", InstrumentRoleKinds.Holder,
+            var role = new InstrumentRoleDto(roleId, Security.SecurityId, "amort-fund", ownerKind.ToString(), InstrumentRoleKinds.Holder,
                 InstrumentAccountingSides.Debit, InstrumentEconomicSides.Asset, AmortAcquired, OriginEvent: origin, EvidenceLinks: [evidence.EvidenceUri]);
             var book = new AccountingBookContextDto(BookId, "amort-fund", ownerId, ownerKind,
                 "Amortization book", "USD", AccountingBasis, "amort-policy", "1")

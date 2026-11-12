@@ -217,6 +217,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
                 OriginalFace = 10_000m,
                 BookedFactor = 1m,
                 ParBasis = 100m,
+                EvidenceRef = source.EvidenceId,
                 Acquisition = acquisition
             };
             var lines = command.Journal.Entry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId,
