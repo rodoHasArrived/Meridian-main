@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui/dashboard
 
+Floating analytics distinguishes `Select observed fixing` for already-reset coupons from `Select
+forward curve` for future resets. The observed-fixing panel verifies and retains exact-date source
+evidence, then explicitly selects its immutable receipt for the mounted calculation. Returning keeps
+the model, dates, quote receipt or manual amount and cutoff. Existing receipts remain selectable if
+the provider is unavailable; a cutoff preceding retention still blocks until deliberately reviewed.
+
 Bond ladder selection loads authoritative Security Master detail even outside current search results
 and opens the existing Evidence tab. Return to bond ladder preserves its query, loaded rows and
 scroll position. Analytics offers Use retained observation with source, time, freshness, quote status,

@@ -378,6 +378,7 @@ export const UI_API_ROUTES = {
   SecurityMasterRetainedPriceObservations: "/api/security-master/{securityId:guid}/price-golden-copy/observations",
   SecurityMasterRateObservations: "/api/security-master/rates/observations",
   SecurityMasterRateIngest: "/api/security-master/rates/ingest",
+  SecurityMasterObservedBondFixings: "/api/security-master/{securityId:guid}/observed-bond-fixings",
   SecurityMasterPriceComparison: "/api/security-master/{securityId:guid}/price-comparison",
   SecurityMasterRecordRawPrice: "/api/security-master/{securityId:guid}/raw-price",
   SecurityMasterCashFlowSource: "/api/security-master/{securityId:guid}/cashflow-source",

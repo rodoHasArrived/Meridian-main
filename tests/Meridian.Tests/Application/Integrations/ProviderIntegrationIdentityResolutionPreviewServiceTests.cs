@@ -4,6 +4,7 @@ using Meridian.Application.Integrations;
 using Meridian.Contracts.Integrations;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Storage.Integrations;
+using NSubstitute;
 
 namespace Meridian.Tests.Application.Integrations;
 
@@ -53,6 +54,58 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewServiceTests : I
         missing.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier);
         missing.AccountStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier);
         missing.Issues.Should().Contain(issue => issue.Code == "identity.security.identifier.missing");
+    }
+
+    [Fact]
+    public async Task PreviewAsync_LoadsOneTenantScopedDecisionSnapshotPerRunAndKeepsEachRowsEvidenceIsolated()
+    {
+        var firstId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var secondId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+        const string connectionId = "connection-alpha";
+        const string syncRunId = "sync-run-identity-1";
+        var retainedStore = new FileProviderIntegrationManifestStore(testRoot);
+        await SeedStagingAsync(retainedStore, false,
+            """{"internalAccountId":"account-1","security":{"cusip":"123456789","isin":"US1234567890"}}""");
+        var original = (await retainedStore.ListStagingRecordsAsync(syncRunId)).Single();
+        await retainedStore.SaveStagingRecordAsync(original with { StagingRecordId = "staging-other-choice" });
+        await retainedStore.SaveStagingRecordAsync(original with { StagingRecordId = "staging-invalid-decisions" });
+        var query = new FakeSecurityMasterQueryService(firstId, secondId);
+        var evidenceHash = (await new ProviderIntegrationIdentityResolutionPreviewService(retainedStore, query)
+            .PreviewAsync(connectionId)).Rows.First().EvidenceHash!;
+        var reviewedAt = DateTimeOffset.Parse("2026-06-17T00:00:00Z");
+        var firstChoice = new ProviderIntegrationIdentityDecisionDto("choice-first", connectionId, syncRunId,
+            original.StagingRecordId, firstId, evidenceHash, "reviewer", reviewedAt, "Verified first choice.");
+        IReadOnlyList<ProviderIntegrationIdentityDecisionDto> decisions =
+        [
+            firstChoice,
+            firstChoice with { DecisionId = "choice-second", StagingRecordId = "staging-other-choice", SelectedSecurityId = secondId },
+            firstChoice with { DecisionId = "stale-evidence", StagingRecordId = "staging-invalid-decisions", EvidenceHash = "changed" },
+            firstChoice with { DecisionId = "foreign-connection", StagingRecordId = "staging-invalid-decisions", ConnectionId = "foreign" },
+            firstChoice with { DecisionId = "foreign-run", StagingRecordId = "staging-invalid-decisions", SyncRunId = "foreign" }
+        ];
+        var scopedStore = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationIdentityDecisionStore>();
+        scopedStore.GetConnectionAsync(connectionId, Arg.Any<CancellationToken>())
+            .Returns(await retainedStore.GetConnectionAsync(connectionId));
+        scopedStore.ListSyncRunsAsync(connectionId, Arg.Any<CancellationToken>())
+            .Returns(await retainedStore.ListSyncRunsAsync(connectionId));
+        scopedStore.ListStagingRecordsAsync(syncRunId, Arg.Any<CancellationToken>())
+            .Returns(await retainedStore.ListStagingRecordsAsync(syncRunId));
+        var decisionStore = (IProviderIntegrationIdentityDecisionStore)scopedStore;
+        decisionStore.ListIdentityDecisionsAsync(syncRunId, Arg.Any<CancellationToken>()).Returns(decisions);
+        var tenantRoot = Substitute.For<IProviderIntegrationManifestStore, IProviderIntegrationTenantManifestStoreFactory>();
+        ((IProviderIntegrationTenantManifestStoreFactory)tenantRoot).ForTenant("tenant-one").Returns(scopedStore);
+
+        var preview = await new ProviderIntegrationIdentityResolutionPreviewService(tenantRoot, query)
+            .PreviewAsync("tenant-one", connectionId);
+
+        preview.TotalRows.Should().Be(3);
+        preview.Rows.Single(row => row.StagingRecordId == original.StagingRecordId).InternalSecurityId.Should().Be(firstId.ToString("D"));
+        preview.Rows.Single(row => row.StagingRecordId == "staging-other-choice").InternalSecurityId.Should().Be(secondId.ToString("D"));
+        var unresolved = preview.Rows.Single(row => row.StagingRecordId == "staging-invalid-decisions");
+        unresolved.SecurityStatus.Should().Be(ProviderIntegrationIdentityResolutionStatusDto.Conflict);
+        unresolved.OperatorResolution.Should().BeNull();
+        await decisionStore.Received(1).ListIdentityDecisionsAsync(syncRunId, Arg.Any<CancellationToken>());
+        await tenantRoot.DidNotReceive().GetConnectionAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
     }
 
     [Theory]

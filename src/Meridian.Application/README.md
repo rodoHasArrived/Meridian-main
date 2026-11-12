@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Application
 
+Observed bond fixings are retained as append-only receipts under `bonds/observed-fixings`, outside
+the bond term codec and forward-curve store. Exact reset dates, source units and raw observations,
+security/version, reviewer and justification remain bound to a content hash. Retrieval-only retries
+return the original receipt. Calculations use explicit receipt IDs; retention never changes a prior
+unpinned calculation or selects a changing latest fixing.
+
 Fixed-income holding imports require explicit original face, current factor, per-100 quotation,
 clean/dirty price and market-value bases, and total accrued interest with matching currencies.
 The mapped record retains exact-string `bondValueReconciliation` evidence (provider value,

@@ -347,6 +347,31 @@ describe("bond analytics inputs", () => {
 });
 
 describe("retained bond observations", () => {
+  it("routes observed and forward blockers separately and preserves inputs when a fixing receipt is selected", async () => {
+    const onSelectFixing = vi.fn();
+    const onSelectForwardCurve = vi.fn();
+    const calculate = vi.fn().mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "MissingFixing", reason: "No observed fixing for 2026-01-15." }] });
+    const props = { securityId: SECURITY_ID, calculate, onSelectFixing, onSelectForwardCurve };
+    const { rerender } = render(<BondAnalyticsPanel {...props} />);
+    fireEvent.change(screen.getByLabelText("Calculation version"), { target: { value: "bond-analytics-v3" } });
+    fireEvent.change(screen.getByLabelText("Calculation date (UTC)"), { target: { value: "2026-02-15" } });
+    fireEvent.change(screen.getByLabelText("Settlement date"), { target: { value: "2026-02-16" } });
+    fireEvent.change(screen.getByLabelText("Recorded cutoff (UTC, optional)"), { target: { value: "2026-02-16T12:00" } });
+    fireEvent.change(screen.getByLabelText("Clean price / 100"), { target: { value: "98.123456789012345678" } });
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select observed fixing" }));
+    expect(onSelectFixing).toHaveBeenCalledOnce(); expect(onSelectForwardCurve).not.toHaveBeenCalled();
+    calculate.mockResolvedValue({ ...floatingResult(), isBlocked: true, blockers: [{ code: "ForwardCurveRequired", reason: "Future resets require a curve." }] });
+    rerender(<BondAnalyticsPanel {...props} observedFixingReceiptIds={["fixing-receipt"]} />);
+    expect(screen.getByLabelText("Calculation version")).toHaveValue("bond-analytics-v3");
+    expect(screen.getByLabelText("Clean price / 100")).toHaveValue("98.123456789012345678");
+    fireEvent.submit(screen.getByRole("form", { name: "Bond analytics inputs" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Select forward curve" }));
+    expect(onSelectForwardCurve).toHaveBeenCalledOnce();
+    expect(calculate.mock.calls[1][1]).toMatchObject({ calculationVersion: "bond-analytics-v3", asOf: "2026-02-15T00:00:00Z",
+      settlementDate: "2026-02-16", knownAt: "2026-02-16T12:00:00Z", cleanPrice: "98.123456789012345678", observedFixingReceiptIds: "fixing-receipt" });
+  });
+
   it("shows provider quotation evidence and submits only the immutable receipt", async () => {
     const calculate = vi.fn().mockResolvedValue(result());
     const loadObservations = vi.fn().mockResolvedValue([{

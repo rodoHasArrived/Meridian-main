@@ -42,6 +42,7 @@ const cashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
 ];
 
 const decimalText = (value: BondDecimal | null | undefined): string => bondDecimalText(value);
+const NO_OBSERVED_FIXINGS: readonly string[] = [];
 
 const floatingCashFlowColumns: DenseDataTableColumn<CashFlow>[] = [
   ...cashFlowColumns,
@@ -80,12 +81,15 @@ export interface BondAnalyticsPanelProps {
   onReviewConventions?: () => void;
   onResolveSourceConflict?: () => void;
   onSelectFixing?: () => void;
+  onSelectForwardCurve?: () => void;
+  observedFixingReceiptIds?: readonly string[];
+  onClearObservedFixings?: () => void;
 }
 
 /** User-triggered analysis; no client-side financial calculation, mutation, or imported-metric overwrite. */
 export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = getBondAnalytics,
   loadObservations = getBondRetainedObservations, onReviewConventions, onResolveSourceConflict,
-  onSelectFixing }: BondAnalyticsPanelProps) {
+  onSelectFixing, onSelectForwardCurve, observedFixingReceiptIds = NO_OBSERVED_FIXINGS, onClearObservedFixings }: BondAnalyticsPanelProps) {
   const id = useId();
   const [asOf, setAsOf] = useState(() => new Date().toISOString().slice(0, 10));
   const [settlementDate, setSettlementDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -145,8 +149,9 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
     }
   }
 
-  function blockerAction(code: string): "fixing" | "conventions" | "source" {
-    if (/Fixing|Curve|Reset/i.test(code)) return "fixing";
+  function blockerAction(code: string): "fixing" | "forwardCurve" | "conventions" | "source" {
+    if (/Fixing|Reset/i.test(code)) return "fixing";
+    if (/Curve/i.test(code)) return "forwardCurve";
     if (/Quotation|Convention|Basis|Settlement/i.test(code)) return "conventions";
     return /Price|Receipt|Source|Conflict/i.test(code) ? "source" : "conventions";
   }
@@ -154,6 +159,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
   function actOnBlocker(code: string) {
     const action = blockerAction(code);
     if (action === "fixing") onSelectFixing?.();
+    else if (action === "forwardCurve") onSelectForwardCurve?.();
     else if (action === "source") {
       onResolveSourceConflict?.();
       focusObservation.current = inputKind !== "retained";
@@ -161,6 +167,13 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       observationPicker.current?.focus({ preventScroll: true });
     } else onReviewConventions?.();
   }
+
+  useEffect(() => {
+    request.current?.abort();
+    setPending(false);
+    setResult(null);
+    setError(null);
+  }, [observedFixingReceiptIds]);
 
   useEffect(() => {
     if (inputKind === "retained" && focusObservation.current) {
@@ -205,6 +218,7 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
       asOf: `${asOf}T00:00:00Z`,
       settlementDate,
       calculationVersion,
+      ...(calculationVersion === "bond-analytics-v3" && observedFixingReceiptIds.length ? { observedFixingReceiptIds: observedFixingReceiptIds.join(",") } : {}),
       yieldConvention: convention,
       ...(knownAt ? { knownAt: utcInstantFromLocalInput(knownAt) } : {}),
       ...(inputKind === "retained" ? { selectionReceiptId: selectedReceipt, ...(priceAccountId ? { priceAccountId } : {}) } : { [inputKind]: value.trim() })
@@ -287,6 +301,10 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                 fixings; future resets require a retained forward curve. Missing inputs block the calculation.
               </p>
             ) : null}
+            {isFloating && observedFixingReceiptIds.length ? <div className="break-words text-xs" aria-label="Selected observed fixing receipts">
+              <p>{observedFixingReceiptIds.length} immutable observed fixing receipt(s) selected: {observedFixingReceiptIds.join(", ")}</p>
+              {onClearObservedFixings ? <Button type="button" variant="outline" size="sm" onClick={onClearObservedFixings}>Clear observed fixing selections</Button> : null}
+            </div> : null}
             <FormGrid columns={3}>
               <FormRow label="Calculation date (UTC)" labelFor={`${id}-asof`}>
                 <Input
@@ -424,9 +442,11 @@ export function BondAnalyticsPanel({ securityId, priceAccountId, calculate = get
                       <li key={`${blocker.code}:${index}`}>
                         {blocker.code}: {blocker.reason}{" "}
                         {(blockerAction(blocker.code) === "fixing" ? onSelectFixing
+                          : blockerAction(blocker.code) === "forwardCurve" ? onSelectForwardCurve
                           : blockerAction(blocker.code) === "source" ? true : onReviewConventions) ? (
                           <Button type="button" variant="outline" size="sm" onClick={() => actOnBlocker(blocker.code)}>
-                            {blockerAction(blocker.code) === "fixing" ? "Select fixing"
+                            {blockerAction(blocker.code) === "fixing" ? "Select observed fixing"
+                              : blockerAction(blocker.code) === "forwardCurve" ? "Select forward curve"
                               : blockerAction(blocker.code) === "source" ? "Resolve source conflict" : "Review conventions"}
                           </Button>
                         ) : null}

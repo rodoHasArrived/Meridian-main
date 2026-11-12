@@ -5007,6 +5007,7 @@ Meridian-main
 │   │   │   ├── CashFlow
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
 │   │   │   │   ├── FileBondExerciseNoticeStore.cs
+│   │   │   │   ├── FileBondObservedFixingStore.cs
 │   │   │   │   ├── FileContractualCashFlowRunStore.cs
 │   │   │   │   ├── SecurityPrincipalBalance.cs
 │   │   │   │   ├── StructuredCashFlowLedgerBridge.cs
@@ -5534,6 +5535,7 @@ Meridian-main
 │   │   │   ├── BondFloatingRateEvidence.cs
 │   │   │   ├── BondMigrationApiRequests.cs
 │   │   │   ├── BondMigrationDtos.cs
+│   │   │   ├── BondObservedFixings.cs
 │   │   │   ├── BondPricingMath.cs
 │   │   │   ├── BondReferenceDtos.cs
 │   │   │   ├── BondSettlementConsideration.cs
@@ -6864,6 +6866,7 @@ Meridian-main
 │   │   │   └── IEquityReferenceService.cs
 │   │   ├── FixedIncome
 │   │   │   ├── BondAnalyticsService.cs
+│   │   │   ├── BondAnalyticsService.ObservedFixings.cs
 │   │   │   ├── BondMigrationService.cs
 │   │   │   ├── BondProjectionService.cs
 │   │   │   ├── BondProjectionService.Paging.cs
@@ -8230,6 +8233,8 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-analytics-panel.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.test.tsx
 │   │   │   │   │   │   ├── bond-migration-preview-panel.tsx
+│   │   │   │   │   │   ├── bond-observed-fixing-panel.test.tsx
+│   │   │   │   │   │   ├── bond-observed-fixing-panel.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.test.tsx
 │   │   │   │   │   │   ├── bond-reference-ladder-panel.tsx
 │   │   │   │   │   │   ├── close-checklist-history-chart.test.tsx
@@ -8572,6 +8577,7 @@ Meridian-main
 │   │   │   │   │   │   ├── bond-cutover.api.ts
 │   │   │   │   │   │   ├── bond-http-precision.test.ts
 │   │   │   │   │   │   ├── bond-migration.api.ts
+│   │   │   │   │   │   ├── bond-observed-fixings.api.ts
 │   │   │   │   │   │   ├── bond-reference.api.ts
 │   │   │   │   │   │   ├── break-audit-rebuild.api.ts
 │   │   │   │   │   │   ├── capital-call-issuance.api.ts
@@ -9710,6 +9716,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.CorporateActionOperations.cs
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
+│   │   │   ├── SecurityMasterEndpoints.ObservedFixings.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcCollateral.cs
 │   │   │   ├── SecurityMasterEndpoints.OtcContracts.cs
 │   │   │   ├── SecurityMasterEndpoints.Rates.cs
@@ -11674,6 +11681,7 @@ Meridian-main
 │   │   │   ├── Wizard
 │   │   │   │   └── WizardConfigurationStepTests.cs
 │   │   │   ├── BondExerciseNoticeStoreTests.cs
+│   │   │   ├── BondObservedFixingStoreTests.cs
 │   │   │   ├── ContractualCashFlowPreviewTests.cs
 │   │   │   ├── ContractualCashFlowScheduleRefusalTests.cs
 │   │   │   ├── DeclaredRateUnitParityTests.cs
@@ -12034,6 +12042,7 @@ Meridian-main
 │   │   │   │   ├── AssetAccountingEventSpineServiceTests.ReferenceAuthority.cs
 │   │   │   │   ├── AssetAccountingLifecycleSeparationTests.cs
 │   │   │   │   ├── BondSettlementConsiderationTests.cs
+│   │   │   │   ├── BondSettlementRetainedObservationTests.cs
 │   │   │   │   ├── ShortCarryTests.cs
 │   │   │   │   ├── ShortCorrectionTests.cs
 │   │   │   │   └── ShortCoverCurrencyTests.cs
@@ -13181,6 +13190,7 @@ Meridian-main
 │   │   │   ├── BondAnalyticsEndpointsTests.cs
 │   │   │   ├── BondExerciseNoticeEndpointsTests.cs
 │   │   │   ├── BondMigrationEndpointsTests.cs
+│   │   │   ├── BondObservedFixingEndpointsTests.cs
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionIsolationTests.cs
@@ -13431,6 +13441,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpointsTests.Wave4.cs
 │   │   │   ├── WorkstationFamilyOfficeEndpointsTests.cs
 │   │   │   ├── WorkstationFinancialRecordExplorerEndpointTests.cs
+│   │   │   ├── WorkstationFinancialRecordExplorerPersonalViewScopeTests.cs
 │   │   │   ├── WorkstationMaintenanceTableExportTests.cs
 │   │   │   ├── WorkstationMultiAssetCoverageEndpointsTests.cs
 │   │   │   ├── WorkstationPersonalTableViewStoreTests.cs

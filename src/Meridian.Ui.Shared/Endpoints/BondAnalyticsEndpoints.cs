@@ -39,6 +39,7 @@ public static class BondAnalyticsEndpoints
             [FromQuery] Guid? selectionReceiptId,
             [FromQuery] string? priceAccountId,
             [FromQuery] string? calculationVersion,
+            [FromQuery] string? observedFixingReceiptIds,
             [FromServices] IBondAnalyticsService service,
             CancellationToken ct) =>
         {
@@ -63,8 +64,19 @@ public static class BondAnalyticsEndpoints
                 return Results.BadRequest(new { error = "Supply exactly one retained selectionReceiptId, cleanPrice per 100 face, or annual fractional yield." });
             }
 
+            IReadOnlyList<Guid>? fixingIds = null;
+            if (!string.IsNullOrWhiteSpace(observedFixingReceiptIds))
+            {
+                var tokens = observedFixingReceiptIds.Split(',', StringSplitOptions.TrimEntries);
+                if (tokens.Length > 64 || tokens.Any(token => !Guid.TryParse(token, out var id) || id == Guid.Empty))
+                    return Results.BadRequest(new { error = "observedFixingReceiptIds must contain at most 64 distinct receipt UUIDs." });
+                fixingIds = tokens.Select(Guid.Parse).ToArray();
+                if (fixingIds.Distinct().Count() != fixingIds.Count)
+                    return Results.BadRequest(new { error = "Select each observed fixing receipt once." });
+            }
+
             var result = await service.CalculateAsync(new BondAnalyticsRequest(
-                securityId, new BondCalculationContext(asOf, settlementDate, knownAt),
+                securityId, new BondCalculationContext(asOf, settlementDate, knownAt) { ObservedFixingReceiptIds = fixingIds },
                 cleanPrice, annualYield, convention)
             {
                 SelectionReceiptId = selectionReceiptId,

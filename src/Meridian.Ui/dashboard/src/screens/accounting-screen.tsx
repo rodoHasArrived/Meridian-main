@@ -30,6 +30,8 @@ import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/se
 import { BondAnalyticsPanel } from "@/components/meridian/bond-analytics-panel";
 import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-preview-panel";
 import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
+import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
+import type { BondObservedFixingReceipt } from "@/lib/api/bond-observed-fixings.api";
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
@@ -1472,6 +1474,9 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const [observedFixingSelection, setObservedFixingSelection] = useState<{ securityId: string; receipts: BondObservedFixingReceipt[] } | null>(null);
+  const observedFixingReceiptIds = useMemo(() => observedFixingSelection?.securityId === securityMaster.selectedSecurityId
+    ? observedFixingSelection.receipts.map(receipt => receipt.receiptId) : [], [observedFixingSelection, securityMaster.selectedSecurityId]);
   const [ladderReturnAvailable, setLadderReturnAvailable] = useState(false);
   const ladderScroll = useRef<Array<{ element: Element; top: number; left: number }>>([]);
   const returnToLadder = () => {
@@ -3260,12 +3265,19 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                       <>
                         <div id="bond-calculation-context" tabIndex={-1}>
                           <BondAnalyticsPanel key={securityMaster.selectedSecurityId} securityId={securityMaster.selectedSecurityId}
+                            observedFixingReceiptIds={observedFixingReceiptIds}
+                            onClearObservedFixings={() => setObservedFixingSelection(null)}
                             onReviewConventions={() => {
                               const panel = document.getElementById("bond-conventions-review");
                               panel?.focus({ preventScroll: true });
                               panel?.scrollIntoView({ block: "nearest" });
                             }}
                             onSelectFixing={() => {
+                              const panel = document.getElementById("bond-observed-fixings");
+                              panel?.focus({ preventScroll: true });
+                              panel?.scrollIntoView({ block: "nearest" });
+                            }}
+                            onSelectForwardCurve={() => {
                               const panel = document.getElementById("bond-rates-fixings");
                               panel?.focus({ preventScroll: true });
                               panel?.scrollIntoView({ block: "nearest" });
@@ -3285,6 +3297,18 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
                             : null}
                         />
                         </section>
+                        <div>
+                          <Button type="button" variant="outline" size="sm" onClick={() => {
+                            const panel = document.getElementById("bond-calculation-context");
+                            panel?.focus({ preventScroll: true }); panel?.scrollIntoView({ block: "nearest" });
+                          }}>Return to calculation from observed fixings</Button>
+                          <BondObservedFixingPanel key={`observed-fixings-${securityMaster.selectedSecurityId}`}
+                            securityId={securityMaster.selectedSecurityId} securityVersion={securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity.version : null}
+                            selectedReceiptIds={observedFixingReceiptIds}
+                            onSelect={(receipt) => setObservedFixingSelection(current => ({ securityId: receipt.fixing.securityId,
+                              receipts: [...(current?.securityId === receipt.fixing.securityId ? current.receipts.filter(prior => prior.fixing.resetDate !== receipt.fixing.resetDate) : []), receipt] }))}
+                            onRemove={(receiptId) => setObservedFixingSelection(current => current ? { ...current, receipts: current.receipts.filter(receipt => receipt.receiptId !== receiptId) } : null)} />
+                        </div>
                         <div>
                           <Button type="button" variant="outline" size="sm" onClick={() => {
                             const panel = document.getElementById("bond-calculation-context");

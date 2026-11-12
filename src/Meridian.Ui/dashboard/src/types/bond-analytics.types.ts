@@ -8,6 +8,7 @@ export interface BondCalculationContext {
   settlementDate?: string | null;
   knownAt?: string | null;
   securityVersion?: number | null;
+  observedFixingReceiptIds?: string[] | null;
   curves?: Array<{
     role: string;
     curveId: string;
@@ -90,6 +91,7 @@ export interface BondAnalyticsQuery {
   yieldConvention?: BondYieldConvention;
   selectionReceiptId?: string;
   priceAccountId?: string;
+  observedFixingReceiptIds?: string;
 }
 
 /** Exact retained provider observation and immutable operator-choice receipt. */

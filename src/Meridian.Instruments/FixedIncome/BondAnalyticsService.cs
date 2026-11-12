@@ -16,7 +16,7 @@ namespace Meridian.Instruments.FixedIncome;
 /// <see cref="BondEconomicsCompatibility.AnalyticsV1"/> mode; its output is pinned by the
 /// bond-analytics-versions golden fixture.
 /// </remarks>
-public sealed class BondAnalyticsService : IBondAnalyticsService
+public sealed partial class BondAnalyticsService : IBondAnalyticsService
 {
     public const string ModelVersion = "bond-analytics-v2";
     public const string LegacyModelVersion = "bond-analytics-v1";
@@ -27,16 +27,18 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
     private readonly IBondCalculationPolicy? _policy;
     private readonly ISecurityForwardCurveProvider? _forwardCurves;
     private readonly ISecurityMasterPricingService? _pricing;
+    private readonly IBondObservedFixingStore? _observedFixings;
 
     public BondAnalyticsService(ISecurityMasterQueryService query, IBusinessDayCalendarSource? calendars = null,
         IBondCalculationPolicy? policy = null, ISecurityForwardCurveProvider? forwardCurves = null,
-        ISecurityMasterPricingService? pricing = null)
+        ISecurityMasterPricingService? pricing = null, IBondObservedFixingStore? observedFixings = null)
     {
         _query = query;
         _calendars = calendars;
         _policy = policy;
         _forwardCurves = forwardCurves;
         _pricing = pricing;
+        _observedFixings = observedFixings;
     }
 
     public async Task<BondAnalyticsResult?> CalculateAsync(BondAnalyticsRequest request, CancellationToken ct = default)
@@ -109,6 +111,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             inputs.Add(new("ContractualEconomics", BondContractualEconomics.ModelVersion));
         BondAnalyticsResult Refuse(string code, string reason)
             => Blocked(request, context, security.Currency, code, reason, model, inputs);
+        if (!model.Floating && context.ObservedFixingReceiptIds is { Count: > 0 })
+            return Refuse("UnsupportedObservedFixingInput", "Observed fixing receipts require the floating v3 model; fixed/zero replay is unchanged.");
         if (context.AsOf == default || context.AsOf.Offset != TimeSpan.Zero
             || context.KnownAt is { Offset: var offset } && offset != TimeSpan.Zero)
             return Refuse("InvalidContext", "Economic and knowledge cutoffs must be explicit UTC timestamps.");
@@ -303,6 +307,9 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         // Reset status follows the economic cutoff: a reset dated after AsOf is a future, projected fixing even
         // when settlement falls after it. Settlement still governs entitlement, accrued interest and discount times.
         var economicDate = DateOnly.FromDateTime(context.AsOf.UtcDateTime);
+        var observedFixings = await ResolveObservedFixingsAsync(security, leg, schedule, settlement, economicDate, context, inputs, ct).ConfigureAwait(false);
+        if (observedFixings.Blocker is { } fixingBlocker)
+            return refuse(fixingBlocker.Code, fixingBlocker.Reason);
         var needsCurve = schedule.Periods.Any(period => period.PaymentDate > settlement && period.AccrualStart > economicDate);
         SecurityForwardCurve? curve = null;
         if (needsCurve)
@@ -316,7 +323,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 AsOf: new DateTimeOffset(curve.AsOfDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero)));
         }
         var spread = leg.SpreadBps.GetValueOrDefault() / 10_000m;
-        if (!TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread,
+        if (!TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread, observedFixings.Receipts,
                 out var flows, out var accrued, out var currentRate, out var refusal, out var code))
             return refuse(code!, refusal!);
         var priceFlows = flows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray();
@@ -334,7 +341,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
         if (clean <= 0m)
             return refuse("InvalidCleanPrice", "Calculated clean price is not positive.");
         decimal? spreadDv01 = null;
-        if (TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread + 0.0001m,
+        if (TryBuildFloating(security.SecurityId, leg, declared, schedule, settlement, economicDate, dayCount, convention, curve, spread + 0.0001m, observedFixings.Receipts,
                 out var bumpedFlows, out _, out _, out _, out _)
             && BondPricingMath.TryPrice(bumpedFlows.Select(static flow => new BondPricingCashFlow(flow.Interest + flow.Principal, flow.TimeInYears)).ToArray(),
                 yield, convention, paymentsPerYear, out var bumped, out _))
@@ -353,7 +360,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
 
     private static bool TryBuildFloating(Guid securityId, StructuredCashFlowLeg leg, DeclaredScheduleResolution declared,
         ScheduleGenerationResult schedule, DateOnly settlement, DateOnly economicDate, DayCountConvention dayCount, BondYieldConvention convention,
-        SecurityForwardCurve? curve, decimal spread, out IReadOnlyList<BondAnalyticsCashFlow> flows, out decimal accrued,
+        SecurityForwardCurve? curve, decimal spread, IReadOnlyDictionary<DateOnly, BondObservedFixingReceipt> observedFixings,
+        out IReadOnlyList<BondAnalyticsCashFlow> flows, out decimal accrued,
         out decimal currentRate, out string? refusal, out string? code)
     {
         flows = [];
@@ -372,7 +380,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             var exactReset = leg.ResetSchedule?.SingleOrDefault(row => row.ResetDate == period.AccrualStart)?.FixingRate;
             var retainedScalar = !leg.HasDeclaredResetSchedule && leg.CurrentIndexResetDate == period.AccrualStart
                 && !string.IsNullOrWhiteSpace(leg.CurrentIndexRateSource) ? leg.CurrentIndexRate : null;
-            var index = alreadyReset ? exactReset ?? retainedScalar : curve?.RateAt(period.AccrualStart);
+            observedFixings.TryGetValue(period.AccrualStart, out var observedReceipt);
+            var index = alreadyReset ? exactReset ?? retainedScalar ?? observedReceipt?.Fixing.RateFraction : curve?.RateAt(period.AccrualStart);
             if (index is null)
             {
                 code = alreadyReset ? "MissingFixing" : "ForwardCurveRequired";
@@ -382,7 +391,7 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
                 return false;
             }
             // Observed fixings carry the leg's declared unit; curve points are annual fractions.
-            var indexFraction = alreadyReset && leg.RateUnit == SecurityCouponRateUnit.Percent ? index.Value / 100m : index.Value;
+            var indexFraction = alreadyReset && observedReceipt is null && leg.RateUnit == SecurityCouponRateUnit.Percent ? index.Value / 100m : index.Value;
             var rate = indexFraction + spread;
             if (leg.CapRate is { } cap)
                 rate = Math.Min(rate, leg.RateUnit == SecurityCouponRateUnit.Percent ? cap / 100m : cap);
@@ -407,7 +416,8 @@ public sealed class BondAnalyticsService : IBondAnalyticsService
             {
                 var curveSource = curve?.Source;
                 var fixingSource = alreadyReset
-                    ? exactReset.HasValue ? "Retained reset schedule" : leg.CurrentIndexRateSource!
+                    ? observedReceipt is not null ? $"ObservedFixingReceipt:{observedReceipt.ReceiptId:D}:{observedReceipt.ContentSha256}"
+                        : exactReset.HasValue ? "Retained reset schedule" : leg.CurrentIndexRateSource!
                     : !string.IsNullOrWhiteSpace(curveSource) ? curveSource
                     : curve?.RetainedInput is not null ? "Retained forward curve" : "Content-bound forward curve";
                 result.Add(new(SchedulePeriodId.Derive(securityId, "bond-analytics", period), period.PaymentDate,

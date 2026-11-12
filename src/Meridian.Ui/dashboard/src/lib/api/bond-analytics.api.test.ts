@@ -63,11 +63,13 @@ describe("bond calculation API adapters", () => {
       knownAt: "2026-11-12T12:00:00Z",
       calculationVersion: "bond-analytics-v3",
       selectionReceiptId: "retained-receipt",
+      observedFixingReceiptIds: "fixing-a,fixing-b",
       priceAccountId: "account-a"
     });
     const params = new URL(String(fetchMock.mock.calls[0][0]), "https://meridian.invalid").searchParams;
     expect(params.get("calculationVersion")).toBe("bond-analytics-v3");
     expect(params.get("selectionReceiptId")).toBe("retained-receipt");
+    expect(params.get("observedFixingReceiptIds")).toBe("fixing-a,fixing-b");
     expect(params.get("priceAccountId")).toBe("account-a");
     expect(params.get("knownAt")).toBe("2026-11-12T12:00:00Z");
     expect(params.has("cleanPrice")).toBe(false);

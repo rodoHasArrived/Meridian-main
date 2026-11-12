@@ -1,7 +1,6 @@
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Contracts.Integrations;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -78,7 +77,8 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         var record = (await scopedStore.ListStagingRecordsAsync(request.SyncRunId, ct).ConfigureAwait(false))
             .SingleOrDefault(candidate => candidate.ConnectionId == connectionId && candidate.StagingRecordId == request.StagingRecordId)
             ?? throw new KeyNotFoundException("The staged record does not belong to this connection and run.");
-        var preview = await ResolveRecordAsync(scopedStore, connection, record, ct).ConfigureAwait(false);
+        var decisions = await LoadIdentityDecisionSnapshotAsync(scopedStore, connectionId, request.SyncRunId, ct).ConfigureAwait(false);
+        var preview = await ResolveRecordAsync(connection, record, decisions[record.StagingRecordId], ct).ConfigureAwait(false);
         if (!StringComparer.Ordinal.Equals(request.EvidenceHash, preview.EvidenceHash))
         {
             throw new InvalidOperationException("Identifier matching evidence changed. Reload and review the current evidence.");
@@ -116,10 +116,11 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
         {
             ct.ThrowIfCancellationRequested();
             var records = await scopedStore.ListStagingRecordsAsync(syncRun.SyncRunId, ct).ConfigureAwait(false);
+            var decisions = await LoadIdentityDecisionSnapshotAsync(scopedStore, connectionId, syncRun.SyncRunId, ct).ConfigureAwait(false);
             foreach (var record in records.Where(record => StringComparer.Ordinal.Equals(record.ConnectionId, connectionId)))
             {
                 ct.ThrowIfCancellationRequested();
-                rows.Add(await ResolveRecordAsync(scopedStore, connection, record, ct).ConfigureAwait(false));
+                rows.Add(await ResolveRecordAsync(connection, record, decisions[record.StagingRecordId], ct).ConfigureAwait(false));
             }
         }
 
@@ -141,10 +142,25 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
             rows.Count(row => row.SecurityStatus == ProviderIntegrationIdentityResolutionStatusDto.MissingIdentifier));
     }
 
-    private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
+    private static async Task<ILookup<string, ProviderIntegrationIdentityDecisionDto>> LoadIdentityDecisionSnapshotAsync(
         IProviderIntegrationManifestStore scopedStore,
+        string connectionId,
+        string syncRunId,
+        CancellationToken ct)
+    {
+        IReadOnlyList<ProviderIntegrationIdentityDecisionDto> decisions = scopedStore is IProviderIntegrationIdentityDecisionStore decisionStore
+            ? await decisionStore.ListIdentityDecisionsAsync(syncRunId, ct).ConfigureAwait(false)
+            : [];
+        return decisions
+            .Where(decision => StringComparer.Ordinal.Equals(decision.ConnectionId, connectionId) &&
+                StringComparer.Ordinal.Equals(decision.SyncRunId, syncRunId))
+            .ToLookup(decision => decision.StagingRecordId, StringComparer.Ordinal);
+    }
+
+    private async Task<ProviderIntegrationStagingIdentityResolutionRowDto> ResolveRecordAsync(
         ProviderConnectionDto connection,
         IntegrationStagingRecordDto record,
+        IEnumerable<ProviderIntegrationIdentityDecisionDto> retainedDecisions,
         CancellationToken ct)
     {
         var issues = new List<ValidationIssueDto>(record.ValidationWarnings);
@@ -209,29 +225,25 @@ public sealed class ProviderIntegrationIdentityResolutionPreviewService
 
         // Bind a retained choice to the complete matching evidence. Changed source data,
         // identifier mappings or Security Master statuses require a fresh review.
-        var evidenceHash = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+        var evidenceHash = Sha256Digest.ComputeUtf8(
             record.MappedRecord.GetRawText() + "\n" + JsonSerializer.Serialize(securityCandidates,
-                ProviderIntegrationContractsJsonContext.Default.IReadOnlyListProviderIntegrationIdentityCandidateDto)))).ToLowerInvariant();
+                ProviderIntegrationContractsJsonContext.Default.IReadOnlyListProviderIntegrationIdentityCandidateDto));
         var hasConflict = securityStatus == ProviderIntegrationIdentityResolutionStatusDto.Conflict;
-        ProviderIntegrationIdentityDecisionDto? resolution = null;
-        if (scopedStore is IProviderIntegrationIdentityDecisionStore decisionStore)
+        var resolution = retainedDecisions
+            .Where(decision => decision.ConnectionId == connection.ConnectionId && decision.SyncRunId == record.SyncRunId &&
+                decision.StagingRecordId == record.StagingRecordId && decision.EvidenceHash == evidenceHash &&
+                securityCandidates.Any(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved &&
+                    candidate.InternalSecurityId == decision.SelectedSecurityId.ToString("D")))
+            .OrderByDescending(decision => decision.ReviewedAt)
+            .ThenByDescending(decision => decision.DecisionId, StringComparer.Ordinal)
+            .FirstOrDefault();
+        if (resolution is not null)
         {
-            resolution = (await decisionStore.ListIdentityDecisionsAsync(record.SyncRunId, ct).ConfigureAwait(false))
-                .Where(decision => decision.ConnectionId == connection.ConnectionId &&
-                    decision.StagingRecordId == record.StagingRecordId && decision.EvidenceHash == evidenceHash &&
-                    securityCandidates.Any(candidate => candidate.Status == ProviderIntegrationIdentityResolutionStatusDto.Resolved &&
-                        candidate.InternalSecurityId == decision.SelectedSecurityId.ToString("D")))
-                .OrderByDescending(decision => decision.ReviewedAt)
-                .ThenByDescending(decision => decision.DecisionId, StringComparer.Ordinal)
-                .FirstOrDefault();
-            if (resolution is not null)
-            {
-                var selected = securityCandidates.First(candidate => candidate.InternalSecurityId == resolution.SelectedSecurityId.ToString("D"));
-                resolvedSecurity = resolution.SelectedSecurityId;
-                securityDisplayName = selected.DisplayName;
-                securityRoute = selected.Route;
-                securityStatus = ProviderIntegrationIdentityResolutionStatusDto.Resolved;
-            }
+            var selected = securityCandidates.First(candidate => candidate.InternalSecurityId == resolution.SelectedSecurityId.ToString("D"));
+            resolvedSecurity = resolution.SelectedSecurityId;
+            securityDisplayName = selected.DisplayName;
+            securityRoute = selected.Route;
+            securityStatus = ProviderIntegrationIdentityResolutionStatusDto.Resolved;
         }
 
         if (hasConflict && resolution is null)

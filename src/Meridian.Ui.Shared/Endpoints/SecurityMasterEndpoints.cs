@@ -1435,6 +1435,8 @@ public static partial class SecurityMasterEndpoints
         MapOtcContractEndpoints(group, jsonOptions);
         MapOtcCollateralEndpoints(app, group, jsonOptions);
         MapCurveAndValuationEndpoints(app, group, jsonOptions);
+        if (app.Services.GetService<Meridian.Contracts.FixedIncome.IBondObservedFixingStore>() is not null)
+            MapObservedBondFixingEndpoints(app, group, jsonOptions);
 
         if (app.Services.GetService<SecurityMasterExceptionCaseworkService>() is not null)
             MapExceptionAgingEndpoints(group, jsonOptions);

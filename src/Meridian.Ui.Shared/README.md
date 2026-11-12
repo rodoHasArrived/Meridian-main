@@ -11,6 +11,12 @@ last_reviewed: 2026-11-11
 
 # src/Meridian.Ui.Shared
 
+Observed bond-fixing retention and selection routes require workstation tenant scope and Security
+Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
+version/index/currency and contractual reset, and retain immutable evidence. They do not amend
+terms or publish forecasts. Analytics accepts explicit observed-fixing receipt UUIDs; missing,
+stale, ambiguous or cutoff-ineligible selections block rather than falling back to a latest value.
+
 Fixed-income HTTP responses for bond reference, analytics, migration, pricing and curves emit CLR
 decimal amounts and rates as invariant decimal strings. This transport-only serializer leaves
 canonical retained receipt bytes and hashes unchanged; identifiers and integer versions retain

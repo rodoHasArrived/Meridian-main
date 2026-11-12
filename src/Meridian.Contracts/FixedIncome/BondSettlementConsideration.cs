@@ -49,6 +49,14 @@ public sealed record BondSettlementConsiderationDto(
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? FunctionalCurrency = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] decimal? SettlementFxRateToFunctional = null)
 {
+    /// <summary>The exact provider-quote selector used by analytics, retained for mode-preserving replay.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SelectionReceiptId { get; init; }
+
+    /// <summary>Pricing account scope; null denotes the retained global hierarchy.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PriceAccountId { get; init; }
+
     /// <summary>True when the book's functional currency differs from the bond's currency.</summary>
     [JsonIgnore]
     public bool IsForeignCurrency => FunctionalCurrency is { } functional && !string.Equals(functional, Currency, StringComparison.Ordinal);
@@ -110,6 +118,16 @@ public static class BondSettlementConsideration
             || receipt.Inputs.Count(input => input.Kind == "SecurityTerms") != 1 || !receipt.Inputs.Any(input => input.Kind == "SecurityTerms"
                 && input.Key == receipt.SecurityId.ToString("D") && input.Version is > 0 && IsSha256(input.ContentSha256)))
             issues.Add("Bond settlement requires hash-bound versioned Security Master calculation inputs.");
+        var priceInputs = receipt.Inputs?.Where(input => input?.Kind == "PriceSelectionReceipt").ToArray() ?? [];
+        if (receipt.SelectionReceiptId is { } priceReceiptId)
+        {
+            if (priceReceiptId == Guid.Empty || priceInputs.Length != 1
+                || priceInputs[0].VersionId != priceReceiptId || priceInputs[0].Key != priceReceiptId.ToString("D")
+                || !IsSha256(priceInputs[0].ContentSha256))
+                issues.Add("Bond settlement retained quote selector must match exactly one hash-bound price-selection input.");
+        }
+        else if (priceInputs.Length > 0 || receipt.PriceAccountId is not null)
+            issues.Add("Bond settlement price-selection evidence and pricing account scope require the retained quote selector for replay.");
         if (receipt.FunctionalCurrency is { } functional)
         {
             if (string.IsNullOrWhiteSpace(functional) || functional != functional.Trim().ToUpperInvariant())

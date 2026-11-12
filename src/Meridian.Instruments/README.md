@@ -11,6 +11,13 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Instruments
 
+Floating bond analytics v3 can consume explicitly pinned observed-fixing receipts for missing
+already-reset periods. Security/version, index, currency, exact reset date and economic/knowledge
+eligibility must agree. Existing declared fixings remain authoritative; duplicate source selections
+block. Receipt IDs and hashes are retained in the input manifest and coupon source. Forward curves
+remain exclusive to future resets; absent receipt selections leave earlier v3 requests unchanged,
+and v1/v2 replay receives no new inputs.
+
 Floating analytics v3 returns each projected coupon's resolved fixing evidence without repricing
 in either workstation. Observed fixings and forecasts retain their distinct source and reset date;
 the effective coupon reflects contractual caps/floors. Fixed/zero v1/v2 remain explicitly selectable

@@ -447,6 +447,7 @@ public static class UiApiRoutes
     public const string SecurityMasterRetainedPriceObservations = "/api/security-master/{securityId:guid}/price-golden-copy/observations";
     public const string SecurityMasterRateObservations = "/api/security-master/rates/observations";
     public const string SecurityMasterRateIngest = "/api/security-master/rates/ingest";
+    public const string SecurityMasterObservedBondFixings = "/api/security-master/{securityId:guid}/observed-bond-fixings";
     public const string SecurityMasterPriceComparison = "/api/security-master/{securityId:guid}/price-comparison";
     public const string SecurityMasterRecordRawPrice = "/api/security-master/{securityId:guid}/raw-price";
 
