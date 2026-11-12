@@ -1,6 +1,5 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
+using Meridian.Contracts.Integrity;
 
 namespace Meridian.Execution.Events;
 
@@ -38,6 +37,6 @@ public sealed record PaperFinancingCharge(
         // Length prefixes avoid separator collisions in externally supplied identifiers.
         var canonical = string.Concat(parts.Select(static part =>
             part.Length.ToString(CultureInfo.InvariantCulture) + ":" + part));
-        return new Guid(SHA256.HashData(Encoding.UTF8.GetBytes(canonical)).AsSpan(0, 16));
+        return new Guid(Sha256Digest.ComputeBytesUtf8(canonical).AsSpan(0, 16));
     }
 }

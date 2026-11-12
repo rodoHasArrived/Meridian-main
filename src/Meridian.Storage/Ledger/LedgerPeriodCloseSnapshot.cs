@@ -1,8 +1,8 @@
 using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Integrity;
 using Meridian.Ledger;
 
 namespace Meridian.Storage.Ledger;
@@ -77,7 +77,7 @@ public sealed record LedgerPeriodCloseSnapshot(
     }
 
     private static string Hash(string json)
-        => Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))).ToLowerInvariant();
+        => Sha256Digest.ComputeUtf8(json);
 
     internal static DateTimeOffset DatabaseTimestamp(DateTimeOffset value)
         => new(value.UtcTicks - value.UtcTicks % 10, TimeSpan.Zero);

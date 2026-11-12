@@ -1,11 +1,11 @@
 {
-  "total_files": 1388,
-  "orphaned_count": 414,
-  "no_heading_count": 234,
+  "total_files": 1387,
+  "orphaned_count": 413,
+  "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 85,
-  "signal_digest": "sha256:0fea2e5f01f431058ca2f69c5019acd0122c9a25b5c9f28749019bd2572e270a",
+  "signal_digest": "sha256:da299d1bcde031e944051d61b4caeb471c475c92dfde93e3d62542b08ae944cc",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -32,7 +32,6 @@
     ".agents/skills/meridian-simulated-user-panel/references/rubric.md",
     ".agents/skills/meridian-simulated-user-panel/references/sample-prompts.md",
     ".agents/skills/meridian-test-writer/SKILL.md",
-    ".ai/ledger-accounting-controls.md",
     "Meridian Design System/BRAND_GUIDELINES.md",
     "Meridian Design System/CONTENT_FUNDAMENTALS.md",
     "Meridian Design System/CONTRIBUTING.md",
@@ -423,7 +422,6 @@
     "tests/setup-script-tests.md"
   ],
   "no_heading_files": [
-    ".ai/ledger-accounting-controls.md",
     "benchmarks/results/20260521_111257/batchserialization/results/Meridian.Benchmarks.BatchSerializationBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/canonicalizing/results/Meridian.Benchmarks.CanonicalizingPublisherBenchmarks-report-github.md",
     "benchmarks/results/20260521_111257/composite/results/Meridian.Benchmarks.CompositeSinkBenchmarks-report-github.md",
@@ -999,13 +997,6 @@
     {
       "path": ".agents/skills/meridian-test-writer/SKILL.md",
       "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".ai/ledger-accounting-controls.md",
-      "has_heading": false,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
