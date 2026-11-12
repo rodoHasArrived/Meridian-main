@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsLedgerPostRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPostRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:561](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L561).
+
+```csharp
+public sealed record OperationsLedgerPostRequestDto(long ExpectedVersion, string Actor, string LedgerBatchId, string PostingKind, bool PeriodOpen, bool HasValidatedJournal = true, bool HasDuplicatePostingCandidate = false, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsLedgerJournalCandidateDto? JournalCandidate = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+```
+
+## OperationsLedgerPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1326](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1326).
+
+```csharp
+public sealed record OperationsLedgerPreviewDto(string PreviewId, string Status, string? LedgerBatchId, DateTimeOffset? GeneratedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
+```
+
 ## OperationsLedgerValidationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerValidationRequestDto</code>. Kind: `record`.
@@ -667,35 +687,4 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:18](../../../.
 
 ```csharp
 public sealed record PaymentInstruction(Guid InstructionId, Guid AccountId, string Currency, decimal Amount, DateOnly TradeDate, DateOnly ValueDate, string Counterparty, string Reference);
-```
-
-## PilotAcceptanceEvidenceCategoryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L51).
-
-```csharp
-public enum PilotAcceptanceEvidenceCategoryDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReconciliationCasework = 0</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L53) |  |
-| <code>AccountingCloseChecklist = 1</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L54) |  |
-| <code>ReportingReviewApproval = 2</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L55) |  |
-| <code>GovernedReportPackPublication = 3</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L56) |  |
-| <code>RestatementReadiness = 4</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L57) |  |
-| <code>EvidenceVaultManifestExportSupport = 5</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L58) |  |
-
-## PilotAcceptanceEvidenceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L68).
-
-```csharp
-public sealed record PilotAcceptanceEvidenceDto(PilotAcceptanceEvidenceCategoryDto Category, PilotAcceptanceEvidenceRoleDto Role, string EvidenceId, string Label, string? Route = null);
 ```

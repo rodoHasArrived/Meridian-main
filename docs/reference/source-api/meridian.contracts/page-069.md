@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationProviderHealthCount
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationProviderHealthCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L19).
+
+Healthy providers out of every provider the Data workspace lists.
+
+```csharp
+public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
+```
+
+## WorkstationReportAccessAuditSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:674](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L674).
+
+Aggregate access-policy evidence for the reporting payload visible to the current caller.
+
+```csharp
+public sealed record WorkstationReportAccessAuditSummaryDto(string EvaluationScope, string Summary, IReadOnlyList<string> PrincipalScopes, int VisibleTemplateCount, int HiddenTemplateCount, int VisibleReportPackCount, int HiddenReportPackCount, int VisibleScheduleCount, int HiddenScheduleCount, int VisibleDeliveryAttemptCount, int HiddenDeliveryAttemptCount, int VisibleStructuredExportCount, int HiddenStructuredExportCount, IReadOnlyList<string> DenialReasons);
+```
+
 ## WorkstationReportingDailyWorkItemDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportingDailyWorkItemDto</code>. Kind: `record`.

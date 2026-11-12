@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowProjectionPoint
+
+Qualified name: <code>Meridian.Contracts.Workstation.CashFlowProjectionPoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L35).
+
+```csharp
+public sealed record CashFlowProjectionPoint(Guid AccountId, string Currency, DateOnly Date, decimal ExpectedInflow, decimal ExpectedOutflow, decimal NetFlow, decimal RunningBalance, bool LiquidityWarning, string WarningDetail);
+```
+
+## CashForecastResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.CashForecastResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L36).
+
+```csharp
+public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlowProjectionPoint> Timeline, IReadOnlyList<string> Warnings);
+```
+
 ## CashLadderBucketDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
@@ -646,23 +666,3 @@ Declared public members:
 | <code>public EvidenceDocumentSourceRecordDto? SourceRecord { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:216](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L216) |  |
 | <code>public IReadOnlyList&lt;EvidenceArtifactExtractionFieldDto&gt; ExtractedFields { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:217](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L217) |  |
 | <code>public EvidenceDocumentAuthorityDto Authority { get; init; } = new ();</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:218](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L218) |  |
-
-## EvidenceDocumentExtractionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentExtractionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L246).
-
-```csharp
-public sealed record EvidenceDocumentExtractionRequestDto(string FileName, string? ContentType, string IntakeChannel, string? SourceSystem, string? SourceReference, IReadOnlyList<EvidenceArtifactExtractionFieldDto> ManualFields);
-```
-
-## EvidenceDocumentExtractionResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentExtractionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:254](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L254).
-
-```csharp
-public sealed record EvidenceDocumentExtractionResultDto(EvidenceExtractionStatusDto Status, IReadOnlyList<EvidenceArtifactExtractionFieldDto> Fields, string ExtractorId, string? Summary);
-```

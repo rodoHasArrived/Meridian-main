@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityRateIngestionRules
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateIngestionRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L48).
+
+Explicit, reviewable conversion rules; a constant-maturity par yield is never a discount factor.
+
+```csharp
+public static class SecurityRateIngestionRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PublishSecurityCurveVersionRequest BuildPublication(IngestSecurityRatesRequest request, SecurityCurveDefinitionDto definition, string actor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L50) |  |
+
 ## SecurityRateObservationDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateObservationDto</code>. Kind: `record`.
@@ -706,7 +724,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValuationAccountingTreatment</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1395](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1395).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1396](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1396).
 
 The declared mark-based accounting treatment for an asset class.
 
@@ -718,8 +736,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1397](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1397) |  |
-| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1398](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1398) |  |
+| <code>Unspecified</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1398](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1398) |  |
+| <code>FairValueThroughProfitOrLoss</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs:1399](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs#L1399) |  |
 
 ## SecurityValuationBlockerDto
 
@@ -882,16 +900,4 @@ Unit count scaled by a ratio (forward or reverse split).
 
 ```csharp
 public sealed record SplitCorporateActionTerms(string EventType, decimal? Ratio) : CorporateActionTerms(EventType);
-```
-
-## StructuredCashFlowCalendarEvidence
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:241](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L241).
-
-One business-day calendar a declared schedule (ADR-025) was generated or measured with.
-
-```csharp
-public sealed record StructuredCashFlowCalendarEvidence(string CalendarId, string ContentHash, string Purpose);
 ```

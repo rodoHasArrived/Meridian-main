@@ -2,11 +2,39 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-566 of 566. References crossing pages remain available in the dependency manifest.
+Objects 561-568 of 568. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_UpsertCorporateActionProcessingOptionRequestDto["UpsertCorporateActionProcessingOptionRequestDto"] {
+        +string Actor
+        +IReadOnlyList~string~? Blockers
+        +Guid CaseId
+        +string CompanyId
+        +string? CorrelationId
+        +string Description
+        +long ExpectedVersion
+        +string IdempotencyKey
+        +string Label
+        +string OptionCode
+        +Guid? OptionId
+        +JsonElement? Parameters
+    }
+    class Meridian_Contracts_SecurityMaster_UpsertDataVendorEntitlementRequest["UpsertDataVendorEntitlementRequest"] {
+        +string? AccountId
+        +string Actor
+        +decimal? AumThresholdUsd
+        +string? ClientId
+        +string? ContactEmail
+        +string? ContractReference
+        +DataVendorDataType DataType
+        +int? DefaultMaxDaysStale
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid? EntitlementId
+        +string? ExpectedRefreshCadence
+    }
     class Meridian_Contracts_SecurityMaster_UpsertOtcCollateralAgreementRequest["UpsertOtcCollateralAgreementRequest"] {
         +Guid? CollateralAgreementId
         +string Currency

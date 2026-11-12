@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 566. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 568. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod["SchedulePeriod"] {
+        +DateOnly AccrualEnd
+        +DateOnly AccrualStart
+        +bool IsFinal
+        +SchedulePeriodKind Kind
+        +DateOnly PaymentDate
+        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
+        +int Sequence
+        +DateOnly UnadjustedEnd
+        +DateOnly UnadjustedStart
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodId["SchedulePeriodId"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind["SchedulePeriodKind"] {
@@ -458,12 +469,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveKind["SecurityCurveKind"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityCurvePointDto["SecurityCurvePointDto"] {
-        +DateOnly Date
-        +SecurityRatePointEvidenceDto? RateEvidence
-        +string? Tenor
-        +decimal Value
-    }
+    Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunAcceptanceChecklistItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:296](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L296).
+
+A canonical promotion checklist requirement projected from durable promotion history. A ready item always has both the canonical checklist id and its keyed evidence reference in the same durable decision record.
+
+```csharp
+public sealed record StrategyRunAcceptanceChecklistItemDto(string ChecklistId, string Label, StrategyRunAcceptanceChecklistStatusDto Status, string? EvidenceReference = null, string? DecidedBy = null, DateTimeOffset? DecidedAt = null, string? AuditReference = null, string? Blocker = null);
+```
+
+## StrategyRunAcceptanceChecklistStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:284](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L284).
+
+Read-only decision posture for one canonical strategy-promotion checklist requirement.
+
+```csharp
+public enum StrategyRunAcceptanceChecklistStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReviewRequired</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:286](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L286) |  |
+| <code>Ready</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:287](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L287) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:288](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L288) |  |
+
 ## StrategyRunArtifactCompleteness
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness</code>. Kind: `record`.
@@ -662,26 +694,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:399](
 
 ```csharp
 public sealed record StructuredReportingExportValidationCheckDto(string CheckId, string Status, string Detail);
-```
-
-## SubmitForApproval
-
-Qualified name: <code>Meridian.Contracts.Workstation.SubmitForApproval</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L28).
-
-```csharp
-public sealed record SubmitForApproval(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
-```
-
-## SubmitSecurityMasterRevisionRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.SubmitSecurityMasterRevisionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L73).
-
-Transitions a draft revision into the governed approval gate. When WorkflowId is supplied, submission is routed through the operations-continuity approval workflow using the workflow&#x27;s ExpectedWorkflowVersion, Reviewer, and ReportPackId.
-
-```csharp
-public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string? Note, string? FundProfileId = null, Guid? WorkflowId = null, long ExpectedWorkflowVersion = 0, string? Reviewer = null, string? ReportPackId = null);
 ```

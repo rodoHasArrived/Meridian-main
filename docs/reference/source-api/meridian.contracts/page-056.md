@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OperationsApprovalCollaborationReceipt
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCollaborationReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L8).
+
+```csharp
+public sealed record OperationsApprovalCollaborationReceipt(string Actor, string CommandId, string Fingerprint);
+```
+
+## OperationsApprovalCommentDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCommentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L4).
+
+Discussion is retained workflow evidence, never an approval decision.
+
+```csharp
+public sealed record OperationsApprovalCommentDto(string CommentId, string ApprovalId, string Author, string Body, IReadOnlyList<string> Mentions, DateTimeOffset CreatedAtUtc, string CommandId);
+```
+
 ## OperationsApprovalCommentRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCommentRequestDto</code>. Kind: `record`.
@@ -611,23 +633,3 @@ Enum declarations:
 | <code>Validated = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L76) |  |
 | <code>Posted = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:77](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L77) |  |
 | <code>Complete = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L78) |  |
-
-## OperationsLedgerPostRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPostRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:561](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L561).
-
-```csharp
-public sealed record OperationsLedgerPostRequestDto(long ExpectedVersion, string Actor, string LedgerBatchId, string PostingKind, bool PeriodOpen, bool HasValidatedJournal = true, bool HasDuplicatePostingCandidate = false, string? Rationale = null, string? CorrelationId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, OperationsLedgerJournalCandidateDto? JournalCandidate = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## OperationsLedgerPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsLedgerPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1326](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1326).
-
-```csharp
-public sealed record OperationsLedgerPreviewDto(string PreviewId, string Status, string? LedgerBatchId, DateTimeOffset? GeneratedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks);
-```

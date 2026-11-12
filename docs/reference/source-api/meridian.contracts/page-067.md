@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SubmitForApproval
+
+Qualified name: <code>Meridian.Contracts.Workstation.SubmitForApproval</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:28](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L28).
+
+```csharp
+public sealed record SubmitForApproval(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
+## SubmitSecurityMasterRevisionRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.SubmitSecurityMasterRevisionRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L73).
+
+Transitions a draft revision into the governed approval gate. When WorkflowId is supplied, submission is routed through the operations-continuity approval workflow using the workflow&#x27;s ExpectedWorkflowVersion, Reviewer, and ReportPackId.
+
+```csharp
+public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid RevisionId, string Actor, string? Note, string? FundProfileId = null, Guid? WorkflowId = null, long ExpectedWorkflowVersion = 0, string? Reviewer = null, string? ReportPackId = null);
+```
+
 ## SymbolAttributionEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
@@ -574,26 +596,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:839](../
 
 ```csharp
 public sealed record WorkstationAccountingOwnerWorkloadPayload(string Owner, int OpenCount);
-```
-
-## WorkstationAccountingPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:917](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L917).
-
-Typed payload returned by GET /api/workstation/accounting. The independent reporting route returns the nested WorkstationReportingPayload directly.
-
-```csharp
-public sealed record WorkstationAccountingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationAccountingRunRecord> ReconciliationQueue, IReadOnlyList<ReconciliationBreakQueueItem> BreakQueue, WorkstationAccountingWorkspaceSummary Workspace, WorkstationAccountingCashFlowSummaryPayload CashFlow, WorkstationReportingPayload Reporting, WorkstationAccountingControlCenterPayload ControlCenter, WorkstationKernelObservabilityPayload KernelObservability, ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
-```
-
-## WorkstationAccountingRunCashFlowPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunCashFlowPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:792](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L792).
-
-```csharp
-public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance, decimal LedgerCashBalance, decimal CashVariance, decimal Financing, decimal RealizedPnl, decimal UnrealizedPnl, int JournalEntryCount, string Tone, string Summary);
 ```

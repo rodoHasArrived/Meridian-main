@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunBreakDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L347).
+
+Open or retained break row scoped to a statement reconciliation run.
+
+```csharp
+public sealed record StatementRunBreakDto(string BreakId, string RunId, string ImportId, string SourceReference, StatementBreakType BreakType, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status);
+```
+
+## StatementRunCreateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunCreateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L299).
+
+Request to create a statement reconciliation run from an already accessible source file. Endpoint implementations keep import and reconciliation behavior in shared services.
+
+```csharp
+public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null);
+```
+
 ## StatementRunDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunDto</code>. Kind: `record`.
@@ -614,35 +638,3 @@ Validation state for a design document.
 ```csharp
 public sealed record StrategyDesignValidationResult(bool IsValid, string Summary, IReadOnlyList<StrategyDesignValidationMessage> Messages);
 ```
-
-## StrategyRunAcceptanceChecklistItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:296](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L296).
-
-A canonical promotion checklist requirement projected from durable promotion history. A ready item always has both the canonical checklist id and its keyed evidence reference in the same durable decision record.
-
-```csharp
-public sealed record StrategyRunAcceptanceChecklistItemDto(string ChecklistId, string Label, StrategyRunAcceptanceChecklistStatusDto Status, string? EvidenceReference = null, string? DecidedBy = null, DateTimeOffset? DecidedAt = null, string? AuditReference = null, string? Blocker = null);
-```
-
-## StrategyRunAcceptanceChecklistStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:284](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L284).
-
-Read-only decision posture for one canonical strategy-promotion checklist requirement.
-
-```csharp
-public enum StrategyRunAcceptanceChecklistStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReviewRequired</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:286](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L286) |  |
-| <code>Ready</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:287](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L287) |  |
-| <code>Rejected</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:288](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L288) |  |

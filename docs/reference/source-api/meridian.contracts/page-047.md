@@ -6,11 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCashFlowCalendarEvidence
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowCalendarEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:308](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L308).
+
+One business-day calendar a declared schedule (ADR-025) was generated or measured with.
+
+```csharp
+public sealed record StructuredCashFlowCalendarEvidence(string CalendarId, string ContentHash, string Purpose);
+```
+
 ## StructuredCashFlowCoverageGap
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowCoverageGap</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:254](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L254).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:321](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L321).
 
 The dates a calendar was asked about outside its declared coverage while a declared schedule was generated or measured: one row per calendar, from the first to the last such date. A gap is informational (ADR-025 decision 2): a holiday on those dates may be missing from the calendar data.
 
@@ -18,11 +30,29 @@ The dates a calendar was asked about outside its declared coverage while a decla
 public sealed record StructuredCashFlowCoverageGap(string CalendarId, DateOnly FirstDate, DateOnly LastDate);
 ```
 
+## StructuredCashFlowInterestSegment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowInterestSegment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:96](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L96).
+
+Retained interest economics for one constant-principal portion of a coupon. Interest is measured over (Start, End&#93;; the original coupon anchors remain explicit so subwindows use differences of cumulative day-count fractions rather than assume that a convention is additive across arbitrary dates. ReferencePrincipal is the balance before any principal payment on the segment&#x27;s end date, and Factor is the pool factor carried by that balance. Interest remains unrounded until allocated to a holder; the rounded sum of segments reconciles to the schedule row&#x27;s interest.
+
+```csharp
+public sealed record StructuredCashFlowInterestSegment(DateOnly Start, DateOnly End, decimal ReferencePrincipal, decimal UnroundedInterestAmount, decimal Factor, DateOnly PeriodStart, DateOnly PeriodEnd)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? FactorAfter { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L111) | Exact pool factor after principal movements on End, for reconciling the closing lot state separately from the face that earned interest through that date. Required on current segment evidence; omitted only when no such evidence was retained. |
+
 ## StructuredCashFlowLeg
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowLeg</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L157).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L224).
 
 One leg of a multi-leg or floating-rate cash-flow structure (swap leg, floating-rate note, funding leg). Per-leg terms fall back to the security-level StructuredCashFlowTerms values when absent: Notional to PrincipalFace, PaymentFrequency and DayCountConvention to the security-level equivalents. Floating legs reset each future period at the SecurityForwardCurve for IndexName plus SpreadBps when a curve is supplied; otherwise they project flat at CurrentIndexRate (the last fixing) plus spread.
 
@@ -34,20 +64,20 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore] public decimal? CapRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) | The contractual cap in RateUnit; retained separately from forecasts. |
-| <code>[JsonIgnore] public decimal? FloorRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L178) | The contractual floor in RateUnit. |
-| <code>[JsonIgnore] public SecurityCouponRateUnit RateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L181) |  |
-| <code>[JsonIgnore] public bool HasDeclaredResetSchedule { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:183](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L183) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? CurrentIndexResetDate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:185](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L185) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CurrentIndexRateSource { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L187) |  |
-| <code>public decimal NotionalOn(DateOnly date, decimal baseNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:193](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L193) | The notional in effect on date: the latest schedule step on or before it, otherwise baseNotional. |
-| <code>public decimal? FixingOn(DateOnly date) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:205](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L205) | The observed fixing of the latest reset on or before date; null when there is no such reset or its fixing is not yet recorded (an earlier fixing is never carried forward). |
+| <code>[JsonIgnore] public decimal? CapRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:241](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L241) | The contractual cap in RateUnit; retained separately from forecasts. |
+| <code>[JsonIgnore] public decimal? FloorRate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:245](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L245) | The contractual floor in RateUnit. |
+| <code>[JsonIgnore] public SecurityCouponRateUnit RateUnit { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L248) |  |
+| <code>[JsonIgnore] public bool HasDeclaredResetSchedule { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:250](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L250) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? CurrentIndexResetDate { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:252](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L252) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CurrentIndexRateSource { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:254](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L254) |  |
+| <code>public decimal NotionalOn(DateOnly date, decimal baseNotional) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:260](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L260) | The notional in effect on date: the latest schedule step on or before it, otherwise baseNotional. |
+| <code>public decimal? FixingOn(DateOnly date) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:272](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L272) | The observed fixing of the latest reset on or before date; null when there is no such reset or its fixing is not yet recorded (an earlier fixing is never carried forward). |
 
 ## StructuredCashFlowLegSchedule
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowLegSchedule</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:223](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L223).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:290](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L290).
 
 A single leg&#x27;s projected schedule, always unsigned (direction is carried alongside).
 
@@ -59,7 +89,7 @@ public sealed record StructuredCashFlowLegSchedule(string LegId, CashFlowLegRate
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowNotionalStep</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:213](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L213).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:280](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L280).
 
 One dated step of an amortizing or accreting leg notional.
 
@@ -71,7 +101,7 @@ public sealed record StructuredCashFlowNotionalStep(DateOnly EffectiveDate, deci
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:289](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L289).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:356](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L356).
 
 Full projected cash flow schedule for a security under one rate scenario.
 
@@ -83,15 +113,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:305](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L305) | Typed capability refusal; null on successful and older projections. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:309](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L309) | Calendar and kernel evidence for a declared projection; absent on legacy projections. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.FixedIncome.BondCalculationInput&gt;? InputManifest { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:313](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L313) | Exact dependencies selected by the context-aware calculation path. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L372) | Typed capability refusal; null on successful and older projections. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:376](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L376) | Calendar and kernel evidence for a declared projection; absent on legacy projections. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.FixedIncome.BondCalculationInput&gt;? InputManifest { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:380](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L380) | Exact dependencies selected by the context-aware calculation path. |
 
 ## StructuredCashFlowResetFixing
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowResetFixing</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L216).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:283](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L283).
 
 A floating-leg reset date with its observed fixing, when known.
 
@@ -128,7 +158,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:90](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L90).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L117).
 
 A single period in a structured cash flow schedule.
 
@@ -140,22 +170,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:97](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L97) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L99) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:101](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L101) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L103) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:105](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L105) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int RowVersion { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:112](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L112) | Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured interest intervals. Calculated projections explicitly stamp their output version. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredFrom { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L116) | The measured interest interval on calculated rows without declared accrual dates. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredTo { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L118) |  |
-| <code>[JsonIgnore] public DateOnly? InterestAccrualStart =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:122](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L122) | The start of the interval this row&#x27;s interest accrues over, when it is known. |
-| <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L126) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:124](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L124) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? UnadjustedEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L126) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualStart { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:128](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L128) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? AccrualEnd { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:130](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L130) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:132](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L132) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int RowVersion { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:140](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L140) | Stored row contract. Zero denotes the frozen legacy shape; version 1 retains measured interest intervals and version 2 retains interest-basis segments. Calculated projections explicitly stamp their output version. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredFrom { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L144) | The measured interest interval on calculated rows without declared accrual dates. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? InterestMeasuredTo { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L146) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;StructuredCashFlowInterestSegment&gt;? InterestSegments { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:153](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L153) | Version-2 row evidence for allocating interest against dated holdings without applying a pool factor twice. Null on historical rows and on calculations without segment evidence. |
+| <code>[JsonIgnore] public DateOnly? InterestAccrualStart =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L157) | The start of the interval this row&#x27;s interest accrues over, when it is known. |
+| <code>[JsonIgnore] public DateOnly? InterestAccrualEnd =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L161) | The end of the interval this row&#x27;s interest accrues over, when it is known. |
+| <code>public bool Equals(StructuredCashFlowScheduleEntry? other) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L163) |  |
+| <code>public override int GetHashCode();</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L174) |  |
 
 ## StructuredCashFlowScheduleEvidence
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowScheduleEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:268](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L268).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:335](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L335).
 
 How a projection&#x27;s schedule was generated from declared schedule conventions (ADR-025): the kernel and mapping versions, the calendars used and any coverage gaps, so the schedule can be reproduced and its calendar data identified.
 
@@ -407,7 +440,7 @@ public sealed record TransitionOtcMarginCallRequest(Guid CallId, OtcMarginCallAc
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertCashFlowSourceRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:319](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L319).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:386](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L386).
 
 Request to assign or update the cash flow source for a security.
 
@@ -833,27 +866,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSymbolAsync(string symbol, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:13](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L13) | Validates Security Master identity and policy posture for a symbol-scoped workflow. |
 | <code>Task&lt;SecurityValidationGateResultDto&gt; ValidateSecurityAsync(Guid securityId, SecurityValidationWorkflowDto workflow, string? workflowReference = null, string? actor = null, bool persistSnapshot = false, string? symbol = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Services/ISecurityValidationGateService.cs:24](../../../../src/Meridian.Contracts/Services/ISecurityValidationGateService.cs#L24) | Validates Security Master identity and policy posture for a known security. |
-
-## ITradingCalendarProvider
-
-Qualified name: <code>Meridian.Contracts.Services.ITradingCalendarProvider</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:256](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L256).
-
-Compatibility alias for the former local scheduling calendar contract. New local scheduling code must use IOperationalTradingCalendar; provider adapters must use Meridian.ProviderSdk.ITradingCalendarProvider so their calendar output retains provider provenance.
-
-```csharp
-public interface ITradingCalendarProvider : IOperationalTradingCalendar
-```
-
-## MaintenanceWindow
-
-Qualified name: <code>Meridian.Contracts.Services.MaintenanceWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:118](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L118).
-
-Maintenance window definition.
-
-```csharp
-public sealed record MaintenanceWindow(string Name, DateTimeOffset StartTime, DateTimeOffset EndTime, IReadOnlyList<OperationType>? AllowedOperations = null, int Priority = 0);
-```

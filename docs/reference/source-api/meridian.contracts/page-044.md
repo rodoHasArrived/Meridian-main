@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityCashFlowCalculationReceipt
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowCalculationReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityCashFlowCalculationReceipt.cs#L10).
+
+A portable calculation receipt. Callers retain this record alongside their governed evidence; its digest detects accidental changes and is not an authentication or authorization signature. Replay never reloads current security terms, source assignments or market curves.
+
+```csharp
+public sealed record SecurityCashFlowCalculationReceipt(string ModelVersion, SecurityDetailDto Security, SecurityCashFlowSourceDto Source, StructuredCashFlowScenario Scenario, BondCalculationContext Context, IReadOnlyList<SecurityForwardCurve> ForwardCurves, StructuredCashFlowProjectionDto Projection, string ContentSha256);
+```
+
 ## SecurityCashFlowSourceDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityCashFlowSourceDto</code>. Kind: `record`.
@@ -822,15 +834,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static SecurityIncomeCashFlowScheduleDto Build(Guid securityId, string assetClass, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf, DateOnly? paymentFrom = null, DateOnly? paymentTo = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:79](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L79) |  |
-
-## SecurityIncomeCashFlowScheduleDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowScheduleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L64).
-
-Declared income schedule for a security: the cash flows for the asset classes whose SecurityCashFlowBehavior is recorded rather than calculated (SecurityCashFlowBehavior.Dividends, SecurityCashFlowBehavior.FundDistributions). Distributions that cannot be scheduled (no pay date, no amount, unknown component) are listed in Gaps instead of being silently dropped.
-
-```csharp
-public sealed record SecurityIncomeCashFlowScheduleDto(Guid SecurityId, string AssetClass, SecurityCashFlowBehavior CashFlowBehavior, DateTimeOffset AsOf, IReadOnlyList<SecurityIncomeCashFlow> Flows, IReadOnlyList<SecurityIncomeCashFlowGap> Gaps);
-```

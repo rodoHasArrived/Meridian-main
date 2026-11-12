@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IClosePublicationReadinessGuard
+
+Qualified name: <code>Meridian.Contracts.Workstation.IClosePublicationReadinessGuard</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs:4](../../../../src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs#L4).
+
+Server-owned shared close evidence check at each publication or ledger-lock boundary.
+
+```csharp
+public interface IClosePublicationReadinessGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs:6](../../../../src/Meridian.Contracts/Workstation/IClosePublicationReadinessGuard.cs#L6) |  |
+
+## ICloseReadinessSubjectSource
+
+Qualified name: <code>Meridian.Contracts.Workstation.ICloseReadinessSubjectSource</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L22).
+
+Resolves the subject information needed to evaluate readiness for a scoped accounting close.
+
+```csharp
+public interface ICloseReadinessSubjectSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L24) |  |
+
 ## IDailyValuationScheduleStatusSource
 
 Qualified name: <code>Meridian.Contracts.Workstation.IDailyValuationScheduleStatusSource</code>. Kind: `interface`.
@@ -630,26 +666,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:634](
 
 ```csharp
 public sealed record LedgerAmountSecurityMasterLinkDto(string Symbol, string? Route, IReadOnlyList<string> RelatedEvidenceIds, int EvidenceCount, DateTimeOffset? CapturedAt = null, Guid? SecurityId = null, string? DisplayName = null, string? SourceSystem = null, string? EvidenceId = null);
-```
-
-## LedgerAmountStrategyRunLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:699](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L699).
-
-```csharp
-public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, DateTimeOffset? CapturedAt = null, bool IsLineScoped = false);
-```
-
-## LedgerImpactPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerImpactPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:291](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L291).
-
-Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.
-
-```csharp
-public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebitEffect, decimal NetCreditEffect, decimal NetBalanceDelta, bool HasValidationWarnings, IReadOnlyList<string> ValidationFlags);
 ```

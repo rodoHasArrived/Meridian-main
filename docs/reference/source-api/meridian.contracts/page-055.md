@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountStrategyRunLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountStrategyRunLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:699](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L699).
+
+```csharp
+public sealed record LedgerAmountStrategyRunLinkDto(string RunId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, DateTimeOffset? CapturedAt = null, bool IsLineScoped = false);
+```
+
+## LedgerImpactPreviewDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerImpactPreviewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:291](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L291).
+
+Preview of accounting impact if current breaks are submitted/closed with draft ledger entries.
+
+```csharp
+public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebitEffect, decimal NetCreditEffect, decimal NetBalanceDelta, bool HasValidationWarnings, IReadOnlyList<string> ValidationFlags);
+```
+
 ## LedgerJournalLine
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
@@ -571,26 +593,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.
 
 ```csharp
 public sealed record OperationsApprovalCollaborationDto(Guid WorkflowId, long Version, OperationsApprovalStateDto ApprovalState, string? CurrentApprovalId, string? Submitter, string? Reviewer, IReadOnlyList<OperationsApprovalCommentDto> Comments, IReadOnlyList<OperationsApprovalDto> ApprovalHistory, bool CanComment, bool CanReassign, string? DisabledReason);
-```
-
-## OperationsApprovalCollaborationReceipt
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCollaborationReceipt</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L8).
-
-```csharp
-public sealed record OperationsApprovalCollaborationReceipt(string Actor, string CommandId, string Fingerprint);
-```
-
-## OperationsApprovalCommentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsApprovalCommentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/OperationsApprovalCollaborationDtos.cs#L4).
-
-Discussion is retained workflow evidence, never an approval decision.
-
-```csharp
-public sealed record OperationsApprovalCommentDto(string CommentId, string ApprovalId, string Author, string Body, IReadOnlyList<string> Mentions, DateTimeOffset CreatedAtUtc, string CommandId);
 ```

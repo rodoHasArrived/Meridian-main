@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerReconciliationSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:362](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L362).
+
+```csharp
+public sealed record ProviderLedgerReconciliationSummaryDto(Guid ReconciliationRunId, Guid AccountId, DateTimeOffset CreatedAt, ProviderLedgerReconciliationStatusDto Status, int TotalChecks, int MatchedChecks, int BreakCount, int SecurityIssueCount, decimal AmountTolerance, int ProviderStaleAfterMinutes, string? ProviderId, string? ExternalAccountId, DateTimeOffset? ProviderSyncedAt, DateOnly? InternalAsOfDate, string? DetailPath = null, int OpenBreakCount = 0, int SignedOffBreakCount = 0, int OldestBreakAgeMinutes = 0);
+```
+
+## ProviderPromotionChecklistDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProviderPromotionChecklistDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L336).
+
+```csharp
+public sealed record ProviderPromotionChecklistDto(bool ContractCompatibilityValidated, bool FocusedAdapterTestsValidated, bool ReplayEvidenceGenerated, bool DegradationCalibrationOutputValidated, bool ReadyForPaperEnablement, bool ReadyForLiveEnablement, IReadOnlyList<string> Blockers, string? EvidenceBundlePath, DateTimeOffset EvaluatedAt);
+```
+
 ## ProviderSecurityMasterPassportDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderSecurityMasterPassportDto</code>. Kind: `record`.
@@ -762,28 +782,4 @@ Canonical envelope for inbound/outbound reconciliation payloads.
 
 ```csharp
 public sealed record ReconciliationPayloadEnvelope<TPayload>(string PayloadId, ReconciliationSchemaVersion Schema, ReconciliationCorrelationContext Correlation, DateTimeOffset CreatedAt, string Producer, string Direction, string? IdempotencyKey, TPayload Payload);
-```
-
-## ReconciliationProcessingTelemetry
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1094).
-
-Processing telemetry summary for SLA and throughput observability.
-
-```csharp
-public sealed record ReconciliationProcessingTelemetry(double MatchRate, double BreakRate, int SlaMissCount, double P50LatencyMs, double P95LatencyMs, double P99LatencyMs);
-```
-
-## ReconciliationRolloutFlags
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRolloutFlags</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1105](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1105).
-
-Scoped rollout flags for phased reconciliation releases.
-
-```csharp
-public sealed record ReconciliationRolloutFlags(bool Enabled, IReadOnlyList<string> ClientIds, IReadOnlyList<string> TeamIds, IReadOnlyList<string> CounterpartyIds, bool AllowReplay, bool AllowBackfill);
 ```

@@ -2,11 +2,17 @@
 
 # `security-master-contracts` data objects - page 6 of 8
 
-Objects 401-480 of 566. References crossing pages remain available in the dependency manifest.
+Objects 401-480 of 568. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityCurvePointDto["SecurityCurvePointDto"] {
+        +DateOnly Date
+        +SecurityRatePointEvidenceDto? RateEvidence
+        +string? Tenor
+        +decimal Value
+    }
     class Meridian_Contracts_SecurityMaster_SecurityCurveRules["SecurityCurveRules"] {
     }
     class Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto["SecurityCurveVersionDto"] {
@@ -410,17 +416,7 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityRateConstructionMethod["SecurityRateConstructionMethod"] {
     }
-    class Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration["SecurityRateFieldDeclaration"] {
-        +bool AllowsNegative
-        +string AssetClass
-        +string ConsumedBy
-        +RateUnit? DefaultUnit
-        +string FieldKey
-        +bool HonorsRecordUnit
-        +decimal? MaxFraction
-        +string Meaning
-        +decimal? MinFraction
-    }
+    Meridian_Contracts_SecurityMaster_SecurityCurveVersionDto --> Meridian_Contracts_SecurityMaster_SecurityCurvePointDto
     Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsRead --> Meridian_Contracts_SecurityMaster_SecurityDeclaredConventionsStatus
     Meridian_Contracts_SecurityMaster_SecurityDetailDto --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto
     Meridian_Contracts_SecurityMaster_SecurityEconomicDefinitionRecord --> Meridian_Contracts_SecurityMaster_SecurityIdentifierDto

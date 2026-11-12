@@ -2,11 +2,13 @@
 
 # `security-master-contracts` data objects - page 4 of 8
 
-Objects 241-320 of 566. References crossing pages remain available in the dependency manifest.
+Objects 241-320 of 568. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_OtcCollateralRules["OtcCollateralRules"] {
+    }
     class Meridian_Contracts_SecurityMaster_OtcCompressionData["OtcCompressionData"] {
         +string CompressionReference
         +decimal RemainingNotional
@@ -471,17 +473,6 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerator["ScheduleGenerator"] {
     }
-    class Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod["SchedulePeriod"] {
-        +DateOnly AccrualEnd
-        +DateOnly AccrualStart
-        +bool IsFinal
-        +SchedulePeriodKind Kind
-        +DateOnly PaymentDate
-        +IReadOnlyList~DayCountReferencePeriod~ ReferencePeriods
-        +int Sequence
-        +DateOnly UnadjustedEnd
-        +DateOnly UnadjustedStart
-    }
     Meridian_Contracts_SecurityMaster_OtcCompressionData --> Meridian_Contracts_SecurityMaster_OtcContractLifecycleData
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractDirection
     Meridian_Contracts_SecurityMaster_OtcContractDto --> Meridian_Contracts_SecurityMaster_OtcContractStatus
@@ -525,5 +516,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure
-    Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod
 ```

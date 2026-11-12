@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationProcessingTelemetry
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1094).
+
+Processing telemetry summary for SLA and throughput observability.
+
+```csharp
+public sealed record ReconciliationProcessingTelemetry(double MatchRate, double BreakRate, int SlaMissCount, double P50LatencyMs, double P95LatencyMs, double P99LatencyMs);
+```
+
+## ReconciliationRolloutFlags
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRolloutFlags</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1105](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1105).
+
+Scoped rollout flags for phased reconciliation releases.
+
+```csharp
+public sealed record ReconciliationRolloutFlags(bool Enabled, IReadOnlyList<string> ClientIds, IReadOnlyList<string> TeamIds, IReadOnlyList<string> CounterpartyIds, bool AllowReplay, bool AllowBackfill);
+```
+
 ## ReconciliationRunDetail
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunDetail</code>. Kind: `record`.
@@ -626,32 +650,4 @@ Period-close cadence for a reporting schedule: one run per monthly, quarterly, o
 
 ```csharp
 public sealed record ReportingSchedulePeriodCadenceDto(ReportingSchedulePeriodFrequencyDto Frequency, int DueDaysAfterPeriodEnd = 0);
-```
-
-## ReportingSchedulePeriodFrequencyDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingSchedulePeriodFrequencyDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1210](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1210).
-
-```csharp
-public enum ReportingSchedulePeriodFrequencyDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Monthly = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1212](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1212) |  |
-| <code>Quarterly = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1213](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1213) |  |
-| <code>Annually = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1214](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1214) |  |
-
-## ReportingScheduleRecordDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingScheduleRecordDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1166](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1166).
-
-```csharp
-public sealed record ReportingScheduleRecordDto(string ScheduleId, string TemplateId, string CronExpression, DateOnly NextAsOfDate, DateTimeOffset DueAtUtc, int MaxRetries, string RequestedBy, ReportingScheduleStateDto State, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc, DateTimeOffset? LastRunAtUtc = null, string? LastRunId = null, int RunCount = 0, string? Description = null, IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? DatasetSourceId = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingThemeOverride = null, VersionedReportTemplateIdDto? Template = null, ReportingRunParametersDto? RunParameters = null, string? TenantId = null, string? CompanyId = null, ReportAccessPolicyDto? AccessPolicySnapshot = null, ReportingRunReadinessDto? LastReadiness = null, IReadOnlyList<ReportingScheduledReleaseHandoffDto>? ReleaseDeliveryHandoffs = null, string? AccessPolicySnapshotHash = null, string? DeliveryTargetsSnapshotHash = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? TimeZoneId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] ReportingSchedulePeriodCadenceDto? PeriodCadence = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? UnresolvedPeriodCloseAfter = null);
 ```

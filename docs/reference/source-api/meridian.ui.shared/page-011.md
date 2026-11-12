@@ -10,9 +10,9 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedIncomeAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:358](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L358).
+Source: [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:19](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L19).
 
-Coupon accrual and premium/discount amortization for one bond position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
+Coupon accrual and premium/discount amortization for one Bond or StructuredCredit position, from the Security Master cash-flow projection and the position&#x27;s open lots. Each occurrence drafts the day-count share of every coupon period that falls inside its accrual window, and the premium or discount amortized over the same days. Projected principal paydowns are not drafted here: they are cash movements and arrive through cash activity. Inputs: securityId, ticker, optional financialAccountId.
 
 ```csharp
 public sealed class FixedIncomeAccrualCalculation(IRecurringJournalCalculationInputs inputs, ISecurityMasterAmortizationLedgerBridge? bridge = null, ISecurityMasterCashFlowService? cashFlows = null, ISecurityMasterQueryService? securities = null) : IRecurringJournalCalculation
@@ -22,11 +22,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:364](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L364) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:367](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L367) |  |
-| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:369](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L369) |  |
-| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:373](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L373) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:375](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L375) |  |
+| <code>public const string CalculationKind = &quot;fixed-income-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:25](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L25) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:28](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L28) |  |
+| <code>public bool ReadsClosingState =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:30](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L30) |  |
+| <code>public IReadOnlyList&lt;string&gt; RequiredInputs =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:34](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L34) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs:36](../../../../src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs#L36) |  |
 
 ## FundAccountCloseReadinessService
 
@@ -52,7 +52,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FundExpenseAccrualCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:279](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L279).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:290](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L290).
 
 Straight-line accrual of an annual fund expense over the accrual window. Terms: annualAmount, yearBasisDays. Input: expenseId.
 
@@ -64,9 +64,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:281](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L281) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:283](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L283) |  |
-| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:285](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L285) |  |
+| <code>public const string CalculationKind = &quot;fund-expense-accrual&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:292](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L292) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:294](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L294) |  |
+| <code>public Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:296](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L296) |  |
 
 ## FundOperationsWorkspaceReadService
 
@@ -145,7 +145,7 @@ public sealed record FxConversionReference(string BaseCurrency, string QuoteCurr
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FxRevaluationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:501](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L501).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:370](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L370).
 
 Unrealized FX revaluation of foreign-currency asset and liability accounts without a security symbol at the effective date. The foreign balance is the sum of the legs recorded in that currency. Its carrying value combines the book-currency amounts on those legs with earlier revaluations, so each occurrence drafts only the change since the last one. The rate must come with its evidence (quote date, derivation and table revision) and be no older than the schedule term maxRateAgeDays; a missing, undated or stale rate blocks the draft. The memo records the evidence of every rate used.
 
@@ -157,10 +157,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:505](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L505) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:507](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L507) |  |
-| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:509](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L509) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:511](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L511) |  |
+| <code>public const string CalculationKind = &quot;fx-revaluation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:374](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L374) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:376](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L376) |  |
+| <code>public bool DependsOnPostedHistory =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:378](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L378) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:380](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L380) |  |
 
 ## GovernanceReportingReleaseAuthorizationVerifier
 

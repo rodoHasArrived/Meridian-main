@@ -715,6 +715,24 @@ Held units exchanged for a successor security, optionally with cash (merger, con
 public sealed record ExchangeCorporateActionTerms(string EventType, Guid? SuccessorSecurityId, decimal? ExchangeRatio, decimal? CashPerUnit, bool? IsVoluntary) : CorporateActionTerms(EventType);
 ```
 
+## FaceValueAccrualHolding
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueAccrualHolding</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L10).
+
+A retained lot&#x27;s entitlement for one accounting date. OpenShare reflects closing disposals, while AccrualFactor is the factor before that date&#x27;s principal paydown: interest accrues through the paydown date before principal is reduced. Lot retains the acquisition facts and the factor held at that day&#x27;s close. This read projection must never be persisted as a replacement lot of record.
+
+```csharp
+public sealed record FaceValueAccrualHolding(DateOnly Date, FaceValueLot Lot, decimal OpenShare, decimal AccrualFactor, Guid? TaxLotRecordId = null, long? Version = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal AccrualFace =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueAccrualHolding.cs#L19) | Face entitled to the date&#x27;s interest, with the factor and open share applied once. |
+
 ## FaceValueLot
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLot</code>. Kind: `record`.
@@ -809,21 +827,3 @@ Declared public members:
 | <code>Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L200) |  |
 | <code>Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L204) |  |
 | <code>Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCaseAccountingContracts.cs#L208) |  |
-
-## ICorporateActionCashDividendAccountingService
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendAccountingService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L176).
-
-```csharp
-public interface ICorporateActionCashDividendAccountingService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CorporateActionCashDividendPreviewDto&gt; PreviewCashDividendAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L178) |  |
-| <code>Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L181) |  |
-| <code>Task&lt;CorporateActionCashDividendPostingResultDto&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L184) |  |

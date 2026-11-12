@@ -161,6 +161,14 @@ classDiagram
         +bool? IsVoluntary
         +Guid? SuccessorSecurityId
     }
+    class Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding["FaceValueAccrualHolding"] {
+        +decimal AccrualFactor
+        +DateOnly Date
+        +FaceValueLot Lot
+        +decimal OpenShare
+        +Guid? TaxLotRecordId
+        +long? Version
+    }
     class Meridian_Contracts_SecurityMaster_FaceValueLot["FaceValueLot"] {
         +DateOnly AcquiredDate
         +decimal BookedFactor
@@ -421,8 +429,6 @@ classDiagram
         +OtcMovementKind Kind
         +OtcMovementParty Mover
     }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralRules["OtcCollateralRules"] {
-    }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleStatus
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_EdgarXbrlFact
     Meridian_Contracts_SecurityMaster_EdgarFactsRecord --> Meridian_Contracts_SecurityMaster_IssuerFactSnapshot
@@ -431,6 +437,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_EdgarFilerRecord --> Meridian_Contracts_SecurityMaster_EdgarFormerName
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarDebtOfferingTerms
     Meridian_Contracts_SecurityMaster_EdgarSecurityDataRecord --> Meridian_Contracts_SecurityMaster_EdgarFundHolding
+    Meridian_Contracts_SecurityMaster_FaceValueAccrualHolding --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FaceValueLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot
     Meridian_Contracts_SecurityMaster_FaceValueLotFactorPaydown --> Meridian_Contracts_SecurityMaster_FaceValueLot
     Meridian_Contracts_SecurityMaster_FundUnitLot --> Meridian_Contracts_SecurityMaster_IUnitizedLot

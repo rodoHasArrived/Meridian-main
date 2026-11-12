@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcCollateralAgreementDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L81).
+
+A credit support annex (or equivalent) under a master agreement: the thresholds, minimum transfer amount, independent amount, rounding, valuation cadence and eligible collateral that govern margin calls between the two parties.
+
+```csharp
+public sealed record OtcCollateralAgreementDto(Guid CollateralAgreementId, Guid MasterAgreementId, string Currency, decimal ThresholdOurs, decimal ThresholdTheirs, decimal MinimumTransferAmount, decimal? IndependentAmount, decimal? RoundingAmount, string ValuationFrequency, IReadOnlyList<OtcEligibleCollateralDto> EligibleCollateral, DateOnly EffectiveDate, DateOnly? TerminationDate, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
+```
+
 ## OtcCollateralBalanceDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralBalanceDto</code>. Kind: `record`.
@@ -799,13 +811,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |
-
-## PostAttestedCorporateActionCashDividendRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L50).
-
-```csharp
-public sealed record PostAttestedCorporateActionCashDividendRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, Guid AttestationId, string Reason, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionCashDividendDecisionAuthorityDto? Authority = null);
-```

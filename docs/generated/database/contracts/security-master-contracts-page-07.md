@@ -2,11 +2,22 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 566. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 568. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration["SecurityRateFieldDeclaration"] {
+        +bool AllowsNegative
+        +string AssetClass
+        +string ConsumedBy
+        +RateUnit? DefaultUnit
+        +string FieldKey
+        +bool HonorsRecordUnit
+        +decimal? MaxFraction
+        +string Meaning
+        +decimal? MinFraction
+    }
     class Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits["SecurityRateFieldUnits"] {
         +IReadOnlyList~SecurityRateFieldDeclaration~ All
     }
@@ -279,6 +290,16 @@ classDiagram
         +DateOnly FirstDate
         +DateOnly LastDate
     }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment["StructuredCashFlowInterestSegment"] {
+        +DateOnly End
+        +decimal Factor
+        +decimal? FactorAfter
+        +DateOnly PeriodEnd
+        +DateOnly PeriodStart
+        +decimal ReferencePrincipal
+        +DateOnly Start
+        +decimal UnroundedInterestAmount
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg["StructuredCashFlowLeg"] {
         +decimal? CapRate
         +decimal? CurrentIndexRate
@@ -331,12 +352,12 @@ classDiagram
         +decimal InterestAmount
         +DateOnly? InterestMeasuredFrom
         +DateOnly? InterestMeasuredTo
+        +IReadOnlyList~StructuredCashFlowInterestSegment~? InterestSegments
         +DateTimeOffset PeriodDate
         +decimal PrincipalAmount
         +Meridian_Contracts_FixedIncome_BondFloatingRateEvidence? RateEvidence
         +int RowVersion
         +DateOnly? UnadjustedEnd
-        +DateOnly? UnadjustedStart
     }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence["StructuredCashFlowScheduleEvidence"] {
         +IReadOnlyList~StructuredCashFlowCalendarEvidence~ Calendars
@@ -456,34 +477,7 @@ classDiagram
         +Guid SecurityId
         +StructuredCashFlowSourceKind SourceKind
     }
-    class Meridian_Contracts_SecurityMaster_UpsertCorporateActionProcessingOptionRequestDto["UpsertCorporateActionProcessingOptionRequestDto"] {
-        +string Actor
-        +IReadOnlyList~string~? Blockers
-        +Guid CaseId
-        +string CompanyId
-        +string? CorrelationId
-        +string Description
-        +long ExpectedVersion
-        +string IdempotencyKey
-        +string Label
-        +string OptionCode
-        +Guid? OptionId
-        +JsonElement? Parameters
-    }
-    class Meridian_Contracts_SecurityMaster_UpsertDataVendorEntitlementRequest["UpsertDataVendorEntitlementRequest"] {
-        +string? AccountId
-        +string Actor
-        +decimal? AumThresholdUsd
-        +string? ClientId
-        +string? ContactEmail
-        +string? ContractReference
-        +DataVendorDataType DataType
-        +int? DefaultMaxDaysStale
-        +DateTimeOffset EffectiveFrom
-        +DateTimeOffset? EffectiveTo
-        +Guid? EntitlementId
-        +string? ExpectedRefreshCadence
-    }
+    Meridian_Contracts_SecurityMaster_SecurityRateFieldUnits --> Meridian_Contracts_SecurityMaster_SecurityRateFieldDeclaration
     Meridian_Contracts_SecurityMaster_SecurityRateIngestionPointDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationDto
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateObservationKind
     Meridian_Contracts_SecurityMaster_SecurityRateObservationDto --> Meridian_Contracts_SecurityMaster_SecurityRateUnit
@@ -521,6 +515,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry --> Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCoverageGap
     Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms --> Meridian_Contracts_SecurityMaster_StructuredCashFlowLeg

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationAccountingPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:917](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L917).
+
+Typed payload returned by GET /api/workstation/accounting. The independent reporting route returns the nested WorkstationReportingPayload directly.
+
+```csharp
+public sealed record WorkstationAccountingPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationAccountingRunRecord> ReconciliationQueue, IReadOnlyList<ReconciliationBreakQueueItem> BreakQueue, WorkstationAccountingWorkspaceSummary Workspace, WorkstationAccountingCashFlowSummaryPayload CashFlow, WorkstationReportingPayload Reporting, WorkstationAccountingControlCenterPayload ControlCenter, WorkstationKernelObservabilityPayload KernelObservability, ManualJournalEntryWorkbenchDto? ManualJournalWorkbench = null);
+```
+
+## WorkstationAccountingRunCashFlowPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunCashFlowPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:792](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L792).
+
+```csharp
+public sealed record WorkstationAccountingRunCashFlowPayload(decimal CashBalance, decimal LedgerCashBalance, decimal CashVariance, decimal Financing, decimal RealizedPnl, decimal UnrealizedPnl, int JournalEntryCount, string Tone, string Summary);
+```
+
 ## WorkstationAccountingRunGovernancePayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunGovernancePayload</code>. Kind: `record`.
@@ -532,28 +554,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:965](../
 
 ```csharp
 public sealed record WorkstationPortfolioSummaryTelemetry(long RefreshLatencyMs, int PayloadSizeBytes, bool IsStale, string? StaleReason, string AsOfUtc);
-```
-
-## WorkstationProviderHealthCount
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationProviderHealthCount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L19).
-
-Healthy providers out of every provider the Data workspace lists.
-
-```csharp
-public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
-```
-
-## WorkstationReportAccessAuditSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationReportAccessAuditSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:674](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L674).
-
-Aggregate access-policy evidence for the reporting payload visible to the current caller.
-
-```csharp
-public sealed record WorkstationReportAccessAuditSummaryDto(string EvaluationScope, string Summary, IReadOnlyList<string> PrincipalScopes, int VisibleTemplateCount, int HiddenTemplateCount, int VisibleReportPackCount, int HiddenReportPackCount, int VisibleScheduleCount, int HiddenScheduleCount, int VisibleDeliveryAttemptCount, int HiddenDeliveryAttemptCount, int VisibleStructuredExportCount, int HiddenStructuredExportCount, IReadOnlyList<string> DenialReasons);
 ```

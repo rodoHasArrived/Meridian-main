@@ -964,7 +964,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FixedAssetDepreciationCalculation</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:305](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L305).
+Source: [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:316](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L316).
 
 Depreciation of every asset the fixed-asset register holds for the fund book: the scheduled charges whose period end falls inside the accrual window, in one draft. Each scheduled period belongs to exactly one window, so an asset&#x27;s life is depreciated once. Units-of-production assets need period output that the register does not hold, so they block the occurrence.
 
@@ -976,6 +976,6 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:307](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L307) |  |
-| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:310](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L310) |  |
-| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:312](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L312) |  |
+| <code>public const string CalculationKind = &quot;fixed-asset-depreciation&quot;;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:318](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L318) |  |
+| <code>public string Kind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:321](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L321) |  |
+| <code>public async Task&lt;RecurringJournalCalculationResult&gt; CalculateAsync(RecurringJournalCalculationContext context, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs:323](../../../../src/Meridian.Ui.Shared/Services/RecurringJournalCalculations.cs#L323) |  |

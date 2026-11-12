@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PilotAcceptanceEvidenceCategoryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceCategoryDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L51).
+
+```csharp
+public enum PilotAcceptanceEvidenceCategoryDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReconciliationCasework = 0</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L53) |  |
+| <code>AccountingCloseChecklist = 1</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L54) |  |
+| <code>ReportingReviewApproval = 2</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L55) |  |
+| <code>GovernedReportPackPublication = 3</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:56](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L56) |  |
+| <code>RestatementReadiness = 4</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L57) |  |
+| <code>EvidenceVaultManifestExportSupport = 5</code> | [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L58) |  |
+
+## PilotAcceptanceEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/PilotReadinessArtifactDtos.cs#L68).
+
+```csharp
+public sealed record PilotAcceptanceEvidenceDto(PilotAcceptanceEvidenceCategoryDto Category, PilotAcceptanceEvidenceRoleDto Role, string EvidenceId, string Label, string? Route = null);
+```
+
 ## PilotAcceptanceEvidenceRoleDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PilotAcceptanceEvidenceRoleDto</code>. Kind: `enum`.
@@ -673,23 +704,3 @@ Enum declarations:
 | <code>Matched = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:286](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L286) |  |
 | <code>Breaks = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L287) |  |
 | <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:288](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L288) |  |
-
-## ProviderLedgerReconciliationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderLedgerReconciliationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:362](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L362).
-
-```csharp
-public sealed record ProviderLedgerReconciliationSummaryDto(Guid ReconciliationRunId, Guid AccountId, DateTimeOffset CreatedAt, ProviderLedgerReconciliationStatusDto Status, int TotalChecks, int MatchedChecks, int BreakCount, int SecurityIssueCount, decimal AmountTolerance, int ProviderStaleAfterMinutes, string? ProviderId, string? ExternalAccountId, DateTimeOffset? ProviderSyncedAt, DateOnly? InternalAsOfDate, string? DetailPath = null, int OpenBreakCount = 0, int SignedOffBreakCount = 0, int OldestBreakAgeMinutes = 0);
-```
-
-## ProviderPromotionChecklistDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ProviderPromotionChecklistDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs:336](../../../../src/Meridian.Contracts/Workstation/TradingOperatorReadinessDtos.cs#L336).
-
-```csharp
-public sealed record ProviderPromotionChecklistDto(bool ContractCompatibilityValidated, bool FocusedAdapterTestsValidated, bool ReplayEvidenceGenerated, bool DegradationCalibrationOutputValidated, bool ReadyForPaperEnablement, bool ReadyForLiveEnablement, IReadOnlyList<string> Blockers, string? EvidenceBundlePath, DateTimeOffset EvaluatedAt);
-```

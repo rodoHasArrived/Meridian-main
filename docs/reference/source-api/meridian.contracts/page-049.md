@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MmfLiquidityState
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:13](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L13).
+
+Operational liquidity state of a money market fund. Liquid funds are within standard WAM limits and fully operational. Restricted funds have elevated WAM or suspended redemptions. Suspended funds are under regulatory or operational hold. Inactive funds have been deactivated in the security master.
+
+```csharp
+public enum MmfLiquidityState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Liquid</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:15](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L15) |  |
+| <code>Restricted</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:16](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L16) |  |
+| <code>Suspended</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:17](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L17) |  |
+| <code>Inactive</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:18](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L18) |  |
+
+## MmfRebuildCheckpointDto
+
+Qualified name: <code>Meridian.Contracts.Treasury.MmfRebuildCheckpointDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:87](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L87).
+
+Tracks the last successful projection rebuild for a money market fund. Used by governance and operations to verify rebuild freshness.
+
+```csharp
+public sealed record MmfRebuildCheckpointDto(Guid SecurityId, long AggregateVersion, DateTimeOffset CheckpointedAt, string RebuildSource);
+```
+
 ## MmfSearchQuery
 
 Qualified name: <code>Meridian.Contracts.Treasury.MmfSearchQuery</code>. Kind: `record`.
@@ -607,24 +640,4 @@ A single historical cash-flow entry from a strategy run.
 
 ```csharp
 public sealed record CashFlowEntryDto(DateTimeOffset Timestamp, decimal Amount, string EventKind, string? Symbol, string Currency, string? AccountId, string? Description);
-```
-
-## CashFlowProjectionPoint
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashFlowProjectionPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L35).
-
-```csharp
-public sealed record CashFlowProjectionPoint(Guid AccountId, string Currency, DateOnly Date, decimal ExpectedInflow, decimal ExpectedOutflow, decimal NetFlow, decimal RunningBalance, bool LiquidityWarning, string WarningDetail);
-```
-
-## CashForecastResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashForecastResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L36).
-
-```csharp
-public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlowProjectionPoint> Timeline, IReadOnlyList<string> Warnings);
 ```

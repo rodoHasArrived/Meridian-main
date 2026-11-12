@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityIncomeCashFlowScheduleDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeCashFlowScheduleDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityIncomeCashFlows.cs#L64).
+
+Declared income schedule for a security: the cash flows for the asset classes whose SecurityCashFlowBehavior is recorded rather than calculated (SecurityCashFlowBehavior.Dividends, SecurityCashFlowBehavior.FundDistributions). Distributions that cannot be scheduled (no pay date, no amount, unknown component) are listed in Gaps instead of being silently dropped.
+
+```csharp
+public sealed record SecurityIncomeCashFlowScheduleDto(Guid SecurityId, string AssetClass, SecurityCashFlowBehavior CashFlowBehavior, DateTimeOffset AsOf, IReadOnlyList<SecurityIncomeCashFlow> Flows, IReadOnlyList<SecurityIncomeCashFlowGap> Gaps);
+```
+
 ## SecurityIncomeComponent
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityIncomeComponent</code>. Kind: `enum`.
@@ -877,21 +889,3 @@ Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:39](.
 ```csharp
 public sealed record SecurityRateIngestionPointDto(DateOnly PointDate, SecurityRateObservationDto Observation, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString)] decimal? ReviewedDiscountFactor = null, string? Tenor = null);
 ```
-
-## SecurityRateIngestionRules
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityRateIngestionRules</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L48).
-
-Explicit, reviewable conversion rules; a constant-maturity par yield is never a discount factor.
-
-```csharp
-public static class SecurityRateIngestionRules
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PublishSecurityCurveVersionRequest BuildPublication(IngestSecurityRatesRequest request, SecurityCurveDefinitionDto definition, string actor);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityRateObservations.cs#L50) |  |

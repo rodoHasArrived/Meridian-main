@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ITradingCalendarProvider
+
+Qualified name: <code>Meridian.Contracts.Services.ITradingCalendarProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:256](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L256).
+
+Compatibility alias for the former local scheduling calendar contract. New local scheduling code must use IOperationalTradingCalendar; provider adapters must use Meridian.ProviderSdk.ITradingCalendarProvider so their calendar output retains provider provenance.
+
+```csharp
+public interface ITradingCalendarProvider : IOperationalTradingCalendar
+```
+
+## MaintenanceWindow
+
+Qualified name: <code>Meridian.Contracts.Services.MaintenanceWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Services/IOperationalScheduler.cs:118](../../../../src/Meridian.Contracts/Services/IOperationalScheduler.cs#L118).
+
+Maintenance window definition.
+
+```csharp
+public sealed record MaintenanceWindow(string Name, DateTimeOffset StartTime, DateTimeOffset EndTime, IReadOnlyList<OperationType>? AllowedOperations = null, int Priority = 0);
+```
+
 ## OperationType
 
 Qualified name: <code>Meridian.Contracts.Services.OperationType</code>. Kind: `enum`.
@@ -869,37 +893,4 @@ Liquidity projection for a money market fund derived from WAM and operational st
 
 ```csharp
 public sealed record MmfLiquidityDto(Guid SecurityId, MmfLiquidityState State, int? WeightedAverageMaturityDays, DateTimeOffset AsOf);
-```
-
-## MmfLiquidityState
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfLiquidityState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:13](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L13).
-
-Operational liquidity state of a money market fund. Liquid funds are within standard WAM limits and fully operational. Restricted funds have elevated WAM or suspended redemptions. Suspended funds are under regulatory or operational hold. Inactive funds have been deactivated in the security master.
-
-```csharp
-public enum MmfLiquidityState
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Liquid</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:15](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L15) |  |
-| <code>Restricted</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:16](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L16) |  |
-| <code>Suspended</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:17](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L17) |  |
-| <code>Inactive</code> | [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:18](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L18) |  |
-
-## MmfRebuildCheckpointDto
-
-Qualified name: <code>Meridian.Contracts.Treasury.MmfRebuildCheckpointDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs:87](../../../../src/Meridian.Contracts/Treasury/MoneyMarketFundDtos.cs#L87).
-
-Tracks the last successful projection rebuild for a money market fund. Used by governance and operations to verify rebuild freshness.
-
-```csharp
-public sealed record MmfRebuildCheckpointDto(Guid SecurityId, long AggregateVersion, DateTimeOffset CheckpointedAt, string RebuildSource);
 ```

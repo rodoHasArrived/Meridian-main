@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterDiffDirectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterDiffDirectionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1615](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1615).
+
+```csharp
+public enum ReportWriterDiffDirectionDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Flat = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1617](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1617) |  |
+| <code>Up = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1618](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1618) |  |
+| <code>Down = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1619](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1619) |  |
+
+## ReportWriterDiffRowStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterDiffRowStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1606](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1606).
+
+```csharp
+public enum ReportWriterDiffRowStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unchanged = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1608](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1608) |  |
+| <code>Changed = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1609](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1609) |  |
+| <code>Added = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1610) |  |
+| <code>Removed = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1611](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1611) |  |
+
 ## ReportWriterFilterDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterFilterDefinitionDto</code>. Kind: `record`.
@@ -553,24 +590,4 @@ Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:56](../../../../src/
 
 ```csharp
 public sealed record SampleArtifactDto(string Name, string Status, string Detail, string Route);
-```
-
-## SampleBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L47).
-
-```csharp
-public sealed record SampleBreakDto(string Id, string Title, string Category, string Severity, decimal Variance, string Summary, string Route);
-```
-
-## SampleHighlightDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SampleHighlightDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L60).
-
-```csharp
-public sealed record SampleHighlightDto(string Label, string Value, string Detail, string Route);
 ```

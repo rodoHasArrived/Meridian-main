@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTrustSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L49).
+
+```csharp
+public sealed record SecurityMasterTrustSnapshotDto(Guid SecurityId, SecurityMasterWorkstationDto Security, SecurityIdentityDrillInDto Identity, SecurityMasterEconomicDefinitionDrillInDto EconomicDefinition, SecurityMasterTrustPostureDto TrustPosture, IReadOnlyList<SecurityMasterSourceCandidateDto> ProvenanceCandidates, IReadOnlyList<SecurityMasterConflictAssessmentDto> ConflictAssessments, SecurityMasterDownstreamImpactDto DownstreamImpact, IReadOnlyList<SecurityMasterRecommendedActionDto> RecommendedActions, IReadOnlyList<SecurityMasterEventEnvelope> History, IReadOnlyList<CorporateActionDto> CorporateActions, DateTimeOffset RetrievedAtUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityValidationReportDto? ValidationReport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L63) |  |
+| <code>public SecurityMasterIdentifierSummaryDto? IdentifierSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:64](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L64) |  |
+| <code>public SecurityMasterSchemaCompatibilityDto? SchemaCompatibility { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:65](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L65) |  |
+| <code>public IReadOnlyList&lt;SecurityMasterChangeHistoryItemDto&gt;? ChangeHistory { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:66](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L66) |  |
+| <code>public SecurityMasterScheduleSummaryDto? ScheduleSummary { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L67) |  |
+| <code>public SecurityMasterLotModelDto? LotModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L68) |  |
+| <code>public SecurityMasterScheduleBookDto? ScheduleBook { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:69](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L69) |  |
+| <code>public SecurityMasterOpenLotReadModelDto? OpenLotReadModel { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L70) |  |
+| <code>public InstrumentPassportDto? InstrumentPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L71) |  |
+| <code>public IReadOnlyList&lt;CorporateActionDescriptorDto&gt;? CorporateActionDescriptors { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L72) |  |
+| <code>public SecurityMasterGovernanceDto? Governance { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L74) | The host&#x27;s effective requirements, including profile latching and ignored configuration. |
+| <code>public SecurityMasterScheduleBlockerDto? CashFlowBlocker { get; init; }</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L76) | Base calculation refusal on the selected terms at RetrievedAtUtc; distinct from exercise-date resolution. |
+
+## SecurityMasterTrustTone
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterTrustTone</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:7](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L7).
+
+```csharp
+public enum SecurityMasterTrustTone
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L9) |  |
+| <code>Blocked = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L10) |  |
+| <code>Review = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L11) |  |
+| <code>Trusted = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L12) |  |
+
 ## SecurityMasterWorkstationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterWorkstationDto</code>. Kind: `record`.
@@ -637,28 +683,4 @@ One canonical record sample shown in the import preview, grouped by kind.
 
 ```csharp
 public sealed record StatementRecordPreviewDto(string Kind, string Account, string Symbol, decimal Quantity, decimal Price, decimal CashAmount, string ActivityType, string TradeDate, string? SettlementDate, string? Currency, decimal? FeesCommission, string? ExternalTransactionId, string? ActivityCategory = null, string? ActivitySubtype = null, string? ProviderActivityCode = null, string? RelatedTransactionId = null, string? OrderId = null, string? Description = null);
-```
-
-## StatementRunBreakDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:347](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L347).
-
-Open or retained break row scoped to a statement reconciliation run.
-
-```csharp
-public sealed record StatementRunBreakDto(string BreakId, string RunId, string ImportId, string SourceReference, StatementBreakType BreakType, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status);
-```
-
-## StatementRunCreateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunCreateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:299](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L299).
-
-Request to create a statement reconciliation run from an already accessible source file. Endpoint implementations keep import and reconciliation behavior in shared services.
-
-```csharp
-public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null);
 ```
