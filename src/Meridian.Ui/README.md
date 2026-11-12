@@ -6,12 +6,18 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-11
+last_reviewed: 2026-11-12
 ---
 
 # src/Meridian.Ui
 
 The served bundle also includes linked analytical investigation views across the existing workspaces: orders, displayed depth, options, margin, maturities, ownership, retained private capital, fixed-income exercises, corporate dates, tax parcels and retained strategy sweeps. The dashboard and shared-source READMEs document their source, unit and authority boundaries; generated assets must be rebuilt after integration.
+
+The served Accounting configuration bundle includes the intercompany agreement registry, immutable
+revision/evidence inspection and governed proposal review over shared tenant-scoped APIs. Optional
+journal-line reference editing follows the server's rollout capability; the browser retains exact
+rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
+[intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
 
 The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads

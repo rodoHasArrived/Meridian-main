@@ -95,6 +95,10 @@ public sealed partial class PostgresLedgerJournalStore
         AddDimension(values, "taxLotId", dimensions.TaxLotId);
         AddDimension(values, "costCenterId", dimensions.CostCenterId);
         AddDimension(values, "counterpartyId", dimensions.CounterpartyId);
+        if (dimensions.IntercompanyAgreementId.HasValue)
+            values["intercompanyAgreementId"] = dimensions.IntercompanyAgreementId.Value;
+        if (dimensions.IntercompanyAgreementVersion.HasValue)
+            values["intercompanyAgreementVersion"] = dimensions.IntercompanyAgreementVersion.Value;
         AddDimension(values, "organizationId", dimensions.OrganizationId);
         AddDimension(values, "portfolioId", dimensions.PortfolioId);
         AddDimension(values, "bookId", dimensions.BookId);
@@ -193,7 +197,9 @@ public sealed partial class PostgresLedgerJournalStore
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return HasAnyLineDimension(canonical) ? canonical : null;
@@ -220,6 +226,8 @@ public sealed partial class PostgresLedgerJournalStore
            !string.IsNullOrWhiteSpace(dimensions.CapitalAccountId) ||
            dimensions.InstrumentId.HasValue ||
            dimensions.PositionId.HasValue ||
+           dimensions.IntercompanyAgreementId.HasValue ||
+           dimensions.IntercompanyAgreementVersion.HasValue ||
            !string.IsNullOrWhiteSpace(dimensions.TaxLotId) ||
            !string.IsNullOrWhiteSpace(dimensions.CostCenterId) ||
            !string.IsNullOrWhiteSpace(dimensions.CounterpartyId) ||

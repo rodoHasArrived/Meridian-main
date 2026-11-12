@@ -11,6 +11,15 @@ last_reviewed: 2026-11-12
 
 # src/Meridian.Ui.Shared
 
+Intercompany agreement routes under `/api/fund-structure/intercompany-agreements` require resolved
+tenant/company scope and access to every legal entity disclosed in the retained record. The shared
+service binds independent review to frozen terms and accepted, byte-verified Evidence Vault artifacts.
+Missing PostgreSQL registry authority returns unavailable rather than substituting a local store.
+The source-line drill-through additionally requires ledger-report authority and an owned entity book;
+it shows exact posted provenance and advisory coverage without changing consolidation matching.
+`MERIDIAN_INTERCOMPANY_REFERENCE_AUTHORING_ENABLED=true` exposes reference-authoring capability only
+when posting authority is registered; validators remain mandatory regardless of this rollout switch.
+
 Observed bond-fixing retention and selection routes require workstation tenant scope and Security
 Master permissions. Writes re-fetch the exact-date provider observation, check the bond's current
 version/index/currency and contractual reset, and retain immutable evidence. They do not amend

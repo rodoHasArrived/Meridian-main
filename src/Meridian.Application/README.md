@@ -13,6 +13,12 @@ last_reviewed: 2026-11-12
 
 Corporate-action inbox projections read actual election cutoffs only from the retained, versioned `electionCalendar` companion. Staged proposals and durable cases preserve source offsets and evidence; absent or malformed companions remain unavailable and never inherit operational SLA or ex-date deadlines.
 
+`IntercompanyAgreementService` owns tenant-scoped proposals, independent approval, exact-command
+receipts and effective-date selection over the durable agreement store. Retrospective amendments
+preserve posted versions; semantic bases follow effective chronology rather than approval order.
+`PostgresIntercompanyAgreementPostingAuthority` validates pinned references under a structure-store
+lease retained through ledger commit. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
 Provider holding normalization identifies bond-style records through the catalog coupon-structure
 capability, while preserving the legacy FixedIncome wire designation. Fixed-income term validation
 uses the shared versioned term keys for call schedules and schedule conventions.

@@ -469,9 +469,10 @@ public sealed partial class AutomatedJournalIntakeRunner
             dimensions.AccountId, dimensions.CustomerId, dimensions.VendorId, dimensions.ProjectId,
             externalGl);
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{key}|positionId={dimensions.PositionId.Value:D}"
             : key;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|");
     }
 
     public Task<AutomatedJournalIntakeRunResult> RunFeeAccrualIntakeAsync(

@@ -39,9 +39,13 @@ public static partial class LedgerEndpoints
             filter.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
 
-        return filter.PositionId is not null
-            ? $"{signature}|positionId={filter.PositionId}"
-            : signature;
+        if (filter.PositionId is not null)
+            signature += $"|positionId={filter.PositionId}";
+        if (filter.IntercompanyAgreementId is not null)
+            signature += $"|intercompanyAgreementId={filter.IntercompanyAgreementId}";
+        if (filter.IntercompanyAgreementVersion is not null)
+            signature += $"|intercompanyAgreementVersion={filter.IntercompanyAgreementVersion}";
+        return signature;
     }
 
     private static string BuildDimensionSignature(LedgerDimensionSetDto? dimensions)
@@ -76,9 +80,10 @@ public static partial class LedgerEndpoints
             dimensions.ProjectId ?? string.Empty,
             string.Join(";", externalGl));
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{signature}|positionId={dimensions.PositionId.Value:D}"
             : signature;
+        return Meridian.Contracts.Ledger.LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "|");
     }
 
     private static LedgerDimensionReportFilter BuildDimensionReportFilter(IQueryCollection query)
@@ -126,7 +131,11 @@ public static partial class LedgerEndpoints
             CustomerId: NormalizeOptional(GetFirstQueryValue(query, "dimensionCustomerId", "customerId")),
             VendorId: NormalizeOptional(GetFirstQueryValue(query, "dimensionVendorId", "vendorId")),
             ProjectId: NormalizeOptional(GetFirstQueryValue(query, "dimensionProjectId", "projectId")),
-            ExternalGlDimensions: externalGlDimensions));
+            ExternalGlDimensions: externalGlDimensions)
+        {
+            IntercompanyAgreementId = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementId", "intercompanyAgreementId")),
+            IntercompanyAgreementVersion = NormalizeOptional(GetFirstQueryValue(query, "dimensionIntercompanyAgreementVersion", "intercompanyAgreementVersion"))
+        });
     }
 
     private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
