@@ -11575,6 +11575,7 @@ Meridian-main
 │   │   │   ├── Integrations
 │   │   │   │   ├── ProviderIntegrationActivationReadinessServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationActivationServiceTests.cs
+│   │   │   │   ├── ProviderIntegrationBondValueNormalizationTests.cs
 │   │   │   │   ├── ProviderIntegrationDryRunServiceTests.cs
 │   │   │   │   ├── ProviderIntegrationFieldTransformsTests.cs
 │   │   │   │   ├── ProviderIntegrationFixedIncomeTermsValidationTests.cs
