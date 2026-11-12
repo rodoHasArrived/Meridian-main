@@ -40,6 +40,10 @@ or create a payment. The retained source hash and document identity explain the 
 unsigned cash-flow, obligation and ledger readers. This is separate from a rate field's validity:
 negative fixings and spreads can still produce a supported positive coupon after contractual floors.
 
+`StructuredCashFlowScheduleEntry` equality follows its serialized members while excluding measured
+accrual intervals that are never serialized. A reflection regression enumerates writable members
+so adding a serialized member without updating equality fails verification.
+
 Economic replay has explicit module homes for commodity quantity units, digital-asset networks,
 underlying exposure and exact leverage, settlement methods, raw classification labels, fund-share
 behavior and operational pricing/fixing sources. These homes recover class-owned flat fields without
