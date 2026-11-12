@@ -43,6 +43,19 @@ public interface IAssetAccountingEventProjectionStore
         CancellationToken ct = default);
 }
 
+/// <summary>Native cash-dividend lifecycle appends sharing the journal and case transaction.</summary>
+public interface ITransactionalAssetAccountingEventProjectionStore : IAssetAccountingEventProjectionStore
+{
+    Task<AssetAccountingEventProjectionRecord?> GetLatestAsync(Npgsql.NpgsqlConnection connection,
+        Npgsql.NpgsqlTransaction transaction, Guid eventId, long eventVersion, CancellationToken ct = default);
+
+    Task<AssetAccountingEventAppendResult> AppendAsync(Npgsql.NpgsqlConnection connection,
+        Npgsql.NpgsqlTransaction transaction, AssetAccountingEventSpineDto projection,
+        long expectedSpineVersion, long expectedBookPositionVersion,
+        Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease lease,
+        CancellationToken ct = default);
+}
+
 internal static class AssetAccountingEventProjectionRules
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
@@ -305,6 +318,11 @@ internal static class AssetAccountingEventProjectionRules
         }
 
         var priorStages = previous.Stages.ToDictionary(static stage => stage.Stage);
+        if (previous.PreparerAttestation is not null && !PayloadEquals(previous.PreparerAttestation, next.PreparerAttestation)
+            || previous.PreparerAttestation is null && next.PreparerAttestation is not null
+                && !(previous.Stages[^1].Stage == AssetAccountingLifecycleStageDto.Drafted
+                    && next.Stages[^1].Stage == AssetAccountingLifecycleStageDto.PreparerAttested))
+            throw new InvalidOperationException("Preparer decision evidence may only be introduced with its distinct lifecycle stage and cannot be rewritten.");
         foreach (var prior in priorStages)
         {
             if (next.Stages.FirstOrDefault(stage => stage.Stage == prior.Key) is not { } retained ||
@@ -325,8 +343,8 @@ internal static class AssetAccountingEventProjectionRules
             AssetAccountingLifecycleStageDto.Projected =>
                 [AssetAccountingLifecycleStageDto.Drafted],
             AssetAccountingLifecycleStageDto.Drafted =>
-                [AssetAccountingLifecycleStageDto.Approved],
-            AssetAccountingLifecycleStageDto.Approved =>
+                [next.PreparerAttestation is null ? AssetAccountingLifecycleStageDto.Approved : AssetAccountingLifecycleStageDto.PreparerAttested],
+            AssetAccountingLifecycleStageDto.Approved or AssetAccountingLifecycleStageDto.PreparerAttested =>
                 [AssetAccountingLifecycleStageDto.Posted],
             AssetAccountingLifecycleStageDto.Posted =>
                 [AssetAccountingLifecycleStageDto.Reconciled],
@@ -347,7 +365,8 @@ internal static class AssetAccountingEventProjectionRules
     public static async Task<bool> ValidateDurablePostedImpactAsync(
         AssetAccountingEventSpineDto projection,
         ILedgerJournalStore? journalStore,
-        CancellationToken ct)
+        CancellationToken ct,
+        Func<LedgerJournalEntryQuery, CancellationToken, Task<IReadOnlyList<LedgerJournalEntryRecord>>>? journalQuery = null)
     {
         if (projection.PostedJournalImpact is not { } impact)
         {
@@ -360,7 +379,8 @@ internal static class AssetAccountingEventProjectionRules
                 "Posted asset accounting impact requires a configured durable journal authority.");
         }
 
-        var records = await journalStore.QueryAsync(
+        var queryJournal = journalQuery ?? ((query, token) => journalStore.QueryAsync(query, token));
+        var records = await queryJournal(
                 new LedgerJournalEntryQuery(
                     LedgerBookId: projection.Scope.LedgerBookId,
                     PeriodId: projection.Scope.PeriodId,
@@ -629,6 +649,7 @@ internal static class AssetAccountingEventProjectionRules
             impact.AccountingBasis != record.AccountingBasis ||
             impact.PostingStatus != JournalPostingStatusDto.Posted ||
             record.Entry.Lines.Count != impact.Lines.Count ||
+            !PayloadEquals(record.Entry.Metadata.PreparerAttestation, projection.PreparerAttestation) ||
             record.Entry.Lines.Sum(static line => line.Debit) != impact.TotalDebits ||
             record.Entry.Lines.Sum(static line => line.Credit) != impact.TotalCredits)
         {

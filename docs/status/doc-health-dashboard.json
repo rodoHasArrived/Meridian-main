@@ -1,11 +1,11 @@
 {
-  "total_files": 967,
+  "total_files": 968,
   "orphaned_count": 398,
   "no_heading_count": 233,
   "stale_count": 0,
   "todo_count": 330,
   "health_score": 79,
-  "signal_digest": "sha256:5f40f496e1d8cf3c982f325aeb635ceec4866c2ad3d2674c090fcbac1a9f81f0",
+  "signal_digest": "sha256:ffb64335f720459a161f0321a75e4302e99687c6ff04ff6afba908ab22cc7eb5",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2843,6 +2843,13 @@
     },
     {
       "path": "docs/generated/database/contracts/security-master-contracts-page-07.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/generated/database/contracts/security-master-contracts-page-08.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

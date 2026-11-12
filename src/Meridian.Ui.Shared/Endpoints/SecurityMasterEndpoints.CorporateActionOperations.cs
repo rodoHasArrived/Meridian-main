@@ -35,6 +35,7 @@ public static partial class SecurityMasterEndpoints
         RouteGroupBuilder group,
         JsonSerializerOptions jsonOptions)
     {
+        MapCashDividendAttestationEndpoints(group, jsonOptions);
         MapCorporateActionCalendarEndpoints(group, jsonOptions);
         group.MapPost(UiApiRoutes.SecurityMasterCorporateActionsIngest, async (
             CorporateActionIngestRequest? request,

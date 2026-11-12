@@ -13,6 +13,12 @@ public sealed class SecurityMasterOptions
     public bool ResolveInactiveByDefault { get; set; } = true;
 
     /// <summary>
+    /// Enables development-configured native single-principal cash-dividend attestation commands.
+    /// This default-off host gate grants no declaration, business permission or posting authority.
+    /// </summary>
+    public bool EnableSinglePrincipalCashDividendAttestations { get; set; }
+
+    /// <summary>
     /// One-time migration-062 upgrade attestation that every Security Master writer has been
     /// stopped. The runner also takes transaction-scoped write locks and refuses active writers.
     /// Not required for a fresh installation or after migration 062 is recorded.

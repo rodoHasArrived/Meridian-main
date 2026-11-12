@@ -148,15 +148,24 @@ public enum UserPermission : long
     /// <summary>Reopen a closed corporate-action case or initiate correction/restatement.</summary>
     ReopenCorporateActionCase = 1L << 39,
 
+    /// <summary>Administer a reasoned, scoped single-principal declaration; confers no domain approval authority.</summary>
+    ManageSinglePrincipalDeclarations = 1L << 40,
+
+    /// <summary>Record non-posting preparer assertions with the existing target-modification permission.</summary>
+    RecordPreparerAttestations = 1L << 41,
+
+    /// <summary>Read scoped preparer-assertion receipts, declaration history and audit evidence.</summary>
+    ViewPreparerAttestations = 1L << 42,
+
     /// <summary>Read source-reported private-capital commitments and valuation observations.</summary>
-    ViewPrivateCapitalRecords = 1L << 40,
+    ViewPrivateCapitalRecords = 1L << 43,
 
     /// <summary>Register private-capital commitments and accept evidence-backed observation imports.</summary>
-    ManagePrivateCapitalRecords = 1L << 41,
+    ManagePrivateCapitalRecords = 1L << 44,
 
     /// <summary>Read account-scoped retained broker option assessments.</summary>
-    ViewOptionAssessments = 1L << 42,
+    ViewOptionAssessments = 1L << 45,
 
     /// <summary>Import and correct evidence-backed broker option assessments.</summary>
-    ManageOptionAssessments = 1L << 43,
+    ManageOptionAssessments = 1L << 46,
 }

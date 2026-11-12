@@ -25,6 +25,16 @@ effective account source used for authentication. Governed accounts take precede
 and development demo accounts are counted only when selected by that existing precedence.
 The deployment guard includes disabled accounts and exposes no credential material.
 
+### Single-principal preparer-assertion permissions
+
+`UserPermission` separates `ManageSinglePrincipalDeclarations`, `RecordPreparerAttestations`
+and `ViewPreparerAttestations`. No built-in role receives these flags automatically. An explicit
+grant to administer a declaration supplies neither the grant to attest nor an existing domain
+approval or posting permission. The shared Evidence Vault adapter also requires authenticated
+human origin and the existing target-modification permission for a mutation; a client-supplied
+actor or origin cannot confer that authority. See the
+[policy development disposition](../../docs/product/single-principal-attestation-policy-proposal-2026-11-02.md#12-development-disposition--2026-11-12).
+
 ## Purpose
 
 Physical bounded-context module project for identity, scoped access, fund-structure scope lineage,

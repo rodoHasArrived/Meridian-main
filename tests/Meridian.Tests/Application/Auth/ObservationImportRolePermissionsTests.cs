@@ -6,6 +6,39 @@ namespace Meridian.Tests.Application.Auth;
 
 public sealed class ObservationImportRolePermissionsTests
 {
+    [Fact]
+    public void PermissionFlagsRemainDistinctPositiveSingleBits()
+    {
+        var flags = Enum.GetValues<UserPermission>();
+        flags.Should().OnlyHaveUniqueItems("persisted permission masks must not alias unrelated financial authorities");
+        flags.Where(flag => flag != UserPermission.None).Should().OnlyContain(flag =>
+            (long)flag > 0 && ((long)flag & ((long)flag - 1)) == 0,
+            "each named permission must own one bit in the retained mask");
+    }
+
+    [Theory]
+    [InlineData(UserPermission.ManageSinglePrincipalDeclarations, 1L << 40)]
+    [InlineData(UserPermission.RecordPreparerAttestations, 1L << 41)]
+    [InlineData(UserPermission.ViewPreparerAttestations, 1L << 42)]
+    [InlineData(UserPermission.ViewPrivateCapitalRecords, 1L << 43)]
+    [InlineData(UserPermission.ManagePrivateCapitalRecords, 1L << 44)]
+    [InlineData(UserPermission.ViewOptionAssessments, 1L << 45)]
+    [InlineData(UserPermission.ManageOptionAssessments, 1L << 46)]
+    public void ShippedAttestationAndObservationPermissionBitsStaySeparate(UserPermission permission, long expected)
+    {
+        ((long)permission).Should().Be(expected);
+    }
+
+    [Fact]
+    public void ObservationRoleGrantsDoNotConferNativeAttestationAuthority()
+    {
+        var attestationPermissions = UserPermission.ManageSinglePrincipalDeclarations |
+            UserPermission.RecordPreparerAttestations | UserPermission.ViewPreparerAttestations;
+        foreach (var role in Enum.GetValues<UserRole>())
+            (RolePermissions.For(role) & attestationPermissions).Should().Be(UserPermission.None,
+                $"the {role} observation grants must not activate separately assigned preparer-attestation authority");
+    }
+
     [Theory]
     [InlineData(UserRole.Developer)]
     [InlineData(UserRole.Analysis)]

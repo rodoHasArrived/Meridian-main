@@ -1435,6 +1435,7 @@ public sealed partial class FinancialRecordExplorerReadService
         AddDimensionFilter(filters, "capital-account", "Capital Account", dimensions.Select(static value => value.CapitalAccountId));
         AddDimensionFilter(filters, "instrument", "Instrument", dimensions.Select(static value => value.InstrumentId?.ToString("D")));
         AddDimensionFilter(filters, "position", "Position", dimensions.Select(static value => value.PositionId?.ToString("D")));
+        AddDimensionFilter(filters, "agreement", "Agreement", dimensions.Select(static value => value.IntercompanyAgreementId?.ToString("D")));
         AddDimensionFilter(filters, "tax-lot", "Tax Lot", dimensions.Select(static value => value.TaxLotId));
         AddDimensionFilter(filters, "cost-center", "Cost Center", dimensions.Select(static value => value.CostCenterId));
         AddDimensionFilter(filters, "counterparty", "Counterparty", dimensions.Select(static value => value.CounterpartyId));

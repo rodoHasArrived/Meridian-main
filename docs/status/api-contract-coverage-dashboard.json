@@ -4,14 +4,14 @@
   "generated_at": "1970-01-01T00:00:00+00:00",
   "score_percent": 19.5,
   "endpoint_coverage_percent": 29.9,
-  "contract_coverage_percent": 3.9,
+  "contract_coverage_percent": 3.8,
   "summary": {
     "endpoint_count": 759,
     "documented_endpoint_count": 227,
     "undocumented_endpoint_count": 532,
-    "workstation_contract_count": 1010,
+    "workstation_contract_count": 1025,
     "documented_workstation_contract_count": 39,
-    "undocumented_workstation_contract_count": 971
+    "undocumented_workstation_contract_count": 986
   },
   "endpoints": [
     {
@@ -3533,121 +3533,121 @@
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/ingest",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:39",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:40",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/inbox",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:73",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:74",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/inbox/apply",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:105",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:106",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/source-proposals",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:118",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:119",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}/resolution",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:153",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:154",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/source-proposals",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:189",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:190",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:214",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:215",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/accept",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:239",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:240",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/source-proposals/{proposalId:guid}/reject",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:257",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:258",
       "documented": true
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/cases",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:332",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:333",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:367",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:368",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:403",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:404",
       "documented": false
     },
     {
       "method": "GET",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts/{conflictId:guid}",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:456",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:457",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/evidence",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:509",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:510",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/conflicts",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:539",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:540",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/options",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:561",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:562",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/transition",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:583",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:584",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-projection",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:612",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:613",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-approval",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:636",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:637",
       "documented": false
     },
     {
       "method": "POST",
       "path": "/api/security-master/corporate-actions/cases/{caseId:guid}/accounting-posting",
-      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:660",
+      "source": "src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.CorporateActionOperations.cs:661",
       "documented": false
     },
     {
@@ -5482,27 +5482,27 @@
     },
     {
       "name": "EvidenceGraphDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:671",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:673",
       "documented": false
     },
     {
       "name": "EvidenceTemplateExportSettingsDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:681",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:685",
       "documented": false
     },
     {
       "name": "EvidenceTemplateDto",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:686",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:690",
       "documented": false
     },
     {
       "name": "EvidencePacketExportRequest",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:693",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:697",
       "documented": false
     },
     {
       "name": "EvidencePacketExportResponse",
-      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:704",
+      "source": "src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:708",
       "documented": false
     },
     {
@@ -6766,6 +6766,11 @@
       "documented": false
     },
     {
+      "name": "AccountingPreparerAttestationDisclosureDto",
+      "source": "src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:56",
+      "documented": false
+    },
+    {
       "name": "MarginControlAccountDto",
       "source": "src/Meridian.Contracts/Workstation/MarginControlCenterDtos.cs:4",
       "documented": false
@@ -7501,6 +7506,21 @@
       "documented": false
     },
     {
+      "name": "PreparerAttestationEvidenceProjectionDto",
+      "source": "src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:7",
+      "documented": false
+    },
+    {
+      "name": "PreparerEvidenceAcknowledgmentDto",
+      "source": "src/Meridian.Contracts/Workstation/PreparerAttestationEvidenceDtos.cs:23",
+      "documented": false
+    },
+    {
+      "name": "PreparerAttestationProofExportDto",
+      "source": "src/Meridian.Contracts/Workstation/PreparerAttestationProofExportDto.cs:9",
+      "documented": false
+    },
+    {
       "name": "ReconciliationBreakLineageDto",
       "source": "src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:6",
       "documented": false
@@ -8223,6 +8243,61 @@
     {
       "name": "SecurityIdentityDrillInDto",
       "source": "src/Meridian.Contracts/Workstation/SecurityMasterWorkstationDtos.cs:56",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationScopeDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:16",
+      "documented": false
+    },
+    {
+      "name": "ChangeSinglePrincipalDeclarationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:21",
+      "documented": false
+    },
+    {
+      "name": "RecordPreparerAttestationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:30",
+      "documented": false
+    },
+    {
+      "name": "RevokePreparerAttestationRequestDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:42",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalDeclarationDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:49",
+      "documented": false
+    },
+    {
+      "name": "PreparerAttestationReceiptDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:63",
+      "documented": false
+    },
+    {
+      "name": "PreparerAttestationRevocationDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:94",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationAuditEventDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:102",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationStateDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:111",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationWorkspaceDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:125",
+      "documented": false
+    },
+    {
+      "name": "SinglePrincipalAttestationSubjectSnapshotDto",
+      "source": "src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:136",
       "documented": false
     },
     {
