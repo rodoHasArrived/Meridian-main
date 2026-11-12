@@ -62,6 +62,11 @@ schedule when effective interest is negative, after contractual caps and floors.
 an entire signed-interest schedule before any period posts. Calculation-only signed-interest
 previews keep their existing signed model; explicit v1/v2 receipt replay retains its original arithmetic.
 
+`SecurityMasterAmortizationLedgerBridge` reads held face from each lot's shared quantity and
+multiplier, and derives premium or discount as native cost less that face. Non-face lot units
+are refused rather than treated as units of 100. Blocked projections are diagnosed before an
+empty schedule is treated as having nothing to post.
+
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).
 
 `ProviderRuntimeCredentialService` owns explicit host defaults and ownership-checked migration
@@ -1140,6 +1145,18 @@ Core workstation host. Do not introduce a second listener or independent monitor
 
 ## Important workflows
 
+`DatabaseStartupPlan` is the shared, sequential migration plan consumed by executable hosts and
+`UiServer`. Each existing `*Startup` owner declares its initializer and prerequisite in
+`DatabaseStartupStep`; `AddDatabaseStartupPlan` registers the eight core participants without
+opening a database. The final graph rejects duplicate identifiers, missing prerequisites and cycles
+before any initializer runs. Failures and cancellation stop the plan before later participants.
+The existing Ledger → Security Master → Direct Lending → Asset Operations → Fund Accounts →
+Fund Structure → Banking → Money Market sequence remains intact. Headless hosts run the plan after
+the production guard and before tenant cutover/background work; desktop children leave migration
+ownership to their parent. Workstation reporting readiness remains a subsequent host-owned step.
+`DatabaseStartupPlanTests`, `HostStartupLifecycleTests`, and
+`SupportedPostureStartupIntegrationTests` cover the plan and both executable entry paths.
+
 Use this module when changing command behavior, workflow orchestration, feature registration, or
 application service contracts consumed by host and UI surfaces.
 
@@ -1321,8 +1338,9 @@ and dispatches to the registered `ISecurityValuationModel` whose kind the reques
 catalog's `DefaultValuationModel` declares; `QuotedPriceValuationModel` composes the golden-copy
 as-of read (retaining a selection receipt, as that read does), reports its staleness verdict as a
 diagnostic and picks the market-value function by the price's quote unit, scaling a percent-of-par
-quote by the same opening outstanding principal used by calculated cash flows. Dated factors
-include only payments through their evidence date; later contractual payments completed before
+quote by the same opening outstanding principal used by calculated cash flows. Dirty quotations
+block with `PriceBasisRequiresNormalization` until settlement-aware clean/dirty normalization is
+reviewed. Dated factors include only payments through their evidence date; later contractual payments completed before
 the valuation date reduce the balance. Without an applicable factor, all completed in-window
 contractual principal payments reduce it; an undated scalar is assumed current and is not reduced
 twice. Payments on the valuation date remain payable, and a future-dated scalar does not apply yet.

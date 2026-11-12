@@ -77,6 +77,7 @@ public static class ServiceCompositionRoot
         options ??= CompositionOptions.Default;
         services.TryAddSingleton(new CompositionConfiguration(options.Configuration));
 
+        services.AddDatabaseStartupPlan();
         services.AddFundScopeTenantServices();
 
         // Core configuration and storage — always required
