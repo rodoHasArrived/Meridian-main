@@ -145,12 +145,12 @@ const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] =
   },
   {
     id: "trust-latency",
-    exportValue: (provider) => `${provider.trustScoreText}; ${provider.latencyText}; ${provider.signalSourceText}`,
+    exportValue: (provider) => `${provider.trustScoreText}; ${provider.latencyOrLastGoodText}; ${provider.signalSourceText}`,
     label: "Trust / last good",
     render: (provider) => (
       <span className="block min-w-[8rem]">
         <span className="block font-mono text-xs text-foreground">{provider.trustScoreText}</span>
-        <span className="mt-1 block font-mono text-xs text-muted-foreground">{provider.latencyText}</span>
+        <span className="mt-1 block font-mono text-xs text-muted-foreground">{provider.latencyOrLastGoodText}</span>
         <span className="mt-1 block text-xs text-muted-foreground">{provider.signalSourceText}</span>
       </span>
     )
