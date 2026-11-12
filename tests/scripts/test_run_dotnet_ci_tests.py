@@ -2,6 +2,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shlex
 import shutil
 import subprocess
@@ -903,6 +904,53 @@ class ExtractedUnitProjectTests(unittest.TestCase):
         self.assertEqual(MODULE.build_isolation_properties(None), [])
         self.assertEqual(MODULE.build_isolation_properties("cold-run_1"),
                          ["/p:MeridianBuildIsolationKey=cold-run_1"])
+
+
+class LinkedUnitProjectCoverageTests(unittest.TestCase):
+    REPO = Path(__file__).resolve().parents[2]
+
+    def test_linked_unit_suites_do_not_strand_service_backed_integration_tests(self):
+        spec = importlib.util.spec_from_file_location(
+            "linked_unit_integration_evidence", self.REPO / "build/scripts/ci/integration_evidence.py")
+        evidence = importlib.util.module_from_spec(spec)
+        assert spec.loader is not None
+        spec.loader.exec_module(evidence)
+        service_backed_projects = {suite["project"] for suite in evidence.SUITES.values()}
+        main_project = "tests/Meridian.Tests/Meridian.Tests.csproj"
+        self.assertIn(main_project, service_backed_projects)
+        main_xml = ET.parse(self.REPO / main_project).getroot()
+
+        for subsystem, item_name in (("Storage", "StorageCoreTestSource"),
+                                     ("Execution", "ExecutionTestSource")):
+            project = f"tests/Meridian.{subsystem}.Tests/Meridian.{subsystem}.Tests.csproj"
+            manifest = self.REPO / "tests" / f"Meridian.{subsystem}.Tests" / f"{item_name}s.props"
+            with self.subTest(project=project):
+                self.assertNotIn(project, service_backed_projects)
+                # Both assemblies use this item list: linked sources compile in the
+                # focused suite and are removed from the service-backed main suite.
+                self.assertIn(f"../Meridian.{subsystem}.Tests/{manifest.name}",
+                              [item.get("Project") for item in main_xml.iter("Import")])
+                self.assertIn(f"@({item_name})", [item.get("Remove") for item in main_xml.iter("Compile")])
+                project_xml = ET.parse(self.REPO / project).getroot()
+                self.assertIn(manifest.name, [item.get("Project") for item in project_xml.iter("Import")])
+                self.assertTrue({f"@({item_name})", f"@({item_name}->Distinct())"}.intersection(
+                    item.get("Include") for item in project_xml.iter("Compile")))
+
+                def expand(patterns):
+                    return {source.resolve() for pattern in patterns.split(";") if pattern
+                            for source in manifest.parent.glob(
+                                pattern.removeprefix("$(MSBuildThisFileDirectory)"))}
+
+                sources = set()
+                for item in ET.parse(manifest).getroot().iter(item_name):
+                    sources.update(expand(item.get("Include", "")) - expand(item.get("Exclude", "")))
+                    sources.difference_update(expand(item.get("Remove", "")))
+                self.assertTrue(sources, "the ownership guard must inspect the linked sources")
+                stranded = [source.relative_to(self.REPO).as_posix() for source in sorted(sources)
+                            if re.search(r'\[\s*Trait\s*\(\s*"Category"\s*,\s*"Integration"\s*\)\s*\]',
+                                         source.read_text(encoding="utf-8-sig"))]
+                self.assertEqual(stranded, [],
+                                 "integration sources must stay in the service-backed main assembly")
 
 
 class UnitAggregateCommandTests(unittest.TestCase):

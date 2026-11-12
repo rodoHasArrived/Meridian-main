@@ -32,5 +32,7 @@
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Etl/**/*.cs" />
     <StorageCoreTestSource Include="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Maintenance/**/*.cs" />
     <StorageCoreTestSource Remove="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/MaintenanceSchedulerTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/DataValidatorTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/JsonlBackfillBarWriterTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/WriteAheadLogProcessTests.cs;$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/Backfill/BackfillStatusStoreTests.cs" />
+    <!-- Keep integration facts in the assembly targeted by the service-backed runner. -->
+    <StorageCoreTestSource Remove="$(MSBuildThisFileDirectory)../Meridian.Tests/Storage/StorageCatalogServiceTests.cs" />
   </ItemGroup>
 </Project>
