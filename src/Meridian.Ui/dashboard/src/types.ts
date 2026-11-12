@@ -15,6 +15,7 @@ export * from "./types/operator-surface-visit";
 export * from "./types/market-data";
 export * from "./types/canonical-symbol";
 export * from "./types/consolidation";
+export type * from "./types/intercompany-agreements";
 export * from "./types/cross-screen-counts";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
