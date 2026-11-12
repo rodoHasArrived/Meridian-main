@@ -42,6 +42,7 @@ import {
 } from "./reconciliation-casework-outcome";
 import { formatBytes, formatCount, formatCurrency, formatCurrencyForCode, formatDateTimeLabel, formatSignedCurrency, toDomId } from "./accounting-screen.formatting";
 import { formatCorporateActionPayload } from "./accounting-screen.corporate-action-formatting";
+import { cashFlowBlockerEvidence, declaredExerciseEvidence, governanceEvidence, type SecurityMasterPolicyEvidence } from "./security-master-policy-evidence";
 import {
   accountingBasisDisplayName,
   buildBasisBridgeViewState
@@ -49,7 +50,8 @@ import {
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
-  formatSecurityDateRange, formatSecurityReferenceValue, referenceDataStatusBadgeVariant,
+  formatSecurityDateRange, formatSecurityReferenceValue, formatSecurityScheduleEventType,
+  formatSecuritySchedulePostingStatus, referenceDataStatusBadgeVariant,
   referenceDataStatusLabel, referenceDataStatusTone, statusBadgeVariantForSecurityIdentity,
   summarizeReferenceDataRoutes,
 } from "./accounting-screen.security-master-presenters";
@@ -186,6 +188,9 @@ import type {
   SecurityMasterOpenLot,
   SecurityMasterOpenLotReadModel,
   SecurityMasterTrustSnapshot,
+  SecurityMasterDeclaredExerciseOutcome,
+  SecurityMasterGovernance,
+  SecurityMasterScheduleBlocker,
   StatementRunSummary,
   SubmitManualJournalEntryApprovalRequest,
   TradingParameters,
@@ -987,6 +992,9 @@ export interface SecuritySchedulesViewState {
   errorDetails: string[];
   hasRows: boolean;
   statusAnnouncement: string;
+  declaredExercise: SecurityMasterPolicyEvidence | null;
+  cashFlowBlocker: SecurityMasterPolicyEvidence | null;
+  governance: SecurityMasterPolicyEvidence;
 }
 
 export type TradingParametersField = { label: string; value: string; tone?: "default" | "warning" };
@@ -3632,7 +3640,10 @@ export function useSecurityMasterViewModel(
       error: trustSnapshotError,
       factorHistoryCount: trustSnapshot?.scheduleBook?.factorHistory.length ?? 0,
       provenanceCount: trustSnapshot?.scheduleBook?.provenanceHistory.length ?? 0,
-      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null
+      sourceSummary: trustSnapshot?.scheduleBook?.sourceSummary ?? trustSnapshot?.scheduleSummary?.sourceSummary ?? null,
+      declaredExercise: trustSnapshot?.scheduleBook?.declaredExercise ?? trustSnapshot?.scheduleSummary?.declaredExercise ?? null,
+      governance: trustSnapshot?.governance ?? null,
+      cashFlowBlocker: trustSnapshot?.cashFlowBlocker ?? null
     }),
     [
       identity?.assetClass,
@@ -4378,6 +4389,16 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    sourceRows: scopedBreakQueue,
+    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
+      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+        setBreakQueue((current) => {
+          const retained = current.find((item) => item.breakId === updated.breakId);
+          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
+          return replaceBreakQueueItem(current, updated);
+        });
+      }
+    },
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -6128,7 +6149,10 @@ export function buildSecuritySchedulesViewState({
   error = null,
   factorHistoryCount = 0,
   provenanceCount = 0,
-  sourceSummary = null
+  sourceSummary = null,
+  declaredExercise = null,
+  governance = null,
+  cashFlowBlocker = null
 }: {
   securityId: string | null;
   displayName: string | null;
@@ -6140,6 +6164,9 @@ export function buildSecuritySchedulesViewState({
   factorHistoryCount?: number;
   provenanceCount?: number;
   sourceSummary?: string | null;
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
+  governance?: SecurityMasterGovernance | null;
+  cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
 }): SecuritySchedulesViewState {
   const normalizedError = normalizeApiErrorDisplay(error);
   const errorText = normalizedError?.summary ?? null;
@@ -6153,6 +6180,7 @@ export function buildSecuritySchedulesViewState({
   const pendingCount = rows.filter((row) => row.postingStatus === "Pending" || row.postingStatus === "Forecast").length;
   const varianceCount = rows.filter((row) => row.postingStatus === "Variance").length;
   const factorCount = rows.filter((row) => row.factorStart !== null || row.factorEnd !== null).length;
+  const exerciseEvidence = declaredExerciseEvidence(declaredExercise);
 
   return {
     securityId: displaySecurityId,
@@ -6182,10 +6210,17 @@ export function buildSecuritySchedulesViewState({
     errorText,
     errorDetails: normalizedError?.details ?? [],
     hasRows: eventCount > 0,
+    declaredExercise: exerciseEvidence,
+    cashFlowBlocker: cashFlowBlockerEvidence(cashFlowBlocker),
+    governance: governanceEvidence(governance),
     statusAnnouncement: errorText
       ? `Schedule book error: ${errorText}`
       : loading
         ? `Loading schedule book for ${displaySecurityId}.`
+        : cashFlowBlocker
+          ? `Cash-flow calculation blocked. ${cashFlowBlocker.code}: ${cashFlowBlocker.reason}`
+        : exerciseEvidence?.blocked
+          ? `${exerciseEvidence.title}. ${exerciseEvidence.messages.join(" ")}`
         : eventCount > 0
           ? `${eventCount} cash-flow schedule ${eventCount === 1 ? "event" : "events"} loaded for ${displaySecurityId}.`
           : ""
@@ -6985,31 +7020,6 @@ export function buildTradingParametersViewState(
           ? `Trading parameters loaded for ${params.securityId}.`
           : ""
   };
-}
-
-function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
-  const labels: Record<string, string> = {
-    Coupon: "Coupon",
-    Principal: "Principal",
-    Paydown: "Paydown",
-    Maturity: "Maturity",
-    Call: "Call",
-    Distribution: "Distribution",
-    FactorUpdate: "Factor update"
-  };
-
-  return labels[eventType] ?? eventType;
-}
-
-function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
-  const labels: Record<string, string> = {
-    Posted: "Posted",
-    Pending: "Pending",
-    Variance: "Variance review",
-    Forecast: "Forecast"
-  };
-
-  return labels[status] ?? status;
 }
 
 function securitySchedulePostingTone(

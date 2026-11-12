@@ -180,6 +180,8 @@ export const FUND_STRUCTURE_API_ENDPOINTS = {
   reportingSchedules: UI_API_ROUTES.ReportingSchedules,
   reportingSchedulePause: UI_API_ROUTES.ReportingSchedulePause,
   reportingScheduleResume: UI_API_ROUTES.ReportingScheduleResume,
+  reportingScheduleDisable: UI_API_ROUTES.ReportingScheduleDisable,
+  reportingScheduleDelete: UI_API_ROUTES.ReportingScheduleDelete,
   reportingScheduleRunNow: UI_API_ROUTES.ReportingScheduleRunNow
 } as const;
 
@@ -1364,18 +1366,6 @@ export function reportingRunReportWriterGridEndpoint(
   return format && format !== "json" ? `${route}${queryString({ format })}` : route;
 }
 
-export function reportingSchedulePauseEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingSchedulePause, "scheduleId", scheduleId);
-}
-
-export function reportingScheduleResumeEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleResume, "scheduleId", scheduleId);
-}
-
-export function reportingScheduleRunNowEndpoint(scheduleId: string): string {
-  return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingScheduleRunNow, "scheduleId", scheduleId);
-}
-
 export function reportingStarterKitProvisionEndpoint(kitId: string): string {
   return routeWithParam(FUND_STRUCTURE_API_ENDPOINTS.reportingStarterKitProvision, "kitId", kitId);
 }
@@ -1953,7 +1943,7 @@ function pathSegment(value: string, name: string): string {
   return encodeURIComponent(trimmed);
 }
 
-function routeWithParam(route: string, paramName: string, value: string): string {
+export function routeWithParam(route: string, paramName: string, value: string): string {
   const encodedValue = pathSegment(value, paramName);
   const simplePlaceholder = `{${paramName}}`;
   if (route.includes(simplePlaceholder)) {

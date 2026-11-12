@@ -37,9 +37,9 @@
       "review_by": "2026-12-01"
     },
     {
-      "path": "tests/Meridian.Tests/Integration/AlpacaPaperOrderLifecycleTests.cs",
-      "test": "AlpacaPaperOrderLifecycleFactAttribute",
-      "reason": "Real paper-broker order validation is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1 and the documented paper credentials.",
+      "path": "tests/Meridian.Tests/Integration/AlpacaPaperSandboxSupport.cs",
+      "test": "AlpacaPaperOrdersFactAttribute",
+      "reason": "Real paper-broker order validation places and cancels paper orders and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_ORDERS=1 and the documented paper credentials.",
       "owner": "Execution",
       "category": "environment-gated",
       "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",
@@ -49,15 +49,6 @@
       "path": "tests/Meridian.Tests/Integration/AlpacaPaperSandboxTests.cs",
       "test": "AlpacaPaperSandboxFactAttribute",
       "reason": "Real paper-broker validation is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1 and the documented paper credentials.",
-      "owner": "Execution",
-      "category": "environment-gated",
-      "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",
-      "review_by": "2026-12-01"
-    },
-    {
-      "path": "tests/Meridian.Tests/Integration/AlpacaPaperSandboxOrderLifecycleTests.cs",
-      "test": "AlpacaPaperSandboxOrdersFactAttribute",
-      "reason": "Paper order-lifecycle validation places and cancels paper orders and is opt-in: set MERIDIAN_RUN_ALPACA_PAPER_SANDBOX=1, MERIDIAN_RUN_ALPACA_PAPER_SANDBOX_ORDERS=1 and the documented paper credentials.",
       "owner": "Execution",
       "category": "environment-gated",
       "tracking": "docs/testing/alpaca-paper-portfolio-sandbox.md",
@@ -103,6 +94,15 @@
       "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterDatabaseFactAttribute.cs",
       "test": "SecurityMasterDatabaseFactAttribute",
       "reason": "\"Security Master PostgreSQL tests are skipped because Docker is unavailable. \" + $\"Start Docker, set {ConnectionStringVariable} to an external Postgres instance, \" + $\"or set {DisableDockerVariable}=true to suppress this suite explicitly.\"",
+      "owner": "Storage",
+      "category": "environment-gated",
+      "tracking": "PRD-016",
+      "review_by": "2027-02-01"
+    },
+    {
+      "path": "tests/Meridian.Tests/SecurityMaster/SecurityMasterIdentifierRevisionMigrationTests.cs",
+      "test": "SecurityMasterDatabaseTheoryAttribute",
+      "reason": "new SecurityMasterDatabaseFactAttribute().Skip",
       "owner": "Storage",
       "category": "environment-gated",
       "tracking": "PRD-016",

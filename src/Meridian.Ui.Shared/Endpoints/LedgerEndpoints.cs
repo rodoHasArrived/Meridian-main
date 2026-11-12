@@ -30,6 +30,8 @@ public static partial class LedgerEndpoints
         MapDisposalTaxEndpoints(app, jsonOptions);
         MapConsolidationEndpoints(app, jsonOptions);
         MapAccountOversightEndpoints(app, jsonOptions);
+        MapPrivateCapitalEndpoints(app, jsonOptions);
+        MapPostedPeriodComparisonEndpoints(app, jsonOptions);
         app.MapGet(UiApiRoutes.LedgerBooks, async (
             string? fundProfileId,
             Guid? fundStructureNodeId,
@@ -320,6 +322,8 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status403Forbidden)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status501NotImplemented);
+
+        MapAccountRunningBalanceEndpoint(app, jsonOptions);
 
         app.MapGet(UiApiRoutes.LedgerAggregateJournalEntries, async (
             Guid aggregateId,
@@ -1758,6 +1762,17 @@ public static partial class LedgerEndpoints
             catch (InvalidOperationException ex)
             {
                 return Results.Conflict(new { error = ex.Message });
+            }
+        })
+        .AddEndpointFilter(async (invocation, next) =>
+        {
+            try
+            { return await next(invocation).ConfigureAwait(false); }
+            catch (LedgerValidationException ex)
+            { return Results.Conflict(new { error = ex.Message }); }
+            catch (Npgsql.PostgresException ex) when (ex.SqlState is "40001" or "40P01" or "23505")
+            {
+                return Results.Conflict(new { error = "Posting authority changed or a retained financial identity is already in use. Reload retained records and review the current inputs before retrying." });
             }
         })
         .WithName("ApplyManualJournalEntryLifecycleAction").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)

@@ -6,10 +6,47 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui/dashboard
+
+The main order ticket retains local quantity and limit/stop-price text while the existing numeric
+model drives preview, validation and submission. Typing `188.0` followed by `5` preserves `188.05`.
+Instrument, order-type, account-scope and close/reset transitions discard stale editor text;
+account changes invalidate review acknowledgement in their first render. Numeric transport and
+server authority remain unchanged. Native number inputs can normalize characters before validation;
+the strict decimal parser validates the text the browser actually supplies. Focused coverage lives
+in `trading-screen.test.tsx` and `trading-screen.view-model.test.ts`.
+
+Native capital-call previews accept the server's canonical case-normalized call identity while
+retaining the reviewed plan hash; a preview for another call is rejected before retention.
+
+Security Master's Schedules tab renders the shared declared call/put outcome, including stable
+blocker codes and reasons, evaluation date, retained security version, resolved window count and
+notice diagnostics. An absent outcome keeps the undeclared distinction. The same panel shows the
+host's effective governance profile, its source and restart latch, edit/review requirements and
+ignored configuration. Missing governance evidence is explicit. Put and call/put notice-deadline
+rows use operator-facing labels. Focused coverage: `security-master-policy-evidence.test.tsx`.
+An independent cash-flow calculation blocker (including `NegativeInterestUnsupported`) stays visible
+even when the record's declared exercise dates resolved successfully.
+
+Data overview leads with provider health and scoped retained verification events before backfill
+work. Verification probes are discrete observations, not uptime; absent, pending or malformed
+history is explicit. Backfill coverage cells retain execution state and requested dates without
+asserting that every market session is complete. Settings overview is a setup checklist based on
+loaded connection and session evidence, with default browser preferences counted as valid.
+Shared chart alternatives retain exact source values through the table workbench. Complete server
+exports read their authorized source before filtering. Upload and workbook downloads explicitly
+export all filtered preview records, with preview-only metadata; they do not claim whole-file coverage.
+Account history keeps cash and securities
+components separate by currency and source; it does not substitute strategy-run equity or derive
+an unprovided account net-equity total.
+Close burndown renders only retained canonical workflow snapshots and breaks the line across
+missing snapshots or workflow-version gaps. Legacy histories and one-point observations remain
+explicit. Metric payloads may carry a version-1 Number Passport reference to the existing
+subject-addressed evidence API; missing references remain unverified, and this additive contract
+does not grant W10/W11 roadmap acceptance.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
@@ -42,7 +79,8 @@ connection's raw identity, tenant, account and environment.
 Live/production acknowledgement also recognizes case and surrounding whitespace in retained
 environment labels without changing the environment sent to the server.
 
-Accounting Ledger Explorer includes a governed factor-paydown workbench. Exact factor text and
+Accounting → Factor Paydown (`/accounting/factor-paydown`) provides the governed paydown workbench.
+Ledger Explorer links to it and to `/accounting/consolidation`, preserving book and period scope. Exact factor text and
 existing retained evidence identities go to the shared preparation endpoint; the server supplies
 principal, basis relief, realized results and per-lot allocation as exact decimal strings. Creating
 a review draft requires an explicit description and confirmation of the preview. The shared draft
@@ -105,7 +143,11 @@ The browser shell renders `WorkspaceHeader` as one row above every route:
   holding Copy link and the workspace's About text.
 
 The route body carries the task title as an `h2` (`Orders blotter`); routes do not render their
-own `h1` or repeat the workspace name. `Workflow context` lives in the scope picker, collapsed
+own `h1`, repeat the workspace name, or repeat the breadcrumb's page name (`Accounting > Approvals`
+is headed `Approval queue`, not `Approvals`). Accounting and Reporting task modes keep `label` for
+the page name and carry the body heading in `title`. The browser tab title and the route-change
+announcement name the page first, as the breadcrumb does (`Orders - Trading - Meridian`,
+"Orders, Trading loaded."), without the old `Workstation` suffix. `Workflow context` lives in the scope picker, collapsed
 under the scope controls; following one of its links closes the picker. Live, simulated/seeded,
 unknown-provenance and degraded warnings remain outside disclosures.
 
@@ -222,6 +264,12 @@ repeated delivery of the same snapshot cannot extend its lifetime. Recovery neve
 or resumes runs. Focused coverage lives in
 `trading-screen.brokerage-recovery.test.tsx`, `trading-screen.view-model.test.ts`, and `api.trading.test.ts`.
 
+Trading's governed approvals panel shows each parked order's economic terms from the shared
+escalation contract: routed notional (in place of the quantity for a dollar-sized order), stop and
+trail terms, time in force, position intent, option contract, legs, and strategy. A term the server
+sends as null gets no row; the fund account ID sits under Technical details. Coverage lives in
+`governed-approvals-panel.test.tsx`.
+
 Reporting run status and governed run detail expose an investment-income comparison over two
 explicit retained run identities. Baseline options distinguish originally published and restated
 results. The shared service retains the manifests, snapshot diff, explanation, and supporting
@@ -281,9 +329,9 @@ custom-stats parsing advisories reported by the September 6 production-certifica
 Tailwind 4 uses its matching `@tailwindcss/postcss` adapter. The main stylesheet imports Tailwind
 once, scoped with `source(none)`, and explicitly loads the existing `tailwind.config.ts` so
 Meridian's semantic colors, typography, shadows and utility sources remain part of generated CSS.
-Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`): Chromium does not
-resolve `ui-monospace`, so without it a machine lacking Cascadia/JetBrains/Consolas renders data
-text in the serif default. `design-system-contract.test.ts` guards both rules. The lockfile retains
+Every config font stack ends in a CSS generic family (`monospace`, `sans-serif`),
+providing an appropriate fallback if the bundled IBM Plex face is unavailable.
+`design-system-contract.test.ts` guards these rules. The lockfile retains
 patched `source-map-js` 1.2.2.
 
 Screens share one status component, one formatting module, one table system and one type scale.
@@ -306,6 +354,12 @@ not been recorded.
   `formatDateTime` covers any other date layout through a pinned-locale `Intl.DateTimeFormat`.
   ESLint blocks `Intl.*` and `toLocale*String` in every non-test file under `src/screens/`, and
   the `directIntlFormatting` baseline is empty.
+- **Calendar dates.** A trade, ex-, due, effective, or period date is carried as a `YYYY-MM-DD`
+  string through `@/lib/local-date` (`LocalDate`, the native port of the Design System 4.3 carrier)
+  and rendered with `LocalDateText` from `@/components/ui/local-date-text`, which emits
+  `<time dateTime>`. Do not cut a day out of `toISOString()`: use `utcToday()` where the server
+  evaluates the day in UTC and `LocalDate.dayOfInstant` for the operator's own day. Impossible days
+  such as `2026-02-30` are null, never rolled into another day.
 - **Number style.** One style for a financial figure, wherever it appears:
   - *Signed P&L*: `formatPnl` puts an explicit sign on every non-zero amount with thousands
     separators and fixed decimals (`+$1,234.56`, `-$1,234.56`, `$0.00`); `pnlToneForValue`
@@ -691,9 +745,10 @@ accounting policy and source provenance, and the execution mode on fill and attr
 Keep the TypeScript declarations aligned with `StrategyRunReadModels.cs`; nullable source
 references remain nullable, while required policy and mode fields must also be present in fixtures.
 
-The browser workstation visual system is light-first and aligned to the Meridian Design System's
-Institutional Ops palette: paper canvas, white cards, near-black masthead/status chrome, hairline
-borders, shallow shadows, Segoe UI body/display type, and Cascadia/JetBrains Mono data text. Keep
+The browser workstation visual system uses Meridian Design System 4.3.0's
+paper/plate/well hierarchy, graphite chrome and primary actions, independent blue
+focus/selection/link roles, terracotta brand/scenario signal, and local IBM Plex
+Sans/Mono typography. Light and dark appearances resolve through semantic roles. Keep
 visual changes on the shared tokens and primitives in `src/styles/index.css` and `src/components/ui/`
 instead of introducing one-off screen styling.
 
@@ -1532,8 +1587,10 @@ access snapshot as `allowOwnerAccess` plus typed `User`, `Group`, or `Company` p
 renders those values as policy evidence only; flattened principal ids are rejected at the API
 boundary rather than assigned a client-inferred principal kind or used to infer authorization.
 The Reporting workspace also renders operator-managed schedule rows from the shared schedule
-payload and wires schedule save/upsert, run-now, pause, and resume controls through the shared
-schedule endpoints. Due schedules are leased and executed only by the hosted reporting worker; the
+payload and wires schedule save/upsert, run-now, pause, resume, disable, and delete (with an
+inline confirm step) controls through the shared schedule endpoints. Cadence presets cover daily,
+weekday, weekly, twice-monthly, first and last day of month, quarterly, and annual runs, and a
+time zone select sends the schedule's IANA `timeZoneId` (default `UTC`). Due schedules are leased and executed only by the hosted reporting worker; the
 browser has no public batch `run-due` control or API helper. Schedule drafts default from the current schedule, approved template, and
 distribution payload before posting back to the server. Retained delivery attempts render from the
 shared delivery-history payload, so browser Reporting shows actual
@@ -1622,11 +1679,20 @@ version-approval workflow without adding browser-local lifecycle rules. Custom d
 post submit-for-review decisions to
 `/api/fund-structure/reporting/templates/{templateName}/versions/{version}/submit`, and in-review
 rows post approval or rejection decisions to the matching `/approve` and `/reject` shared
+In Report Builder mode a `New custom report` control adds a blank, unsaved report-writer grid whose
+field palette comes from the first retained dataset source (or the preview fixture fields). Saving it
+posts a new `CustomReport` template draft with no base version; its preview renders the inline grid
+against an approved built-in template because the render endpoint requires an approved template.
 governance endpoints. When the shared payload marks a template with report-writer grids, the browser
 summarizes those grid counts from `reportWriterGrids` and renders a no-code grid designer with
 source fields, row/column zones, metrics, formulas, grid-type and Top-N controls, sort posture, and operator-authored
-custom formula name/label/expression fields plus saved filter controls for field/operator/value
-slicing. Source fields come from the shared report-writer field catalog when present, so the browser
+custom formula name/label/expression fields plus filter controls for field/operator/value
+slicing. Every saved filter is loaded into the draft as its own row, operators can add or remove
+rows, and all complete rows are sent on preview and save (the engine keeps a row only when it
+matches every filter). The access-policy principal ID field and the
+schedule recipient principal ID field use `PrincipalIdInput`, which suggests role and role-profile
+names for `Group` principals and usernames for `User` principals (when the caller may list
+accounts) on first focus, while still accepting typed IDs. Source fields come from the shared report-writer field catalog when present, so the browser
 palette can include source-backed portfolio, analytics, consolidation, and generated contribution
 fields even when a saved grid has not already placed those fields. The designer also renders a live layout summary from the current draft zones so operators
 can confirm dimension, metric, formula, filter, and Top-N posture before preview or save. Operators can save the current grid layout as a
@@ -1648,7 +1714,7 @@ source-backed option posts the selected payload-owned rows to the render endpoin
 renders the source-owned field catalog with role and data-type metadata before preview. Formula
 preview row generation recognizes brace references, bare identifiers, `total(...)`, and shared
 formula functions such as `abs(...)`, `min(...)`, `max(...)`, `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)`, so local sample rows include the same formula source fields
+`basisPoints(...)`, `round(...)`, and `if(...)`, so local sample rows include the same formula source fields
 the shared renderer will evaluate. The
 certified operational data-mart option is server-projected with row-lineage keys, lineage manifest
 pointers, evidence-index links, source run ids, validation/reconciliation posture, certification
@@ -1987,15 +2053,184 @@ independently of Tailwind utility ordering.
 and checks token-backed components, responsive utilities, typography, opacity, and focus behavior.
 Any future separately processed stylesheet that uses `@apply` must first reference
 `src/styles/index.css` with `@reference` to access the workstation theme without emitting it twice.
-The root `Meridian Design System/` package is vendored as the visual source bundle for tokens,
+### Meridian Design System 4.3.0 integration
+
+The root `Meridian Design System/` package is the visual source bundle for tokens,
 component references, patterns, templates, and governance scripts. The browser workstation consumes
 the package through copied `src/assets/` files and the `src/design-system/assets.ts` bridge, while
 `src/design-system-contract.test.ts` keeps the package manifest, canonical token values, asset bridge,
 and runtime CSS alignment under test.
+Native adapters use complete workstation color values such as `--border-color` and `--ws-border`.
+Tailwind role variables such as `--border`, `--primary`, `--danger` and `--warning` contain HSL
+channels; direct CSS color values must wrap them in `hsl(...)`. The source contract in
+`src/design-system-color-values.test.ts` prevents raw channel values from reaching native CSS or
+arbitrary utilities. `node scripts/test-native-adapter-colors.mjs` checks computed native borders,
+chart separators, validation colors and keyboard focus in light and dark Chromium appearances.
+Set `MERIDIAN_CHROMIUM_PATH` when using a system Chromium installation.
+
+Workstation tokens in `src/styles/index.css` follow the package's 4.3.0 roles: graphite (`#29323A`)
+is the primary action and chrome color, terracotta (`#C56343`) is the brand/scenario signal only,
+and focus and selection use the interaction blue family (`#2D6FB3` ring, `#E7EDF2` selected
+surface). Light, auto-dark, manual-dark, and forced-light scopes take their values from the package's
+`tokens/` files.
+
+`main.tsx` loads `src/design-system/fonts.css`, synchronized from the package,
+before the workstation stylesheet. The package ships IBM Plex Sans and Mono as TTF; the sync serves
+them as WOFF2 under `src/assets/fonts/` (about a third of the size) and rewrites the projected
+`fonts.css` sources to match. `woff2-sources.json` records each source TTF and WOFF2 SHA-256, so check
+mode stays pure Node while `npm run design-system:sync` reconverts changed fonts through
+`scripts/convert-fonts-to-woff2.py` (Python with `fonttools` and `brotli`; set `MERIDIAN_PYTHON` to
+pick an interpreter). Their OFL notices ship through `public/licenses/`. Brand
+marks, lockups, the identity sheet, and module icons use the canonical copied
+assets in `src/assets/` and the typed asset bridge. Vite bundles these local
+assets for hosted and offline-capable deployments.
+
+Asset drift is checked before dev/build and by Vite's build hook. Run
+`npm run design-system:check` to verify the copied bytes,
+`npm run design-system:sync` after an intentional package asset update, and
+`npm run design-system:test-assets` for the synchronization regression suite.
+Keep the package, synchronized assets, token bridge, and contract tests in the
+same reviewable change.
+
+Token values are checked from the package directory. `python3 scripts/check_token_parity.py`
+fails when a token name that `src/styles/index.css` and the package both declare resolves to a
+different value in light, auto-dark, manual-dark, or forced-light scope; a deliberate difference
+has to be listed in `tokens/parity-manifest.json` (none is). The Review severity chip is the
+terracotta signal, distinct from Action's ochre, with `--brand-signal-text` as its text ink.
+`python3 scripts/check_contrast.py` checks chip and button contrast, `var()` fallback literals,
+brand art in all three tracks, and the WPF runtime palette.
+
+Auxiliary route and primitive styles consume the same roles: `--font-body` /
+`--font-display` for interface text, `--font-data` for values and identifiers,
+`--interaction-focus` for keyboard focus, `--interaction-selected` and
+`--interaction-selected-surface` for committed selection, and
+`--interaction-link` for navigation links. Table headers, zebra rows, row detail,
+popovers, and shell fields use the active `--ws-*` / chrome surfaces so appearance
+changes do not reveal hardcoded legacy panels. Financial and permission states
+retain their own severity roles and visible labels.
+
+Primary hover/pressed states remain structural. The Paper environment uses Field
+slate, and chart observations/comparisons use graphite/slate/neutral roles. The
+host-served distribution also preserves OFL notices under `notices/`, alongside
+the compatible `licenses/` path. Canonical workspace SVGs serve as masks so
+navigation color remains legible in dark and forced-color modes. Startup and
+chart labels use the shared font roles; density remains operator-controlled.
+
 Live shell chrome and Accounting adapters remain dashboard-native TypeScript: `WorkstationTopbar`,
 `WorkstationStatusBar`, `TrialBalanceTable`, `AgingTable`, and `ReconciliationComparisonPanel`
 adapt the manifest-backed design-system references without importing root JSX or runtime-injected
 package CSS into the dashboard build.
+
+Four components new in 4.3 are also dashboard-native ports wired into live screens; each renders
+only from data the screen already loads:
+
+- `LocalDate` / `LocalDateText` (`src/lib/local-date.ts`, `src/components/ui/local-date-text.tsx`)
+  carry and render calendar dates in the Data corporate-action inbox and the Accounting
+  prepare-next-period dates, and `utcToday()` names the UTC "today" default used by the Reporting
+  as-of defaults and the Settings asset-profile effective dates. Visible text is unchanged.
+- `SelectionCompare` (`src/components/charts/SelectionCompare.tsx`, with `ComparisonPlate` /
+  `PlateGrid`) adds a per-row `Chart` toggle, an inline tray capped at six runs, and an inline sheet
+  of equity paths on one shared scale to the Strategy run library. The set is chart-only and
+  separate from the two-run Compare/Diff/Promote selection. Curves come from the existing run
+  equity-curve client when the sheet opens; a run without a curve keeps its plate and says why.
+  Paths are rebased to 100 at each run's first curve point, and Total return is the run record's
+  figure. The package's overlay sheet and corner-docked tray are not ported.
+- `RollforwardTrace` and `TieOutPanel` (`src/components/accounting/`, arithmetic in
+  `proof-arithmetic.ts`) are read-only. The Capital Account workbench proves each investor row from
+  its subledger entries' net capital activity and reports an account with no entries as
+  "Not itemised", never as tied. The Accounting reconciliation band mounts the tie-out as the proof
+  of the figures `ReconciliationComparisonPanel` already shows, with status passed explicitly so
+  offsetting breaks never read as tied. Accept, resolve, escalate, reopen, and add-item actions and
+  the reviewer line are omitted because no endpoint backs them. The external GL reconciliation is read
+  on the External GL workstream, so the tie-out appears in the Reconciliation band after that
+  workstream has been opened in the same Accounting session.
+- `OptimisticCell` (`src/components/data/optimistic-cell.tsx`, with `OptimisticProvider`,
+  `OptimisticRowBar`, and `EditableCell`) edits provider module priority in place on the Settings
+  provider card. The write is the existing provider-module update and always resends the module's
+  `enabled` flag. An edit reads Provisional, then Confirmed (saved, not live until the provider host
+  restarts); a server refusal reads Rejected with the server's reason; a write with no answer is
+  read back and otherwise shown as Unlanded. Revert is a second write of the prior value under a
+  reason held in this browser session only, because the provider API has no reason or audit field.
+  The edit drawer remains the full-form path.
+Cash Ladder uses the shared `Select` for scenarios and `Input type="number"` for the minimum
+balance draft. Blank input still requests the service default; Enter and Apply threshold keep
+the existing request and account-reset behavior. The provider integration workbench uses shared
+`Select` and `TextArea` controls for template/capability choices and JSON/CSV drafts, preserving
+the existing labels, disabled states, validation, and service-owned activation workflow.
+The shared `Tabs` primitive generates instance-specific tab/panel ids, labels each panel from its
+tab, and includes the visible panel in keyboard focus order. Explicit `panelId` links are retained;
+reusing tab values across independent groups no longer creates duplicate generated ids.
+Market Data's URL-backed tab changes retain tab focus; operating-scope and evidence-hash navigation
+still use the shell's route focus handoff.
+Metric cards resolve the active workstation surface and border roles, including nested light scopes.
+Nonselectable and empty dense tables provide named keyboard stops for scrolling. Cash Ladder's
+interactive chart exposes a labelled group and pressed bucket controls with visible keyboard focus.
+
+The merged PR also carries WPF IBM Plex Sans/Mono typography through its native
+font resources. That concurrent platform work is preserved. Browser checks here
+cover the web workstation; Windows/WPF rendering and identical cross-platform
+metrics have not been established by those checks.
+
+Run `npm run smoke:design-system` against a dev server started with
+`MERIDIAN_DEV_MODE=fixture-only` to reproduce the rendered integration checks.
+The script accepts `--url` and `--output`; `CHROMIUM_EXECUTABLE_PATH` selects a
+system Chromium when needed. Its report and screenshots record theme values,
+loaded fonts, workspace navigation, proof-dialog keyboard behavior, density,
+native Accounting borders/selection, and fresh accessibility scans. Fixture API
+gaps remain explicit in the report and are not backend validation.
+
+The full PR #3501 adoption review is recorded in
+`Meridian Design System/api/project-compatibility.json`. It covers every browser
+screen and shared adapter, including concrete reasons for retaining specialized
+accounting tables, native file controls and embedded row actions. The dashboard
+keeps its existing React, routes, service contracts and financial semantics.
+
+Provider institution search now uses shared search input and selectable dense
+results while retaining explicit server search and exact institution identifiers.
+Maintenance history uses a shared filter and the read-only dense adapter through
+the governed TableWorkbench. Its default remains service order with a 25-row
+limit; concurrent personal-view, search and export controls are preserved. Report-writer token actions
+use shared buttons with visible keyboard focus and disabled reasons, preserving
+reordering, removal and drag behavior. Other compatible forms and flat tables
+use the same adapters; specialized financial tables retain their row/header and
+grouping semantics. `DenseDataTable.tableClassName` preserves a screen's existing
+minimum table width without introducing a row cap or sort.
+
+Reproduce package-wide offline validation from the design-system directory with
+`npm run test:library` and `npm run test:types`; the package's test guide documents
+the source-level interaction suites. These synthetic checks establish component
+and browser behavior. Live providers, backend writes, native Windows/Edge and
+assistive-technology announcement journeys require their own evidence.
+
+`node scripts/smoke-design-system-adoption.mjs --url http://127.0.0.1:5173/workstation --output /tmp/meridian-adoption`
+reproduces the institution, maintenance and report-token acceptance matrix against
+the fixture-only server. Its defaults run both themes at three desktop sizes and
+a 200% desktop zoom layout equivalent, with exact request/selection/cancellation
+IDs, keyboard ordering, drag actions and scoped accessibility checks. The optional
+`--only` and `--sizes` filters produce explicitly focused evidence.
+
+The final adoption checkpoint passes 5,100 tests across all 455 dashboard test
+files, strict types, production build, 31 tooling checks and ratchets. Lint has
+zero errors and 98 existing warnings. The maintained browser passes 64 checks
+and 15 axe scans; the three adoption journeys pass 24 checks and 24 scoped axe
+scans. All use synthetic fixtures; these counts do not certify backend services
+or native Windows/assistive-technology behavior.
+
+The routes that walk reads are answered by `src/lib/dev-fixtures/`. Read surfaces
+that once returned 501 there (reconciliation readiness, statement-run detail for
+the sample run, operator preference reads, ledger books, the provider capability
+matrix, and the empty-state answers for escalations, valuation schedules, data
+quality and the corporate-action inbox) are served from
+`workstation-surface-fixtures.ts`, typed against the shared contracts. The smoke
+script lists those paths and fails if one returns 501 again. Three calls stay
+unanswered on purpose and are still reported: the financial-operations command
+center and the close period plan (large composite projections with no synthetic
+fixture yet), and the POST that records an operator visit (a write). The walk
+covers a small part of the workstation: other routes, including most of Data and
+Security Master reference data, still return 501 in fixture-only mode.
+
+### Workspace-specific styling
+
 Accounting uses one local navigation model in the workspace sidebar. Unique destinations are grouped
 under Close, Records, Reconciliation, Review, and Administration; Accounting screens do not repeat
 those routes in a horizontal tab strip or task-mode launcher. Governed delivery evidence remains a
@@ -2106,6 +2341,39 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 | `TODO-SRC-UI-DASHBOARD-001` | Add browser workstation route diagram coverage for paper readiness | done | medium |
 | `TODO-SRC-UI-DASHBOARD-002` | Wire Accounting Transaction Lab browser endpoint requests to shared API contracts | done | high |
 <!-- source-todos:end -->
+
+## Design-system development
+
+From the repository root, `npm run check:design-system` runs the focused integration
+checks without installing dependencies, rewriting baselines, regenerating checked-in assets, or starting
+a browser. Use the Node 24 version selected by `.nvmrc`, install both the dashboard and
+`Meridian Design System/` dependencies with their committed lockfiles, and provide Python 3
+(`MERIDIAN_PYTHON` can select its executable). The command rejects stale direct dependencies
+before running consistency, typography, component, asset, gallery, action-contrast, package
+freshness, and export-integrity checks. It is a focused development check; the full application
+and broader legacy package-governance checks retain their own scope and results.
+
+`npm run ratchets:update` from this directory records reductions in existing screen-level UI
+debt. It refuses new offenders or per-file increases and preserves the baseline on failure.
+
+Start `npm run dev:fixtures` from the repository root and open
+`http://127.0.0.1:5173/workstation/__design-system` to inspect the native component workbench.
+It is available only in fixture-only Vite development, before application data providers mount;
+production and backend-connected development do not expose it. The workbench uses the actual
+Button, Badge/status, form, table, and inspector adapters with fixed synthetic records. Appearance,
+density, explicit-light surfaces, data states, and button states live in its shareable URL, with
+a Reset control. It makes no backend requests and does not use operator preference storage.
+
+Browser integration verification is explicit: `npm run check:design-system:browser` from the
+repository root runs the maintained design-system smoke profile. Use its `--help` output for
+server, URL, and evidence-directory options. The profile exercises real fixture-backed routes
+and the workbench, including font loading, selected-state contrast, keyboard focus, appearance,
+density, and asset health; failures retain machine-readable results and screenshots.
+
+The exported package's `tests/gallery.html` reads its specimen inventory directly from
+`_ds_manifest.json`, with metadata, filters, links, and one optional preview at a time. A loaded
+specimen document is not a conformance verdict: some specimens retain their Design Component or
+external-runtime requirements. Package conformance and browser regression harnesses remain separate.
 
 ## Validation
 
@@ -2244,3 +2512,68 @@ those retained for other workflows. The seven root workspaces and WPF remain unc
 Focused regression coverage includes `reconciliation-view-state.test.tsx`,
 `accounting-screen.reconciliation-continuity.test.ts`, `accounting-screen.reconciliation-workbench.test.tsx`,
 `app-shell.route-focus.test.ts`, and the existing Accounting, shell and accessibility suites.
+
+## Native commitments and capital calls
+
+Accounting → Capital accounts links to the native commitment-to-cash workbench at
+`/accounting/capital-calls`. Select a retained ledger book; the server resolves entity, fund,
+currency, tenant and company authority. Reads disable development fallback and explicitly
+report unavailable persistence or unsupported book scope.
+
+Commitment revisions retain source terms and evidence before explicit review and approval.
+Call previews retain the reviewed server plan hash. The notice date selects one effective
+approved revision per commitment; inactive successors are excluded without reviving older terms.
+Changing that date clears selection and prior previews.
+Issuance and funding only queue governed journal drafts. Posted balances and receipt identities
+come from the shared authority. Decimal text is preserved without browser allocation or rounding.
+Retained calls and their detail show an overdue receivable only when a posted outstanding balance
+remains after the due date, evaluated at the server view's UTC date rather than the local clock.
+Funding requires a distinct receipt identity, bank-line identity and retained bank evidence.
+The cash-receipt panel imports a reviewed BankEvidence/BankStatement JSON observation through
+the native book-scoped authority. It submits only the accepted Evidence Vault reference and
+document ID. The returned source fills bank-line identity, exact amount, effective date and
+evidence; a fresh match confirmation is required before the separate funding-draft action.
+Import conflicts preserve existing cash fields and never create local balances or journals.
+The bounded funding workflow uses the call's accounting period; closed-period or different-period
+receipts require a separately supported correction or receipt workflow and remain blocked here.
+Notice generation creates a Reporting draft; governance and delivery states remain separate.
+Each installment has its own notice action and retained status, including when one investor has
+multiple commitments in the call. New requests explicitly select that line's commitment.
+Each deliberate Generate/Regenerate notice action creates one operation UUID. An unconfirmed
+request retains that exact body for retry, recovering the original Reporting run; a deliberate
+regeneration creates a new operation and run. The shared mutation lock rejects duplicate clicks.
+Before sending, the original operation and exact tenant/company/entity/fund/book/currency/call/
+investor/commitment target are retained in this tab's session storage; no amounts or authority are stored.
+Reloading the original tab offers Recover original notice without sending automatically. The
+record clears only after the response identifies that operation's exact retained run. Missing
+storage blocks sending, and malformed records are removed with an explicit review notice.
+An earlier investor-level pending intent migrates only when that investor has one call line,
+preserving its UUID and original omitted-selector request body. Multiple lines leave that legacy
+intent untouched and explain that automatic recovery cannot select an installment.
+Browser reload recovery lasts while the original tab session retains its intent; server restart
+recovery requires that known operation ID and the authenticated scope to remain available.
+Only an authorized terminal-failure response matching the original operation's exact run enables
+Generate new notice after confirmed failure. The original intent stays retained until that
+explicit action safely retains a new UUID; generic conflicts, denied access, in-flight and unknown
+outcomes keep the original. Failure confirmation is not persisted: after reload, Recover original
+notice must obtain a fresh server confirmation before a new operation is offered. Failed run
+audit history remains on the server.
+
+Changing book selection disables the previous scope until Apply. Scope/session changes discard
+old results, input changes cancel pending previews, and unconfirmed writes retain the same request
+for retry. Journal and report links open the existing review workflows. The seven root workspaces
+remain unchanged. Focused coverage: `capital-call-issuance-screen.test.tsx`,
+`private-capital-installment-notices.test.tsx`, `private-capital.api.test.ts`, and the existing pure
+capital-call presentation tests.
+
+### Posted-ledger account drill-down
+
+Selecting a trial-balance account in the Accounting posted-ledger panel renders
+`LedgerAccountRunningBalancePanel`, which lists the account's postings for the selected period
+with a running balance from `GET /api/ledger/periods/{periodId}/accounts/running-balance`.
+The panel sends the selected row's accounting basis, symbol, financial account and dimension set,
+so the postings and ending balance are those of that row only. Basis and row changes discard the
+previous scope's response. Missing book currency remains explicitly unavailable rather than
+defaulting to dollars. Legacy API callers that omit accounting basis retain an unfiltered read. The
+route helper lives in `src/lib/ledger-reports-api.ts` rather than `workstation-endpoints.ts`,
+which is at its file-size limit.

@@ -3,11 +3,9 @@
 // FamilyOwnershipGraphDto (nodes/edges), FamilyAccountSummaryDto (with the provenance
 // tuple), CapitalCommitmentDto / CapitalActivityDto, FamilyOfficeReadinessDto.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout,
-  DenseDataTable, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink,
-  OwnershipGraph, CommitmentBar, ProvenanceChip
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip;
 const { useState } = React;
 
 const NAV = [
@@ -21,7 +19,7 @@ const NAV = [
     { id: "reports", label: "Reports", icon: "../../assets/icons/data-export.svg" },
   ]},
 ];
-const ROUTES = { recon: "../reconciliation-workstation/index.html", reports: "../report-library/index.html" };
+const ROUTES = { recon: "../reconciliation/Reconciliation.dc.html", reports: "../report-library/ReportLibrary.dc.html" };
 
 // ── FamilyOwnershipGraphDto ──────────────────────────────────────────────────
 const NODES = [
@@ -76,27 +74,40 @@ const ACTIVITY = [
   { activityId: "ACT-0912", vehicle: "Growth Fund III LP", activityType: "Distribution", amount: "$180,000", noticeDate: "2026-05-28", dueDate: "2026-06-15", status: "Settled" },
 ];
 
-function FamilyOfficeScreen() {
+function FamilyOfficeScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Callout, DataGrid, SeverityBadge, KeyValueGrid, MetricCard, EvidenceLink, OwnershipGraph, CommitmentBar, ProvenanceChip } = window.MeridianDesignSystem_205d17);
   const [sel, setSel] = useState("tr1");
+  const [section, setSection] = useState("overview");
+  const [evidenceOpen, setEvidenceOpen] = useState(false);
+  const [reviewNote, setReviewNote] = useState(null);
   const facts = ENTITY_FACTS[sel] || {};
   const selNode = NODES.find((n) => n.id === sel);
 
   return (
-    <React.Fragment>
-      <WorkstationTopbar moduleLabel="Family Office" environment="OPS" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: "var(--bg)", color: "var(--text-secondary)", fontFamily: "var(--font-body)" }}>
+      <WorkstationTopbar moduleLabel="Family Office" environment={environment} brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-        <NavRail activeId="overview" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
-        <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
+        <NavRail activeId={section} sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) { window.location.href = r; return; } setSection(id); document.getElementById(`family-${id}`)?.scrollIntoView({ block: "start" }); }} />
+        <main id="family-overview" style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
 
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Whitfield Family Office</h1>
             <Badge variant="neutral">USD · as-of 2026-06-30</Badge>
             <SeverityBadge status="ReviewRequired" label="Review required" />
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm">Evidence binder</Button>
-            <Button variant="primary" size="sm">Record review</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm" onClick={() => setEvidenceOpen((open) => !open)}>Evidence binder</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm" onClick={() => setReviewNote(`Synthetic review noted for ${selNode?.label || sel}. Open blockers remain unresolved; no review was submitted.`)}>Record example review</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Family office records">
 
+          <Callout tone="info" title="Synthetic retained example">Entity, account and capital figures are fixture data. Actions below only change this local example.</Callout>
+          {reviewNote ? <div role="status">{reviewNote}</div> : null}
+          {evidenceOpen ? <section aria-label="Example evidence binder" style={{ border: "1px solid var(--border)", padding: 12 }}>
+            <h2 style={{ marginTop: 0 }}>Example evidence binder</h2>
+            <p>Entity registry snapshot: 2026-06-30. Formation evidence for {selNode?.label || sel}: {facts.evidence || "Not declared"}.</p>
+            <p>Custody cash break and missing valuation statement are still open. No live evidence is attached.</p>
+            <Button variant="ghost" onClick={() => setEvidenceOpen(false)}>Close evidence binder</Button>
+          </section> : null}
           {/* FamilyOfficeReadinessDto.Blockers */}
           <Callout tone="warning" title="2 blockers before this workspace can be trusted for decisions">
             NT-4417 has 1 unresolved custody cash break · Growth Fund III Q2 valuation statement not yet captured.
@@ -113,13 +124,13 @@ function FamilyOfficeScreen() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 12, alignItems: "start" }}>
             {/* FamilyOwnershipGraphDto */}
-            <PanelSurface style={{ padding: 0, display: "flex", flexDirection: "column" }}>
+            <PanelSurface id="family-entities" style={{ padding: 0, display: "flex", flexDirection: "column" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderBottom: "1px solid var(--border)" }}>
                 <Eyebrow>Ownership &amp; control</Eyebrow>
                 <div style={{ flex: 1 }}></div>
                 <ProvenanceChip sourceSystem="Entity registry" asOfDate="2026-06-30" completeness="Complete" reconciliation="Matched" />
               </div>
-              <OwnershipGraph nodes={NODES} edges={EDGES} selectedId={sel} onSelectNode={setSel} />
+              <OwnershipGraph nodes={NODES} edges={EDGES} selectedId={sel} onSelectNode={(id) => { setSel(id); setReviewNote(null); }} />
               <div style={{ borderTop: "1px solid var(--border)", padding: "10px 14px", display: "flex", flexDirection: "column", gap: 8 }}>
                 <Eyebrow>{selNode ? selNode.label : "Entity"}</Eyebrow>
                 <KeyValueGrid columns={2} items={[
@@ -139,20 +150,20 @@ function FamilyOfficeScreen() {
               {/* FamilyAccountSummaryDto */}
               <PanelSurface style={{ padding: 0 }}>
                 <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}><Eyebrow>Accounts</Eyebrow></div>
-                <DenseDataTable
+                <DataGrid
                   columns={[
                     { key: "accountId", label: "Account" },
                     { key: "entity", label: "Entity" },
                     { key: "marketValue", label: "Market value", align: "right" },
                     { key: "cash", label: "Cash", align: "right" },
-                    { key: "recon", label: "Recon", render: (r) => <SeverityBadge status={r.recon} /> },
-                    { key: "prov", label: "Provenance", render: (r) => <ProvenanceChip {...r.prov} /> },
+                    { key: "recon", label: "Recon", cell: (r) => <SeverityBadge status={r.recon} /> },
+                    { key: "prov", label: "Provenance", cell: (r) => <ProvenanceChip {...r.prov} /> },
                   ]}
-                  rows={ACCOUNTS} />
+                  rows={ACCOUNTS} rowKey="accountId" label="Example family accounts" />
               </PanelSurface>
 
               {/* CapitalCommitmentDto */}
-              <PanelSurface raised style={{ padding: 14, display: "flex", flexDirection: "column", gap: 16 }}>
+              <PanelSurface id="family-commitments" raised style={{ padding: 14, display: "flex", flexDirection: "column", gap: 16 }}>
                 <Eyebrow>Private capital commitments</Eyebrow>
                 {COMMITMENTS.map((c) => <CommitmentBar key={c.label} {...c} />)}
               </PanelSurface>
@@ -162,19 +173,20 @@ function FamilyOfficeScreen() {
           {/* CapitalActivityDto */}
           <PanelSurface style={{ padding: 0 }}>
             <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)" }}><Eyebrow>Recent capital activity</Eyebrow></div>
-            <DenseDataTable
+            <DataGrid
               columns={[
                 { key: "activityId", label: "Activity" },
                 { key: "vehicle", label: "Vehicle" },
-                { key: "activityType", label: "Type", render: (r) => <Badge variant={r.activityType === "Distribution" ? "success" : "warning"}>{r.activityType}</Badge> },
+                { key: "activityType", label: "Type", cell: (r) => <Badge variant={r.activityType === "Distribution" ? "success" : "warning"}>{r.activityType}</Badge> },
                 { key: "amount", label: "Amount", align: "right" },
                 { key: "noticeDate", label: "Notice" },
                 { key: "dueDate", label: "Due" },
-                { key: "status", label: "Status", render: (r) => <SeverityBadge status={r.status} /> },
+                { key: "status", label: "Status", cell: (r) => <SeverityBadge status={r.status} /> },
               ]}
-              rows={ACTIVITY} />
+              rows={ACTIVITY} rowKey="activityId" label="Example capital activity" />
           </PanelSurface>
 
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[
@@ -183,7 +195,7 @@ function FamilyOfficeScreen() {
         { label: "Selected", value: selNode ? selNode.label : "—" },
         { status: "ok", label: "Evidence", value: "last capture 05:02Z", push: true },
       ]} />
-    </React.Fragment>
+    </div>
   );
 }
 

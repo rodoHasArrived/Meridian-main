@@ -6,10 +6,19 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui.Shared
+
+Security Master trust snapshots include read-only `Governance` evidence from the effective
+`ISecurityMasterGovernanceRequirements` snapshot: profile, source, restart latch, enforced review
+requirements and ignored contradictory configuration. Browser and WPF show the same host decision;
+an unavailable requirements seam remains unavailable rather than implying Standard defaults.
+The snapshot also carries the selected terms' Base cash-flow calculation blocker at the snapshot's
+evaluation time through `GetProjectionBlockerAsync`, a passive read that retains no receipt. Typed
+signed-interest refusals remain visible to both clients and prevent payment, cash-flow, ledger and
+close readiness; current reads never recalculate a legacy receipt to obtain it.
 
 Margin Control Center reads and certifications are tenant-scoped: `GET /api/workstation/reconciliation/margin-control` and `POST /api/workstation/reconciliation/margin-control/certifications` require tenant and company scope and show or certify only retained snapshots whose import was recorded against an active fund account whose fund is held by the caller's tenant and company, and whose external account id matches (case-insensitively) one of that same fund account's identifiers: account code, custodian sub-account number, bank account number or IBAN. External ids are unique only within a provider, so an id match alone never admits another tenant's evidence. Both routes fail closed: they return 403 when the tenant context, `IAccountQueryService` or `IFundProfileTenancyRegistry` is unavailable; a fund whose ownership cannot be resolved contributes no accounts; evidence retained before the importing fund account was recorded is not shown; and certifying a snapshot outside the caller's scope returns the same 404 as an unknown snapshot. `MarginControlCenterReadService.GetAsync` and `CertifyAsync` take that scope as an optional `MarginEvidenceOwner` predicate (recorded fund account, provider and external account id); `null` shows every retained account and is reserved for trusted in-process callers.
 
@@ -38,6 +47,125 @@ does, then `BondExerciseNoticeWatch` lists each declared call or put window as `
 `DeadlineElapsed` or `NotStated` within a 1–366 day horizon (default 90). The route has the same tenant
 scope and `ViewSecurityMaster`/`ModifySecurityMaster` permission as analytics. Windows record no notice
 and grant no exercise authority; an elapsed deadline needs retained notice evidence.
+
+Capital-call intake resolves frozen call plans and approved commitment terms from durable
+private-capital authority. Legacy caller-supplied totals are consistency checks. Trusted automated
+intake alone retains `PrivateCapitalAuthorityJson`; client edits cannot replace it. Draft review
+checks scope, dates, amounts and retained bank evidence, while final storage repeats authority and
+ceiling checks atomically. Unavailable authority and changed or voided funding sources refuse
+intake/review rather than falling back to attested totals.
+Native issuance derives called capital from posting receipts for the exact commitment as of the
+notice date, so two approved commitments sharing an investor and capital account retain independent
+callable balances. Shared approval and posting checks also protect future effective commitment terms
+and already-posted future issuance throughout the retained timeline.
+
+## Commitment-to-cash authority
+
+The browser capital-call workbench uses `/api/ledger/private-capital` over the shared
+`PrivateCapitalLifecycleService`. Every request resolves tenant/company from authenticated context
+and fund, entity and currency from an already-owned entity ledger book. Commitment revisions require
+accepted, integrity-verified scoped Evidence Vault documents. Preview and retained-call intake check
+the exact open accounting period; journal submission, independent review and posting remain separate.
+Amounts use exact decimal text on this HTTP surface.
+
+Native funding requires stable receipt and bank-transaction identities, a supported capital cash-in
+classification, matching entity/date/currency/amount, and retained source evidence. The final
+PostgreSQL append rechecks bank authority in the same database and records the economic receipt in
+the journal transaction. Missing authority, historical capital without opening reconciliation,
+unsupported book shapes, and changed preview inputs fail closed. This first slice supports funding
+within the call's accounting period; it does not infer legacy openings or execute payments.
+
+`POST /api/ledger/private-capital/bank-observations?ledgerBookId=...` imports a reviewed
+`BankEvidence`/`BankStatement` JSON document into Banking. The request supplies only `evidenceLink`
+and `documentId`; source bytes supply the positive settled Credit observation. Scope, original-byte
+SHA-256, accepted review, dates and exact `NUMERIC(19,4)` representation are checked before retention.
+Exact source retries recover the retained observation; changed inputs or collisions refuse. This
+operation neither posts cash nor initiates a payment and establishes no live-provider compatibility.
+
+Capital-call notices use the existing governed Reporting lifecycle and an explicit deployment-owned
+investor-to-recipient binding under `PrivateCapital:NoticeRecipients`. Investor IDs are not assumed
+to be login IDs. Each mapping supplies `TenantId`, `CompanyId`, `FundProfileId`, `InvestorId`, and
+`RecipientPrincipalId`, and `ReviewGroupPrincipalId`; the configured secure delivery destination is
+checked independently. The retained review group supports independent approval and release without
+widening the investor audience to other LPs.
+Before generation, `CapitalCallNoticeReportingService` reconciles the frozen investor installment
+to its exact posted issuance, retaining an operational receipt through
+the existing Reporting evidence store. This receipt does not claim accounting-close completion.
+Only the named notice template may release its restricted, independently approved operational
+snapshot while the period is open; financial reports keep their Final and committed-close gates.
+Unrelated close-queue changes do not alter that immutable issuance proof; the dedicated receipt
+branch checks exact notice, investor, commitment and source bindings before accepting it.
+Generation, approval, release, delivery and cash settlement remain distinct outcomes. Workbench
+notice summaries come from retained reporting and delivery records, never browser-local status.
+
+The notice POST body uses `{ "operationId": "<UUID>", "commitmentId": "<commitment>" }`. A retry reuses that exact body and
+recovers the exact retained run before reading current call or ledger inputs. The server binds it
+to the authenticated actor and full scope/call/investor/commitment identity; collisions refuse. Deliberate
+regeneration uses a new UUID. Durable PostgreSQL Reporting create claims and the original
+certified parameters preserve one run across concurrent hosts and lost responses; current access
+and permissions are still checked on recovery. Configure `MERIDIAN_REPORTING_CONNECTION_STRING`
+(or its documented ledger fallback) so `IReportingRunStore` resolves to
+`PostgresReportingRunStore`; file-backed compatibility stores do not support notice generation.
+Each notice covers one complete posted commitment installment. Multiple commitments for the same
+investor in one call receive separate notices with exact commitment/journal filters, and retained
+summaries carry `CommitmentId`. The optional selector may be omitted for new generation only when
+the investor has one call installment. Existing pending operations whose original body omitted it
+retain that omitted-selector body and original hash; adding or changing a selector under the same
+UUID is a conflicting request.
+An authenticated recovery of an exact retained Failed operation returns HTTP 409 with
+`code: notice_operation_failed` and its exact `runId`; the failed manifest and audit remain intact.
+For a pending intent, only that confirmed terminal outcome permits the UI's explicit
+new-generation action. Other errors retain the original pending intent for recovery.
+
+Focused validation uses the `PrivateCapital` and `CapitalCall` test filters in `Meridian.Tests`,
+with `EnableWindowsTargeting=true` and a configured PostgreSQL ledger test connection.
+
+Audit browsing and complete CSV export share one HTTP authority. Execution records remain the
+existing retained host feed, with its brokerage-account guard; this is not a full WAL-history
+query. Operations timelines require their read permission and exact book/account-to-fund
+tenant/company ownership before timeline loading. Mismatched returned identities refuse the
+read. Export preserves submitted filters, selected columns and deterministic ordering, labels
+the two source namespaces, and refuses an oversized response rather than returning partial CSV.
+
+Workstation chart evidence includes bounded verification histories for exactly owned provider
+connections, projected from the existing credential audit without exposing credentials or actor
+metadata. Pending audit publication or malformed audit data refuses an apparently complete
+history. Retained account balance history uses the unconditional scoped trade-read account guard,
+checks every returned snapshot's account, and returns exact decimal component strings with currency,
+source and recording time. No account equity total or cross-currency aggregation is inferred.
+The maintenance table export adapter reads the full retained execution population beyond the
+browser's 25-row window, applies current failed/search/column filters, and includes execution
+identity and export provenance. Source retention remains explicit.
+
+Operator triage joins durable attention metadata to the permission-filtered ranked inbox. Assignment
+uses the source casework authority where one exists; acknowledgement and snooze are personal and
+never clear readiness gates. Commands retain versions, reasons, actor identity and replay receipts.
+Blocked/critical work cannot be snoozed; observed escalation permanently cancels an existing snooze.
+Account-scoped single and bulk commands carry the selected `FundAccountId`, recheck its retained
+ownership, and rebuild that account's source inbox before acting. Exact retries retain the original
+command identity; omitted account scope preserves legacy command fingerprints.
+Production uses PostgreSQL through `MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING` (falling back to the
+ledger connection); missing persistence disables triage actions explicitly. Synthetic hosts use a
+durable file adapter. No notification delivery is implied by assignment or acknowledgement.
+
+Posted-period comparison reads require retained fund ownership for the exact tenant, company and
+ledger book. The shared route recomputes filtered totals from immutable journals with exact decimal
+transport, policy/currency checks and source population identities. An open period compares the
+same elapsed fiscal interval in a completed baseline; missing or too-short baselines remain
+unavailable. These comparisons never consume the strategy-run simulated ledger.
+
+The posted-account running-balance read requires the same authenticated tenant/company and
+retained book ownership, including exact returned period, book and fund identities. Its optional
+`accountingBasis` selector filters retained journal records before aggregation; the posted-row
+browser drill-down supplies its selected basis. Omitting the selector preserves the legacy all-
+basis API behavior. Running-balance amounts retain the existing decimal-to-JSON-number
+transport; the exact-string comparison transport remains separate.
+
+Close checklist history projects only versioned snapshots retained by canonical workflow commits.
+Its shared read endpoint uses exact account/book/fund ownership, verifies mixed legacy/new audit
+chains, reports coverage and missing versions, and splits observations across unknown intervals.
+Legacy workflows remain history-unavailable until new committed observations exist; the endpoint
+never turns current gate state into invented historical progress.
 
 Portfolio cash-ladder composition supplies the configured business-day calendars to the shared Instruments scenario engine. Declared issuer-call and holder-put scenarios use retained projection terms and calendar hashes; floating shocks consume retained per-reset inputs. Scenario blockers remain visible through the existing decision-readiness response; no new approval or payment authority is introduced. The optional `engineVersion` query selects explicit `portfolio-cash-ladder-v1` replay; an unknown version returns a blocked ladder with no contributions that names the unsupported version rather than falling back silently.
 
@@ -546,7 +674,10 @@ health or fallback evidence for that scoped result, including after its credenti
 The shared lifecycle resolves its retained tenant, provider, external account and environment against
 the server session before accessing scoped credentials. Missing, ambiguous, unowned or mismatched
 connections are refused. Scoped Alpaca verification requires the returned account to match retained
-ownership. Other scoped providers remain unverified until a connection-bound live verifier exists;
+ownership. The Alpaca brokerage routes (`/api/brokerage-connections/alpaca*`) have no provider-wide
+path: `AlpacaBrokerageConnectionService` binds connect, status and revoke to the connection named by
+`?connectionId=`, or to the tenant's single owned paper connection when the query is omitted, and
+verifies submitted keys against the retained account and environment before storing them. Other scoped providers remain unverified until a connection-bound live verifier exists;
 provider-wide accounting verifiers are not invoked for scoped requests. Omitting the query retains
 the legacy path during the unfinished workstation/default-runtime cutover.
 
@@ -967,9 +1098,11 @@ show the same durable chain after restart.
 The report-line provenance builder emits an explicit instrument -> position or transaction ->
 reconciliation -> journal -> report-line -> evidence/audit chain using retained provenance fields,
 while `FileFinancialRecordExplorerSavedViewStore` persists operator-created views under the
-workstation data root. Saved views are keyed by the authenticated workstation tenant and explorer
-id, so operator filters created in one tenant do not appear in another tenant's Financial Record
-Explorer session. Missing projections return empty or blocked DTO state with disabled actions and
+workstation data root. Browser-created views use snapshot v2 ownership keyed by authenticated
+workstation tenant, operator and table/explorer identity. Ownerless v1 views remain read-only
+legacy tenant views with an explicit personal-copy action. All read/write paths validate table
+access; atomic snapshot publication and a cross-host writer lease preserve concurrent updates.
+The retained programmatic tenant-view overload remains compatible and cannot overwrite a personal view. Missing projections return empty or blocked DTO state with disabled actions and
 reasons, not synthetic operational balances.
 Reference-data endpoint groups for bonds, options, equity, futures, FX spot, crypto, deposits,
 certificates of deposit, commodities, swaps, and money-market funds adapt `Meridian.Instruments` services
@@ -1544,6 +1677,20 @@ fundable ceiling is recomputed server-side from the call's posted ledger activit
 debits minus funding credits on the LP's receivable — so funding an unissued call, exceeding the
 open receivable, or omitting retained remittance evidence returns `Blocked` with reasons instead
 of drafts; partial funding drafts the funded portion and leaves the receivable balance open.
+`/api/ledger/journal-automation/capital-call-default-interest-intake` (same declaration) accrues
+default interest on the unfunded part of a posted call as governed drafts (Dr Capital Call Default
+Interest Receivable / Cr Capital Call Default Interest Income). The called amount and receipts are
+folded from posted ledger lines; the due date, rate, day-count convention and grace days are
+operator-attested terms that must cite retained evidence, because the ledger does not hold them.
+Interest is accrued to its cumulative amount and only the part not already posted is drafted; an
+earlier default-interest draft still awaiting approval returns `Blocked`.
+`/api/ledger/journal-automation/distribution-intake` (same declaration) declares a distribution and
+runs `EuropeanDistributionWaterfall` per investor into `Distribution` drafts (Dr Investor Capital
+and Carried Interest Allocation / Cr Fund Distribution Payable). Earlier tiers come from the
+durable distribution register for posted distributions; an earlier distribution that is not yet
+posted returns `Blocked`, a rejected one is ignored, and redeclaring an id with different terms is
+refused. `/api/ledger/fixed-assets` lists and registers the fixed assets a fund book depreciates;
+the `fixed-asset-depreciation` recurring calculation reads that register.
 Default-interest accrual for late LPs is not wired yet: the kernel exists
 (`DefaultInterestCalculator`, `BuildDefaultInterestDraft`), but its rate/convention/grace terms
 and the installment due date have no durable server-side policy source to corroborate against.
@@ -1860,6 +2007,25 @@ evidence, approvals, document attachments, export manifests, and report-pack/res
 Browser and WPF command surfaces should consume that shared workflow instead of creating separate
 accounting-record launch lists.
 
+`/api/ledger/periods/{periodId}/accounts/running-balance?account=...` returns one account's
+postings in the period with a running balance, optionally narrowed by `symbol`,
+`financialAccountId` and `dimensions` (the JSON dimension set of one trial-balance row, matched
+exactly after the book's fund is defaulted as the period trial balance does), under the same ledger read permission as the other period routes.
+
+`DirectLendingOperationsReadService` adds a subledger-to-GL tie-out when a ledger journal store is
+registered: servicing principal, accrued interest and accrued PIK are compared with the net
+balance of the loan's `LoanPrincipal`, `AccruedInterestReceivable` and `PikInterestReceivable`
+control accounts, and a difference above 0.01 is a `SubledgerTieOut` warning close blocker.
+
+`BrokeragePortfolioSyncService` retains a per-account activity history
+(`activity-history/{fundAccountId}.json`): each sync's fills and cash transactions are merged by
+provider id, so rows later snapshots no longer return are kept without duplicates. The current
+projection is unchanged and remains the latest provider snapshot. The history and the projection it
+falls back to are used only for the external account the fund account is currently linked to, and cash amounts keep the broker's
+sign so a reversal nets against its receipt. `BrokerageSyncActualCashActivitySource`
+reads interest/coupon and principal/paydown cash for held symbols from that history (or from a
+fresh projection) and supplies it to expected-income reconciliation.
+
 Evidence Vault packet exports stream retained local artifacts through a bounded 64 KiB read
 window into private staging while the canonical SHA-256 primitive hashes the same bytes. The
 copy boundary buffers smaller digest reads so a source that fills the window does not incur extra
@@ -1987,7 +2153,20 @@ previews can display the same audit trace as retained exports. Template governan
 blocks report-writer formulas that reference unknown metrics/formulas, unsupported `total(...)`
 fields, or self/forward/circular formula dependencies before those templates can enter review or
 approval, while recognizing supported helpers such as `safeDivide(...)`, `percent(...)`,
-`basisPoints(...)`, and `round(...)` as functions instead of missing row fields.
+`basisPoints(...)`, `round(...)`, and `if(...)` as functions instead of missing row fields.
+Draft formula validation reads hyphenated bare references with the same
+`ReportWriterFormulaReferences` rule as the grid engine, so `pnl-fees` between two known metrics
+validates as subtraction while a real `net-pnl` metric stays one reference.
+`IReportingSchedulePeriodResolver` (`LedgerReportingSchedulePeriodResolver` over
+`ILedgerJournalStore`) gives `ReportingScheduleService` the durable accounting-period id for a
+period-close schedule's as-of date; the schedule service never derives a period selector from a
+calendar date. Its `ResolveNextClosePeriodAsync` names the next period to close (the following
+period for monthly, the fiscal quarter-end or year-end period by ledger period number for
+quarterly and annual), and the schedule takes its as-of date, due date and period id from it.
+When that lookup fails at advance time the schedule moves on by calendar and records
+`UnresolvedPeriodCloseAfter`; `RealignPeriodCloseToLedgerAsync` repeats the lookup before the next
+run, corrects the date and persists it under the execution lease before the run starts (lease
+renewal matches the stored payload), deferring a due run that is not yet due on the corrected date.
 Browser and WPF clients should render that shared
 template state instead of treating built-in templates as the full authoring workflow.
 Template definitions and report-pack workflow records now carry shared access policies for

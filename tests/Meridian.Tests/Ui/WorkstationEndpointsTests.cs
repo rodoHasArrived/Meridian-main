@@ -244,7 +244,11 @@ public sealed partial class WorkstationEndpointsTests
         research.RootElement.GetProperty("timeline").GetArrayLength().Should().Be(2);
         research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("title").GetString()
             .Should()
-            .Contain("workstation");
+            .Contain("Retained");
+        research.RootElement.GetProperty("plotTool").GetProperty("analyticsEvidenceStatus").GetString().Should().Be("Unavailable");
+        research.RootElement.GetProperty("plotTool").GetProperty("workspace").GetProperty("points").GetArrayLength().Should().Be(0);
+        research.RootElement.GetProperty("plotTool").GetProperty("statistics").GetProperty("distributionBars").GetArrayLength().Should().Be(0);
+        research.RootElement.GetProperty("plotTool").GetProperty("statistics").GetProperty("sampleRows").GetArrayLength().Should().Be(0);
         research.RootElement.GetProperty("plotTool").GetProperty("tabs").GetArrayLength().Should().Be(2);
 
         research.RootElement.GetProperty("metrics").EnumerateArray()
@@ -1718,6 +1722,8 @@ public sealed partial class WorkstationEndpointsTests
         var brokerageNotes = string.Join(" ", brokerage.GetProperty("notes").EnumerateArray().Select(n => n.GetString()));
         brokerageNotes.Should().Contain("blocked");
         brokerageNotes.Should().Contain("paper trading");
+        trading.RootElement.GetProperty("positions").GetArrayLength().Should().Be(0,
+            "an empty financial population must not contain an informational placeholder holding");
     }
 
     [Fact]

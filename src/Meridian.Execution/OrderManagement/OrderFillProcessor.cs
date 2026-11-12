@@ -276,7 +276,9 @@ internal sealed class OrderFillProcessor(
                 if (progress.IsTrackedOrder
                     && (_accounting.HasPublisher || !string.IsNullOrWhiteSpace(sessionId)))
                 {
-                    progress.TradeEvent ??= CreateTradeExecutedEvent(
+                    // Created once and reused by every handoff retry. Strategy lineage lets the
+                    // ledger attribute the fill's P&L to the strategy and run that placed the order.
+                    progress.TradeEvent ??= WithStrategyLineage(orderId, CreateTradeExecutedEvent(
                         fillIncrement,
                         progress.CumulativeFilledQuantity,
                         progress.RealizedPnl,
@@ -293,7 +295,7 @@ internal sealed class OrderFillProcessor(
                               ?? (_portfolioState is PaperTradingPortfolio
                                   ? 1m
                                   : fillIncrement.LotMultiplier
-                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)));
+                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId))));
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -379,6 +381,22 @@ internal sealed class OrderFillProcessor(
             if (_fillProcessing.TryGetValue(oldest, out var progress) && progress.IsComplete)
                 _fillProcessing.TryRemove(oldest, out _);
         }
+    }
+
+    private TradeExecutedEvent WithStrategyLineage(string? orderId, TradeExecutedEvent tradeEvent)
+    {
+        if (string.IsNullOrWhiteSpace(orderId)
+            || !_context.TryGetOrder(orderId, out var order)
+            || order is null)
+        {
+            return tradeEvent;
+        }
+
+        return tradeEvent with
+        {
+            StrategyId = string.IsNullOrWhiteSpace(order.StrategyId) ? null : order.StrategyId.Trim(),
+            RunId = string.IsNullOrWhiteSpace(order.RunId) ? null : order.RunId.Trim()
+        };
     }
 
     private string? ResolveFinancialAccountId(string? orderId)

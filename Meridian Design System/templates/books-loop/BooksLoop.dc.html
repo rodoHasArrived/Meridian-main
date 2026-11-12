@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>Investigate · Books Loop — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Books Loop" description="The exit-check journey end to end on ONE scoped read model — tie-out break, evidence, staged journal, approval against a single snapshot, submit, explicit receipt, then ledger / trial balance / account sheet with scope and instruction intact." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="books-loop">
+<style>html,body{margin:0;padding:0;height:100%}
+[data-bl-show="off"]{display:none!important}
+tbody[data-bl-pick] tr{cursor:pointer}
+tbody[data-bl-pick] tr:hover td{background:var(--bg-hover,#EDEFF0)}
+tr[data-bl-sel="on"] td{background:var(--blue-a10,rgba(47,100,138,.10))}
+tr[data-bl-sel="on"] td:first-child{box-shadow:inset 3px 0 0 var(--brand-signal,#C56343)}
+@media (max-width:1180px){[data-bl-grid="journal"]{grid-template-columns:minmax(0,1fr)}}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Books" action-label="Retry" on-action="{{ onPreviewRetry }}" hint-size="100%,900px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextProvider" value="{{ context }}" hint-size="100%,900px">
+<div data-screen-label="Books loop" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Books" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="accounting" sections="{{ nav }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<div style="flex:1;min-width:0;display:flex;flex-direction:column">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceContextBar" value="{{ context }}" condition="{{ contextCondition }}" collapse="auto" hint-size="100%,40px"></x-import>
+<div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:9px 14px;border-bottom:1px solid var(--border);background:var(--card-surface,#F8F7F3)">
+<span style="font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Entity</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ entity }}" options="{{ entityOptions }}" on-change="{{ onEntity }}" hint-size="240px,26px"></x-import>
+<span style="font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Basis</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ basis }}" options="{{ basisOptions }}" on-change="{{ onBasis }}" hint-size="120px,26px"></x-import>
+<span style="font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Period</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ period }}" options="{{ periodOptions }}" on-change="{{ onPeriod }}" hint-size="170px,26px"></x-import>
+<div style="flex:1"></div>
+<span style="font:11px/1.4 var(--font-data);color:var(--text-muted)">One selector · {{ scopeLabel }}</span>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;overflow-x:auto;padding:8px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ view }}" options="{{ viewOptions }}" on-change="{{ onView }}" style="min-width:0;max-width:100%;overflow-x:auto" hint-size="520px,28px"></x-import>
+<div style="flex:1"></div>
+<span style="font:11px/1.4 var(--font-data);color:var(--text-muted)">Selected · {{ selectedLabel }}</span>
+</div>
+<main style="flex:1;min-height:0;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px">
+<h1 style="margin:0;font:600 20px var(--font-display);color:var(--text-primary)">Books · {{ scopeLabel }}</h1>
+<div data-bl-show="{{ tieoutShow }}" data-books-view="tieout" style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div style="flex:1;min-width:210px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:11px 13px">
+<span style="display:block;font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Actual residual</span>
+<b style="display:block;font:600 23px/1.2 var(--font-data);color:var(--text-primary);margin-top:4px">{{ residualActual }}</b>
+<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:5px;text-wrap:pretty">What the books say now. Closed only by a posted journal with a receipt.</span>
+</div>
+<div style="flex:1;min-width:210px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:11px 13px">
+<span style="display:block;font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Projected residual</span>
+<b style="display:block;font:600 23px/1.2 var(--font-data);color:var(--text-secondary);margin-top:4px">{{ residualProjected }}</b>
+<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:5px;text-wrap:pretty">What they would say if the {{ stagedCount }} staged journal(s) posted. Never added to the actual.</span>
+</div>
+<div style="flex:1;min-width:210px;border:1px solid var(--border);background:var(--card-surface,#F8F7F3);padding:11px 13px">
+<span style="display:block;font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Proof</span>
+<b style="display:block;font:600 14px/1.3 var(--font-data);color:var(--text-primary);margin-top:6px">Dr {{ proofDebits }} · Cr {{ proofCredits }}</b>
+<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:5px">{{ proofNote }}</span>
+</div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ basisTone }}" title="Basis scope" hint-size="100%,72px">{{ basisNote }}</x-import>
+<h2 style="font:600 13px var(--font-display);margin:2px 0 0;color:var(--text-primary)">Open breaks</h2>
+<div style="border:1px solid var(--border-strong);background:var(--card-surface,#F8F7F3);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Break</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Date</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Statement line</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Classification</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Actual residual</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Projected residual</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">State</th>
+</tr></thead>
+<tbody data-bl-pick="breaks">
+<sc-for list="{{ breakRows }}" as="b">
+<tr data-bl-sel="{{ b.sel }}" on-click="{{ b.open }}">
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ b.breakId }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">{{ b.date }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ b.memo }} · {{ b.statementLine }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ b.classification }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ b.actual }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:12px;color:var(--text-secondary)">{{ b.projected }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ b.status }}" label="{{ b.stateLabel }}" hint-size="90px,18px"></x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ReconciliationPanel" left="{{ reconLeft }}" right="{{ reconRight }}" currency="USD" statement-balance="{{ stmtBalance }}" book-balance="{{ bookBalance }}" hint-size="100%,420px"></x-import>
+</div>
+<div data-bl-show="{{ journalShow }}" data-books-view="journal" style="display:flex;flex-direction:column;gap:12px">
+<div data-bl-show="{{ noDraftShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="No journal drafted" hint-size="100%,86px">Select a break on the tie-out and choose <b>Draft correcting journal</b>. The draft is seeded from the break's own statement line, so the thing reviewed here is the thing the break describes.</x-import>
+</div>
+<div data-bl-show="{{ draftShow }}" data-bl-grid="journal" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="review" title="{{ draftBreakTitle }}" hint-size="100%,78px">{{ draftBreakNote }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.JournalEntryForm" key="{{ draftKey }}" initial-lines="{{ draftLines }}" initial-header="{{ draftHeader }}" accounts="{{ accountNames }}" blockers="{{ formBlockers }}" on-change="{{ onDraftChange }}" hint-size="100%,300px"></x-import>
+<label style="display:flex;flex-direction:column;gap:5px">
+<span style="font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Rationale — travels inside the reviewed payload</span>
+<textarea rows="3" value="{{ rationale }}" on-change="{{ onRationale }}" placeholder="Why this entry, in the words the approver will read." style="font:13px/1.5 var(--font-body);color:var(--text-primary);background:var(--surface-input);border:1px solid var(--border-strong);border-radius:3px;padding:8px 10px;resize:vertical"></textarea>
+</label>
+<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" disabled="{{ stageDisabled }}" title="{{ stageTitle }}" on-click="{{ onStage }}" hint-size="140px,30px">Stage journal</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onDiscard }}" hint-size="110px,30px">Discard draft</x-import>
+<span style="font:11px/1.4 var(--font-data);color:var(--text-muted)">{{ stageHint }}</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:12px">
+<span style="font:600 10px/1.4 var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Approval &amp; submission</span>
+<div data-bl-show="{{ stagedShow }}" style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Staged journal</span><b style="color:var(--text-primary)">{{ stagedRef }}</b></div>
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Closes projected</span><b style="color:var(--text-primary)">{{ stagedClosesProjected }}</b></div>
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Closes actual</span><b style="color:var(--text-primary)">{{ stagedClosesActual }}</b></div>
+</div>
+<div data-bl-show="{{ snapshotShow }}" style="display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);padding-top:9px">
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Snapshot</span><b style="color:var(--text-primary)">{{ snapshotId }}</b></div>
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Approved by</span><b style="color:var(--text-primary)">{{ approvedBy }}</b></div>
+<div style="display:flex;justify-content:space-between;gap:8px;font-family:var(--font-data);font-size:11.5px"><span style="color:var(--text-muted)">Approved at</span><b style="color:var(--text-primary)">{{ approvedAt }}</b></div>
+</div>
+<div data-bl-show="{{ staleShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="blocked" title="Approval withdrawn" hint-size="100%,92px">{{ staleReason }}</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="secondary" size="sm" disabled="{{ approveDisabled }}" title="{{ approveTitle }}" on-click="{{ onApprove }}" hint-size="100%,30px">{{ approveLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionEnvelope" action="journal.post" label="{{ submitLabel }}" endpoint="POST /books/journals" idempotency-key="{{ submitKey }}" failure-surface="Books loop · instruction tray" state="{{ submitState }}" reason="{{ submitReason }}" receipt="{{ submitReceipt }}" submit-label="Submit for posting" disabled="{{ submitDisabled }}" on-submit="{{ onSubmit }}" on-retry="{{ onRetrySubmit }}" hint-size="100%,150px"></x-import>
+<div data-bl-show="{{ receiptShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="positive" title="Receipt {{ receiptId }}" hint-size="100%,96px">{{ receiptNote }}</x-import>
+</div>
+</div>
+</div>
+</div>
+<div data-bl-show="{{ ledgerShow }}" data-books-view="ledger" style="display:flex;flex-direction:column;gap:10px">
+<h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">General ledger · {{ scopeLabel }}</h2>
+<p style="margin:0;font-size:11.5px;color:var(--text-muted);text-wrap:pretty">Every line here is the same object the tie-out and the trial balance read. A staged journal shows as <b>pending</b> and is excluded from the posted totals until its receipt arrives.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LedgerTable" rows="{{ ledgerRows }}" currency="USD" show-account="{{ true }}" caption="General ledger" selected-index="{{ ledgerSelectedIndex }}" on-row-click="{{ onLedgerRow }}" hint-size="100%,460px"></x-import>
+<div data-bl-show="{{ excludedShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="info" title="Excluded by basis" hint-size="100%,80px">{{ excludedNote }}</x-import>
+</div>
+</div>
+<div data-bl-show="{{ trialShow }}" data-books-view="trial" style="display:flex;flex-direction:column;gap:10px">
+<h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">Trial balance · {{ scopeLabel }}</h2>
+<p style="margin:0;font-size:11.5px;color:var(--text-muted);text-wrap:pretty">Balances are <b>actual</b>. The trailing column names the accounts a staged journal would move — a projected figure is never printed in the balance column.</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TrialBalance" rows="{{ tbRows }}" currency="USD" caption="Trial balance" trailing="{{ tbTrailing }}" trailing-label="If posted" selected-index="{{ tbSelectedIndex }}" on-row-click="{{ onTbRow }}" hint-size="100%,520px"></x-import>
+</div>
+<div data-bl-show="{{ accountShow }}" data-books-view="account" style="display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<h2 style="font:600 13px var(--font-display);margin:0;color:var(--text-primary)">Account sheet</h2>
+<select value="{{ account }}" on-change="{{ onAccount }}" aria-label="Account" style="font:12px var(--font-data);color:var(--text-primary);background:var(--surface-input);border:1px solid var(--border-strong);border-radius:3px;padding:5px 8px">
+<sc-for list="{{ accountOptions }}" as="a"><option value="{{ a.value }}">{{ a.label }}</option></sc-for>
+</select>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<div style="flex:1;min-width:150px;border:1px solid var(--border);background:var(--card-surface,#F8F7F3);padding:10px 12px"><span style="display:block;font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Opening</span><b style="display:block;font:600 17px var(--font-data);color:var(--text-primary);margin-top:3px">{{ acctOpening }}</b></div>
+<div style="flex:1;min-width:150px;border:1px solid var(--border);background:var(--card-surface,#F8F7F3);padding:10px 12px"><span style="display:block;font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Movement</span><b style="display:block;font:600 17px var(--font-data);color:var(--text-primary);margin-top:3px">{{ acctMovement }}</b></div>
+<div style="flex:1;min-width:150px;border:1px solid var(--border-strong);background:var(--card-surface-raised,#FCFBF8);padding:10px 12px"><span style="display:block;font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Closing — actual</span><b style="display:block;font:600 17px var(--font-data);color:var(--text-primary);margin-top:3px">{{ acctClosing }}</b></div>
+<div style="flex:1;min-width:150px;border:1px solid var(--border);background:var(--card-surface,#F8F7F3);padding:10px 12px"><span style="display:block;font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Closing — projected</span><b style="display:block;font:600 17px var(--font-data);color:var(--text-secondary);margin-top:3px">{{ acctProjected }}</b></div>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.LedgerTable" rows="{{ acctRows }}" currency="USD" opening="{{ acctOpeningValue }}" normal-side="{{ acctNormalSide }}" caption="{{ acctCaption }}" hint-size="100%,400px"></x-import>
+</div>
+</main>
+</div>
+<aside style="width:min(312px,32vw);min-width:250px;flex:none;border-left:1px solid var(--border);background:var(--card-surface,#F8F7F3);overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:12px" aria-label="Selection and instructions">
+<div style="display:flex;flex-direction:column;gap:7px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">{{ selKind }}</x-import>
+<b style="font:600 14px/1.35 var(--font-display);color:var(--text-primary)">{{ selTitle }}</b>
+<sc-for list="{{ selFacts }}" as="f">
+<div style="display:flex;justify-content:space-between;gap:10px;font-family:var(--font-data);font-size:11.5px;border-bottom:1px solid var(--border);padding:5px 0"><span style="color:var(--text-muted)">{{ f.label }}</span><b style="color:var(--text-primary);text-align:right">{{ f.value }}</b></div>
+</sc-for>
+</div>
+<div data-bl-show="{{ evidenceShow }}" style="display:flex;flex-direction:column;gap:7px">
+<span style="font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Evidence</span>
+<sc-for list="{{ selEvidence }}" as="e">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceLink" label="{{ e.label }}" status="Ready" route="{{ e.ref }}" href="#evidence" hint-size="100%,24px"></x-import>
+</sc-for>
+</div>
+<div data-bl-show="{{ draftActionShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onSeedDraft }}" hint-size="100%,30px">Draft correcting journal</x-import>
+</div>
+<div data-bl-show="{{ loopShow }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ReturnPath" loops="{{ selLoops }}" label="Back to" hint-size="100%,24px"></x-import>
+</div>
+<div style="border-top:1px solid var(--border);padding-top:11px;display:flex;flex-direction:column;gap:8px">
+<span style="font:600 10px var(--font-data);letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted)">Instructions</span>
+<p style="margin:0;font-size:11px;line-height:1.5;color:var(--text-muted);text-wrap:pretty">{{ durabilityNote }}</p>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionQueue" instructions="{{ instructions }}" docked="inline" label="Unresolved" empty-label="Nothing in flight." hide-when-empty="{{ false }}" on-retry="{{ onQueueRetry }}" on-open="{{ onQueueOpen }}" hint-size="100%,180px"></x-import>
+</div>
+</aside>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;FIXTURE&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;],&quot;default&quot;:&quot;FIXTURE&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;},&quot;transport&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;confirms&quot;,&quot;refuses&quot;,&quot;never answers&quot;],&quot;default&quot;:&quot;confirms&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Adapter&quot;},&quot;startView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;tieout&quot;,&quot;journal&quot;,&quot;ledger&quot;,&quot;trial&quot;,&quot;account&quot;],&quot;default&quot;:&quot;tieout&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Chrome&quot;}}">
+class Component extends DCLogic {
+  retryPreview = () => this.setState({ previewReady: true });
+  constructor(props) {
+    super(props);
+    this.state = {
+      view: props.startView || "tieout",
+      entity: "MER-FUND-I", basis: "STAT", period: "2026-06",
+      selected: "break:CASE-4187", account: "1100",
+      staged: [], draft: null, draftKey: 0, rationale: "",
+      approval: null, snapSeq: 0, instructionId: null, instructions: [],
+    };
+  }
+
+  componentDidMount() {
+    const I = window.MeridianInstructions;
+    if (I) { this.setState({ instructions: I.list() }); this.unsub = I.subscribe((l) => this.setState({ instructions: l })); }
+    this.syncEnv();
+    this.nameCrumbs();
+  }
+  componentDidUpdate(prev) {
+    this.syncEnv();
+    if (prev.startView !== this.props.startView) this.setState({ view: this.props.startView || "tieout" });
+    if (prev.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false });
+  }
+  componentWillUnmount() { if (this.unsub) this.unsub(); if (this.timer) clearTimeout(this.timer); }
+
+  syncEnv() {
+    const prefs = window.MeridianPrefs;
+    document.documentElement.setAttribute("data-environment", this.env());
+    document.documentElement.setAttribute("data-theme", prefs ? prefs.theme(this.props.theme || "light") : (this.props.theme || "light"));
+    if (document.body) document.body.setAttribute("data-theme-density", prefs ? prefs.density(this.props.density || "compact") : (this.props.density || "compact"));
+  }
+  env() { const seed = String(this.props.environment || "FIXTURE").toUpperCase(); return window.MeridianPrefs ? window.MeridianPrefs.environment(seed) : seed; }
+  nameCrumbs() {
+    const M = window.MeridianAppMap, m = this.model();
+    if (!M || !M.nameObject || !m) return;
+    m.breaks.forEach((b) => M.nameObject("break", b.breakId, b.breakId + " · " + b.memo));
+  }
+
+  // ── The one read model ──────────────────────────────────────────────────────
+  model() {
+    const B = window.MeridianBooks;
+    if (!B) return null;
+    return B.select({ entity: this.state.entity, basis: this.state.basis, period: this.state.period, staged: this.state.staged });
+  }
+  fmt(n) {
+    const v = Math.round((Number(n) || 0) * 100) / 100;
+    const s = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return v < 0 ? "(" + s + ")" : s;
+  }
+  codeOf(account) { const m = String(account || "").match(/\d{3,}/); return m ? m[0] : ""; }
+  stamp() { return (window.MeridianWorld && window.MeridianWorld.stamp) ? window.MeridianWorld.stamp() : new Date().toISOString().replace("T", " ").replace(/\.\d+Z$/, "Z"); }
+
+  // ── Draft → stage ───────────────────────────────────────────────────────────
+  /** Seed from the break's OWN statement line, so the reviewed entry describes the break. */
+  seedDraft() {
+    const B = window.MeridianBooks, m = this.model();
+    const sel = m && m.find(this.state.selected);
+    if (!B || !sel || !sel.breakId) return;
+    const amt = Math.abs(sel.amount), received = sel.amount > 0;
+    const lines = received
+      ? [{ account: B.label(sel.account), debit: amt, credit: "" }, { account: B.label("4200"), debit: "", credit: amt }]
+      : [{ account: B.label("5100"), debit: amt, credit: "" }, { account: B.label(sel.account), debit: "", credit: amt }];
+    this.setState((s) => ({
+      view: "journal", draftKey: s.draftKey + 1, approval: null, instructionId: null,
+      rationale: sel.memo + " — " + String(sel.classification || "").toLowerCase() + ". The custodian line stands; the ledger did not carry it.",
+      draft: {
+        header: { date: "2026-06-26", ref: "JE-" + (1090 + s.draftKey), memo: sel.memo + " — accrual correction" },
+        lines: lines, attachments: (sel.evidence || []).slice(), sourceBreak: sel.breakId,
+      },
+    }));
+  }
+  stageResult() {
+    const B = window.MeridianBooks, d = this.state.draft;
+    if (!B || !d) return null;
+    return B.stage({
+      ref: d.header.ref, date: d.header.date, memo: d.header.memo,
+      rationale: this.state.rationale, attachments: d.attachments, sourceBreak: d.sourceBreak,
+      lines: (d.lines || []).map((l) => ({ code: this.codeOf(l.account), debit: l.debit, credit: l.credit })),
+    }, { entity: this.state.entity, basis: this.state.basis, period: this.state.period });
+  }
+  stagedJournal() { return this.state.staged.filter((j) => j.status === "staged" || j.status === "posted")[0] || null; }
+
+  /** What the approval was taken against. Anything in here moving withdraws the signature. */
+  signature(m) {
+    const d = this.state.draft || { lines: [] };
+    return JSON.stringify({
+      scope: m.scope.label, asOf: m.time.asOf, rationale: this.state.rationale,
+      lines: (d.lines || []).map((l) => [l.account, String(l.debit || ""), String(l.credit || "")]),
+      staged: this.state.staged.map((j) => j.ref + ":" + j.status),
+    });
+  }
+  staleAgainst(m) {
+    const a = this.state.approval;
+    if (!a || !m) return null;
+    if (a.signature === this.signature(m)) return null;
+    if (a.scopeLabel !== m.scope.label) return "The approval was taken against " + a.scopeLabel + "; the workspace now reads " + m.scope.label + ". A signature does not travel between scopes — approve again against this one.";
+    return "The reviewed payload changed after " + a.snapshotId + " was signed. The approval covered the earlier snapshot, so it no longer covers what would be submitted.";
+  }
+
+  transportAnswer(journal) {
+    const mode = String(this.props.transport || "confirms");
+    if (mode === "refuses") return { ok: false, reason: "Posting refused — the June statutory window closed at 2026-06-26 18:00Z, after this journal was approved." };
+    if (mode === "never answers") return undefined;
+    return { ok: true, id: "JRNL-" + journal.ref + "-R1" };
+  }
+
+  send(journal, rec) {
+    const I = window.MeridianInstructions;
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      const answer = this.transportAnswer(journal);
+      const settled = I.settle(rec.id, answer);
+      // The RECEIPT posts the journal — not the click. An unlanded or refused instruction
+      // leaves the actual residual exactly where it was.
+      if (settled && settled.state === "landed") {
+        this.setState((s) => ({
+          staged: s.staged.map((x) => (x.ref === journal.ref
+            ? Object.assign({}, x, { status: "posted", condition: "confirmed", authority: "source", receipt: settled.receipt && settled.receipt.id })
+            : x)),
+        }));
+      }
+    }, 1100);
+  }
+
+  renderVals() {
+    // Retry only the declared synthetic preview, never an application transport.
+
+    this.syncEnv();
+    const prefs = window.MeridianPrefs;
+    document.documentElement.setAttribute("data-theme", prefs ? prefs.theme(this.props.theme ?? "light") : (this.props.theme ?? "light"));
+    if (document.body) document.body.setAttribute("data-theme-density", prefs ? prefs.density(this.props.density ?? "default") : (this.props.density ?? "default"));
+    const B = window.MeridianBooks, I = window.MeridianInstructions, M = window.MeridianAppMap;
+    const s = this.state, m = this.model();
+    const noop = () => {};
+    if (!m) return { dataState: "loading", noop: noop, nav: [], instructions: [] };
+
+    const view = s.view;
+    const show = (id) => (view === id ? "on" : "off");
+    const sel = m.find(s.selected);
+    const staged = this.stagedJournal();
+    const stageOut = this.stageResult();
+    const stale = this.staleAgainst(m);
+    const instruction = s.instructionId && I ? I.byId(s.instructionId) : null;
+    const landed = !!(instruction && instruction.state === "landed");
+    const posted = !!(staged && staged.status === "posted");
+    const resolves = staged ? m.breaks.filter((b) => b.breakId === staged.sourceBreak)[0] : null;
+
+    const breakRows = m.breaks.map((b) => ({
+      breakId: b.breakId, date: b.date, memo: b.memo, statementLine: b.statementLine,
+      classification: b.classification, actual: this.fmt(b.actualResidual), projected: this.fmt(b.projectedResidual),
+      // The chip carries the readiness vocabulary AND the domain word. An open break reading as a
+      // neutral "Info" is absence presented as agreement — the one thing this template is about.
+      status: b.actualResidual === 0 ? "Ready" : b.projectedResidual === 0 ? "ReviewRequired" : "Blocked",
+      stateLabel: b.actualResidual === 0 ? "Reconciled" : b.projectedResidual === 0 ? "Staged" : "Break",
+      sel: s.selected === b.identity ? "on" : "off",
+      open: () => this.setState({ selected: b.identity }),
+    }));
+
+    const ledgerRows = m.glRows.map((r) => ({
+      date: r.date, ref: r.ref, memo: r.memo, account: r.account,
+      debit: r.debit, credit: r.credit,
+      status: r.status === "void" ? "void" : r.staged ? "pending" : "posted",
+    }));
+    const ledgerIndex = m.glRows.map((r) => r.identity).indexOf(s.selected);
+
+    const tbRows = m.trialBalance.map((r) => ({ code: r.code, account: r.account, type: r.type, balance: r.balance, moved: r.moved, projectedBalance: r.projectedBalance }));
+    const tbIndex = tbRows.map((r) => "account:" + r.code).indexOf(s.selected);
+
+    const sheet = m.accountSheet(s.account) || m.accounts[0];
+    const credit = sheet && (sheet.type === "liability" || sheet.type === "equity" || sheet.type === "revenue");
+
+    // The rail speaks about whatever is selected — one identity, five surfaces.
+    const kind = B.parse(s.selected).type;
+    let selTitle = "Nothing selected", selFacts = [], selEvidence = [];
+    if (kind === "break" && sel) {
+      selTitle = sel.breakId + " · " + sel.memo;
+      selFacts = [
+        { label: "Statement line", value: sel.statementLine },
+        { label: "Amount", value: this.fmt(sel.amount) },
+        { label: "Account", value: B.label(sel.account) },
+        { label: "Actual residual", value: this.fmt(sel.actualResidual) },
+        { label: "Projected residual", value: this.fmt(sel.projectedResidual) },
+        { label: "Resolved by", value: sel.resolvedBy || "nothing yet" },
+      ];
+      selEvidence = sel.evidence || [];
+    } else if (kind === "glline" && sel) {
+      selTitle = sel.ref + " · " + sel.account;
+      selFacts = [
+        { label: "Posted", value: sel.date }, { label: "Memo", value: sel.memo },
+        { label: "Debit", value: sel.debit ? this.fmt(sel.debit) : "—" },
+        { label: "Credit", value: sel.credit ? this.fmt(sel.credit) : "—" },
+        { label: "Condition", value: sel.condition }, { label: "Authority", value: sel.authority },
+      ];
+      selEvidence = sel.attachments || [];
+    } else if (kind === "account" && sel) {
+      selTitle = sel.label;
+      selFacts = [
+        { label: "Opening", value: this.fmt(sel.opening) }, { label: "Movement", value: this.fmt(sel.movement) },
+        { label: "Closing — actual", value: this.fmt(sel.closing) },
+        { label: "Closing — projected", value: this.fmt(sel.projectedClosing) },
+      ];
+    }
+
+    return {
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"), noop: () => this.setState({ previewReady: true }),
+      envLabel: this.env(),
+      nav: M ? M.sections("accounting") : [],
+      onNav: (id) => M && M.go(id),
+      context: {
+        entity: { type: "fund", label: m.scope.entityLabel }, book: m.scope.book, basis: m.scope.basis,
+        period: m.scope.periodLabel, asOf: m.time.asOf, currency: "USD",
+        locked: m.time.periodState !== "open",
+      },
+      contextCondition: m.time.periodState === "open" ? "Live" : "Locked",
+
+      entity: s.entity, basis: s.basis, period: s.period,
+      entityOptions: B.SCOPES.entity.map((e) => ({ value: e.id, label: e.label })),
+      basisOptions: B.SCOPES.basis.map((b) => ({ value: b.id, label: b.label })),
+      periodOptions: B.SCOPES.period.map((p) => ({ value: p.id, label: p.label })),
+      onEntity: (v) => this.setState({ entity: v }),
+      onBasis: (v) => this.setState({ basis: v }),
+      onPeriod: (v) => this.setState({ period: v }),
+      scopeLabel: m.scope.label,
+      basisNote: m.scope.basisNote + (m.excluded.length ? " " + m.excluded.length + " journal(s) sit outside this basis and are named on the ledger, not dropped." : ""),
+      basisTone: m.excluded.length ? "review" : "info",
+
+      view: view,
+      viewOptions: [
+        { value: "tieout", label: "Tie-out", count: m.residual.open },
+        { value: "journal", label: "Journal review" },
+        { value: "ledger", label: "Ledger", count: m.glRows.length },
+        { value: "trial", label: "Trial balance" },
+        { value: "account", label: "Account sheet" },
+      ],
+      onView: (v) => this.setState({ view: v }),
+      tieoutShow: show("tieout"), journalShow: show("journal"), ledgerShow: show("ledger"),
+      trialShow: show("trial"), accountShow: show("account"),
+      selectedLabel: s.selected,
+
+      residualActual: this.fmt(m.residual.actual),
+      residualProjected: this.fmt(m.residual.projected),
+      stagedCount: m.residual.staged,
+      proofDebits: this.fmt(m.proof.actual.debits), proofCredits: this.fmt(m.proof.actual.credits),
+      proofNote: m.proof.actual.balanced ? "Posted lines balance. Staged lines are proved separately." : "Posted lines do not balance — the ledger says so before anyone asks.",
+      breakRows: breakRows,
+      reconLeft: { title: "Custodian statement", items: m.matched.map((x) => ({ id: x.identity, date: x.date, ref: x.statementLine, memo: x.memo, amount: x.amount, matched: true })).concat(m.breaks.map((b) => ({ id: b.identity, date: b.date, ref: b.statementLine, memo: b.memo, amount: b.amount, matched: b.actualResidual === 0 }))) },
+      reconRight: { title: "Ledger", items: m.glRows.filter((r) => r.code === "1100" && r.status !== "void").map((r) => ({ id: r.identity, date: r.date, ref: r.ref, memo: r.memo, amount: (Number(r.debit) || 0) - (Number(r.credit) || 0), matched: !r.staged })) },
+      stmtBalance: m.matched.reduce((a, x) => a + x.amount, 0) + m.breaks.reduce((a, b) => a + b.amount, 0),
+      bookBalance: m.glRows.filter((r) => r.code === "1100" && r.status !== "void" && !r.staged).reduce((a, r) => a + (Number(r.debit) || 0) - (Number(r.credit) || 0), 0),
+
+      noDraftShow: s.draft ? "off" : "on",
+      draftShow: s.draft ? "on" : "off",
+      draftKey: s.draftKey,
+      draftBreakTitle: s.draft ? "Correcting " + s.draft.sourceBreak : "",
+      draftBreakNote: s.draft ? "Seeded from the break's statement line. Evidence and rationale travel inside the payload, so what is approved and what is submitted are one object." : "",
+      draftLines: s.draft ? s.draft.lines : [],
+      draftHeader: s.draft ? s.draft.header : {},
+      accountNames: B.ACCOUNTS.map((a) => B.label(a.code)),
+      formBlockers: stageOut ? stageOut.issues : [],
+      onDraftChange: (entry) => this.setState((st) => ({ draft: Object.assign({}, st.draft, { header: entry.header, lines: entry.lines }) })),
+      rationale: s.rationale,
+      onRationale: (e) => this.setState({ rationale: e.target.value }),
+      stageDisabled: !stageOut || !stageOut.ok || !!staged,
+      stageTitle: staged ? "Already staged as " + staged.ref : stageOut && !stageOut.ok ? stageOut.issues.map((i) => i.label).join(" · ") : "Stage " + (s.draft ? s.draft.header.ref : ""),
+      stageHint: staged ? "Staged. The projected residual moved; the actual one did not." : "Staging changes the projected residual only.",
+      onStage: () => {
+        const out = this.stageResult();
+        if (!out || !out.ok) return;
+        this.setState({ staged: [out.journal], approval: null, instructionId: null });
+      },
+      onDiscard: () => this.setState({ draft: null, staged: [], approval: null, instructionId: null }),
+
+      stagedShow: staged ? "on" : "off",
+      stagedRef: staged ? staged.ref + " · " + staged.status : "—",
+      stagedClosesProjected: resolves ? this.fmt(resolves.projectedResidual) + " (from " + this.fmt(-resolves.amount) + ")" : "—",
+      stagedClosesActual: posted ? "closed on receipt " + (staged.receipt || "") : resolves ? this.fmt(resolves.actualResidual) + " — still open, no receipt" : "—",
+      snapshotShow: s.approval ? "on" : "off",
+      snapshotId: s.approval ? s.approval.snapshotId : "—",
+      approvedBy: s.approval ? s.approval.actor : "—",
+      approvedAt: s.approval ? s.approval.at : "—",
+      staleShow: stale && !landed ? "on" : "off",
+      staleReason: stale || "",
+      approveLabel: s.approval && !stale ? "Approved against " + s.approval.snapshotId : "Approve against snapshot",
+      approveDisabled: !staged || (!!s.approval && !stale) || landed,
+      approveTitle: !staged ? "Stage the journal first — an approval signs a staged payload, not a draft." : "Signs this exact payload and this exact scope",
+      onApprove: () => this.setState((st) => {
+        const mm = this.model();
+        const id = "SNAP-2026-06-26-" + String(st.snapSeq + 1).padStart(2, "0");
+        return { snapSeq: st.snapSeq + 1, approval: { snapshotId: id, at: this.stamp(), actor: "R. Alvarez · Controller", signature: this.signature(mm), scopeLabel: mm.scope.label } };
+      }),
+
+      submitLabel: staged ? "Post " + staged.ref + " · " + m.scope.entityLabel : "Post journal",
+      submitKey: staged && s.approval ? "journal.post:" + staged.ref + ":v1:" + s.approval.snapshotId : "journal.post:unapproved",
+      submitState: instruction ? instruction.state : "idle",
+      submitReason: instruction ? instruction.reason : null,
+      submitReceipt: instruction ? instruction.receipt : null,
+      submitDisabled: !staged || !s.approval || !!stale || landed,
+      onSubmit: () => {
+        const j = this.stagedJournal(), a = this.state.approval, mm = this.model();
+        if (!I || !j || !a || this.staleAgainst(mm)) return;
+        const rec = I.submit({
+          action: "journal.post", label: "Post " + j.ref + " · " + mm.scope.entityLabel,
+          idempotencyKey: "journal.post:" + j.ref + ":v1:" + a.snapshotId,
+          endpoint: "POST /books/journals", origin: "Books loop · journal review",
+          payload: B.reviewPayload(mm, j, { snapshotId: a.snapshotId, actor: a.actor }),
+        });
+        this.setState({ instructionId: rec.id });
+        if (!rec.deduped) this.send(j, rec);
+      },
+      onRetrySubmit: () => {
+        const j = this.stagedJournal();
+        if (!I || !j || !s.instructionId) return;
+        const rec = I.retry(s.instructionId);
+        if (rec) this.send(j, rec);
+      },
+      receiptShow: landed && instruction.receipt && instruction.receipt.id ? "on" : "off",
+      receiptId: instruction && instruction.receipt ? instruction.receipt.id : "",
+      receiptNote: instruction && instruction.receipt
+        ? "The adapter returned this id at " + instruction.receipt.at + " against key " + instruction.idempotencyKey + ". The actual residual closed on the receipt, not on the click — the ledger, trial balance and account sheet all read it from the same model."
+        : "",
+
+      ledgerRows: ledgerRows,
+      ledgerSelectedIndex: ledgerIndex,
+      onLedgerRow: (row, i) => this.setState({ selected: m.glRows[i] ? m.glRows[i].identity : s.selected }),
+      excludedShow: m.excluded.length ? "on" : "off",
+      excludedNote: m.excluded.map((j) => j.ref + " · " + j.memo + " (" + (j.basisOnly || []).join("/") + " only)").join(" · "),
+
+      tbRows: tbRows,
+      tbSelectedIndex: tbIndex,
+      tbTrailing: (row) => (row && row.moved ? "moves if posted" : ""),
+      onTbRow: (row) => this.setState({ selected: "account:" + row.code, account: row.code, view: "account" }),
+
+      account: s.account,
+      accountOptions: m.accounts.map((a) => ({ value: a.code, label: a.label })),
+      onAccount: (e) => this.setState({ account: e.target.value, selected: "account:" + e.target.value }),
+      acctOpening: sheet ? this.fmt(sheet.opening) : "—",
+      acctMovement: sheet ? this.fmt(sheet.movement) : "—",
+      acctClosing: sheet ? this.fmt(sheet.closing) : "—",
+      acctProjected: sheet ? this.fmt(sheet.projectedClosing) : "—",
+      acctOpeningValue: sheet ? sheet.opening : 0,
+      acctNormalSide: credit ? "credit" : "debit",
+      acctCaption: sheet ? sheet.label + " · " + m.scope.periodLabel : "Account sheet",
+      acctRows: sheet ? sheet.rows.map((r) => ({ date: r.date, ref: r.ref, memo: r.memo, debit: r.debit, credit: r.credit, status: r.staged ? "pending" : r.status === "void" ? "void" : "posted" })) : [],
+
+      selKind: kind ? kind.toUpperCase() : "SELECTION",
+      selTitle: selTitle, selFacts: selFacts, selEvidence: selEvidence,
+      evidenceShow: selEvidence.length ? "on" : "off",
+      draftActionShow: kind === "break" && sel && sel.actualResidual !== 0 && !staged ? "on" : "off",
+      onSeedDraft: () => this.seedDraft(),
+      loopShow: kind === "break" ? "on" : "off",
+      selLoops: M && sel ? M.loops("break", sel) : [],
+
+      durabilityNote: I ? I.durable.note : "Instruction store unavailable — nothing here survives navigation, and this line says so.",
+      instructions: s.instructions,
+      onQueueRetry: (ins) => { const j = this.stagedJournal(); const rec = I && I.retry(ins.id); if (rec && j) this.send(j, rec); },
+      onQueueOpen: () => this.setState({ view: "journal" }),
+    };
+  }
+}
+</script>
+</body>
+</html>

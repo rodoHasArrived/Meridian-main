@@ -43,3 +43,11 @@ a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-2026102
 a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3654
 a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3663
 a6943fa561bad4a36bdb4ad73fc75594d7de8979:docs/testing/evidence/next-work-20261028/selected-dotnet-tests.json:generic-api-key:3665
+# Meridian Design System 4.3.0: localStorage key names and a fixture idempotency key, not secrets
+bdf83bec5f378be92ca2c4f2ab76972ab0d5bda2:Meridian Design System/templates/_scaffold/instructions.js:generic-api-key:25
+bdf83bec5f378be92ca2c4f2ab76972ab0d5bda2:Meridian Design System/templates/_scaffold/prefs.js:generic-api-key:20
+bdf83bec5f378be92ca2c4f2ab76972ab0d5bda2:Meridian Design System/templates/settings-admin/SettingsAdmin.dc.html:generic-api-key:154
+# Verified SHA-256 of public components/data/KeyValueGrid.jsx in generated build
+# provenance and its bundled copy. Only these original commit/path/rule/line findings.
+de886adbf6285ae9b322b9ba1a64f68e2c8b025b:Meridian Design System/release-build.json:generic-api-key:179
+de886adbf6285ae9b322b9ba1a64f68e2c8b025b:Meridian Design System/_ds_bundle.js:generic-api-key:1

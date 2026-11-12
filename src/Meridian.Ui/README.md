@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-10-28
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Ui
@@ -14,6 +14,12 @@ last_reviewed: 2026-10-28
 The host-served bundle includes the Security Master bond analytics model selector and floating v3
 metrics, projected payments, fixing provenance and typed refusal states. Rebuild it from `dashboard/`
 after source changes; the shared analytics endpoint remains the calculation authority.
+
+The browser `/accounting/capital-calls` workflow consumes the shared commitment-to-cash API and
+retained reporting notice summaries. It presents commitment approval, call planning, posted activity,
+funding review and notice governance as distinct states. No browser-local balances, WPF state fork,
+new root navigation or live payment capability is introduced. See the dashboard and UI Shared
+READMEs for the exact support boundary and validation.
 
 The host-served workstation bundle uses paired React/React DOM runtime packages and preserves
 accessible separators between account labels, tab counts, and provider state badges. Dashboard
@@ -177,6 +183,9 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
+
+The host-served bundle includes Trading's governed approvals panel showing each parked order's
+economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
 
 ## Diagrams
 

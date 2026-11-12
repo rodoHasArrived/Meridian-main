@@ -13,9 +13,9 @@ public sealed class SecurityTermsS2StampTests
 {
     [Theory]
     [InlineData("Bond", 3, 1)]
-    [InlineData("CertificateOfDeposit", 3, 1)]
-    [InlineData("StructuredCredit", 4, 2)]
-    [InlineData("Swap", 1, 1)]
+    [InlineData("CertificateOfDeposit", 5, 1)]
+    [InlineData("StructuredCredit", 6, 2)]
+    [InlineData("Swap", 4, 1)]
     public void WritableCeiling_AndDocumentFloor_AreSeparate(string assetClass, int writes, int floor)
     {
         SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(writes);

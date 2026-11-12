@@ -54,6 +54,8 @@ export interface WorksheetGridProps {
   /** Fired on commit with the cell ref and the raw draft string (e.g. `("E2", "=YTM(B2)")`). */
   onCellCommit?: (ref: string, value: string) => void;
   style?: React.CSSProperties;
+  /** 3.5 · Accessible name of the grid. @default "Worksheet" */
+  label?: string;
 }
 
-export declare function WorksheetGrid(props: WorksheetGridProps): JSX.Element;
+export declare function WorksheetGrid(props: WorksheetGridProps): React.JSX.Element;

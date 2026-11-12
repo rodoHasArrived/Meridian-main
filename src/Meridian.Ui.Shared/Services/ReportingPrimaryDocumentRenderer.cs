@@ -185,6 +185,9 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer :
     internal static ReportDocumentModel BuildModel(ReportingOutputManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
+        if (string.Equals(manifest.TemplateId, CapitalCallNoticeReportingService.TemplateId,
+                StringComparison.OrdinalIgnoreCase))
+            return CapitalCallNoticeDocument.Build(manifest);
         var template = manifest.ResolvedTemplate!;
         var rowHash = DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(
             manifest.CertifiedDatasetRows);

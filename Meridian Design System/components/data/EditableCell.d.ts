@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Editable cell — inline editing in tables without modals. Click to enter edit mode,
  * Tab/Enter to commit, Escape to cancel. On blur, commits automatically. Validator
@@ -30,4 +31,4 @@ export interface EditableCellProps {
   /** Hint text shown below the input during edit (or error message if validation fails). */
   hint?: string;
 }
-export declare function EditableCell(props: EditableCellProps): JSX.Element;
+export declare function EditableCell(props: EditableCellProps): React.JSX.Element;

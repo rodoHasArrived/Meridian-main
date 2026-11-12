@@ -35,6 +35,46 @@
           "required": true
         }
       ]
+    },
+    {
+      "termsVersion": 2,
+      "fields": [
+        {
+          "key": "collateralType",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "counterparty",
+          "type": "String",
+          "required": true
+        },
+        {
+          "key": "endDate",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "haircut",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "rateUnit",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "repoRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "startDate",
+          "type": "Date",
+          "required": true
+        }
+      ]
     }
   ]
 }

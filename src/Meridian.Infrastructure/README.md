@@ -6,7 +6,7 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Infrastructure
@@ -60,7 +60,11 @@ answered under the name the caller used, declared as an alias on the catalog ent
 forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
 Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
 dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
-nothing rather than a partial history. The provider is review-only: its records are staged for
+nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
+(no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
+repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
+other corporate-action providers use the interface default, which reports whatever `FetchAsync`
+returns as complete. The provider is review-only: its records are staged for
 review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
@@ -342,6 +346,13 @@ providers and queue resources are disposed. Its bounded completion reader remain
 admitted producer has quiesced, then drains every retained notification without loss before
 shutdown completes; cleanup failures remain part of the terminal stop result.
 
+Streaming failover is driven by the active transport. The composite client forwards the current
+connection's diagnostics to the failover monitor: a connected transport is a heartbeat, so a quiet
+but connected feed stays healthy, and a terminal state (`Failed`, or an unrequested `Disconnected`)
+requests an immediate hand-off to the first viable backup. `Degraded` and `Reconnecting` are not
+terminal, callbacks from a provider that is no longer the current connection are dropped, and a
+standby provider's silence does not consume its failure budget.
+
 Streaming failover uses a two-phase runtime handoff. The coordinator proposes a transition, the
 client connects and restores the required subscriptions, and only then does the coordinator commit
 the active provider; rejected or cancelled handoffs retain the prior provider and state.
@@ -389,6 +400,10 @@ family and resolves each through its declared factory. Streaming factories creat
 clients. `ib-sim` transport and `ib-flex` credential resources keep their separate identities.
 Family disable settings apply across capabilities; inventory does not grant a production factory
 to template-only or mapper-only families.
+`IHistoricalDataProvider.CoverageFeed` names the dataset an instance serves beyond its provider name
+(Alpaca: feed and adjustment; `default` otherwise). Backfill resume treats dates as covered only for
+the same provider and `CoverageFeed`.
+
 Composite historical failover treats provider rate limits as structured signals only:
 `RateLimitException` (including wrapped instances) or `HttpRequestException.StatusCode` equal to
 HTTP 429. Adapter implementations should map vendor 429 responses at the HTTP boundary instead of

@@ -17,6 +17,24 @@ The reconciliation engine rethrows caller cancellation during Security Master lo
 none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
 latest-import and latest-reconciliation reads have no side effects.
 
+`PrivateCapitalLifecycleService` coordinates commitment revision review, effective approved terms,
+pro-rata call previews, and retention of the exact reviewed plan over `IPrivateCapitalStore`.
+Previews allocate over posted calls effective by the notice date, then validate the full approved
+commitment/issuance timeline, including future reductions and later posted calls.
+The first slice supports one fund/book/currency per call. It does not reserve capacity at preview
+or post journals itself. Missing evidence and unmatched historical capital activity block adoption
+until opening reconciliation; no legacy commitment balances are guessed or automatically migrated.
+Approved retained terms establish the source-backed investor/capital-account mapping for this slice;
+an approved capital account cannot be rebound to a different investor across commitments.
+
+Canonical Operations Continuity commits retain a versioned snapshot of all five required close
+gates in the same audit/state transaction. Snapshot-bearing events use an explicit v1 hash envelope;
+events without snapshots preserve their original canonical hash bytes. Upgraded readers verify
+mixed chains and reject mutated, stripped or unknown snapshot formats. Readers must deploy with
+the new writer; older hash validators intentionally refuse the new envelope. Legacy audit events
+and nontransactional paths remain explicit history gaps, with no reconstructed or backfilled task
+counts. Burndown observations retain workflow versions and break across missing coverage.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an
@@ -454,7 +472,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` - server-owned approval-policy matrix, governed rule upsert validation, audit-event construction, and file-backed policy persistence.
 - `OperationsContinuity/OperationsCloseCalendarService.cs` - account-close calendar projection, governed due-date/owner overrides, and audit-event construction backed by Financial Operations policy.
 - `PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs` - Financial Operations-owned private-capital activity projection over manual-journal drafts, posted ledger events, report-pack workflow records, bank evidence, readiness, evidence categories, report-output posture, and payment-intent workflow status.
-- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
+- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness. When the period has recurring or calculated journal occurrences it also adds a lane that is ready only once each is posted or recorded as needing no draft.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
 - `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over

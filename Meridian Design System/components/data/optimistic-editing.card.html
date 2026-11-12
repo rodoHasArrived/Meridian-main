@@ -1,0 +1,67 @@
+<!-- @dsCard group="Data" viewport="960x760" name="Optimistic editing & revert" subtitle="OptimisticCell · OptimisticRowBar — provisional until confirmed, rejected with the reason, reverted with a reason" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Optimistic editing & revert — OptimisticCell</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)}
+.demo-title{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin:0 0 8px}
+.note{font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:14px}
+.note b{color:var(--text-secondary)}
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { DataGrid, OptimisticProvider, OptimisticCell, OptimisticRowBar, Format } = window.MeridianDesignSystem_205d17;
+const { useState } = React;
+const money = (v) => (Format && Format.formatNumber ? Format.formatNumber(String(v).replace(/,/g, ""), { decimals: 2 }) : String(v));
+
+const SEED = [
+  { id: "ibkr-eq", venue: "IBKR · equities", limit: "2,500,000", budget: "250", owner: "a.patel" },
+  { id: "ibkr-opt", venue: "IBKR · options", limit: "600,000", budget: "250", owner: "a.patel" },
+  { id: "bny", venue: "BNY Mellon · custody", limit: "40,000,000", budget: "400", owner: "r.okafor" },
+  { id: "netsuite", venue: "NetSuite · postings", limit: "—", budget: "600", owner: "m.chen" },
+];
+
+// Fixture transport: latency 900ms; a budget under 100ms or a limit over 50m is rejected by policy.
+const commit = (e) => new Promise((ok, no) => setTimeout(() => {
+  const n = Number(String(e.value).replace(/[^0-9.]/g, ""));
+  if (e.field === "budget" && n < 100) return no(new Error("Policy · acknowledgement budget floor is 100ms for this venue class (RISK-014)."));
+  if (e.field === "limit" && n > 50000000) return no(new Error("Policy · exposure limit above 50,000,000 requires a second approver; submit through Change control."));
+  ok({ receipt: `chg-${Math.floor(Math.random() * 9000 + 1000)}` });
+}, 900));
+const revert = () => new Promise((ok) => setTimeout(ok, 500));
+
+function Demo() {
+  const [rows, setRows] = useState(SEED);
+  const [selected, setSelected] = useState([]);
+  const onSettle = (e) => { if (e.status === "confirmed") setRows((rs) => rs.map((r) => (r.id === e.rowId ? { ...r, [e.field]: e.value } : r))); if (e.status === "reverted") setRows((rs) => rs.map((r) => (r.id === e.rowId ? { ...r, [e.field]: e.prior } : r))); };
+  const num = (v) => (/^[0-9,.]+$/.test(String(v).trim()) ? true : "Digits only");
+  const columns = [
+    { key: "venue", label: "Venue" },
+    { key: "limit", label: "Exposure limit", align: "right", cell: (r) => <OptimisticCell rowId={r.id} field="limit" value={r.limit} align="right" validator={num} format={(v) => (v === "—" ? "—" : money(v))} hint="Enter commits · a write takes ~1s" /> },
+    { key: "budget", label: "Ack budget (ms)", align: "right", cell: (r) => <OptimisticCell rowId={r.id} field="budget" value={r.budget} align="right" mode="number" validator={num} hint="Below 100 is rejected by policy" /> },
+    { key: "owner", label: "Owner", cell: (r) => <OptimisticCell rowId={r.id} field="owner" value={r.owner} /> },
+  ];
+  const ids = selected.map((i) => rows[i] && rows[i].id).filter(Boolean);
+  return (
+    <OptimisticProvider commit={commit} revert={revert} onSettle={onSettle}>
+      <p className="demo-title">Adapter limits · click a cell, Enter to commit</p>
+      <div style={{ marginBottom: 8 }}>
+        <OptimisticRowBar rowIds={ids.length ? ids : undefined} label={ids.length ? `edits in ${ids.length} selected row${ids.length === 1 ? "" : "s"}` : "edits on this screen"} emptyLabel="No edits yet — every write will be listed here with its fate." />
+      </div>
+      <DataGrid rowKey="index" columns={columns} rows={rows} select selected={selected} onSelectedChange={setSelected} />
+      <p className="note"><b>Try:</b> set an Ack budget to <b>80</b> — it renders provisional (dashed), then comes back rejected with the policy reason attached and the prior value restored. Set one to <b>300</b> — it confirms; hover it and press <b>Revert…</b>, which asks for a reason. Confirm edits on two rows, select them, and revert the batch from the bar.</p>
+    </OptimisticProvider>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

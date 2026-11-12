@@ -20,12 +20,12 @@ export interface DrawdownChartProps {
   timeTicks?: number;
 }
 
-const PLOT = "var(--chart-plot, #FBFAF8)";
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const DRAWDOWN = "var(--chart-drawdown, #A8443C)";
-const WARNING = "var(--chart-warning, #8A5C12)";
+const PLOT = "var(--chart-plot, #F8F7F3)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const DRAWDOWN = "var(--chart-drawdown, #B54B42)";
+const WARNING = "var(--chart-warning, #986717)";
 
 export function DrawdownChart({
   series,

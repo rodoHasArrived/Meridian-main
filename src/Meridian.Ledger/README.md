@@ -15,6 +15,23 @@ last_reviewed: 2026-10-02
 
 Share-class redemptions round cash to the class currency's minor units (`NavPerUnitCalculator.CashForRedemption(units, nav, currency)`).
 
+`PrivateCapitalPostingAuthority` binds frozen call plans and approved commitment revisions to
+governed issuance/funding drafts. Native funding has a distinct stable receipt identity for each
+partial receipt while retaining the originating installment and fund-event identity. Historical
+factory calls without a receipt identity retain their previous idempotency keys. Bank evidence
+must identify a positive, unvoided `CapitalCallFunding` transaction matching entity, currency,
+amount and effective date; source snapshots are hashed and rechecked before posting.
+
+`IPrivateCapitalStore` exposes durable commitment revisions, frozen call plans, and immutable posting
+receipts without owning a storage engine. `PrivateCapitalAuthorityRules` validates explicit scope
+and source terms; `PrivateCapitalCallPlanHash` binds the reviewed allocation while excluding later
+posting observations. The commitment-to-cash workflow reuses the existing capital-call kernel and
+requires source-backed opening authority instead of inferring commitments from assignments.
+Call allocation uses called capital as of its notice date. The shared authority rule also walks
+all posted issuance dates and approved effective-date checkpoints, so backdated calls cannot break
+a future reduction and later increases cannot authorize an earlier overcall. At one effective date,
+the highest approved revision owns the cap; superseded and draft terms do not constrain the timeline.
+
 `ShortCarryProjector` derives the borrow-fee and payment-in-lieu journals (expense debit, cash
 credit) from a reviewed `ShortCarryInstruction`; it refuses long lots, non-functional currencies,
 zero-rounding charges and mixed inputs, and changes no lot quantity or basis.
@@ -143,13 +160,28 @@ Csv, Json, RegulatoryXml natively plus real binary Xlsx/Pdf through the
 `ILedgerReportBinaryRenderer` seam (the dependency-free `BuiltInLedgerReportBinaryRenderer` by
 default; `Meridian.Documents.FinancialReportDocumentRenderer` supplies branded, deterministic
 QuestPDF/ClosedXML output for client delivery).
+Text cells in both builders' CSV artifacts pass through `LedgerCsvCell`, which prefixes
+formula-looking text (leading `=`, `+`, `@`, tab, or a non-numeric `-`) with an apostrophe so
+spreadsheets open it as text; ordinary values and negative amounts keep their existing bytes.
 The report pack's trial-balance, income-statement, and balance-sheet line provenance includes the
 complete selected as-of history, matching those point-in-time amounts. Prior-period entries remain
 explicit support for opening balances instead of being omitted from a current-period proof.
+When a chart row aggregates multiple investor, financial-account, or symbol identities under one
+account path, its provenance resolves the actual posted accounts of that type and path. The
+as-of, financial-account, and line-dimension filters still apply, so an aggregate retains every
+contributing journal without widening the selected scope.
 Ledger legs can carry explicit `LedgerEntryCurrency` (transaction currency, transaction amounts,
 and FX rate) alongside the functional debit/credit so currency no longer has to be inferred from
 account symbols; the currency-aware `Ledger.PostLines` overload and
 `MultiCurrencyJournalProjection.ToCurrencyAwareLedgerLines` post that detail durably.
+
+`LedgerReportPackBuilder` also emits `gl-detail.csv` (one row per journal line posted after the
+period start and up to the as-of time, the same window as the period statements, inside the pack's financial-account and dimension scope) and
+`pnl-by-strategy-symbol.csv` (period revenue and expense grouped by the journal's `StrategyId` and
+the line's symbol; lines without either are kept under an empty key, and closing journals that only
+transfer revenue and expense to retained earnings are left out so the rows sum to the period's
+result from activity). `manifest.csv` carries control totals over the GL detail: journal-entry count, line
+count, total debits, total credits, and their variance.
 
 Fund-ops economics are modeled as pure calculators: `PreferredReturnCalculator` (compounding or
 simple preferred return on a contribution timeline), `EuropeanDistributionWaterfall` (return of
@@ -172,6 +204,11 @@ uncalled. The `CommitmentRollForwardCalculator` and `DefaultInterestCalculator` 
 F# posting kernel so storage and reporting projections do not duplicate account-type math.
 `MultiCurrencyLedgerTranslator` translates local-currency balances to a base currency and prepares
 balanced unrealized FX revaluation journal lines for monetary asset/liability accounts.
+`JournalTemplate.Calculation` marks a template whose lines come from a registered posting
+calculation each period; the recurring-journal runner uses it to draft management fees,
+performance fees, expense accruals, bond coupon and amortization, and FX revaluation for approval
+(see `docs/domain/recurring-journal.md`). `PostingCalculationNotYetConnectedAttribute` records a
+finished draft or line builder that deliberately has no production caller yet.
 `MultiCurrencyJournalProjector` converts local-currency debit/credit journal inputs into balanced
 base-currency ledger posting lines while preserving local amount, currency, and FX-rate evidence.
 `DailyPortfolioPricingProjector` applies fund-specific valuation policies to listed and OTC daily
@@ -295,7 +332,9 @@ fund/entity/sleeve plus organization, portfolio, book, account, customer, vendor
 external-GL scoped instead of emitting all same-account ledger entries.
 `LedgerReportSchedulePlanner` projects monthly, quarterly, or annual report schedules into
 period-bounded export occurrences and dimension-scoped report-pack requests for regulatory,
-investor, or internal stakeholder delivery workflows.
+investor, or internal stakeholder delivery workflows. Its `PeriodStartingOn` method is the shared
+period-boundary definition that the governed reporting scheduler uses to advance period-close
+schedules; the planner itself never executes anything.
 `LedgerScheduledReportExportPackageBuilder` turns a signed report pack plus one scheduled
 occurrence into a delivery manifest and regulator-facing XML summary artifact when requested by the
 schedule, preserving recipients, due date, requested formats, report-pack signature, dimension

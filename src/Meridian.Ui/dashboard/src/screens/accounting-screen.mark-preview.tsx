@@ -1,3 +1,4 @@
+import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
@@ -32,6 +33,7 @@ export function useValuationMarkPreview(schedule: DailyValuationScheduleWorkItem
 }
 
 export function ValuationMarkPreviewPanel({ preview }: { preview: ReturnType<typeof useValuationMarkPreview> }) {
+  const result = preview.result;
   return <section aria-label="Valuation mark impact preview" className="panel-surface space-y-3 p-4">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h3 className="font-semibold">Preview valuation mark controls</h3>
@@ -39,19 +41,15 @@ export function ValuationMarkPreviewPanel({ preview }: { preview: ReturnType<typ
       <Button disabled={preview.busy} onClick={() => void preview.run()}>{preview.busy ? "Assessing marks…" : "Preview mark impact"}</Button>
     </div>
     <div role="status" aria-live="polite">
-      {preview.error ?? (preview.result
-        ? `${preview.result.blockedPositionCount} of ${preview.result.assessedPositionCount} positions require review; ${preview.result.affectedValuationCount} valuation(s) affected. Policy ${preview.result.policyVersion}.`
+      {preview.error ?? (result
+        ? `${result.blockedPositionCount} of ${result.assessedPositionCount} positions require review; ${result.affectedValuationCount} valuation(s) affected. Policy ${result.policyVersion}.`
         : "No current impact preview. A refresh is required when the schedule, scope, or policy changes.")}
     </div>
-    {preview.result && <>
-      <p className="text-xs text-muted-foreground">Assessed {preview.result.evaluatedAtUtc}. Approval rechecks current evidence.</p>
-      <div className="overflow-x-auto"><table className="w-full text-sm" aria-label="Valuation mark preview positions">
-        <thead><tr><th className="text-left">Position</th><th className="text-left">Mark readiness</th><th className="text-left">Reason</th></tr></thead>
-        <tbody>{preview.result.positions.map((position, index) => <tr key={`${position.financialAccountId}-${position.securityId}-${position.symbol}-${index}`}>
-          <td className="py-2">{position.symbol}<div className="text-xs text-muted-foreground">{position.financialAccountId ?? "Account unavailable"}</div></td>
-          <td><MarkFreshnessCell mark={presentMarkFreshness(position)} /></td><td>{position.blockReason ?? "Current"}</td>
-        </tr>)}</tbody>
-      </table></div>
+    {result && <>
+      <p className="text-xs text-muted-foreground">Assessed {result.evaluatedAtUtc}. Approval rechecks current evidence.</p>
+      <div className="overflow-x-auto"><TableWorkbench<(typeof result.positions)[number]> workbenchId="accounting-mark-preview" sourceKey={JSON.stringify(result.positions)} rows={result.positions} columns={[{id:"field-0",label:"Position",exportValue:position=>position.symbol,render:position=><>{position.symbol}<div className="text-xs text-muted-foreground">{position.financialAccountId ?? "Account unavailable"}</div></>},
+{id:"field-1",label:"Mark readiness",exportValue:position=>JSON.stringify(presentMarkFreshness(position)),render:position=><><MarkFreshnessCell mark={presentMarkFreshness(position)} /></>},
+{id:"field-2",label:"Reason",exportValue:position=>position.blockReason,render:position=><>{position.blockReason ?? "Current"}</>}]} getRowId={position=>`mark-preview-${result.positions.indexOf(position)}`} getSearchText={position=>[position.symbol,JSON.stringify(presentMarkFreshness(position)),position.blockReason].join(" ")} completePopulation sourceDescription="Current valuation freshness preview; no missing mark is substituted by a synthetic observation." ariaLabel="Valuation mark preview positions" emptyText="No source records returned." /></div>
     </>}
   </section>;
 }

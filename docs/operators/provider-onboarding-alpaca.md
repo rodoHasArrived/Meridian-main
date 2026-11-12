@@ -58,6 +58,12 @@ environment takes precedence over the variable. When neither names an environmen
 defaults to paper, while those reference lookups keep the live host they always used unless the
 key ID is a paper key (`PK…`); set the variable to make every surface agree. The separate
 `MDC_ALPACA_SANDBOX` override sets `Alpaca:UseSandbox` for the configured market-data client.
+
+The Alpaca provider module follows the same rule. Its setup probe and the brokerage gateway it
+registers use one key pair (the module's, otherwise the environment's) and one Trading API
+environment taken from `ALPACA_TRADING_ENVIRONMENT`, so the probe checks the account the gateway
+will trade in. The module's `useSandbox` setting selects the market-data stream sandbox only; it
+no longer moves the probe to a different environment from the gateway.
 `ALPACA_PAPER` is not recognized. See the [environment reference](../reference/environment-variables.md#alpaca-provider)
 for exact names, defaults, and credential precedence.
 

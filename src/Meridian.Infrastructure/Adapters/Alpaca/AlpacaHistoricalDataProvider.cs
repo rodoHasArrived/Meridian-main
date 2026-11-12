@@ -53,6 +53,9 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 
 
     public override string Name => "alpaca";
+
+    /// <summary>Bars differ by feed (IEX vs SIP) and by adjustment, so both identify the dataset.</summary>
+    public override string CoverageFeed => $"{_feed}:{_adjustment}";
     public override string DisplayName => "Alpaca Markets";
     public override string Description => "Daily and intraday OHLCV bars with split/dividend adjustments for US equities.";
     protected override string HttpClientName => HttpClientNames.AlpacaHistorical;

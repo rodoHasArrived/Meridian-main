@@ -1,4 +1,4 @@
-P&L / balance-sheet / cash-flow layout — grouped sections, indented line items, per-section subtotals, and a double-ruled grand total. Use this instead of `DenseDataTable` whenever the shape is "statement," not "rows."
+P&L / balance-sheet / cash-flow layout — grouped sections, indented line items, per-section subtotals, and a double-ruled grand total. Use this instead of `DataGrid` whenever the shape is "statement," not "rows."
 
 ```jsx
 <StatementTable

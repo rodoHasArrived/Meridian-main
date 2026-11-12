@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import type { SecurityMasterPolicyEvidence } from "./security-master-policy-evidence";
 import type {
   CorporateActionsViewState,
   CorporateActionRowViewModel,
@@ -346,6 +347,12 @@ export function SecuritySchedulesPanel({
           </div>
         )}
         {!view.loadingText && !view.errorText && (
+          <>
+          {view.cashFlowBlocker && <PolicyEvidence evidence={view.cashFlowBlocker} />}
+          <div className="grid gap-4 xl:grid-cols-2">
+            {view.declaredExercise && <PolicyEvidence evidence={view.declaredExercise} />}
+            <PolicyEvidence evidence={view.governance} />
+          </div>
           <div className="grid gap-4 2xl:grid-cols-[minmax(0,1.45fr)_minmax(20rem,0.55fr)]">
           <DenseDataTable
             columns={securityScheduleColumns}
@@ -381,9 +388,27 @@ export function SecuritySchedulesPanel({
             )}
           </div>
           </div>
+          </>
         )}
       </CardContent>
     </Card>
+  );
+}
+
+function PolicyEvidence({ evidence }: { evidence: SecurityMasterPolicyEvidence }) {
+  return (
+    <section aria-label={evidence.title} className={cn("rounded-lg border p-4", evidence.blocked ? "border-warning/40 bg-warning/5" : "border-border")}>
+      <h3 className="text-sm font-semibold text-foreground">{evidence.title}</h3>
+      <p className="mt-2 text-sm text-muted-foreground">{evidence.summary}</p>
+      {evidence.fields.length > 0 && <dl className="mt-3 space-y-1 text-xs">
+        {evidence.fields.map((field) => <div key={field.label} className="flex flex-wrap justify-between gap-x-4 gap-y-1">
+          <dt className="text-muted-foreground">{field.label}</dt><dd className="font-mono text-foreground">{field.value}</dd>
+        </div>)}
+      </dl>}
+      {evidence.messages.length > 0 && <ul className="mt-3 list-disc space-y-1 pl-5 text-xs leading-5 text-foreground">
+        {evidence.messages.map((message, index) => <li key={`${index}-${message}`} className="break-words">{message}</li>)}
+      </ul>}
+    </section>
   );
 }
 

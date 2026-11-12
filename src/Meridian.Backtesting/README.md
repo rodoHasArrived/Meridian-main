@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-10
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Backtesting
@@ -22,6 +22,10 @@ XIRR is computed from investor-boundary flows only (initial capital out, termina
 `MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
 square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
 to zero or below.
+
+Reducing an OCO sibling after the other leg fills keeps the sibling's own filled shares in its
+total `Quantity`, so a partly filled bracket exit keeps working the full remaining position instead
+of losing the already-filled amount a second time.
 
 ## Purpose
 
@@ -43,6 +47,16 @@ and implements the canonical live-position adjuster. Existing aggregate query ca
 identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
+
+`AddMeridianBacktesting` builds that service itself when a host registers the Security Master
+(corporate-action query plus resolver) but no `ICorporateActionAdjustmentService`, so
+`AdjustForCorporateActions` behaves the same on the browser/CLI host as on WPF; without a Security
+Master the engine still reports that corporate actions were not applied.
+`SecurityMasterAssetEventSource` (`IBacktestAssetEventSource`) maps confirmed cash distributions
+and share splits to `AssetEvent`s for raw-price runs. The engine uses it only when
+`BacktestRequest.PopulateAssetEventsFromSecurityMaster` is set and the request supplies no events,
+and rejects it together with `AdjustForCorporateActions`, because back-adjusted prices already
+contain those actions. Mergers, spin-offs and other position transformations are not mapped.
 
 ## Key folders and files
 

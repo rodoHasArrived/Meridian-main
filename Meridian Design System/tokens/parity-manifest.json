@@ -1,0 +1,284 @@
+{
+  "$comment": "Canonical token record for Meridian's Programmed Institutionalism v2.1 palette. THIS FILE is the single source of truth for the base flip set (the tokens colors-dark.css overrides) and the token NAME contract the upstream app authors CSS against. scripts/check_token_parity.py verifies tokens/*.css against it: light values (resolved through the default theme graph), all three dark-mode blocks, and every recorded name. Retoning a token = change it here AND in tokens/*.css in the same commit; the gate fails on any one-sided edit. Upstream note: since the 4.3.0 migration (PR #3501) src/Meridian.Ui/dashboard/src/styles/index.css carries THIS palette, so VALUES are shared again. When the package sits in the monorepo the gate resolves every name both sides declare in light, auto dark, manual dark and forced light and fails on any difference that is not listed under upstreamValueDivergences. The name surface is still recorded below as aliasContract (--ws-*) plus workingNameContract (the theme/working/domain/chart/effect tiers the app also authors against).",
+  "canonicalSource": {
+    "name": "Programmed Institutionalism v2.1 — Foundations & Primitives sheet",
+    "files": [
+      "tokens/colors.css",
+      "tokens/theme.css",
+      "tokens/colors-dark.css",
+      "tokens/visualization.css"
+    ],
+    "lastVerified": "2026-09-01"
+  },
+  "upstream": {
+    "repo": "rodoHasArrived/Meridian-main",
+    "nameContractSources": [
+      "src/Meridian.Ui/dashboard/src/styles/index.css",
+      "src/Meridian.Wpf/Styles/ThemeTokens.xaml"
+    ],
+    "valuesShared": true,
+    "valuesSharedSince": "4.3.0",
+    "nameSurfaceRecordedAt": "2026-09-01",
+    "nameSurfaceRecordedFromTree": "fa43d2e476a0",
+    "note": "131 contract names read off index.css at the tree above. Value parity is checked live against index.css whenever the package sits in the monorepo, across every name both sides declare (224 at the 4.3.0 integration), not only the 131 pinned here. ThemeTokens.xaml is listed as a source but is light-only XAML; its runtime twin ColorPalette.cs is held to it by scripts/check_contrast.py (runtime-palette)."
+  },
+  "aliasContract": [
+    "--ws-page-bg",
+    "--ws-surface",
+    "--ws-surface-subtle",
+    "--ws-surface-raised",
+    "--ws-border",
+    "--ws-border-strong",
+    "--ws-text",
+    "--ws-text-muted",
+    "--ws-text-secondary",
+    "--ws-masthead-bg",
+    "--ws-masthead-fg",
+    "--ws-rail-bg",
+    "--ws-rail-active",
+    "--ws-row-hover",
+    "--ws-row-selected",
+    "--ws-row-border",
+    "--ws-inspector-bg",
+    "--ws-canvas-bg",
+    "--ws-accent",
+    "--ws-accent-hover",
+    "--ws-accent-pressed",
+    "--ws-shadow"
+  ],
+  "workingNameContract": {
+    "$comment": "The rest of the upstream name surface. Same rule as aliasContract: every name must resolve in the CSS closure, as a var() reference to a semantic source — never a duplicate hex. Values are this system's, not the console's.",
+    "theme": ["--theme-bg-canvas", "--theme-bg-light", "--theme-bg-hover", "--theme-bg-active", "--theme-border", "--theme-border-strong", "--theme-primary-text", "--theme-secondary-text", "--theme-muted-text", "--theme-accent"],
+    "working": ["--bg", "--bg-light", "--bg-medium", "--bg-hover", "--bg-active", "--fg", "--fg-muted", "--fg-secondary", "--text-primary", "--text-secondary", "--text-muted", "--card-bg", "--panel-strong-bg", "--panel-soft-bg", "--surface-raise-bg", "--surface-topbar", "--surface-input", "--border-color", "--border-hi", "--border-hover", "--border-strong", "--border-divider", "--accent-ghost", "--green", "--red", "--orange", "--amber", "--purple", "--cyan-primary", "--cyan-secondary", "--cyan-focus", "--cyan-pressed", "--sidebar-hover", "--nav-item", "--nav-item-hover", "--nav-item-active", "--nav-section-label"],
+    "domain": ["--mode-live", "--mode-paper", "--mode-fixture", "--state-healthy-fg", "--state-healthy-bd", "--state-healthy-bg", "--state-warn-fg", "--state-warn-bd", "--state-warn-bg", "--state-danger-fg", "--state-danger-bd", "--state-danger-bg", "--state-paper-fg", "--state-paper-bd", "--state-paper-bg", "--state-strategy-fg", "--state-strategy-bd", "--state-strategy-bg", "--state-live-fg", "--state-live-bd", "--state-live-bg", "--state-muted-fg", "--state-muted-bd", "--state-muted-bg", "--state-pending-fg", "--state-pending-bd", "--state-pending-bg", "--severity-blocked-fg", "--severity-blocked-bd", "--severity-blocked-bg", "--severity-action-fg", "--severity-action-bd", "--severity-action-bg", "--severity-review-fg", "--severity-review-bd", "--severity-review-bg", "--severity-ready-fg", "--severity-ready-bd", "--severity-ready-bg", "--severity-info-fg", "--severity-info-bd", "--severity-info-bg"],
+    "chart": ["--chart-grid", "--chart-grid-major", "--chart-up", "--chart-dn", "--chart-ma20", "--chart-ma50", "--chart-bench", "--chart-band", "--chart-crosshair", "--chart-dd"],
+    "effects": ["--shadow-workstation", "--shadow-panel", "--shadow-menu", "--shadow-float", "--shadow-soft", "--radius-chip", "--radius-button", "--radius-card", "--radius-checkbox", "--space-panel"]
+  },
+  "upstreamValueDivergences": [],
+  "tokens": {
+    "--accent": {
+      "light": "#C56343",
+      "dark": "#D88466"
+    },
+    "--accent-dim": {
+      "light": "#CB6E4E",
+      "dark": "#E19479"
+    },
+    "--accent-ghost": {
+      "light": "#F6E6DF",
+      "dark": "#35251F"
+    },
+    "--accent-hover": {
+      "light": "#D2795A",
+      "dark": "#E5A088"
+    },
+    "--bg": {
+      "light": "#F2F0EB",
+      "dark": "#11171D"
+    },
+    "--bg-active": {
+      "light": "#E7EDF2",
+      "dark": "#2C4054"
+    },
+    "--bg-hover": {
+      "light": "#EDEFF0",
+      "dark": "#25303A"
+    },
+    "--bg-light": {
+      "light": "#F8F7F3",
+      "dark": "#171E25"
+    },
+    "--bg-medium": {
+      "light": "#EBE8E1",
+      "dark": "#1D252D"
+    },
+    "--border": {
+      "light": "#D2CDC3",
+      "dark": "#2C3640"
+    },
+    "--border-divider": {
+      "light": "#E2DED5",
+      "dark": "#26313B"
+    },
+    "--border-focus": {
+      "light": "#2D6FB3",
+      "dark": "#5C9FE5"
+    },
+    "--border-hover": {
+      "light": "#BEB8AD",
+      "dark": "#3C4854"
+    },
+    "--border-strong": {
+      "light": "#AAA49A",
+      "dark": "#46515C"
+    },
+    "--brand-axis": {
+      "light": "#29323A",
+      "dark": "#F1EFEA"
+    },
+    "--brand-field": {
+      "light": "#5D7286",
+      "dark": "#7F9DB8"
+    },
+    "--card-surface-raised": {
+      "light": "#FCFBF8",
+      "dark": "#1F2831"
+    },
+    "--chart-compare-1": {
+      "light": "#7890A4",
+      "dark": "#7F9DB8"
+    },
+    "--chart-compare-2": {
+      "light": "#8C918F",
+      "dark": "#9AA2A9"
+    },
+    "--dim-mix": {
+      "light": "#000",
+      "dark": "#FFFFFF"
+    },
+    "--focus": {
+      "light": "#2D6FB3",
+      "dark": "#5C9FE5"
+    },
+    "--green": {
+      "light": "#2E7655",
+      "dark": "#65A983"
+    },
+    "--green-surface": {
+      "light": "#E4EEE8",
+      "dark": "#20372D"
+    },
+    "--info-surface": {
+      "light": "#E3ECF2",
+      "dark": "#20303B"
+    },
+    "--ink-inverse": {
+      "light": "#F5F3EE",
+      "dark": "#20252B"
+    },
+    "--interaction-hover": {
+      "light": "#DDE5EC",
+      "dark": "#25303A"
+    },
+    "--missing": {
+      "light": "#A34A42",
+      "dark": "#D4776C"
+    },
+    "--navy": {
+      "light": "#2E4B6E",
+      "dark": "#85A3C4"
+    },
+    "--neutral": {
+      "light": "#6D757D",
+      "dark": "#9AA2A9"
+    },
+    "--orange": {
+      "light": "#986717",
+      "dark": "#C69B4D"
+    },
+    "--orange-surface": {
+      "light": "#F2EAD8",
+      "dark": "#3B3222"
+    },
+    "--pending": {
+      "light": "#7A6B52",
+      "dark": "#A39374"
+    },
+    "--purple": {
+      "light": "#2F648A",
+      "dark": "#79A8C8"
+    },
+    "--red": {
+      "light": "#B54B42",
+      "dark": "#D97A70"
+    },
+    "--red-surface": {
+      "light": "#F5E5E2",
+      "dark": "#402624"
+    },
+    "--scrim": {
+      "light": "rgba(17, 23, 29, 0.52)",
+      "dark": "rgba(4, 8, 12, 0.66)"
+    },
+    "--selected": {
+      "light": "#496C8F",
+      "dark": "#7F9DB8"
+    },
+    "--selected-surface": {
+      "light": "#E7EDF2",
+      "dark": "#2C4054"
+    },
+    "--statusbar-bg": {
+      "light": "#29323A",
+      "dark": "#0D1217"
+    },
+    "--statusbar-border": {
+      "light": "#3A444D",
+      "dark": "#26313B"
+    },
+    "--statusbar-text": {
+      "light": "#C9CFD4",
+      "dark": "#BEC4CA"
+    },
+    "--surface-overlay-base": {
+      "light": "#FFFFFF",
+      "dark": "#222B34"
+    },
+    "--text-disabled": {
+      "light": "#A4ABB2",
+      "dark": "#5F6A73"
+    },
+    "--text-muted": {
+      "light": "#606870",
+      "dark": "#929CA6"
+    },
+    "--text-on-accent": {
+      "light": "#0D1217",
+      "dark": "#14100E"
+    },
+    "--text-primary": {
+      "light": "#20252B",
+      "dark": "#F1EFEA"
+    },
+    "--text-secondary": {
+      "light": "#535C65",
+      "dark": "#BEC4CA"
+    },
+    "--topbar-bg": {
+      "light": "#29323A",
+      "dark": "#0D1217"
+    },
+    "--topbar-field-bg": {
+      "light": "#20272D",
+      "dark": "#161D24"
+    },
+    "--topbar-field-border": {
+      "light": "#38424B",
+      "dark": "#2C3640"
+    },
+    "--topbar-field-border-hover": {
+      "light": "#46515C",
+      "dark": "#3C4854"
+    },
+    "--topbar-sep": {
+      "light": "#4A545D",
+      "dark": "#3C4854"
+    },
+    "--topbar-text": {
+      "light": "#F1EFEA",
+      "dark": "#F1EFEA"
+    },
+    "--topbar-text-faint": {
+      "light": "#969EA6",
+      "dark": "#7F8993"
+    },
+    "--topbar-text-muted": {
+      "light": "#A9B1B8",
+      "dark": "#9AA2A9"
+    },
+    "--text-on-fill": {
+      "light": "#FFFFFF",
+      "dark": "#14100E"
+    }
+  }
+}

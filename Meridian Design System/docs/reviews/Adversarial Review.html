@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adversarial Review — Meridian Design System</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--brand-signal-ink);text-decoration:none}a:hover{color:var(--brand-signal-ink)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border);margin-bottom:8px}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:80ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.chip--blocked{color:var(--severity-blocked-fg);border:1px solid var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.chip--action{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--review{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--info{color:var(--severity-info-fg);border:1px solid var(--severity-info-bd);background:var(--severity-info-bg)}
+.chip--ready{color:var(--severity-ready-fg);border:1px solid var(--severity-ready-bd);background:var(--severity-ready-bg)}
+.f__hd .chip{margin-left:auto}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong);white-space:nowrap}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap}
+table.rm td.n{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--text-secondary)}
+table.rm tr.tot td{border-top:2px solid var(--border-strong);font-weight:600;color:var(--text-primary);background:var(--bg-medium)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.keep{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--border);background:var(--bg-light)}
+.keep div{padding:13px 16px;border-right:1px solid var(--border-divider);border-bottom:1px solid var(--border-divider)}
+.keep .n{font-weight:600;color:var(--text-primary);font-size:13px;margin-bottom:3px}
+.keep .d{font-size:12px;line-height:18px;color:var(--text-muted);text-wrap:pretty}
+.note{border-left:3px solid var(--accent);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
+@media (max-width:900px){.f__body{grid-template-columns:1fr}.keep{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">ADVERSARIAL REVIEW · 2026-08-06</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Internal audit · disposable artifact</p>
+<h1>The system is strong. Its edges are not.</h1>
+<p>193 exports, 29 templates, 91 cards, 622 tokens, and a governance checker that passes clean. The core is genuinely well-built — the token tiering, the data-condition vocabulary, and the per-component <code>.prompt.md</code> discipline are better than most shipped systems. This review ignores all of that and attacks only what is weak: material that no longer earns its place, and implementations that contradict the system's own law.</p>
+<p>Findings are graded with the system's own severity ladder. <b>Blocked</b> = the system contradicts itself and will mislead a consumer. <b>Action</b> = dead or duplicated weight. <b>Review</b> = a judgement call worth making deliberately.</p>
+<div class="tally">
+<div><div class="v">4.2<span style="font-size:14px"> MB</span></div><div class="l">Removable, unreferenced</div></div>
+<div><div class="v">31</div><div class="l">Files proposed for deletion</div></div>
+<div><div class="v">3</div><div class="l">Self-contradictions</div></div>
+<div><div class="v">0</div><div class="l">Templates using WorkstationShell</div></div>
+</div>
+</div></div>
+<div class="page">
+
+<h2 class="sec"><span>Self-contradiction — the system disobeys itself</span><span class="idx">01 / 04</span></h2>
+<p class="sub-lede">These are the expensive findings. A design system's only real asset is that its documentation can be trusted; each of these teaches a consumer to do the wrong thing.</p>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">C-01</span><span class="f__t">The flagship shell component is used by nothing</span><span class="chip chip--blocked">Blocked</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>readme.md</b> › shell/
+"WorkstationShell (slot-based frame — chrome slots around a
+ crash-isolated main + optional right rail; <b>use instead of
+ hand-rolled flex scaffolding</b>)"
+
+grep WorkstationShell templates/  →  <span class="neg">0 matches / 29 templates</span></div>
+<p>Every template instead hand-rolls <code>&lt;main style={{flex:1, overflowY:"auto", padding:16 …}}&gt;</code> — and <code>guidelines/WORKSTATION_BLUEPRINT.md</code> §3 <em>teaches</em> that hand-rolled version as the standard, directly contradicting the readme.</p></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>An abstraction with zero internal adoption is an untested abstraction. Its crash-isolation and right-rail slots have never run in a real screen, so the first consumer to follow the readme is the integration test.</p>
+<p><b>Decide one way.</b> Either migrate 3–4 templates onto <code>WorkstationShell</code> (starting with <code>blank-workstation</code>, whose whole job is to be the reference shell) and make the blueprint teach it — or delete the component and stop advertising it. Half-shipped is the only unacceptable state.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">C-02</span><span class="f__t">Row height has three different official answers</span><span class="chip chip--blocked">Blocked</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>readme.md</b>          terminal 26 · dense 28 · standard 36 · review 44
+<b>DenseDataTable.jsx</b>:101  "32 compact · <span class="neg">40 cozy</span> · 48 spacious"
+<b>DenseDataTable.jsx</b>:34   height: var(--theme-row-height, <span class="neg">40px</span>)
+<b>WORKSTATION_BLUEPRINT</b>   "40px default, 32px in FilteredDataTable"</div>
+<p>The density scope names were renamed to terminal / dense / standard / review; <code>cozy</code> no longer exists anywhere in <code>tokens/</code>. The CSS fallback still resolves to the retired 40px.</p></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>The fallback is what renders whenever a consumer loads the bundle without <code>styles.css</code> — so the documented-wrong value is also the actually-wrong pixel. Three sources disagreeing means nobody has a way to be right.</p>
+<p>Update the fallback to <code>36px</code>, rewrite the prop comment to the current four scope names, and delete the size table from the blueprint (see D-05) rather than maintaining a fourth copy of it.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">C-03</span><span class="f__t">Governance forbids <code>uploads/</code> references while a 3.5 MB <code>uploads/preview/</code> sits in the tree</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>scripts/README.md</b> — gates: "… <b>no uploads/ references</b> …"
+
+grep -r "uploads/preview" .  →  <span class="neg">0 matches</span>
+uploads/preview/  →  20 files, 3,545,718 bytes
+  · a 1.7 MB .pptx and a 1.0 MB .pdf
+  · a parallel token system (meridian.base.tokens.json,
+    meridian.visualization.tokens.json, 2 .css, 1 .types.ts)
+  · <b>two</b> versions of the same playground (64 KB + 39 KB)</div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>The checker's rule is correct and the folder proves it: this is the v2.1 source material that <em>was already absorbed</em> into <code>tokens/visualization.css</code>, <code>guidelines/VISUALIZATION_GRAMMAR.md</code>, and the <code>charts/</code> v2.1 components. What remains is a second, unversioned copy of the token layer that nothing loads and nothing checks — the exact thing that drifts and then gets cited as authority in six months.</p>
+<p><b>Delete the folder.</b> If the PDF/PPTX have archival value they belong outside the design system.</p></div>
+</div></div>
+
+<h2 class="sec"><span>Frivolous weight — delete</span><span class="idx">02 / 04</span></h2>
+<p class="sub-lede">Unreferenced, superseded, or duplicated by something better. Every row here was checked for inbound references across the whole tree before being listed.</p>
+
+<table class="rm">
+<thead><tr><th>Path</th><th style="text-align:right">Bytes</th><th>Why it goes</th></tr></thead>
+<tbody>
+<tr><td class="p">Meridian Design System.html</td><td class="n">616,168</td><td class="w">A bundled standalone export of the landing page, committed at the project root. A build artifact, not a source file — and it embeds a frozen copy of <code>index.html</code> that already drifts from it.</td></tr>
+<tr><td class="p">exports/index-standalone-src.html</td><td class="n">14,658</td><td class="w">A <b>forked</b> second landing page. It has diverged: it carries <code>data-register</code> / <code>data-density</code> / <code>data-surface</code> tweak variables that <code>index.html</code> lacks. Three landing pages, one of which is the real one, is a coin-flip for the next editor. Fold the tweak variables into <code>index.html</code> if they're wanted, then drop <code>exports/</code>.</td></tr>
+<tr><td class="p">uploads/preview/ <span style="color:var(--text-muted)">(20 files)</span></td><td class="n">3,545,718</td><td class="w">C-03. Absorbed staging material, referenced by nothing, in a folder the governance checker explicitly quarantines.</td></tr>
+<tr><td class="p">docs/changelog/ <span style="color:var(--text-muted)">(5 files)</span></td><td class="n">31,145</td><td class="w">Its own README marks three of four documents <b>“Superseded / not adopted as written.”</b> The fourth, <code>SYSTEM_STATE_2026-06.md</code>, is labelled <b>“Current”</b> but describes “108 components / 6 domains” against today's 193 exports across 7. A folder whose index has to warn you off its contents is not documentation. <code>CHANGELOG.md</code> already holds the real history.</td></tr>
+<tr><td class="p">guidelines/WORKSTATION_BLUEPRINT.md</td><td class="n">7,403</td><td class="w">See D-05 — a fourth composition guide that teaches hardcoded pixels and the hand-rolled shell.</td></tr>
+<tr><td class="p">assets/brand/meridian-symbol{,-light,-monochrome}.svg</td><td class="n">~3 files</td><td class="w">The brand README states plainly: <em>“Same geometry, named as the standalone symbol.”</em> Three byte-alike aliases of the <code>meridian-mark</code> trio. Keep one name.</td></tr>
+<tr class="tot"><td>31 files</td><td class="n">≈ 4.2 MB</td><td>Roughly 40% of the repository's non-source weight.</td></tr>
+</tbody>
+</table>
+
+<h2 class="sec"><span>Poor implementation — refine</span><span class="idx">03 / 04</span></h2>
+<p class="sub-lede">Nothing here is broken. Each is a place where the system charges a consumer for a choice it should have made for them.</p>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-01</span><span class="f__t">Modal and Dialog are the same component with different prop names</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev">Modal   → open · onClose · closeOnEsc + Header/Body/Footer/Form
+Dialog  → open · onClose · closeOnEsc + Header/Body/Footer
+          (+ title, maxWidth, showClose)
+
+Both share <b>core/useOverlayFocus.js</b>. <b>9 of 193 exports.</b>
+
+PATTERNS.md splits them by <em>size</em>:
+  "confirm → Dialog (small, centered)"
+  "form takeover → Modal (wider)"</div>
+<p>A size distinction is a prop, not a component. And <code>journaling-workstation</code> — the only template using <code>Modal</code> — skips <code>ModalHeader</code>/<code>ModalBody</code> entirely and hand-writes <code>.journ-modal-hd</code> / <code>.journ-modal-body</code> CSS, so the compound API isn't earning its four extra exports either.</p></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>Nine exports, two <code>.d.ts</code>, two <code>.prompt.md</code>, a card, a lint rule, and a keyboard-map row that has to say “Dialog / Drawer / Modal” every time — all to express one overlay at two widths.</p>
+<p><b>Keep <code>Dialog</code></b> (richer API, the one 3 templates actually chose), add <code>size="sm|md|lg"</code>, port <code>ModalForm</code> to <code>DialogForm</code>, and alias <code>Modal → Dialog</code> for one release. Then migrate <code>journaling-workstation</code> and delete the hand-rolled modal CSS with it.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-02</span><span class="f__t">Three components render a bar with a number on it</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>ProgressBar</b>   value · max · label · size
+<b>LinearGauge</b>   value · max · label · showValue · color · height
+<b>Gauge</b>         value · max · label · size · color · thickness
+                <span class="neg">— radial SVG arc</span>
+
+Template usage: <span class="neg">Gauge 0 · LinearGauge 0</span></div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p><code>LinearGauge</code> is <code>ProgressBar</code> with <code>height</code> instead of <code>size</code>. Merge it in.</p>
+<p><code>Gauge</code> is the sharper problem: a radial dial is the canonical dashboard-decoration trope, and this system's thesis is <em>“no gradients, no glow, fine 1px rules, every pixel communicates information.”</em> A 120px SVG arc to encode one scalar is the least information-dense option available, and nothing in the system uses it. <b>Delete it</b> — or, if a bounded-ratio display is genuinely needed, express it as a <code>LinearGauge</code> variant with a target datum, which matches the visualization grammar already written for <code>IntervalBar</code>.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-03</span><span class="f__t">Three components are exported but invisible to the system's own census</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev">On window.MeridianDesignSystem_205d17, but with
+<b>no .d.ts and no .prompt.md</b>:
+
+  DockGrid          18,066 B   375 lines
+  GroupedDataTable  13,300 B   269 lines
+  ApprovalRequest   16,941 B   277 lines  (+ ApprovalsInbox)
+
+<b>Template usage: 0. Card coverage: 0.</b></div>
+<p>Missing the <code>.d.ts</code> means the compiler never registers them as components — so the governance gate that enforces <em>“<code>*.prompt.md</code> coverage for every component trio”</em> never sees them, and passes clean.</p></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>48 KB of real, non-trivial code that a consumer can call, that no type checker describes, no lint rule constrains, no card demonstrates, and no gate protects. Worse: the gate <em>reports success</em>, so the gap is invisible.</p>
+<p>Pick per component — <b>promote</b> (add <code>.d.ts</code> + <code>.prompt.md</code> + a card) or <b>delete</b>. My read: <code>GroupedDataTable</code> earns promotion (it fills a real hole beside Expandable/Filtered); <code>DockGrid</code> and <code>ApprovalRequest</code> look like speculative work with no home in any of the 29 templates.</p>
+<p>Then close the hole: make the checker fail on a <code>.jsx</code> that exports a capitalized symbol with no sibling <code>.d.ts</code>.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-04</span><span class="f__t">Cards named after the release they shipped in</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev">components/core/<b>new-components</b>.card.html
+components/core/<b>new-primitives</b>.card.html
+components/data/<b>data-extras</b>.card.html
+tests/<b>verify-new-components</b>.html
+tests/<b>qa-hifi-pass</b>.html</div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>“New” is a timestamp, not a category — and these cards are two releases old. A designer browsing the Core group sees “New Components” and “New Primitives” and has no way to know what's inside without opening both.</p>
+<p>Rename by content (the subtitles already say it: <em>Combobox · TreeView · Accordion · Callout · VirtualizedList</em>), or fold them into the existing <code>core.card.html</code> / <code>data.card.html</code> galleries. Same for the two <code>tests/</code> files — a “QA pass” for a specific review session is a dated artifact, not a standing suite.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-05</span><span class="f__t">Four documents teach how to compose a screen</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>guidelines/PATTERNS.md</b>       "composition &amp; decision trees"
+<b>docs/COOKBOOK.md</b>             "recipes → finished screens"
+<b>templates/README.md</b>          "template anatomy"
+<b>guidelines/WORKSTATION_BLUEPRINT.md</b>  "how a workstation
+                                 screen is composed"</div>
+<p>The blueprint is the weakest of the four and the most quotable. It teaches the hand-rolled shell (C-01), a stale size table (C-02), and closes with <em>“Typical time: 30 minutes from scaffold to working prototype.”</em></p></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>Its own §"Size &amp; scale reference" hardcodes eight pixel values in a system whose <code>STATES_AND_ANTIPATTERNS.md</code> says, of exactly this habit: <em>“z-index: 9999 — don't; a magic number will collide.”</em> The blueprint is the anti-pattern document's counter-example, shipped as law.</p>
+<p><b>Delete it.</b> Its two genuinely useful passages — the folder-structure diagram and the seed-data ordering warning about sibling <code>*-data.js</code> files — belong in <code>templates/README.md</code>, which is where someone copying a template actually looks. Marketing timings belong nowhere.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-06</span><span class="f__t">An abandoned documentation pattern, 2/193 complete</span><span class="chip chip--info">Info</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev">components/core/<b>Button.stories.html</b>   → group="Documentation"
+components/core/<b>Input.stories.html</b>    → group="Documentation"
+
+<b>…and 191 exports with no .stories.html.</b>
+Meanwhile docs/COMPONENT_API_REFERENCE.card.html already
+renders the full prop table for every component.</div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>Two components have a per-component API page; everything else doesn't. In the Documentation group they read as “Button and Input are documented, the rest aren't” — which is false, and unflattering.</p>
+<p>Delete both, or drop the <code>@dsCard</code> tag so they stay as local scratch without claiming a slot in the tab. The API reference card is the pattern that scaled; back it.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-07</span><span class="f__t"><code>ui_kits/</code> is documented as a liability</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>ui_kits/README.md</b>:
+"…<em>not</em> the recommended starting point for new work:
+ copy from ../templates/ instead, which <b>stays current</b>…"
+"When a product surface changes upstream, <b>update the
+ matching kit here</b> so designers can diff intended vs shipped."
+
+4 kits · ~57 KB · last touched before the v2.1 retone.</div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>Four screens (dashboard, plottool, accounting, security-master) that each duplicate a template's job, that the README tells you not to use, and whose stated value — diffing intended vs. shipped — depends on a manual upstream-sync ritual with no owner and no gate.</p>
+<p><b>Ask the honest question:</b> has anyone run that diff? If not, delete the folder; the four templates cover the same surfaces and are held to the entry contract. If yes, it needs a sync date in <code>github.md</code> and a governance check, not a warning label.</p></div>
+</div></div>
+
+<div class="f">
+<div class="f__hd"><span class="f__id">D-08</span><span class="f__t"><code>!important</code> in four component stylesheets</span><span class="chip chip--info">Info</span></div>
+<div class="f__body">
+<div class="col"><p class="h">Evidence</p>
+<div class="ev"><b>TrialBalance.jsx</b>:33,36   .tbl__sec / .tbl__sub td backgrounds
+<b>LedgerTable.jsx</b>:41       .ldg__row--void td span color
+<b>CorrelationHeatmap.jsx</b>:20  .mds-corr__cell--diag background</div></div>
+<div class="col"><p class="h">Why it matters &amp; what to do</p>
+<p>Each is fighting the same thing: a row-level background set by a sibling rule at equal specificity. That's a cascade-ordering problem, not a priority problem — and every <code>!important</code> in a shipped component is a wall a consumer's legitimate override will later hit.</p>
+<p>Low urgency, but fix by ordering (state modifiers after base rows) or one extra class on the selector. Then add <code>!important</code> to the governance checker's forbidden list so the count can't grow.</p></div>
+</div></div>
+
+<h2 class="sec"><span>What survived the attack</span><span class="idx">04 / 04</span></h2>
+<p class="sub-lede">Named so the cuts above don't read as a verdict on the whole system. These are load-bearing and should not be touched in the cleanup.</p>
+<div class="keep">
+<div><div class="n">The three-tier token model</div><div class="d">Primitive → semantic → domain, with Tier 3 derived via <code>color-mix()</code> and never hardcoded. The white-label story actually works because of it.</div></div>
+<div><div class="n">Per-component <code>.prompt.md</code></div><div class="d">~140 of them, and the samples are substantive — behavior, state ownership, a usage example. Rare discipline. Keep the gate that enforces it.</div></div>
+<div><div class="n">The data-condition vocabulary</div><div class="d">Ten conditions, text <b>plus</b> marker, and an explicit rule that a blank cell never encodes one. This is the system's best original idea.</div></div>
+<div><div class="n">Series roles over per-chart color</div><div class="d">Color assigned by what a series <em>is</em>, not which chart it's in — and scenario deliberately separated from loss. Most systems never get here.</div></div>
+<div><div class="n">One signal, separate interaction family</div><div class="d">Terracotta reserved for brand/scenario; blue for focus and selection. Prevents the classic bug where system feedback impersonates the brand.</div></div>
+<div><div class="n">Tables that prove their arithmetic</div><div class="d">Imbalance flags, “Out by…”, gated posting, cent-exact allocation through shared <code>money.js</code>. The accounting domain is the strongest part of the system.</div></div>
+</div>
+
+<div class="note"><b>On this file.</b> It is a point-in-time audit, and section 02 argues that point-in-time audits should not accumulate in the tree — <code>docs/changelog/</code> and <code>docs/CONTRACT_AUDIT.md</code> are what happens when they do. Act on it, fold anything durable into <code>CHANGELOG.md</code>, and delete it. No deletions have been made; this is a proposal.</div>
+
+</div>
+</body>
+</html>

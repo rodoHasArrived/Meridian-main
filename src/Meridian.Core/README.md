@@ -66,6 +66,9 @@ This layer provides low-level reusable infrastructure. It must stay independent 
   including shared alert/health-check monitoring contracts, the `IFlushable` shutdown/flush
   contract, and optional flush queue-diagnostics contract used by storage sinks, Platform runtime
   shutdown handlers, and Application pipeline components.
+  `Scheduling/CronExpressionParser` is the shared five-field cron evaluator (time-zone and
+  daylight-saving aware) with two Meridian extensions: `d#n` in the day-of-week field for the nth
+  weekday of the month, and a lone `L` in the day-of-month field for the last day of the month.
 
 ## Important workflows
 

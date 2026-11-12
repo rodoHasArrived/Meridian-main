@@ -31,6 +31,16 @@ The capability-floor foundation described here is reviewable code; it does not e
 node has been deployed or that floor activation is authorized. This procedure follows the writer-inventory and drain precedent of
 the [governed edit rollout](security-master-governed-edit-rollout.md).
 
+### ADR-027 complete module event rollout
+
+The S3-E writer emits `SecurityEconomicDefinition` event payload version **3**, including in its
+metadata. Upgrade every event replay reader to support version 3 before enabling these writers;
+readers capped at version 2 refuse the new events. The current reader still replays historical
+event versions 1 and 2, and a historical event with no declared version still resolves to version
+2. The nested economic terms keep codec `schemaVersion: 2`; no stored events or shipped migrations
+are rewritten. Record the reader inventory and writer activation in the deployment change record.
+This source change does not establish that the fleet rollout has occurred.
+
 ## Prerequisites
 
 - A deployment change record naming the release owner, the accepting operator and, before any real
@@ -633,3 +643,22 @@ person. Mark unperformed checks pending; this procedure records no production ac
   mapping, the calendar files and the ledger gate)
 - [Startup capability line](../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs)
 - [Business-Day Calendar](../domain/business-day-calendar.md)
+
+
+## Governed scalar rate-unit repair
+
+Classes without the schedule anchors required by a populated `scheduleConventions` block can declare
+`assetSpecificTerms.rateUnit` through the existing draft, approve and publish lifecycle. Allowed values
+are `Fraction`, `Percent` and `BasisPoints`. This changes the interpretation of the retained rate,
+never the stored number: review source evidence before approving a unit. Missing declarations do not
+gain defaults, and magnitude never chooses a unit. Bond continues using its schedule declaration.
+Changing or clearing a declaration always requires its approved field revision, including under the
+Standard profile; neither the direct amendment path nor system ingest can bypass that requirement.
+
+The new declaration is version 5 on CertificateOfDeposit, 6 on StructuredCredit, 4 on Swap, 3 on
+DirectLoan, and 2 on Deposit, CommercialPaper, TreasuryBill, Repo, CashSweep, Swaption, CapFloor and
+StructuredNote. Deploy readers of these versions before publishing a declaration. Published field
+replacement raises the row's stamp; old stamped stray keys remain inert through unrelated amendments.
+The economic `rateConvention` module restores that stamp on an economic-only replay. Absent modules
+leave historical economic bytes unchanged. These version advances do not enable authoring the
+calculation-only `cashFlowContract` companion or swap leg convention blocks.

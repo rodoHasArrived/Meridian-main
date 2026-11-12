@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.AccountingConfigurePage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:views="clr-namespace:Meridian.Wpf.Views"
@@ -1222,7 +1223,7 @@
                                         <DataGridTextColumn Header="Effective / Period" Binding="{Binding EffectiveDate}" Width="160" />
                                         <DataGridTextColumn Header="State / Human approval" Binding="{Binding State}" Width="190" />
                                         <DataGridTextColumn Header="Retained draft" Binding="{Binding Draft}" Width="270" />
-                                        <DataGridTextColumn Header="Blocked reason" Binding="{Binding Blockers}" Width="300" />
+                                        <DataGridTextColumn Header="Blocked reason / note" Binding="{Binding Blockers}" Width="300" />
                                         <DataGridTextColumn Header="Lock owner / Governed reopen" Binding="{Binding PeriodLock}" Width="350" />
                                         <DataGridTextColumn Header="Retained source references" Binding="{Binding Evidence}" Width="300" />
                                     </DataGrid.Columns>

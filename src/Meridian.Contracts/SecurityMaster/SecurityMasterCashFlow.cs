@@ -103,6 +103,35 @@ public sealed record StructuredCashFlowScheduleEntry(
     public DateOnly? AccrualEnd { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public Meridian.Contracts.FixedIncome.BondFloatingRateEvidence? RateEvidence { get; init; }
+
+    // The interval a legacy calculated row's interest was measured over. Never serialized: the
+    // legacy projection's wire shape is retained in calculation receipts, and adding members to it
+    // would stop those receipts replaying. Declared projections state AccrualStart/AccrualEnd.
+    [JsonIgnore]
+    public DateOnly? InterestMeasuredFrom { get; init; }
+    [JsonIgnore]
+    public DateOnly? InterestMeasuredTo { get; init; }
+
+    /// <summary>The start of the interval this row's interest accrues over, when it is known.</summary>
+    [JsonIgnore]
+    public DateOnly? InterestAccrualStart => AccrualStart ?? InterestMeasuredFrom;
+
+    /// <summary>The end of the interval this row's interest accrues over, when it is known.</summary>
+    [JsonIgnore]
+    public DateOnly? InterestAccrualEnd => AccrualEnd ?? InterestMeasuredTo;
+
+    // Two rows are the same row when their serialized members agree. The unserialized measured
+    // interval is working data for accruals and must not make a replayed row differ from the
+    // retained row it reproduces.
+    public bool Equals(StructuredCashFlowScheduleEntry? other)
+        => other is not null && PeriodDate == other.PeriodDate && PrincipalAmount == other.PrincipalAmount &&
+           InterestAmount == other.InterestAmount && Factor == other.Factor &&
+           UnadjustedStart == other.UnadjustedStart && UnadjustedEnd == other.UnadjustedEnd &&
+           AccrualStart == other.AccrualStart && AccrualEnd == other.AccrualEnd &&
+           EqualityComparer<Meridian.Contracts.FixedIncome.BondFloatingRateEvidence?>.Default.Equals(RateEvidence, other.RateEvidence);
+
+    public override int GetHashCode()
+        => HashCode.Combine(PeriodDate, PrincipalAmount, InterestAmount, Factor, UnadjustedStart, UnadjustedEnd, AccrualStart, AccrualEnd);
 }
 
 /// <summary>How a cash-flow leg's rate is determined.</summary>
@@ -279,6 +308,10 @@ public sealed record StructuredCashFlowProjectionDto(
     string? BlockedReason = null,
     bool IsNormalizedPer100 = false)
 {
+    /// <summary>Typed capability refusal; null on successful and older projections.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityCashFlowBlockerDto? Blocker { get; init; }
+
     /// <summary>Calendar and kernel evidence for a declared projection; absent on legacy projections.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public StructuredCashFlowScheduleEvidence? ScheduleEvidence { get; init; }
@@ -322,6 +355,9 @@ public sealed record StructuredCashFlowLedgerPostingResult(
     string? BlockedReason,
     IReadOnlyList<StructuredCashFlowLedgerPosting> Postings)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public SecurityCashFlowBlockerDto? Blocker { get; init; }
+
     /// <summary>Creates a blocked result carrying the gate reason and no postings.</summary>
     public static StructuredCashFlowLedgerPostingResult Blocked(Guid securityId, string reason)
         => new(securityId, false, reason, Array.Empty<StructuredCashFlowLedgerPosting>());

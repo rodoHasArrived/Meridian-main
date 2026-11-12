@@ -280,6 +280,11 @@ snapshot, audit-chain, and close-scope integrity checks. A failed probe clears t
 again, so repeated checks remain fail-closed until the durable snapshot is actually repaired; it
 does not silently accept the last in-memory state.
 
+`SecurityMasterAccountingEventSourceAdapter` accepts an optional
+`ISecurityActualCashActivitySource`. When one is supplied, its rows become the request's
+`ActualActivity`, so expected coupons and paydowns are compared with reported cash; without one
+the request carries no actual activity and every expected cash event reads as missing, as before.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.

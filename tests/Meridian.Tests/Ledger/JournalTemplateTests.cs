@@ -150,4 +150,29 @@ public sealed class JournalTemplateTests
 
         instance.Metadata.LedgerBook.Should().Be("Book-A");
     }
+
+    [Fact]
+    public void CalculatedTemplate_HasNoFixedLines_AndCannotBeInstantiated()
+    {
+        var template = new JournalTemplate("calc", "Calculated", "", [],
+            calculation: new JournalTemplateCalculation(" Management-Fee-Accrual ", new Dictionary<string, string> { [" b "] = " 2 ", ["a"] = "1" }));
+
+        template.Calculation!.Kind.Should().Be("management-fee-accrual");
+        template.Calculation.Inputs.Keys.Should().Equal("a", "b");
+        template.Calculation.Inputs["b"].Should().Be("2");
+        var instantiate = () => template.Instantiate(new JournalTemplateInstantiation(DateTimeOffset.UnixEpoch, new Dictionary<string, decimal>()));
+        instantiate.Should().Throw<LedgerValidationException>().WithMessage("*calculated*");
+    }
+
+    [Fact]
+    public void Template_RejectsFixedLinesTogetherWithACalculation_AndNoLinesWithoutOne()
+    {
+        var line = new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 1m);
+
+        var both = () => new JournalTemplate("t", "T", "", [line], calculation: new JournalTemplateCalculation("fx-revaluation"));
+        var neither = () => new JournalTemplate("t", "T", "", []);
+
+        both.Should().Throw<ArgumentException>();
+        neither.Should().Throw<ArgumentException>();
+    }
 }

@@ -9,16 +9,16 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-corr{display:inline-grid;gap:1px;background:var(--border,#E4E3DE);
-  border:1px solid var(--border-strong,#AFABA1);font-family:var(--font-data,monospace);}
-.mds-corr__h{background:var(--bg-medium,#EDEAE4);color:var(--text-secondary,#4E5258);
+.mds-corr{display:inline-grid;gap:1px;background:var(--border,#D2CDC3);
+  border:1px solid var(--border-strong,#AAA49A);font-family:var(--font-data,monospace);}
+.mds-corr__h{background:var(--bg-medium,#EBE8E1);color:var(--text-secondary,#535C65);
   font-size:11px;font-weight:600;display:flex;align-items:center;justify-content:center;
   padding:4px 6px;white-space:nowrap;}
 .mds-corr__rh{justify-content:flex-end;padding-right:8px;}
 .mds-corr__cell{display:flex;align-items:center;justify-content:center;font-size:11px;
-  color:var(--text-primary,#22252A);font-variant-numeric:tabular-nums;cursor:default;}
-.mds-corr__cell--diag{color:var(--text-muted,#5E666F);background:var(--bg-active,#F2E3DB)!important;}
-.mds-corr__corner{background:var(--bg-medium,#EDEAE4);}
+  color:var(--text-primary,#20252B);font-variant-numeric:tabular-nums;cursor:default;}
+.mds-corr__cell--diag{color:var(--text-primary,#20252B);}
+.mds-corr__corner{background:var(--bg-medium,#EBE8E1);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "corr-heatmap");
@@ -27,11 +27,11 @@ function inject() {
 }
 
 function cellColor(v) {
-  if (v == null || Number.isNaN(v)) return "var(--bg-light,#FBFAF8)";
+  if (typeof v !== "number" || !Number.isFinite(v)) return "var(--bg-light,#F8F7F3)";
   const mag = Math.min(1, Math.abs(v));
   const pct = (mag * 62).toFixed(0);
-  const base = v >= 0 ? "var(--green,#3A7A56)" : "var(--red,#A8443C)";
-  return `color-mix(in srgb, ${base} ${pct}%, var(--bg-light,#FBFAF8))`;
+  const base = v >= 0 ? "var(--green,#2E7655)" : "var(--red,#B54B42)";
+  return `color-mix(in srgb, ${base} ${pct}%, var(--bg-light,#F8F7F3))`;
 }
 
 export function CorrelationHeatmap({
@@ -49,12 +49,14 @@ export function CorrelationHeatmap({
 
   return (
     <div className="mds-corr" style={{ gridTemplateColumns: cols }} role="grid" aria-label="Correlation matrix">
-      <div className="mds-corr__corner" />
+      <div role="row" style={{ display: "contents" }}>
+      <div className="mds-corr__corner" role="columnheader" aria-label="Series" />
       {labels.map((l) => (
         <div key={"ch" + l} className="mds-corr__h" role="columnheader">{l}</div>
       ))}
+      </div>
       {matrix.map((row, r) => (
-        <React.Fragment key={"r" + r}>
+        <div role="row" key={"r" + r} style={{ display: "contents" }}>
           <div className="mds-corr__h mds-corr__rh" role="rowheader">{labels[r]}</div>
           {row.map((v, c) => {
             const diag = r === c;
@@ -63,15 +65,15 @@ export function CorrelationHeatmap({
                 key={"c" + r + "-" + c}
                 role="gridcell"
                 className={`mds-corr__cell${diag ? " mds-corr__cell--diag" : ""}`}
-                style={{ background: cellColor(v), height: cellSize }}
-                title={`${labels[r]} · ${labels[c]} = ${v == null ? "—" : valueFmt(v)}`}
+                style={{ background: diag ? "var(--selected-surface,var(--bg-active,#E7EDF2))" : cellColor(v), height: cellSize }}
+                title={`${labels[r]} · ${labels[c]} = ${typeof v !== "number" || !Number.isFinite(v) ? "—" : valueFmt(v)}`}
                 onMouseEnter={onCellHover ? () => onCellHover({ row: r, col: c, value: v }) : undefined}
               >
-                {showValues && v != null && !Number.isNaN(v) ? valueFmt(v) : ""}
+                {showValues && typeof v === "number" && Number.isFinite(v) ? valueFmt(v) : ""}
               </div>
             );
           })}
-        </React.Fragment>
+        </div>
       ))}
     </div>
   );

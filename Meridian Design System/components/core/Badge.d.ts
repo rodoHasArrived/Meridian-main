@@ -1,3 +1,4 @@
+import type React from "react";
 /**
  * Compact tag badge — mirrors `NeutralBadgeStyle` + the semantic badge styles. Small-caps,
  * 4px radius, alpha-10 fill with a solid semantic border and dim text. Used for status and
@@ -14,4 +15,4 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   dot?: boolean;
   children?: React.ReactNode;
 }
-export declare function Badge(props: BadgeProps): JSX.Element;
+export declare function Badge(props: BadgeProps): React.JSX.Element;

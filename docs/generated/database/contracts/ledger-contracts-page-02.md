@@ -2,7 +2,7 @@
 
 # `ledger-contracts` data objects - page 2 of 5
 
-Objects 81-160 of 344. References crossing pages remain available in the dependency manifest.
+Objects 81-160 of 367. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -409,6 +409,9 @@ classDiagram
         +DateTimeOffset? RequestedAtUtc
         +string? RequestedBy
     }
+    class Meridian_Contracts_Ledger_ApprovePrivateCapitalCommitmentRequest["ApprovePrivateCapitalCommitmentRequest"] {
+        +int Revision
+    }
     class Meridian_Contracts_Ledger_AssetAccountingApprovalReceiptDto["AssetAccountingApprovalReceiptDto"] {
         +string ApprovalId
         +DateTimeOffset ApprovedAtUtc
@@ -655,15 +658,6 @@ classDiagram
         +VerifiedOperationOutcome Outcome
         +ClosePeriodPlanDto? Plan
         +OperationsTransitionResultDto? Transition
-    }
-    class Meridian_Contracts_Ledger_ClosePeriodPlanConfigurationDto["ClosePeriodPlanConfigurationDto"] {
-        +DateTimeOffset? ConfiguredAtUtc
-        +string? ConfiguredBy
-        +IReadOnlyList~string~ EvidenceLinks
-        +MaterialityPolicyDto MaterialityPolicy
-        +ClosePlanPreparationLineageDto? Preparation
-        +IReadOnlyList~CloseTaskConfigurationDto~ TaskConfigurations
-        +Guid WorkflowId
     }
     Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto --> Meridian_Contracts_Ledger_AccountingBasisKindDto
     Meridian_Contracts_Ledger_AccountingBasisProjectionSetDto --> Meridian_Contracts_Ledger_AccountingBasisProjectionItemDto

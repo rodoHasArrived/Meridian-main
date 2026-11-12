@@ -1,4 +1,4 @@
-Left operator rail — 14rem light paper sidebar (`#EDEAE4`), small-caps section labels, nav items with a **3px copper left indicator** + light wash on the active item.
+Left operator rail — 14rem light paper sidebar (`#F6F4EF`), small-caps section labels, nav items with a **3px terracotta left indicator** + light wash on the active item.
 
 ```jsx
 <NavRail
