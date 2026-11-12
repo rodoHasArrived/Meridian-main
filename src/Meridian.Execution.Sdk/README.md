@@ -11,6 +11,8 @@ last_reviewed: 2026-07-05
 
 # src/Meridian.Execution.Sdk
 
+`IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
+
 `CanonicalTaxLotAdapter` now compares explicit retained direction with the execution lot's sign,
 then compares absolute quantity, original date, identity and exact basis. Matching short lots may
 bind; opposite directions cannot net. Symbols remain display evidence and binding grants no
@@ -20,7 +22,10 @@ posting authority or tax character.
 `BrokeragePortfolioSnapshotDto.IsComplete` defaults to false until a provider establishes complete
 account and holding evidence. `IBrokerageConnectionState` supplies a credential-free connection
 epoch and verified account/environment scope, so cached execution evidence cannot survive a
-connection switch. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
+connection switch. `IBrokerageAccountIdentity` is for a broker that gives one account more than one
+identifier: the gateway reports one as the account's identity and recognizes the others, so a link
+retained under an older identifier is neither refused nor treated as a second account. A catalog
+entry declares such identifiers under `BrokerageExternalAccountMetadata.AccountIdAliases`. `IBrokerageOrderRecoveryGateway` reads a retained client identity without
 submitting or treating a missing broker response as permission to retry.
 
 ## Shared close and lot convergence
@@ -93,6 +98,12 @@ scope so synchronization and durable recovery revoke evidence when the active co
 The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
 it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
 Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
+`ExecutionReport.BookedMoneyMultiplier` records the money scale a paper book applied to a fill (the
+contract multiplier for listed premium contracts); it is omitted when null, and an unstamped durable
+record replays at the 1× it was booked at. `ExecutionReport.BookedVariationMargin` records that a
+paper book booked a futures fill under daily variation margin (no notional moved); it is omitted when
+null, and an unstamped durable record replays on the notional model. `PositionState.ContractMultiplier` (default 1) scales its
+`UnrealizedPnl` and `MarketValue`, while `AverageCostBasis` and `MarketPrice` stay per-unit quotes.
 Brokerage activity fill snapshots can carry explicit provider-reported realized P&L when a broker
 or custodian supplies it; callers should leave the field null rather than infer it from fill
 notional. Activity snapshots can also carry provider corporate-action/factor events such as
@@ -129,6 +140,10 @@ contract applies to backtesting and ledger lots.
 Generic execution and backtesting lot prices are raw quotes: debt is priced as percent of par,
 and contract quotes are scaled by the declared multiplier. Cost, value, and P&L methods apply
 those conventions; retained exact monetary basis is never scaled again.
+
+`OrderState.ParentOrderId` links a broker-side exit leg to its parent order, so risk rules can count
+one-cancels-other legs once. It is omitted when null; records written before it existed read as
+unlinked orders.
 
 ## Diagrams
 

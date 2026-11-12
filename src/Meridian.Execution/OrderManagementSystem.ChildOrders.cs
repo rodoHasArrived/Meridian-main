@@ -1,3 +1,4 @@
+using Meridian.Execution.OrderManagement;
 using Meridian.Execution.Logging;
 using Meridian.Execution.Sdk;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ public sealed partial class OrderManagementSystem
         foreach (var child in childOrders)
         {
             var childOrderId = string.IsNullOrWhiteSpace(child.ClientOrderId) ? child.OrderId : child.ClientOrderId;
-            if (string.IsNullOrWhiteSpace(childOrderId) || IsTerminal(child.Status))
+            if (string.IsNullOrWhiteSpace(childOrderId) || OrderStatusFacts.IsTerminal(child.Status))
             {
                 continue;
             }
@@ -57,6 +58,9 @@ public sealed partial class OrderManagementSystem
                 CreatedAt = child.CreatedAt == default ? DateTimeOffset.UtcNow : child.CreatedAt,
                 StrategyId = parent.StrategyId,
                 RunId = parent.RunId,
+                // Links the exit legs to their entry so position controls can treat sibling
+                // legs as one-cancels-other instead of two independent working orders.
+                ParentOrderId = parentOrderId,
                 // The parent's scope, deliberately: a bracket's exit legs settle into the same
                 // fund account and derivative identity the entry was admitted under.
                 FundAccountId = parent.FundAccountId,

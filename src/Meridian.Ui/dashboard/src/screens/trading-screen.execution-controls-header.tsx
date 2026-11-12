@@ -2,6 +2,7 @@ import { OctagonX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ExecutionEvidenceViewModel, TradingConfirmAction } from "@/screens/trading-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /**
  * Title row of the execution controls snapshot: the kill switch, the refresh control, and the
@@ -19,7 +20,7 @@ export function ExecutionControlsHeader({
 
   return (
     <div className="mb-2 flex items-center justify-between gap-3">
-      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(panel?.title ?? "Execution controls snapshot") && "uppercase tracking-[0.14em]")}>
         {panel?.title ?? "Execution controls snapshot"}
       </p>
       <div className="panel-action-zone">

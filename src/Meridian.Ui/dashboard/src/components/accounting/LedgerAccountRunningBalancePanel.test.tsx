@@ -1,0 +1,143 @@
+import { act, render, screen } from "@testing-library/react";
+import * as ledgerReportsApi from "@/lib/ledger-reports-api";
+import { LedgerAccountRunningBalancePanel } from "@/components/accounting/LedgerAccountRunningBalancePanel";
+import type { LedgerAccountRunningBalance } from "@/types";
+
+vi.mock("@/lib/ledger-reports-api", () => ({
+  getLedgerPeriodAccountRunningBalance: vi.fn()
+}));
+
+const PERIOD_ID = "11111111-1111-1111-1111-111111111111";
+
+function makeRunningBalance(overrides: Partial<LedgerAccountRunningBalance> = {}): LedgerAccountRunningBalance {
+  return {
+    periodId: PERIOD_ID,
+    ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
+    accountName: "Management fees",
+    accountType: "Revenue",
+    symbol: null,
+    financialAccountId: null,
+    totalDebits: 0,
+    totalCredits: 300,
+    endingBalance: 300,
+    points: [
+      {
+        journalEntryId: "j-1",
+        entryId: "e-1",
+        globalSequence: 1,
+        timestamp: "2026-06-30T21:00:00Z",
+        description: "June management fee",
+        debit: 0,
+        credit: 100,
+        balance: 100
+      },
+      {
+        journalEntryId: "j-2",
+        entryId: "e-2",
+        globalSequence: 2,
+        timestamp: "2026-06-30T22:00:00Z",
+        description: "Parallel fund fee",
+        debit: 0,
+        credit: 200,
+        balance: 300
+      }
+    ],
+    ...overrides
+  };
+}
+
+const formatAmount = (value: number) => `$${value.toFixed(2)}`;
+
+describe("LedgerAccountRunningBalancePanel", () => {
+  beforeEach(() => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockReset();
+  });
+
+  it("requests the selected account scope and lists each posting with its running balance", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(makeRunningBalance());
+
+    render(
+      <LedgerAccountRunningBalancePanel
+        periodId={PERIOD_ID}
+        accountName="Management fees"
+        symbol="AAPL"
+        formatAmount={formatAmount}
+      />
+    );
+
+    expect(await screen.findByText("June management fee")).toBeInTheDocument();
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenCalledWith(PERIOD_ID, {
+      account: "Management fees",
+      symbol: "AAPL",
+      financialAccountId: null,
+      dimensions: null
+    });
+    expect(screen.getByRole("region", { name: "Postings to Management fees" })).toBeInTheDocument();
+    expect(screen.getAllByRole("row")).toHaveLength(3);
+    expect(screen.getByText(/2 postings; ending balance/)).toHaveTextContent("$300.00");
+  });
+
+  it("limits the request to the selected row's dimension set", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(makeRunningBalance());
+
+    render(
+      <LedgerAccountRunningBalancePanel
+        periodId={PERIOD_ID}
+        accountName="Management fees"
+        dimensions={{ fundId: "alpha", sleeveId: "s1" }}
+        formatAmount={formatAmount}
+      />
+    );
+
+    await screen.findByText("June management fee");
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenCalledWith(PERIOD_ID, {
+      account: "Management fees",
+      symbol: null,
+      financialAccountId: null,
+      dimensions: { fundId: "alpha", sleeveId: "s1" }
+    });
+  });
+
+  it("says so when the account has no postings in the period", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockResolvedValue(
+      makeRunningBalance({ points: [], totalCredits: 0, endingBalance: 0 })
+    );
+
+    render(
+      <LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" formatAmount={formatAmount} />
+    );
+
+    expect(await screen.findByText("No postings to this account in the selected period.")).toBeInTheDocument();
+  });
+
+  it("reports a load failure instead of an empty history", async () => {
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).mockRejectedValue(new Error("Ledger store offline"));
+
+    render(
+      <LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" formatAmount={formatAmount} />
+    );
+
+    expect(await screen.findByRole("alert")).toBeInTheDocument();
+    expect(screen.queryByText("No postings to this account in the selected period.")).not.toBeInTheDocument();
+  });
+
+  it("reloads the selected basis and ignores a late response from the previous basis", async () => {
+    let finishPrimary!: (data: LedgerAccountRunningBalance) => void;
+    vi.mocked(ledgerReportsApi.getLedgerPeriodAccountRunningBalance)
+      .mockImplementationOnce(() => new Promise(resolve => { finishPrimary = resolve; }))
+      .mockResolvedValueOnce(makeRunningBalance({
+        endingBalance: 40,
+        points: [{ journalEntryId: "gaap-journal", entryId: "gaap-entry", globalSequence: 2,
+          timestamp: "2026-06-30T22:00:00Z", description: "GAAP-only fee", debit: 0, credit: 40, balance: 40 }]
+      }));
+    const view = render(<LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" accountingBasis="Primary" formatAmount={formatAmount} />);
+    view.rerender(<LedgerAccountRunningBalancePanel periodId={PERIOD_ID} accountName="Management fees" accountingBasis="Gaap" formatAmount={formatAmount} />);
+    await screen.findByText("GAAP-only fee");
+    expect(ledgerReportsApi.getLedgerPeriodAccountRunningBalance).toHaveBeenLastCalledWith(PERIOD_ID, {
+      account: "Management fees", accountingBasis: "Gaap", symbol: null, financialAccountId: null, dimensions: null
+    });
+    await act(async () => finishPrimary(makeRunningBalance()));
+    expect(screen.queryByText("June management fee")).not.toBeInTheDocument();
+    expect(screen.getByText(/1 posting; ending balance/)).toHaveTextContent("$40.00");
+  });
+});

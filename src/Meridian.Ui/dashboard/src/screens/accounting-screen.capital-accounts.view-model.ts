@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   getCapitalAccountWorkbench,
   type CapitalAccountWorkbenchQuery,
@@ -31,6 +31,71 @@ import type {
 import type {
   CapitalAccountWorkbench,
 } from "@/types";
+import { formatCount } from "@/lib/format";
+import { formatMoney } from "@/components/accounting/money";
+import {
+  proveRollforward,
+  rollforwardVerdict,
+  usableAmount,
+  type RollforwardVerdict,
+} from "@/components/accounting/proof-arithmetic";
+
+/** One movement in an investor capital account rollforward; the amount stays numeric. */
+export interface CapitalAccountRollforwardMovementViewModel {
+  id: string;
+  label: string;
+  /** Signed net capital activity. `null` when the wire value is not a usable number. */
+  value: number | null;
+  note?: string;
+}
+
+/**
+ * Numeric rollforward for one investor capital account: opening net activity, the movements
+ * that explain the change, and the stated ending. Amounts are carried as numbers so the
+ * RollforwardTrace can prove the arithmetic instead of re-parsing `rollForwardLabel`.
+ */
+export interface CapitalAccountRollforwardViewModel {
+  openingLabel: string;
+  closingLabel: string;
+  opening: number | null;
+  closing: number | null;
+  currency: string;
+  movements: CapitalAccountRollforwardMovementViewModel[];
+  /** The workbench never supplies an independently stated opening, so the trace says how it arose. */
+  openingDerivation: string;
+  /**
+   * Set when the account has no subledger entries. The one net movement then restates the
+   * ending, so agreement proves nothing and the trace says "Not proved" with this sentence.
+   */
+  unsupportedReason?: string;
+  /**
+   * What the proof says, computed by the same arithmetic the trace renders. `unsupported` is
+   * the no-entry case that agrees: it is never reported as `tied`.
+   */
+  verdict: RollforwardVerdict;
+  /** Short verdict for the disclosure summary, e.g. "Ties", "Not itemised" or "Out by $20.00". */
+  verdictLabel: string;
+}
+
+/** Why an account with no subledger entries cannot be proved. Completes "Not proved — …". */
+export const CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON =
+  "no subledger entries are loaded for this account, so the one net movement restates the ending instead of explaining it.";
+
+const CAPITAL_ACCOUNT_ROLLFORWARD_VERDICT_LABEL: Record<Exclude<RollforwardVerdict, "out">, string> = {
+  tied: "Ties",
+  unsupported: "Not itemised",
+  indeterminate: "Not provable"
+};
+
+export interface CapitalAccountWorkbenchInvestorAccountProofRowViewModel
+  extends CapitalAccountWorkbenchInvestorAccountRowViewModel {
+  rollforward: CapitalAccountRollforwardViewModel;
+}
+
+/** The Capital Account Workbench view model with a numeric rollforward on every investor row. */
+export interface CapitalAccountWorkbenchProofViewModel extends Omit<CapitalAccountWorkbenchViewModel, "investorAccounts"> {
+  investorAccounts: CapitalAccountWorkbenchInvestorAccountProofRowViewModel[];
+}
 
 const defaultCapitalAccountWorkbenchServices: CapitalAccountWorkbenchServices = {
   getWorkbench: (query) => getCapitalAccountWorkbench(query)
@@ -40,22 +105,40 @@ export function useCapitalAccountWorkbenchViewModel(
   active: boolean,
   search = "",
   services: CapitalAccountWorkbenchServices = defaultCapitalAccountWorkbenchServices
-): CapitalAccountWorkbenchViewModel {
-  const [workbench, setWorkbench] = useState<CapitalAccountWorkbench | null>(null);
+): CapitalAccountWorkbenchProofViewModel {
+  const [loadedWorkbench, setLoadedWorkbench] = useState<{
+    query: CapitalAccountWorkbenchQuery;
+    workbench: CapitalAccountWorkbench;
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<ApiErrorDisplay | null>(null);
   const query = useMemo(() => parseCapitalAccountWorkbenchQuery(search), [search]);
+  const refreshRevision = useRef(0);
+  // A workbench is only shown for the scope it was requested for, so a changed fund or
+  // period never renders the previous scope's capital accounts while its own load runs.
+  const workbench = loadedWorkbench?.query === query ? loadedWorkbench.workbench : null;
 
   const refresh = useCallback(async () => {
+    // Only the latest request may apply its outcome; a slower response for an earlier
+    // scope must not replace the current one.
+    const requestRevision = ++refreshRevision.current;
+    const isCurrent = () => refreshRevision.current === requestRevision;
     setLoading(true);
     setError(null);
     try {
-      setWorkbench(await services.getWorkbench(query));
+      const next = await services.getWorkbench(query);
+      if (isCurrent()) {
+        setLoadedWorkbench({ query, workbench: next });
+      }
     } catch (err) {
-      setError(describeApiError(err, "Capital Account Workbench could not load."));
-      setWorkbench(null);
+      if (isCurrent()) {
+        setError(describeApiError(err, "Capital Account Workbench could not load."));
+        setLoadedWorkbench(null);
+      }
     } finally {
-      setLoading(false);
+      if (isCurrent()) {
+        setLoading(false);
+      }
     }
   }, [query, services]);
 
@@ -87,7 +170,7 @@ function parseCapitalAccountWorkbenchQuery(search: string): CapitalAccountWorkbe
   };
 }
 
-function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | null): Omit<CapitalAccountWorkbenchViewModel, "loading" | "errorText" | "refresh"> {
+function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | null): Omit<CapitalAccountWorkbenchProofViewModel, "loading" | "errorText" | "refresh"> {
   if (!workbench) {
     return {
       title: "Capital Account Workbench",
@@ -149,29 +232,29 @@ function buildCapitalAccountWorkbenchView(workbench: CapitalAccountWorkbench | n
       {
         id: "investor-accounts",
         label: "Investor accounts",
-        value: workbench.investorAccountCount.toLocaleString(),
+        value: formatCount(workbench.investorAccountCount),
         detail: `${formatCurrencyWithCode(workbench.netCapitalActivity, workbench.currency, true)} net activity`,
         tone: workbench.investorAccountCount > 0 ? "success" : "warning"
       },
       {
         id: "allocation-rules",
         label: "Allocation rules",
-        value: workbench.allocationRules.length.toLocaleString(),
-        detail: `${workbench.allocationRules.filter((item) => item.isSatisfied).length.toLocaleString()} satisfied`,
+        value: formatCount(workbench.allocationRules.length),
+        detail: `${formatCount(workbench.allocationRules.filter((item) => item.isSatisfied).length)} satisfied`,
         tone: workbench.allocationRules.length > 0 && workbench.allocationRules.every((item) => item.isSatisfied) ? "success" : "warning"
       },
       {
         id: "statements",
         label: "Statements",
-        value: workbench.statementCount.toLocaleString(),
-        detail: `${workbench.restatementLineageCount.toLocaleString()} restatement lineage`,
+        value: formatCount(workbench.statementCount),
+        detail: `${formatCount(workbench.restatementLineageCount)} restatement lineage`,
         tone: workbench.statementCount > 0 ? "success" : "warning"
       },
       {
         id: "audit-drill-throughs",
         label: "Audit drill-throughs",
-        value: workbench.auditDrillThroughCount.toLocaleString(),
-        detail: `${workbench.auditDrillThroughs.filter((item) => item.isAvailable).length.toLocaleString()} available`,
+        value: formatCount(workbench.auditDrillThroughCount),
+        detail: `${formatCount(workbench.auditDrillThroughs.filter((item) => item.isAvailable).length)} available`,
         tone: workbench.auditDrillThroughs.length > 0 && workbench.auditDrillThroughs.every((item) => item.isAvailable) ? "success" : "warning"
       }
     ],
@@ -216,9 +299,69 @@ function buildCapitalAccountFundEventCommandRows(
   return rows;
 }
 
+/**
+ * Build the numeric rollforward for one investor capital account.
+ *
+ * Movements are the account's subledger entries (one per entry, in wire order), each carrying
+ * its own `netCapitalActivity`. With no entries the trace shows one "Net capital activity"
+ * movement. The contributions / distributions / subscriptions / redemptions / fees buckets are
+ * deliberately not used: their signs are not guaranteed to sum to the net.
+ *
+ * The opening is not an independently stated balance. The private-capital projection derives it
+ * from the first subledger entry's running net activity (zero when there are no entries), so the
+ * trace labels it as derived rather than presenting it as a bare opening balance.
+ *
+ * With no entries the three figures are not independent at all: the projection reports a zero
+ * opening and the same number as both the net activity and the ending, so they agree for every
+ * value. That agreement is reported as `unsupported` ("Not itemised"), never as a passed proof.
+ * An out-by or an unusable amount in that case is still reported as such.
+ */
+export function buildCapitalAccountRollforward(
+  account: CapitalAccountWorkbench["investorAccounts"][number]
+): CapitalAccountRollforwardViewModel {
+  const entries = account.subledgerEntries ?? [];
+  const movements: CapitalAccountRollforwardMovementViewModel[] = entries.length > 0
+    ? entries.map((entry, index) => ({
+      id: entry.subledgerEntryId || `${account.accountKey}:entry:${index}`,
+      label: entry.fundEventType || entry.fundEventId || "Capital movement",
+      value: usableAmount(entry.netCapitalActivity),
+      note: [entry.effectiveDate, entry.isPosted === false ? "not posted" : null].filter(Boolean).join(" · ") || undefined
+    }))
+    : [{
+      id: `${account.accountKey}:net-capital-activity`,
+      label: "Net capital activity",
+      value: usableAmount(account.netCapitalActivity)
+    }];
+  const openingLabel = "Opening net activity";
+  const closingLabel = "Ending net activity";
+  const opening = usableAmount(account.openingNetActivity);
+  // A null ending stays null: the workbench always states one, so a missing value is a gap.
+  const closing = usableAmount(account.endingNetActivity);
+  const itemised = entries.length > 0;
+  const proof = proveRollforward({ openingLabel, opening, movements, closingLabel, closing });
+  const verdict = rollforwardVerdict(proof, { independent: itemised });
+
+  return {
+    openingLabel,
+    closingLabel,
+    opening,
+    closing,
+    currency: account.currency,
+    movements,
+    openingDerivation: itemised
+      ? "Opening is derived by the capital-account projection from the subledger's running net activity; it is not a separately stated opening balance."
+      : "Opening is set by the capital-account projection with no subledger entries behind it; it is not a separately stated opening balance.",
+    ...(itemised ? {} : { unsupportedReason: CAPITAL_ACCOUNT_ROLLFORWARD_NOT_ITEMISED_REASON }),
+    verdict,
+    verdictLabel: verdict === "out"
+      ? `Out by ${formatMoney(Math.abs(proof.difference ?? 0), { currency: account.currency })}`
+      : CAPITAL_ACCOUNT_ROLLFORWARD_VERDICT_LABEL[verdict]
+  };
+}
+
 function buildCapitalAccountInvestorAccountRow(
   account: CapitalAccountWorkbench["investorAccounts"][number]
-): CapitalAccountWorkbenchInvestorAccountRowViewModel {
+): CapitalAccountWorkbenchInvestorAccountProofRowViewModel {
   const paymentEvidence = buildManualJournalPaymentIntentEvidenceView(
     account.paymentIntentEvidence,
     account.evidenceLinks,
@@ -230,6 +373,7 @@ function buildCapitalAccountInvestorAccountRow(
   return {
     id: account.accountKey,
     title: `${formatCapitalAccountPartyLabel(account.investorId)} capital account`,
+    rollforward: buildCapitalAccountRollforward(account),
     subtitle: `${formatCapitalAccountPartyLabel(account.investorId)} / ${account.currency}`,
     statusLabel: paymentEvidence.tone === "success" ? account.readinessLabel || account.readiness : "Cash support review",
     statusTone: paymentEvidence.tone === "success" ? capitalAccountReadinessTone(account.readiness) : "warning",
@@ -242,8 +386,8 @@ function buildCapitalAccountInvestorAccountRow(
       `Redemptions ${formatCurrencyWithCode(account.redemptions, account.currency)}`,
       `Fees ${formatCurrencyWithCode(account.managementFees, account.currency)}`
     ].join(" / "),
-    evidenceLabel: `${account.evidenceLinkCount.toLocaleString()} evidence / ${account.evidenceCategorySummary}`,
-    eventLabel: `${account.fundEventCount.toLocaleString()} fund event(s) / ${account.postedFundEventCount.toLocaleString()} posted / ${account.publishedReportOutputCount.toLocaleString()} published`,
+    evidenceLabel: `${formatCount(account.evidenceLinkCount)} evidence / ${account.evidenceCategorySummary}`,
+    eventLabel: `${formatCount(account.fundEventCount)} fund event(s) / ${formatCount(account.postedFundEventCount)} posted / ${formatCount(account.publishedReportOutputCount)} published`,
     paymentEvidenceLabel: paymentEvidence.label,
     paymentEvidenceTone: paymentEvidence.tone,
     paymentEvidenceSummaryLabel: paymentEvidence.summary,
@@ -265,7 +409,7 @@ function buildCapitalAccountAllocationRuleRow(
     statusTone: rule.isSatisfied ? "success" : "warning",
     reason: rule.reason,
     basis: rule.basis,
-    evidenceLabel: `${rule.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(rule.evidenceLinkCount)} evidence`,
     routeLabel: rule.route ?? "No route",
     requiredLabel: rule.requiredEvidence.length > 0 ? rule.requiredEvidence.join(" / ") : "No explicit evidence requirement",
     policyLabel: rule.ruleVersion ?? "No policy version",
@@ -296,9 +440,9 @@ function buildCapitalAccountStatementLineageRow(
       lineage.publishedBy ? `by ${lineage.publishedBy}` : null,
       lineage.publishedAtUtc ? formatDateTimeLabel(lineage.publishedAtUtc) : null
     ].filter(Boolean).join(" / "),
-    provenanceLabel: `${lineage.reportLineProvenanceCount.toLocaleString()} provenance line(s)`,
+    provenanceLabel: `${formatCount(lineage.reportLineProvenanceCount)} provenance line(s)`,
     restatementLabel: lineage.hasRestatementLineage
-      ? `${lineage.restatementReasonCode ?? "Restated"} / ${lineage.restatementChangedLineCount.toLocaleString()} changed line(s) / ${lineage.restatementEvidenceLinkCount.toLocaleString()} evidence`
+      ? `${lineage.restatementReasonCode ?? "Restated"} / ${formatCount(lineage.restatementChangedLineCount)} changed line(s) / ${formatCount(lineage.restatementEvidenceLinkCount)} evidence`
       : lineage.restatementStatus,
     manifestLabel: [lineage.publicationManifestId, lineage.retainedManifestPath, lineage.publicationEvidenceHash].filter(Boolean).join(" / ") || "No retained manifest metadata",
     routeLabel: lineage.reportOutputRoute ?? lineage.reportRoute,
@@ -313,7 +457,7 @@ function buildCapitalAccountRestatementChangedLineRow(
     id: line.lineKey,
     lineKey: line.lineKey,
     valueLabel: `${line.previousValue} -> ${line.currentValue}`,
-    evidenceLabel: `${line.evidenceLinkCount.toLocaleString()} changed-line evidence`
+    evidenceLabel: `${formatCount(line.evidenceLinkCount)} changed-line evidence`
   };
 }
 
@@ -349,7 +493,7 @@ function formatAllocationInputSummary(
   const remaining = inputs.length > preview.length
     ? ` + ${inputs.length - preview.length} more`
     : "";
-  return `${inputs.length.toLocaleString()} input(s): ${preview.join(" / ")}${remaining}`;
+  return `${formatCount(inputs.length)} input(s): ${preview.join(" / ")}${remaining}`;
 }
 
 function buildCapitalAccountAuditDrillThroughRow(
@@ -362,7 +506,7 @@ function buildCapitalAccountAuditDrillThroughRow(
     summary: drill.summary,
     statusLabel: drill.isAvailable ? "Available" : "Missing route",
     statusTone: drill.isAvailable ? "success" : "warning",
-    evidenceLabel: `${drill.evidenceLinkCount.toLocaleString()} evidence`,
+    evidenceLabel: `${formatCount(drill.evidenceLinkCount)} evidence`,
     routeLabel: drill.route ?? "No route",
     relatedLabel: drill.relatedIds.length > 0
       ? `${drill.relatedIds.length} related record${drill.relatedIds.length === 1 ? "" : "s"}`

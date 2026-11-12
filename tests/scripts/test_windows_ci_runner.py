@@ -35,7 +35,7 @@ class WindowsCiRunnerTests(unittest.TestCase):
         return path
 
     def test_class_outcomes_count_actual_theory_rows_and_preserve_all_outcomes(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = self.write_result_fixture(tmp)
             self.assertEqual(module.class_outcomes([str(path)]), {
                 "Example.WriterTests": dict(passed=1, failed=1, skipped=1, other=0),
@@ -44,7 +44,7 @@ class WindowsCiRunnerTests(unittest.TestCase):
             })
 
     def test_console_report_uses_only_the_same_collected_trx_evidence(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             self.write_result_fixture(tmp)
             evidence = module.runner.collect_trx(Path(tmp), "full")
             # An unrelated file left after collection must not become invented execution proof.
@@ -62,7 +62,7 @@ class WindowsCiRunnerTests(unittest.TestCase):
             self.assertEqual(result.exit_code, 1)
 
     def test_missing_invalid_or_changed_evidence_never_reports_class_success(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             path = self.write_result_fixture(tmp)
             evidence = module.runner.collect_trx(Path(tmp), "full")
             result = module.runner.TestResult("full", "tests.csproj", 1, [], evidence=evidence)
@@ -112,7 +112,7 @@ class WindowsCiRunnerTests(unittest.TestCase):
             self.assertEqual(kwargs["properties"], calls[0][3:])
             return [module.runner.TestResult(p.name, p.path, int(i == 1), ["dotnet", "test"])
                     for i, p in enumerate(projects)]
-        with tempfile.TemporaryDirectory() as tmp, patch.object(sys, "argv", ["runner", "--results-dir", tmp]):
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, patch.object(sys, "argv", ["runner", "--results-dir", tmp]):
             with patch.object(module.platform, "system", return_value="Windows"), patch.object(module.subprocess, "run", side_effect=command), patch.object(module.runner, "run_tests", side_effect=test_slices):
                 self.assertEqual(module.main(), 1)
 

@@ -30,4 +30,4 @@ export interface TreemapProps {
   /** Tile width (px) below which no label renders. @default 44 */
   minTileLabel?: number;
 }
-export declare function Treemap(props: TreemapProps): JSX.Element;
+export declare function Treemap(props: TreemapProps): React.JSX.Element;

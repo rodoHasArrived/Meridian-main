@@ -64,8 +64,9 @@ public sealed class DirectLendingServiceTests
         afterReset.CurrentRateReset!.AllInRate.Should().Be(0.055m);
 
         accrual.Should().NotBeNull();
-        accrual!.InterestAmount.Should().BeApproximately(38.194444444m, 0.000000001m);
-        accrual.CommitmentFeeAmount.Should().BeApproximately(62.5m, 0.000000001m);
+        // Accruals post rounded to cents, half away from zero, as the F# aggregate does: 38.1944 -> 38.19.
+        accrual!.InterestAmount.Should().Be(38.19m);
+        accrual.CommitmentFeeAmount.Should().Be(62.50m);
 
         var servicing = await service.GetServicingStateAsync(detail.LoanId);
         var history = await service.GetHistoryAsync(detail.LoanId);
@@ -110,13 +111,15 @@ public sealed class DirectLendingServiceTests
         var nonLeapAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2027, 3, 24)));
         var leapAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2028, 2, 29)));
 
-        // Fixed 8% on 250,000 principal: 2027 divides by 365, leap year 2028 divides by 366.
+        // Fixed 8% on 250,000 principal: 2027 divides by 365, leap year 2028 divides by 366; the
+        // 3% fee runs on 750,000 undrawn. Rounded to cents: 54.794 -> 54.79, 54.644 -> 54.64,
+        // 61.643 -> 61.64, 61.475 -> 61.48.
         nonLeapAccrual.Should().NotBeNull();
-        nonLeapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 365m, 0.000000001m);
-        nonLeapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 365m, 0.000000001m);
+        nonLeapAccrual!.InterestAmount.Should().Be(54.79m);
+        nonLeapAccrual.CommitmentFeeAmount.Should().Be(61.64m);
         leapAccrual.Should().NotBeNull();
-        leapAccrual!.InterestAmount.Should().BeApproximately(20_000m / 366m, 0.000000001m);
-        leapAccrual.CommitmentFeeAmount.Should().BeApproximately(22_500m / 366m, 0.000000001m);
+        leapAccrual!.InterestAmount.Should().Be(54.64m);
+        leapAccrual.CommitmentFeeAmount.Should().Be(61.48m);
     }
 
     [Fact]
@@ -131,12 +134,12 @@ public sealed class DirectLendingServiceTests
 
         var accrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
 
-        // Fixed 8% on 250,000 principal, Act/360: one day accrues 20,000 / 360,
-        // capitalized into principal instead of the cash-interest receivable.
-        var expectedPik = 20_000m / 360m;
+        // Fixed 8% on 250,000 principal, Act/360: one day accrues 20,000 / 360 = 55.5556, rounded to
+        // 55.56 and capitalized into principal instead of the cash-interest receivable.
+        var expectedPik = 55.56m;
         accrual.Should().NotBeNull();
         accrual!.InterestAmount.Should().Be(0m);
-        accrual.PikInterestAmount.Should().BeApproximately(expectedPik, 0.000000001m);
+        accrual.PikInterestAmount.Should().Be(expectedPik);
 
         var servicing = await service.GetServicingStateAsync(detail.LoanId);
         servicing.Should().NotBeNull();
@@ -155,7 +158,8 @@ public sealed class DirectLendingServiceTests
         var cashAccrual = await service.PostDailyAccrualAsync(detail.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 25)));
         cashAccrual.Should().NotBeNull();
         cashAccrual!.PikInterestAmount.Should().Be(0m);
-        cashAccrual.InterestAmount.Should().BeApproximately((250_000m + expectedPik) * 0.08m / 360m, 0.000000001m);
+        // 250,055.56 x 8% / 360 = 55.5679 -> 55.57.
+        cashAccrual.InterestAmount.Should().Be(55.57m);
     }
 
     [Fact]

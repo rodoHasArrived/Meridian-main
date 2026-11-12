@@ -46,7 +46,7 @@ def _registry(*entries: tuple[str, str] | tuple[str, str, int]) -> str:
 
 class RenderRoadmapDiagramsTests(unittest.TestCase):
     def _render(self, registry: str) -> str:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             data_dir = root / "docs" / "roadmap" / "data"
             data_dir.mkdir(parents=True)

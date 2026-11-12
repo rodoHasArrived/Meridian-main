@@ -1,0 +1,354 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using FluentAssertions;
+using Meridian.Application.SecurityMaster;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.FSharp.Domain;
+using Meridian.FSharp.SecurityMasterInterop;
+using Xunit;
+
+namespace Meridian.Tests.SecurityMaster;
+
+/// <summary>
+/// ADR-027 stage 2 (S2-B1): pins the equivalence between the codec-side kind validation
+/// (<c>validateKindTerms</c>, reached through
+/// <see cref="SecurityMasterCommandFacade.ValidateKindInvariants"/>) and the new validation
+/// surface over the economic definition's modules
+/// (<see cref="SecurityMasterCommandFacade.ValidateDefinitionInvariants"/>). For every declared
+/// class, the clean twin passes both; for every error code the ledger
+/// (<see cref="SecurityMasterCommandFacade.DefinitionExpressibleCodes"/>) declares
+/// definition-expressible, a mutation of the twin trips <b>both</b> validators with that code,
+/// and the definition validator never reports a code the kind validator does not — so S2-B2 can
+/// switch the command path onto the definition surface without changing a single verdict on the
+/// expressible set. The ledger was one side of a partition while some rules were codec-only;
+/// since the stage-3 contraction every term rule is on the definition surface and ledgered here.
+/// </summary>
+[Trait("Category", "Unit")]
+public sealed class SecurityDefinitionValidationEquivalenceTests
+{
+    public static TheoryData<string> DeclaredAssetClasses() => SecurityAssetTermsSchemaRoundTripTests.DeclaredAssetClasses();
+
+    [Theory]
+    [MemberData(nameof(DeclaredAssetClasses))]
+    public void CleanTwin_PassesBothValidators(string assetClass)
+    {
+        var (kind, modules) = KindAndModules(assetClass, FlatTwin(assetClass));
+
+        SecurityMasterCommandFacade.ValidateKindInvariants(kind).Should().BeEmpty(
+            $"the {assetClass} twin is a valid record");
+        SecurityMasterCommandFacade.ValidateDefinitionInvariants(assetClass, modules).Should().BeEmpty(
+            $"the definition surface must agree with the kind surface on the valid {assetClass} twin");
+    }
+
+    // ── The mutation table: one row per definition-expressible code ─────────────────────────────
+
+    public static TheoryData<string, string, string, string> ExpressibleCodeMutations()
+    {
+        var data = new TheoryData<string, string, string, string>();
+        foreach (var (assetClass, code, path, value) in Mutations)
+        {
+            data.Add(assetClass, code, path, value);
+        }
+
+        return data;
+    }
+
+    private static readonly (string AssetClass, string Code, string Path, string Value)[] Mutations =
+    [
+        // The Bond twin carries a floating coupon, whose flat couponRate feeds the floating
+        // structure; the rule reads the fixed-coupon rate, so the mutation pins the type too.
+        ("Bond", "bond_coupon_invalid", "*", """{"couponType":"Fixed","couponRate":-1}"""),
+        ("CertificateOfDeposit", "cd_issuer_required", "issuerName", "\" \""),
+        ("CertificateOfDeposit", "cd_coupon_invalid", "couponRate", "-1"),
+        ("CertificateOfDeposit", "cd_callable_date_invalid", "callableDate", "\"2999-01-01\""),
+        ("Deposit", "deposit_type_required", "depositType", "\" \""),
+        ("Deposit", "deposit_institution_required", "institutionName", "\" \""),
+        ("Deposit", "deposit_interest_rate_invalid", "interestRate", "-1"),
+        ("MoneyMarketFund", "mmf_wam_invalid", "weightedAverageMaturityDays", "-1"),
+        ("CommercialPaper", "commercial_paper_issuer_required", "issuerName", "\" \""),
+        ("CommercialPaper", "commercial_paper_discount_rate_invalid", "discountRate", "-1"),
+        ("TreasuryBill", "treasury_bill_auction_date_invalid", "auctionDate", "\"2999-01-01\""),
+        ("TreasuryBill", "treasury_bill_discount_rate_invalid", "discountRate", "-1"),
+        ("Repo", "repo_counterparty_required", "counterparty", "\" \""),
+        ("Repo", "repo_date_range_invalid", "startDate", "\"2999-01-01\""),
+        ("Repo", "repo_rate_invalid", "repoRate", "-1"),
+        ("Repo", "repo_haircut_invalid", "haircut", "-1"),
+        ("CashSweep", "cash_sweep_program_required", "programName", "\" \""),
+        ("CashSweep", "cash_sweep_vehicle_required", "sweepVehicleType", "\" \""),
+        ("CashSweep", "cash_sweep_yield_rate_invalid", "yieldRate", "-1"),
+        ("StructuredCredit", "structured_credit_tranche_required", "tranche", "\" \""),
+        ("StructuredCredit", "structured_credit_collateral_required", "collateralType", "\" \""),
+        ("StructuredCredit", "structured_credit_original_face_invalid", "originalFace", "-1"),
+        ("StructuredCredit", "structured_credit_current_factor_invalid", "currentFactor", "1.5"),
+        ("StructuredCredit", "structured_credit_coupon_index_required", "couponOrIndex", "\" \""),
+        // structured_credit_factor_schedule_invalid, _duplicate_date and _not_monotonic cannot be
+        // exercised through the JSON route: the codec gate
+        // (SecurityEconomicScheduleValidation.ThrowIfInvalid in ToSecurityKind) refuses those
+        // shapes before either validator runs, so both validators carry them as defense in depth.
+        // SecurityDefinitionValidationTests (Meridian.FSharp.Tests) mutates the records directly
+        // and pins both surfaces for those codes; CodesCoveredByFSharpTests keeps the ledger
+        // coverage honest here.
+        ("StructuredCredit", "structured_credit_factor_after_maturity", "factorScheduleEntries",
+            """[{"asOfDate":"2999-01-01","factor":0.9}]"""),
+        ("StructuredCredit", "structured_credit_weighted_average_coupon_invalid", "weightedAverageCoupon", "-1"),
+        ("StructuredCredit", "structured_credit_weighted_average_maturity_invalid", "weightedAverageMaturityMonths", "-1"),
+        ("StructuredCredit", "structured_credit_weighted_average_loan_age_invalid", "weightedAverageLoanAgeMonths", "-1"),
+        ("Commodity", "commodity_contract_size_invalid", "contractSize", "-1"),
+        ("Cfd", "cfd_leverage_invalid", "leverage", "-1"),
+        // Zero regression (Codex review on #3439): the module projection divides by leverage, so
+        // zero must carry as a zero margin and be refused, not throw before validation runs.
+        ("Cfd", "cfd_leverage_invalid", "leverage", "0"),
+        ("Warrant", "warrant_multiplier_invalid", "multiplier", "-1"),
+        // ADR-027 stage 3 (S3-E): the exercise module homes the strike, right and style, and the
+        // contract multiplier joins tradingParameters for options and futures.
+        ("Option", "option_put_call_required", "putCall", "\" \""),
+        ("Option", "option_put_call_invalid", "putCall", "\"Straddle\""),
+        ("Option", "option_strike_invalid", "strike", "-1"),
+        ("Option", "option_multiplier_invalid", "multiplier", "-1"),
+        ("Future", "future_multiplier_invalid", "multiplier", "-1"),
+        ("Warrant", "warrant_type_required", "warrantType", "\" \""),
+        ("Warrant", "warrant_type_invalid", "warrantType", "\"Straddle\""),
+        ("Warrant", "warrant_strike_invalid", "strike", "-1"),
+        ("Swaption", "swaption_payer_receiver_invalid", "payerReceiver", "\"Both\""),
+        ("Swaption", "swaption_exercise_style_invalid", "exerciseStyle", "\"Asian\""),
+        ("CapFloor", "cap_floor_type_invalid", "capFloorType", "\"Corridor\""),
+        ("CapFloor", "cap_floor_cap_strike_required", "*", """{"capFloorType":"Cap","capStrike":null}"""),
+        ("CapFloor", "cap_floor_floor_strike_required", "*", """{"capFloorType":"Floor","floorStrike":null}"""),
+        ("CapFloor", "cap_floor_premium_invalid", "premiumAmount", "-1"),
+        // S3-E2: the currencyPair module homes the pair, the settlement currency and the agreed rate.
+        ("FxSpot", "fx_base_currency_required", "baseCurrency", "\" \""),
+        ("FxSpot", "fx_quote_currency_required", "quoteCurrency", "\" \""),
+        ("FxSpot", "fx_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("CryptoCurrency", "crypto_base_currency_required", "baseCurrency", "\" \""),
+        ("CryptoCurrency", "crypto_quote_currency_required", "quoteCurrency", "\" \""),
+        ("CryptoCurrency", "crypto_currency_pair_invalid", "*", """{"baseCurrency":"BTC","quoteCurrency":"btc"}"""),
+        ("FxForward", "fx_forward_base_currency_required", "baseCurrency", "\" \""),
+        ("FxForward", "fx_forward_quote_currency_required", "quoteCurrency", "\" \""),
+        ("FxForward", "fx_forward_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("FxForward", "fx_forward_rate_invalid", "forwardRate", "-1"),
+        ("NonDeliverableForward", "ndf_base_currency_required", "baseCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_quote_currency_required", "quoteCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_settlement_currency_required", "settlementCurrency", "\" \""),
+        ("NonDeliverableForward", "ndf_currency_pair_invalid", "*", """{"baseCurrency":"USD","quoteCurrency":"usd"}"""),
+        ("NonDeliverableForward", "ndf_rate_invalid", "forwardRate", "-1"),
+        // S3-E3: the notional module homes contract notionals, denominations and commitment amounts.
+        ("FxForward", "fx_forward_notional_invalid", "notional", "-1"),
+        ("NonDeliverableForward", "ndf_notional_invalid", "notional", "-1"),
+        ("CreditDefaultSwap", "cds_notional_invalid", "notional", "-1"),
+        ("Swaption", "swaption_notional_invalid", "notional", "-1"),
+        ("CapFloor", "cap_floor_notional_invalid", "notional", "-1"),
+        ("StructuredNote", "structured_note_denomination_invalid", "denomination", "-1"),
+        ("PrivateFundInterest", "private_fund_commitment_invalid", "commitment", "-1"),
+        ("PrivateFundInterest", "private_fund_funded_invalid", "fundedAmount", "-1"),
+        ("PrivateFundInterest", "private_fund_unfunded_invalid", "unfundedAmount", "-1"),
+        ("CommitmentGuarantee", "commitment_guarantee_amount_invalid", "committedAmount", "-1"),
+        ("CommitmentGuarantee", "commitment_guarantee_exposure_invalid", "unfundedAmount", "-1"),
+        // S3-E4: the profileEnvelope module carries the envelope and its governed document. The
+        // twin pins a profile that resolves to StructuredCredit; repinning it to one that does not
+        // leaves the securitized category noncanonical.
+        ("CustomAsset", "custom_asset_profile_version_missing", "profileVersion", "null"),
+        ("CustomAsset", "custom_asset_profile_version_invalid", "profileVersion", "1.5"),
+        ("CustomAsset", "custom_asset_profile_fields_missing", "profileFields", "null"),
+        ("CustomAsset", "custom_asset_securitized_noncanonical", "customProfileId", "\"co-invest-spv\""),
+        ("CapFloor", "cap_floor_reference_index_required", "referenceIndex", "\" \""),
+        ("CapFloor", "cap_floor_strike_order_invalid", "floorStrike", "99999"),
+        ("CapFloor", "cap_floor_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
+        ("Swap", "swap_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
+        ("CreditDefaultSwap", "cds_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
+        ("CreditDefaultSwap", "cds_fixed_coupon_invalid", "fixedCouponBps", "-100"),
+        ("NonDeliverableForward", "ndf_fixing_date_invalid", "fixingDate", "\"2999-01-01\""),
+        ("FxForward", "fx_forward_trade_date_invalid", "tradeDate", "\"2999-01-01\""),
+        ("StructuredNote", "structured_note_issuer_required", "issuerName", "\" \""),
+        ("StructuredNote", "structured_note_issue_date_invalid", "issueDate", "\"2999-01-01\""),
+        ("StructuredNote", "structured_note_coupon_invalid", "couponRate", "-1"),
+        ("CommitmentGuarantee", "commitment_guarantee_counterparty_required", "counterparty", "\" \""),
+        ("CommitmentGuarantee", "commitment_guarantee_date_range_invalid", "effectiveDate", "\"2999-01-01\""),
+        ("DirectLoan", "direct_loan_borrower_required", "borrower", "\" \""),
+        ("PrivateFundInterest", "private_fund_gp_required", "gpSponsor", "\" \""),
+        ("PrivateFundInterest", "private_fund_strategy_required", "strategy", "\" \""),
+        ("PrivateCompanyEquity", "private_company_issuer_required", "issuer", "\" \""),
+        ("PrivateCompanyEquity", "private_company_share_class_required", "shareClass", "\" \""),
+        ("PrivateCompanyEquity", "private_company_round_required", "round", "\" \""),
+        ("RealEstateHolding", "real_estate_property_type_required", "propertyType", "\" \""),
+        // The rules that were codec-only until the stage-3 contraction put every per-class field on
+        // a shared module: each is now expressed on the definition surface and proven here.
+        ("Future", "future_root_symbol_required", "rootSymbol", "\" \""),
+        ("Future", "future_contract_month_required", "contractMonth", "\" \""),
+        ("Commodity", "commodity_type_required", "commodityType", "\" \""),
+        ("Cfd", "cfd_underlying_asset_class_required", "underlyingAssetClass", "\" \""),
+        ("StructuredNote", "structured_note_underlying_required", "underlyingDescription", "\" \""),
+        ("StructuredNote", "structured_note_protection_invalid", "principalProtectionPct", "2"),
+        ("StructuredNote", "structured_note_participation_invalid", "participationRate", "-1"),
+        ("StructuredNote", "structured_note_return_cap_invalid", "returnCap", "-1"),
+        ("StructuredNote", "structured_note_barrier_invalid", "barrierLevel", "0"),
+        ("Swaption", "swaption_expiry_invalid", "underlyingMaturityDate", "\"2000-01-01\""),
+        ("Swaption", "swaption_underlying_dates_invalid", "underlyingEffectiveDate", "\"2000-01-01\""),
+        ("CreditDefaultSwap", "cds_reference_entity_required", "referenceEntity", "\" \""),
+        ("CreditDefaultSwap", "cds_protection_side_invalid", "protectionSide", "\"Both\""),
+        ("CreditDefaultSwap", "cds_recovery_rate_invalid", "recoveryRateAssumption", "2"),
+        ("CommitmentGuarantee", "commitment_guarantee_fee_invalid", "feeRate", "-1"),
+        ("StructuredCredit", "structured_credit_attachment_point_invalid", "attachmentPoint", "2"),
+        ("StructuredCredit", "structured_credit_detachment_point_invalid", "detachmentPoint", "2"),
+        ("StructuredCredit", "structured_credit_attachment_above_detachment", "*", """{"attachmentPoint":0.9,"detachmentPoint":0.1}"""),
+        ("StructuredCredit", "structured_credit_period_after_maturity", "reinvestmentPeriodEnd", "\"2999-01-01\""),
+        ("PrivateFundInterest", "private_fund_vintage_invalid", "vintage", "0"),
+        ("PrivateCompanyEquity", "private_company_ownership_invalid", "ownershipPercent", "-1"),
+        ("PrivateCompanyEquity", "private_company_cost_basis_invalid", "costBasis", "0"),
+        ("PrivateCompanyEquity", "private_company_valuation_invalid", "latestValuation", "-1"),
+        ("RealEstateHolding", "real_estate_market_required", "addressOrMarket", "\" \""),
+        ("RealEstateHolding", "real_estate_ownership_invalid", "ownershipPercent", "0"),
+        ("RealEstateHolding", "real_estate_appraisal_invalid", "appraisalValue", "0"),
+        ("Bond", "bond_securitized_subclass_noncanonical", "subclass", "\"MBS\""),
+        ("Bond", "bond_bank_loan_subclass_noncanonical", "subclass", "\"BankLoan\""),
+        ("Bond", "bond_principal_schedule_date_invalid", "*", """{"par":1000,"principalSchedule":[{"paymentDate":"2999-01-01","amount":100}]}"""),
+        ("Bond", "bond_principal_schedule_exceeds_par", "*", """{"par":100,"principalSchedule":[{"paymentDate":"2030-06-15","amount":500}]}"""),
+        ("Bond", "bond_principal_schedule_requires_par", "*", """{"par":null,"principalSchedule":[{"paymentDate":"2030-06-15","amount":100}]}"""),
+        ("Bond", "bond_step_schedule_required", "*", """{"couponType":"Step","stepSchedule":[]}"""),
+        ("Bond", "bond_step_date_after_maturity", "*", """{"couponType":"Step","stepSchedule":[{"effectiveDate":"2999-01-01","rate":4}]}"""),
+        ("Bond", "bond_inflation_real_rate_invalid", "*", """{"couponType":"InflationLinked","couponRate":-1,"inflationIndex":"CPI-U"}"""),
+        ("Bond", "bond_inflation_index_required", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":" "}"""),
+        ("Bond", "bond_inflation_index_values_invalid", "*", """{"couponType":"InflationLinked","couponRate":1,"inflationIndex":"CPI-U","inflationBaseIndexValue":0}"""),
+        ("OtherSecurity", "other_security_category_required", "category", "\" \""),
+        ("OtherSecurity", "other_security_securitized_noncanonical", "category", "\"MBS\""),
+        ("DirectLoan", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("DirectLoan", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
+        ("CommitmentGuarantee", "covenant_type_required", "covenants", """[{"covenantType":" ","threshold":"< 4.0x"}]"""),
+        ("CommitmentGuarantee", "covenant_threshold_required", "covenants", """[{"covenantType":"Leverage","threshold":" "}]"""),
+        ("Swap", "swap_legs_required", "legs", "[]"),
+        ("Swap", "swap_leg_notional_invalid", "legs", """[{"legType":"Fixed","currency":"USD","notional":0}]"""),
+        ("Swap", "swap_leg_direction_invalid", "legs", """[{"legType":"Fixed","currency":"USD","direction":"Sideways"}]"""),
+        ("Swap", "swap_leg_notional_schedule_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2027-01-15","notional":0}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_order_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2028-01-15","notional":900},{"effectiveDate":"2027-01-15","notional":800}]}]"""),
+        ("Swap", "swap_leg_notional_schedule_range_invalid", "legs",
+            """[{"legType":"Fixed","currency":"USD","notionalSchedule":[{"effectiveDate":"2999-01-01","notional":900}]}]"""),
+        ("Swap", "swap_leg_reset_schedule_order_invalid", "legs",
+            """[{"legType":"Floating","currency":"USD","index":"SOFR","resetSchedule":[{"resetDate":"2027-01-15","fixingRate":4.1},{"resetDate":"2026-07-15","fixingRate":4.0}]}]"""),
+    ];
+
+    [Theory]
+    [MemberData(nameof(ExpressibleCodeMutations))]
+    public void MutatedTwin_TripsBothValidators_WithTheSameCode(string assetClass, string code, string path, string value)
+    {
+        var twin = JsonNode.Parse(FlatTwin(assetClass).GetRawText())!.AsObject();
+        if (path == "*")
+        {
+            foreach (var edit in JsonNode.Parse(value)!.AsObject())
+            {
+                twin[edit.Key] = edit.Value?.DeepClone();
+            }
+        }
+        else
+        {
+            twin[path] = JsonNode.Parse(value);
+        }
+        var (kind, modules) = KindAndModules(assetClass, JsonDocument.Parse(twin.ToJsonString()).RootElement.Clone());
+
+        var kindCodes = SecurityMasterCommandFacade.ValidateKindInvariants(kind).Select(static e => e.Code).ToArray();
+        var definitionCodes = SecurityMasterCommandFacade.ValidateDefinitionInvariants(assetClass, modules).Select(static e => e.Code).ToArray();
+
+        kindCodes.Should().Contain(code, $"the mutation must trip the kind validator ({assetClass}.{path} = {value})");
+        definitionCodes.Should().Contain(code, "the definition surface must report the same verdict on an expressible code");
+        definitionCodes.Should().BeSubsetOf(kindCodes,
+            "the definition surface may never invent an error the kind surface does not raise");
+        definitionCodes.Should().BeSubsetOf(SecurityMasterCommandFacade.DefinitionExpressibleCodes[assetClass],
+            "every reported definition code must be in the class's expressible ledger");
+    }
+
+    /// <summary>
+    /// Codes whose invalid shapes the codec gate refuses before any validator runs on the JSON
+    /// route; their two-surface proof lives in the F# suite (SecurityDefinitionValidationTests),
+    /// which mutates the records directly.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string[]> CodesCoveredByFSharpTests =
+        new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["StructuredCredit"] =
+            [
+                "structured_credit_factor_schedule_invalid",
+                "structured_credit_factor_schedule_duplicate_date",
+                "structured_credit_factor_schedule_not_monotonic"
+            ],
+            // The flat codec's schedule validation refuses a non-positive instalment, a negative
+            // step rate and a repeated step date before a kind exists, so only a directly built
+            // record can carry one.
+            ["Bond"] =
+            [
+                "bond_principal_schedule_invalid",
+                "bond_step_rate_invalid",
+                "bond_step_dates_duplicate"
+            ],
+            // The flat codec reads an exercise style it does not recognise as no style, so an
+            // unrecognised one reaches a kind only on a directly built record.
+            ["Option"] = ["option_exercise_style_invalid"],
+            // The flat codec refuses a leg whose type or currency is blank and reads a blank
+            // payment frequency as absent, so only a directly built record can carry one.
+            ["Swap"] =
+            [
+                "swap_leg_type_required",
+                "swap_leg_currency_required",
+                "swap_leg_payment_frequency_invalid"
+            ],
+            // A blank profile id reads as the OtherSecurity salvage, and a non-object or
+            // unparseable document never reaches a CustomAsset kind through the codec.
+            ["CustomAsset"] =
+            [
+                "custom_asset_profile_required",
+                "custom_asset_terms_required",
+                "custom_asset_terms_invalid"
+            ]
+        };
+
+    /// <summary>
+    /// Parity guard for the asset-class literal ratchet
+    /// (<c>SecurityAssetClassLiteralRatchetTests</c>): the class-gated
+    /// <c>validateDefinitionTerms</c> dispatch in <c>SecurityMasterCommands.fs</c> is a declared
+    /// dispatch site, and its ledger may only name declared catalog classes. Together with the
+    /// clean-twin theory (every declared class runs both validators) and
+    /// <see cref="MutationTable_CoversEveryLedgeredCode"/> (the proof covers exactly the ledger),
+    /// this holds the F# dispatch to <see cref="SecurityAssetClassCatalog"/>.
+    /// </summary>
+    [Fact]
+    public void LedgeredClasses_AreDeclaredCatalogClasses()
+    {
+        SecurityMasterCommandFacade.DefinitionExpressibleCodes.Keys.Should().BeSubsetOf(
+            SecurityAssetClassCatalog.AssetClasses,
+            "the definition-expressible ledger (and the validateDefinitionTerms dispatch it mirrors) may only name declared catalog classes");
+    }
+
+    [Fact]
+    public void MutationTable_CoversEveryLedgeredCode()
+    {
+        var covered = Mutations
+            .GroupBy(static row => row.AssetClass, static row => row.Code)
+            .ToDictionary(static group => group.Key, static group => group.Distinct().ToHashSet(StringComparer.Ordinal));
+
+        foreach (var (assetClass, codes) in SecurityMasterCommandFacade.DefinitionExpressibleCodes)
+        {
+            covered.Should().ContainKey(assetClass, "every ledgered class needs mutation coverage");
+            var fsharpCovered = CodesCoveredByFSharpTests.TryGetValue(assetClass, out var elsewhere) ? elsewhere : [];
+            var shapeCovered = SecurityRequiredModuleValueTests.RequiredShapeClasses.Contains(assetClass)
+                ? new[] { "required_module_value_missing" } : Array.Empty<string>();
+            covered[assetClass].Concat(fsharpCovered).Concat(shapeCovered).Should().BeEquivalentTo(codes,
+                $"the mutation table (plus the F# and direct-module required-value proofs) must cover exactly the ledgered codes for {assetClass}, so the ledger and the proof stay in step");
+        }
+
+        covered.Keys.Should().BeEquivalentTo(
+            SecurityMasterCommandFacade.DefinitionExpressibleCodes.Keys,
+            "a mutation row for an unledgered class means the ledger is stale");
+    }
+
+    private static JsonElement FlatTwin(string assetClass)
+        => SecurityAssetTermsSchemaRoundTripTests.SerializeThroughDomain(
+            assetClass,
+            SecurityAssetTermsSchemaRoundTripTests.FullPayloads[assetClass]);
+
+    private static (SecurityKind Kind, SecurityTermModules Modules) KindAndModules(string assetClass, JsonElement flatTerms)
+    {
+        var record = SecurityMasterMapping.ToRecord(
+            SecurityAssetTermsSchemaRoundTripTests.LegacyProjection(assetClass, flatTerms));
+        var definition = SecurityMasterLegacyUpgrade.toEconomicDefinition(record);
+        return (record.Kind, definition.Terms);
+    }
+}

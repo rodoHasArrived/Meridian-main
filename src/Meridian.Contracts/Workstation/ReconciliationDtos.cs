@@ -750,7 +750,17 @@ public sealed record ReconciliationBulkCaseworkRequest(
     IReadOnlyList<string>? EvidenceLinks = null,
     string? ApprovalActor = null,
     string? ApprovalReference = null,
-    string? SupersedingBreakId = null);
+    string? SupersedingBreakId = null)
+{
+    /// <summary>
+    /// Bulk "assign to me": the endpoint replaces <see cref="Assignee"/> with the authenticated
+    /// operator, because a client knows its display name but not its login identity. It is cleared
+    /// before the request reaches the queue, and skipped when false, so retained input hashes keep
+    /// their shape. Init-only preserves the positional constructor and deconstruction ABI.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool AssignToCurrentOperator { get; init; }
+}
 
 public sealed record ReconciliationBulkCaseworkCaseResult(
     string BreakId,

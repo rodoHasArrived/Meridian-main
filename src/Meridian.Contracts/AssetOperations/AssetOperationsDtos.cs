@@ -60,6 +60,9 @@ public sealed record AssetCashFlowProjectionRunDto(
     string? SourceEntityId,
     JsonElement? ExtensionPayload = null)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto? Blocker { get; init; }
+
     public IReadOnlyList<RetainedEvidenceIdentityDto> RetainedEvidence { get; init; } = [];
 }
 

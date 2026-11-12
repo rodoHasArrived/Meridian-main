@@ -605,6 +605,160 @@ public sealed class SecurityAssetClassCatalogTests
     }
 
     [Fact]
+    public void AssetPackRegistry_ValidateCandidateSet_ShouldRejectACandidatePlanningAnAlreadyPlannedClass()
+    {
+        // CreditFacility is planned by the private-loan-credit pack. A newcomer may not add a second
+        // claim silently, even though the class is not modeled yet.
+        var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            "revolving-credit",
+            "Revolving credit",
+            [],
+            ["Purchase", "Sale", "Draw", "Repayment", "Amendment"],
+            ["DiscountedCashFlow", "UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["CreditFacility"]);
+
+        var result = SecurityAssetPackRegistry.ValidateCandidateSet([candidate]);
+
+        result.IsValid.Should().BeFalse();
+        var issue = result.Issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("asset-pack.planned-asset-class-overlap");
+        issue.Target.Should().Be("PlannedAssetClasses");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateCandidateSet_ShouldRejectTwoCandidatesPlanningTheSameClass()
+    {
+        SecurityAssetPackDescriptor Planning(string packId) => SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            packId,
+            packId,
+            [],
+            ["Purchase", "Sale", "Distribution", "Amendment"],
+            ["DiscountedCashFlow", "UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
+
+        var result = SecurityAssetPackRegistry.ValidateCandidateSet([Planning("royalty-stream"), Planning("music-royalty")]);
+
+        result.Issues.Should().ContainSingle(issue => issue.Code == "asset-pack.planned-asset-class-overlap");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_DeclaredSharedCoverage_ShouldNameEveryBuiltInOverlapAndItsReason()
+    {
+        // The built-in overlaps are stated allowances, not a side effect of the candidate filter.
+        var declared = SecurityAssetPackRegistry.DeclaredSharedCoverage;
+
+        var directLoan = declared.Should().ContainSingle().Subject;
+        directLoan.AssetClass.Should().Be("DirectLoan");
+        directLoan.PackIds.Should().BeEquivalentTo("private-loan-credit", "mortgage-facility-intercompany");
+        directLoan.Reason.Should().NotBeNullOrWhiteSpace();
+        SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, declared).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateSharedCoverage_ShouldReportAnUndeclaredBuiltInOverlap()
+    {
+        // With no allowance declared, the overlap the registry ships is reported: the built-in
+        // rule can fire.
+        var issues = SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, []);
+
+        var issue = issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("asset-pack.shared-coverage-undeclared");
+        issue.Severity.Should().Be("Critical");
+        issue.Message.Should().Contain("'DirectLoan'");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_PlannedClasses_ShouldEachHaveOneBuiltInOwner()
+    {
+        // CreditFacility was planned by three packs until its owner was chosen (private-loan-credit).
+        // No planned class is shared today, so each has one pack that will own it when it is modeled.
+        var sharedPlanned = SecurityAssetPackRegistry.All
+            .SelectMany(static pack => pack.PlannedAssetClasses.Select(assetClass => (pack.PackId, AssetClass: assetClass)))
+            .GroupBy(static row => row.AssetClass, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => group.Key);
+
+        sharedPlanned.Should().BeEmpty();
+        SecurityAssetPackRegistry.All
+            .Single(static pack => pack.PlannedAssetClasses.Contains("CreditFacility"))
+            .PackId.Should().Be("private-loan-credit");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateSharedCoverage_ShouldReportAnUndeclaredPlannedOverlap()
+    {
+        // The rule reads planned coverage as well as claimed coverage: two packs planning one class
+        // without a declared allowance are reported.
+        SecurityAssetPackDescriptor Planning(string packId) => SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            packId,
+            packId,
+            [],
+            ["Purchase", "Sale", "Distribution", "Amendment"],
+            ["DiscountedCashFlow", "UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
+        SecurityAssetPackDescriptor[] packs = [.. SecurityAssetPackRegistry.All, Planning("royalty-stream"), Planning("music-royalty")];
+
+        var issues = SecurityAssetPackRegistry.ValidateSharedCoverage(packs, SecurityAssetPackRegistry.DeclaredSharedCoverage);
+
+        var issue = issues.Should().ContainSingle().Subject;
+        issue.Code.Should().Be("asset-pack.shared-coverage-undeclared");
+        issue.Message.Should().Contain("'RoyaltyStream'");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_ValidateSharedCoverage_ShouldReportDeclarationsThatNoLongerMatch()
+    {
+        AssetPackSharedCoverage[] declarations =
+        [
+            // Names one of the two packs that actually share DirectLoan, and gives no reason.
+            new("DirectLoan", ["private-loan-credit", "fixed-income"], " "),
+            // Equity belongs to one pack, so this allowance describes nothing.
+            new("Equity", ["public-equity-etf", "fixed-income"], "stale")
+        ];
+
+        var issues = SecurityAssetPackRegistry.ValidateSharedCoverage(SecurityAssetPackRegistry.All, declarations);
+
+        issues.Select(static issue => issue.Code).Should().BeEquivalentTo(
+            "asset-pack.shared-coverage-mismatch",
+            "asset-pack.shared-coverage-reason-required",
+            "asset-pack.shared-coverage-stale");
+    }
+
+    [Fact]
+    public void AssetPackRegistry_DescriptiveMetadata_IsOneSharedSetAndOnlyTheTermsSchemaIsPerPack()
+    {
+        // ValidationRules, ReportingTaxonomy and the contract schema's prose lists describe; they do
+        // not gate. Every pack, built-in or candidate, carries the same instances. If one of them
+        // becomes per-pack, it needs a real check and the registry's doc comment must say so.
+        var candidate = SecurityAssetPackRegistry.CreateCandidateDescriptor(
+            "royalty-stream",
+            "Royalty streams",
+            [],
+            ["Purchase", "Sale"],
+            ["UserEstimate"],
+            [],
+            AssetPackAutomationDepth.WideCapture,
+            plannedAssetClasses: ["RoyaltyStream"]);
+        var reference = SecurityAssetPackRegistry.All[0];
+
+        foreach (var pack in SecurityAssetPackRegistry.All.Append(candidate))
+        {
+            pack.ValidationRules.Should().BeSameAs(reference.ValidationRules);
+            pack.ReportingTaxonomy.Should().BeSameAs(reference.ReportingTaxonomy);
+            pack.ContractSchema.Terms.Should().BeSameAs(reference.ContractSchema.Terms);
+            pack.ContractSchema.Rates.Should().BeSameAs(reference.ContractSchema.Rates);
+            pack.ContractSchema.AssetClassTerms.Select(static schema => schema.AssetClass)
+                .Should().BeEquivalentTo(pack.AssetClasses);
+        }
+    }
+
+    [Fact]
     public void AssetPackRegistry_ValidateDescriptor_ShouldFailClosedForInvalidCandidatePack()
     {
         var baseline = SecurityAssetPackRegistry.Find("private-loan-credit");

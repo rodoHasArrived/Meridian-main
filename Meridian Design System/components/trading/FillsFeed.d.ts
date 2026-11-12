@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * FillsFeed — streaming execution tape, newest first. Mono rows: time-of-day, symbol, washed
  * side, qty @ price. Deliberately quiet — no per-row animation. Prepend new fills to the array.
@@ -22,4 +23,4 @@ export interface FillsFeedProps {
   maxHeight?: number | string;
   emptyLabel?: React.ReactNode;
 }
-export declare function FillsFeed(props: FillsFeedProps): JSX.Element;
+export declare function FillsFeed(props: FillsFeedProps): React.JSX.Element;

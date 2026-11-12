@@ -59,7 +59,7 @@ items:
 
 class ProgramStateConsistencyTests(unittest.TestCase):
     def test_validate_generated_outputs_accepts_current_registry_render(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = _write_registry(Path(tmp))
             program, rows = generator.load_program_state(root)
             _write_outputs(root, program, rows)
@@ -69,7 +69,7 @@ class ProgramStateConsistencyTests(unittest.TestCase):
             self.assertEqual([], errors)
 
     def test_validate_generated_outputs_rejects_stale_summary(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = _write_registry(Path(tmp))
             output_dir = root / "docs" / "status"
             output_dir.mkdir(parents=True)

@@ -2,8 +2,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<title>Meridian — Environment modes</title>
 <meta charset="UTF-8">
 <link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css">
 <style>
   body { margin: 0; padding: 16px; background: var(--bg); font-family: var(--font-body); display: flex; flex-direction: column; gap: 12px; }
   .row { display: flex; gap: 10px; }
@@ -14,22 +16,22 @@
   .v { font-family: var(--font-data); font-size: 9px; color: var(--text-muted); }
 </style>
 </head>
-<body>
+<body class="mds-specimen">
   <div class="row">
     <div class="mode" style="border-left-color: var(--mode-live);">
       <span class="badge" style="color: var(--red-dim);"><span class="dot" style="background: var(--mode-live);"></span>Live</span>
       <span class="desc">Real money. Orders hit the broker.</span>
-      <span class="v">#A8443C</span>
+      <span class="v">#B54B42</span>
     </div>
     <div class="mode" style="border-left-color: var(--mode-paper);">
-      <span class="badge" style="color: var(--accent);"><span class="dot" style="background: var(--mode-paper);"></span>Paper</span>
+      <span class="badge" style="color: var(--text-primary);"><span class="dot" style="background: var(--mode-paper);"></span>Paper</span>
       <span class="desc">Simulated fills, live data.</span>
-      <span class="v">#A85436</span>
+      <span class="v">#5D7286</span>
     </div>
     <div class="mode" style="border-left-color: var(--mode-fixture);">
       <span class="badge" style="color: var(--orange-dim);"><span class="dot" style="background: var(--mode-fixture);"></span>Fixture</span>
       <span class="desc">Replay / recorded fixture data.</span>
-      <span class="v">#8A5C12</span>
+      <span class="v">#986717</span>
     </div>
   </div>
 </body>

@@ -1,6 +1,15 @@
 // Meridian shared time formatting. Relative-age text for freshness indicators and
 // "last updated" labels; promoted from the watchlist view model so chips, screens,
 // and view models share one age vocabulary.
+export function formatDateTimeUtc(value: string | null | undefined): string {
+  const timestamp = Date.parse(value ?? "");
+  if (!Number.isFinite(timestamp)) return "Timestamp unavailable";
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
+    hourCycle: "h23", timeZone: "UTC", timeZoneName: "short"
+  }).format(timestamp);
+}
+
 export function formatRelativeAge(iso: string | null, now = Date.now()): string {
   if (!iso) {
     return "Never";

@@ -1,0 +1,266 @@
+namespace Meridian.Contracts.SecurityMaster;
+
+/// <summary>How the flat decode reads one bound key. The names follow the schema-bound reader.</summary>
+public enum SecurityTermRead
+{
+    RequiredString,
+    OptionalString,
+    /// <summary>An optional string read through the convention-aware reader.</summary>
+    ConventionString,
+    RequiredDecimal,
+    OptionalDecimal,
+    /// <summary>An optional decimal a write refuses when malformed instead of reading as absent.</summary>
+    StrictDecimal,
+    RequiredInt,
+    OptionalInt,
+    StrictInt,
+    RequiredDate,
+    OptionalDate,
+    StrictDate,
+    /// <summary>A required guid held as a security id.</summary>
+    RequiredSecurityId,
+    OptionalBoolean,
+    /// <summary>An optional boolean the codec reads and writes as <c>false</c> when absent.</summary>
+    BooleanDefaultFalse,
+    /// <summary>A day-count convention: read through the governed parser, written as its term label.</summary>
+    DayCount,
+}
+
+/// <summary>
+/// One member of a per-class record and the flat key that carries it.
+/// </summary>
+/// <param name="Path">The member, as <c>Field.Member</c> over the class's record.</param>
+/// <param name="Key">The flat key, or null for a member the decode sets without reading one.</param>
+/// <param name="Read">How the decode reads the key; null when <paramref name="DecodeExpression"/> says.</param>
+/// <param name="DecodeExpression">
+/// The decode expression verbatim, for a member the row derives or fixes instead of reading plainly
+/// (a constant issuer, a style parsed through its own vocabulary).
+/// </param>
+/// <param name="WriteVia">
+/// The record's own computed property the writer reads instead of the member, where that property
+/// supplies the written form (a required date written as its default when the record lacks it).
+/// </param>
+/// <param name="DecodeOnly">Whether the key is written by another row and only read here.</param>
+public sealed record SecurityTermBinding(
+    string Path,
+    string? Key,
+    SecurityTermRead? Read,
+    string? DecodeExpression = null,
+    string? WriteVia = null,
+    bool DecodeOnly = false);
+
+/// <summary>The bindings of one asset class.</summary>
+/// <param name="ReadsResolvedTerms">
+/// Whether the class reads its keys from the profile-resolved terms document rather than the root.
+/// </param>
+public sealed record SecurityClassCodecBinding(
+    string AssetClass,
+    bool ReadsResolvedTerms,
+    IReadOnlyList<SecurityTermBinding> Members);
+
+/// <summary>
+/// The single statement of which flat key carries which member of a per-class record, for the
+/// classes whose flat codec is generated (ADR-027 stage 3). Both codec arms are generated from
+/// this table: the decode arm in <c>SecurityMasterMapping.GeneratedDecode.cs</c> and the writer arm
+/// in <c>Interop.SecurityMaster.GeneratedWriter.fs</c>. Neither file is edited by hand;
+/// <c>SecurityFlatCodecGenerationTests</c> regenerates both and fails when the committed source
+/// differs.
+/// <para>
+/// A member with no row is one the class's flat row does not carry, and decodes as absent. Key
+/// types and requiredness are the schema's (<see cref="SecurityAssetTermsSchema"/>); a row names
+/// only what the schema does not say: the member, the reader's tolerance, and the few values a
+/// class fixes or derives.
+/// </para>
+/// </summary>
+public static class SecurityAssetTermsCodecBindings
+{
+    private static SecurityTermBinding B(string path, string key, SecurityTermRead read, string? via = null)
+        => new(path, key, read, WriteVia: via);
+
+    /// <summary>A member the decode fixes or derives; nothing is written for it.</summary>
+    private static SecurityTermBinding Fixed(string path, string decodeExpression)
+        => new(path, null, null, decodeExpression);
+
+    /// <summary>A second member read from a key another row writes.</summary>
+    private static SecurityTermBinding Also(string path, string key, SecurityTermRead read)
+        => new(path, key, read, DecodeOnly: true);
+
+    private static SecurityClassCodecBinding Class(string assetClass, params SecurityTermBinding[] members)
+        => new(assetClass, false, members);
+
+    private static SecurityClassCodecBinding ResolvedClass(string assetClass, params SecurityTermBinding[] members)
+        => new(assetClass, true, members);
+
+    /// <summary>The generated classes, in catalog order.</summary>
+    public static IReadOnlyList<SecurityClassCodecBinding> Classes { get; } =
+    [
+        Class("Option",
+            B("Dates.MaturityDate", "expiry", SecurityTermRead.RequiredDate, via: "Expiry"),
+            B("ListingDetail.OptChainId", "optChainId", SecurityTermRead.OptionalString),
+            B("ListingDetail.SettlementType", "settlementType", SecurityTermRead.OptionalString),
+            B("ListingDetail.IsAdjusted", "isAdjusted", SecurityTermRead.BooleanDefaultFalse),
+            B("ListingDetail.LastTradingDt", "lastTradingDt", SecurityTermRead.OptionalDate),
+            B("Exercise.OptionRight", "putCall", SecurityTermRead.RequiredString),
+            B("Exercise.StrikePrice", "strike", SecurityTermRead.RequiredDecimal),
+            new("Exercise.ExerciseStyle", "exerciseStyle", null,
+                DecodeExpression: "CanonicalExerciseStyle(ParseExerciseStyle(bound.OptionalString(\"exerciseStyle\")))"),
+            B("Exercise.UnderlyingSecurityId", "underlyingId", SecurityTermRead.RequiredSecurityId),
+            B("TradingParameters.ContractMultiplier", "multiplier", SecurityTermRead.RequiredDecimal)),
+        Class("Future",
+            B("Dates.MaturityDate", "expiry", SecurityTermRead.RequiredDate, via: "Expiry"),
+            B("ListingDetail.SettlementType", "settlementType", SecurityTermRead.OptionalString),
+            B("ListingDetail.LastTradingDt", "lastTradingDt", SecurityTermRead.OptionalDate),
+            B("ListingDetail.RootSymbol", "rootSymbol", SecurityTermRead.RequiredString),
+            B("ListingDetail.ContractMonth", "contractMonth", SecurityTermRead.RequiredString),
+            B("ListingDetail.FirstNoticeDt", "firstNoticeDt", SecurityTermRead.OptionalDate),
+            B("ListingDetail.DeliveryMonthDt", "deliveryMonthDt", SecurityTermRead.OptionalDate),
+            B("ListingDetail.DeliveryLocationCode", "deliveryLocationCode", SecurityTermRead.OptionalString),
+            B("ListingDetail.IsRollTarget", "isRollTarget", SecurityTermRead.BooleanDefaultFalse),
+            B("ListingDetail.RollWindowDays", "rollWindowDays", SecurityTermRead.OptionalInt),
+            B("TradingParameters.ContractMultiplier", "multiplier", SecurityTermRead.RequiredDecimal)),
+        Class("FxSpot",
+            B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString)),
+        Class("MoneyMarketFund",
+            B("FundTerms.FundFamily", "fundFamily", SecurityTermRead.OptionalString),
+            B("FundTerms.WeightedAverageMaturityDays", "weightedAverageMaturityDays", SecurityTermRead.OptionalInt),
+            B("FundTerms.SweepEligible", "sweepEligible", SecurityTermRead.BooleanDefaultFalse),
+            B("FundTerms.LiquidityFeeEligible", "liquidityFeeEligible", SecurityTermRead.BooleanDefaultFalse)),
+        Class("TreasuryBill",
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
+            B("Auction.AuctionDate", "auctionDate", SecurityTermRead.OptionalDate),
+            Fixed("IssuerTerms.IssuerName", "ToOption(\"US Treasury\")"),
+            B("IssuerTerms.IssuerProgram", "cusip", SecurityTermRead.OptionalString),
+            Fixed("IssuerTerms.IssuerCountry", "ToOption(\"US\")"),
+            B("DiscountTerms.DiscountRate", "discountRate", SecurityTermRead.OptionalDecimal)),
+        Class("Repo",
+            B("FinancingTerms.Counterparty", "counterparty", SecurityTermRead.RequiredString, via: "Counterparty"),
+            B("FinancingTerms.CollateralType", "collateralType", SecurityTermRead.OptionalString),
+            B("FinancingTerms.Haircut", "haircut", SecurityTermRead.OptionalDecimal),
+            B("FinancingTerms.OpenDate", "startDate", SecurityTermRead.RequiredDate, via: "StartDate"),
+            B("FinancingTerms.CloseDate", "endDate", SecurityTermRead.RequiredDate, via: "EndDate"),
+            B("DiscountTerms.YieldRate", "repoRate", SecurityTermRead.OptionalDecimal)),
+        Class("OtherSecurity",
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.OptionalDate),
+            B("ClassificationDetail.Category", "category", SecurityTermRead.RequiredString),
+            B("ClassificationDetail.SubType", "subType", SecurityTermRead.OptionalString),
+            B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.OptionalString),
+            B("IssuerTerms.IssuerProgram", "settlementType", SecurityTermRead.OptionalString)),
+        ResolvedClass("PrivateFundInterest",
+            B("PrivateAssetValuation.Vintage", "vintage", SecurityTermRead.RequiredInt),
+            B("PrivateAssetValuation.NavDate", "navDate", SecurityTermRead.RequiredDate),
+            B("PrivateAssetValuation.Lockup", "lockup", SecurityTermRead.OptionalString),
+            B("Notional.CommittedAmount", "commitment", SecurityTermRead.RequiredDecimal),
+            B("Notional.FundedAmount", "fundedAmount", SecurityTermRead.OptionalDecimal),
+            B("Notional.UnfundedAmount", "unfundedAmount", SecurityTermRead.OptionalDecimal),
+            B("IssuerTerms.IssuerName", "gpSponsor", SecurityTermRead.RequiredString, via: "GpSponsor"),
+            B("IssuerTerms.IssuerProgram", "strategy", SecurityTermRead.RequiredString, via: "Strategy")),
+        ResolvedClass("PrivateCompanyEquity",
+            B("Capital.ShareClass", "shareClass", SecurityTermRead.RequiredString, via: "ShareClass"),
+            B("PrivateAssetValuation.OwnershipPercent", "ownershipPercent", SecurityTermRead.OptionalDecimal),
+            B("PrivateAssetValuation.CostBasis", "costBasis", SecurityTermRead.RequiredDecimal),
+            B("PrivateAssetValuation.LatestValuation", "latestValuation", SecurityTermRead.OptionalDecimal),
+            B("PrivateAssetValuation.TransferRestrictions", "transferRestrictions", SecurityTermRead.OptionalString),
+            B("IssuerTerms.IssuerName", "issuer", SecurityTermRead.RequiredString, via: "Issuer"),
+            B("IssuerTerms.IssuerProgram", "round", SecurityTermRead.RequiredString, via: "Round")),
+        ResolvedClass("RealEstateHolding",
+            B("PrivateAssetValuation.OwnershipPercent", "ownershipPercent", SecurityTermRead.RequiredDecimal, via: "PrivateAssetValuation.OwnershipPercent"),
+            B("PrivateAssetValuation.AddressOrMarket", "addressOrMarket", SecurityTermRead.RequiredString),
+            B("PrivateAssetValuation.AppraisalValue", "appraisalValue", SecurityTermRead.RequiredDecimal),
+            B("PrivateAssetValuation.ValuationDate", "valuationDate", SecurityTermRead.RequiredDate),
+            B("PrivateAssetValuation.DebtStack", "debtStack", SecurityTermRead.OptionalString),
+            B("IssuerTerms.IssuerName", "sponsor", SecurityTermRead.OptionalString),
+            B("IssuerTerms.IssuerProgram", "propertyType", SecurityTermRead.RequiredString, via: "PropertyType"),
+            Fixed("IssuerTerms.IssuerSector", "ToOption(\"RealEstate\")")),
+        Class("Commodity",
+            B("CommodityContract.CommodityType", "commodityType", SecurityTermRead.RequiredString),
+            B("CommodityContract.Denomination", "denomination", SecurityTermRead.OptionalString),
+            B("CommodityContract.ContractSize", "contractSize", SecurityTermRead.OptionalDecimal)),
+        Class("CryptoCurrency",
+            B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString),
+            B("DigitalAsset.Network", "network", SecurityTermRead.OptionalString)),
+        Class("Cfd",
+            B("UnderlyingExposure.UnderlyingAssetClass", "underlyingAssetClass", SecurityTermRead.RequiredString),
+            B("UnderlyingExposure.UnderlyingDescription", "underlyingDescription", SecurityTermRead.OptionalString),
+            B("UnderlyingExposure.Leverage", "leverage", SecurityTermRead.OptionalDecimal)),
+        Class("Warrant",
+            B("Dates.MaturityDate", "expiry", SecurityTermRead.OptionalDate),
+            B("Exercise.OptionRight", "warrantType", SecurityTermRead.RequiredString),
+            B("Exercise.StrikePrice", "strike", SecurityTermRead.OptionalDecimal),
+            B("Exercise.UnderlyingSecurityId", "underlyingId", SecurityTermRead.RequiredSecurityId),
+            B("TradingParameters.ContractMultiplier", "multiplier", SecurityTermRead.OptionalDecimal)),
+        Class("FxForward",
+            B("Dates.EffectiveDate", "tradeDate", SecurityTermRead.StrictDate),
+            B("Dates.MaturityDate", "valueDate", SecurityTermRead.RequiredDate, via: "ValueDate"),
+            B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.ForwardRate", "forwardRate", SecurityTermRead.StrictDecimal),
+            B("Notional.Notional", "notional", SecurityTermRead.StrictDecimal),
+            B("Settlement.SettlementType", "settlementType", SecurityTermRead.ConventionString)),
+        Class("NonDeliverableForward",
+            B("Dates.EffectiveDate", "fixingDate", SecurityTermRead.RequiredDate, via: "FixingDate"),
+            B("Dates.MaturityDate", "valueDate", SecurityTermRead.RequiredDate, via: "ValueDate"),
+            B("CurrencyPair.BaseCurrency", "baseCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.QuoteCurrency", "quoteCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.SettlementCurrency", "settlementCurrency", SecurityTermRead.RequiredString),
+            B("CurrencyPair.ForwardRate", "forwardRate", SecurityTermRead.StrictDecimal),
+            B("Notional.Notional", "notional", SecurityTermRead.StrictDecimal),
+            B("ReferenceDataSource.FixingSource", "fixingSource", SecurityTermRead.ConventionString)),
+        Class("CreditDefaultSwap",
+            B("Dates.EffectiveDate", "effectiveDate", SecurityTermRead.RequiredDate, via: "EffectiveDate"),
+            Also("Dates.IssueDate", "effectiveDate", SecurityTermRead.RequiredDate),
+            B("Dates.MaturityDate", "maturityDate", SecurityTermRead.RequiredDate, via: "MaturityDate"),
+            B("CreditProtection.ReferenceEntity", "referenceEntity", SecurityTermRead.RequiredString),
+            B("CreditProtection.ReferenceObligation", "referenceObligation", SecurityTermRead.ConventionString),
+            B("CreditProtection.ProtectionSide", "protectionSide", SecurityTermRead.RequiredString),
+            B("CreditProtection.Seniority", "seniority", SecurityTermRead.ConventionString),
+            B("CreditProtection.RestructuringClause", "restructuringClause", SecurityTermRead.ConventionString),
+            B("CreditProtection.UpfrontPoints", "upfrontPoints", SecurityTermRead.StrictDecimal),
+            B("CreditProtection.RecoveryRateAssumption", "recoveryRateAssumption", SecurityTermRead.StrictDecimal),
+            B("CreditProtection.IndexName", "indexName", SecurityTermRead.ConventionString),
+            B("Notional.Notional", "notional", SecurityTermRead.RequiredDecimal),
+            B("ContractualRate.FixedCouponBps", "fixedCouponBps", SecurityTermRead.RequiredDecimal, via: "FixedCouponBps"),
+            B("ContractualRate.PaymentFrequency", "paymentFrequency", SecurityTermRead.ConventionString),
+            B("ContractualRate.DayCount", "dayCount", SecurityTermRead.DayCount)),
+        Class("Swaption",
+            B("Dates.EffectiveDate", "underlyingEffectiveDate", SecurityTermRead.StrictDate),
+            B("Dates.MaturityDate", "expiry", SecurityTermRead.RequiredDate, via: "Expiry"),
+            B("Exercise.OptionRight", "payerReceiver", SecurityTermRead.RequiredString),
+            B("Exercise.StrikeRate", "strikeRate", SecurityTermRead.RequiredDecimal),
+            B("Exercise.ExerciseStyle", "exerciseStyle", SecurityTermRead.ConventionString),
+            B("Notional.Notional", "notional", SecurityTermRead.RequiredDecimal),
+            B("UnderlyingSwap.MaturityDate", "underlyingMaturityDate", SecurityTermRead.RequiredDate),
+            B("UnderlyingSwap.FloatingIndex", "floatingIndex", SecurityTermRead.ConventionString),
+            B("UnderlyingSwap.FixedLegPaymentFrequency", "fixedLegPaymentFrequency", SecurityTermRead.ConventionString),
+            B("UnderlyingSwap.FixedLegDayCount", "fixedLegDayCount", SecurityTermRead.DayCount),
+            B("Settlement.SettlementType", "settlementType", SecurityTermRead.ConventionString)),
+        Class("CapFloor",
+            B("Dates.EffectiveDate", "effectiveDate", SecurityTermRead.RequiredDate, via: "EffectiveDate"),
+            B("Dates.MaturityDate", "maturityDate", SecurityTermRead.RequiredDate, via: "MaturityDate"),
+            B("Exercise.OptionRight", "capFloorType", SecurityTermRead.RequiredString),
+            B("Exercise.PremiumAmount", "premiumAmount", SecurityTermRead.StrictDecimal),
+            B("FloatingRate.ReferenceIndex", "referenceIndex", SecurityTermRead.RequiredString),
+            B("FloatingRate.ResetFrequency", "resetFrequency", SecurityTermRead.ConventionString),
+            B("FloatingRate.FloorRate", "floorStrike", SecurityTermRead.StrictDecimal),
+            B("FloatingRate.CapRate", "capStrike", SecurityTermRead.StrictDecimal),
+            B("Notional.Notional", "notional", SecurityTermRead.RequiredDecimal),
+            B("ContractualRate.DayCount", "dayCount", SecurityTermRead.DayCount)),
+        Class("StructuredNote",
+            B("Dates.IssueDate", "issueDate", SecurityTermRead.StrictDate),
+            B("Dates.MaturityDate", "maturity", SecurityTermRead.RequiredDate, via: "Maturity"),
+            B("StructuredPayoff.UnderlyingDescription", "underlyingDescription", SecurityTermRead.RequiredString),
+            B("StructuredPayoff.PrincipalProtectionPct", "principalProtectionPct", SecurityTermRead.StrictDecimal),
+            B("StructuredPayoff.ParticipationRate", "participationRate", SecurityTermRead.StrictDecimal),
+            B("StructuredPayoff.ReturnCap", "returnCap", SecurityTermRead.StrictDecimal),
+            B("StructuredPayoff.BarrierLevel", "barrierLevel", SecurityTermRead.StrictDecimal),
+            B("Notional.Denomination", "denomination", SecurityTermRead.StrictDecimal),
+            B("IssuerTerms.IssuerName", "issuerName", SecurityTermRead.RequiredString, via: "IssuerName"),
+            B("ContractualRate.CouponRate", "couponRate", SecurityTermRead.StrictDecimal),
+            B("ContractualRate.PaymentFrequency", "paymentFrequency", SecurityTermRead.ConventionString)),
+    ];
+
+    /// <summary>The generated classes by name.</summary>
+    public static IReadOnlyDictionary<string, SecurityClassCodecBinding> ByAssetClass { get; } =
+        Classes.ToDictionary(static binding => binding.AssetClass, StringComparer.Ordinal);
+}

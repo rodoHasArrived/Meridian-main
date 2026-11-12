@@ -574,6 +574,9 @@ public sealed class StatementImportServiceTests : IDisposable
             var result = await _service.CommitAsync(CommitRequest(document));
             var evidencePath = Path.Combine(_root, Path.GetDirectoryName(result.RetainedCanonicalPath)!, "canonical-evidence.json");
             (await File.ReadAllTextAsync(evidencePath)).Should().Contain("GBP");
+            // Margin views scope retained evidence by the fund account the import was checked for.
+            (await new StatementCanonicalEvidenceReader(_root).ListAsync()).Should().ContainSingle()
+                .Which.Artifact.FundAccountId.Should().Be("FUND-A");
             return;
         }
 
@@ -976,6 +979,21 @@ public sealed class StatementImportServiceTests : IDisposable
         second.CaseIds.Should().Equal(first.CaseIds);
         second.ReconciliationCaseRoutes.Should().Equal(first.ReconciliationCaseRoutes);
         second.ReconciliationCaseLinks.Should().BeEquivalentTo(first.ReconciliationCaseLinks);
+    }
+
+    [Fact]
+    public async Task Commit_SameStatementForAnotherFundAccount_KeepsEachImportsRecordedOwner()
+    {
+        var document = FixtureDocument("csv-mixed-kinds.csv");
+
+        var first = await _service.CommitAsync(CommitRequest(document, fundAccountId: "FUND-OWNER-1"));
+        var second = await _service.CommitAsync(CommitRequest(document, fundAccountId: "FUND-OWNER-2"));
+
+        first.RetainedCanonicalPath.Should().NotBe(second.RetainedCanonicalPath,
+            "the evidence sidecar records its owning fund account, so another owner must not overwrite it");
+        var owners = (await new StatementCanonicalEvidenceReader(_root).ListAsync())
+            .Select(static envelope => envelope.Artifact.FundAccountId);
+        owners.Should().BeEquivalentTo(["FUND-OWNER-1", "FUND-OWNER-2"]);
     }
 
     [Fact]

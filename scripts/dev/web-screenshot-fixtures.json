@@ -1711,6 +1711,19 @@
         "accountingBasis": "Primary",
         "accountingPolicyId": "fund-alpha-gaap",
         "accountingPolicyVersion": "2026.1"
+      },
+      {
+        "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+        "fundProfileId": "fund-a",
+        "fundStructureNodeId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+        "fundStructureNodeKind": "Entity",
+        "displayName": "Seeded Fund A primary book",
+        "baseCurrency": "USD",
+        "createdAt": "2026-11-01T00:00:00Z",
+        "updatedAt": "2026-11-01T00:00:00Z",
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "policy-a",
+        "accountingPolicyVersion": "1"
       }
     ],
     "/api/ledger/periods": [
@@ -5452,7 +5465,7 @@
           "fromGateStatus": "NotStarted",
           "toGateStatus": "InProgress",
           "actor": "ops-user",
-          "rationale": "Open monthly close lane.",
+          "rationale": "Open monthly close.",
           "correlationId": "dev-continuity",
           "references": [],
           "previousHash": null,
@@ -6221,7 +6234,7 @@
             "fromGateStatus": "NotStarted",
             "toGateStatus": "InProgress",
             "actor": "ops-user",
-            "rationale": "Open monthly close lane.",
+            "rationale": "Open monthly close.",
             "correlationId": "dev-continuity",
             "references": [],
             "previousHash": null,
@@ -6878,6 +6891,56 @@
           }
         ]
       }
+    },
+    "/api/ledger/private-capital/workbench": {
+      "scope": {
+        "tenantId": "tenant-a",
+        "companyId": "company-a",
+        "entityId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+        "fundProfileId": "fund-a",
+        "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+        "currency": "USD"
+      },
+      "commitments": [
+        {
+          "commitmentId": "commitment-a",
+          "scope": {
+            "tenantId": "tenant-a",
+            "companyId": "company-a",
+            "entityId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+            "fundProfileId": "fund-a",
+            "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+            "currency": "USD"
+          },
+          "revision": 1,
+          "investorId": "investor-a",
+          "capitalAccountId": "capital-a",
+          "totalCommitment": "1000000.00",
+          "commitmentDate": "2026-01-01",
+          "effectiveFrom": "2026-01-01",
+          "investmentPeriodEndDate": null,
+          "isActive": true,
+          "approvalStatus": 1,
+          "evidenceLinks": [
+            "evidence://evidence-vault/ev-0123456789abcdef01234567"
+          ],
+          "createdBy": "preparer",
+          "createdAtUtc": "2026-11-01T00:00:00Z",
+          "approvedBy": "reviewer",
+          "approvedAtUtc": "2026-11-02T00:00:00Z",
+          "calledAmount": "0.00",
+          "fundedAmount": "0.00",
+          "uncalledAmount": "1000000.00"
+        }
+      ],
+      "calls": [],
+      "receipts": [],
+      "notices": [],
+      "generatedAtUtc": "2026-11-03T00:00:00Z"
+    },
+    "/api/workstation/operator/scope-preference": {
+      "defaultScope": null,
+      "updatedAt": null
     }
   }
 }

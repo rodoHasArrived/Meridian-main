@@ -1,3 +1,4 @@
+import type { ProviderIntegrationIdentityDecision } from "./provider-integration-identity";
 import type {
   MetricSnapshot,
   ProviderCredentialSource,
@@ -5,10 +6,12 @@ import type {
   ProviderIntegrationManifestProvenance,
   ProviderIntegrationManifestReference,
   ProviderIntegrationReplayMode,
+  SecurityMasterDeclaredExerciseOutcome,
   SecurityMasterFactorPoint,
   SecurityMasterScheduleEvent,
   SecurityMasterScheduleProvenance,
   SecurityMasterScheduleSummary,
+  SecurityMasterScheduleBlocker,
 } from "../types";
 
 export interface SecurityMasterScheduleBook {
@@ -24,6 +27,7 @@ export interface SecurityMasterScheduleBook {
   events: SecurityMasterScheduleEvent[];
   factorHistory: SecurityMasterFactorPoint[];
   provenanceHistory: SecurityMasterScheduleProvenance[];
+  declaredExercise?: SecurityMasterDeclaredExerciseOutcome | null;
 }
 
 export interface SecurityMasterLotModel {
@@ -116,6 +120,19 @@ export interface SecurityMasterTrustSnapshot {
   scheduleBook?: SecurityMasterScheduleBook | null;
   openLotReadModel?: SecurityMasterOpenLotReadModel | null;
   corporateActionDescriptors?: CorporateActionDescriptor[] | null;
+  governance?: SecurityMasterGovernance | null;
+  cashFlowBlocker?: SecurityMasterScheduleBlocker | null;
+}
+
+/** Effective host requirements; absent means unavailable, never a Standard-profile assumption. */
+export interface SecurityMasterGovernance {
+  profile: string;
+  profileSource: string;
+  isProfileLatched: boolean;
+  requireGovernedTermAmendments: boolean;
+  requireIndependentReviewer: boolean;
+  requireIndependentProfileApprover: boolean;
+  contradictedKeys: string[];
 }
 
 export interface OperatorOverridesDto {
@@ -418,6 +435,7 @@ export type ProviderIntegrationIdentityResolutionStatus =
   | "ReviewRequired"
   | "MissingIdentifier"
   | "NotFound"
+  | "Conflict"
   | "NotConfigured";
 
 export type ProviderIntegrationPromotionReadinessStatus =
@@ -730,6 +748,9 @@ export interface ProviderIntegrationStagingIdentityResolutionRow {
   securityRoute?: string | null;
   securityCandidates: ProviderIntegrationIdentityCandidate[];
   issues: ProviderIntegrationValidationIssue[];
+  evidenceHash?: string | null;
+  hasIdentifierConflict?: boolean;
+  operatorResolution?: ProviderIntegrationIdentityDecision | null;
 }
 
 export interface ProviderIntegrationStagingIdentityResolutionPreview {
@@ -898,6 +919,7 @@ export interface ProviderIntegrationRunDueSyncRequest {
 }
 
 export interface ProviderIntegrationDryRunResult {
+  mappedRecordPreviews?: unknown[];
   syncRunId: string;
   rawPayloadId: string;
   capability: ProviderIntegrationCapabilityKind;
@@ -1430,6 +1452,27 @@ export interface ProviderInstrumentCapabilityRow {
   declaredInstrumentTypes: string[];
   surfaces: ProviderCapabilitySurface;
   cells: ProviderInstrumentCapabilityCell[];
+  fixedIncomeTasks?: ProviderFixedIncomeTaskCapability[] | null;
+}
+
+export interface ProviderFixedIncomeTaskCapability {
+  task: string;
+  adapterSupport: "AdapterDeclared" | "Unsupported";
+  detail: string;
+  connections: ProviderFixedIncomeConnectionEvidence[];
+}
+
+export interface ProviderFixedIncomeConnectionEvidence {
+  connectionId: string;
+  displayName: string;
+  enabled: boolean;
+  configurationState: string;
+  entitlementState: string;
+  freshnessState: string;
+  verificationState: string;
+  observationAsOf: string | null;
+  verifiedAt: string | null;
+  evidence: { kind: string; detail: string; observedAt?: string | null }[];
 }
 
 export interface ProviderDiscoveryFailure {
@@ -1734,6 +1777,12 @@ export interface SecurityMasterQualityReport {
   securitiesScanned: number;
   violationCount: number;
   violations: SecurityMasterQualityViolation[];
+  /**
+   * Stored rows (active and inactive) whose asset-specific terms declare no termsFormat tag —
+   * the ADR-024 decision-5 retirement gate for the payload shape rule. Absent on reports
+   * persisted before the gauge existed.
+   */
+  untaggedTermsPayloadCount?: number | null;
 }
 
 // --- Security master coverage drafts ---

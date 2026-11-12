@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 250,
-    "warning": 250
+    "total": 252,
+    "warning": 252
   },
   "failed": false,
   "findings": [
@@ -724,6 +724,26 @@
       },
       "message": "Business table money_market.mmf_rebuild_checkpoints does not have a table comment.",
       "object": "money_market.mmf_rebuild_checkpoints",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "item_metadata"
+      },
+      "message": "Business table operator_triage.item_metadata does not have a table comment.",
+      "object": "operator_triage.item_metadata",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "operator_triage",
+        "table": "operator_triage_schema_migrations"
+      },
+      "message": "Business table operator_triage.operator_triage_schema_migrations does not have a table comment.",
+      "object": "operator_triage.operator_triage_schema_migrations",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2753,5 +2773,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "d45f8bf8166ca7663e7dd237ef113a5a7ce736fb3c3e92d0655814742e4788a9"
+  "fingerprint": "0ef980e42e3d404799e102e5fe544dd6cdd7fb583b6f855bf87ae06a4772b8c9"
 }

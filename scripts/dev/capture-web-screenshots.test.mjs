@@ -7,7 +7,12 @@ import path from "node:path";
 import { test } from "node:test";
 import {
   captureRouteWithRetries,
+  collectAllowedContentIssueKinds,
+  describeCaptureContentIssues,
   finalizeCaptureRun,
+  findCaptureContentIssues,
+  isSlugIdentifier,
+  partitionCaptureContentIssues,
   waitForServer,
   writeCaptureManifest
 } from "./capture-web-screenshots.mjs";
@@ -188,4 +193,129 @@ test("readiness reports spawn errors and removes its child listeners", async (t)
   await assert.rejects(waitForServer(url, 100, child, []), /Dev server could not start: spawn npm ENOENT/);
   assert.equal(child.listenerCount("exit"), 0);
   assert.equal(child.listenerCount("error"), 0);
+});
+
+test("rendered identifiers are reported once each, whatever their case", () => {
+  const guid = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+  const issues = findCaptureContentIssues(
+    `Selected 2026-05 / ${guid}\nFund account ${guid.toUpperCase()}\nBook 00000000-0000-0000-0000-0000000000aa`
+  );
+  assert.deepEqual(issues, [
+    { kind: "opaque-identifier", excerpt: guid },
+    { kind: "opaque-identifier", excerpt: "00000000-0000-0000-0000-0000000000aa" }
+  ]);
+  // Readable codes, dates and partial hex are not identifiers.
+  assert.deepEqual(findCaptureContentIssues("Period 2026-05 · fund-alpha · deadbeef-cafe"), []);
+});
+
+test("request paths and words about the system are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues(
+      "Recurring queue unavailable: Request failed for /api/ledger/journal-automation/recurring/occurrences?fundProfileId=x (500)\n"
+      + "Strategy Lane · PlotTool\nNo payload is available.\nLegacy pack mutations are retired.\nCaller-visible Reporting records"
+    ),
+    [
+      { kind: "api-path", excerpt: "/api/ledger/journal-automation/recurring/occurrences?fundProfileId=x" },
+      { kind: "internal-term", excerpt: "Lane" },
+      { kind: "internal-term", excerpt: "payload" },
+      { kind: "internal-term", excerpt: "mutations" },
+      { kind: "internal-term", excerpt: "Caller-visible" }
+    ]
+  );
+  // Words that merely contain a banned term, and a path that is not a request path, are fine.
+  assert.deepEqual(findCaptureContentIssues("Planet · explanation · permutation · Rapid API usage · api/keys"), []);
+});
+
+test("slug-shaped record identifiers are reported and ordinary compounds are not", () => {
+  for (const slug of ["run-dev-1", "default-fund", "entity-fund-alpha", "sec-dev-001", "investor-anchor-lp", "cfo-1"]) {
+    assert.equal(isSlugIdentifier(slug), true, slug);
+  }
+  for (const compound of [
+    "as-of", "read-only", "point-in-time", "end-of-day", "fund-level", "account-period", "tier-1", "phase-2",
+    "rule-144a", "mark-to-market", "strat-mean-reversion", "fund"
+  ]) {
+    assert.equal(isSlugIdentifier(compound), false, compound);
+  }
+  assert.deepEqual(
+    findCaptureContentIssues("Fund: default-fund, Entity: entity-fund-alpha as-of 2026-06-30 (read-only), run run-dev-1"),
+    [
+      { kind: "slug-identifier", excerpt: "default-fund" },
+      { kind: "slug-identifier", excerpt: "entity-fund-alpha" },
+      { kind: "slug-identifier", excerpt: "run-dev-1" }
+    ]
+  );
+  // Dates, file names, addresses and upper-case codes are not slugs.
+  assert.deepEqual(findCaptureContentIssues("2026-06-30 · notes-2026.pdf · ops-1@example.com · PO-1 · FL-1"), []);
+});
+
+test("a disabled primary action without a reason is reported from the DOM probe", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Submit approval", { unexplainedDisabledActions: ["Submit approval", "Submit approval", ""] }),
+    [
+      { kind: "disabled-primary-without-reason", excerpt: "Submit approval" },
+      { kind: "disabled-primary-without-reason", excerpt: "(unlabelled button)" }
+    ]
+  );
+  const excused = partitionCaptureContentIssues("", {
+    allowedContentIssues: [{ kind: "disabled-primary-without-reason", reason: "Reason is shown inline beside the button." }]
+  }, { unexplainedDisabledActions: ["Add symbol set"] });
+  assert.equal(excused.blocking.length, 0);
+  assert.equal(excused.allowed.length, 1);
+});
+
+test("a status bar that contradicts the page's freshness is reported", () => {
+  const contradiction = 'status bar "Sync up to date Workspace Portfolio" vs page "Freshness Needs review Stale · 187d ago"';
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { statusContradictions: [contradiction] }),
+    [{ kind: "status-contradiction", excerpt: contradiction }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { statusContradictions: [] }), []);
+});
+
+test("a count of one before a plural noun is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("1 ROWS\n1 templates · 2 jobs\nShowing 1 packages.\n(1 checks)").map((issue) => issue.excerpt),
+    ["1 ROWS", "1 templates", "1 packages", "1 checks"]
+  );
+});
+
+test("correct singulars, larger counts and verbs are not reported as plural mistakes", () => {
+  const clean = [
+    "1 row", "11 rows", "21 rows", "0.1 rows", "$1 fees", "2026-01-1 runs", "1 of 4 gates passed",
+    "Slice 1 uses the configured provider", "Step 1 needs review", "1 business day", "1 status",
+    "1 basis", "1 series", "1 provider blocks dependent workflows", "Tier 1 requires approval",
+    // A plural-form modifier inside a singular phrase is correct.
+    "1 operations continuity workflow loaded.", "1 securities account", "1 sales order",
+    // A ratio counts the whole set.
+    "1 of 1 loaded breaks", "Showing 1 of 1 breaks", "Step 1 fails."
+  ].join("\n");
+  assert.deepEqual(findCaptureContentIssues(clean), []);
+  assert.deepEqual(findCaptureContentIssues(""), []);
+  assert.deepEqual(findCaptureContentIssues(null), []);
+});
+
+test("a capture is only excused from a content rule it names with a reason", () => {
+  const text = "1 rows · 53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+  assert.equal(partitionCaptureContentIssues(text, { name: "plain" }).blocking.length, 2);
+
+  const excused = partitionCaptureContentIssues(text, {
+    name: "excused",
+    allowedContentIssues: [{ kind: "opaque-identifier", reason: "Contract exposes no display name yet." }]
+  });
+  assert.deepEqual(excused.allowed.map((issue) => issue.kind), ["opaque-identifier"]);
+  assert.deepEqual(excused.blocking.map((issue) => issue.kind), ["singular-count-plural-noun"]);
+
+  // An exception with no reason, or for an unknown rule, excuses nothing.
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind: "opaque-identifier" }] }).size, 0);
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind: "typo", reason: "x" }] }).size, 0);
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: "opaque-identifier" }).size, 0);
+});
+
+test("the content-issue failure names the route, the excerpts and the remedy", () => {
+  const issues = Array.from({ length: 7 }, (_, index) => ({ kind: "singular-count-plural-noun", excerpt: `1 thing${index}s` }));
+  const message = describeCaptureContentIssues("web-example", issues);
+  assert.match(message, /^Capture web-example renders 7 operator-copy issue\(s\)/);
+  assert.match(message, /singular-count-plural-noun "1 thing0s"/);
+  assert.match(message, /and 2 more/);
+  assert.match(message, /allowedContentIssues/);
 });

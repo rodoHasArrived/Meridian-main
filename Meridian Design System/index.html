@@ -3,185 +3,114 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meridian Design System</title>
-<link rel="stylesheet" href="colors_and_type.css">
+<title>Meridian Design System — Programmed Institutionalism</title>
+<link rel="stylesheet" href="styles.css">
 <style>
-  body { margin: 0; font-family: var(--font-sans); color: var(--fg); background: var(--bg); background-image: var(--bg-ambient); }
-  .shell { max-width: 1320px; margin: 0 auto; padding: 28px 24px 72px; }
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border-color); }
-  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .brand img { width: 34px; height: 34px; }
-  .brand h1 { font-family: var(--font-display); font-weight: 600; font-size: 18px; letter-spacing: 0; margin: 0; color: #FFFFFF; }
-  .brand .sub { font-family: var(--font-mono); font-size: 10px; color: var(--cyan-primary); text-transform: uppercase; letter-spacing: 0.14em; margin-top: 2px; }
-  .top .meta { font-family: var(--font-mono); font-size: 10.5px; color: var(--fg-muted); text-align: right; line-height: 1.55; }
-  .top .meta .v { color: var(--cyan-primary); }
-
-  .hero { display: grid; grid-template-columns: minmax(0, .85fr) minmax(520px, 1.15fr); gap: 18px; align-items: stretch; margin-bottom: 30px; }
-  .hero-copy { border: 1px solid var(--border-color); border-radius: var(--radius-xl); background: #201D19; padding: 26px 28px; box-shadow: var(--shadow-workstation); display: flex; flex-direction: column; justify-content: space-between; min-height: 360px; }
-  .hero-copy .eyebrow { color: var(--cyan-primary); margin-bottom: 14px; }
-  .hero-copy .big { font-family: var(--font-display); font-weight: 600; font-size: 36px; line-height: 1.08; letter-spacing: 0; margin: 0 0 16px; color: #FFFFFF; }
-  .hero-copy .big em { color: var(--cyan-primary); font-style: normal; }
-  .hero-copy p { font-size: 13px; line-height: 1.65; color: #E3DED6; max-width: 58ch; margin: 0; }
-  .hero-copy .links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 22px; }
-  .link-chip { display: inline-flex; align-items: center; height: 28px; padding: 0 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); color: var(--fg); text-decoration: none; font-family: var(--font-mono); font-size: 10.5px; }
-  .link-chip.primary { border-color: rgba(217,138,100,0.45); background: rgba(217,138,100,0.10); color: var(--cyan-primary); }
-
-  .monitor { overflow: hidden; border: 1px solid var(--border-hi); border-radius: var(--radius-xl); background: #0C0B09; box-shadow: var(--shadow-float); }
-  .monitor img { display: block; width: 100%; height: 100%; min-height: 360px; object-fit: cover; object-position: 61% 44%; opacity: 0.95; }
-
-  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 30px; }
-  .stat { border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 12px 14px; background: #201D19; box-shadow: var(--shadow-panel); }
-  .stat .k { font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.14em; }
-  .stat .v { font-family: var(--font-mono); font-size: 22px; color: #FFFFFF; margin-top: 6px; font-variant-numeric: tabular-nums; letter-spacing: 0; }
-  .stat .v.p { color: var(--cyan-primary); }
-
-  h2.sec { font-family: var(--font-display); font-weight: 600; font-size: 13px; text-transform: uppercase; letter-spacing: 0.14em; color: #FFFFFF; margin: 36px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: baseline; }
-  h2.sec .idx { font-family: var(--font-mono); font-size: 11px; color: var(--cyan-primary); font-weight: 400; }
-
-  .docs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-  .docs a { display: block; padding: 15px; border: 1px solid var(--border-color); border-radius: var(--radius-md); text-decoration: none; background: #201D19; color: #FFFFFF; transition: border-color 150ms ease, background 150ms ease; }
-  .docs a:hover { border-color: var(--border-hi); background: #252119; }
-  .docs .n { font-family: var(--font-mono); font-size: 10px; color: var(--cyan-primary); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px; }
-  .docs .t { font-size: 13px; font-weight: 500; margin-bottom: 4px; color: #FFFFFF; }
-  .docs .d { font-size: 11px; color: var(--fg-muted); line-height: 1.55; }
-
-  .system { display: grid; grid-template-columns: 190px 1fr; gap: 24px; align-items: start; padding: 16px 0; border-bottom: 1px solid var(--border-color); }
-  .system:last-of-type { border-bottom: 0; }
-  .system .lead { font-family: var(--font-mono); font-size: 11px; color: #FFFFFF; text-transform: uppercase; letter-spacing: 0.14em; padding-top: 2px; font-weight: 500; }
-  .system .body { font-size: 13px; line-height: 1.65; color: #E3DED6; }
-  .system code { font-family: var(--font-mono); font-size: 11px; color: var(--cyan-primary); background: #100E0C; padding: 2px 6px; border: 1px solid var(--border-color); border-radius: 3px; }
-
-  .reference-board { margin-top: 0; }
-  .reference-card img.workstation { object-position: 61% 44%; }
-  .reference-card img.custody { object-position: 54% 48%; }
-  .reference-card img.guide { object-position: 44% 45%; }
-
-  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 10px; color: var(--fg-muted); display: flex; justify-content: space-between; gap: 12px; text-transform: uppercase; letter-spacing: 0.14em; }
-
-  @media (max-width: 1080px) {
-    .hero { grid-template-columns: 1fr; }
-    .monitor img { max-height: 460px; }
-    .docs, .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  }
-
-  @media (max-width: 680px) {
-    .shell { padding: 20px 14px 56px; }
-    .top, footer { flex-direction: column; align-items: flex-start; }
-    .top .meta { text-align: left; }
-    .hero-copy { min-height: auto; padding: 22px; }
-    .hero-copy .big { font-size: 28px; }
-    .docs, .stats, .system { grid-template-columns: 1fr; }
-  }
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--border-focus);text-decoration:none}a:hover{text-decoration:underline}
+.page{max-width:1080px;margin:0 auto;padding:0 32px 64px}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1080px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:14px}
+.masthead img{height:26px;width:auto}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.hero{background:var(--bg-medium);border-bottom:1px solid var(--border)}
+.hero .in{max-width:1080px;margin:0 auto;padding:56px 32px;display:flex;align-items:center;gap:48px}
+.hero img.mk{height:180px;width:auto;flex:none}
+.hero img.mk.dk{display:none}
+@media (prefers-color-scheme: dark){.hero img.mk.lt{display:none}.hero img.mk.dk{display:block}}
+:root[data-theme="dark"] .hero img.mk.lt{display:none}
+:root[data-theme="dark"] .hero img.mk.dk{display:block}
+:root[data-theme="light"] .hero img.mk.lt{display:block}
+:root[data-theme="light"] .hero img.mk.dk{display:none}
+.hero h1{font-family:var(--font-display);font-size:32px;line-height:40px;font-weight:600;color:var(--text-primary);margin:0 0 6px}
+.hero .sub{font-size:11px;font-weight:600;letter-spacing:.3em;color:var(--brand-axis);margin:0 0 16px}
+.hero p{max-width:56ch;margin:0;text-wrap:pretty}
+.hero .motto{margin-top:18px;display:flex;gap:24px;font-family:var(--font-data);font-size:11px;letter-spacing:.18em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:48px 0 4px;padding-top:24px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px}
+.swatches{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--border)}
+.swatches div{height:88px;padding:8px 10px;display:flex;flex-direction:column;justify-content:flex-end}
+.swatches .n{font-size:11px;font-weight:600}
+.swatches .h{font-family:var(--font-data);font-size:11px;opacity:.75}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--border);background:var(--bg-light)}
+.grid a{display:block;padding:16px 18px;border-right:1px solid var(--border-divider);border-bottom:1px solid var(--border-divider);color:inherit}
+.grid a:hover{background:var(--bg-hover)}
+.grid .n{font-family:var(--font-data);font-size:10px;letter-spacing:.08em;color:var(--text-muted);margin-bottom:4px}
+.grid .t{font-weight:600;color:var(--text-primary);margin-bottom:2px}
+.grid .d{font-size:12px;line-height:17px;color:var(--text-muted);text-wrap:pretty}
+.stats{display:flex;gap:0;border:1px solid var(--border);background:var(--bg-light)}
+.stats div{flex:1;padding:16px 18px;border-right:1px solid var(--border-divider)}
+.stats div:last-child{border-right:none}
+.stats .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary)}
+.stats .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+.type-row{background:var(--bg-light);border:1px solid var(--border);padding:20px 24px;display:flex;align-items:baseline;gap:32px;flex-wrap:wrap}
+.type-row .d1{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--text-primary)}
+.type-row .d2{font-family:var(--font-body);font-size:14px}
+.type-row .d3{font-family:var(--font-data);font-size:14px;font-variant-numeric:tabular-nums;color:var(--text-primary)}
 </style>
 </head>
-<body class="bg-app">
-  <div class="shell">
-    <div class="top">
-      <div class="brand">
-        <img src="assets/brand/meridian-mark.svg" alt="">
-        <div>
-          <h1>Meridian</h1>
-          <div class="sub">Design system · image-refined</div>
-        </div>
-      </div>
-      <div class="meta">
-        SOURCE · Meridian-main<br>
-        BUILD · <span class="v">MRD-DS-2.1.0</span> · 2026.04
-      </div>
-    </div>
-
-    <section class="hero">
-      <div class="hero-copy">
-        <div>
-          <div class="eyebrow">Operator workstation reference</div>
-          <h1 class="big">Dense financial workflows with <em>evidence-first</em> screens.</h1>
-          <p>Refined from the uploaded workstation, custody, reporting, charting, product-guide, and security-master references. Meridian keeps its warm-graphite/copper identity while adopting the best structural cues: masthead, left rail, compact filters, split workbenches, and selected-row detail.</p>
-        </div>
-        <div class="links">
-          <a class="link-chip primary" href="INSPIRATION_BRIEF.md">Inspiration brief</a>
-          <a class="link-chip" href="preview/institutional-workstation.html">Workstation preview</a>
-          <a class="link-chip" href="preview/reference-workbench.html">Reference workbench</a>
-          <a class="link-chip" href="preview/component-state-matrix.html">State matrix</a>
-          <a class="link-chip" href="colors_and_type.css">Token CSS</a>
-        </div>
-      </div>
-      <div class="monitor">
-        <img src="assets/brand/meridian-hero.svg" alt="Meridian workstation concept reference">
-      </div>
-    </section>
-
-    <div class="stats">
-      <div class="stat"><div class="k">Token file</div><div class="v p">v2.1</div></div>
-      <div class="stat"><div class="k">Workspaces</div><div class="v">7</div></div>
-      <div class="stat"><div class="k">Icon set</div><div class="v">47</div></div>
-      <div class="stat"><div class="k">Upload refs</div><div class="v">16</div></div>
-    </div>
-
-    <h2 class="sec"><span>Documentation</span><span class="idx">01 / 04</span></h2>
-    <div class="docs">
-      <a href="README.md"><div class="n">§0 · README</div><div class="t">Overview &amp; sources</div><div class="d">Product context, repo provenance, file map.</div></a>
-      <a href="INSPIRATION_BRIEF.md"><div class="n">§1 · BRIEF</div><div class="t">Uploaded image cues</div><div class="d">Workstation, custody, reporting, charting, and security-master patterns.</div></a>
-      <a href="CONTENT_FUNDAMENTALS.md"><div class="n">§2 · CONTENT</div><div class="t">Voice, tone, copy</div><div class="d">Operator-to-operator. Sentence case, no emoji.</div></a>
-      <a href="VISUAL_FOUNDATIONS.md"><div class="n">§3 · VISUAL</div><div class="t">Foundations</div><div class="d">Surfaces, borders, shadows, motion, layout.</div></a>
-    </div>
-
-    <h2 class="sec"><span>Reference Board</span><span class="idx">02 / 04</span></h2>
-    <div class="reference-board">
-      <div class="reference-card">
-        <img class="workstation" src="assets/brand/meridian-hero.svg" alt="Dark Meridian workstation reference">
-        <div class="body"><div class="k">Target mood</div><div class="t">Masthead, rail, KPI evidence</div><div class="d">Use the monitor-like shell and chart/table pairing; keep the brand and navigation Meridian-owned.</div></div>
-      </div>
-      <div class="reference-card">
-        <img class="custody" src="assets/brand/meridian-tile-256.png" alt="Custody positions density reference">
-        <div class="body"><div class="k">Institutional density</div><div class="t">Filters, row counts, detail panes</div><div class="d">Compact controls, high row count tables, selected records, and status windows inform the dense-table primitives.</div></div>
-      </div>
-      <div class="reference-card">
-        <img class="guide" src="assets/brand/meridian-tile.svg" alt="Product guide annotation reference">
-        <div class="body"><div class="k">Walkthroughs</div><div class="t">Task annotations stay in docs</div><div class="d">Guide-style pins are useful in manuals and previews; production screens should use labels, banners, and state text.</div></div>
-      </div>
-    </div>
-
-    <h2 class="sec"><span>Implementation Guides</span><span class="idx">03 / 05</span></h2>
-    <div class="docs">
-      <a href="preview/component-state-matrix.html"><div class="n">§4 · STATES</div><div class="t">Component state matrix</div><div class="d">Badges, banners, KPIs, toolbar chips, nav rows, tables, inputs, buttons, and entity fields.</div></a>
-      <a href="preview/screen-recipes.html"><div class="n">§5 · RECIPES</div><div class="t">Workspace screen recipes</div><div class="d">Trading, Portfolio, Accounting, Reporting, Strategy, Data, and Settings recipes, including report-pack delivery.</div></a>
-      <a href="preview/reference-workbench.html"><div class="n">§6 · REFERENCE</div><div class="t">Reference workbench</div><div class="d">Security Master master table, selected-security detail, cash-flow/factor schedules, controls, and audit evidence.</div></a>
-      <a href="preview/chart-table-standards.html"><div class="n">§7 · EVIDENCE</div><div class="t">Chart &amp; table standards</div><div class="d">Projection, scatter, order-book, dense table, status-window, and row-detail patterns.</div></a>
-      <a href="scripts/check_design_system_governance.py"><div class="n">§8 · GOVERNANCE</div><div class="t">Token governance</div><div class="d">Local script for links, tokens, workspace names, radii, gradients, and table numerics.</div></a>
-    </div>
-
-    <h2 class="sec"><span>System notes</span><span class="idx">04 / 05</span></h2>
-
-    <div class="system">
-      <div class="lead">Palette</div>
-      <div class="body">Base is warm graphite <code>#14120F</code>. Surface stack: <code>card #201D19</code> → <code>panel #252119</code> → <code>soft #292520</code> → <code>raise #2E2A24</code>. A single signal primary <code>#D98A64</code> carries CTAs, active nav, focus rings, chart lines, and selected-row emphasis. Semantic tones remain structural: <code>healthy</code>, <code>observe</code>, <code>critical</code>, <code>paper</code>, <code>research</code>, <code>pending</code>, <code>inactive</code>.</div>
-    </div>
-    <div class="system">
-      <div class="lead">Typography</div>
-      <div class="body">Three roles, strict use. <code>Segoe UI Variable Display 600</code> for display titles. <code>Segoe UI Variable Text 400/500</code> for UI prose and labels. <code>Cascadia Mono</code> — tabular, platform stacks only, no font CDN — for every number, identifier, timestamp, row count, price, and KPI. Letter spacing stays at <code>0</code> except mono eyebrows and table headers.</div>
-    </div>
-    <div class="system">
-      <div class="lead">Geometry</div>
-      <div class="body">Radii step 3 / 4 / 6 / 8 / 10 px. Default border <code>#4A443C</code>; high-contrast separators and active frames use <code>#736B60</code>. Shadows use the flat workstation offset plus faint inset highlights; no large glow effects. Uploaded custody/reporting references favor crisp rows and narrow controls.</div>
-    </div>
-    <div class="system">
-      <div class="lead">Workbenches</div>
-      <div class="body">Use <code>.workstation-frame</code>, <code>.workstation-masthead</code>, <code>.operator-rail</code>, <code>.toolbar-strip</code>, <code>.metric-strip</code>, <code>.split-workbench</code>, <code>.dense-table</code>, and <code>.entity-summary</code> for image-inspired operator pages. Summary metrics must connect to chart/table/detail evidence.</div>
-    </div>
-
-    <h2 class="sec"><span>Kits</span><span class="idx">05 / 05</span></h2>
-    <div class="docs">
-      <a href="colors_and_type.css"><div class="n">§4 · TOKENS</div><div class="t">colors_and_type.css</div><div class="d">CSS variables, typography, state classes, workstation primitives.</div></a>
-      <a href="ui_kits/dashboard/README.md"><div class="n">§5 · REACT</div><div class="t">Dashboard kit</div><div class="d">JSX primitives for panels, buttons, badges, metrics, dense tables, and workstation shell.</div></a>
-      <a href="preview/institutional-workstation.html"><div class="n">§6 · PREVIEW</div><div class="t">Institutional workstation</div><div class="d">Image-inspired masthead, rail, KPI strip, dense table, and entity inspector.</div></a>
-      <a href="tests/test_design_system_governance.py"><div class="n">§9 · TESTS</div><div class="t">Governance tests</div><div class="d">Regression coverage for local links, raw hex, workspace names, and table numerics.</div></a>
-    </div>
-
-    <footer>
-      <span>MRD-DS-2.1.0</span>
-      <span>Trading · Portfolio · Accounting · Reporting · Strategy · Data · Settings</span>
-      <span>Meridian</span>
-    </footer>
-  </div>
+<body>
+<!-- landing:generated:begin -->
+<div class="masthead"><div class="in"><img src="assets/brand/meridian-mark-light.svg" alt=""><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">PROGRAMMED INSTITUTIONALISM · 4.3.0 · DECLARED STABLE</span></div></div>
+<script type="application/json" id="landing-manifest">{"cards": 135, "components": 351, "templates": 30, "tokens": 743}</script>
+<!-- landing:generated:end -->
+<div class="hero"><div class="in">
+<img class="mk lt" src="assets/brand/meridian-mark.svg" alt="Meridian mark"><img class="mk dk" src="assets/brand/meridian-mark-light.svg" alt="Meridian mark">
+<div>
+<h1>Meridian</h1>
+<p class="sub">PROGRAMMED INSTITUTIONALISM</p>
+<p>A modular analytical operating system in which every number has a state, every comparison has a shared geometry, every relationship can be traced, and consequential work is reviewed against visible evidence. Paper, plate, well, graphite, fine rules, one terracotta signal, and blue interaction remain the material language.</p>
+<div class="motto"><span>MEASURE</span><span>UNDERSTAND</span><span>CONVERGE</span></div>
+</div>
+</div></div>
+<div class="page">
+<h2 class="sec"><span>Palette</span><span class="idx">01 / 04</span></h2>
+<p class="sub-lede">Color is information, not branding. The signal is never used for positive/negative values; focus and selection are blue.</p>
+<div class="swatches">
+<div style="background:#F2F0EB;color:#20252B"><span class="n">Paper</span><span class="h">#F2F0EB</span></div>
+<div style="background:#EBE8E1;color:#20252B"><span class="n">Recessed</span><span class="h">#EBE8E1</span></div>
+<div style="background:#AAA49A;color:#20252B"><span class="n">Slate</span><span class="h">#AAA49A</span></div>
+<div style="background:#29323A;color:#F1EFEA"><span class="n">Graphite</span><span class="h">#29323A</span></div>
+<div style="background:#C56343;color:#0D1217"><span class="n">Terracotta</span><span class="h">#C56343</span></div>
+<div style="background:#2D6FB3;color:#FFFFFF"><span class="n">Interaction</span><span class="h">#2D6FB3</span></div>
+</div>
+<h2 class="sec"><span>Type</span><span class="idx">02 / 04</span></h2>
+<p class="sub-lede">IBM Plex Sans for interface · IBM Plex Mono for all data — tabular numerals, prices never jump.</p>
+<div class="type-row"><span class="d1">Portfolio Analysis</span><span class="d2">Interface body, 14px — calm, precise, quietly intelligent.</span><span class="d3">4.35% · +2bp · 412,008</span></div>
+<h2 class="sec"><span>Inventory</span><span class="idx">03 / 04</span></h2>
+<div class="stats">
+<div><div class="v" id="st-comp">—</div><div class="l">Public exports</div></div>
+<div><div class="v" id="st-tmpl">—</div><div class="l">Manifest templates</div></div>
+<div><div class="v" id="st-tok">—</div><div class="l">Tokens</div></div>
+<div><div class="v">48</div><div class="l">Module icons</div></div>
+<div><div class="v" id="st-cards">—</div><div class="l">Specimen cards</div></div>
+</div>
+<h2 class="sec"><span>Documents</span><span class="idx">04 / 04</span></h2>
+<div class="grid">
+<a href="README.md"><div class="n">§1 · GUIDE</div><div class="t">README</div><div class="d">System overview, repository map, component inventory, consumption model.</div></a>
+<a href="docs/ARCHITECTURE.md"><div class="n">§2 · ARCHITECTURE</div><div class="t">Architecture</div><div class="d">Compile model, layer &amp; dependency rules, component anatomy, gates.</div></a>
+<a href="CONTRIBUTING.md"><div class="n">§3 · CONTRIBUTE</div><div class="t">Contributing</div><div class="d">Checklists — add a component, token, or template; release protocol.</div></a>
+<a href="guidelines/PATTERNS.md"><div class="n">§4 · PATTERNS</div><div class="t">Patterns</div><div class="d">When to reach for each component; screen composition rules.</div></a>
+<a href="guidelines/BRAND_GUIDELINES.md"><div class="n">§5 · BRAND</div><div class="t">Brand guidelines</div><div class="d">Marks, palette, wordmark, usage rules. Identity sheet in assets/brand/.</div></a>
+<a href="styles.css"><div class="n">§6 · TOKENS</div><div class="t">styles.css</div><div class="d">Global CSS entry — tokens, fonts, theme, dark mode, print.</div></a>
+<a href="docs/COORDINATED_COMPONENTS.md"><div class="n">§7 · COORDINATE</div><div class="t">Coordinated components</div><div class="d">State ownership, analytical figures, proof workflows, and reference compositions.</div></a>
+<a href="tests/gallery.html"><div class="n">§8 · GALLERY</div><div class="t">Card gallery</div><div class="d">Every specimen card on one page — visual-regression baseline.</div></a>
+<a href="CHANGELOG.md"><div class="n">§9 · HISTORY</div><div class="t">Changelog</div><div class="d">Semver history; migration notes in docs/UPGRADING.md.</div></a>
+<a href="preview/release-readiness.html"><div class="n">§10 · REFERENCE</div><div class="t">Operational states</div><div class="d">Ordinary HTML reference with local component runtime and synthetic evidence states.</div></a>
+<a href="docs/AUDIT_4_3_0.md"><div class="n">§11 · AUDIT</div><div class="t">Current export audit</div><div class="d">Current-source census, baseline findings, and integration boundaries.</div></a>
+<a href="docs/EXPORT_4_3_0.md"><div class="n">§12 · EXPORT</div><div class="t">Build and verify</div><div class="d">Reproducible build, archive inventory, checksums, and dependency handoff.</div></a>
+</div>
+</div>
+<script>
+function updateInventory(m){
+var n=function(v){return Array.isArray(v)?v.length:(typeof v==='number'?v:(v&&typeof v==='object'?Object.keys(v).length:null))};
+var set=function(id,v){var e=document.getElementById(id);if(e&&v)e.textContent=v};
+set('st-comp',n(m.components));set('st-tmpl',n(m.templates));set('st-tok',n(m.tokens));set('st-cards',n(m.cards));
+}
+updateInventory(JSON.parse(document.getElementById('landing-manifest').textContent));
+fetch('_ds_manifest.json').then(function(r){if(!r.ok)throw new Error('Manifest unavailable');return r.json()}).then(updateInventory).catch(function(){});
+</script>
 </body>
 </html>

@@ -120,6 +120,11 @@ per-lot realized gain/loss; otherwise the artifact remains header-only for stabl
 ### `LedgerReportSchedulePlanner`
 
 `LedgerReportSchedulePlanner` projects governed report schedules into concrete export occurrences.
+It is not a second scheduler: nothing in `Meridian.Ledger` runs schedules. Its
+`PeriodStartingOn(frequency, periodStart)` method is the single definition of monthly, quarterly,
+and annual period boundaries and period ids, and the governed reporting scheduler advances
+period-close schedules through it (via `Meridian.Reporting.ReportingSchedulePeriodPlanner`), so the
+hosted reporting worker remains the only component that executes schedules.
 A `LedgerReportSchedule` captures the fund, report name, monthly/quarterly/annual cadence, first
 period start, due-day offset, base currency, requested formats, recipients, and creator evidence.
 `LedgerScheduledReportExportPackageBuilder` then binds a signed report pack to one scheduled

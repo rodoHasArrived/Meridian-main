@@ -749,21 +749,24 @@ CONFIGURATION:
       Copy appsettings.sample.json to appsettings.json and customize.
 
 DATA PROVIDERS:
-    - Interactive Brokers (IB): Level 2 market depth + trades
-    - Alpaca: Real-time trades and quotes via WebSocket
-    - Polygon: Real-time and historical data (coming soon)
+    Streaming: Alpaca, Polygon, Interactive Brokers (IB), NYSE
+    Backfill:  Stooq, Yahoo, Tiingo, Finnhub, Alpha Vantage, Alpaca, Polygon,
+               Nasdaq Data Link, IB, and more
+    Run --help providers for the full list, or see
+    docs/reference/provider-capability-matrix.md.
 
 DOCUMENTATION:
     For detailed documentation, see:
-    - HELP.md                    - Complete user guide
-    - README.md                  - Project overview
-    - docs/CONFIGURATION.md      - Configuration reference
-    - docs/GETTING_STARTED.md    - Setup guide
-    - docs/TROUBLESHOOTING.md    - Common issues
+    - docs/HELP.md                            - Complete user guide
+    - README.md                               - Project overview
+    - docs/start/README.md                    - Setup guide
+    - docs/reference/appsettings-schema.md    - Configuration reference
+    - docs/reference/environment-variables.md - Environment variables
+    - docs/HELP.md (Troubleshooting section)  - Common issues
 
 SUPPORT:
-    Report issues: https://github.com/rodoHasArrived/Test/issues
-    Documentation: ./HELP.md
+    Report issues: https://github.com/rodoHasArrived/Meridian-main/issues
+    Documentation: docs/HELP.md
 
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  FIRST SETUP:  Run: ./Meridian --setup                    ║
@@ -789,8 +792,8 @@ BULK INGEST:
                                       to be configured.
 
     Supported formats:
-      .csv   Header row + data rows. See docs/providers/security-master-guide.md
-             for the expected column names.
+      .csv   Header row + data rows. The expected column names are defined in
+             src/Meridian.Application/SecurityMaster/SecurityMasterCsvParser.cs.
       .json  Array of CreateSecurityRequest objects.
 
     Examples:
@@ -820,7 +823,8 @@ ENVIRONMENT VARIABLES:
     MERIDIAN_SECURITY_MASTER_SCHEMA              Schema name (default: security_master)
 
 DOCUMENTATION:
-    docs/providers/security-master-guide.md
+    docs/architecture/security-master-identifier-conflict-detection.md
+    docs/reference/api-reference.md
 ");
     }
 }

@@ -11,22 +11,22 @@ function inject() {
   const css = `
 .mds-cbx{position:relative;font-family:var(--font-body);}
 .mds-cbx__field{display:flex;align-items:center;gap:6px;height:30px;padding:0 8px;
-  border:1px solid var(--border,#E4E3DE);background:var(--bg-light,#FBFAF8);}
-.mds-cbx__field:focus-within{outline:var(--focus-ring,2px solid #A85436);outline-offset:-1px;}
+  border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);}
+.mds-cbx__field:focus-within{outline:var(--focus-ring,2px solid #2D6FB3);outline-offset:-1px;}
 .mds-cbx__input{flex:1;min-width:0;border:none;outline:none;background:transparent;
-  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#22252A);}
-.mds-cbx__caret{color:var(--text-muted,#5E666F);font-size:10px;flex:none;}
+  font-family:var(--font-data);font-size:12px;color:var(--text-primary,#20252B);}
+.mds-cbx__caret{color:var(--text-muted,#606870);font-size:10px;flex:none;}
 .mds-cbx__pop{position:absolute;left:0;right:0;top:calc(100% + 3px);z-index:var(--z-dropdown,100);
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
   box-shadow:var(--shadow-menu);max-height:264px;overflow-y:auto;}
-.mds-cbx__opt{padding:7px 10px;font-size:12px;color:var(--text-primary,#22252A);cursor:pointer;
+.mds-cbx__opt{padding:7px 10px;font-size:12px;color:var(--text-primary,#20252B);cursor:pointer;
   display:flex;align-items:baseline;gap:8px;box-sizing:border-box;}
-.mds-cbx__opt--on{background:var(--bg-active,#F2E3DB);}
+.mds-cbx__opt--on{background:var(--bg-active,#E7EDF2);}
 .mds-cbx__opt-sym{font-family:var(--font-data);font-weight:600;flex:none;min-width:56px;}
-.mds-cbx__opt-label{color:var(--text-secondary,#4E5258);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.mds-cbx__foot{padding:8px 10px;font-size:11px;color:var(--text-muted,#5E666F);
+.mds-cbx__opt-label{color:var(--text-secondary,#535C65);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.mds-cbx__foot{padding:8px 10px;font-size:11px;color:var(--text-muted,#606870);
   font-family:var(--font-body);text-align:center;}
-.mds-cbx__foot--err{color:var(--red-dim,#7E332D);}
+.mds-cbx__foot--err{color:var(--red-dim,#883832);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "asynccombobox");
@@ -39,7 +39,8 @@ const ROW_H = 32;
 export function AsyncCombobox({
   value = null, onChange, fetchOptions, getKey = (o) => o.value, getLabel = (o) => o.label,
   getSecondary = (o) => o.secondary, placeholder = "Search…", debounceMs = 220, minChars = 0,
-  emptyLabel = "No matches", maxRows = 200,
+  emptyLabel = "No matches", maxRows = 200, id, disabled = false,
+  "aria-label": ariaLabel = "Search options",
 }) {
   inject();
   const [open, setOpen] = React.useState(false);
@@ -51,49 +52,65 @@ export function AsyncCombobox({
   const rootRef = React.useRef(null);
   const listRef = React.useRef(null);
   const reqRef = React.useRef(0);
+  const generatedId = React.useId();
+  const inputId = id || generatedId;
+  const listId = `${inputId}-options`;
+  React.useEffect(() => { if (disabled) setOpen(false); }, [disabled]);
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open || disabled) return;
     if (text.length < minChars) { setOptions([]); setStatus("idle"); return; }
     const reqId = ++reqRef.current;
+    let current = true;
     const controller = typeof AbortController !== "undefined" ? new AbortController() : { abort() {}, signal: undefined };
     setStatus("loading");
+    setOptions([]);
+    setHl(0);
+    setScrollTop(0);
     const t = setTimeout(async () => {
       try {
         const res = await fetchOptions(text, controller.signal);
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
         const rows = (res || []).slice(0, maxRows);
         setOptions(rows);
         setStatus(rows.length ? "ready" : "empty");
         setHl(0);
       } catch (e) {
         if (e && e.name === "AbortError") return;
-        if (reqId !== reqRef.current) return;
+        if (!current || reqId !== reqRef.current) return;
+        setOptions([]);
         setStatus("error");
       }
     }, debounceMs);
-    return () => { controller.abort(); clearTimeout(t); };
-  }, [text, open, minChars, debounceMs, maxRows]);
+    return () => { current = false; controller.abort(); clearTimeout(t); };
+  }, [text, open, minChars, debounceMs, maxRows, fetchOptions, disabled]);
 
   React.useEffect(() => {
     if (!open) return;
     const onDown = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
+    const onFocus = (e) => { if (rootRef.current && !rootRef.current.contains(e.target)) setOpen(false); };
     document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
+    document.addEventListener("focusin", onFocus);
+    return () => { document.removeEventListener("mousedown", onDown); document.removeEventListener("focusin", onFocus); };
   }, [open]);
 
   const commit = (opt) => {
+    if (disabled) return;
     onChange && onChange(opt);
     setText(getLabel(opt) != null ? String(getSecondary(opt) ? getKey(opt) : getLabel(opt)) : "");
     setOpen(false);
   };
 
   const onKeyDown = (e) => {
-    if (!open && (e.key === "ArrowDown" || e.key === "Enter")) { setOpen(true); return; }
-    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.min(options.length - 1, h + 1)); }
+    if (disabled) return;
+    if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp" || e.key === "Enter")) { e.preventDefault(); setOpen(true); return; }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHl((h) => Math.max(0, Math.min(options.length - 1, h + 1))); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHl((h) => Math.max(0, h - 1)); }
+    else if (open && e.key === "Home") { e.preventDefault(); setHl(0); }
+    else if (open && e.key === "End") { e.preventDefault(); setHl(Math.max(0, options.length - 1)); }
     else if (e.key === "Enter") { e.preventDefault(); if (options[hl]) commit(options[hl]); }
-    else if (e.key === "Escape") { setOpen(false); }
+    else if (e.key === "Escape" && open) { e.preventDefault(); e.stopPropagation(); setOpen(false); }
+    else if (e.key === "Tab") { setOpen(false); }
   };
 
   // Windowed list: only render the visible slice.
@@ -117,15 +134,18 @@ export function AsyncCombobox({
     <div className="mds-cbx" ref={rootRef}>
       <div className="mds-cbx__field">
         <input
+          id={inputId} disabled={disabled} aria-label={ariaLabel}
           className="mds-cbx__input" role="combobox" aria-expanded={open} aria-autocomplete="list"
+          aria-controls={open ? listId : undefined}
+          aria-activedescendant={open && status === "ready" && hl >= start && hl < end && options[hl] ? `${listId}-${hl}` : undefined}
           value={display} placeholder={placeholder}
           onChange={(e) => { setText(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)} onKeyDown={onKeyDown}
+          onFocus={() => { if (!disabled) setOpen(true); }} onKeyDown={onKeyDown}
         />
         <span className="mds-cbx__caret" aria-hidden="true">▾</span>
       </div>
       {open && (
-        <div className="mds-cbx__pop" ref={listRef} role="listbox"
+        <div className="mds-cbx__pop" id={listId} ref={listRef} role="listbox" aria-label={ariaLabel}
           onScroll={(e) => setScrollTop(e.currentTarget.scrollTop)}>
           {status === "ready" && (
             <div style={{ height: options.length * ROW_H, position: "relative" }}>
@@ -133,12 +153,12 @@ export function AsyncCombobox({
                 {options.slice(start, end).map((o, i) => {
                   const idx = start + i;
                   return (
-                    <div key={getKey(o)} role="option" aria-selected={idx === hl}
+                    <div key={getKey(o)} id={`${listId}-${idx}`} role="option" aria-selected={idx === hl}
                       className={`mds-cbx__opt${idx === hl ? " mds-cbx__opt--on" : ""}`}
                       style={{ height: ROW_H }}
                       onMouseEnter={() => setHl(idx)} onMouseDown={(e) => { e.preventDefault(); commit(o); }}>
                       <span className="mds-cbx__opt-sym">{getSecondary(o) ? getKey(o) : getLabel(o)}</span>
-                      <span className="mds-cbx__opt-label">{getSecondary(o) || getLabel(o)}</span>
+                      {getSecondary(o) != null && <span className="mds-cbx__opt-label">{getSecondary(o)}</span>}
                     </div>
                   );
                 })}

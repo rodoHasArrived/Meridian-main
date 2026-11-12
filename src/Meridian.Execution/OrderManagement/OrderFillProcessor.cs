@@ -169,6 +169,54 @@ internal sealed class OrderFillProcessor(
                 fillIncrement = fillIncrement with { UsesFaceValuePercentageOfPar = true };
             }
 
+            // Likewise stamp the OMS-resolved contract multiplier when the gateway supplied none
+            // (for example an option with no security-master lot convention). Session projection
+            // and restart replay apply the persisted report without this context, so without the
+            // stamp they would book one contract at 2.50 as $2.50 while the live book moved $250.
+            // LotMultiplier is not part of the canonical fill identity either.
+            if (!string.IsNullOrWhiteSpace(orderId)
+                && !fillIncrement.UsesFaceValuePercentageOfPar
+                && fillIncrement.LotMultiplier is null
+                && _context.GetContractMultiplier(orderId) is var resolvedMultiplier
+                && resolvedMultiplier != 1m)
+            {
+                fillIncrement = fillIncrement with { LotMultiplier = resolvedMultiplier };
+            }
+
+            // Record the money scale the paper book books this fill at, so a replayed session
+            // reproduces it exactly and the accounting event's gross value agrees with the
+            // realized P&L the book reports. A fill that adds to or closes an open position
+            // takes that position's scale: a session restored from pre-stamp records holds 1x
+            // option positions, and they continue at 1x until flat instead of being refused.
+            // Only a scale that differs from what an unstamped record would replay or resolve
+            // to is stamped, so ordinary 1x reports stay identical to what arrived.
+            if (_portfolioState is PaperTradingPortfolio paperBook
+                && fillIncrement.BookedMoneyMultiplier is null
+                && !string.IsNullOrWhiteSpace(orderId)
+                && _context.ContainsOrder(orderId))
+            {
+                // The booking model first, because it decides the money scale. A futures fill
+                // settles variation margin unless it continues a position restored from
+                // notional-model records, which stays on that model until flat. An unstamped
+                // record replays on the notional model, so anything else is stamped.
+                if (fillIncrement.BookedVariationMargin is null)
+                {
+                    var resolvedVariationMargin = PaperTradingPortfolio.ResolveVariationMargin(
+                        fillIncrement, fillIncrement.UsesFaceValuePercentageOfPar);
+                    var bookedVariationMargin = paperBook.GetOpenVariationMargin(fillIncrement.Symbol) ?? resolvedVariationMargin;
+                    if (bookedVariationMargin || resolvedVariationMargin)
+                        fillIncrement = fillIncrement with { BookedVariationMargin = bookedVariationMargin };
+                }
+
+                var resolvedMoneyMultiplier = PaperTradingPortfolio.ResolveMoneyMultiplier(
+                    fillIncrement,
+                    _context.GetContractMultiplier(orderId),
+                    fillIncrement.UsesFaceValuePercentageOfPar);
+                var bookedMultiplier = paperBook.GetOpenMoneyMultiplier(fillIncrement.Symbol) ?? resolvedMoneyMultiplier;
+                if (bookedMultiplier != 1m || bookedMultiplier != resolvedMoneyMultiplier)
+                    fillIncrement = fillIncrement with { BookedMoneyMultiplier = bookedMultiplier };
+            }
+
             progress = _fillProcessing.GetOrAdd(
                 report,
                 _ => new FillProcessingProgress(
@@ -228,13 +276,26 @@ internal sealed class OrderFillProcessor(
                 if (progress.IsTrackedOrder
                     && (_accounting.HasPublisher || !string.IsNullOrWhiteSpace(sessionId)))
                 {
-                    progress.TradeEvent ??= CreateTradeExecutedEvent(
+                    // Created once and reused by every handoff retry. Strategy lineage lets the
+                    // ledger attribute the fill's P&L to the strategy and run that placed the order.
+                    progress.TradeEvent ??= WithStrategyLineage(orderId, CreateTradeExecutedEvent(
                         fillIncrement,
                         progress.CumulativeFilledQuantity,
                         progress.RealizedPnl,
                         progress.NewCash,
                         ResolveFinancialAccountId(orderId),
-                        usesFaceValuePercentageOfPar);
+                        usesFaceValuePercentageOfPar,
+                        // The scale the realized P&L was booked at, so GrossValue and RealizedPnl
+                        // describe the same money. A paper book records it as the booked stamp
+                        // (unstamped means 1x: futures and legacy positions); other portfolios
+                        // keep the OMS-resolved contract multiplier.
+                        usesFaceValuePercentageOfPar
+                            ? 1m
+                            : fillIncrement.BookedMoneyMultiplier
+                              ?? (_portfolioState is PaperTradingPortfolio
+                                  ? 1m
+                                  : fillIncrement.LotMultiplier
+                                    ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId))));
                 }
 
                 if (_accounting.HasPublisher && progress.IsTrackedOrder)
@@ -322,6 +383,22 @@ internal sealed class OrderFillProcessor(
         }
     }
 
+    private TradeExecutedEvent WithStrategyLineage(string? orderId, TradeExecutedEvent tradeEvent)
+    {
+        if (string.IsNullOrWhiteSpace(orderId)
+            || !_context.TryGetOrder(orderId, out var order)
+            || order is null)
+        {
+            return tradeEvent;
+        }
+
+        return tradeEvent with
+        {
+            StrategyId = string.IsNullOrWhiteSpace(order.StrategyId) ? null : order.StrategyId.Trim(),
+            RunId = string.IsNullOrWhiteSpace(order.RunId) ? null : order.RunId.Trim()
+        };
+    }
+
     private string? ResolveFinancialAccountId(string? orderId)
         => !string.IsNullOrWhiteSpace(orderId)
             ? _context.GetFinancialAccountId(orderId)
@@ -366,7 +443,8 @@ internal sealed class OrderFillProcessor(
         decimal realizedPnl,
         decimal newCash,
         string? financialAccountId,
-        bool usesFaceValuePercentageOfPar)
+        bool usesFaceValuePercentageOfPar,
+        decimal contractMultiplier = 1m)
     {
         if (fillIncrement.FillPrice is not { } fillPrice)
         {
@@ -391,7 +469,9 @@ internal sealed class OrderFillProcessor(
             newCash,
             fillIncrement.Timestamp,
             financialAccountId,
-            usesFaceValuePercentageOfPar);
+            usesFaceValuePercentageOfPar,
+            contractMultiplier,
+            fillIncrement.BookedVariationMargin == true);
     }
 
     /// <summary>

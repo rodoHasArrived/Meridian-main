@@ -352,6 +352,37 @@ public sealed record LedgerJournalEntryLineDto(
     string Description,
     LedgerDimensionSetDto? Dimensions = null);
 
+/// <summary>One posting to an account with the account balance after it.</summary>
+public sealed record LedgerAccountRunningBalancePointDto(
+    Guid JournalEntryId,
+    Guid EntryId,
+    long GlobalSequence,
+    DateTimeOffset Timestamp,
+    string Description,
+    decimal Debit,
+    decimal Credit,
+    decimal Balance);
+
+/// <summary>
+/// Posting history of one account inside an accounting period, with a running balance in the
+/// account's normal-balance sign (debit-normal for assets and expenses, credit-normal otherwise).
+/// The balance starts at zero at the first posting of the period.
+/// </summary>
+public sealed record LedgerAccountRunningBalanceDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    string AccountName,
+    string? AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal EndingBalance,
+    IReadOnlyList<LedgerAccountRunningBalancePointDto> Points)
+{
+    public IReadOnlyList<LedgerAccountRunningBalancePointDto> Points { get; init; } = Points ?? [];
+}
+
 public sealed record LedgerJournalEntryDto(
     Guid JournalEntryId,
     Guid PeriodId,

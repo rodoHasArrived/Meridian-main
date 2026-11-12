@@ -9,16 +9,39 @@ using SdkOrderStatus = Meridian.Execution.Sdk.OrderStatus;
 namespace Meridian.Execution.Adapters;
 
 /// <summary>
-/// Compatibility view that exposes health, capabilities, validation, and execution reports from
-/// the same <see cref="IExecutionGateway"/> instance owned by the OMS. Direct mutations are
-/// structurally blocked so there is only one authoritative order state and one risk-gated path.
+/// Compatibility view that exposes health, capabilities and validation from the same
+/// <see cref="IExecutionGateway"/> instance owned by the OMS, and order updates from the OMS's
+/// own report publication. Direct mutations are structurally blocked so there is only one
+/// authoritative order state and one risk-gated path.
 /// </summary>
+/// <remarks>
+/// Order updates never read <see cref="IExecutionGateway.StreamExecutionReportsAsync"/>: the OMS
+/// is that stream's only consumer, and a gateway such as the paper simulator hands each report to
+/// exactly one reader. A second reader would take resting-order fills away from the OMS, leaving
+/// its order state and portfolio unapplied.
+/// </remarks>
 public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
 {
+    private const string ObserverSubscriberName = "order-gateway-observer";
+
     private readonly IExecutionGateway _inner;
+    private readonly Func<IOrderManager?>? _orderManagerAccessor;
 
     public OmsGovernedExecutionOrderGateway(IExecutionGateway inner)
-        => _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        : this(inner, orderManagerAccessor: null)
+    {
+    }
+
+    /// <param name="inner">The OMS's execution gateway.</param>
+    /// <param name="orderManagerAccessor">
+    /// Resolves the OMS whose published reports back <see cref="StreamOrderUpdatesAsync"/>. Lazy
+    /// so the view can be composed before the OMS. Without it, the update stream is empty.
+    /// </param>
+    public OmsGovernedExecutionOrderGateway(IExecutionGateway inner, Func<IOrderManager?>? orderManagerAccessor)
+    {
+        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+        _orderManagerAccessor = orderManagerAccessor;
+    }
 
     public string BrokerName => _inner.GatewayId;
 
@@ -63,20 +86,33 @@ public sealed class OmsGovernedExecutionOrderGateway : IOrderGateway
         => throw new InvalidOperationException(
             "Order cancellation must go through IOrderManager so authoritative OMS state cannot be bypassed.");
 
+    /// <summary>
+    /// Order snapshots (status, cumulative filled quantity and average price) for every OMS
+    /// order-state transition, fills and non-fill transitions alike, from
+    /// <see cref="OrderManagementSystem.SubscribeOrderStateChanges"/>. Each snapshot is captured
+    /// when the OMS writes it, so it never depends on the order still being retained. A slow
+    /// reader may skip an order's intermediate states but always receives its latest, and never
+    /// blocks the OMS. Covers transitions after subscribing; read earlier state from
+    /// <see cref="IOrderManager"/>.
+    /// </summary>
     public async IAsyncEnumerable<OrderStatusUpdate> StreamOrderUpdatesAsync(
         [EnumeratorCancellation] CancellationToken ct = default)
     {
-        await foreach (var report in _inner.StreamExecutionReportsAsync(ct).ConfigureAwait(false))
+        if (_orderManagerAccessor?.Invoke() is not OrderManagementSystem oms)
+            yield break;
+
+        await using var subscription = oms.SubscribeOrderStateChanges();
+        await foreach (var state in subscription.ReadAllAsync(ct).ConfigureAwait(false))
         {
             yield return new OrderStatusUpdate(
-                report.OrderId,
-                report.ClientOrderId ?? report.OrderId,
-                report.Symbol,
-                MapStatus(report.OrderStatus),
-                report.FilledQuantity,
-                report.FillPrice,
-                report.RejectReason,
-                report.Timestamp);
+                state.OrderId,
+                state.OrderId,
+                state.Symbol,
+                MapStatus(state.Status),
+                state.FilledQuantity,
+                state.AverageFillPrice,
+                RejectReason: null,
+                state.LastUpdatedAt ?? state.CreatedAt);
         }
     }
 

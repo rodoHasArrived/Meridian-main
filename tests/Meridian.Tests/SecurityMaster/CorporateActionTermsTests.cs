@@ -92,6 +92,33 @@ public sealed class CorporateActionTermsTests
         history.FactorAsOf(new DateOnly(2025, 12, 31)).Should().BeNull();
     }
 
+    [Fact]
+    public void CashDistribution_GrossAmountFor_PaysPerEconomicUnit_OnlyOnShareOrUnitCountedLots()
+    {
+        var terms = new CashDistributionCorporateActionTerms(CorporateActionEventTypes.Dividend, 0.25m, "USD", SecurityIncomeComponent.Income);
+
+        terms.GrossAmountFor(new LotQuantity(400m, SecurityLotUnitKind.Shares, 1m)).Should().Be(100m);
+        terms.GrossAmountFor(new LotQuantity(40m, SecurityLotUnitKind.Units, 1m)).Should().Be(10m);
+        terms.GrossAmountFor(new LotQuantity(1_000_000m, SecurityLotUnitKind.Commitment, 1m))
+            .Should().BeNull("a per-unit rate has no reading on a commitment amount");
+        terms.GrossAmountFor(new LotQuantity(100_000m, SecurityLotUnitKind.FaceValue, 1m)).Should().BeNull();
+        terms.GrossAmountFor(new LotQuantity(0m, SecurityLotUnitKind.Shares, 1m)).Should().BeNull();
+
+        (terms with { AmountPerUnit = 0m }).PositiveAmountPerUnit.Should().BeNull();
+        (terms with { AmountPerUnit = null }).GrossAmountFor(new LotQuantity(400m, SecurityLotUnitKind.Shares, 1m)).Should().BeNull();
+    }
+
+    [Fact]
+    public void ReturnOfCapital_ReadsItsPayloadAmount_WhenTheColumnIsEmpty()
+    {
+        var terms = CorporateActionTerms.From(Action(
+            CorporateActionEventTypes.ReturnOfCapital,
+            new Dictionary<string, object> { [CorporateActionPayloads.CapitalReturnPerShare] = 0.40m }));
+
+        terms.Should().BeOfType<CashDistributionCorporateActionTerms>()
+            .Which.PositiveAmountPerUnit.Should().Be(0.40m);
+    }
+
     private static CorporateActionDto Action(string eventType, object? payload = null)
         => new(
             Guid.NewGuid(),

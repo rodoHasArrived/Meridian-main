@@ -35,6 +35,7 @@ import type {
   ReconciliationQueueAccountStatus,
   ReconciliationTaxonomySnapshot
 } from "@/types/reconciliation-readiness.types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 export function ReconciliationReadinessPanel() {
   const [statuses, setStatuses] = useState<ReconciliationQueueAccountStatus[] | null>(null);
@@ -166,7 +167,7 @@ export function ReconciliationReadinessPanel() {
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className="whitespace-nowrap uppercase tracking-[0.08em] text-muted-foreground">{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.08em]")}>{label}</dt>
       <dd className="whitespace-nowrap font-mono text-sm font-semibold text-foreground">{value}</dd>
     </div>
   );

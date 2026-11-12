@@ -6,10 +6,28 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-10-15
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Infrastructure
+
+FRED supports a typed rates observation path alongside the legacy synthetic-bar compatibility API.
+Fixed-income ingestion uses original decimal text, provider units, observation date, publication
+(unknown when unavailable), vintage interval, retrieval time and transformation metadata. Constant-
+maturity Treasury yields are labeled par-curve observations and are never silently treated as
+zero rates or discount factors. Provider verification here is synthetic; live FRED access remains untested.
+
+The queued backfill worker fetches and stores daily bars only. A request for any other granularity fails without fetching or writing, instead of storing daily bars under that granularity's file prefix where gap analysis counted them as coverage. `DataGapAnalyzer` reads `bar_15min` files as 15-minute data, not 5-minute.
+
+`BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
+
+Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
+
+The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
+
+`RateLimiter` serialises its expired-timestamp cleanup, so concurrent callers cannot dequeue a fresh timestamp and undercount the window.
+
+IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
@@ -26,7 +44,27 @@ not sent, and failures after the confirmed cancel but before the replacement POS
 (cancelled, no successor); outcomes after the cancel are always delivered. Reconnect FILL-activity reports carry the broker's `replaces` link so a
 successor's fill stays bound to its original order after a restart. While a replacement is unconfirmed, cancellation also
 cancels the candidate successor and stays pending until it is proven inactive. A candidate that executed before
-that cancellation publishes its cumulative fills through the replacement chain first. Order and
+that cancellation publishes its cumulative fills through the replacement chain first. Once a
+replacement is confirmed, Alpaca refuses to cancel the `replaced` predecessor, so cancellation follows
+the broker's `replaced_by` links to the live successor and stays pending, cancelling nothing, when a
+link cannot be verified. A multi-leg package parent is returned with an empty symbol and side: REST
+reconciliation and the trade-update client leave it unnormalized (its legs are separate orders) so it
+cannot fail the durable inbox for other orders, and recovering or amending one is refused.
+The Alpaca gateway identifies the account by its account number, the identifier operators see and
+verification records; the internal UUID from the same response is accepted as an alias on requests,
+answered under the name the caller used, declared as an alias on the catalog entry, and still
+forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
+Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
+dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
+(no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
+repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
+other corporate-action providers use the interface default, which reports whatever `FetchAsync`
+returns as complete. The provider is review-only: its records are staged for
+review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
+symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
+send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
+auction range ends on the requested date, which Alpaca treats as inclusive. Order and
 amendment recovery refuse evidence read across a connection change, rechecked before every report, and `accepted_for_bidding` is a valid provisional
 snapshot state. Durable trade-update hashes omit derived metadata
 while serialized pending reports retain it, preserving replay identities across upgrades.
@@ -78,7 +116,14 @@ and outage classifications for failed batches.
 Alpha Vantage adjusted OHLC uses the adjusted-close/raw-close ratio independently of the session's
 split coefficient. Yahoo daily history includes boundary padding and uses historical exchange
 timezone rules for session dates, falling back to the supplied offset and then UTC when absent.
-Alpaca symbol search initializes authentication after credentials are assigned. OpenFIGI resolution
+Alpaca symbol search initializes authentication after credentials are assigned. Alpaca asset
+search and option contract discovery are Trading API resources and follow the selected credential
+record's paper or live Trading API host, then `ALPACA_TRADING_ENVIRONMENT`; with neither, a paper
+key ID goes to paper and anything else stays on the live host, because a paper key pair is refused
+there. Contract discovery states its expiration horizon and follows page tokens, and returns
+nothing rather than a partial chain when a page cannot be read. Option chain snapshots and quotes
+read the underlying's latest trade first, because the snapshot payload has no underlying price,
+and join open interest from the contract listing. OpenFIGI resolution
 learns canonical identities only from complete, unambiguous exchange and instrument evidence;
 broad NASDAQ requests include UW, UQ, and UR while exact venue requests remain distinct;
 discovery can still return candidate lists. These corrections support `W1-DATA-001` and `W7-LIVE-001`.
@@ -293,6 +338,13 @@ providers and queue resources are disposed. Its bounded completion reader remain
 admitted producer has quiesced, then drains every retained notification without loss before
 shutdown completes; cleanup failures remain part of the terminal stop result.
 
+Streaming failover is driven by the active transport. The composite client forwards the current
+connection's diagnostics to the failover monitor: a connected transport is a heartbeat, so a quiet
+but connected feed stays healthy, and a terminal state (`Failed`, or an unrequested `Disconnected`)
+requests an immediate hand-off to the first viable backup. `Degraded` and `Reconnecting` are not
+terminal, callbacks from a provider that is no longer the current connection are dropped, and a
+standby provider's silence does not consume its failure budget.
+
 Streaming failover uses a two-phase runtime handoff. The coordinator proposes a transition, the
 client connects and restores the required subscriptions, and only then does the coordinator commit
 the active provider; rejected or cancelled handoffs retain the prior provider and state.
@@ -340,6 +392,10 @@ family and resolves each through its declared factory. Streaming factories creat
 clients. `ib-sim` transport and `ib-flex` credential resources keep their separate identities.
 Family disable settings apply across capabilities; inventory does not grant a production factory
 to template-only or mapper-only families.
+`IHistoricalDataProvider.CoverageFeed` names the dataset an instance serves beyond its provider name
+(Alpaca: feed and adjustment; `default` otherwise). Backfill resume treats dates as covered only for
+the same provider and `CoverageFeed`.
+
 Composite historical failover treats provider rate limits as structured signals only:
 `RateLimitException` (including wrapped instances) or `HttpRequestException.StatusCode` equal to
 HTTP 429. Adapter implementations should map vendor 429 responses at the HTTP boundary instead of
@@ -407,6 +463,9 @@ account's balances or positions. Account-summary request correlation is register
 so synchronous vendor callbacks cannot arrive before the awaiting operation exists.
 Alpaca trade-update streaming accumulates complete WebSocket messages across fragmented frames,
 bounds each message before UTF-8 decoding, and reconnects after an incomplete oversized payload.
+The file-backed trade-update cursor store takes its cross-process lease through
+`Core.IO.ExclusiveFileLock`: only sharing/lock contention is retried, with jittered backoff, and any
+other I/O fault surfaces immediately instead of after the lease timeout.
 Alpaca order cancellation accepts a typed client-ID or broker-ID namespace. Client identifiers use
 only the provider's dedicated lookup route, so a UUID-shaped client ID cannot collide with an
 unrelated broker UUID; DELETE receives only the resolved broker ID. HTTP 204 is acceptance rather
@@ -491,6 +550,23 @@ checked before sessions, listing, downloads, and each upload.
 Broker statement imports hash the source file bytes and persist the resulting content hash with a
 deterministic duplicate key derived from fund account, statement period, and source hash. Source
 paths and original file names remain provenance metadata, not duplicate-detection inputs.
+
+## Audit hardening (2026-11)
+
+- **Backfill failover on timeouts.** `CompositeHistoricalDataProvider` and `CrossProviderValidator` rethrow `OperationCanceledException` only when the caller's token is cancelled. A provider-side timeout, such as `HttpClient.Timeout` surfacing as `TaskCanceledException`, now fails over to the next provider instead of ending the request.
+- **Polygon trading-parameter backfill uses the system-ingest path.** `TradingParametersBackfillService` amends through `ISecurityMasterAmender` when the composed service exposes it. That keeps provider-sourced tick and lot sizes writable while `SecurityMasterWorkbench:RequireGovernedTermAmendments` refuses operator-direct amendments.
+
+**Provider construction and credentials.** `ProviderFactory.CreateAndRegisterAllAsync`,
+`InitializeProvidersAsync`, `ProviderRegistry.CreateStreamingClientAsync` and `WarmProvidersAsync`
+read provider credentials first and construct inside the prepared scope. The synchronous
+`CreateAndRegisterAll` and `CreateStreamingClient` remain for callers that cannot await.
+
+**Brokerage hardening.** The Robinhood and Template gateways, and the Alpaca gateway when it has
+no trade-updates stream, wait on a full execution-report channel instead of dropping the oldest
+report. With a trade-updates stream the Alpaca gateway streams reports from it and nothing reads
+the REST report channel, so that channel keeps dropping its oldest entry. One Alpaca path cannot
+wait: a pending-modification report is returned to its caller and, if the channel is full, logged
+as not published.
 
 ## Diagrams
 

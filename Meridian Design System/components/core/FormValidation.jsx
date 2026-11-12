@@ -2,10 +2,12 @@
 // Validators: required, email, number, minLength, maxLength, pattern, custom.
 // UI: red borders, inline hints, error icons, form-level summary, tooltip errors.
 
+import React from "react";
+
 const Validators = {
-  required: (val) => !val || val.toString().trim() === "" ? "Required" : null,
+  required: (val) => val == null || (typeof val === "string" && val.trim() === "") || (Array.isArray(val) && val.length === 0) ? "Required" : null,
   email: (val) => val && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) ? "Invalid email" : null,
-  number: (val) => val && isNaN(val) ? "Must be a number" : null,
+  number: (val) => val == null || val === "" ? null : !Number.isFinite(Number(val)) ? "Must be a number" : null,
   minLength: (min) => (val) => val && val.length < min ? `Minimum ${min} characters` : null,
   maxLength: (max) => (val) => val && val.length > max ? `Maximum ${max} characters` : null,
   pattern: (pattern, msg) => (val) => val && !pattern.test(val) ? msg : null,
@@ -38,8 +40,10 @@ const FormValidation = {
 
 // FieldInput — field with real-time + blur validation, inline hint, error icon, tooltip
 const FieldInput = ({ label, value, onChange, onBlur, validators, hint, placeholder, type = "text" }) => {
+  const inputId = React.useId();
   const [touched, setTouched] = React.useState(false);
   const [error, setError] = React.useState(null);
+  React.useEffect(() => { if (touched) setError(FormValidation.validateField(value, validators)); }, [value, validators, touched]);
 
   const handleBlur = (e) => {
     setTouched(true);
@@ -62,14 +66,14 @@ const FieldInput = ({ label, value, onChange, onBlur, validators, hint, placehol
 .mds-field-input{padding:8px 12px;border:1px solid var(--border);background:var(--bg-light);
   color:var(--text-primary);font-family:var(--font-body);font-size:13px;border-radius:var(--radius-chip,2px);
   transition:border-color .12s,box-shadow .12s;}
-.mds-field-input:focus{outline:none;border-color:var(--accent);outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
+.mds-field-input:focus{outline:none;border-color:var(--interaction-focus,#2D6FB3);outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
 .mds-field-input--error{border-color:var(--red);}
 .mds-field-input--error:focus{outline:2px solid color-mix(in srgb,var(--red) 55%,transparent);outline-offset:1px;}
 .mds-field-hint{font-size:11px;color:var(--text-muted);line-height:1.4;}
 .mds-field-error{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--red);}
 .mds-field-error-icon{flex:0 0 16px;line-height:1.4;font-weight:600;}
 `;
-  if (!document.getElementById("mds-field-css")) {
+  if (typeof document !== "undefined" && !document.getElementById("mds-field-css")) {
     const el = document.createElement("style");
     el.id = "mds-field-css";
     el.textContent = css;
@@ -78,12 +82,14 @@ const FieldInput = ({ label, value, onChange, onBlur, validators, hint, placehol
 
   return (
     <div className="mds-field">
-      {label && <label className="mds-field-label">{label}</label>}
+      {label && <label className="mds-field-label" htmlFor={inputId}>{label}</label>}
       <input className={`mds-field-input${error && touched ? " mds-field-input--error" : ""}`}
+        id={inputId} aria-invalid={error && touched ? true : undefined}
+        aria-describedby={hint || error && touched ? `${inputId}-message` : undefined}
         type={type} value={value} onChange={handleChange} onBlur={handleBlur}
         placeholder={placeholder} />
-      {hint && !error && <div className="mds-field-hint">{hint}</div>}
-      {error && touched && <div className="mds-field-error"><span className="mds-field-error-icon">!</span><span>{error}</span></div>}
+      {hint && !error && <div className="mds-field-hint" id={`${inputId}-message`}>{hint}</div>}
+      {error && touched && <div className="mds-field-error" id={`${inputId}-message`}><span className="mds-field-error-icon" aria-hidden="true">!</span><span>{error}</span></div>}
     </div>
   );
 };
@@ -97,14 +103,14 @@ const FormErrorSummary = ({ errors, fields }) => {
   if (errorList.length === 0) return null;
 
   const css = `
-.mds-form-errors{background:var(--red-a10,rgba(168,68,60,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
+.mds-form-errors{background:var(--red-a10,rgba(181,75,66,.10));border:1px solid color-mix(in srgb,var(--red) 30%,transparent);border-radius:var(--radius-chip,2px);
   padding:12px;margin-bottom:16px;}
 .mds-form-errors-title{font-size:12px;font-weight:600;color:var(--red);margin-bottom:8px;}
 .mds-form-errors-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;}
 .mds-form-errors-item{font-size:12px;color:var(--red);display:flex;gap:6px;}
 .mds-form-errors-item::before{content:'•';flex:0 0 6px;}
 `;
-  if (!document.getElementById("mds-form-errors-css")) {
+  if (typeof document !== "undefined" && !document.getElementById("mds-form-errors-css")) {
     const el = document.createElement("style");
     el.id = "mds-form-errors-css";
     el.textContent = css;
@@ -112,7 +118,7 @@ const FormErrorSummary = ({ errors, fields }) => {
   }
 
   return (
-    <div className="mds-form-errors">
+    <div className="mds-form-errors" role="alert">
       <div className="mds-form-errors-title">{errorList.length} error{errorList.length > 1 ? "s" : ""}</div>
       <ul className="mds-form-errors-list">
         {errorList.map(({ field, label, error }) => (

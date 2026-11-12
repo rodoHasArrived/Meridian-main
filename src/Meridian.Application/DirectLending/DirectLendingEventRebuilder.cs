@@ -163,23 +163,54 @@ public sealed class DirectLendingEventRebuilder
                         var spreadBps = root.GetProperty("spreadBps").GetDecimal();
                         var allInRate = root.GetProperty("allInRate").GetDecimal();
                         var sourceRef = GetOptionalString(root, "sourceRef");
+                        var resetKind = GetOptionalString(root, "resetKind") is { } kindText
+                            ? Enum.Parse<RateResetKind>(kindText, ignoreCase: true)
+                            : (RateResetKind?)null;
+                        DateOnly? fixingObservationDate =
+                            root.TryGetProperty("fixingObservationDate", out var observationElement) &&
+                            observationElement.ValueKind == JsonValueKind.String
+                                ? observationElement.Deserialize<DateOnly>(JsonOptions)
+                                : null;
+                        var schedule = contract!.CurrentTerms.RateResetSchedule;
+                        var isScheduled = resetKind == RateResetKind.Scheduled;
+                        var reset = new RateResetDto(
+                            effectiveDate,
+                            isScheduled && schedule is not null ? schedule.IndexName : contract.CurrentTerms.InterestIndexName ?? "FloatingIndex",
+                            observedRate,
+                            spreadBps,
+                            allInRate,
+                            sourceRef)
+                        {
+                            ResetKind = resetKind,
+                            FixingObservationDate = fixingObservationDate,
+                            FixingId = root.TryGetProperty("fixingId", out var fixingIdElement) && fixingIdElement.ValueKind == JsonValueKind.String
+                                ? fixingIdElement.GetGuid()
+                                : null,
+                            FixingRevision = root.TryGetProperty("fixingRevision", out var revisionElement) && revisionElement.ValueKind == JsonValueKind.Number
+                                ? revisionElement.GetInt32()
+                                : null
+                        };
 
                         servicing = servicing! with
                         {
-                            CurrentRateReset = new RateResetDto(
-                                effectiveDate,
-                                contract!.CurrentTerms.InterestIndexName ?? "FloatingIndex",
-                                observedRate,
-                                spreadBps,
-                                allInRate,
-                                sourceRef),
+                            CurrentRateReset = reset,
+                            // Loans with a reset schedule keep every reset (see ServicingAggregate).
+                            RateResetHistory = schedule is null
+                                ? servicing.RateResetHistory
+                                : (servicing.RateResetHistory ?? [])
+                                    .Where(item => item.EffectiveDate != effectiveDate)
+                                    .Append(reset)
+                                    .OrderBy(static item => item.EffectiveDate)
+                                    .ToArray(),
                             ServicingRevision = servicing.ServicingRevision + 1,
                             RevisionHistory = PrependRevision(
                                 servicing.RevisionHistory,
                                 servicing.ServicingRevision + 1,
-                                "InternalEvent",
+                                isScheduled ? "ScheduledRateReset" : "InternalEvent",
                                 effectiveDate,
-                                $"Rate reset applied at {allInRate:P4}.",
+                                isScheduled
+                                    ? $"Scheduled rate reset applied at {allInRate:P4}."
+                                    : $"Rate reset applied at {allInRate:P4}.",
                                 entry.RecordedAt)
                         };
                         break;
@@ -215,6 +246,106 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+
+                case "loan.mixed-payment-applied":
+                    {
+                        // Replays the recorded resolution, not the resolver, so a later rule or
+                        // terms change cannot alter history. Events from before PRD-115 carry no
+                        // excess members, which read as 0; their unapplied amount was never
+                        // tracked, so it is not added to UnappliedCash on replay.
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var amount = root.GetProperty("amount").GetDecimal();
+                        var resolution = Deserialize<MixedPaymentResolutionDto>(root, "resolution");
+                        var tracksExcess = resolution.ExcessRuleApplied is not null;
+                        var breakdown = resolution.Breakdown;
+                        var principalReduction = breakdown.ToPrincipal + resolution.ExcessToPrincipal;
+                        var balances = servicing!.Balances;
+                        var totalDrawnAfter = Math.Max(0m, servicing.TotalDrawn - principalReduction);
+
+                        servicing = servicing with
+                        {
+                            TotalDrawn = totalDrawnAfter,
+                            AvailableToDraw = DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+                            Balances = balances with
+                            {
+                                PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - principalReduction),
+                                InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                                CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                                FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                                PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty) + resolution.PrepaymentPenaltyCharged,
+                                PrepaidInterest = balances.PrepaidInterest + resolution.ExcessToPrepaidInterest,
+                                UnappliedCash = balances.UnappliedCash + (tracksExcess ? resolution.UnappliedAmount : 0m)
+                            },
+                            DrawdownLots = ApplyPaymentToLots(servicing.DrawdownLots, principalReduction),
+                            LastPaymentDate = effectiveDate,
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Mixed payment applied for {amount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
+                case "loan.unapplied-cash-applied":
+                    {
+                        // PRD-115: held cash allocated to amounts owed; no cash received.
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var breakdown = Deserialize<PaymentBreakdownDto>(root, "breakdown");
+                        var appliedAmount = root.GetProperty("appliedAmount").GetDecimal();
+                        var balances = servicing!.Balances;
+                        var totalDrawnAfter = Math.Max(0m, servicing.TotalDrawn - breakdown.ToPrincipal);
+
+                        servicing = servicing with
+                        {
+                            TotalDrawn = totalDrawnAfter,
+                            AvailableToDraw = DirectLendingInterop.CalculateAvailableToDraw(servicing.CurrentCommitment, totalDrawnAfter),
+                            Balances = balances with
+                            {
+                                PrincipalOutstanding = Math.Max(0m, balances.PrincipalOutstanding - breakdown.ToPrincipal),
+                                InterestAccruedUnpaid = Math.Max(0m, balances.InterestAccruedUnpaid - breakdown.ToInterest),
+                                CommitmentFeeAccruedUnpaid = Math.Max(0m, balances.CommitmentFeeAccruedUnpaid - breakdown.ToCommitmentFee),
+                                FeesAccruedUnpaid = Math.Max(0m, balances.FeesAccruedUnpaid - breakdown.ToFees),
+                                PenaltyAccruedUnpaid = Math.Max(0m, balances.PenaltyAccruedUnpaid - breakdown.ToPenalty),
+                                UnappliedCash = balances.UnappliedCash - appliedAmount
+                            },
+                            DrawdownLots = ApplyPaymentToLots(servicing.DrawdownLots, breakdown.ToPrincipal),
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Unapplied cash applied for {appliedAmount:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
+                case "loan.unapplied-cash-refunded":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var effectiveDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "effectiveDate");
+                        var refunded = root.GetProperty("amount").GetDecimal();
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with { UnappliedCash = servicing.Balances.UnappliedCash - refunded },
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "InternalEvent",
+                                effectiveDate,
+                                $"Unapplied cash refunded for {refunded:0.00}.",
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
 
                 case "loan.prepayment-penalty-charged":
                     {
@@ -254,6 +385,15 @@ public sealed class DirectLendingEventRebuilder
                             pikElement.ValueKind == JsonValueKind.Number
                                 ? pikElement.GetDecimal()
                                 : 0m;
+                        var pikDeferred =
+                            root.TryGetProperty("pikCapitalizationDeferred", out var deferredElement) &&
+                            deferredElement.ValueKind == JsonValueKind.True;
+                        // PRD-115: events recorded before prepaid-interest consumption carry none.
+                        var prepaidInterestConsumed =
+                            root.TryGetProperty("prepaidInterestConsumed", out var consumedElement) &&
+                            consumedElement.ValueKind == JsonValueKind.Number
+                                ? consumedElement.GetDecimal()
+                                : 0m;
                         var accrualEntry = new DailyAccrualEntryDto(
                             accrualEntryId,
                             accrualDate,
@@ -262,15 +402,18 @@ public sealed class DirectLendingEventRebuilder
                             penaltyAmount,
                             annualRateApplied,
                             entry.RecordedAt,
-                            pikInterestAmount);
+                            pikInterestAmount,
+                            pikDeferred);
 
                         servicing = servicing! with
                         {
+                            PikInterestAccruedUnpaid = servicing.PikInterestAccruedUnpaid + (pikDeferred ? pikInterestAmount : 0m),
                             Balances = servicing.Balances with
                             {
-                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + pikInterestAmount,
-                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount,
-                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount
+                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + (pikDeferred ? 0m : pikInterestAmount),
+                                InterestAccruedUnpaid = servicing.Balances.InterestAccruedUnpaid + interestAmount - prepaidInterestConsumed,
+                                CommitmentFeeAccruedUnpaid = servicing.Balances.CommitmentFeeAccruedUnpaid + commitmentFeeAmount,
+                                PrepaidInterest = servicing.Balances.PrepaidInterest - prepaidInterestConsumed
                             },
                             LastAccrualDate = accrualDate,
                             ServicingRevision = servicing.ServicingRevision + 1,
@@ -279,9 +422,11 @@ public sealed class DirectLendingEventRebuilder
                                 servicing.ServicingRevision + 1,
                                 "InternalEvent",
                                 accrualDate,
-                                pikInterestAmount > 0m
-                                    ? $"Daily PIK accrual capitalized at annual rate {annualRateApplied:P4}."
-                                    : $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
+                                pikDeferred
+                                    ? $"Daily accrual posted at annual rate {annualRateApplied:P4}; PIK {pikInterestAmount:0.00} deferred to capitalization."
+                                    : pikInterestAmount > 0m
+                                        ? $"Daily PIK accrual capitalized at annual rate {annualRateApplied:P4}."
+                                        : $"Daily accrual posted at annual rate {annualRateApplied:P4}.",
                                 entry.RecordedAt),
                             AccrualEntries = servicing.AccrualEntries.Concat([accrualEntry]).OrderByDescending(static item => item.AccrualDate).ToArray()
                         };
@@ -310,6 +455,36 @@ public sealed class DirectLendingEventRebuilder
                                 "PikToggle",
                                 effectiveDate,
                                 reason,
+                                entry.RecordedAt)
+                        };
+                        break;
+                    }
+
+                case "loan.pik-capitalized":
+                    {
+                        EnsureInitialized(contract, servicing, entry.EventType);
+                        var capitalizationDate = entry.EffectiveDate ?? Deserialize<DateOnly>(root, "capitalizationDate");
+                        var periodStart = Deserialize<DateOnly>(root, "periodStart");
+                        var periodEnd = Deserialize<DateOnly>(root, "periodEnd");
+                        var amount = root.GetProperty("amount").GetDecimal();
+                        var capitalization = new PikCapitalizationDto(capitalizationDate, periodStart, periodEnd, amount, entry.RecordedAt);
+
+                        servicing = servicing! with
+                        {
+                            Balances = servicing.Balances with
+                            {
+                                PrincipalOutstanding = servicing.Balances.PrincipalOutstanding + amount
+                            },
+                            PikInterestAccruedUnpaid = 0m,
+                            LastPikCapitalizationDate = capitalizationDate,
+                            PikCapitalizations = (servicing.PikCapitalizations ?? []).Append(capitalization).ToArray(),
+                            ServicingRevision = servicing.ServicingRevision + 1,
+                            RevisionHistory = PrependRevision(
+                                servicing.RevisionHistory,
+                                servicing.ServicingRevision + 1,
+                                "PikCapitalization",
+                                capitalizationDate,
+                                $"PIK interest of {amount:0.00} capitalized into principal.",
                                 entry.RecordedAt)
                         };
                         break;

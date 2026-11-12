@@ -5,10 +5,10 @@ using Meridian.Ledger;
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
-/// One operator-attested commitment-register line backing a capital call. The total commitment is
-/// the operator's attestation (there is no server commitment store yet), so each line must carry
-/// retained register evidence; the called-to-date state is never taken from the caller — it is
-/// recomputed server-side from posted private-capital fund events before any draft is produced.
+/// Compatibility projection of one commitment-register line backing a capital call. Native intake
+/// resolves its terms from the approved durable commitment revision; caller totals are consistency
+/// checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is
+/// recomputed server-side from commitment-scoped posting receipts before any native draft is produced.
 /// </summary>
 public sealed record CapitalCallCommitmentInput(
     string CommitmentId,
@@ -61,8 +61,8 @@ internal sealed record CapitalCallIssuanceProduction(
 /// kernel (<see cref="CapitalCallPlanBuilder"/> → <see cref="CapitalCallScheduleDraftBuilder"/>),
 /// failing closed on everything the tie-out discipline demands:
 /// <list type="bullet">
-/// <item>the uncalled basis is recomputed from posted private-capital fund events, never accepted
-/// from the caller;</item>
+/// <item>the native uncalled basis is recomputed from posting receipts for the exact commitment;
+/// the compatibility producer retains its broader fund-event projection;</item>
 /// <item>a commitment line without retained register evidence blocks the run;</item>
 /// <item>a plan that is not executable (over-capacity call, invariant breach, critical roll-forward
 /// issue) blocks the run with the kernel's own reasons instead of drafting wrong numbers.</item>
@@ -83,6 +83,34 @@ internal static class CapitalCallIssuanceDraftProducer
     {
         ArgumentNullException.ThrowIfNull(request);
         ArgumentNullException.ThrowIfNull(postedFundEvents);
+        return Produce(request, evaluatedAtUtc,
+            commitment => CommitmentRollForwardCalculator.BuildFromFundEvents(commitment, postedFundEvents));
+    }
+
+    public static CapitalCallIssuanceProduction ProduceFromCommitmentReceipts(
+        RunCapitalCallIssuanceDraftIntakeRequest request,
+        PrivateCapitalScopeDto scope,
+        IReadOnlyList<PrivateCapitalPostingReceiptDto> postedReceipts,
+        DateTimeOffset evaluatedAtUtc)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        ArgumentNullException.ThrowIfNull(scope);
+        ArgumentNullException.ThrowIfNull(postedReceipts);
+        if (postedReceipts.Any(receipt => receipt.Scope != scope))
+            throw new InvalidOperationException("The commitment receipt source returned activity outside the retained call scope.");
+        return Produce(request, evaluatedAtUtc, commitment => CommitmentRollForwardCalculator.Build(
+            commitment,
+            postedReceipts.Where(receipt => receipt.CommitmentId == commitment.CommitmentId && receipt.Kind == "Issuance"
+                && receipt.EffectiveDate <= request.NoticeDate)
+                .Select(receipt => new CommitmentActivityEvent(receipt.PostingId, ManualJournalEntryTypeDto.CapitalCall,
+                    receipt.EffectiveDate, receipt.Amount)).ToArray()));
+    }
+
+    private static CapitalCallIssuanceProduction Produce(
+        RunCapitalCallIssuanceDraftIntakeRequest request,
+        DateTimeOffset evaluatedAtUtc,
+        Func<InvestorCommitment, CommitmentRollForward> buildRollForward)
+    {
         Validate(request);
 
         var blockers = new List<string>();
@@ -111,12 +139,9 @@ internal static class CapitalCallIssuanceDraftProducer
             }
         }
 
-        // Server-owned corroboration: fold each commitment's called-to-date state from the posted
-        // private-capital fund events. Recallable distributions are treated as non-recallable here
-        // (conservative: restoration never widens capacity without an explicit recall policy).
-        var rollForwards = commitments
-            .Select(pair => CommitmentRollForwardCalculator.BuildFromFundEvents(pair.Commitment, postedFundEvents))
-            .ToArray();
+        // Native receipt history preserves commitment identity even when an investor's commitments
+        // share a capital account. The compatibility path continues to fold its fund-event view.
+        var rollForwards = commitments.Select(pair => buildRollForward(pair.Commitment)).ToArray();
 
         var planRequest = new CapitalCallPlanRequest(
             request.CallId,
@@ -260,7 +285,7 @@ internal static class CapitalCallIssuanceDraftProducer
         if (postedSteps == 0)
         {
             reasons.Add(FormattableString.Invariant(
-                $"No posted private-capital activity exists for capital account '{rollForward.CapitalAccountId}'; the operator-attested commitment register is the sole basis for this first call."));
+                $"No posted issuance exists for commitment '{rollForward.CommitmentId}' in this allocation basis; retained commitment terms are the sole basis for this first call, with native approval authority checked separately before journal review."));
         }
 
         var quality = confidence >= 0.90m

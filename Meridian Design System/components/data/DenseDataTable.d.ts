@@ -43,5 +43,7 @@ export interface DenseDataTableProps {
   rowHeight?: number;
   /** Scrolling viewport height once virtualized. @default 560 */
   maxHeight?: number;
+  /** Accessible name of the keyboard-focusable scroll region. @default "Data table" */
+  label?: string;
 }
 export declare function DenseDataTable(props: DenseDataTableProps): JSX.Element;

@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type { CalibrationProfileRowViewModel, CalibrationSummaryViewModel } from "./accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const calibrationProfileColumns: DenseDataTableColumn<CalibrationProfileRowViewModel>[] = [
   {
@@ -139,7 +140,7 @@ export function CalibrationSummaryPanel({ view, compact = false }: { view: Calib
               ))}
             </div>
             <div>
-              <div className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{view.profilesLabel}</div>
+              <div className={cn("mb-2 text-xs font-semibold text-muted-foreground", usesTrackedCaps(view.profilesLabel) && "uppercase tracking-[0.14em]")}>{view.profilesLabel}</div>
               {view.hasProfiles ? (
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(280px,360px)]">
                   <DenseDataTable

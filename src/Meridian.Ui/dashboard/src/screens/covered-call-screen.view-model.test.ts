@@ -545,7 +545,7 @@ describe("buildCoveredCallTradeTimelinePanel", () => {
       statusBadgeVariant: "warning",
       detailPanelId: "covered-call-trade-detail",
       ariaExpanded: true,
-      rowSelectAriaLabel: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, PnL -$140, status Assigned."
+      rowSelectAriaLabel: "Inspect SPY trade 2, entry 2024-02-01, exit 2024-02-12, strike 510.00, P&L -$140, status Assigned."
     });
     expect(panel.selectedDetail).toMatchObject({
       title: "SPY 510.00 call",
@@ -553,7 +553,7 @@ describe("buildCoveredCallTradeTimelinePanel", () => {
       ariaLabel: "Selected covered-call trade 2: SPY 510.00 call"
     });
     expect(panel.rows[0].exitReasonLabel).toBe("Take profit");
-    expect(panel.selectedDetail?.description).toBe("Assigned; exit reason Assigned; -$140 total net PnL.");
+    expect(panel.selectedDetail?.description).toBe("Assigned; exit reason Assigned; -$140 total net P&L.");
     expect(panel.selectedDetail?.fields).toContainEqual({ label: "Exit reason", value: "Assigned" });
     expect(panel.selectedDetail?.fields).toContainEqual({ label: "Assignment", value: "Assigned" });
   });

@@ -29,6 +29,10 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
 {
     private readonly string _directory = Path.Combine(Path.GetTempPath(), "amortization-pipeline-" + Guid.NewGuid().ToString("N"));
 
+    private const string FloorRefusal = "Security Master terms capability floor refused this node.";
+
+    private static Task RefusedByTheFloor(CancellationToken ct) => throw new InvalidOperationException(FloorRefusal);
+
     [LedgerDatabaseFact]
     public Task CanonicalAmortization_Premium_ApprovedSpineRetainsHistoricalEvidenceAndReplaysAfterRestart()
         => AssertGovernedAmortizationAsync(premium: true);
@@ -291,6 +295,18 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
             (await assets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(drafted.SpineVersion);
             return;
         }
+        // A node the Security Master terms capability floor refuses posts no new amortization batch.
+        var belowFloor = new AccountingPostingCandidatePostService(candidateBuilder, journal, assetAccountingEventStore: assets,
+            termsCapabilityCheck: RefusedByTheFloor);
+        // The refused attempt carries different approval notes: had it appended an Approved stage, the
+        // retry below would fail the retained-attestation match.
+        await belowFloor.Invoking(service => service.PostCandidateAsync(request with { ApprovalNotes = "Attempt on a refused node." }, ct))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage(FloorRefusal);
+        (await journal.GetByPeriodAsync(period.PeriodId, ct)).Should().BeEmpty();
+        (await journal.GetTaxLotsByIdsAsync(bookId, [lotId], ct)).Single().Should().BeEquivalentTo(lot);
+        var afterRefusal = (await assets.GetLatestAsync(eventId, 1, ct))!.Projection;
+        afterRefusal.SpineVersion.Should().Be(drafted.SpineVersion, "a refused batch appends no Approved stage");
+        afterRefusal.Stages.Select(stage => stage.Stage).Should().NotContain(AssetAccountingLifecycleStageDto.Approved);
         var posted = await postingService.PostCandidateAsync(request, ct);
         posted.WasReplay.Should().BeFalse();
         posted.TaxLotMutationBatchId.Should().NotBeNull();
@@ -311,8 +327,9 @@ public sealed class AssetAmortizationPostgresRoundTripTests : IDisposable
         using var restartedProvider = ComposePrimaryHost(ledgerOptions, securityOptions, assetOptions);
         var restartedJournal = restartedProvider.GetRequiredService<PostgresLedgerJournalStore>();
         var restartedAssets = restartedProvider.GetRequiredService<PostgresAssetOperationsProjectionStore>();
+        // An exact replay of the retained batch is still served below the floor.
         var replay = await new AccountingPostingCandidatePostService(candidateBuilder, restartedJournal,
-            assetAccountingEventStore: restartedAssets).PostCandidateAsync(request, ct);
+            assetAccountingEventStore: restartedAssets, termsCapabilityCheck: RefusedByTheFloor).PostCandidateAsync(request, ct);
         replay.WasReplay.Should().BeTrue();
         replay.TaxLotMutationBatchId.Should().Be(posted.TaxLotMutationBatchId);
         (await restartedAssets.GetLatestAsync(eventId, 1, ct))!.Projection.SpineVersion.Should().Be(5);

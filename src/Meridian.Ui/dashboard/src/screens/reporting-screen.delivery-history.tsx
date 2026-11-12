@@ -13,6 +13,7 @@ import type {
   ReportPackDeliveryAttempt,
   ReportPackDeliveryPackage
 } from "@/types";
+import { formatCount } from "@/lib/format";
 
 interface ReportingDeliveryHistoryPanelProps {
   deliveryAttempts: ReportPackDeliveryAttempt[];
@@ -450,7 +451,7 @@ export function ReportingDeliveryHistoryPanel({
                               <Badge variant="outline">{artifact.format}</Badge>
                             </div>
                             <dl className="mt-2 grid gap-1 text-[11px] sm:grid-cols-2">
-                              <ReportingScheduleField label="Size" value={`${artifact.byteSize.toLocaleString()} bytes`} />
+                              <ReportingScheduleField label="Size" value={`${formatCount(artifact.byteSize)} bytes`} />
                               <ReportingScheduleField label="Evidence" value={artifact.evidenceId} />
                               <ReportingScheduleField label="Checksum" value={artifact.checksumSha256 || "Checksum pending"} />
                               <ReportingScheduleField label="Version" value={artifact.versionStamp || "Version pending"} />
@@ -507,9 +508,9 @@ function formatReportingRunPackageMetadata(reportPackage: ReportPackDeliveryPack
     reportPackage.reportingRunAsOfDate ? `asOf=${reportPackage.reportingRunAsOfDate}` : null,
     reportPackage.reportingRunStatus ? `status=${reportPackage.reportingRunStatus}` : null,
     reportPackage.reportingRunTrigger ? `trigger=${reportPackage.reportingRunTrigger}` : null,
-    reportPackage.reportingRunAttemptCount != null ? `attempt=${reportPackage.reportingRunAttemptCount.toLocaleString()}` : null,
-    reportPackage.reportingRunSectionCount != null ? `sections=${reportPackage.reportingRunSectionCount.toLocaleString()}` : null,
-    reportPackage.reportingRunLineageLinkedSections != null ? `lineage=${reportPackage.reportingRunLineageLinkedSections.toLocaleString()}` : null
+    reportPackage.reportingRunAttemptCount != null ? `attempt=${formatCount(reportPackage.reportingRunAttemptCount)}` : null,
+    reportPackage.reportingRunSectionCount != null ? `sections=${formatCount(reportPackage.reportingRunSectionCount)}` : null,
+    reportPackage.reportingRunLineageLinkedSections != null ? `lineage=${formatCount(reportPackage.reportingRunLineageLinkedSections)}` : null
   ].filter((part): part is string => Boolean(part)).join(" · ");
 }
 
@@ -527,7 +528,7 @@ function formatReportWriterDatasetMetadata(reportPackage: ReportPackDeliveryPack
     "Report-writer dataset";
   return reportPackage.reportWriterDatasetRowCount == null
     ? source
-    : `${source} (${reportPackage.reportWriterDatasetRowCount.toLocaleString()} row${reportPackage.reportWriterDatasetRowCount === 1 ? "" : "s"})`;
+    : `${source} (${formatCount(reportPackage.reportWriterDatasetRowCount)} row${reportPackage.reportWriterDatasetRowCount === 1 ? "" : "s"})`;
 }
 
 function reportPackDeliveryEvidencePath(reportId: string, attemptId: string): string {

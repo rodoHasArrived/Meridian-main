@@ -6,10 +6,26 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-10-30
+last_reviewed: 2026-11-11
 ---
 
 # src/Meridian.Backtesting
+
+With short selling disabled, `SimulatedPortfolio` rejects any sell that would leave the position net short, including a sell larger than the current long (long 100, sell 150); it previously rejected only sells from a flat or short position.
+
+An annualised return too large for `decimal` (a 25% one-day gain compounds past it) is reported capped at 1e12 instead of aborting the metrics build. Walk-forward stitched out-of-sample total and annualised returns use the same cap.
+
+`MarketImpactFillModel` fills an all-or-none order completely or not at all; a limit order whose later slices cross the limit no longer returns a partial fill when partial fills are disallowed.
+
+XIRR is computed from investor-boundary flows only (initial capital out, terminal equity in); internal trade, commission and dividend flows are already inside equity. A loss of 100% or more reports an annualised return of -100% instead of aborting the metrics build.
+
+`MarketImpactFillModel` leaves an order working on a zero-volume bar (no traded liquidity) and caps
+square-root impact at `MaxImpactFraction` (50%), so a thin bar can no longer drive a sell fill price
+to zero or below.
+
+Reducing an OCO sibling after the other leg fills keeps the sibling's own filled shares in its
+total `Quantity`, so a partly filled bracket exit keeps working the full remaining position instead
+of losing the already-filled amount a second time.
 
 ## Purpose
 
@@ -31,6 +47,16 @@ and implements the canonical live-position adjuster. Existing aggregate query ca
 identity fallback, while hosts can compose the narrow services independently.
 The original aggregate-query constructor remains available with its original CLR signature and
 optional arguments for existing compiled callers.
+
+`AddMeridianBacktesting` builds that service itself when a host registers the Security Master
+(corporate-action query plus resolver) but no `ICorporateActionAdjustmentService`, so
+`AdjustForCorporateActions` behaves the same on the browser/CLI host as on WPF; without a Security
+Master the engine still reports that corporate actions were not applied.
+`SecurityMasterAssetEventSource` (`IBacktestAssetEventSource`) maps confirmed cash distributions
+and share splits to `AssetEvent`s for raw-price runs. The engine uses it only when
+`BacktestRequest.PopulateAssetEventsFromSecurityMaster` is set and the request supplies no events,
+and rejects it together with `AdjustForCorporateActions`, because back-adjusted prices already
+contain those actions. Mergers, spin-offs and other position transformations are not mapped.
 
 ## Key folders and files
 
@@ -168,6 +194,14 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
 - `BacktestRequest.MaxParticipationRate` caps per-bar participation for bar-midpoint and
   market-impact fills. A value of `0` preserves the historical full-fill behavior; positive values
   leave oversized market-impact orders working across bars when partial fills are allowed.
+- The bar-based fill models honour time-in-force the same way the order-book model does. An
+  `ImmediateOrCancel` or `FillOrKill` order is resolved on the first bar it is executable: IOC keeps
+  what filled and cancels the remainder, FOK fills completely or is cancelled with no fill, and
+  neither stays working on later bars. An order with `AllowPartialFills = false` never ends
+  partially filled, including when market-impact slices are skipped for crossing the limit price.
+  The replay engine acts on that result: an order the fill model cancels, and an immediate order
+  whose generated fills the account rejected, is removed from the pending set and cannot fill on a
+  later event. This applies to every fill model, including the order-book model.
 - `MeridianNativeBacktestStudioEngine` stamps native engine output through
   `CanonicalBacktestResultNormalizer.FromNative`, matching the metadata contract used by
   QuantConnect Lean imports.

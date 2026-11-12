@@ -392,6 +392,8 @@ public static class ExecutionEndpoints
             int? limit,
             HttpContext context) =>
         {
+            if (!await AuditTrailHttpAuthority.CanReadExecutionFeedAsync(context).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
             var explorer = context.RequestServices.GetService<AuditTrailExplorerService>();
             if (explorer is null)
             {
@@ -401,7 +403,7 @@ public static class ExecutionEndpoints
                     : new AuditTrailExplorerService(auditTrail);
             }
 
-            var result = await explorer.SearchAsync(
+            var result = await explorer.SearchAuthorizedAsync(
                 new AuditTrailExplorerQueryDto(
                     SearchText: searchText,
                     RunId: runId,
@@ -417,6 +419,7 @@ public static class ExecutionEndpoints
                     FromUtc: fromUtc,
                     ToUtc: toUtc,
                     Limit: limit ?? 100),
+                (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token),
                 context.RequestAborted).ConfigureAwait(false);
 
             return Results.Json(result, jsonOptions);
@@ -1065,6 +1068,16 @@ public static class ExecutionEndpoints
                 return Results.Json(notFound, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
             }
 
+            if (DescribeUnsupportedLotSelection(request.LotSelection, snapshot, context.RequestServices) is { } lotSelectionRefusal)
+            {
+                var unsupported = new TradingActionResult(
+                    ActionId: GenerateActionId(),
+                    Status: "Rejected",
+                    Message: lotSelectionRefusal,
+                    OccurredAt: DateTimeOffset.UtcNow);
+                return Results.Json(unsupported, jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+            }
+
             if (await RequireScopedFundAccountOrderAccessAsync(
                     context,
                     request.FundAccountId,
@@ -1270,6 +1283,50 @@ public static class ExecutionEndpoints
             Source: "Paper Trading",
             StatusMessage: paperStatus,
             AsOf: DateTimeOffset.UtcNow);
+    }
+
+    /// <summary>
+    /// Explains why a requested lot selection cannot be applied to a close, or returns
+    /// <see langword="null"/> when the request is safe to submit.
+    /// </summary>
+    /// <remarks>
+    /// A close is submitted as an ordinary order, and an order carries no lot instruction: lots are
+    /// relieved later, at the fill, by whatever method the position's book applies. A selection is
+    /// therefore accepted only when it names the method that will be applied anyway. Everything else
+    /// is refused, because accepting it would relieve different lots than the operator asked for.
+    /// </remarks>
+    private static string? DescribeUnsupportedLotSelection(
+        PositionLotSelection? selection,
+        ExecutionBlotterSnapshotResponse snapshot,
+        IServiceProvider services)
+    {
+        if (selection is null)
+        {
+            return null;
+        }
+
+        const string Remedy = "Remove lotSelection to close the position.";
+
+        if (selection.Method == PositionLotSelectionMethod.SpecificId || !string.IsNullOrWhiteSpace(selection.SpecificLotId))
+        {
+            return $"A specific lot cannot be closed from the blotter: the close order carries no lot instruction. {Remedy}";
+        }
+
+        if (snapshot.IsBrokerBacked)
+        {
+            return $"Lot selection {selection.Method} cannot be honoured for a position held at {snapshot.Source}: "
+                + $"the close order carries no lot instruction, so the broker's own relief method applies. {Remedy}";
+        }
+
+        if (services.GetService<IPortfolioState>() is not PaperTradingPortfolio paperPortfolio)
+        {
+            return $"Lot selection {selection.Method} cannot be honoured: the close order carries no lot instruction. {Remedy}";
+        }
+
+        return selection.Method == paperPortfolio.LotSelectionMethod
+            ? null
+            : $"Lot selection {selection.Method} cannot be honoured: this paper portfolio relieves lots by "
+                + $"{paperPortfolio.LotSelectionMethod}. Remove lotSelection or request {paperPortfolio.LotSelectionMethod}.";
     }
 
     private static async Task<IResult> SubmitPositionActionAsync(

@@ -172,6 +172,7 @@ export function buildWorkflowContinuityViewModel(
     operatorFocusOverflowLabel: operatorFocus.overflowLabel,
     operatorFocusItems: operatorFocus.items,
     operatorFocusCommandItems: operatorFocus.commandItems,
+    leadingOperatorFocusItemId: operatorFocus.leadingItem?.id ?? null,
     evidenceTimelineLabel: "Evidence timeline",
     evidenceTimelineSummary: evidenceTimeline.summary,
     evidenceTimelineEmptyText: evidenceTimeline.emptyText,
@@ -398,6 +399,13 @@ interface OperatorFocusViewModel {
   overflowLabel: string | null;
   items: AppShellOperatorFocusItem[];
   commandItems: AppShellOperatorFocusItem[];
+  /**
+   * The worst queued item by tone, then source priority, whatever order the queue is listed in.
+   * Today lists the queue finance-first while every other route lists it worst-first; the
+   * leading decision must not change with the route, or the masthead would name one issue on
+   * Today and another everywhere else.
+   */
+  leadingItem: AppShellOperatorFocusItem | null;
 }
 
 interface EvidenceTimelineViewModel {
@@ -443,7 +451,7 @@ function buildDecisionBriefViewModel({
   subjectSymbol
 }: DecisionBriefInput): AppShellDecisionBrief {
   const latestEvidence = evidenceTimeline.items[0] ?? null;
-  const focusItem = operatorFocus.commandItems[0] ?? operatorFocus.items[0] ?? null;
+  const focusItem = operatorFocus.leadingItem ?? operatorFocus.commandItems[0] ?? operatorFocus.items[0] ?? null;
 
   if (focusItem) {
     return {
@@ -540,7 +548,8 @@ function buildOperatorFocusViewModel(
       emptyText: "Ranked focus actions will appear after workspace data loads.",
       overflowLabel: null,
       items: [],
-      commandItems: []
+      commandItems: [],
+      leadingItem: null
     };
   }
 
@@ -557,6 +566,9 @@ function buildOperatorFocusViewModel(
     ...buildStrategyOperatorFocusItems(context.payload.strategy)
   ]).sort((left, right) => compareOperatorFocusCandidates(left, right, financeFirst));
 
+  const leadingCandidate = financeFirst
+    ? [...candidates].sort((left, right) => compareOperatorFocusCandidates(left, right))[0] ?? null
+    : candidates[0] ?? null;
   const visibleItems = candidates.slice(0, OPERATOR_FOCUS_VISIBLE_LIMIT).map((candidate) => toOperatorFocusItem(candidate, operatingScope));
   const blockedCount = candidates.filter((item) => item.tone === "blocked").length;
   const reviewCount = candidates.filter((item) => item.tone === "review").length;
@@ -569,7 +581,8 @@ function buildOperatorFocusViewModel(
     emptyText: "Loaded workspaces have no ranked blockers.",
     overflowLabel: overflowCount > 0 ? `+${overflowCount} more focus ${overflowCount === 1 ? "item" : "items"}` : null,
     items: visibleItems,
-    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope))
+    commandItems: candidates.map((candidate) => toOperatorFocusItem(candidate, operatingScope)),
+    leadingItem: leadingCandidate ? toOperatorFocusItem(leadingCandidate, operatingScope) : null
   };
 }
 

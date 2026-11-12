@@ -13,6 +13,20 @@ public sealed class SecurityMasterOptions
     public bool ResolveInactiveByDefault { get; set; } = true;
 
     /// <summary>
+    /// One-time migration-062 upgrade attestation that every Security Master writer has been
+    /// stopped. The runner also takes transaction-scoped write locks and refuses active writers.
+    /// Not required for a fresh installation or after migration 062 is recorded.
+    /// </summary>
+    public bool IdentifierHistoryMigrationWritersStopped { get; set; }
+
+    /// <summary>
+    /// One-time migration-062 upgrade attestation that no pre-062 binary will write after commit.
+    /// Deployment owns this assertion; the runner cannot discover binaries on other hosts.
+    /// Not required for a fresh installation or after migration 062 is recorded.
+    /// </summary>
+    public bool IdentifierHistoryMigrationLegacyWritersRetired { get; set; }
+
+    /// <summary>
     /// Interval, in minutes, at which the projection warmup service re-warms the per-process
     /// projection cache from the durable store. Zero (the default) disables periodic re-warm —
     /// single-node deployments stay coherent through per-write cache upserts, and multi-node
