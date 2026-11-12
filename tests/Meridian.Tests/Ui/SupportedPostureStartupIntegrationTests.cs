@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
@@ -38,6 +39,16 @@ public sealed class SupportedPostureStartupIntegrationTests
             using var startTimeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
 
             var app = GetServerApp(server);
+            var endpoints = ((IEndpointRouteBuilder)app).DataSources
+                .SelectMany(source => source.Endpoints).ToArray();
+            endpoints.Should().NotBeEmpty("the real host must compose its complete workstation endpoint graph");
+            var duplicateNames = endpoints
+                .Where(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName is not null)
+                .GroupBy(endpoint => endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()!.EndpointName, StringComparer.Ordinal)
+                .Where(group => group.Count() > 1)
+                .Select(group => $"{group.Key}: {string.Join(", ", group.Select(endpoint => (endpoint as RouteEndpoint)?.RoutePattern.RawText ?? endpoint.DisplayName))}")
+                .ToArray();
+            duplicateNames.Should().BeEmpty("endpoint names share one namespace across all domains in the composed host");
             app.MapGet(
                 "/api/problem-details/empty-unauthorized",
                 () => Results.Unauthorized());

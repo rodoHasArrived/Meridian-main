@@ -66,7 +66,7 @@ public static class PrivateCapitalRecordEndpoints
                 return Results.Json(await service.CreateAsync(Scope(context), Actor(context), request, ct).ConfigureAwait(false), jsonOptions);
             }))
             .RequirePermission(UserPermission.ManagePrivateCapitalRecords).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
-            .RequireWorkstationTenantCompanyScope().WithName("CreatePrivateCapitalCommitment");
+            .RequireWorkstationTenantCompanyScope().WithName("CreatePrivateCapitalRecordCommitment");
         group.MapPost("/preview", (PreviewPrivateCapitalImport request, HttpContext context,
             [FromServices] PrivateCapitalRecordService service, CancellationToken ct) =>
             ExecuteAsync(async () =>
