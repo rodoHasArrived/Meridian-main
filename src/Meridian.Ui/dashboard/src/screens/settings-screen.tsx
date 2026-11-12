@@ -7,6 +7,7 @@ import { Activity, ArrowRight, ExternalLink, GitBranch, KeyRound, LoaderCircle, 
 import { ProviderSetupPanel } from "@/components/data/provider-setup-panel";
 import { LifecycleControlPanel } from "@/components/meridian/lifecycle-control-panel";
 import { formatCount, formatNumber as formatNumberAmount, formatUtcDate, formatUtcTimestamp } from "@/lib/format";
+import { utcToday } from "@/lib/local-date";
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
@@ -17,6 +18,8 @@ import { Checkbox, Toggle } from "@/components/ui/checkbox";
 import { DensityToggle } from "@/components/ui/density-toggle";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { TextArea } from "@/components/ui/text-area";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -425,14 +428,14 @@ const requirementToneClass = {
 
 const environmentOptionClass = {
   paper: {
-    selected: "border-paper/40 bg-paper/10 text-paper",
+    selected: "border-paper/40 bg-paper/10 text-[var(--state-paper-fg)]",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-paper/35 hover:bg-paper/10",
-    badge: "border-paper/30 bg-paper/10 text-paper"
+    badge: "border-paper/30 bg-paper/10 text-[var(--state-paper-fg)]"
   },
   live: {
     selected: "border-live-env/40 bg-live-env/10 text-live-env",
     idle: "border-border/70 bg-secondary/25 text-foreground hover:border-live-env/35 hover:bg-live-env/10",
-    badge: "border-live-env/35 bg-live-env/10 text-live-env"
+    badge: "border-live-env/35 bg-live-env/10 text-[var(--state-live-fg)]"
   }
 } as const;
 
@@ -2439,7 +2442,7 @@ export function SettingsScreen({
 
       <StatStrip metrics={settingsStatMetrics} label="Operator control posture metrics" source="System overview" figureSource="overview" />
 
-      {showChooserSection ? <SettingsTaskChooser /> : null}
+      {showChooserSection ? <SettingsTaskChooser viewModel={vm} /> : null}
 
       {showAccessSection ? (
       <section className="grid gap-4 xl:grid-cols-[0.95fr_1.05fr]">
@@ -5007,8 +5010,13 @@ function normalizeAssetProfileId(value: string): string {
   return value.trim().toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
 }
 
+/**
+ * Today as an asset-profile `effectiveFrom`. Deliberately the UTC calendar day, the same day
+ * `isWriteSelectableAssetProfile` compares effective windows against, so a profile approved here
+ * is selectable for writes straight away for every operator.
+ */
 function todayDateOnly(): string {
-  return new Date().toISOString().slice(0, 10);
+  return utcToday();
 }
 
 function createBrowserGuid(): string {
@@ -5137,11 +5145,11 @@ function FilterSelect({
   return (
     <label className="grid gap-1 text-xs font-medium text-muted-foreground">
       {label}
-      <select
+      <Select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        className="h-9 rounded-md border border-border/70 bg-background px-2 text-sm text-foreground"
+        className="h-9 text-sm"
         aria-label={ariaLabel ?? label}
       >
         {options.map((option) => (
@@ -5149,7 +5157,7 @@ function FilterSelect({
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   );
 }
@@ -5899,20 +5907,20 @@ function ProviderIntegrationWorkbenchPanel({
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Template catalog
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
+          <Select className="text-xs" value={state.selectedManifestId} onChange={(event) => updateField("selectedManifestId", event.target.value)} disabled={busy || !state.templates || state.templates.length === 0} aria-label={`${row.displayName} provider integration template`}>
             <option value={state.selectedManifestId}>{state.selectedManifestId || "No template selected"}</option>
             {(state.templates ?? []).map((template) => <option key={template.manifestId} value={template.manifestId}>{template.displayName}</option>)}
-          </select>
+          </Select>
         </label>
       </div>
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Manifest draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftManifestJson} onChange={(event) => updateField("draftManifestJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration manifest draft JSON`} spellCheck={false} />
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Connection draft JSON
-          <textarea className="min-h-36 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
+          <TextArea className="min-h-36 font-mono text-[11px]" value={state.draftConnectionJson} onChange={(event) => updateField("draftConnectionJson", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration connection draft JSON`} spellCheck={false} />
         </label>
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
@@ -5963,12 +5971,12 @@ function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)]">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Capability
-          <select className="rounded-md border border-border/70 bg-background px-3 py-2 text-xs text-foreground outline-hidden focus:border-primary" value={state.capability} onChange={(event) => setState((current) => {
+          <Select className="text-xs" value={state.capability} onChange={(event) => setState((current) => {
             const capability = event.target.value as ProviderIntegrationCapabilityKind;
             return { ...current, capability, endpointKey: providerIntegrationPreferredEndpointKey(current.manifest, capability, current.endpointKey), message: null, details: [], tone: "default" };
           })} disabled={busy} aria-label={`${row.displayName} provider integration dry-run capability`}>
             {capabilityOptions.map((capability) => <option key={capability} value={capability}>{capability}</option>)}
-          </select>
+          </Select>
         </label>
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           Service key
@@ -5983,7 +5991,7 @@ function ProviderIntegrationWorkbenchPanel({
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
           CSV content
-          <textarea className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-[11px] text-foreground outline-hidden focus:border-primary" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
+          <TextArea className="min-h-24 font-mono text-[11px]" value={state.csvContent} onChange={(event) => updateField("csvContent", event.target.value)} disabled={busy} aria-label={`${row.displayName} provider integration CSV dry-run content`} spellCheck={false} />
         </label>
         <div className="grid gap-3">
           <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
@@ -6159,8 +6167,8 @@ function ProviderOpenApiImportForm({
       </div>
       <label className="grid gap-1 text-[11px] font-medium text-muted-foreground">
         OpenAPI JSON
-        <textarea
-          className="min-h-24 rounded-md border border-border/70 bg-background px-3 py-2 font-mono text-xs text-foreground outline-hidden focus:border-primary"
+        <TextArea rows={2}
+          className="min-h-24 font-mono text-xs"
           value={state.openApiDocumentJson}
           onChange={(event) => updateField("openApiDocumentJson", event.target.value)}
           disabled={state.busy}

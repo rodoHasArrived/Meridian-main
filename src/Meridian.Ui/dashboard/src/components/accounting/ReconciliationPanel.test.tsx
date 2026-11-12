@@ -89,4 +89,10 @@ describe("ReconciliationPanel", () => {
     fireEvent.keyDown(refHeader, { key: "Enter" });
     expect(refHeader).toHaveAttribute("aria-sort", "ascending");
   });
+
+  it("makes each side's scroll region keyboard-focusable with an accessible name", () => {
+    render(<ReconciliationPanel left={statement} right={ledger} currency="USD" />);
+    expect(screen.getByRole("region", { name: "Statement items" })).toHaveAttribute("tabindex", "0");
+    expect(screen.getByRole("region", { name: "Ledger items" })).toHaveAttribute("tabindex", "0");
+  });
 });

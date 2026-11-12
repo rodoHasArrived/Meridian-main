@@ -1,0 +1,6 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Desktop zoom layout controls</title>
+<style>
+body{margin:0;font:16px sans-serif}#responsive{display:grid;grid-template-columns:1fr 1fr;gap:16px}#responsive>div{min-width:0;padding:16px;background:#eee}#forced-overflow{display:none;width:800px;height:40px;background:#ddd}
+@media(max-width:800px){#responsive{grid-template-columns:1fr}}
+</style></head><body><main><h1>Desktop zoom layout controls</h1><div id="responsive"><div>First responsive column</div><div>Second responsive column</div></div><div id="forced-overflow">Deliberate 800 CSS pixel overflow</div></main></body></html>

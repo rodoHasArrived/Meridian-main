@@ -1,34 +1,53 @@
 /**
- * Candlestick price chart — mirrors the desktop ChartingPage candlestick pane. Renders
- * price/time axes with labels, gridlines, MA overlays, an optional volume histogram subpane,
- * and a crosshair readout with a right-axis price chip. Up candles use --chart-equity (green,
- * hollow body), down use --chart-drawdown (red, filled).
+ * CandleChart — candlestick price chart with MA overlays, optional volume subpane, and a
+ * crosshair readout chip on the price rail. Up = --chart-equity, down = --chart-drawdown.
+ * Renders through ChartFrame (real-pixel geometry — type and strokes never scale).
+ * Interactive crosshair: pair with ChartCursor.useChartCrosshair({padLeft:10, rail}).
  */
-export interface Candle {
-  /** X-axis time label, e.g. "10:48". */
+import * as React from "react";
+
+export interface CandleBar {
+  /** Time label shown on the x axis, e.g. "09:30". */
   t: string;
-  o: number; h: number; l: number; c: number;
-  /** Volume (drives the histogram subpane). */
+  o: number;
+  h: number;
+  l: number;
+  c: number;
+  /** Volume (used when showVolume). */
   v?: number;
 }
+
 export interface CandleOverlay {
   label: string;
-  /** CSS color (token var), e.g. "var(--accent)". */
+  /** CSS color (token var). */
   color: string;
   /** Moving-average window in bars. */
   win: number;
 }
+
 export interface CandleChartProps {
-  bars: Candle[];
-  /** MA overlays. @default MA20 (accent) + MA50 (orange) */
+  bars: CandleBar[];
+  /** @default MA20 (--accent) + MA50 (--orange) */
   overlays?: CandleOverlay[];
-  /** Bar index to mark with the crosshair + price chip. */
+  /** Index of the highlighted bar; null hides the crosshair. @default null */
   crosshairIndex?: number | null;
-  /** Show the volume histogram subpane. @default true */
+  /** @default true */
   showVolume?: boolean;
-  /** Approx. number of price gridlines. @default 5 */
+  /** Price-rail formatter. @default Fmt.price */
+  priceFmt?: (v: number) => string;
+  /** @default 6 */
   priceTicks?: number;
-  /** Approx. number of time labels. @default 6 */
+  /** @default 7 */
   timeTicks?: number;
+  /** SVG height in px. @default 420 */
+  height?: number;
+  /** Price-rail width in px. @default 64 */
+  rail?: number;
+  /** 3.5 · Forwarded to ChartFrame — names the figure (svg role="img"). */
+  ariaLabel?: string;
+  /** 3.5 · Forwarded to ChartFrame — linked description. */
+  ariaDescription?: string;
+  /** 3.5 · Forwarded to ChartFrame — visually-hidden data table/list behind the pixels. */
+  accessibleData?: string | { label: string; value: React.ReactNode }[] | { caption?: string; columns: React.ReactNode[]; rows: React.ReactNode[][] };
 }
-export declare function CandleChart(props: CandleChartProps): JSX.Element;
+export declare function CandleChart(props: CandleChartProps): React.JSX.Element;

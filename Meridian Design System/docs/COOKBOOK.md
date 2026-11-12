@@ -1,11 +1,13 @@
 # Meridian Cookbook
 
-Step-by-step recipes that bridge [PATTERNS.md](../PATTERNS.md) (principles) and the
-`templates/` (finished screens). Each recipe names the exact components in play and the order
-to assemble them. Import everything from the compiled bundle:
+Five **assembly recipes**: which components to reach for and in what order. This file owns the
+component-by-component sequence, nothing else — [guidelines/PATTERNS.md](../guidelines/PATTERNS.md)
+owns which component to pick, and [WORKSTATION_BLUEPRINT.md](WORKSTATION_BLUEPRINT.md) owns the
+composition law (archetype, surfaces, data states, quality gate). Every recipe assumes the frame
+is already a `WorkstationShell`; the code below shows what goes *inside* it.
 
 ```js
-const { WorkstationTopbar, DenseDataTable, /* … */ } = window.MeridianDesignSystem_4f61be;
+const { WorkstationShell, DataGrid, /* … */ } = window.MeridianDesignSystem_205d17;
 ```
 
 All examples assume the global stylesheet is loaded (`styles.css`) so tokens and fonts resolve.
@@ -17,67 +19,35 @@ All examples assume the global stylesheet is loaded (`styles.css`) so tokens and
 **Goal:** a list-driven monitoring surface where an operator scans a severity-ranked table,
 selects a row, and inspects it — the shape behind Alerting, Trading, and Data Ops.
 
-**Assemble:** `WorkstationTopbar` → `NavRail` → `Toolbar` (search + data-state) →
-`SplitPane` wrapping `DenseDataTable` (with `SeverityBadge` cells) and a `KeyValueGrid`
-inspector → `StatusBar`.
+**Assemble:** `WorkstationShell` (topbar + nav + status bar) → `Toolbar` (search + data-state) →
+`SplitPane` wrapping `DataGrid` (with `SeverityBadge` cells) and a `KeyValueGrid`
+inspector.
 
 ```jsx
-<WorkstationTopbar moduleLabel="Alerting" environment="PAPER" clock="14:32:08 UTC" />
-<div style={{ display: "flex", flex: 1, minHeight: 0 }}>
-  <NavRail activeId="alerting" sections={SECTIONS} onSelect={go} />
-  <main style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, padding: 14 }}>
+<WorkstationShell
+  archetype="monitor"
+  labelledBy="workspace-title"
+  topbar={<WorkstationTopbar moduleLabel="Alerting" environment="PAPER" clock="14:32:08 UTC" />}
+  nav={<NavRail activeId="alerting" sections={SECTIONS} onSelect={go} />}
+  statusBar={<StatusBar items={STATUS} />}
+>
+  <div style={{ height: "100%", minHeight: 0, boxSizing: "border-box",
+    display: "flex", flexDirection: "column", gap: 10, padding: 14 }}>
+    <h1 id="workspace-title">Alerts</h1>
     <Toolbar>{/* Input + SegmentedControl data-state */}</Toolbar>
     <SplitPane direction="horizontal" primary="end" initial={340} persistKey="triage">
-      <DenseDataTable columns={COLS} rows={rows} selectedIndex={i} onRowClick={(_, i) => setI(i)} />
+      <DataGrid columns={COLS} rows={rows} selectedIndex={i} onRowClick={(_, i) => setI(i)} />
       <KeyValueGrid columns={2} items={detailItems(rows[i])} />
     </SplitPane>
-  </main>
-</div>
-<StatusBar items={STATUS} />
+  </div>
+</WorkstationShell>
 ```
 
 **Rule:** always render the full data-state ladder — `SkeletonTable` (loading), `EmptyState`
-(empty / no-match), `StatusBanner` tone="danger" (error). Never show stale rows on error.
+(empty / no-match), `StatusBanner` tone="danger" (error). Never show stale rows on error. The
+shell renders the `<main>` landmark — don't add a second one.
 
 ---
-
-### Browser work queues and records
-
-Lead a working surface with its selectable queue or records. Keep source, scope, freshness,
-completeness, and blocker status visible in a compact summary; put explanations, receipts,
-and supporting tools in keyboard-accessible native disclosures. The browser adapter
-`OperationalTrustSummary` supports this with `disclosure`, while its default expanded view
-remains available for tasks that need fuller context. The disclosure must retain warning text
-and financially material values when closed, and recovery actions when opened.
-
-Use the shared dense-row/detail contract for selectable work: each row controls the selected
-inspector; Enter or Space selects it and moves focus into its panel, and Escape
-returns to its originating row. Keep the selected item's primary action before its supporting
-facts. Bind shareable selection to immutable item identity and current financial scope; show
-unavailable selection explicitly after removal rather than substituting another item's proof.
-
-### Reconciliation queue–inspector pilot
-
-The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and
-`DenseRowDetailPanel`. Use `inspectorRole="region"` when the shell is nested inside another
-named region, avoiding a nested complementary landmark. Default shell consumers retain their
-existing complementary semantics.
-
-Keep selected-record commands before supporting facts, with disabled reasons and explicit
-rationale for resolution. Show discrepancy, owner, status, source observation and required
-sign-off; retain technical metadata in a disclosure. Search and status filters must never silently
-replace the selected evidence. Show filtered versus loaded counts, keep controls available in
-empty/no-match states, and distinguish unavailable selection from an empty queue.
-
-Persist view choices in scoped URLs and scroll in navigation state; restore after data loads.
-Enter/Space enters the selected inspector and Escape returns to its row. At constrained widths,
-use explicit Inspect/Back controls without discarding queue state. Wide tables scroll locally.
-Loading and failed reads must prevent stale commands; old-scope responses cannot repopulate the
-current inspector. Success comes from the authoritative operation result, never optimistic approval.
-
-Use the shell's `WorkspaceStatus` disclosure for affected-area recovery detail. Retain distinct
-warnings for distinct problems, disable repeated retry while refreshing, and keep operating scope
-applicability explicit. These patterns add no new tokens or business-state vocabulary.
 
 ## 2 · Validated form
 
@@ -112,7 +82,7 @@ source of truth for validity — disable it, don't just warn.
 ## 3 · Monitoring wall
 
 **Goal:** an at-a-glance operations wall — headline metrics, feed health, and coverage — for a
-shared monitor. Terminal density (`data-theme-density="terminal"`) fits more per screen.
+shared monitor. The terminal density scope (`data-theme-density="terminal"`) fits the most per screen.
 
 **Assemble:** a `MetricCard` grid (KPIs with `Delta`) → a `FreshnessIndicator` row (provider
 health) → `Sparkline` trends → `CoverageMatrix` (data-availability heat) → `LogTail` (live run
@@ -140,8 +110,9 @@ status (green live / amber partial / red gap); never rely on text alone.
 **Goal:** an accounting view — a ledger, its reconciliation state, and the resulting statement.
 
 **Assemble:** `LedgerTable` (double-entry rows with `AmountCell`) → `ReconciliationPanel`
-(matched / unmatched) → `StatementTable` (rolled-up totals). `AmountCell` handles sign,
-alignment, and the debit/credit convention.
+(matched / unmatched) → `StatementTable` (rolled-up totals). Reach for `DataGrid` with `groupBy` when
+the rows roll up by account or strategy — group headers carry subtotals for every column declaring `total`,
+so group figures tie out.
 
 ```jsx
 <LedgerTable entries={journal} />
@@ -176,5 +147,5 @@ real-capital acknowledgement. Side is always a washed green/red — never a soli
 ---
 
 See the assembled versions under `templates/`: `alerting-workstation` (recipe 1),
-`report-scheduler` (2), `ingestion-operations` (3), `journaling-workstation` (4),
-`trading-desk` (5).
+`report-scheduler` (2), `ingestion-operations` (3), `accounting-workstation` (4 —
+journal posting as its GL compose mode), `trading-desk` (5).

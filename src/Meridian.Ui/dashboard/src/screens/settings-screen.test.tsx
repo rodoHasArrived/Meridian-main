@@ -569,7 +569,7 @@ describe("SettingsScreen", () => {
     apiMocks.activateProviderIntegration.mockReset();
   });
 
-  it("lands the bare /settings route on the focused task chooser", () => {
+  it("lands the bare /settings route on the evidence-based setup checklist", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -583,8 +583,9 @@ describe("SettingsScreen", () => {
       "Choose a settings task"
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /Open Preferences:/ })[0]).toHaveAttribute("href", "/settings/preferences");
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
     expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
   });
 

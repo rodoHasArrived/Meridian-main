@@ -20,6 +20,7 @@ import {
   type BulkTriageKind,
   type BulkTriagePreview
 } from "./reconciliation-bulk-triage";
+import { Select } from "@/components/ui/select";
 
 export interface BulkTriageServices {
   dryRun: (request: ReconciliationBulkCaseworkRequest) => Promise<ReconciliationBulkCaseworkResult>;
@@ -288,20 +289,20 @@ export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: 
                   <Input id="bulk-resolve-evidence" value={draft.evidenceLink} onChange={(event) => triage.updateDraft({ evidenceLink: event.target.value })} />
                 </FormRow>
                 <FormRow label="Root cause" labelFor="bulk-resolve-root-cause">
-                  <select id="bulk-resolve-root-cause" value={draft.rootCauseCode} onChange={(event) => triage.updateDraft({ rootCauseCode: event.target.value })}>
+                  <Select id="bulk-resolve-root-cause" value={draft.rootCauseCode} onChange={(event) => triage.updateDraft({ rootCauseCode: event.target.value })}>
                     <option value="">Choose a root cause</option>
                     {(triage.taxonomy?.rootCauses ?? []).filter((value) => value.isActive).map((value) => (
                       <option key={value.code} value={value.code}>{value.displayName}</option>
                     ))}
-                  </select>
+                  </Select>
                 </FormRow>
                 <FormRow label="Resolution" labelFor="bulk-resolve-resolution">
-                  <select id="bulk-resolve-resolution" value={draft.resolutionCode} onChange={(event) => triage.updateDraft({ resolutionCode: event.target.value })}>
+                  <Select id="bulk-resolve-resolution" value={draft.resolutionCode} onChange={(event) => triage.updateDraft({ resolutionCode: event.target.value })}>
                     <option value="">Choose a resolution</option>
                     {(triage.taxonomy?.resolutionCodes ?? []).filter((value) => value.isActive).map((value) => (
                       <option key={value.code} value={value.code}>{value.displayName}</option>
                     ))}
-                  </select>
+                  </Select>
                 </FormRow>
                 {triage.taxonomyError ? <p role="alert" className="text-sm text-danger sm:col-span-2">{triage.taxonomyError}</p> : null}
               </div>

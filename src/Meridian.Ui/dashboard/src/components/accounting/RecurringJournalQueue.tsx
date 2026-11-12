@@ -67,10 +67,17 @@ export function RecurringJournalQueue({ scope, onSelectDraft, availableDraftIds 
             <p className="break-words font-semibold">{row.scheduleId} · v{row.scheduleVersion}</p>
             <p className="break-words text-muted-foreground">Template {row.templateId} · v{row.templateVersion}</p>
             <p>{row.effectiveDate} · {row.periodId ?? "Period unresolved"}</p>
-            <p className="mt-2 font-semibold">{row.state} · Approval: {row.approvalStatus ?? "Not submitted"}</p>
+            <p className="mt-2 font-semibold">
+              {row.state === "NoDraftRequired" ? "Nothing to post" : `${row.state} · Approval: ${row.approvalStatus ?? "Not submitted"}`}
+            </p>
             <p className="break-all text-muted-foreground">Occurrence {row.occurrenceId}</p>
             {row.journalEntryId ? <p className="break-all">Draft {row.journalEntryId}</p> : null}
-            {row.blockers.length ? <ul className="mt-2 list-disc space-y-1 pl-4 text-danger">{row.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}</ul> : null}
+            {row.blockers.length ? (
+              // A calculated occurrence with nothing to post explains why; that is a note, not a blocker.
+              <ul className={`mt-2 list-disc space-y-1 pl-4 ${row.state === "NoDraftRequired" ? "text-muted-foreground" : "text-danger"}`}>
+                {row.blockers.map((blocker) => <li key={blocker}>{blocker}</li>)}
+              </ul>
+            ) : null}
             {row.periodLockOwner ? <p className="mt-2 break-words">Period lock owner: {row.periodLockOwner}</p> : null}
             {row.governedReopenPath ? <p className="break-words">Governed reopen: {row.governedReopenPath}</p> : null}
             <details className="mt-2">

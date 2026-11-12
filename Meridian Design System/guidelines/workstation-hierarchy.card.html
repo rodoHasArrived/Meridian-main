@@ -1,0 +1,43 @@
+<!-- @dsCard group="Documentation" viewport="1180x780" name="Workstation hierarchy" subtitle="Context → object → evidence → consequence → action — the five layers every Meridian workstation reads in the same order" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Workstation hierarchy</title><link rel="stylesheet" href="../styles.css">
+<link rel="stylesheet" href="../docs/specimen-layout.css"><style>body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)}.wrap{display:grid;gap:16px;max-width:1140px}.grid{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:16px;align-items:start}.panel{border:1px solid var(--border);background:var(--bg-light);padding:12px;display:grid;gap:10px}.eyebrow{font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}.muted{font:12px/18px var(--font-body);color:var(--text-muted);margin:0;text-wrap:pretty}.stack{display:grid;gap:0}.layer{border:1px solid var(--border);border-bottom:0;background:var(--card-surface-raised);padding:9px 12px;display:grid;gap:2px}.layer:last-child{border-bottom:1px solid var(--border)}.layer b{font:600 13px var(--font-display);color:var(--text-primary)}.layer span{font:11px var(--font-data);color:var(--text-muted)}.arrow{justify-self:center;font:11px var(--font-data);color:var(--text-disabled);padding:0}table{border-collapse:collapse;width:100%;font:11px/16px var(--font-data);color:var(--text-secondary)}th{text-align:left;font-weight:600;color:var(--text-muted);border-bottom:1px solid var(--border);padding:5px 10px 5px 0;white-space:nowrap}td{border-bottom:1px solid var(--border);padding:5px 10px 5px 0;vertical-align:top}td b{color:var(--text-primary);font-weight:600}.rules{display:grid;gap:7px;margin:0;padding:0;list-style:none}.rules li{font:12px/18px var(--font-body);color:var(--text-muted);padding-left:14px;position:relative;text-wrap:pretty}.rules li:before{content:"—";position:absolute;left:0;color:var(--text-disabled)}.rules li b{color:var(--text-primary);font-weight:600}@media(max-width:820px){body{padding:12px}.grid{grid-template-columns:1fr}}</style></head><body class="mds-specimen"><div class="wrap">
+<div class="grid">
+  <div class="panel"><span class="eyebrow">The five layers</span>
+    <div class="stack">
+      <div class="layer"><b>Global context</b><span>entity · portfolio · book · basis · period · currency · as-of · scenario</span></div>
+      <div class="layer"><b>Active object</b><span>security · position · account · journal · reconciliation · exception · control</span></div>
+      <div class="layer"><b>Evidence</b><span>sources · calculation · lineage · documents · audit history</span></div>
+      <div class="layer"><b>Consequence</b><span>difference · impact · dependency · what this decision invalidates</span></div>
+      <div class="layer"><b>Action</b><span>resolve · post · attest · approve</span></div>
+    </div>
+    <p class="muted">Layout is free — columns, rails, or bottom sheets. Order is not: context above object, evidence before consequence, consequence before action, at 390 px and at 1920 px alike.</p>
+  </div>
+  <div class="panel"><span class="eyebrow">Owner of each layer</span>
+    <table><thead><tr><th>Layer</th><th>Answers</th><th>Owner</th></tr></thead><tbody>
+      <tr><td><b>Context</b></td><td>Where am I working?</td><td>WorkspaceContextProvider · WorkspaceContextBar</td></tr>
+      <tr><td><b>Object</b></td><td>What am I working on?</td><td>ObjectHeader · LinkedSelectionProvider</td></tr>
+      <tr><td><b>Evidence</b></td><td>Why should I believe it?</td><td>EvidenceInspector · CalculationTrace · EvidencePreview · SourceCoverageSummary · ProvenanceChip</td></tr>
+      <tr><td><b>Consequence</b></td><td>What happens if I act?</td><td>PostingImpactPreview · ControlDependencyGraph · Delta · VarianceCell</td></tr>
+      <tr><td><b>Action</b></td><td>What do I do?</td><td>One primary Button · ResolutionDrawer · AttestationPanel</td></tr>
+    </tbody></table>
+    <span class="eyebrow">Rules that make it hold</span>
+    <ul class="rules">
+      <li><b>Context is declared once and inherited.</b> No panel below the bar carries its own period, currency, or basis control.</li>
+      <li><b>The object is named once.</b> One ObjectHeader per screen; a second identity block below it is a defect.</li>
+      <li><b>Evidence is persistent, not modal.</b> An evidence rail that only opens as a dialog forces a choice between the claim and its support.</li>
+      <li><b>Consequence precedes action.</b> An enabled primary button with no stated consequence is the system’s most expensive defect.</li>
+      <li><b>One primary action per plane.</b> Two equal primary actions means two screens.</li>
+      <li><b>Every layer degrades honestly.</b> Evidence retains its last valid snapshot under ContinuityFrame; blocked actions name the unmet guard.</li>
+    </ul>
+  </div>
+</div>
+<div class="panel"><span class="eyebrow">The same five layers, read across four workstations</span>
+  <table><thead><tr><th>Workstation</th><th>Context</th><th>Object</th><th>Evidence</th><th>Consequence</th><th>Action</th></tr></thead><tbody>
+    <tr><td><b>Reconciliation exception</b></td><td>entity · book · period · as-of</td><td>the exception, residual, version</td><td>both sources, tie-out trace, audit history</td><td>which control the residual blocks</td><td>resolve, or escalate</td></tr>
+    <tr><td><b>Close management</b></td><td>entity · period · close deadline</td><td>the selected control</td><td>execution record, sign-off, source coverage</td><td>downstream controls released, hours off the critical path</td><td>unblock, or reassign</td></tr>
+    <tr><td><b>Asset-liability review</b></td><td>entity · book · basis · scenario · as-of</td><td>the selected horizon bucket</td><td>cash-flow classification, model version, assumptions</td><td>base versus scenario change in the gap</td><td>publish scenario, or escalate</td></tr>
+    <tr><td><b>Attestation</b></td><td>entity · book · reporting period</td><td>the attestation and its scope</td><td>evidence-set snapshot, changes since prior attestation</td><td>gates unsatisfied, what re-attestation reopens</td><td>sign</td></tr>
+  </tbody></table>
+  <p class="muted">Full law in <b>guidelines/WORKSTATION_HIERARCHY.md</b>; the object layer’s contract in <b>guidelines/OBJECT_MODEL.md</b>.</p>
+</div>
+</div></body></html>

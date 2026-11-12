@@ -50,7 +50,8 @@ import {
 import {
   buildSecurityConflictAction, buildSecurityIdentityAliasRow, buildSecurityIdentityIdentifierRow,
   formatConflictDate, formatFinanceFacingSourceSummary, formatSecurityConflictField, formatSecurityDate,
-  formatSecurityDateRange, formatSecurityReferenceValue, referenceDataStatusBadgeVariant,
+  formatSecurityDateRange, formatSecurityReferenceValue, formatSecurityScheduleEventType,
+  formatSecuritySchedulePostingStatus, referenceDataStatusBadgeVariant,
   referenceDataStatusLabel, referenceDataStatusTone, statusBadgeVariantForSecurityIdentity,
   summarizeReferenceDataRoutes,
 } from "./accounting-screen.security-master-presenters";
@@ -4388,6 +4389,16 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    sourceRows: scopedBreakQueue,
+    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
+      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
+        setBreakQueue((current) => {
+          const retained = current.find((item) => item.breakId === updated.breakId);
+          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
+          return replaceBreakQueueItem(current, updated);
+        });
+      }
+    },
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -7009,34 +7020,6 @@ export function buildTradingParametersViewState(
           ? `Trading parameters loaded for ${params.securityId}.`
           : ""
   };
-}
-
-function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
-  const labels: Record<string, string> = {
-    Coupon: "Coupon",
-    Principal: "Principal",
-    Paydown: "Paydown",
-    Maturity: "Maturity",
-    Call: "Call",
-    Put: "Holder put",
-    CallNoticeDeadline: "Issuer call notice deadline",
-    PutNoticeDeadline: "Holder put notice deadline",
-    Distribution: "Distribution",
-    FactorUpdate: "Factor update"
-  };
-
-  return labels[eventType] ?? eventType;
-}
-
-function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
-  const labels: Record<string, string> = {
-    Posted: "Posted",
-    Pending: "Pending",
-    Variance: "Variance review",
-    Forecast: "Forecast"
-  };
-
-  return labels[status] ?? status;
 }
 
 function securitySchedulePostingTone(

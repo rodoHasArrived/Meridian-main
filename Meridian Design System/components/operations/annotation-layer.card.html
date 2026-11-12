@@ -1,0 +1,96 @@
+<!-- @dsCard group="Operations" viewport="960x720" name="Annotation layer" subtitle="AnnotationAnchor · AnnotationPanel — notes on a cell, series point, ledger line or header, versioned with the object" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Annotation layer — AnnotationAnchor + AnnotationPanel</title>
+<link rel="stylesheet" href="../../styles.css">
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<style>
+body{margin:0;padding:16px;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary)}
+.demo-title{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin:0 0 8px}
+.plane{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,300px);gap:12px;align-items:start}
+.panel{min-width:0;border:1px solid var(--border);background:var(--bg-light)}
+.hdr{display:flex;align-items:baseline;gap:10px;padding:10px 12px;border-bottom:1px solid var(--border)}
+.hdr h2{margin:0;font:600 15px var(--font-display);color:var(--text-primary)}
+.hdr code{font:11px var(--font-data);color:var(--text-muted)}
+.line{display:grid;grid-template-columns:84px minmax(0,1fr) 120px;gap:10px;align-items:center;padding:0 12px;min-height:var(--table-row-height);border-bottom:1px solid var(--border-divider);font:12px var(--font-data)}
+.line .amt{text-align:right;font-variant-numeric:tabular-nums;color:var(--text-primary)}
+.tools{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+.btn{min-height:28px;padding:0 10px;border:1px solid var(--border-strong);border-radius:var(--radius-button);background:var(--bg-light);color:var(--text-primary);font:600 12px var(--font-body);cursor:pointer}
+.note{font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:14px}
+.note b{color:var(--text-secondary)}
+</style>
+<style>
+@media(max-width:900px){.plane{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body class="meridian">
+<div id="root"></div>
+<script type="text/babel">
+const { AnnotationProvider, AnnotationAnchor, AnnotationPanel, DataGrid } = window.MeridianDesignSystem_205d17;
+const { useState } = React;
+
+const SEED = [
+  { id: "a1", anchor: { kind: "cell", ref: "row:1310/closing", label: "1310 · Equities · closing" }, text: "Closing includes the 15 Jun restatement of MSFT cost basis. Certified against 819,882.00 — if this moves, the certification is void, not stale.", author: "r.okafor", at: Date.now() - 5400000, version: 12, lifecycle: "follow" },
+  { id: "a2", anchor: { kind: "line", ref: "line:JE-1080", label: "JE-1080" }, text: "Posted after the certification. Expect the 1310 gate to block until re-certified.", author: "m.chen", at: Date.now() - 3600000, version: 14, lifecycle: "follow" },
+  { id: "a3", anchor: { kind: "header", ref: "obj:1310", label: "Account 1310" }, text: "Auditor asked for the roll-forward with opening derived — sent 14 Jun. Pinned: this was true of v12 as delivered.", author: "a.patel", at: Date.now() - 86400000, version: 12, lifecycle: "pin" },
+];
+const ROWS = [
+  { id: "1100", account: "1100 · Cash", opening: "1,204,118.40", closing: "1,161,902.08" },
+  { id: "1310", account: "1310 · Equities", opening: "802,114.00", closing: "819,882.00" },
+  { id: "2100", account: "2100 · Payables", opening: "(88,410.00)", closing: "(91,205.50)" },
+];
+const LINES = [
+  { id: "JE-1079", memo: "Dividend MSFT · 1310 ↔ 1100", amt: "1,290.00" },
+  { id: "JE-1080", memo: "Cost basis restatement · 1310", amt: "(2,232.00)" },
+  { id: "JE-1081", memo: "Custody fee accrual · 2100", amt: "(318.50)" },
+];
+
+function Demo() {
+  const [version, setVersion] = useState(14);
+  const [focus, setFocus] = useState(null);
+  const cols = [
+    { key: "account", label: "Account" },
+    { key: "opening", label: "Opening", align: "right" },
+    { key: "closing", label: "Closing", align: "right", cell: (r) => <AnnotationAnchor anchor={{ kind: "cell", ref: `row:${r.id}/closing`, label: `${r.id} · closing` }} style={{ width: "100%", justifyContent: "flex-end" }}><span style={{ fontVariantNumeric: "tabular-nums", color: "var(--text-primary)" }}>{r.closing}</span></AnnotationAnchor> },
+  ];
+  return (
+    <AnnotationProvider objectId="acct:1310" objectVersion={version} author="you" annotations={SEED} onFocus={(n) => setFocus(n.anchor.ref)}>
+      <div className="tools">
+        <p className="demo-title" style={{ margin: 0 }}>Account 1310 · v{version}</p>
+        <span style={{ flex: 1 }} />
+        <button type="button" className="btn" onClick={() => setVersion((v) => v + 1)}>Post a change → v{version + 1}</button>
+      </div>
+      <div className="plane">
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+          <div className="panel">
+            <div className="hdr">
+              <AnnotationAnchor block anchor={{ kind: "header", ref: "obj:1310", label: "Account 1310" }} popover="left" style={{ flex: 1 }}><h2>1310 · Equities</h2></AnnotationAnchor>
+              <code>v{version} · Assets · normal side Dr</code>
+            </div>
+            <DataGrid rowKey="id" columns={cols} rows={ROWS} />
+          </div>
+          <div className="panel">
+            <div className="hdr"><h2 style={{ fontSize: 13 }}>Postings</h2><code>{LINES.length} lines</code></div>
+            {LINES.map((l) => (
+              <AnnotationAnchor key={l.id} block anchor={{ kind: "line", ref: `line:${l.id}`, label: l.id }} style={{ background: focus === `line:${l.id}` ? "var(--selected-surface)" : undefined }}>
+                <div className="line"><b style={{ color: "var(--text-primary)" }}>{l.id}</b><span>{l.memo}</span><span className="amt">{l.amt}</span></div>
+              </AnnotationAnchor>
+            ))}
+          </div>
+        </div>
+        <div className="panel" style={{ maxHeight: 560, display: "flex" }}>
+          <AnnotationPanel style={{ flex: 1 }} />
+        </div>
+      </div>
+      <p className="note"><b>Try:</b> hover a closing figure and press <b>¶</b> to add a note — choose <b>Follow</b> or <b>Pin to v{version}</b>. Then <b>Post a change</b>: following notes go stale (dashed marker, <i>stale · v14 → v15</i>) and offer <i>Still holds</i>; pinned notes keep their version and say so. The panel's Stale filter is what a reviewer reads first.</p>
+    </AnnotationProvider>
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo />);
+</script>
+</body>
+</html>

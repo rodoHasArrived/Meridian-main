@@ -1,0 +1,49 @@
+<!-- @dsCard group="Accounting" viewport="1180x760" name="Assurance — certification as carried state" subtitle="AssuranceChip · CertificationMatrix — who vouched for each balance, against which number; a moved balance voids the signature and the voided chain is retained" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Assurance</title><link rel="stylesheet" href="../../styles.css"><style>
+body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body);color:var(--text-primary)}.wrap{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;max-width:1140px}.lede h1{margin:0;font-size:16px;font-weight:600}.lede p{margin:4px 0 0;font-size:12px;line-height:1.5;color:var(--text-secondary);max-width:92ch;text-wrap:pretty}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.act{display:flex;gap:8px;align-items:center;font:11px var(--font-data);color:var(--text-muted)}.refuse{border:1px solid var(--red,#B54B42);border-left-width:3px;background:var(--red-a10,rgba(181,75,66,.10));padding:8px 11px;font-size:11.5px;line-height:1.5;color:var(--text-primary)}
+</style><style>
+.wrap > *{min-width:0}
+</style>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+</head><body><div id="root"></div><script type="text/babel">
+const {Assurance,AssuranceChip,CertificationMatrix,Button}=window.MeridianDesignSystem_205d17;
+const ACCOUNTS=[{code:"1100",name:"Cash & equivalents",material:true},{code:"1200",name:"Brokerage receivable",material:false},{code:"1310",name:"Equities",material:true},{code:"2100",name:"Margin payable",material:true},{code:"3100",name:"Contributed capital",material:true},{code:"5100",name:"Commissions & fees",material:false}];
+const BAL0={"1100":96881.5,"1200":42580,"1310":884002,"2100":-210000,"3100":-700000,"5100":28440};
+const sig=(stage,actor,authority,at,balance)=>({stage,actor,authority,at,balance});
+const REC0={
+ "1100":{signatures:[sig("prepared","R. Chen","Preparer","2026-06-30T18:02:11Z",96881.5),sig("reviewed","M. Okafor","Reviewer","2026-06-30T19:40:53Z",96881.5)]},
+ "1200":{signatures:[sig("prepared","R. Chen","Preparer","2026-06-30T18:14:37Z",42580)]},
+ "1310":{signatures:[sig("prepared","R. Chen","Preparer","2026-06-15T17:20:00Z",819882),sig("reviewed","M. Okafor","Reviewer","2026-06-15T18:05:12Z",819882),sig("certified","A. Patel","Controller","2026-06-15T18:31:44Z",819882)]},
+ "3100":{signatures:[sig("prepared","R. Chen","Preparer","2026-06-30T18:25:40Z",-700000),sig("reviewed","M. Okafor","Reviewer","2026-06-30T19:44:02Z",-700000),sig("certified","A. Patel","Controller","2026-06-30T20:10:19Z",-700000)]},
+};
+const OPERATOR="R. Alvarez";
+const AUTHORITY={prepared:"Preparer",reviewed:"Reviewer",certified:"Controller"};
+function Demo(){
+ const [rec,setRec]=React.useState(REC0);const [bal,setBal]=React.useState(BAL0);
+ const [acting,setActing]=React.useState("Preparer");const [refusal,setRefusal]=React.useState("");
+ const cov=Assurance.coverage(ACCOUNTS,rec,bal);
+ // One signed-in operator, one authority at a time. This demo never invents a signatory to advance a
+ // stage: an account needing a different authority — or a second person — says so and stays put.
+ const sign=(code)=>{
+  const st=Assurance.state(rec[code],bal[code]);const nx=Assurance.next(st.stage);
+  if(!nx){setRefusal(`${code} is certified against the balance in front of you — there is no further stage.`);return}
+  if(AUTHORITY[nx]!==acting){setRefusal(`${code} needs a ${AUTHORITY[nx]} to ${String(Assurance.verb(st.stage)||"sign").toLowerCase()} it. ${OPERATOR} is acting as ${acting}.`);return}
+  const mine=(st.live||st.signatures||[]).find(s=>s.actor===OPERATOR);
+  if(mine){setRefusal(`Segregation of duties — ${OPERATOR} already signed ${code} as ${mine.authority}. The next stage is a second person's signature.`);return}
+  setRefusal("");
+  setRec({...rec,[code]:Assurance.sign(rec[code],{actor:OPERATOR,authority:acting,balance:bal[code]})});
+ };
+ const post=()=>setBal({...bal,"1100":bal["1100"]-1120});
+ return <div className="wrap">
+  <div className="lede"><h1>Assurance — certification as carried state</h1><p>Sign-off used to exist only at object level (a close, a change set). The balance — the thing actually vouched for — carried no assurance state. Now each account × period climbs <b>unprepared → prepared → reviewed → certified</b>, one stage at a time, and every signature is bound to the balance it was given. <b>1310 · Equities</b> was certified on 15 June against 819,882.00; JE-1080 then bought 40 NVDA, so the chain is struck through: void, not stale — and <b>retained</b>, because an audit trail that deletes the signature it voided cannot show who vouched for what. Signing here is the signed-in operator in one authority; the demo will not conjure a preparer, reviewer and controller to walk an account up the ladder. The lock gate reads material coverage from <code>Assurance.coverage()</code> and names the uncovered accounts.</p></div>
+  <div className="row"><AssuranceChip stage="unprepared"/><AssuranceChip stage="prepared"/><AssuranceChip stage="reviewed"/><AssuranceChip stage="certified"/><AssuranceChip record={rec["1310"]} balance={bal["1310"]} showActor/><span className="act">← derived: certified, then the balance moved</span></div>
+  <CertificationMatrix accounts={ACCOUNTS} records={rec} balances={bal} onOpenAccount={sign}/>
+  <div className="row"><span className="act">Signed in · {OPERATOR} · acting as</span>{["Preparer","Reviewer","Controller"].map(a=><Button key={a} size="sm" variant={acting===a?"primary":"ghost"} onClick={()=>{setActing(a);setRefusal("")}}>{a}</Button>)}<Button size="sm" variant="ghost" onClick={post}>Post 1,120.00 against Cash</Button><span className="act">→ voids Cash's prepared + reviewed signatures</span></div>
+  {refusal?<div className="refuse">{refusal}</div>:null}
+  <div className="row"><span className="act">Click a row to sign it as {OPERATOR} in the selected authority · {(rec["1310"].signatures||[]).length} signatures retained on 1310, including the voided chain</span><span className="act" style={{marginLeft:"auto"}}>Lock gate: {cov.complete?"material coverage complete":cov.uncovered.length+" material uncovered — "+cov.uncovered.map(r=>r.code).join(", ")}</span></div>
+ </div>;
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

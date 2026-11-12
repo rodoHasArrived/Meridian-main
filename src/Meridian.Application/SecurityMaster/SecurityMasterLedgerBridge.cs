@@ -15,6 +15,7 @@ namespace Meridian.Application.SecurityMaster;
 /// using <see cref="LedgerViewKind.SecurityMaster"/>, enabling reconciliation between
 /// contractual flows (declared in the Security Master) and actual cash movements.
 /// </summary>
+[PostingCalculationNotYetConnected("Posts straight into a ledger rather than drafting for approval, so it must not be wired to the general ledger. Dividends are already drafted by CorporateActionDividendEventProducer, factor paydowns by the governed lot mutation, and return of capital by the corporate-action accounting case lane; redemptions still need a lot-relieving governed path. Its golden scenarios pin known defects CA-DEF-002 and CA-DEF-006 for the planned entitlement engine.")]
 public interface ISecurityMasterLedgerBridge
 {
     /// <summary>
