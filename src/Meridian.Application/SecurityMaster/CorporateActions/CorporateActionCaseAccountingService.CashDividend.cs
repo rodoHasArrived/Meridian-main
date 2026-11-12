@@ -184,7 +184,7 @@ public sealed partial class CorporateActionCaseAccountingService
             return new CorporateActionCashDividendPostingDto(Guid.NewGuid(), trusted.CaseId,
                 projection.ProjectionId, attestation.AttestationId, impact.JournalEntryId, impact.LedgerBookId,
                 impact.PeriodId, impact.AccountingBasis.ToString(), impact.Currency, impact.TotalDebits,
-                impact.TotalCredits, impact.PostingStatus.ToString(), null, trusted.Actor, default);
+                impact.TotalCredits, impact.PostingStatus.ToString(), null, trusted.Actor, impact.PostedAtUtc);
         }, fingerprint, ct).ConfigureAwait(false);
     }
 

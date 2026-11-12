@@ -19,6 +19,7 @@ using Meridian.Tests.Storage;
 using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using NSubstitute;
 
 namespace Meridian.Tests.SecurityMaster;
 
@@ -267,7 +268,7 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
                 lease.AppendJournalAsync(journal, repeatedWrite, postingCt));
             reusedLease.Message.Should().Contain("unused");
             return new(Guid.NewGuid(), ready.CaseId, attached.Projection.ProjectionId, lease.Attestation.AttestationId,
-                impact.JournalEntryId, bookId, periodId, "GAAP", "USD", impact.TotalDebits, impact.TotalCredits,
+                impact.JournalEntryId, bookId, periodId, impact.AccountingBasis.ToString(), "USD", impact.TotalDebits, impact.TotalCredits,
                 "Posted", null, Preparer, impact.PostedAtUtc);
         }
 
@@ -291,13 +292,35 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         var preservedConfiguration = await configuration.GetWorkspaceAsync(Fund, bookId, ct, Tenant, Company);
         var securityProjectionStore = new PostgresSecurityMasterStore(securityOptions);
         var preservedSecurityProjection = (await securityProjectionStore.GetProjectionAsync(securityId, ct))!;
-        var postingTask = operations.ExecuteAttestedCashDividendPostingAsync(postRequest, async (lease, postingCt) =>
+        var eligibilityResolver = Substitute.For<ICorporateActionCashDividendEligibilityResolver>();
+        eligibilityResolver.ResolveAsync(Arg.Any<CorporateActionProcessingCaseDto>(),
+            Arg.Any<CorporateActionCaseAccountingProjectionDto>(), Arg.Any<AssetAccountingEventSpineDto>(),
+            Arg.Any<CancellationToken>()).Returns(new CorporateActionCashDividendEligibilityDto(securityId, EffectiveDate,
+                receipt.RelatedEventKey, source.ProviderId, source.SourceEventId, source.SourceEventVersion, source.EvidenceHash!,
+                ready.SourceSnapshot.ProposedAction.DividendPerShare!.Value, Amount, Amount, PeriodStart,
+                snapshotHash, snapshot, roleBinding));
+        // Forward the application's actual factory callback into the real native transaction.
+        // The hook only pauses after it produces a result so concurrent exclusion is observable.
+        var heldNativeStore = Substitute.For<ICorporateActionCashDividendAccountingStore>();
+        heldNativeStore.ExecuteAttestedCashDividendPostingAsync(Arg.Any<PostAttestedCorporateActionCashDividendRequestDto>(),
+            Arg.Any<Func<CorporateActionCashDividendPostingLease, CancellationToken, Task<CorporateActionCashDividendPostingDto>>>(),
+            Arg.Any<string>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
-            var result = await PostNative(lease, postingCt);
-            postingHeld.SetResult(true);
-            await releasePosting.Task.WaitAsync(postingCt);
-            return result;
-        }, new string('f', 64), ct);
+            var request = call.ArgAt<PostAttestedCorporateActionCashDividendRequestDto>(0);
+            var callback = call.ArgAt<Func<CorporateActionCashDividendPostingLease, CancellationToken, Task<CorporateActionCashDividendPostingDto>>>(1);
+            var fingerprint = call.ArgAt<string>(2);
+            var cancellation = call.ArgAt<CancellationToken>(3);
+            return operations.ExecuteAttestedCashDividendPostingAsync(request, async (lease, postingCt) =>
+            {
+                var result = await callback(lease, postingCt);
+                postingHeld.SetResult(true);
+                await releasePosting.Task.WaitAsync(postingCt);
+                return result;
+            }, fingerprint, cancellation);
+        });
+        var nativeApplication = new CorporateActionCaseAccountingService(operations, assets, posting, books,
+            heldNativeStore, eligibilityResolver);
+        var postingTask = nativeApplication.PostAttestedCashDividendAsync(postRequest, ct);
         CorporateActionCashDividendPostingResultDto posted;
         try
         {
@@ -327,8 +350,11 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         finally { releasePosting.TrySetResult(true); }
         posted.Replayed.Should().BeFalse();
         posted.Case.State.Should().Be(CorporateActionCaseStates.Posted);
-        var journalEntry = (await journal.GetByPeriodAsync(periodId, ct)).Should().ContainSingle().Subject.Entry;
+        var journalRecord = (await journal.GetByPeriodAsync(periodId, ct)).Should().ContainSingle().Subject;
+        var journalEntry = journalRecord.Entry;
         journalEntry.JournalEntryId.Should().Be(posted.Posting.JournalEntryId);
+        posted.Posting.AccountingBasis.Should().Be(attached.Projection.AccountingBasis);
+        posted.Posting.PostedAtUtc.Should().Be(journalRecord.CreatedAt);
         journalEntry.Lines.Sum(line => line.Debit).Should().Be(Amount);
         journalEntry.Lines.Sum(line => line.Credit).Should().Be(Amount);
         journalEntry.Lines.Should().OnlyContain(line => line.Account.Symbol == drafted.DraftedCandidate!.InstrumentSymbol);
@@ -360,8 +386,8 @@ public sealed partial class CorporateActionAccountingPostgresRoundTripTests
         originalProof.Declaration.Should().Be(declaration);
         securityOptions.EnableSinglePrincipalCashDividendAttestations = false;
         var reopened = new PostgresCorporateActionOperationsStore(securityOptions, new PostgresLedgerJournalStore(ledgerOptions));
-        var replay = await reopened.ExecuteAttestedCashDividendPostingAsync(postRequest with { Authority = new(false, false) },
-            (_, _) => throw new InvalidOperationException("Replay must not run the posting callback"), new string('f', 64), ct);
+        var reopenedApplication = new CorporateActionCaseAccountingService(reopened);
+        var replay = await reopenedApplication.PostAttestedCashDividendAsync(postRequest with { Authority = new(false, false) }, ct);
         replay.Replayed.Should().BeTrue();
         replay.Posting.Should().Be(posted.Posting);
         (await reopened.GetCashDividendPostedProofAsync(posted.Posting.JournalEntryId, Tenant, Company, ct))!
