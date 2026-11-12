@@ -27,7 +27,12 @@ public sealed partial class WorkstationEndpointsTests
         var response = await client.GetAsync(url);
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         source.Scope.Should().Be(("tenant-test", "tenant-test"));
-        source.Unavailable = true;
+        source.Failure = new RecurringJournalStoreNotProvisionedException();
+        var unprovisioned = await client.GetAsync(url);
+        unprovisioned.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await unprovisioned.Content.ReadFromJsonAsync<RecurringJournalQueueDto>(ServerJsonOptions))
+            .Should().BeEquivalentTo(new RecurringJournalQueueDto("fund", book, "entity", []));
+        source.Failure = new IOException("Injected durable state outage");
         (await client.GetAsync(url)).StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         (await client.GetAsync(UiApiRoutes.LedgerJournalAutomationRecurringOccurrences)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -35,8 +40,8 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task RecurringConfiguration_IsAtomicAndRetainsServerActorAndOwnership()
     {
-        var directory = Path.Combine(Path.GetTempPath(), "meridian-recurring-api-" + Guid.NewGuid().ToString("N"));
-        var store = new FileRecurringJournalStore(directory);
+        var root = Path.Combine(Path.GetTempPath(), "meridian-recurring-api-" + Guid.NewGuid().ToString("N"));
+        var store = new FileRecurringJournalStore(Path.Combine(root, "registry"));
         await store.InitializeAsync();
         try
         {
@@ -69,19 +74,19 @@ public sealed partial class WorkstationEndpointsTests
             session.CurrentSchedules.Single().Scope.TenantId.Should().Be("tenant-test");
             session.Templates.Single().Scope!.CompanyId.Should().Be("tenant-test");
         }
-        finally { Directory.Delete(directory, recursive: true); }
+        finally { Directory.Delete(root, recursive: true); }
     }
 
     private sealed class CapturingRecurringQueueSource : IRecurringJournalQueueSource
     {
         public (string?, string?) Scope { get; private set; }
-        public bool Unavailable { get; set; }
+        public Exception? Failure { get; set; }
         public Task<RecurringJournalQueueDto> GetQueueAsync(string fundProfileId, Guid ledgerBookId, string entityId,
             CancellationToken ct = default, string? tenantId = null, string? companyId = null)
         {
             Scope = (tenantId, companyId);
-            if (Unavailable)
-                throw new IOException("Injected durable state outage");
+            if (Failure is { } failure)
+                throw failure;
             return Task.FromResult(new RecurringJournalQueueDto(fundProfileId, ledgerBookId, entityId, []));
         }
     }

@@ -315,7 +315,8 @@ public sealed class FixedAssetDepreciationCalculation(IFixedAssetRegister? regis
             throw new InvalidOperationException("The fixed-asset register is unavailable; depreciation is blocked.");
         var scope = context.Scope;
         var windowStart = context.RequireWindowStart();
-        var entries = await register.ListAsync(scope.TenantId, scope.CompanyId, scope.FundProfileId, scope.LedgerBookId, ct).ConfigureAwait(false);
+        var entries = await register.ListForDepreciationAsync(scope.TenantId, scope.CompanyId, scope.FundProfileId,
+            scope.LedgerBookId, ct).ConfigureAwait(false);
         if (entries.Count == 0)
             return RecurringJournalCalculationResult.NothingDue("The fixed-asset register holds no assets for this fund book.");
 

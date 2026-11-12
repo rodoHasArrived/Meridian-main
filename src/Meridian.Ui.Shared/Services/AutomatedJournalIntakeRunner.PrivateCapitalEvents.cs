@@ -60,6 +60,9 @@ public sealed partial class AutomatedJournalIntakeRunner
             return BuildBlockedCapitalCallResult(runKey, code, lane, "The distribution register is unavailable, so earlier waterfall tiers cannot be read.");
         if (string.IsNullOrWhiteSpace(request.TenantId) || string.IsNullOrWhiteSpace(request.CompanyId))
             return BuildBlockedCapitalCallResult(runKey, code, lane, "A distribution needs its tenant and company scope.");
+        if (request.LedgerBookId is not { } bookId || bookId == Guid.Empty)
+            return BuildBlockedCapitalCallResult(runKey, code, lane, "A distribution must name its ledger book.");
+
         // Hold the shared register lease from the first queue read through the last durable write.
         await using var lease = await _distributionRegister.AcquireDeclarationLeaseAsync(ct).ConfigureAwait(false);
         var (workbench, blocker) = await LoadPrivateCapitalWorkbenchAsync(request.FundProfileId, request.LedgerBookId,
@@ -71,14 +74,17 @@ public sealed partial class AutomatedJournalIntakeRunner
         foreach (var investorId in (request.Investors ?? []).Where(static line => line is not null && !string.IsNullOrWhiteSpace(line.InvestorId))
                      .Select(static line => line.InvestorId.Trim()).Distinct(StringComparer.OrdinalIgnoreCase))
         {
-            registered[investorId] = request.LedgerBookId is { } book
-                ? await _distributionRegister.ListAsync(request.TenantId, request.CompanyId, request.FundProfileId, book, investorId, ct).ConfigureAwait(false)
-                : [];
+            registered[investorId] = await _distributionRegister.ListAsync(
+                request.TenantId, request.CompanyId, request.FundProfileId, bookId, investorId, ct).ConfigureAwait(false);
         }
 
-        var (production, records) = DistributionDeclarationDraftProducer.Produce(request, registered, workbench.Value.Drafts, evaluatedAtUtc);
+        var (period, periodBlocker) = await ResolveDistributionPeriodAsync(request, bookId, ct).ConfigureAwait(false);
+        if (period is null)
+            return BuildBlockedCapitalCallResult(runKey, code, lane, periodBlocker!);
+
+        var (production, records) = DistributionDeclarationDraftProducer.Produce(request, period, registered, workbench.Value.Drafts, evaluatedAtUtc);
         var result = await AdmitPrivateCapitalEventDraftsAsync(production, runKey, code, lane, request.FundProfileId, request.Currency,
-            request.Actor, request.LedgerBookId, request.PeriodId, request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
+            request.Actor, bookId, period.PeriodId.ToString("D"), request.EntityId, request.TenantId, request.CompanyId, ct).ConfigureAwait(false);
         if (result.Readiness != AutomatedJournalIntakeReadiness.Ready)
             return result;
 
@@ -98,6 +104,34 @@ public sealed partial class AutomatedJournalIntakeRunner
         }
 
         return result;
+    }
+
+    private async Task<(LedgerPeriodDto? Period, string? Blocker)> ResolveDistributionPeriodAsync(
+        RunDistributionDeclarationDraftIntakeRequest request, Guid bookId, CancellationToken ct)
+    {
+        if (_ledgerBookService is null)
+            return (null, "The ledger period authority is unavailable; distribution intake is blocked.");
+
+        var requestedPeriodId = Guid.Empty;
+        if (!string.IsNullOrWhiteSpace(request.PeriodId) &&
+            (!Guid.TryParse(request.PeriodId, out requestedPeriodId) || requestedPeriodId == Guid.Empty))
+        {
+            return (null, "The supplied distribution period ID must be a durable ledger period GUID.");
+        }
+
+        var periods = await _ledgerBookService.ListPeriodsAsync(
+            new LedgerPeriodQuery(LedgerBookId: bookId, FundProfileId: request.FundProfileId.Trim()), ct).ConfigureAwait(false);
+        var matches = periods.Where(period =>
+            period.PeriodId != Guid.Empty && period.LedgerBookId == bookId &&
+            period.AccountingBasis == AccountingBasisKindDto.Primary &&
+            period.StartDate <= request.EffectiveDate && request.EffectiveDate <= period.EndDate &&
+            (requestedPeriodId == Guid.Empty || period.PeriodId == requestedPeriodId)).Take(2).ToArray();
+        if (matches.Length == 1)
+            return (matches[0], null);
+
+        return requestedPeriodId == Guid.Empty
+            ? (null, $"Exactly one authoritative accounting period in the selected ledger book must cover {request.EffectiveDate:yyyy-MM-dd}; supply its period ID if more than one covers that date.")
+            : (null, $"The supplied ledger period '{requestedPeriodId:D}' must cover {request.EffectiveDate:yyyy-MM-dd} in the selected ledger book.");
     }
 
     private async Task<((IReadOnlyList<ManualJournalEntryDraftDto> Drafts, PrivateCapitalActivityProjectionDto Activity)? Workbench, string? Blocker)> LoadPrivateCapitalWorkbenchAsync(

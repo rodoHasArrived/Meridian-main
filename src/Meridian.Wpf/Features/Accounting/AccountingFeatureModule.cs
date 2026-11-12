@@ -263,7 +263,12 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
                 sp.GetService<IOperationsContinuityWorkflowService>(),
                 sp.GetService<IDailyValuationScheduleStatusSource>(),
                 sp.GetService<IAutomatedJournalScheduleStatusSource>(),
-                sp.GetService<IRecurringJournalQueueSource>()));
+                sp.GetService<IRecurringJournalQueueSource>(),
+                async (bookId, periodId, ct) =>
+                {
+                    var response = await sp.GetRequiredService<ILedgerReportsApiClient>().GetPeriodsAsync(bookId, ct).ConfigureAwait(false);
+                    return response.Success ? response.Data?.SingleOrDefault(period => period.PeriodId == periodId && period.LedgerBookId == bookId) : null;
+                }));
         services.TryAddSingleton<ICloseReadinessSubjectSource, CloseReadinessSubjectSource>();
         services.TryAddSingleton<IWorkstationTenantContextAccessor, DesktopWorkstationTenantContextAccessor>();
         services.TryAddSingleton<IOperationsReportPackAuthority, OperationsReportPackAuthority>();

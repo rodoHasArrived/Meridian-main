@@ -7,12 +7,13 @@ namespace Meridian.Tests.FinancialOperations;
 
 public sealed class RecurringJournalStoreTests : IDisposable
 {
-    private readonly string _directory = Path.Combine(Path.GetTempPath(), "meridian-recurring-tests", Guid.NewGuid().ToString("N"));
+    private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-recurring-tests", Guid.NewGuid().ToString("N"));
+    private string StateDirectory => Path.Combine(_root, "registry");
     private static readonly DateTimeOffset At = new(2026, 10, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly DateOnly Date = new(2026, 10, 1);
     private static readonly RecurringJournalScope Scope = new("fund-a", Guid.Parse("048804c2-31df-4878-8008-580386a12e80"), "entity-a", "USD", "tenant-a", "company-a", "account-a");
 
-    private FileRecurringJournalStore Store() => new(_directory);
+    private FileRecurringJournalStore Store() => new(StateDirectory);
 
     private static JournalTemplate Template(decimal factor = 1m) => new("fee", "Management fee", "Approved contract fee",
     [
@@ -170,27 +171,40 @@ public sealed class RecurringJournalStoreTests : IDisposable
     public async Task UnprovisionedState_FailsClosedWithoutCreatingAnEmptyStore()
     {
         Func<Task> read = async () => await Store().OpenSessionAsync();
-        await read.Should().ThrowAsync<InvalidOperationException>();
-        Directory.Exists(_directory).Should().BeFalse();
+        await read.Should().ThrowAsync<RecurringJournalStoreNotProvisionedException>();
+        Directory.Exists(StateDirectory).Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task LostProvisionedDirectory_CannotBeReadOrRecreatedAsAnUnusedStore()
+    {
+        await SeedAsync();
+        Directory.Delete(StateDirectory, recursive: true);
+
+        Func<Task> read = async () => await Store().OpenSessionAsync();
+        Func<Task> initialize = () => Store().InitializeAsync();
+        await read.Should().ThrowExactlyAsync<InvalidOperationException>().WithMessage("*previously provisioned*");
+        await initialize.Should().ThrowExactlyAsync<InvalidOperationException>();
+        File.Exists(Path.Combine(StateDirectory, "recurring-journals.json")).Should().BeFalse();
     }
 
     [Fact]
     public async Task DeletedInitializedState_CannotBeReinitializedAsEmpty()
     {
         await SeedAsync();
-        File.Delete(Path.Combine(_directory, "recurring-journals.json"));
+        File.Delete(Path.Combine(StateDirectory, "recurring-journals.json"));
         Func<Task> read = async () => await Store().OpenSessionAsync();
         Func<Task> initialize = () => Store().InitializeAsync();
         await read.Should().ThrowAsync<InvalidOperationException>();
         await initialize.Should().ThrowAsync<InvalidOperationException>();
-        File.Exists(Path.Combine(_directory, "recurring-journals.json")).Should().BeFalse();
+        File.Exists(Path.Combine(StateDirectory, "recurring-journals.json")).Should().BeFalse();
     }
 
     [Fact]
     public async Task CorruptState_FailsClosedAndPreservesOriginalBytes()
     {
         await SeedAsync();
-        var path = Path.Combine(_directory, "recurring-journals.json");
+        var path = Path.Combine(StateDirectory, "recurring-journals.json");
         await File.WriteAllTextAsync(path, "{bad-data");
         Func<Task> read = async () => await Store().OpenSessionAsync();
         Func<Task> initialize = () => Store().InitializeAsync();
@@ -336,8 +350,8 @@ public sealed class RecurringJournalStoreTests : IDisposable
 
     public void Dispose()
     {
-        if (Directory.Exists(_directory))
-            Directory.Delete(_directory, recursive: true);
+        if (Directory.Exists(_root))
+            Directory.Delete(_root, recursive: true);
     }
 
     [Fact]

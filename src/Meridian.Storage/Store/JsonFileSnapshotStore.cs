@@ -48,6 +48,9 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
     /// </summary>
     protected virtual TSnapshot HandleCorruptSnapshot(JsonException exception) => throw exception;
 
+    /// <summary>Called when an existing snapshot file contains a JSON null.</summary>
+    protected virtual TSnapshot HandleNullSnapshot() => CreateEmptySnapshot();
+
     /// <summary>
     /// Called after a snapshot is successfully deserialized. Stores with versioned snapshots
     /// override this to validate or upgrade the document. Default: return it unchanged.
@@ -195,7 +198,7 @@ public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
             return HandleCorruptSnapshot(ex);
         }
 
-        return snapshot is null ? CreateEmptySnapshot() : OnSnapshotLoaded(snapshot);
+        return snapshot is null ? HandleNullSnapshot() : OnSnapshotLoaded(snapshot);
     }
 
     /// <summary>Serializes and atomically persists the snapshot without taking the gate.</summary>

@@ -28,6 +28,10 @@ public interface IFixedAssetRegister
     Task<IReadOnlyList<FixedAssetRegisterEntry>> ListAsync(string tenantId, string companyId, string fundProfileId,
         Guid ledgerBookId, CancellationToken ct = default);
 
+    /// <summary>Reads depreciation inputs from a retained register, including a confirmed empty one.</summary>
+    Task<IReadOnlyList<FixedAssetRegisterEntry>> ListForDepreciationAsync(string tenantId, string companyId,
+        string fundProfileId, Guid ledgerBookId, CancellationToken ct = default);
+
     /// <summary>Adds the asset, or replaces the entry with the same asset id in the same book.</summary>
     Task<FixedAssetRegisterEntry> UpsertAsync(FixedAssetRegisterEntry entry, CancellationToken ct = default);
 }
@@ -98,14 +102,38 @@ public sealed class FileFixedAssetRegister(string directory)
     : JsonFileSnapshotStore<FileFixedAssetRegister.Snapshot>(Path.Combine(directory, "fixed-asset-register.json"), FundAdministrationRegisterJson.Options),
       IFixedAssetRegister
 {
+    // A missing, never-initialized register is distinct from a retained empty asset list.
+    private static readonly Snapshot UnretainedSnapshot = new([]);
+    // Keep the witness outside the register directory so losing that directory cannot reset it.
+    private string InitializationPath => Path.GetDirectoryName(Path.GetFullPath(SnapshotPath)) + ".fixed-asset-register.initialized";
+
     public Task<IReadOnlyList<FixedAssetRegisterEntry>> ListAsync(string tenantId, string companyId, string fundProfileId,
         Guid ledgerBookId, CancellationToken ct = default)
-        => ReadSnapshotAsync<IReadOnlyList<FixedAssetRegisterEntry>>(snapshot => snapshot.Assets
-            .Where(entry => InScope(entry, tenantId, companyId, fundProfileId, ledgerBookId))
-            .OrderBy(entry => entry.Asset.InServiceDate).ThenBy(entry => entry.Asset.AssetId)
-            .ToArray(), ct);
+        => ListAssetsAsync(tenantId, companyId, fundProfileId, ledgerBookId, requireRetainedSnapshot: false, ct);
 
-    public Task<FixedAssetRegisterEntry> UpsertAsync(FixedAssetRegisterEntry entry, CancellationToken ct = default)
+    public async Task<IReadOnlyList<FixedAssetRegisterEntry>> ListForDepreciationAsync(string tenantId, string companyId,
+        string fundProfileId, Guid ledgerBookId, CancellationToken ct = default)
+    {
+        var entries = await ListAssetsAsync(tenantId, companyId, fundProfileId, ledgerBookId,
+            requireRetainedSnapshot: true, ct).ConfigureAwait(false);
+        RememberInitialization();
+        return entries;
+    }
+
+    private Task<IReadOnlyList<FixedAssetRegisterEntry>> ListAssetsAsync(string tenantId, string companyId,
+        string fundProfileId, Guid ledgerBookId, bool requireRetainedSnapshot, CancellationToken ct)
+        => ReadSnapshotAsync<IReadOnlyList<FixedAssetRegisterEntry>>(snapshot =>
+        {
+            if (requireRetainedSnapshot && ReferenceEquals(snapshot, UnretainedSnapshot))
+                throw new InvalidOperationException("A retained fixed-asset register is required before running depreciation.");
+
+            return snapshot.Assets
+                .Where(entry => InScope(entry, tenantId, companyId, fundProfileId, ledgerBookId))
+                .OrderBy(entry => entry.Asset.InServiceDate).ThenBy(entry => entry.Asset.AssetId)
+                .ToArray();
+        }, ct);
+
+    public async Task<FixedAssetRegisterEntry> UpsertAsync(FixedAssetRegisterEntry entry, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Asset);
@@ -125,7 +153,9 @@ public sealed class FileFixedAssetRegister(string directory)
             EvidenceUri = FundAdministrationRegisterJson.Require(entry.EvidenceUri, nameof(entry.EvidenceUri)),
             RegisteredAtUtc = entry.RegisteredAtUtc.ToUniversalTime()
         };
-        return UpdateSnapshotAsync(snapshot =>
+        await using var lease = await ExclusiveFileLock.AcquireAsync(SnapshotPath + ".lock", TimeSpan.FromSeconds(30), ct)
+            .ConfigureAwait(false);
+        var retained = await UpdateSnapshotAsync(snapshot =>
         {
             var owner = snapshot.Assets.FirstOrDefault(existing => existing.Asset.AssetId == normalized.Asset.AssetId);
             if (owner is not null && !InScope(owner, normalized.TenantId, normalized.CompanyId, normalized.FundProfileId, normalized.LedgerBookId))
@@ -137,10 +167,44 @@ public sealed class FileFixedAssetRegister(string directory)
                     "A registered fixed asset's cost, salvage value, life, method, currency and in-service date cannot be changed. Retire it and register the revised asset under a new id.");
             var assets = snapshot.Assets.Where(existing => existing.Asset.AssetId != normalized.Asset.AssetId).Append(normalized).ToArray();
             return (new Snapshot(assets), normalized);
-        }, ct);
+        }, ct).ConfigureAwait(false);
+        RememberInitialization();
+        return retained;
     }
 
-    protected override Snapshot CreateEmptySnapshot() => new([]);
+    protected override Snapshot CreateEmptySnapshot()
+        => RetainedPathExists(InitializationPath) || RetainedPathExists(SnapshotPath)
+            ? throw new InvalidOperationException("The retained fixed-asset register is missing. Restore it before continuing.")
+            : UnretainedSnapshot;
+
+    protected override Snapshot HandleNullSnapshot()
+        => throw new JsonException("The retained fixed-asset register contains JSON null.");
+
+    protected override Snapshot OnSnapshotLoaded(Snapshot snapshot)
+        => snapshot.Assets is null || snapshot.Assets.Any(static entry => entry?.Asset is null)
+            ? throw new JsonException("The fixed-asset register has a missing asset list or invalid asset entry.")
+            : snapshot;
+
+    private void RememberInitialization()
+    {
+        if (!RetainedPathExists(InitializationPath))
+        {
+            using var marker = File.Open(InitializationPath, FileMode.OpenOrCreate, FileAccess.Write, FileShare.ReadWrite);
+        }
+    }
+
+    private static bool RetainedPathExists(string path)
+    {
+        try
+        {
+            _ = File.GetAttributes(path);
+            return true;
+        }
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+        {
+            return false;
+        }
+    }
 
     private static bool InScope(FixedAssetRegisterEntry entry, string tenantId, string companyId, string fundProfileId, Guid ledgerBookId)
         => entry.LedgerBookId == ledgerBookId && FundAdministrationRegisterJson.Same(entry.TenantId, tenantId) &&

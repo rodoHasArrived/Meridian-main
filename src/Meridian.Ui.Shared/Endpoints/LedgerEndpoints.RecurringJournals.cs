@@ -98,7 +98,11 @@ public static partial class LedgerEndpoints
                 return Results.Json(await source.GetQueueAsync(fund, book, entity, context.RequestAborted,
                     tenant.TenantId, tenant.CompanyId).ConfigureAwait(false), jsonOptions);
             }
-            catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
+            catch (RecurringJournalStoreNotProvisionedException)
+            {
+                return Results.Json(new RecurringJournalQueueDto(fund, book, entity, []), jsonOptions);
+            }
+            catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException or UnauthorizedAccessException)
             { return Results.Problem("The durable recurring journal queue is unavailable.", statusCode: StatusCodes.Status503ServiceUnavailable); }
         }).WithName("ListRecurringJournalOccurrences")
             .RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports)

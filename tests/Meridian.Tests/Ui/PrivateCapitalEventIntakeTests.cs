@@ -1,8 +1,10 @@
+using System.Globalization;
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
 using Meridian.FinancialOperations.FundAdministration;
 using Meridian.Ledger;
 using Meridian.Ui.Shared.Services;
+using Moq;
 using Xunit;
 
 namespace Meridian.Tests.Ui;
@@ -20,6 +22,8 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     private const string CallId = "call-1";
     private const string DefaultId = "default:cmt-1:call-1:cmt-1";
     private static readonly Guid BookId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+    private static readonly Guid AprilPeriodId = Guid.Parse("40000000-0000-0000-0000-000000000000");
+    private static readonly Guid MayPeriodId = Guid.Parse("50000000-0000-0000-0000-000000000000");
     private static readonly DateOnly NoticeDate = new(2026, 3, 15);
     private static readonly DateTimeOffset AsOf = new(2026, 6, 1, 12, 0, 0, TimeSpan.Zero);
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-private-capital-events-" + Guid.NewGuid().ToString("N"));
@@ -128,6 +132,47 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         may.Intake.Created.Should().ContainSingle().Which.TotalDebits.Should().Be(16_438.36m);
     }
 
+    [Theory]
+    [InlineData(ManualJournalEntryStatusDto.Rejected, "2739.73")]
+    [InlineData(ManualJournalEntryStatusDto.Reversed, "2739.73")]
+    [InlineData(ManualJournalEntryStatusDto.Rebooked, "2739.73")]
+    [InlineData(ManualJournalEntryStatusDto.Posted, "1739.73")]
+    [InlineData(ManualJournalEntryStatusDto.CloseLocked, "1739.73")]
+    public async Task DefaultInterest_OccupiedJournalAtCureDate_BlocksWhenInterestRemainsDue(
+        ManualJournalEntryStatusDto status, string amountOwed)
+    {
+        var cureDate = new DateOnly(2026, 4, 9);
+        var issuance = CapitalCallFundingTestData.PostedIssuanceEvent(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate, AsOf);
+        PrivateCapitalLedgerImpactDto[] posted =
+        [
+            CapitalCallFundingTestData.PostedIssuanceImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, NoticeDate),
+            CapitalCallFundingTestData.PostedFundingImpact(Fund, CallId, "cmt-1", "lp-1", 1_000_000m, cureDate)
+        ];
+        var fixture = await CreateFixtureAsync([issuance], posted);
+        var first = await fixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 5, 29)));
+        var draft = first.Intake.Created.Should().ContainSingle().Subject;
+        draft.AccountingDate.Should().Be(cureDate);
+        await fixture.Drafts.SaveAsync(draft with { Status = status });
+
+        PrivateCapitalLedgerImpactDto[] updated = status switch
+        {
+            ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked =>
+                [.. posted, PostedInterest("20260409", 1_000m)],
+            ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked =>
+                [.. posted, PostedInterest("20260409", draft.TotalDebits), PostedInterest("20260409", draft.TotalDebits, reversal: true)],
+            _ => posted
+        };
+        var replayFixture = await CreateFixtureAsync([issuance], updated);
+        var replay = await replayFixture.Runner.RunCapitalCallDefaultInterestIntakeAsync(DefaultRequest(new(2026, 6, 1)));
+
+        replay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        replay.ReadinessBlockers.Should().ContainSingle().Which.Should()
+            .Contain($"{amountOwed} USD remains due").And.Contain("2026-04-09").And.Contain(status.ToString())
+            .And.Contain(draft.JournalEntryId.ToString("D")).And.Contain("governed journal workflow");
+        replay.Intake.Created.Should().BeEmpty();
+        replay.Intake.Skipped.Should().BeEmpty();
+    }
+
     [Fact]
     public async Task DefaultInterest_StopsAtTheCureDate_AndIgnoresACallFundedWithinGrace()
     {
@@ -175,6 +220,7 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         var firstDraft = first.Intake.Created.Should().ContainSingle().Subject;
         firstDraft.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
         firstDraft.EntryType.Should().Be(ManualJournalEntryTypeDto.Distribution);
+        firstDraft.PeriodId.Should().Be(AprilPeriodId.ToString("D"));
         firstDraft.TreasuryContext!.CapitalAccountId.Should().Be("ca-lp-1");
         Lines(firstDraft).Should().BeEquivalentTo(new[]
         {
@@ -211,6 +257,48 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         var changed = await fixture.Runner.RunDistributionDeclarationIntakeAsync(DistributionRequest("dist-2", new(2026, 5, 31), amount: 700_000m));
         changed.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
         changed.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("different terms");
+    }
+
+    [Fact]
+    public async Task Distribution_ClosedPeriod_AllowsExactReplayButBlocksNewAdmission()
+    {
+        var request = DistributionRequest("dist-1", new(2026, 4, 30));
+        var open = await CreateFixtureAsync([], []);
+        var first = await open.Runner.RunDistributionDeclarationIntakeAsync(request);
+        first.Intake.Created.Should().ContainSingle().Which.PeriodId.Should().Be(AprilPeriodId.ToString("D"));
+
+        var closed = await CreateFixtureAsync([], [], [Period(AprilPeriodId, 4, LedgerPeriodStatusDto.HardClosed)]);
+        var replay = await closed.Runner.RunDistributionDeclarationIntakeAsync(request);
+        replay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        replay.Intake.Skipped.Should().ContainSingle();
+
+        var blocked = await closed.Runner.RunDistributionDeclarationIntakeAsync(request with { DistributionId = "dist-2" });
+        blocked.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        blocked.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("HardClosed").And.Contain("reopen");
+        blocked.Intake.Created.Should().BeEmpty();
+        (await closed.Drafts.ListAsync(Fund, BookId)).Should().ContainSingle();
+        (await closed.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().ContainSingle();
+    }
+
+    [Fact]
+    public async Task Distribution_ExplicitPeriodMustBeDurableAndCoverTheDeclarationDate()
+    {
+        var fixture = await CreateFixtureAsync([], []);
+        var request = DistributionRequest("dist-1", new(2026, 4, 30));
+
+        var calendarLabel = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request with { PeriodId = "2026-04" });
+        calendarLabel.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        calendarLabel.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("durable ledger period GUID");
+
+        var wrongDate = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request with { PeriodId = MayPeriodId.ToString("D") });
+        wrongDate.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
+        wrongDate.ReadinessBlockers.Should().ContainSingle().Which.Should().Contain("must cover 2026-04-30");
+        (await fixture.Drafts.ListAsync(Fund, BookId)).Should().BeEmpty();
+        (await fixture.Register.ListAsync(Tenant, Company, Fund, BookId, "lp-1")).Should().BeEmpty();
+
+        var correct = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request with { PeriodId = AprilPeriodId.ToString("N") });
+        correct.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
+        correct.Intake.Created.Should().ContainSingle().Which.PeriodId.Should().Be(AprilPeriodId.ToString("D"));
     }
 
     [Fact]
@@ -366,8 +454,9 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
     [Fact]
     public async Task Distribution_LegacyDraftCanReplayOnlyWithItsOriginalRegisterRecord()
     {
-        var fixture = await CreateFixtureAsync([], []);
-        var request = DistributionRequest("legacy-dist", new(2026, 4, 30));
+        var alternatePeriodId = Guid.Parse("40000000-0000-0000-0000-000000000001");
+        var fixture = await CreateFixtureAsync([], [], [Period(AprilPeriodId, 4), Period(alternatePeriodId, 4)]);
+        var request = DistributionRequest("legacy-dist", new(2026, 4, 30)) with { PeriodId = AprilPeriodId.ToString("D") };
         var admitted = await fixture.Runner.RunDistributionDeclarationIntakeAsync(request);
         var legacyDraft = admitted.Intake.Created.Single() with { DistributionDeclarationJson = null };
         await fixture.Drafts.SaveAsync(legacyDraft);
@@ -382,7 +471,7 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         replay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Ready);
         replay.Intake.Skipped.Should().ContainSingle().Which.JournalEntryId.Should().Be(legacyDraft.JournalEntryId);
 
-        foreach (var changed in new[] { request with { EntityId = "different-entity" }, request with { PeriodId = "different-period" } })
+        foreach (var changed in new[] { request with { EntityId = "different-entity" }, request with { PeriodId = alternatePeriodId.ToString("D") } })
         {
             var changedReplay = await fixture.Runner.RunDistributionDeclarationIntakeAsync(changed);
             changedReplay.Readiness.Should().Be(AutomatedJournalIntakeReadiness.Blocked);
@@ -416,13 +505,15 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
             : (AccountingTemplateLineSideDto.Debit, AccountingTemplateLineSideDto.Credit);
         var id = Guid.NewGuid();
         return new($"journal-entry:{id:D}", id, $"fund-event:{Fund}:default-interest:{DefaultId}:{through}", "DefaultInterest",
-            "ca-lp-1", "lp-1", ManualJournalEntryStatusDto.Approved, new DateOnly(2026, 4, 29), "USD", amount, amount, 0m, 2, true, true, [],
+            "ca-lp-1", "lp-1", ManualJournalEntryStatusDto.Approved, DateOnly.ParseExact(through, "yyyyMMdd", CultureInfo.InvariantCulture),
+            "USD", amount, amount, 0m, 2, true, true, [],
             [new("line-1", "Capital Call Default Interest Receivable", receivable, amount, "USD", "lp-1", null, null, null),
              new("line-2", "Capital Call Default Interest Income", income, amount, "USD", Fund, null, null, null)],
             []);
     }
 
-    private async Task<Fixture> CreateFixtureAsync(PrivateCapitalFundEventDto[] postedFundEvents, PrivateCapitalLedgerImpactDto[] postedLedgerImpacts)
+    private async Task<Fixture> CreateFixtureAsync(PrivateCapitalFundEventDto[] postedFundEvents, PrivateCapitalLedgerImpactDto[] postedLedgerImpacts,
+        IReadOnlyList<LedgerPeriodDto>? distributionPeriods = null)
     {
         var workspace = CapitalCallFundingTestData.Workspace(Fund, Tenant, Company);
         var configurationStore = new InMemoryAccountingConfigurationStore();
@@ -441,11 +532,24 @@ public sealed class PrivateCapitalEventIntakeTests : IDisposable
         var drafts = new FileManualJournalEntryDraftStore(Path.Combine(_root, "drafts.json"));
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configurationService, new InMemoryAccountingActionAuditStore());
         var register = new FileDistributionRegister(Path.Combine(_root, "registers"));
+        var ledgerBooks = new Mock<ILedgerBookService>(MockBehavior.Strict);
+        ledgerBooks.Setup(service => service.ListPeriodsAsync(
+                It.Is<LedgerPeriodQuery>(query => query.LedgerBookId == BookId && query.FundProfileId == Fund),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(distributionPeriods ?? [Period(AprilPeriodId, 4), Period(MayPeriodId, 5)]);
         var runner = new AutomatedJournalIntakeRunner(new AutomatedJournalDraftIntakeService(workbench, drafts, configurationService),
             new FeeScheduleAccrualEventProducer(),
+            ledgerBookService: ledgerBooks.Object,
             manualJournalWorkbench: new PostedActivityManualJournalWorkbench(workbench, postedFundEvents, postedLedgerImpacts),
             distributionRegister: register);
         return new(runner, drafts, register, workbench);
+    }
+
+    private static LedgerPeriodDto Period(Guid periodId, int month, LedgerPeriodStatusDto status = LedgerPeriodStatusDto.Open)
+    {
+        var start = new DateOnly(2026, month, 1);
+        return new(periodId, BookId, 2026, month, start.ToString("yyyy-MM", CultureInfo.InvariantCulture),
+            start, start.AddMonths(1).AddDays(-1), status, AsOf, null, 1);
     }
 
     private static ChartOfAccountsNodeDto Node(string path, string name, string type)

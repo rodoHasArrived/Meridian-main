@@ -1,7 +1,9 @@
+using System.Data.Common;
 using System.Globalization;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
+using Meridian.FinancialOperations.FundAdministration;
 using Meridian.FinancialOperations.OperationsContinuity;
 using static Meridian.Contracts.Text.TextPrimitives;
 
@@ -46,15 +48,18 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private readonly IDailyValuationScheduleStatusSource? _dailyValuationScheduleStatusSource;
     private readonly IAutomatedJournalScheduleStatusSource? _automatedJournalScheduleStatusSource;
     private readonly IRecurringJournalQueueSource? _recurringJournalQueueSource;
+    private readonly Func<Guid, Guid, CancellationToken, Task<LedgerPeriodDto?>>? _lookupRecurringPeriod;
 
     public PrivateCapitalCloseCockpitService(
         IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService,
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
         IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
         IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null,
-        IRecurringJournalQueueSource? recurringJournalQueueSource = null)
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null,
+        Func<Guid, Guid, CancellationToken, Task<LedgerPeriodDto?>>? lookupRecurringPeriod = null)
     {
         _recurringJournalQueueSource = recurringJournalQueueSource;
+        _lookupRecurringPeriod = lookupRecurringPeriod;
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
         _dailyValuationScheduleStatusSource = dailyValuationScheduleStatusSource;
@@ -943,12 +948,36 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             var queue = await _recurringJournalQueueSource
                 .GetQueueAsync(fund, bookId, entity, ct, tenant, company)
                 .ConfigureAwait(false);
-            // The close scope may name the period by its authoritative id or by calendar month.
+            // A claim can survive a crash before its period ID is retained. Bind that row by
+            // date against the exact authoritative close period when the scope names a GUID.
+            var isAuthoritativeId = Guid.TryParse(periodId, out var id);
+            LedgerPeriodDto? period = null;
+            if (isAuthoritativeId && queue.Occurrences.Any(row => !Guid.TryParse(row.PeriodId, out _)))
+            {
+                period = _lookupRecurringPeriod is null ? null :
+                    await _lookupRecurringPeriod(bookId, id, ct).ConfigureAwait(false);
+                if (period is null || period.PeriodId != id || period.LedgerBookId != bookId || period.EndDate < period.StartDate)
+                    return Lane(laneId, label, EvidenceStatusDto.Blocked, false,
+                        "The accounting period could not be verified for recurring occurrences with no retained period.",
+                        UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, [],
+                        "Restore authoritative accounting period evidence, then recheck close readiness");
+            }
+
             rows = queue.Occurrences.Where(row =>
-                (!string.IsNullOrWhiteSpace(row.PeriodId) && string.Equals(row.PeriodId.Trim(), periodId?.Trim(), StringComparison.OrdinalIgnoreCase)) ||
-                MatchesPeriod(row.EffectiveDate, periodId)).ToArray();
+            {
+                if (!isAuthoritativeId)
+                    return MatchesPeriod(row.EffectiveDate, periodId) || (!string.IsNullOrWhiteSpace(row.PeriodId) &&
+                        string.Equals(row.PeriodId.Trim(), periodId?.Trim(), StringComparison.OrdinalIgnoreCase));
+                if (Guid.TryParse(row.PeriodId, out var retainedId))
+                    return retainedId == id;
+                return period is not null && period.StartDate <= row.EffectiveDate && row.EffectiveDate <= period.EndDate;
+            }).ToArray();
         }
-        catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
+        catch (RecurringJournalStoreNotProvisionedException)
+        {
+            return null;
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException or UnauthorizedAccessException or DbException)
         {
             // Unknown is not ready: an unreadable queue cannot show the period's journals are posted.
             return Lane(laneId, label, EvidenceStatusDto.Blocked, false,

@@ -226,6 +226,17 @@ internal static class CapitalCallDefaultInterestDraftProducer
                 continue;
             }
 
+            var occupied = queueDrafts.FirstOrDefault(draft =>
+                string.Equals(draft.TreasuryContext?.IdempotencyKey, thisKey, StringComparison.OrdinalIgnoreCase) &&
+                draft.Status is ManualJournalEntryStatusDto.Rejected or ManualJournalEntryStatusDto.Reversed or ManualJournalEntryStatusDto.Rebooked
+                    or ManualJournalEntryStatusDto.Posted or ManualJournalEntryStatusDto.CloseLocked);
+            if (occupied is not null)
+            {
+                blockers.Add(FormattableString.Invariant(
+                    $"Default interest of {increment:0.00} {currency} remains due for commitment '{commitmentId}' on call '{callId}' through {through:yyyy-MM-dd}, but journal '{occupied.JournalEntryId:D}' is {occupied.Status}. Use the governed journal workflow to post the outstanding amount against the same fund event under a new journal identity."));
+                continue;
+            }
+
             var evidence = evidenceLinks.Select((link, index) => new JournalEvidenceReference(
                 $"default-terms:{commitmentId}:{index + 1}", link, "commitment-default-terms",
                 "capital-call-default-interest-intake", evaluatedAtUtc, request.Actor.Trim(), SubjectId: commitmentId)).ToArray();
@@ -314,6 +325,7 @@ internal static class DistributionDeclarationDraftProducer
 
     public static (PrivateCapitalEventProduction Production, IReadOnlyList<DistributionDeclarationRecord> Records) Produce(
         RunDistributionDeclarationDraftIntakeRequest request,
+        LedgerPeriodDto period,
         IReadOnlyDictionary<string, IReadOnlyList<DistributionDeclarationRecord>> registeredByInvestor,
         IReadOnlyList<ManualJournalEntryDraftDto> queueDrafts,
         DateTimeOffset evaluatedAtUtc)
@@ -322,7 +334,7 @@ internal static class DistributionDeclarationDraftProducer
         var fund = request.FundProfileId.Trim();
         var distributionId = request.DistributionId.Trim();
         var currency = request.Currency.Trim().ToUpperInvariant();
-        var periodId = string.IsNullOrWhiteSpace(request.PeriodId) ? request.EffectiveDate.ToString("yyyy-MM") : request.PeriodId.Trim();
+        var periodId = period.PeriodId.ToString("D");
         var blockers = new List<string>();
         var drafts = new List<AutomatedJournalDraft>();
         var records = new List<DistributionDeclarationRecord>();
@@ -352,6 +364,19 @@ internal static class DistributionDeclarationDraftProducer
                 continue;
             }
 
+            if (retainedDraft is null && period.Status != LedgerPeriodStatusDto.Open)
+            {
+                blockers.Add($"Accounting period '{period.Label}' is {period.Status}; reopen it before admitting a distribution draft.");
+                continue;
+            }
+
+            if (retainedDraft is not null &&
+                (!Guid.TryParse(retainedDraft.PeriodId, out var retainedPeriodId) || retainedPeriodId == Guid.Empty))
+            {
+                blockers.Add($"Distribution '{distributionId}' for investor '{investorId}' retains an unpostable draft without a durable ledger period. Reject that draft and use a new distribution id.");
+                continue;
+            }
+
             var retainedJson = retainedDraft?.DistributionDeclarationJson;
             DraftDeclaration? declaration = null;
             try
@@ -377,7 +402,8 @@ internal static class DistributionDeclarationDraftProducer
                 (!MatchesTerms(original, request, input) ||
                  !SameId(capitalAccountId, declaration?.CapitalAccountId ?? retainedDraft?.TreasuryContext?.CapitalAccountId) ||
                  !SameId(currency, declaration?.Currency ?? retainedDraft?.Currency) ||
-                 !SameId(periodId, declaration?.PeriodId ?? retainedDraft?.PeriodId ?? request.EffectiveDate.ToString("yyyy-MM")) ||
+                 !Guid.TryParse(declaration?.PeriodId ?? retainedDraft?.PeriodId, out var originalPeriodId) ||
+                 originalPeriodId != period.PeriodId ||
                  !SameId(request.EntityId, declaration is not null ? declaration.EntityId : retainedDraft?.EntityId)))
             {
                 blockers.Add($"Distribution '{distributionId}' is already declared for investor '{investorId}' with different terms. Use a new distribution id.");
