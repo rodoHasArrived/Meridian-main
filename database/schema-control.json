@@ -171,11 +171,11 @@
     "format": "meridian.schema-control.v1",
     "postgres_image": "postgres:16.14-alpine"
   },
+  "migration_reservations": "database/migration-reservations.json",
   "migration_search_roots": [
     "src/Meridian.Storage",
     "src/Meridian.Identity"
   ],
-  "migration_reservations": "database/migration-reservations.json",
   "migration_sets": [
     {
       "connection_variables": [
@@ -381,6 +381,26 @@
       "owner": "src/Meridian.Identity",
       "quote_schema": true,
       "schema": "identity_access",
+      "track_ordinals": false
+    },
+    {
+      "connection_variables": [
+        "MERIDIAN_OPERATOR_TRIAGE_CONNECTION_STRING",
+        "MERIDIAN_OPERATOR_TRIAGE_SCHEMA"
+      ],
+      "directory": "src/Meridian.Storage/Workstation/Migrations",
+      "display_name": "Operator Triage",
+      "drift_policy": "throw",
+      "glob": "*.sql",
+      "id": "operator-triage",
+      "ledger": {
+        "checksum_column": "checksum",
+        "key_column": "filename",
+        "table": "operator_triage_schema_migrations"
+      },
+      "owner": "src/Meridian.Storage/Workstation",
+      "quote_schema": false,
+      "schema": "operator_triage",
       "track_ordinals": false
     }
   ],
